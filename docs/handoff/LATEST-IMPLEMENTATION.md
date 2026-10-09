@@ -4,7 +4,7 @@
 
 - **阶段：** M1.1–M1.5 DEV 收口；首次独立 QA 发现 C03 P1，已修复并交固定提交复验。
 - **首次 QA 固定代码 SHA：** `73ec81a06f2557c006f98ff88fa81b08d14ef315`。
-- **当前修复候选代码 SHA：** `34522507f2c5c9856ed859f0593e1967190cae41`。
+- **当前修复候选代码 SHA：** `f349fe6cb5da86c3fdafff11738e2a55335d8874`。
 - **分支：** `codex/m1-close`。
 - **材料边界：** 只用隔离模拟工作库与 Fake providers；没有导入真实“场地与酒店”材料、付费模型或真实飞书。
 - **DEV 自测记录：** [2026-10-09-M1-close-DEV.md](../quality/reports/2026-10-09-M1-close-DEV.md)（已提交，不是独立 QA 报告）。详细隔离运行记录另保存在 ignored `.local/m1-close/evidence/dev-self-check.md`。
@@ -32,7 +32,7 @@ uv run python scripts/run_dev.py
 
 默认 API `127.0.0.1:8793`、Web `127.0.0.1:5173`。并发隔离可设 `SUMMIT_API_PORT`、`SUMMIT_WEB_PORT`、`SUMMIT_API_TARGET`、`SUMMIT_PROFILE_ROOT`。访问 `http://127.0.0.1:5173`。原生开发壳：`cd native && swift run`。
 
-旧代码候选运行记录与退出码见 `.local/m1-close/evidence/dev-self-check.md`。固定修复代码 SHA `34522507f2c5c9856ed859f0593e1967190cae41` 的复验结果：后端 77 passed；前端 5 个测试文件 / 10 项测试通过；ruff / format、mypy、lock、sdist+wheel、OpenAPI 类型生成、前端 typecheck / lint / production build、Swift build 均退出 0。保留 1 条 Starlette/httpx 弃用提示及 3 条既有 React effect lint 警告。
+旧代码候选运行记录与退出码见 `.local/m1-close/evidence/dev-self-check.md`。固定修复代码候选 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 的前端改动复验：前端 5 个测试文件 / 10 项测试、typecheck、lint、production build 均退出 0。其父提交 `34522507f2c5c9856ed859f0593e1967190cae41` 的后端 77 项、ruff / format、mypy、lock、sdist+wheel、OpenAPI 类型生成及 Swift build 均通过；最终 SHA 的完整门禁复跑待 QA 与最终 main 复验。保留 1 条 Starlette/httpx 弃用提示及 3 条既有 React effect lint 警告。
 
 ## 真实 UI 复演
 
@@ -48,4 +48,4 @@ uv run python scripts/run_dev.py
 
 ## QA 交接
 
-使用源码仓库外的独立 worktree / checkout，固定 ref 为 `34522507f2c5c9856ed859f0593e1967190cae41`；测试者只在自己的隔离目录使用模拟库 / profile、增补测试和新报告，不修改 `src/`、`web/`、`native/` 产品实现。读取 `docs/handoff/TESTER.md` 与 `docs/quality/ACCEPTANCE.md`，覆盖 Foundation 和 M1.1–M1.5 Must 场景，区分跨阶段已实现部分与 M3/M4 未测项。报告新建于 `docs/quality/reports/`，保留两份旧报告。若发现缺陷，把复现、严重度和证据交回执行者；修复后对新固定 SHA 复验修复项与相关回归。
+使用源码仓库外的独立 worktree / checkout，固定 ref 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；测试者只在自己的隔离目录使用模拟库 / profile、增补测试和新报告，不修改 `src/`、`web/`、`native/` 产品实现。读取 `docs/handoff/TESTER.md` 与 `docs/quality/ACCEPTANCE.md`，覆盖 Foundation 和 M1.1–M1.5 Must 场景，区分跨阶段已实现部分与 M3/M4 未测项。报告新建于 `docs/quality/reports/`，保留两份旧报告。若发现缺陷，把复现、严重度和证据交回执行者；修复后对新固定 SHA 复验修复项与相关回归。
