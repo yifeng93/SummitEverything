@@ -2,27 +2,26 @@
 
 ## Fixed implementation
 
-- **Stage:** M1 local knowledge loop, M1.1–M1.5 DEV complete; waiting for independent QA.
-- **Product baseline:** `PRODUCT-SPEC.md`, 2026-10-09 decisions.
-- **Fixed code SHA:** `f364c0122a1a74580009bf9342e6e864df6d975d` (`feat(m1): complete local knowledge loop UI`).
-- **Branch at implementation:** `codex/project-foundation`.
-- **Working tree:** implementation code remains at the fixed SHA above; this follow-up adds native-shell verification evidence only.
-- **Independent QA:** not run. Do not treat the DEV checks below as an acceptance pass.
+- **Stage:** M1 local knowledge loop remediation; implementation self-check complete, waiting for a new independent review.
+- **Product baseline:** `docs/product/PRODUCT-SPEC.md`, decisions confirmed 2026-10-09.
+- **Fixed code SHA:** `7b41ca272b14c38a7b6ebf0e9766766749ccf001`.
+- **Branch:** `codex/project-foundation`.
+- **Working tree at handoff:** clean. The SHA is a local commit; it has not been pushed.
+- **Prior independent QA:** report `docs/quality/reports/2026-10-09-M1-f364c01.md`, report commit `c4f755f648324bf714000e2765fa99917909692b`, tested the old implementation SHA `f364c0122a1a74580009bf9342e6e864df6d975d`. It reported C08/C10 FAIL and C03/C06/C13/C14 incomplete. That report remains valid for its fixed SHA; it is not a result for this remediation SHA.
+- **Independent review of this SHA:** not run. Do not mark M1 QA passed based on the self-check below.
 
-## What is implemented
+## Remediation summary
 
-- Authenticated loopback FastAPI API, workspace and profile separation, line / project / page browsing, transactional page confirmation and update.
-- Local source intake, original-content reading and hash verification, deterministic FakeLLM drafts, source-linked review, partial confirmation, and action suggestions that are never executed.
-- Incremental local index planning and execution, query SSE with ordered events and cancellation, citations rechecked against current page content before opening.
-- React / TypeScript WebUI for Today, Projects & Knowledge, Knowledge Ask, and Settings; OpenAPI-generated TypeScript types.
-- A thin macOS SwiftUI / WKWebView development shell that starts the local services, waits for API readiness, provides a native folder chooser, and stops its owned process.
-- One-command local API + browser preview in `scripts/run_dev.py`.
+- C08: draft review now reports a stale target as a conflict, refreshes the current page snapshot, displays the current-versus-draft comparison, and requires the reviewer to explicitly adopt the current version before retrying. The page writer still checks the version at confirmation time.
+- C10: changed pages remain visible as needing confirmation. Page Reader now shows the current title and body and offers an explicit confirmation action. The new version is confirmed before it becomes eligible again; old cached chunks remain excluded until incremental indexing.
+- C06: a selected source can produce multiple proposals using its Markdown H2 sections. Every proposal keeps source links and inherits the single line/project selected by the user. Each draft remains independently pending until confirmed. C06 has been revised to match the already-confirmed single-project boundary; automatic cross-project routing is out of scope.
+- C03/C13 M1 portion: added checks for archived project knowledge remaining searchable, nonempty project deletion being rejected, superseded knowledge being excluded from current retrieval, and history citations carrying `superseded` validity.
+- C14 M1 portion: SSE tests now check contiguous sequence numbers, a single terminal event, and cancellation without a false completion.
+- The writer now permits a user-confirmed page whose validity is `superseded`; it remains history-only under the shared retrieval gate.
 
-The implementation uses only temporary synthetic materials and fake model / embedding / reranking providers. No real “场地与酒店” materials were read, imported, approved, committed, or used to initialize a workspace. No real model or Feishu endpoint was called.
+## Startup commands
 
-## Startup command
-
-From the repository root, install dependencies and launch the browser preview:
+From the repository root, start the browser preview:
 
 ~~~sh
 uv sync --group dev
@@ -31,52 +30,50 @@ cd ..
 uv run python scripts/run_dev.py
 ~~~
 
-Open `http://127.0.0.1:5173`. The script creates an ephemeral session token, starts the API on `127.0.0.1:8793` and Vite on `127.0.0.1:5173`, and stops both services on Ctrl+C. Readiness can be checked at `http://127.0.0.1:8793/api/v1/health`.
+Open `http://127.0.0.1:5173`. The script starts FastAPI at `127.0.0.1:8793` and Vite at `127.0.0.1:5173`; `http://127.0.0.1:8793/api/v1/health` returned `ready`. Ctrl+C on this script stopped both listeners.
 
-The native development shell command is `cd native && swift run`. After unlock, a temporary debug `.app` wrapper around the `swift build` output rendered the SwiftUI window and embedded WebUI; switching to workspace setup and selecting the synthetic replay folder through the native chooser populated the setup path field. No workspace was created through that picker flow. Separately, `cd native && swift run` started its own API and Vite services; `/api/v1/health` returned `ready`. Interrupting that terminal-launched process with Ctrl+C left its child services running. I sent SIGTERM to the `run_dev.py` parent I had started, and confirmed both listeners stopped. Closing the normal app window / choosing Quit while it owns the services still needs verification.
+Native development command: `cd native && swift run`. It started the API and Vite services in this environment. A normal window Quit was not verified: macOS presented a Documents-folder access prompt for the temporary development app, and the prompt was not approved. The previously observed terminal Ctrl+C path for `swift run` can leave child listeners running; do not interpret the direct runner check as a successful normal-quit test. M4 native packaging/exit behavior remains unverified.
 
-## Browser replay with synthetic data
+## Browser replay with isolated synthetic material
 
-1. Start the preview with the command above. Create a fresh empty temporary directory and choose it as a new workspace in the setup screen.
-2. In **项目与知识**, create one synthetic line and one synthetic project.
-3. In **今日**, save two clearly synthetic notes to **待整理**. Select both items, select their line and project, and explicitly generate drafts.
-4. Open both drafts and verify the full draft and original source are available. Confirm only one draft; verify the other remains pending.
-5. Save another synthetic note, generate its draft, select the existing confirmed page in **整理到**, inspect the current-page / draft comparison, and confirm the update.
-6. In **知识问答**, prepare and confirm the first index plan, ask about a fact in the confirmed synthetic page, then click its citation and verify the current page opens.
-7. Edit that page outside the app, then ask about its indexed text again without rebuilding. The expected result is “没有找到经确认且仍为当前版本的相关资料” and no citation. This guards against stale index evidence.
-8. Stop services with Ctrl+C. Keep this isolated workspace for inspection or discard it after QA.
+Replay workspace: `/tmp/summit-m1-fix-replay-nwyhoS` (synthetic only).
 
-This replay was performed in a temporary folder under the system temp directory. It exercised line / project setup, multiple drafts, partial confirmation, an authoritative page update, index build, query, citation navigation, and stale-content exclusion after an external edit.
+1. Start the browser preview and create a new workspace at that path.
+2. Create line `模拟业务线` and project `用户选定的模拟项目`.
+3. Save one note with H2 sections `预算` and `时间`. Select the one source and the one project, then explicitly generate drafts. The UI showed two independently reviewable drafts with one source each.
+4. Confirm `预算` only. `时间` remained pending. Confirm it afterward to continue the page-update replay.
+5. Edit the confirmed `时间.md` outside the app, changing `周五` to `周六`. Reload and open the page: the UI showed `待确认`, the current body, and `确认当前版本`. Confirm it and observe the page return to confirmed status.
+6. Save another one-section note, generate its draft, select the existing `时间` page, and save the target selection. Edit that page externally from `周六` to `周一` while the draft is open. Confirming the draft returned a conflict; the UI displayed the externally changed body and disabled confirmation until `采用当前页面作为比较基准` was clicked. Save the draft and confirm again. The original external edit was not overwritten before explicit rebase.
+7. All material, facts, and workspace state in this replay are synthetic and local. The replay did not initialize any real “场地与酒店” content.
 
-## Verification evidence
+## Verification evidence at the fixed SHA
 
-- `uv run pytest -q`: **67 passed**, with one Starlette `TestClient` / httpx deprecation warning.
 - `uv run ruff check src tests scripts`: passed.
 - `uv run ruff format --check src tests scripts`: passed.
-- `uv run mypy src`: passed; 22 source files.
+- `uv run mypy src`: passed, 22 source files.
+- `uv run pytest -q`: **72 passed**, one Starlette `TestClient` / httpx deprecation warning.
 - `uv lock --check`: passed.
 - `uv build`: source distribution and wheel built.
-- `npm run api:types`: OpenAPI contract exported and TypeScript types generated.
-- `npm test`: **2 passed**.
+- `npm test`: **4 passed** across 3 files.
 - `npm run typecheck`: passed.
-- `npm run build`: production assets built.
-- `npm run lint`: exited 0, with three `react/set-state-in-effect` warnings on async initial data loading effects in `ProjectsView`, `TodayView`, and `AskView`.
+- `npm run build`: passed.
+- `npm run lint`: exited 0, with three existing `react/set-state-in-effect` warnings in `ProjectsView`, `TodayView`, and `AskView`.
 - `swift build`: passed.
-- Browser replay: the actual app was used through the local WebUI; after an external page edit, a query against stale indexed content returned no citation.
-- Native shell spot check: launched temporary debug wrapper, rendered the WebUI, opened the native folder chooser, selected the already-created synthetic replay workspace, and observed its path in setup. No real user files were opened.
-- Native service startup: `cd native && swift run` launched API + Vite; health returned `{"service":"ready","workspace_open":false,"version":"1.0.0"}`. Ctrl+C did not stop the child listeners; after SIGTERM to this test's `run_dev.py` parent, both API and Vite listeners were absent.
+- Browser UI replay: C06, C08, and C10 flows above were manually exercised in the local UI.
+- C03/C13/C14 additions are covered by automated service/integration tests; this is developer evidence, not independent acceptance.
+- Local preview listeners were checked absent after stopping the preview.
 
 ## Not tested / remaining gates
 
-- Independent Luna QA against this fixed SHA and `docs/quality/ACCEPTANCE.md` has not run.
-- Native shell normal UI Quit / close-window cleanup is not verified. The terminal Ctrl+C path left API and Vite child processes running, which were stopped manually; independent QA should exercise normal application termination and report this observation.
-- The picker test did not create or initialize a workspace.
-- No `.app` archive, DMG, clean-machine install, update, restart, or release identity verification; these belong to M4.
-- No real business material or “场地与酒店” sample confirmation / workspace initialization.
-- No real cloud model quality, credential, cost, Feishu read/write, or real task creation test.
-- No five-day single-device use or two-device round trip.
-- The frontend lint warnings and Starlette/httpx deprecation warning are recorded above; neither was hidden by relaxing a check.
+- Independent Luna review of the new fixed SHA and a new report covering M1.1–M1.5.
+- Normal macOS window Quit/close cleanup: not verified because the temporary app triggered a Documents access prompt. No approval was given for broad Documents-folder access.
+- C03 full structural matrix (all line/project edits, moves, and deletion cases) requires independent review; the added developer test covers archive/search and nonempty deletion.
+- C13 historical session UI and C14 disconnect recovery / old citation UI are M3 work and were not tested here. The M1 retrieval and stream portions are listed above.
+- Native `.app` archive, DMG, clean-machine install, restart, and release identity verification (M4).
+- Real business sample confirmation and initialization; real model quality, credentials, costs, Feishu read/write, or task creation.
+- Five-day single-device use and two-device round trip.
+- The Starlette/httpx deprecation and three frontend lint warnings remain visible; no check was relaxed.
 
 ## QA handoff
 
-Please check out exactly `f364c0122a1a74580009bf9342e6e864df6d975d` in an independent checkout / worktree. Follow `docs/handoff/TESTER.md` and `docs/quality/ACCEPTANCE.md`, record each M1 scenario as passed / failed / untested with evidence, and write the independent report separately. Do not edit the implementation or infer a pass from this DEV report.
+Use an independent checkout/worktree at exactly `7b41ca272b14c38a7b6ebf0e9766766749ccf001`. Read `docs/handoff/TESTER.md` and `docs/quality/ACCEPTANCE.md`; record each relevant result with evidence. In particular, re-run C08/C10 against the new SHA, review the revised C06 boundary, and report C03/C06/C13/C14 scope without filling historical M3 or native M4 gaps as passes. Do not edit implementation code or infer independent approval from this handoff.

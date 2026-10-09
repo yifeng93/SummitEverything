@@ -5,7 +5,7 @@
 | 阶段 | 实施状态 | 独立验收 | 备注 |
 |---|---|---|---|
 | Foundation | 本轮完成文档与核心门禁骨架，自检证据见报告 | 尚未独立验收 | 没有应用服务 / UI / DMG |
-| M1 本地闭环 | DEV完成待验收 | 未开始 | M1.1–M1.5 DEV 切片已提交；固定验收基线见 `f364c0122a1a74580009bf9342e6e864df6d975d` |
+| M1 本地闭环 | DEV 修复已提交，等待新 SHA 独立复验 | 旧 SHA 验收未通过；新 SHA 未验收 | 原验收基线 `f364c0122a1a74580009bf9342e6e864df6d975d` 有 C08/C10 FAIL 与 C03/C06/C13/C14 覆盖缺口；修复代码 SHA `7b41ca272b14c38a7b6ebf0e9766766749ccf001` |
 | M2 飞书 / 日常 | 未开始 | 未开始 | 真实权限与写动作门独立记录 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
@@ -13,7 +13,7 @@
 
 ## 当前下一步
 
-M1 DEV 闭环已完成并交接。下一步由另一位 Luna 在独立 checkout 对照 [执行交接](../handoff/LATEST-IMPLEMENTATION.md) 和验收手册复核固定 SHA；实现者不标记独立验收通过。
+下一步由另一位 Luna 在独立 checkout 对照 [执行交接](../handoff/LATEST-IMPLEMENTATION.md) 和验收手册复核新固定 SHA。当前记录不标记独立验收通过；旧 SHA 的失败报告仍保留。
 
 ## 独立数据 / 外部门
 
@@ -32,8 +32,9 @@ M1 DEV 闭环已完成并交接。下一步由另一位 Luna 在独立 checkout 
 | M1.3 来源、随手记录和多稿整理 | DEV完成待验收 | `4a1fc293bbc6520cb6819cbc1902f53841cc6fea` | `uv run pytest -q`：59 passed；ruff、mypy、`uv lock --check`、`uv build` 均退出 0。覆盖原字节保存、TXT/MD 与 UTF-8 限制、零模型读取、显式 FakeLLM 多稿、malformed/timeout 边界、冲突分项处理、逐稿确认、仅候选 action、本机 API 流程。 | 临时隔离库、合成文本与 FakeLLM；无真实模型或飞书调用 | 作业运行中断后保留 running 状态；同步 Fake provider 调用不能运行时取消。Starlette TestClient/httpx 弃用提示仍存在。没有 UI。 |
 | M1.4 增量索引、问答与引用门禁 | DEV完成待验收 | `0aae5a2718a792b7e9b35afaf401987ed1d9ccaa` | `uv run pytest -q`：64 passed；ruff、mypy、`uv lock --check`、`uv build` 均退出 0。覆盖 source/draft 排除、中文多候选检索、外部编辑及重新批准的旧 chunk 拒绝、邻页复验、分块嵌入复用、过期计划拒绝、model-change 失败保留旧索引。 | SQLite 位于隔离 profile；Fake embedding / rerank / answer，无网络模型或费用 | M1.4 service 尚未接到 WebUI/API；历史 purpose 沿共享门禁实现但需进一步外部复验。Starlette 弃用提示仍存在。 |
 | M1.5 WebUI 与本地运行壳 | DEV完成待验收 | `f364c0122a1a74580009bf9342e6e864df6d975d` | `uv run pytest -q`：67 passed；ruff / format、mypy、`uv lock --check`、`uv build`、OpenAPI 类型生成、`npm test`（2 passed）、`npm run typecheck`、`npm run build`、Oxlint、`swift build` 均退出 0。浏览器复演覆盖新建工作库至外部编辑后旧索引无引用。解锁后临时 debug `.app` 渲染 WebUI，系统目录选择器选中既有合成 replay 库并把路径回填；未创建工作库。`cd native && swift run` 启动 API / Vite，health 返回 ready。 | 临时合成工作库；FakeLLM / Fake embedding / rerank / answer；无真实材料、模型或飞书调用 | 原生交互测试时 QA worktree 占用端口，目录选择 UI 使用了已有服务。`swift run` 的 Ctrl+C 留下 API / Vite 子进程，手动 SIGTERM 本轮 `run_dev.py` 后确认监听端口关闭；原生窗口正常 Quit / 关闭时的进程清理仍待验证。Oxlint 有 3 条 effect 提示；pytest 有 Starlette/httpx 弃用提示；DMG 未做。 |
+| M1 QA 修复与补充证据 | DEV完成待验收 | `7b41ca272b14c38a7b6ebf0e9766766749ccf001` | `uv run pytest -q`：72 passed；ruff check / format、mypy、`uv lock --check`、`uv build`、`npm test`（4 passed）、typecheck、build、lint、`swift build` 通过。浏览器复演 C06/C08/C10；自动测试补充 C03 归档 / 非空删除、C13 当前与历史效力、C14 顺序 / 唯一终态 / 取消。 | 只用 `/tmp/summit-m1-fix-replay-nwyhoS` 隔离合成内容及 Fake providers；没有读取、导入、审批或提交真实业务材料；没有真实模型或飞书调用 | 新 SHA 独立复验未开始。C06 按用户选择修订为“用户先选定一个项目，一份多主题来源在该项目下生成多稿”，不做自动跨项目分流。macOS 对临时开发 App 显示 Documents 文件夹访问提示，本轮未授权；正常窗口 Quit 未验证。M3 历史会话 / 旧引用 UI、M4 打包 / DMG 及真实门仍未测。保留一个 Starlette/httpx 弃用提示和三个既有 Oxlint effect 提示。 |
 
-下一步：由独立 Luna 固定复验 M1.1–M1.5。M1 QA 尚未运行；真实业务样板、真实模型和飞书仍由各自独立门控制。
+下一步：由独立 Luna 在隔离 checkout 固定复验 `7b41ca272b14c38a7b6ebf0e9766766749ccf001` 的 M1.1–M1.5 并另写报告。真实业务样板、真实模型和飞书仍由各自独立门控制；执行者不填写 QA 通过。
 
 ## 更新格式
 
