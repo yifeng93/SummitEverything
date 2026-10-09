@@ -2,8 +2,10 @@ import AppKit
 import SwiftUI
 import WebKit
 
-private let webURL = URL(string: "http://127.0.0.1:5173")!
-private let healthURL = URL(string: "http://127.0.0.1:8793/api/v1/health")!
+private let apiPort = ProcessInfo.processInfo.environment["SUMMIT_API_PORT"] ?? "8793"
+private let webPort = ProcessInfo.processInfo.environment["SUMMIT_WEB_PORT"] ?? "5173"
+private let webURL = URL(string: "http://127.0.0.1:\(webPort)")!
+private let healthURL = URL(string: "http://127.0.0.1:\(apiPort)/api/v1/health")!
 
 @main
 struct SummitEverythingApp: App {
@@ -11,7 +13,7 @@ struct SummitEverythingApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LocalWebView()
+            LocalWebView(expectedRunID: appDelegate.runID)
                 .frame(minWidth: 960, minHeight: 680)
         }
         .windowResizability(.contentSize)
@@ -20,6 +22,11 @@ struct SummitEverythingApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var server: Process?
+    let runID = UUID().uuidString
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let root = URL(fileURLWithPath: #filePath)
@@ -31,6 +38,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
         process.arguments = ["uv", "run", "python", "scripts/run_dev.py"]
         process.currentDirectoryURL = root
+        var environment = ProcessInfo.processInfo.environment
+        environment["SUMMIT_RUN_ID"] = runID
+        process.environment = environment
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice
         do {
@@ -57,7 +67,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 struct LocalWebView: NSViewRepresentable {
-    func makeCoordinator() -> Coordinator { Coordinator() }
+    let expectedRunID: String
+
+    func makeCoordinator() -> Coordinator { Coordinator(expectedRunID: expectedRunID) }
 
     func makeNSView(context: Context) -> WKWebView {
         let controller = WKUserContentController()
@@ -74,9 +86,14 @@ struct LocalWebView: NSViewRepresentable {
     func updateNSView(_ view: WKWebView, context: Context) {}
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+        private let expectedRunID: String
         weak var webView: WKWebView?
         private var readinessTimer: Timer?
         private var attempts = 0
+
+        init(expectedRunID: String) {
+            self.expectedRunID = expectedRunID
+        }
 
         func waitForReadiness() {
             readinessTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
@@ -84,8 +101,15 @@ struct LocalWebView: NSViewRepresentable {
                 self.attempts += 1
                 var request = URLRequest(url: healthURL, timeoutInterval: 1)
                 request.httpMethod = "GET"
-                URLSession.shared.dataTask(with: request) { [weak self] _, response, _ in
-                    guard let self, (response as? HTTPURLResponse)?.statusCode == 200 else { return }
+                URLSession.shared.dataTask(with: request) { [weak self] data, response, _ in
+                    guard
+                        let self,
+                        let data,
+                        (response as? HTTPURLResponse)?.statusCode == 200,
+                        let health = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                        health["service"] as? String == "ready",
+                        health["run_id"] as? String == self.expectedRunID
+                    else { return }
                     DispatchQueue.main.async {
                         timer.invalidate()
                         self.readinessTimer = nil

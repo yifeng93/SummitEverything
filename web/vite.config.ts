@@ -21,7 +21,7 @@ export default defineConfig({
   },
   server: {
     host: '127.0.0.1',
-    port: 5173,
+    port: Number(process.env.SUMMIT_WEB_PORT ?? 5173),
     strictPort: true,
     proxy: { '/api': apiProxy },
   },

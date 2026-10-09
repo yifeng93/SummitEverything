@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-09：M1.1–M1.5 的本地知识闭环已完成 DEV 实现：工作库与组织管理、显式确认写入、原件收件队列、逐稿审核、本地索引与引用、React WebUI 和薄 macOS 开发壳。M1 等待独立验收；飞书、真实模型质量验收与可安装 DMG 尚未实现。
+2026-10-09：M1.1–M1.5 的本地知识闭环已完成 DEV 实现，并补修来源处理状态、重复整理、冲突结果表达与本地服务生命周期。当前候选版本正在独立验收；验收通过前不宣告 M1 收口。飞书、真实模型质量验收与可安装 DMG 尚未实现。详见 [进展账本](docs/implementation/PROGRESS.md) 和 [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -35,7 +35,7 @@ uv build
 
 ### 本地 WebUI 开发预览（M1）
 
-先安装前端依赖，然后在仓库根目录启动 FastAPI 与 Vite。脚本自动生成仅供本次进程使用的本机会话 token，并在退出时关闭它启动的服务：
+先安装前端依赖，然后在仓库根目录启动 FastAPI 与 Vite。脚本自动生成仅供本次进程使用的本机会话 token 和运行身份，并在退出时只关闭自己启动的服务：
 
 ~~~sh
 cd web && npm ci
@@ -43,7 +43,7 @@ cd ..
 uv run python scripts/run_dev.py
 ~~~
 
-打开 `http://127.0.0.1:5173`，新建工作库时选一个空的隔离目录。也可运行薄 macOS 壳：
+打开 `http://127.0.0.1:5173`，新建工作库时选一个空的隔离目录。隔离并发复演可通过 `SUMMIT_API_PORT`、`SUMMIT_WEB_PORT` 和 `SUMMIT_PROFILE_ROOT` 指定独立端口与 profile。也可运行薄 macOS 壳：
 
 ~~~sh
 cd native && swift run

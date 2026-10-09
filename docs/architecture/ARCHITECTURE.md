@@ -8,7 +8,7 @@
 
 React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 / 外部服务适配器。Swift 只负责窗口、文件选择、钥匙串桥接、服务启停和系统打开操作；不放入知识处理或第二套聊天界面。
 
-后端只监听 127.0.0.1。开发默认端口 8793，可显式配置；前端开发端口 5174。生产由启动器传递会话 token，通过 Authorization: Bearer 保护 API，限制允许的 origin。token 不进 URL、构建产物或诊断日志。
+后端只监听 127.0.0.1。开发默认端口 8793，WebUI 为 5173；隔离复演可分别通过 `SUMMIT_API_PORT` / `SUMMIT_WEB_PORT` 指定，并将 `SUMMIT_API_TARGET` 指向同一 API。启动器为本次运行分配身份，UI 只连接身份匹配的服务；退出时只终止自己启动的进程组。生产由启动器传递会话 token，通过 Authorization: Bearer 保护 API，限制允许的 origin。token 不进 URL、构建产物或诊断日志。
 
 模型及飞书外部连接由后端执行。前端不持有长期 API 密钥。飞书 OAuth 的 redirect_uri 使用用户配置并与应用注册一致；不能擅自换端口破坏回调。浏览器回调仅通过限时、一次性且绑定本机会话的 state 认证，具体边界见 API 契约；其他业务 API 始终需要 Bearer。
 
