@@ -84,4 +84,4 @@ allowed 状态为 未开始 / 进行中 / DEV完成待验收 / 验收未通过 /
 - 状态：DEV完成待验收（仅 Fake 模拟范围）；代码 `e4f382956ab1beb381ab75ed5b1fab22c79bd682`、UI / 契约 `72612e641dd00a34c71f8424adbbf3b622309891`。
 - 覆盖 C15、日历读流程与 OAuth 本机会话安全门；26 个新增真实路由 / 文件事务测试、完整后端 103 passed、前端 13 passed，ruff / format / mypy 与前端类型生成 / typecheck / lint / build 均退出 0。保留既有 1 条 Starlette 弃用与 3 条 React effect 警告；无新增警告。
 - 合成工作库、FakeFeishu / 内存凭据；真实飞书登录 / scope / 原件 / 任务写、真实模型、钥匙串 / DMG、独立 QA 和真实浏览器跨阶段复演不在此自动检查结果内。
-- 精确命令、红绿证据、文件清单、设计与未测边界见 [M2.1 任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.1-report.md)。下一步由主执行会话复核本切片并推进 M2.2；本切片未实现任务动作。
+- 精确命令、红绿证据、文件清单、设计与未测边界见 [M2.1 任务报告](../quality/reports/2026-10-09-M2.1-DEV.md)。下一步由主执行会话复核本切片并推进 M2.2；本切片未实现任务动作。
