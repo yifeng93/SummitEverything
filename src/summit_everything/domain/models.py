@@ -119,3 +119,43 @@ class ActionCandidate(OpenModel):
     state: Literal["proposed"] = "proposed"
     source_draft_id: UUID
     created_at: datetime
+
+
+class Citation(BaseModel):
+    page_id: UUID
+    content_sha256: str
+    chunk_id: str
+    heading: str
+    excerpt: str
+    validity: Literal["current", "superseded", "invalid"] = "current"
+
+
+class Answer(BaseModel):
+    answer_id: UUID
+    question: str
+    text: str
+    citations: list[Citation] = Field(default_factory=list)
+    inferences: list[str] = Field(default_factory=list)
+    missing_information: list[str] = Field(default_factory=list)
+    purpose: Literal["current", "history"] = "current"
+    index_status: Literal["ready", "empty", "not_ready"]
+
+
+class IndexPlan(BaseModel):
+    plan_id: UUID
+    workspace_id: UUID
+    mode: Literal["initial", "incremental", "full", "model_change"]
+    fingerprint: str
+    page_ids: list[UUID]
+    page_versions: dict[str, str] = Field(default_factory=dict)
+    estimated_tokens: int
+    estimated_cost: float = 0
+
+
+class IndexResult(BaseModel):
+    indexed_pages: int
+    indexed_chunks: int
+    embedded_chunks: int
+    reused_chunks: int
+    active_fingerprint: str
+    saved_locally: bool = True
