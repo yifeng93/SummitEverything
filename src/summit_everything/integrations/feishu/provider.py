@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 CALLBACK_PATH = "/api/v1/integrations/feishu/callback"
 
@@ -35,6 +35,7 @@ class FeishuError(Exception):
 class FeishuConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
     mode: Literal["fake"] = "fake"
+    app_id: str = Field(default="synthetic-fake-app", min_length=1, max_length=200)
     redirect_uri: str = "http://127.0.0.1:5173" + CALLBACK_PATH
     allowed_origins: tuple[str, ...] = ("http://127.0.0.1:5173", "http://127.0.0.1:8793")
     state_ttl_seconds: int = Field(default=300, ge=1, le=600)
@@ -75,6 +76,21 @@ class FeishuConfig(BaseModel):
         return values
 
 
+class AppCredentials(BaseModel):
+    """Backend-only application identity and secret, separate from user tokens."""
+
+    model_config = ConfigDict(extra="forbid")
+    app_id: str = Field(min_length=1, max_length=200)
+    app_secret: SecretStr = Field(repr=False)
+
+    @field_validator("app_secret")
+    @classmethod
+    def nonempty_secret(cls, secret: SecretStr) -> SecretStr:
+        if not secret.get_secret_value().strip():
+            raise ValueError("Application secret must not be empty")
+        return secret
+
+
 class UserCredentials(BaseModel):
     model_config = ConfigDict(extra="forbid")
     token_type: Literal["user"] = "user"
@@ -87,6 +103,8 @@ class UserCredentials(BaseModel):
 class CredentialStore(Protocol):
     def get(self) -> UserCredentials | None: ...
     def put(self, credentials: UserCredentials) -> None: ...
+    def get_app(self) -> AppCredentials | None: ...
+    def put_app(self, credentials: AppCredentials) -> None: ...
 
 
 class MemoryCredentialStore:
@@ -94,12 +112,19 @@ class MemoryCredentialStore:
 
     def __init__(self) -> None:
         self._credentials: UserCredentials | None = None
+        self._app_credentials: AppCredentials | None = None
 
     def get(self) -> UserCredentials | None:
         return self._credentials
 
     def put(self, credentials: UserCredentials) -> None:
         self._credentials = credentials
+
+    def get_app(self) -> AppCredentials | None:
+        return self._app_credentials
+
+    def put_app(self, credentials: AppCredentials) -> None:
+        self._app_credentials = credentials
 
 
 class Material(BaseModel):
@@ -137,7 +162,9 @@ class CalendarPage(BaseModel):
 
 class FeishuProvider(Protocol):
     def authorization_url(self, redirect_uri: str, state: str) -> str: ...
-    def exchange(self, code: str, redirect_uri: str) -> UserCredentials: ...
+    def exchange(
+        self, code: str, redirect_uri: str, app_credentials: AppCredentials | None = None
+    ) -> UserCredentials: ...
     def materials(
         self,
         credentials: UserCredentials,

@@ -77,3 +77,5 @@ Must FAIL、未关闭 P0 / P1 阻止相关阶段通过。真实门未测时只�
 `tests/integration/test_feishu.py` 使用真实 API / SourceStore / 隔离库，外部边界 Fake：多页、空页、visibility、只取选择正文、失败逐项、denied/expired/scope/404/malformed/timeout/unavailable、UTF-8 / 类型 / 安全文件名 / 大小、state 重放 / 到期 / 跨运行 / callback 地址 / Origin、授权 Bearer 门、重启幂等及原件写后中断恢复。`FeishuPanel.test.tsx` 覆盖真实组件的失败授权、分页选择、部分结果、取消与日历空 / 错误态。
 
 实现者自测不填写独立 QA 通过。真实 Feishu 用户权限、账户登录、真实材料与钥匙串持久化均未测；任务写属于 M2.2。
+
+M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请求实际注册目的地且不跟随 redirect / 携带凭据；检查 callback allowlist CORS / no-store、非法外部地址拒绝。导入合法材料与“ .txt”等被来源 writer 拒绝的名称，必须逐项失败且其余继续。模拟 token_expired / not_authorized 后查看界面状态并确认读取按钮关闭，missing_scope 显示权限不足且没有虚构成功；检查合成 AppCredentials 与 user token 隔离、配置无秘密、状态 / 错误 / 授权 URL 无秘密。

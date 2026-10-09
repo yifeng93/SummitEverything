@@ -360,3 +360,96 @@ def test_list_provider_failures_safe(tmp_path: Path, route: str, failure: str, c
     assert result.json()["error"]["code"] == code
     assert "synthetic-sensitive-secret" not in result.text
     assert c.get("/api/v1/intake/items").json() == []
+
+
+def test_source_filename_rejection_is_per_item_and_continues(tmp_path: Path) -> None:
+    from summit_everything.integrations.feishu.provider import MaterialBody
+
+    c = client(tmp_path)
+    authorize(c)
+    provider = c.app.state.feishu_service.provider
+    original = provider.body
+    provider.body = lambda user, material_id: (
+        MaterialBody(raw=b"synthetic text", filename=" .txt", content_type="text/plain")
+        if material_id == "a-bad"
+        else original(user, material_id)
+    )
+    result = c.post(
+        PREFIX + "/imports",
+        json={"material_ids": ["a-bad", "minute-1"], "operation_id": "invalid-name-batch"},
+    )
+    assert result.status_code == 200
+    assert result.json()["state"] == "partial"
+    assert result.json()["outcomes"][0]["error_code"] == "malformed_response"
+    assert result.json()["outcomes"][1]["state"] == "succeeded"
+    assert len(c.get("/api/v1/intake/items").json()) == 1
+
+
+def test_configured_callback_other_port_and_cors_is_preserved(tmp_path: Path) -> None:
+    from summit_everything.integrations.feishu.provider import FeishuConfig
+
+    config = FeishuConfig(redirect_uri="http://127.0.0.1:8793" + PREFIX + "/callback")
+    c = TestClient(
+        create_app(session_token="local", feishu_config=config),
+        base_url="http://127.0.0.1:5173",
+        headers={"Authorization": "Bearer local"},
+    )
+    url = c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"]
+    assert url.startswith(config.redirect_uri + "?")
+    response = c.get(url, headers={"Authorization": "", "Origin": "http://127.0.0.1:5173"})
+    assert response.status_code == 200 and response.json()["authorized"] is True
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+
+
+def test_app_secret_boundary_isolated_from_user_tokens_and_responses(tmp_path: Path) -> None:
+    import summit_everything.integrations.feishu.provider as module
+
+    assert hasattr(module, "AppCredentials")
+    assert hasattr(module.FeishuConfig(), "app_id")
+    credentials = module.AppCredentials(app_id="synthetic-app", app_secret="synthetic-app-secret")
+    assert "synthetic-app-secret" not in repr(credentials)
+    store = module.MemoryCredentialStore()
+    store.put_app(credentials)
+    assert store.get_app() == credentials
+    assert store.get() is None
+    config = module.FeishuConfig(app_id="synthetic-app")
+    assert "synthetic-app-secret" not in config.model_dump_json()
+    c = TestClient(
+        create_app(session_token="local", credential_store=store, feishu_config=config),
+        base_url="http://127.0.0.1:5173",
+        headers={"Authorization": "Bearer local"},
+    )
+    authorize(c)
+    for response in [
+        c.get(PREFIX + "/status"),
+        c.post(PREFIX + "/authorizations", json={}),
+        c.get(PREFIX + "/materials"),
+    ]:
+        assert "synthetic-app-secret" not in response.text
+    assert store.get_app() == credentials and store.get().token_type == "user"
+
+
+def test_capture_validation_failure_continues_batch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from summit_everything.intake.sources import SourceStore
+    from summit_everything.workspace.manifest import WorkspaceError
+
+    c = client(tmp_path)
+    authorize(c)
+    original = SourceStore.capture
+
+    def rejected(self, root, raw, filename, operation_id, **kwargs):
+        if filename == "模拟会议.txt":
+            raise WorkspaceError("synthetic-rejected-source")
+        return original(self, root, raw, filename, operation_id, **kwargs)
+
+    monkeypatch.setattr(SourceStore, "capture", rejected)
+    result = c.post(
+        PREFIX + "/imports",
+        json={"material_ids": ["minute-1", "minute-2"], "operation_id": "capture-validation"},
+    )
+    assert result.status_code == 200 and result.json()["state"] == "partial"
+    assert result.json()["outcomes"][0]["error_code"] == "malformed_response"
+    assert result.json()["outcomes"][1]["state"] == "succeeded"
+    assert "synthetic-rejected-source" not in result.text

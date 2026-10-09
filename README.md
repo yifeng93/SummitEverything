@@ -74,4 +74,6 @@ uv run mypy src
 cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
 ~~~
 
-这些检查只覆盖合成材料、Fake Feishu 与内存凭据。真实 user access token 的 scope、真实材料读取与长期钥匙串配置尚未验收；M2.2 正式任务写入不在本切片内。
+这些检查只覆盖合成材料、Fake Feishu 与内存凭据。真实 user access token 的 scope、真实材料读取与 OS 钥匙串配置入口尚未实现 / 验收；M2.2 正式任务写入不在本切片内。
+
+M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；仅测试合成秘密，不存在真实账号适配器、凭据设置 UI 或 OS Keychain 权限路径。

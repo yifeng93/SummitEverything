@@ -5,6 +5,7 @@ from time import time
 from urllib.parse import urlencode
 
 from summit_everything.integrations.feishu.provider import (
+    AppCredentials,
     CalendarEvent,
     CalendarPage,
     FeishuError,
@@ -27,7 +28,9 @@ class FakeFeishu:
     def authorization_url(self, redirect_uri: str, state: str) -> str:
         return redirect_uri + "?" + urlencode({"code": "fake-ok", "state": state})
 
-    def exchange(self, code: str, redirect_uri: str) -> UserCredentials:
+    def exchange(
+        self, code: str, redirect_uri: str, app_credentials: AppCredentials | None = None
+    ) -> UserCredentials:
         if code == "denied":
             raise FeishuError("authorization_denied")
         if code != "fake-ok":

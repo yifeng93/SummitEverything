@@ -98,7 +98,7 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 
 ## M2.1 已实施的飞书 Fake 契约
 
-默认且唯一可配置模式为 `fake`；所有外部行为通过注入 FeishuProvider，默认实现没有网络代码。CredentialStore 隔离 user access/refresh token；本切片使用进程内 MemoryCredentialStore。未实施真实 app-secret / 钥匙串设置入口，不读取现有凭据。
+默认且唯一可配置模式为 `fake`；所有外部行为通过注入 FeishuProvider，默认实现没有网络代码。CredentialStore 分别隔离 AppCredentials（app_id / SecretStr app_secret）与 user access/refresh token；非秘密 FeishuConfig 保存 app_id 和精确 redirect_uri。本切片使用进程内 MemoryCredentialStore，仅注入合成秘密，未实施真实账户适配器、app-secret 设置 UI 或 OS Keychain 权限路径，不读取现有凭据。
 
 - `GET /integrations/feishu/status` → `{mode, authorized, token_type: user, scopes}`，不返回 token。
 - `POST /integrations/feishu/authorizations` → `{authorization_url, expires_in_seconds}`。Fake URL 使用精确配置的 callback 加 OAuth `code/state`；state 由本机会话创建、300 秒到期、一次性并受运行身份限制。
@@ -110,3 +110,5 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 - 安全错误代码：authorization_denied、not_authorized、token_expired、missing_scope、not_found、malformed_response、provider_timeout、provider_unavailable、invalid_state、invalid_redirect、invalid_cursor；内部异常文本不泄露到响应。
 
 已核对的真实协议约束仅作为适配边界：妙记搜索为 POST `/open-apis/minutes/v1/minutes/search`，分页为 page_size/page_token（最大 30），要求 user_access_token；不可把 tenant token 或其 scope 当 user scope。正文接口可返回文件，不能假设 JSON text。参见[官方妙记搜索](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/minutes-v1/minute/search)及 REUSE-MAP；本切片未发真实请求。
+
+M2.1 审查补充：前端 callback 使用返回的绝对本机地址，限定 http loopback / 固定 callback path / 单一 OAuth code或error及state 参数；不改 host / port、不携带 cookie/Bearer、不跟随 redirect。callback 仅向配置 Origin 返回 Access-Control-Allow-Origin，错误响应也保留此读取边界，Cache-Control 为 no-store；业务路由认证不变。文本文件名验证共享 SourceStore.safe_source_filename 规则；逐项 capture 验证失败转安全 malformed_response 后继续其余选择。前端保留 API error code，expired/not_authorized 使状态失效并停读，missing_scope 只标记权限不足；不把 scope 缺失误当 token 到期。

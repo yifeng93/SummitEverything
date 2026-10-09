@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, Field, ValidationError
 
-from summit_everything.intake.sources import IntakeConflict, SourceStore
+from summit_everything.intake.sources import IntakeConflict, SourceStore, safe_source_filename
 from summit_everything.integrations.feishu.provider import (
     CalendarPage,
     CredentialStore,
@@ -30,7 +30,7 @@ from summit_everything.integrations.feishu.provider import (
     MaterialPage,
     UserCredentials,
 )
-from summit_everything.workspace.manifest import load_manifest
+from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.transactions import atomic_write
 
 
@@ -119,7 +119,12 @@ class FeishuService:
             raise FeishuError("authorization_denied")
         if not code:
             raise FeishuError("malformed_response")
-        credentials = self._call(lambda: self.provider.exchange(code, self.config.redirect_uri))
+        app_credentials = self.credentials.get_app()
+        if app_credentials is not None and app_credentials.app_id != self.config.app_id:
+            raise FeishuError("malformed_response")
+        credentials = self._call(
+            lambda: self.provider.exchange(code, self.config.redirect_uri, app_credentials)
+        )
         if not isinstance(credentials, UserCredentials) or credentials.expires_at <= self.clock():
             raise FeishuError("malformed_response")
         self.credentials.put(credentials)
@@ -233,12 +238,17 @@ class FeishuService:
                             item_id=item.item_id,
                             source_id=item.source_id,
                         )
-                    except FeishuError as exc:
+                    except (FeishuError, WorkspaceError) as exc:
+                        error = (
+                            exc
+                            if isinstance(exc, FeishuError)
+                            else FeishuError("malformed_response")
+                        )
                         outcome = ImportOutcome(
                             material_id=material_id,
                             state="failed",
-                            error_code=exc.code,
-                            message=exc.message,
+                            error_code=error.code,
+                            message=error.message,
                         )
                     intent["outcomes"][material_id] = outcome.model_dump(mode="json")
                     atomic_write(journal, json.dumps(intent).encode())
@@ -277,10 +287,11 @@ class FeishuService:
         ):
             raise FeishuError("malformed_response")
         try:
+            safe_source_filename(body.filename)
             text = body.raw.decode("utf-8")
             if "\x00" in text:
                 raise ValueError()
-        except (UnicodeDecodeError, ValueError):
+        except (UnicodeDecodeError, ValueError, WorkspaceError):
             raise FeishuError("malformed_response") from None
 
 

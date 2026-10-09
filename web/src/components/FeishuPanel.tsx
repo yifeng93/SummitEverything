@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { api, newOperationId } from '../api/client'
+import { ApiError, api, newOperationId } from '../api/client'
 import type { components } from '../api/generated'
 
 type Status = components['schemas']['FeishuStatus']
@@ -12,6 +12,7 @@ const prefix = '/integrations/feishu'
 export function FeishuPanel({ onImported }: { onImported: () => Promise<void> }) {
   const [status, setStatus] = useState<Status | null>(null)
   const [error, setError] = useState('')
+  const [authProblem, setAuthProblem] = useState<'expired' | 'scope' | null>(null)
   const [busy, setBusy] = useState(false)
   const [query, setQuery] = useState('')
   const [visibility, setVisibility] = useState('')
@@ -33,15 +34,27 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
     return () => { alive = false }
   }, [])
 
+  function recordAuthProblem(code?: string) {
+    if (code === 'token_expired' || code === 'not_authorized') {
+      setStatus((current) => current ? { ...current, authorized: false, scopes: [] } : null)
+      setAuthProblem(code === 'token_expired' ? 'expired' : null)
+      setSelected([]); setMaterials(null); setCalendar(null)
+    } else if (code === 'missing_scope') {
+      setAuthProblem((current) => current === 'expired' ? current : 'scope')
+    }
+  }
+
+  function recordFailure(cause: unknown) {
+    if (cause instanceof ApiError) recordAuthProblem(cause.code)
+  }
+
   async function authorize() {
     setBusy(true); setError('')
     try {
       const result = await api.post<Authorization>(prefix + '/authorizations', {})
-      const url = new URL(result.authorization_url)
-      // Fake callback is local and returns validated status, never presumed success.
-      const value = await api.get<Status>(url.pathname.replace('/api/v1', '') + url.search)
-      setStatus(value)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '授权失败') }
+      const value = await api.oauthCallback<Status>(result.authorization_url)
+      setStatus(value); setAuthProblem(null)
+    } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '授权失败') }
     finally { setBusy(false) }
   }
 
@@ -54,7 +67,7 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
       const value = await api.get<Materials>(prefix + '/materials?' + params)
       setTitles((current) => ({ ...current, ...Object.fromEntries(value.items.map((item) => [item.material_id, item.title])) }))
       setMaterials(value)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '无法读取材料'); setMaterials(null) }
+    } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '无法读取材料'); setMaterials(null) }
     finally { setBusy(false) }
   }
 
@@ -65,8 +78,9 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
     try {
       const result = await api.post<Imports>(prefix + '/imports', { material_ids: selected, operation_id: operation.current.id })
       setImports(result); setSelected([]); operation.current = null
+      for (const outcome of result.outcomes) recordAuthProblem(outcome.error_code ?? undefined)
       await onImported()
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '导入失败，请重试同一选择') }
+    } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '导入失败，请重试同一选择') }
     finally { setBusy(false) }
   }
 
@@ -76,12 +90,12 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
       const params = new URLSearchParams({ start: start + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00'), end: end + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00'), timezone, limit: '20' })
       if (cursor) params.set('cursor', cursor)
       setCalendar(await api.get<Calendar>(prefix + '/calendar?' + params))
-    } catch (cause) { setCalendar(null); setCalendarError(cause instanceof Error ? cause.message : '无法读取日历') }
+    } catch (cause) { recordFailure(cause); setCalendar(null); setCalendarError(cause instanceof Error ? cause.message : '无法读取日历') }
     finally { setBusy(false) }
   }
 
   return <section className="panel feishu-panel">
-    <div className="panel-heading"><div><h2>飞书日常</h2><p>模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。</p></div><span className="status-label">{status?.authorized ? '已授权' : '未授权'}</span></div>
+    <div className="panel-heading"><div><h2>飞书日常</h2><p>模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。</p></div><span className="status-label">{authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '已授权' : '未授权'}</span></div>
     <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>模拟授权飞书</button></div>
     {error && <p role="alert" className="helper-line">{error}</p>}
     <h3>材料</h3>

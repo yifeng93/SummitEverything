@@ -241,7 +241,13 @@ def create_app(
                     "error": {"code": "forbidden_origin", "message": "只允许配置的本机页面访问。"}
                 },
             )
-        return await call_next(request)
+        response = await call_next(request)
+        if request.url.path == "/api/v1/integrations/feishu/callback":
+            response.headers["Cache-Control"] = "no-store"
+            if origin is not None:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Vary"] = "Origin"
+        return response
 
     @app.exception_handler(FeishuError)
     async def feishu_error_handler(request: Request, exc: FeishuError) -> JSONResponse:

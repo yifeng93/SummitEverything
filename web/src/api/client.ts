@@ -12,7 +12,44 @@ export type Citation = components['schemas']['Citation']
 export type IndexPlan = components['schemas']['IndexPlan']
 export type IndexResult = components['schemas']['IndexResult']
 
-type ErrorEnvelope = { error?: { message?: string } }
+type ErrorEnvelope = { error?: { code?: string; message?: string } }
+
+export class ApiError extends Error {
+  readonly code?: string
+  readonly status: number
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.code = code
+  }
+}
+
+async function readResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as ErrorEnvelope
+    throw new ApiError(payload.error?.message ?? 'Request failed: ' + response.status, response.status, payload.error?.code)
+  }
+  if (response.status === 204) return undefined as T
+  return (await response.json()) as T
+}
+
+async function oauthCallback<T>(destination: string): Promise<T> {
+  const url = new URL(destination)
+  const keys: string[] = []
+  url.searchParams.forEach((_value, key) => { keys.push(key) })
+  if (url.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)
+    || url.username || url.password || url.hash || url.pathname !== '/api/v1/integrations/feishu/callback'
+    || !url.searchParams.get('state') || url.searchParams.getAll('state').length !== 1
+    || keys.some((key) => !['code', 'state', 'error'].includes(key) || url.searchParams.getAll(key).length !== 1)
+    || (!url.searchParams.has('code') && !url.searchParams.has('error'))
+    || (url.searchParams.has('code') && url.searchParams.has('error'))) {
+    throw new ApiError('授权回调地址无效，请检查本机配置。', 400, 'invalid_redirect')
+  }
+  // Narrow Fake callback: preserve the registered destination, send no credentials,
+  // and never follow a redirect to another endpoint.
+  return readResponse<T>(await fetch(destination, { credentials: 'omit', redirect: 'error', cache: 'no-store' }))
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers)
@@ -20,15 +57,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers.set('Content-Type', 'application/json')
   }
   const response = await fetch('/api/v1' + path, { ...init, headers })
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => ({}))) as ErrorEnvelope
-    throw new Error(payload.error?.message ?? 'Request failed: ' + response.status)
-  }
-  if (response.status === 204) return undefined as T
-  return (await response.json()) as T
+  return readResponse<T>(response)
 }
 
 export const api = {
+  oauthCallback,
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(payload) }),

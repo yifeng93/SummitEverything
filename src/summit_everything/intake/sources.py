@@ -20,7 +20,7 @@ class IntakeConflict(ValueError):
     """An intake retry does not match its original user intent."""
 
 
-def _safe_filename(filename: str) -> str:
+def safe_source_filename(filename: str) -> str:
     basename = Path(filename.replace("\\", "/")).name
     cleaned = re.sub(r"[^\w.() -]+", "_", basename, flags=re.UNICODE).strip(" .")
     if not cleaned or Path(cleaned).suffix.lower() not in {".txt", ".md"}:
@@ -44,7 +44,7 @@ class SourceStore:
         external_identity: dict[str, str] | None = None,
     ) -> IntakeItem:
         root = root.resolve()
-        filename = _safe_filename(filename)
+        filename = safe_source_filename(filename)
         if not operation_id.strip():
             raise WorkspaceError("Intake operation ID is required")
         digest = hashlib.sha256(raw).hexdigest()
