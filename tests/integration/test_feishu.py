@@ -1,0 +1,362 @@
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
+
+import pytest
+from fastapi.testclient import TestClient
+
+from summit_everything.api.app import create_app
+
+PREFIX = "/api/v1/integrations/feishu"
+
+
+def client(tmp_path: Path) -> TestClient:
+    app = create_app(session_token="local-test-session", profile_root=tmp_path / "profiles")
+    c = TestClient(
+        app,
+        base_url="http://127.0.0.1:5173",
+        headers={"Authorization": "Bearer local-test-session"},
+    )
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace"),
+                "name": "模拟",
+                "mode": "create",
+                "operation_id": "open",
+            },
+        ).status_code
+        == 201
+    )
+    return c
+
+
+def authorize(c: TestClient) -> str:
+    response = c.post(PREFIX + "/authorizations", json={})
+    assert response.status_code == 200
+    url = response.json()["authorization_url"]
+    callback = urlsplit(url)
+    result = c.get(callback.path + "?" + callback.query, headers={"Authorization": ""})
+    assert result.status_code == 200
+    assert result.json()["authorized"] is True
+    return parse_qs(callback.query)["state"][0]
+
+
+def test_fake_default_authorization_and_selected_only_import(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    response = c.get(PREFIX + "/status")
+    assert response.status_code == 200
+    assert response.json() == {
+        "mode": "fake",
+        "authorized": False,
+        "token_type": "user",
+        "scopes": [],
+    }
+    authorize(c)
+    first = c.get(PREFIX + "/materials", params={"limit": 1}).json()
+    assert len(first["items"]) == 1 and first["next_cursor"]
+    second = c.get(
+        PREFIX + "/materials", params={"cursor": first["next_cursor"], "limit": 1}
+    ).json()
+    assert len(second["items"]) == 1
+    assert c.get(PREFIX + "/materials", params={"query": "no-matches"}).json()["items"] == []
+    assert c.get("/api/v1/intake/items").json() == []
+    payload = {"material_ids": [first["items"][0]["material_id"]], "operation_id": "import-one"}
+    imported = c.post(PREFIX + "/imports", json=payload)
+    assert imported.status_code == 200
+    assert imported.json()["state"] == "succeeded"
+    assert c.post(PREFIX + "/imports", json=payload).json() == imported.json()
+    assert (
+        c.post(PREFIX + "/imports", json={**payload, "material_ids": ["minute-2"]}).status_code
+        == 409
+    )
+    items = c.get("/api/v1/intake/items").json()
+    assert len(items) == 1 and items[0]["state"] == "pending"
+    assert items[0]["title"] == "模拟会议"
+    source = c.get("/api/v1/sources/" + items[0]["source_id"]).json()
+    raw = (tmp_path / "workspace" / items[0]["original_relative_path"]).read_bytes()
+    assert raw == "模拟会议：等待用户确认。\r\n".encode()
+    assert source["source"]["sha256"] == hashlib.sha256(raw).hexdigest()
+    assert source["source"]["external_identity"]["material_id"] == "minute-1"
+    assert c.get("/api/v1/drafts").json() == []
+    assert c.get("/api/v1/pages").json() == []
+    assert c.app.state.review_service.provider.calls == 0
+
+
+def test_oauth_invalid_replay_origin_and_cross_run(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    state = authorize(c)
+    assert (
+        c.get(PREFIX + "/callback", params={"state": state, "code": "fake-ok"}).status_code == 400
+    )
+    for state_value in ["", "fabricated", "../invalid"]:
+        assert (
+            c.get(
+                PREFIX + "/callback", params={"state": state_value, "code": "fake-ok"}
+            ).status_code
+            == 400
+        )
+    assert c.get(PREFIX + "/callback").status_code == 422
+    assert (
+        c.post(
+            PREFIX + "/authorizations", json={}, headers={"Origin": "https://attacker.invalid"}
+        ).status_code
+        == 403
+    )
+    fresh = c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"]
+    other = TestClient(create_app(session_token="other"), base_url="http://127.0.0.1:5173")
+    assert other.get(urlsplit(fresh).path + "?" + urlsplit(fresh).query).status_code == 400
+    for method, route, data in [
+        ("GET", "/status", None),
+        ("POST", "/authorizations", {}),
+        ("GET", "/materials", None),
+        ("POST", "/imports", {}),
+        ("GET", "/calendar", None),
+    ]:
+        assert (
+            c.request(method, PREFIX + route, json=data, headers={"Authorization": ""}).status_code
+            == 401
+        )
+
+
+def test_denied_authorization_never_reports_success(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    url = urlsplit(c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"])
+    state = parse_qs(url.query)["state"][0]
+    denied = c.get(PREFIX + "/callback", params={"state": state, "error": "access_denied"})
+    assert denied.status_code == 403 and denied.json()["error"]["code"] == "authorization_denied"
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
+    assert c.get(PREFIX + "/materials").status_code == 401
+
+
+def test_calendar_range_timezone_and_pagination(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    authorize(c)
+    params = {
+        "start": "2026-10-09T00:00:00+08:00",
+        "end": "2026-10-10T00:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "limit": 1,
+    }
+    response = c.get(PREFIX + "/calendar", params=params)
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 1 and response.json()["next_cursor"]
+    assert c.get(
+        PREFIX + "/calendar", params={**params, "cursor": response.json()["next_cursor"]}
+    ).json()["items"]
+    assert c.get(PREFIX + "/calendar", params={**params, "timezone": "bad-zone"}).status_code == 422
+    assert c.get(PREFIX + "/calendar", params={**params, "end": params["start"]}).status_code == 422
+    assert (
+        c.get(
+            PREFIX + "/calendar",
+            params={**params, "start": "2027-01-01T00:00:00Z", "end": "2027-01-02T00:00:00Z"},
+        ).json()["items"]
+        == []
+    )
+    assert c.get("/api/v1/intake/items").json() == []
+
+
+@pytest.mark.parametrize(
+    "material_id,code",
+    [
+        ("missing", "not_found"),
+        ("scope", "missing_scope"),
+        ("malformed", "malformed_response"),
+        ("timeout", "provider_timeout"),
+        ("unavailable", "provider_unavailable"),
+    ],
+)
+def test_import_partial_failure_is_explicit_and_replayed(
+    tmp_path: Path, material_id: str, code: str
+) -> None:
+    c = client(tmp_path)
+    authorize(c)
+    payload = {"operation_id": "partial", "material_ids": ["minute-1", material_id]}
+    result = c.post(PREFIX + "/imports", json=payload)
+    assert result.status_code == 200
+    assert result.json()["state"] == "partial"
+    assert (
+        next(row for row in result.json()["outcomes"] if row["material_id"] == material_id)[
+            "error_code"
+        ]
+        == code
+    )
+    assert len(c.get("/api/v1/intake/items").json()) == 1
+    assert c.post(PREFIX + "/imports", json=payload).json() == result.json()
+
+
+def test_expiry_missing_scope_and_safe_provider_errors(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    authorize(c)
+    service = c.app.state.feishu_service
+    credentials = service.credentials.get()
+    service.credentials.put(credentials.model_copy(update={"expires_at": 0}))
+    assert c.get(PREFIX + "/materials").json()["error"]["code"] == "token_expired"
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
+    authorize(c)
+    credentials = service.credentials.get()
+    service.credentials.put(credentials.model_copy(update={"scopes": []}))
+    assert c.get(PREFIX + "/materials").json()["error"]["code"] == "missing_scope"
+    assert (
+        c.get(
+            PREFIX + "/calendar",
+            params={
+                "start": "2026-10-09T00:00:00Z",
+                "end": "2026-10-10T00:00:00Z",
+                "timezone": "UTC",
+            },
+        ).json()["error"]["code"]
+        == "missing_scope"
+    )
+    authorize(c)
+
+    def broken(*args):
+        raise RuntimeError("sensitive-token-do-not-expose")
+
+    service.provider.materials = broken
+    response = c.get(PREFIX + "/materials")
+    assert response.status_code == 503
+    assert "sensitive-token" not in response.text
+
+
+def test_oauth_expiry_and_wrong_redirect(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    service = c.app.state.feishu_service
+    service.clock = lambda: 1000
+    url = urlsplit(c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"])
+    service.clock = lambda: 1301
+    assert c.get(url.path + "?" + url.query).json()["error"]["code"] == "invalid_state"
+    url = urlsplit(c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"])
+    wrong = c.get("http://127.0.0.1:8793" + url.path + "?" + url.query)
+    assert wrong.json()["error"]["code"] == "invalid_redirect"
+    assert (
+        c.get(url.path + "?" + url.query, headers={"Origin": "http://evil.invalid"}).status_code
+        == 403
+    )
+
+
+@pytest.mark.parametrize(
+    "raw,filename,content_type",
+    [
+        (b"bad", "../escape.txt", "text/plain"),
+        (b"bad", "file.txt", "application/json"),
+        (b"\xff", "file.txt", "text/plain"),
+        (b"bad\x00", "file.txt", "text/plain"),
+        (b"bad", "file.txt", "text/plain; charset=gbk"),
+        (b"", "file.txt", "text/plain"),
+        (b"x" * (20 * 1024 * 1024 + 1), "file.txt", "text/plain"),
+    ],
+)
+def test_untrusted_body_boundary(
+    tmp_path: Path, raw: bytes, filename: str, content_type: str
+) -> None:
+    from summit_everything.integrations.feishu.provider import MaterialBody
+
+    c = client(tmp_path)
+    authorize(c)
+    c.app.state.feishu_service.provider.body = lambda *_: MaterialBody(
+        raw=raw, filename=filename, content_type=content_type
+    )
+    response = c.post(
+        PREFIX + "/imports", json={"material_ids": ["minute-1"], "operation_id": "invalid-body"}
+    )
+    assert response.json()["state"] == "failed"
+    assert response.json()["outcomes"][0]["error_code"] == "malformed_response"
+    assert c.get("/api/v1/intake/items").json() == []
+
+
+def test_selected_body_calls_and_restart_replay(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    authorize(c)
+    provider = c.app.state.feishu_service.provider
+    calls = []
+    original = provider.body
+
+    def tracked(credentials, material_id):
+        calls.append(material_id)
+        return original(credentials, material_id)
+
+    provider.body = tracked
+    assert (
+        c.get(PREFIX + "/materials", params={"visibility": "shared"}).json()["items"][0][
+            "material_id"
+        ]
+        == "minute-2"
+    )
+    assert calls == []
+    payload = {"material_ids": ["minute-2"], "operation_id": "restart"}
+    result = c.post(PREFIX + "/imports", json=payload).json()
+    assert calls == ["minute-2"]
+    c2 = client(tmp_path)
+    assert c2.post(PREFIX + "/imports", json=payload).json() == result
+    assert len(c2.get("/api/v1/intake/items").json()) == 1
+
+
+def test_import_recovers_captured_bytes_without_refetch_after_interruption(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import summit_everything.integrations.feishu.service as module
+
+    c = client(tmp_path)
+    authorize(c)
+    calls = []
+    provider = c.app.state.feishu_service.provider
+    original_body = provider.body
+
+    def tracked(credentials, material_id):
+        calls.append(material_id)
+        return original_body(credentials, material_id)
+
+    provider.body = tracked
+    original_write = module.atomic_write
+
+    def interrupted(path, raw):
+        import json
+
+        if json.loads(raw).get("outcomes"):
+            raise OSError("simulated interruption after source capture")
+        original_write(path, raw)
+
+    payload = {"material_ids": ["minute-1"], "operation_id": "interrupted"}
+    monkeypatch.setattr(module, "atomic_write", interrupted)
+    with pytest.raises(OSError):
+        c.post(PREFIX + "/imports", json=payload)
+    monkeypatch.setattr(module, "atomic_write", original_write)
+    assert c.post(PREFIX + "/imports", json=payload).json()["state"] == "succeeded"
+    assert calls == ["minute-1"]
+    assert len(c.get("/api/v1/intake/items").json()) == 1
+
+
+@pytest.mark.parametrize("route", ["materials", "calendar"])
+@pytest.mark.parametrize(
+    "failure,code",
+    [
+        ("timeout", "provider_timeout"),
+        ("unavailable", "provider_unavailable"),
+        ("malformed", "malformed_response"),
+    ],
+)
+def test_list_provider_failures_safe(tmp_path: Path, route: str, failure: str, code: str) -> None:
+    c = client(tmp_path)
+    authorize(c)
+
+    def failing(*args):
+        if failure == "timeout":
+            raise TimeoutError("synthetic-sensitive-secret")
+        if failure == "unavailable":
+            raise RuntimeError("synthetic-sensitive-secret")
+        return {"not": "valid"}
+
+    setattr(c.app.state.feishu_service.provider, route, failing)
+    params = (
+        {}
+        if route == "materials"
+        else {"start": "2026-10-09T00:00:00Z", "end": "2026-10-10T00:00:00Z", "timezone": "UTC"}
+    )
+    result = c.get(PREFIX + "/" + route, params=params)
+    assert result.json()["error"]["code"] == code
+    assert "synthetic-sensitive-secret" not in result.text
+    assert c.get("/api/v1/intake/items").json() == []

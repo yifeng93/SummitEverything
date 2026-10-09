@@ -66,6 +66,7 @@ class MutationResult(BaseModel):
 
 
 class SourceRecord(OpenModel):
+    external_identity: dict[str, str] | None = None
     source_id: UUID
     role: Literal["source"] = "source"
     original_relative_path: str

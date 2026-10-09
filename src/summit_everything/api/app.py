@@ -4,6 +4,7 @@ import json
 import os
 import secrets
 from collections.abc import Iterator
+from datetime import datetime
 from pathlib import Path
 from threading import Event
 from typing import Annotated, Any, Literal, cast
@@ -41,7 +42,25 @@ from summit_everything.domain.models import (
     WorkspaceContext,
 )
 from summit_everything.intake.review import IntakeReviewService
-from summit_everything.intake.sources import IntakeService
+from summit_everything.intake.sources import IntakeConflict, IntakeService
+from summit_everything.integrations.feishu.fake import FakeFeishu
+from summit_everything.integrations.feishu.provider import (
+    CalendarPage,
+    CredentialStore,
+    FeishuConfig,
+    FeishuError,
+    FeishuProvider,
+    MaterialPage,
+    MemoryCredentialStore,
+)
+from summit_everything.integrations.feishu.service import (
+    AuthorizationStart,
+    FeishuService,
+    FeishuStatus,
+    ImportRequest,
+    ImportResult,
+    callback_boundary,
+)
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
@@ -184,6 +203,9 @@ def create_app(
     profile_root: Path | None = None,
     review_service: IntakeReviewService | None = None,
     query_service: QueryService | None = None,
+    feishu_provider: FeishuProvider | None = None,
+    credential_store: CredentialStore | None = None,
+    feishu_config: FeishuConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.add_middleware(LoopbackOnly)
@@ -200,6 +222,52 @@ def create_app(
     app.state.intake_service = intake_service
     app.state.review_service = review
     cancellations: dict[str, Event] = {}
+    config = feishu_config or FeishuConfig()
+    feishu = FeishuService(
+        feishu_provider or FakeFeishu(),
+        credential_store or MemoryCredentialStore(),
+        config,
+        app.state.session_token,
+    )
+    app.state.feishu_service = feishu
+
+    @app.middleware("http")
+    async def origin_guard(request: Request, call_next):  # type: ignore[no-untyped-def]
+        origin = request.headers.get("origin")
+        if origin is not None and origin not in config.allowed_origins:
+            return JSONResponse(
+                status_code=403,
+                content={
+                    "error": {"code": "forbidden_origin", "message": "只允许配置的本机页面访问。"}
+                },
+            )
+        return await call_next(request)
+
+    @app.exception_handler(FeishuError)
+    async def feishu_error_handler(request: Request, exc: FeishuError) -> JSONResponse:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "error": {
+                    "code": exc.code,
+                    "message": exc.message,
+                    "request_id": request.state.request_id,
+                }
+            },
+        )
+
+    @app.exception_handler(IntakeConflict)
+    async def intake_conflict_handler(request: Request, exc: IntakeConflict) -> JSONResponse:
+        return JSONResponse(
+            status_code=409,
+            content={
+                "error": {
+                    "code": "intent_conflict",
+                    "message": str(exc),
+                    "request_id": request.state.request_id,
+                }
+            },
+        )
 
     def authenticated(authorization: str | None = Header(default=None)) -> None:
         expected = f"Bearer {app.state.session_token}"
@@ -693,7 +761,77 @@ def create_app(
         cancellation.set()
         return {"request_id": str(request_id), "state": "cancellation_requested"}
 
+    prefix = "/api/v1/integrations/feishu"
+
+    @app.get(prefix + "/status", dependencies=[Depends(authenticated)])
+    def feishu_status() -> FeishuStatus:
+        return feishu.status()
+
+    @app.post(prefix + "/authorizations", dependencies=[Depends(authenticated)])
+    def feishu_authorize() -> AuthorizationStart:
+        return feishu.authorize()
+
+    @app.get(prefix + "/callback")
+    def feishu_callback(
+        request: Request, state: str, code: str | None = None, error: str | None = None
+    ) -> FeishuStatus:
+        return feishu.callback(state, code, error, callback_boundary(str(request.url)))
+
+    @app.get(prefix + "/materials", dependencies=[Depends(authenticated)])
+    def feishu_materials(
+        query: str = "",
+        visibility: Literal["owner", "shared"] | None = None,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> MaterialPage:
+        if not 1 <= limit <= 30 or len(query) > 500 or (cursor and len(cursor) > 500):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "材料筛选无效。"}
+            )
+        return feishu.materials(query, visibility, cursor, limit)
+
+    @app.post(prefix + "/imports", dependencies=[Depends(authenticated)])
+    def feishu_imports(
+        payload: ImportRequest, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> ImportResult:
+        try:
+            return feishu.imports(Path(workspace.root), payload)
+        except ValueError as exc:
+            if isinstance(exc, IntakeConflict):
+                raise
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "材料选择无效。"}
+            ) from None
+
+    @app.get(prefix + "/calendar", dependencies=[Depends(authenticated)])
+    def feishu_calendar(
+        start: datetime, end: datetime, timezone: str, cursor: str | None = None, limit: int = 20
+    ) -> CalendarPage:
+        if not 1 <= limit <= 30 or (cursor and len(cursor) > 500):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "日历分页无效。"}
+            )
+        try:
+            return feishu.calendar(start, end, timezone, cursor, limit)
+        except ValueError:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"}
+            ) from None
+
     return app
 
 
-app = create_app(session_token=os.environ.get("SUMMIT_SESSION_TOKEN"))
+app = create_app(
+    session_token=os.environ.get("SUMMIT_SESSION_TOKEN"),
+    feishu_config=FeishuConfig(
+        redirect_uri=os.environ.get(
+            "SUMMIT_FEISHU_REDIRECT_URI",
+            f"http://127.0.0.1:{os.environ.get('SUMMIT_WEB_PORT', '5173')}"
+            "/api/v1/integrations/feishu/callback",
+        ),
+        allowed_origins=(
+            f"http://127.0.0.1:{os.environ.get('SUMMIT_WEB_PORT', '5173')}",
+            f"http://127.0.0.1:{os.environ.get('SUMMIT_API_PORT', '8793')}",
+        ),
+    ),
+)
