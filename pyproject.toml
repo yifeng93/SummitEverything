@@ -7,10 +7,21 @@ name = "summit-everything"
 version = "0.1.0"
 description = "Personal work knowledge application — contract foundation"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115,<1",
+    "pydantic>=2.9,<3",
+    "pyyaml>=6,<7",
+    "uvicorn>=0.30,<1",
+]
 
 [dependency-groups]
-dev = ["pytest>=8,<10", "ruff>=0.9,<1", "mypy>=1.10,<2"]
+dev = [
+    "pytest>=8,<10",
+    "ruff>=0.9,<1",
+    "mypy>=1.10,<2",
+    "httpx>=0.27,<1",
+    "types-pyyaml>=6,<7",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/summit_everything"]
