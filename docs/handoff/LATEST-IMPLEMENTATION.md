@@ -32,7 +32,7 @@ uv run python scripts/run_dev.py
 
 Open `http://127.0.0.1:5173`. The script starts FastAPI at `127.0.0.1:8793` and Vite at `127.0.0.1:5173`; `http://127.0.0.1:8793/api/v1/health` returned `ready`. Ctrl+C on this script stopped both listeners.
 
-Native development command: `cd native && swift run`. It started the API and Vite services in this environment. A normal window Quit was not verified: macOS presented a Documents-folder access prompt for the temporary development app, and the prompt was not approved. The previously observed terminal Ctrl+C path for `swift run` can leave child listeners running; do not interpret the direct runner check as a successful normal-quit test. M4 native packaging/exit behavior remains unverified.
+Native development command: `cd native && swift run`. It started the API and Vite services in this environment. After the macOS Documents access prompt was approved, I also opened a temporary debug `.app` wrapper around the built shell. The API and Vite listeners were active; I sent the app's normal `⌘Q` Quit shortcut through the native UI, the app exited, and a subsequent `lsof` / process check showed no listeners on either port and no owned `run_dev.py`, Uvicorn, or Vite process. This verifies the development-shell normal-Quit cleanup path. The previously observed terminal Ctrl+C path for `swift run` can still leave child listeners running. M4 package/DMG, clean-install, and restart behavior remain unverified.
 
 ## Browser replay with isolated synthetic material
 
@@ -61,15 +61,14 @@ Replay workspace: `/tmp/summit-m1-fix-replay-nwyhoS` (synthetic only).
 - `swift build`: passed.
 - Browser UI replay: C06, C08, and C10 flows above were manually exercised in the local UI.
 - C03/C13/C14 additions are covered by automated service/integration tests; this is developer evidence, not independent acceptance.
-- Local preview listeners were checked absent after stopping the preview.
+- Local preview listeners were checked absent after stopping the preview and again after native app `⌘Q`.
 
 ## Not tested / remaining gates
 
 - Independent Luna review of the new fixed SHA and a new report covering M1.1–M1.5.
-- Normal macOS window Quit/close cleanup: not verified because the temporary app triggered a Documents access prompt. No approval was given for broad Documents-folder access.
 - C03 full structural matrix (all line/project edits, moves, and deletion cases) requires independent review; the added developer test covers archive/search and nonempty deletion.
 - C13 historical session UI and C14 disconnect recovery / old citation UI are M3 work and were not tested here. The M1 retrieval and stream portions are listed above.
-- Native `.app` archive, DMG, clean-machine install, restart, and release identity verification (M4).
+- Native `.app` archive, DMG, clean-machine install, restart, and release identity verification (M4). The development wrapper Quit check does not cover those packaged scenarios.
 - Real business sample confirmation and initialization; real model quality, credentials, costs, Feishu read/write, or task creation.
 - Five-day single-device use and two-device round trip.
 - The Starlette/httpx deprecation and three frontend lint warnings remain visible; no check was relaxed.
