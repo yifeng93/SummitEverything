@@ -57,3 +57,7 @@ uv run python scripts/run_dev.py
 ## QA 交接
 
 独立验收在源码仓库外的 `/Users/yifengstudio/.codex/worktrees/qa-m1-close-r3` 固定到 `f349fe6cb5da86c3fdafff11738e2a55335d8874`。报告与隔离模拟 UI 证据已保存；不修改产品实现。M2/M3/M4/M5 场景和真实外部门按最终复验报告保持 NOT_RUN。
+
+## 下一阶段
+
+M1 已收口，当前可以开始 M2，首个任务为 M2.1。先在隔离模拟环境使用 Fake Feishu provider 完成授权失败、材料选择 / 分页 / 正文读取和日历流程，再交独立 QA。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。
