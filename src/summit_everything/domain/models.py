@@ -74,6 +74,11 @@ class SourceRecord(OpenModel):
     created_at: datetime
 
 
+class SourceDetail(BaseModel):
+    source: SourceRecord
+    text: str
+
+
 class IntakeItem(OpenModel):
     item_id: UUID
     source_id: UUID
@@ -93,7 +98,7 @@ class Draft(OpenModel):
     expected_base_sha256: str | None = None
     important_conflicts: list[dict[str, Any]] = Field(default_factory=list)
     action_suggestions: list[dict[str, Any]] = Field(default_factory=list)
-    conflict_resolutions: dict[str, Literal["adopt", "unresolved"]] = Field(default_factory=dict)
+    conflict_resolutions: dict[str, str] = Field(default_factory=dict)
     source_ids: list[UUID]
     state: Literal["pending", "confirmed", "cancelled"] = "pending"
     created_at: datetime

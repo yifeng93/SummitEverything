@@ -130,3 +130,21 @@ class IndexStore:
             }
             for row in rows
         ]
+
+    def status(self, workspace_id: UUID) -> dict[str, int | str | None]:
+        fingerprint = self.active_fingerprint(workspace_id)
+        if fingerprint is None:
+            return {"fingerprint": None, "pages": 0, "chunks": 0}
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT COUNT(DISTINCT page_id) AS pages, COUNT(*) AS chunks
+                FROM chunks WHERE workspace_id = ? AND fingerprint = ?
+                """,
+                (str(workspace_id), fingerprint),
+            ).fetchone()
+        return {
+            "fingerprint": fingerprint,
+            "pages": int(row["pages"]),
+            "chunks": int(row["chunks"]),
+        }

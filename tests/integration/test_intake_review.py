@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
@@ -12,6 +13,8 @@ from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeConflict, IntakeService
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.workspace.manifest import create_line, create_project, create_workspace
+from summit_everything.workspace.reader import list_pages
+from summit_everything.workspace.writer import PageWriter
 
 
 def make_workspace(root: Path) -> Path:
@@ -251,6 +254,64 @@ def test_action_suggestions_remain_local_candidates(tmp_path: Path) -> None:
     assert len(actions) == 1
     assert actions[0].state == "proposed"
     assert not (root / ".summit-everything" / "executions").exists()
+
+
+def test_review_can_update_an_authoritative_page_with_its_current_version(tmp_path: Path) -> None:
+    from uuid import uuid4
+
+    root = make_workspace(tmp_path / "workspace")
+    line = create_line(root, "模拟主线", "line")
+    project = create_project(root, line.id, "模拟项目", "project")
+    metadata = {
+        "id": str(uuid4()),
+        "title": "已确认事实",
+        "role": "knowledge",
+        "kind": "topic",
+        "line_id": str(line.id),
+        "project_id": str(project.id),
+    }
+    first = PageWriter().confirm(
+        root,
+        metadata=metadata,
+        body="会议地点是旧馆。",
+        confirmation_id="confirm-old",
+        operation_id="write-old",
+    )
+    item = IntakeService().add_text(
+        root, "会议地点已更新为新馆。", filename="update.txt", operation_id="update"
+    )
+    review = IntakeReviewService(FakeLLM())
+    job = review.create_job(
+        root,
+        [item.item_id],
+        operation_id="organize-update",
+        line_id=line.id,
+        project_id=project.id,
+    )
+    draft = review.get_draft(root, job.draft_ids[0])
+    page = next(page for page in list_pages(root) if page.page_id == UUID(metadata["id"]))
+    edited = review.edit_draft(
+        root,
+        draft.draft_id,
+        expected_version=draft.version,
+        title=draft.metadata["title"],
+        body="会议地点已更新为新馆。",
+        target_page_id=page.page_id,
+        expected_base_sha256=page.content_sha256,
+    )
+    result = review.confirm_draft(
+        root,
+        draft.draft_id,
+        expected_version=edited.version,
+        confirmation_id="confirm-update",
+        operation_id="write-update",
+        conflict_resolutions={},
+    )
+    pages = list_pages(root)
+    updated = next(page for page in pages if page.page_id == UUID(metadata["id"]))
+    assert result.page_versions[str(metadata["id"])] != first.page_versions[str(metadata["id"])]
+    assert updated.body == "会议地点已更新为新馆。"
+    assert len([page for page in pages if page.page_id == UUID(metadata["id"])]) == 1
 
 
 def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> None:

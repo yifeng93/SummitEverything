@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid5
 
+from summit_everything.domain.content import StorageArea, retrieval_eligibility
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
@@ -20,6 +21,7 @@ from summit_everything.domain.models import (
 )
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
+from summit_everything.workspace.reader import read_page
 from summit_everything.workspace.transactions import atomic_write
 from summit_everything.workspace.writer import PageWriter, WorkspaceWriteConflict
 
@@ -226,7 +228,15 @@ class IntakeReviewService:
             raise WorkspaceError("Draft was not found", 404) from exc
 
     def edit_draft(
-        self, root: Path, draft_id: UUID, *, expected_version: int, title: str, body: str
+        self,
+        root: Path,
+        draft_id: UUID,
+        *,
+        expected_version: int,
+        title: str,
+        body: str,
+        target_page_id: UUID | None = None,
+        expected_base_sha256: str | None = None,
     ) -> Draft:
         root = root.resolve()
         path = _state_root(root) / "drafts" / f"{draft_id}.json"
@@ -234,10 +244,32 @@ class IntakeReviewService:
             draft = self.get_draft(root, draft_id)
             if draft.state != "pending" or draft.version != expected_version:
                 raise WorkspaceWriteConflict("Draft changed since it was reviewed")
+            metadata = {**draft.metadata, "title": title}
+            if target_page_id is None:
+                if expected_base_sha256 is not None:
+                    raise WorkspaceError("A base version requires a target page")
+                metadata["id"] = str(draft.draft_id)
+            else:
+                target = read_page(root, target_page_id)
+                if target.approval_state != "confirmed" or target.storage_area != "formal":
+                    raise WorkspaceError("Only confirmed knowledge pages can be updated")
+                eligibility = retrieval_eligibility(
+                    target.metadata, target.body, area=StorageArea.FORMAL
+                )
+                if not eligibility.eligible or target.content_sha256 != expected_base_sha256:
+                    raise WorkspaceWriteConflict("Target page changed since it was selected")
+                if any(
+                    metadata.get(key) != target.metadata.get(key)
+                    for key in ("line_id", "project_id")
+                ):
+                    raise WorkspaceError("A draft can only update a page in its selected project")
+                metadata["id"] = str(target.page_id)
             edited = draft.model_copy(
                 update={
-                    "metadata": {**draft.metadata, "title": title},
+                    "metadata": metadata,
                     "body": body,
+                    "target_page_id": target_page_id,
+                    "expected_base_sha256": expected_base_sha256,
                     "version": draft.version + 1,
                 }
             )
@@ -280,6 +312,7 @@ class IntakeReviewService:
                 body=draft.body,
                 confirmation_id=confirmation_id,
                 operation_id=operation_id,
+                expected_base_sha256=draft.expected_base_sha256,
             )
             confirmed = draft.model_copy(
                 update={"state": "confirmed", "conflict_resolutions": conflict_resolutions}

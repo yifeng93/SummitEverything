@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid5
 
-from summit_everything.domain.models import IntakeItem, SourceRecord
+from summit_everything.domain.models import IntakeItem, SourceDetail, SourceRecord
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.transactions import atomic_write, workspace_lock
 
@@ -90,6 +90,34 @@ class SourceStore:
             except (OSError, ValueError) as exc:
                 raise WorkspaceError("An intake queue item is invalid") from exc
         return sorted(items, key=lambda item: (item.created_at, str(item.item_id)))
+
+    def get_source(self, root: Path, source_id: UUID) -> SourceDetail:
+        root = root.resolve()
+        source_root = root / ".summit-everything" / "sources"
+        if source_root.exists():
+            for index_path in source_root.glob("*.json"):
+                try:
+                    records = json.loads(index_path.read_text(encoding="utf-8"))
+                    record_data = next(
+                        (row for row in records if row.get("source_id") == str(source_id)), None
+                    )
+                    if record_data is None:
+                        continue
+                    record = SourceRecord.model_validate(record_data)
+                    source_path = (root / record.original_relative_path).resolve()
+                    if not source_path.is_relative_to(root) or not source_path.is_file():
+                        raise WorkspaceError(
+                            "The original source is missing or outside the workspace"
+                        )
+                    raw = source_path.read_bytes()
+                    if hashlib.sha256(raw).hexdigest() != record.sha256:
+                        raise WorkspaceError("The original source no longer matches its saved hash")
+                    return SourceDetail(source=record, text=raw.decode("utf-8"))
+                except (OSError, UnicodeDecodeError, ValueError) as exc:
+                    if isinstance(exc, WorkspaceError):
+                        raise
+                    raise WorkspaceError("Source record is invalid") from exc
+        raise WorkspaceError("Source record was not found", 404)
 
     def recover(self, root: Path) -> None:
         journal_root = root / ".summit-everything" / "transactions"
@@ -217,3 +245,6 @@ class IntakeService:
 
     def list_items(self, root: Path) -> list[IntakeItem]:
         return self.source_store.list_items(root)
+
+    def get_source(self, root: Path, source_id: UUID) -> SourceDetail:
+        return self.source_store.get_source(root, source_id)

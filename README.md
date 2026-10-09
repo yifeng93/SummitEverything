@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-09：M1.1–M1.3 本地后端切片已实现：工作库与组织管理、显式确认写入、原件收件队列、FakeLLM 整理任务和逐稿审核 API。WebUI、检索问答、飞书连接和可安装 DMG 尚未实现；阶段仍待独立验收。
+2026-10-09：M1.1–M1.5 的本地知识闭环已完成 DEV 实现：工作库与组织管理、显式确认写入、原件收件队列、逐稿审核、本地索引与引用、React WebUI 和薄 macOS 开发壳。M1 等待独立验收；飞书、真实模型质量验收与可安装 DMG 尚未实现。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -33,16 +33,25 @@ uv build
 
 当前测试只覆盖已实现的契约切片，不代表 M1 或产品验收通过。DMG / WebUI 构建命令将在相应阶段实现后补充。
 
-### 本地 API 开发预览（M1.1–M1.3）
+### 本地 WebUI 开发预览（M1）
 
-设置一个随机的本机会话 token 后启动 FastAPI：
+先安装前端依赖，然后在仓库根目录启动 FastAPI 与 Vite。脚本自动生成仅供本次进程使用的本机会话 token，并在退出时关闭它启动的服务：
 
 ~~~sh
-export SUMMIT_SESSION_TOKEN='replace-with-a-random-local-token'
-uv run uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 8793
+cd web && npm ci
+cd ..
+uv run python scripts/run_dev.py
 ~~~
 
-`GET http://127.0.0.1:8793/api/v1/health` 可检查 readiness；业务 API 需要 `Authorization: Bearer $SUMMIT_SESSION_TOKEN`。本地 API 支持线 / 项目 / 页面、来源保存与列表、显式 FakeLLM 整理、完整稿编辑及用户确认。文件导入仅接受 UTF-8 文本内容的 TXT / Markdown，最大 20 MB。当前命令只启动本地后端，还没有 WebUI、启动器或安装包。
+打开 `http://127.0.0.1:5173`，新建工作库时选一个空的隔离目录。也可运行薄 macOS 壳：
+
+~~~sh
+cd native && swift run
+~~~
+
+WebUI 支持主线 / 项目 / 页面浏览、随手记、文字导入、显式 FakeLLM 整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引与变更计划均需用户在界面确认。
+
+开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。真实模型、飞书和真实业务材料仍未接入。
 
 ## 与原项目的关系
 

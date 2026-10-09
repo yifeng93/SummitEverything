@@ -1,10 +1,13 @@
 """FastAPI application factory for the local-only service."""
 
+import json
 import os
 import secrets
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Annotated, Any, cast
-from uuid import UUID
+from threading import Event
+from typing import Annotated, Any, Literal, cast
+from uuid import UUID, uuid4
 
 from fastapi import (
     Depends,
@@ -18,24 +21,30 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
+    IndexPlan,
+    IndexResult,
     IntakeItem,
     IntakeJob,
     LineRecord,
     MutationResult,
     PageSnapshot,
     ProjectRecord,
+    SourceDetail,
     WorkspaceContext,
 )
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
+from summit_everything.retrieval.query import QueryService
+from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
     WorkspaceError,
     create_line,
@@ -124,6 +133,8 @@ class DraftPatchRequest(RequestModel):
     expected_version: int = Field(ge=1)
     title: str = Field(min_length=1)
     body: str = Field(min_length=1)
+    target_page_id: UUID | None = None
+    expected_base_sha256: str | None = Field(default=None, pattern="^[0-9a-f]{64}$")
 
 
 class DraftConfirmationRequest(RequestModel):
@@ -131,6 +142,27 @@ class DraftConfirmationRequest(RequestModel):
     confirmation_id: str = Field(min_length=1)
     operation_id: str = Field(min_length=1)
     conflict_resolutions: dict[str, str] = Field(default_factory=dict)
+
+
+class IndexPlanRequest(RequestModel):
+    mode: str = Field(pattern="^(initial|incremental|full|model_change)$")
+    fingerprint: str = Field(min_length=1)
+
+
+class QueryRequest(RequestModel):
+    question: str = Field(min_length=1)
+    fingerprint: str = Field(min_length=1)
+    purpose: Literal["current", "history"] = "current"
+    request_id: UUID | None = None
+
+
+class JournalRequest(RequestModel):
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+    line_id: UUID | None = None
+    project_id: UUID | None = None
+    confirmation_id: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
 
 
 class LoopbackOnly(BaseHTTPMiddleware):
@@ -150,6 +182,7 @@ def create_app(
     session_token: str | None = None,
     profile_root: Path | None = None,
     review_service: IntakeReviewService | None = None,
+    query_service: QueryService | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.add_middleware(LoopbackOnly)
@@ -162,6 +195,7 @@ def create_app(
     review = review_service or IntakeReviewService(FakeLLM())
     app.state.intake_service = intake_service
     app.state.review_service = review
+    cancellations: dict[str, Event] = {}
 
     def authenticated(authorization: str | None = Header(default=None)) -> None:
         expected = f"Bearer {app.state.session_token}"
@@ -179,6 +213,11 @@ def create_app(
                 detail={"code": "workspace_not_open", "message": "Open a workspace first"},
             )
         return workspace
+
+    def query_for(workspace: WorkspaceContext) -> QueryService:
+        if query_service is not None:
+            return query_service
+        return QueryService(IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"))
 
     @app.exception_handler(WorkspaceError)
     async def workspace_error_handler(_request: Request, exc: WorkspaceError) -> JSONResponse:
@@ -361,9 +400,14 @@ def create_app(
 
     @app.get("/api/v1/pages/{page_id}", dependencies=[Depends(authenticated)])
     def page_get(
-        page_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+        page_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        expected_content_sha256: str | None = None,
     ) -> PageSnapshot:
-        return read_page(Path(workspace.root), page_id)
+        page = read_page(Path(workspace.root), page_id)
+        if expected_content_sha256 is not None and page.content_sha256 != expected_content_sha256:
+            raise WorkspaceWriteConflict("Page content has changed since this citation was created")
+        return page
 
     @app.post("/api/v1/pages/{page_id}/confirmations", dependencies=[Depends(authenticated)])
     def page_confirmation(
@@ -397,6 +441,30 @@ def create_app(
             payload.destination_relative_path,
             operation_id=payload.operation_id,
             structure_confirmation_id=payload.structure_confirmation_id,
+        )
+
+    @app.post("/api/v1/journal/{kind}", status_code=201, dependencies=[Depends(authenticated)])
+    def journal_create(
+        kind: Literal["log", "thought"],
+        payload: JournalRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        metadata: dict[str, Any] = {
+            "id": str(UUID(bytes=secrets.token_bytes(16), version=4)),
+            "title": payload.title,
+            "role": "knowledge",
+            "kind": kind,
+        }
+        if payload.line_id is not None:
+            metadata["line_id"] = str(payload.line_id)
+        if payload.project_id is not None:
+            metadata["project_id"] = str(payload.project_id)
+        return PageWriter().confirm(
+            Path(workspace.root),
+            metadata=metadata,
+            body=payload.body,
+            confirmation_id=payload.confirmation_id,
+            operation_id=payload.operation_id,
         )
 
     @app.post("/api/v1/intake/items", status_code=201, dependencies=[Depends(authenticated)])
@@ -435,6 +503,13 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> list[IntakeItem]:
         return intake_service.list_items(Path(workspace.root))
+
+    @app.get("/api/v1/sources/{source_id}", dependencies=[Depends(authenticated)])
+    def source_get(
+        source_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> SourceDetail:
+        return intake_service.get_source(Path(workspace.root), source_id)
 
     @app.post("/api/v1/intake/jobs", status_code=201, dependencies=[Depends(authenticated)])
     def intake_job_create(
@@ -485,6 +560,8 @@ def create_app(
             expected_version=payload.expected_version,
             title=payload.title,
             body=payload.body,
+            target_page_id=payload.target_page_id,
+            expected_base_sha256=payload.expected_base_sha256,
         )
 
     @app.post("/api/v1/drafts/{draft_id}/confirmations", dependencies=[Depends(authenticated)])
@@ -507,6 +584,104 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> list[ActionCandidate]:
         return review.list_actions(Path(workspace.root))
+
+    @app.post("/api/v1/index/plans", dependencies=[Depends(authenticated)])
+    def index_plan(
+        payload: IndexPlanRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> IndexPlan:
+        return query_for(workspace).plan(
+            Path(workspace.root), fingerprint=payload.fingerprint, mode=payload.mode
+        )
+
+    @app.post("/api/v1/index/jobs", dependencies=[Depends(authenticated)])
+    def index_execute(
+        payload: IndexPlan,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> IndexResult:
+        return query_for(workspace).execute_plan(Path(workspace.root), payload)
+
+    @app.get("/api/v1/index/status", dependencies=[Depends(authenticated)])
+    def index_status(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, int | str | None]:
+        store = IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3")
+        return store.status(workspace.workspace_id)
+
+    @app.post("/api/v1/queries", dependencies=[Depends(authenticated)])
+    def query_stream(
+        payload: QueryRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> StreamingResponse:
+        request_id = str(payload.request_id or uuid4())
+        if request_id in cancellations:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "intent_conflict", "message": "查询标识已在使用"},
+            )
+        cancelled = Event()
+        cancellations[request_id] = cancelled
+
+        def event(seq: int, event_type: str, data: Any) -> str:
+            value = {
+                "request_id": request_id,
+                "seq": seq,
+                "type": event_type,
+                "data": data,
+            }
+            return f"data: {json.dumps(value, ensure_ascii=False)}\n\n"
+
+        def generate() -> Iterator[str]:
+            seq = 0
+            try:
+                seq += 1
+                yield event(seq, "status", {"state": "retrieving"})
+                answer = query_for(workspace).query(
+                    Path(workspace.root),
+                    payload.question,
+                    fingerprint=payload.fingerprint,
+                    purpose=RetrievalPurpose(payload.purpose),
+                )
+                if cancelled.is_set():
+                    seq += 1
+                    yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                    return
+                for citation in answer.citations:
+                    seq += 1
+                    yield event(seq, "citation", citation.model_dump(mode="json"))
+                for offset in range(0, len(answer.text), 120):
+                    if cancelled.is_set():
+                        seq += 1
+                        yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                        return
+                    seq += 1
+                    yield event(seq, "delta", {"text": answer.text[offset : offset + 120]})
+                seq += 1
+                yield event(seq, "completed", answer.model_dump(mode="json"))
+            except Exception as exc:
+                seq += 1
+                yield event(seq, "error", {"code": "query_error", "message": str(exc)})
+            finally:
+                cancellations.pop(request_id, None)
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    @app.delete(
+        "/api/v1/queries/{request_id}", status_code=202, dependencies=[Depends(authenticated)]
+    )
+    def query_cancel(request_id: UUID) -> dict[str, str]:
+        cancellation = cancellations.get(str(request_id))
+        if cancellation is None:
+            raise HTTPException(
+                status_code=404,
+                detail={"code": "not_found", "message": "查询已结束或不存在"},
+            )
+        cancellation.set()
+        return {"request_id": str(request_id), "state": "cancellation_requested"}
 
     return app
 
