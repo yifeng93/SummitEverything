@@ -57,6 +57,13 @@
 | 本地运行壳身份 / 清理 | DEV完成待验收 | `73ec81a` | runner 测试 2 passed：独立端口与 profile、API 端口冲突不误杀其他服务、SIGTERM 后监听关闭；本机 UI 真实复演最后窗口关闭、正常 Quit 与 swift run Ctrl+C 后均无本轮服务残留。 | 单独端口 8823/5183、8825/5185；.local 临时 profile / 工作库 | 不代表 DMG、干净机器安装或发布验收。 |
 | 全量 M1 DEV 检查 | DEV完成待验收 | `73ec81a06f2557c006f98ff88fa81b08d14ef315` | 后端 77 项、前端 6 项、ruff / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、前端 build、swift build 全部退出 0；浏览器覆盖 C06/C08/C10 端到端流程。细节见 [最新交接](../handoff/LATEST-IMPLEMENTATION.md)。 | 全部模拟与 Fake | 保留 1 条 Starlette/httpx 弃用提示和 3 条既有 frontend effect lint 警告。 |
 
+### C03 界面补修候选（固定代码 SHA `34522507f2c5c9856ed859f0593e1967190cae41`）
+
+| 任务 | 实施状态 | 实现代码 SHA | 检查 / 覆盖 | 材料边界 | 备注 |
+|---|---|---|---|---|---|
+| C03 目录和页面结构 UI | DEV完成待验收 | `34522507f2c5c9856ed859f0593e1967190cae41` | 真实浏览器创建 / 改名 / 归档 / 归档检索 / 恢复；前端新增改名稳定 ID、归档恢复、非空删除拒绝、跨项目移动和相对链接确认测试；前端 10 项测试通过。 | 隔离 profile 与模拟工作库 | 首次独立报告 C03 FAIL/P1；新 SHA 的独立浏览器复验正在进行，尚不记 QA通过。 |
+| M1 自动检查复跑 | DEV完成待验收 | `34522507f2c5c9856ed859f0593e1967190cae41` | 后端 77 passed；前端 10 passed；ruff / format、mypy、lock、uv build、OpenAPI 类型生成、前端 typecheck / lint / build、Swift build 均退出 0。 | Fake providers 与模拟内容 | 保留 1 条 Starlette/httpx 弃用提示和 3 条既有 React effect lint 警告。 |
+
 真实业务样板、真实模型、飞书、五日实际工作及双机仍由各自授权门控制；执行者不填写 QA 通过。
 
 ## 更新格式
