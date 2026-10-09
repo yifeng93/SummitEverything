@@ -1,78 +1,49 @@
-# Latest implementation handoff
+# 最新实现交接
 
-## Fixed implementation
+## 固定候选
 
-- **Stage:** M1 local knowledge loop remediation; implementation self-check complete, waiting for a new independent review.
-- **Product baseline:** `docs/product/PRODUCT-SPEC.md`, decisions confirmed 2026-10-09.
-- **Fixed code SHA:** `7b41ca272b14c38a7b6ebf0e9766766749ccf001`.
-- **Branch:** `codex/project-foundation`.
-- **Implementation commit:** the fixed code SHA is the implementation checkpoint; later documentation commits on this branch record QA history and handoff updates.
-- **Prior independent QA:** two reports test the old implementation SHA `f364c0122a1a74580009bf9342e6e864df6d975d` and are now included in this branch. `docs/quality/reports/2026-10-09-M1-f364c01.md` (source report commit `c4f755f648324bf714000e2765fa99917909692b`) reports C08/C10 FAIL and C03/C06/C13/C14 incomplete. `docs/quality/reports/2026-10-09-M1.1-M1.5-f364c01.md` (source report commit `51b3654`) reports C05/C06/C13 FAIL, C08/C10 PASS, and C03/C07/C11/C12/C14 incomplete. The reports disagree on some case outcomes and remain separate evidence for their fixed SHA; neither is a result for this remediation SHA.
-- **Independent review of this SHA:** not run. Do not mark M1 QA passed based on the self-check below.
+- **阶段：** M1.1–M1.5 DEV 收口，等待独立 QA 对固定代码提交复验。
+- **固定代码 SHA：** `73ec81a06f2557c006f98ff88fa81b08d14ef315`。
+- **分支：** `codex/m1-close`。
+- **材料边界：** 只用隔离模拟工作库与 Fake providers；没有导入真实“场地与酒店”材料、付费模型或真实飞书。
+- **自测证据：** `.local/m1-close/evidence/dev-self-check.md`（忽略文件，只保留在此 worktree；摘要同时记录于本交接）。
+- **独立 QA：** 尚未运行。不得用执行者自测、浏览器复演或旧报告替代独立结论。
 
-## Remediation summary
+## 修复摘要
 
-- C08: draft review now reports a stale target as a conflict, refreshes the current page snapshot, displays the current-versus-draft comparison, and requires the reviewer to explicitly adopt the current version before retrying. The page writer still checks the version at confirmation time.
-- C10: changed pages remain visible as needing confirmation. Page Reader now shows the current title and body and offers an explicit confirmation action. The new version is confirmed before it becomes eligible again; old cached chunks remain excluded until incremental indexing.
-- C06: a selected source can produce multiple proposals using its Markdown H2 sections. Every proposal keeps source links and inherits the single line/project selected by the user. Each draft remains independently pending until confirmed. C06 has been revised to match the already-confirmed single-project boundary; automatic cross-project routing is out of scope.
-- C03/C13 M1 portion: added checks for archived project knowledge remaining searchable, nonempty project deletion being rejected, superseded knowledge being excluded from current retrieval, and history citations carrying `superseded` validity.
-- C14 M1 portion: SSE tests now check contiguous sequence numbers, a single terminal event, and cancellation without a false completion.
-- The writer now permits a user-confirmed page whose validity is `superseded`; it remains history-only under the shared retrieval gate.
+- 修复 C05：来源状态由最新整理作业和关联稿件派生并持久化，覆盖 pending、processing、reviewing、completed、failed、cancelled；正在整理或仍有待审稿的来源不能用新 operation ID 另起作业。失败、取消或全部处理完成后，只有显式 `reprocess=true` 才能重新整理；相同 operation ID 按原意图幂等重试。
+- C06：用户先选一个项目，一份多主题来源可生成多份稿件，逐份确认并保持完整来源关联；不进行自动跨项目分流。
+- C07：未决或选择结果会写入最终正文，未决内容明确标为未确定；稿件编辑区预览结果。
+- C08/C10：真实 UI 显示外部版本差异、阻止覆盖；保留稿件、显式比较基准、重新确认后，索引重建并恢复最新正文检索。
+- C03/C13/C14 的 M1 部分：既有测试覆盖归档知识检索、非空删除保护、失效 / 被替代内容区分、SSE 顺序 / 唯一终态 / 取消不伪装完成。
+- C11/C12/C23 的 M1 部分：旧版本资格门、邻页复核、索引 fingerprint 变化与失败重建保护、原子写恢复和同意图重试由现有测试继续覆盖；需 QA 独立复验。
+- 本地开发壳：API / Web 端口与 profile 可隔离；run identity 防止误连其它 checkout 服务；runner 只清理自己启动的进程组。正常 Quit、最后窗口关闭、`swift run` Ctrl+C 均以本轮独立端口复演并确认无监听残留。
 
-## Startup commands
+## 启动与检查
 
-From the repository root, start the browser preview:
-
-~~~sh
+```sh
 uv sync --group dev
 cd web && npm ci
 cd ..
 uv run python scripts/run_dev.py
-~~~
+```
 
-Open `http://127.0.0.1:5173`. The script starts FastAPI at `127.0.0.1:8793` and Vite at `127.0.0.1:5173`; `http://127.0.0.1:8793/api/v1/health` returned `ready`. Ctrl+C on this script stopped both listeners.
+默认 API `127.0.0.1:8793`、Web `127.0.0.1:5173`。并发隔离可设 `SUMMIT_API_PORT`、`SUMMIT_WEB_PORT`、`SUMMIT_API_TARGET`、`SUMMIT_PROFILE_ROOT`。访问 `http://127.0.0.1:5173`。原生开发壳：`cd native && swift run`。
 
-Native development command: `cd native && swift run`. It started the API and Vite services in this environment. After the macOS Documents access prompt was approved, I also opened a temporary debug `.app` wrapper around the built shell. The API and Vite listeners were active; I sent the app's normal `⌘Q` Quit shortcut through the native UI, the app exited, and a subsequent `lsof` / process check showed no listeners on either port and no owned `run_dev.py`, Uvicorn, or Vite process. This verifies the development-shell normal-Quit cleanup path. The previously observed terminal Ctrl+C path for `swift run` can still leave child listeners running. M4 package/DMG, clean-install, and restart behavior remain unverified.
+完整自测命令和退出码见 `.local/m1-close/evidence/dev-self-check.md`。当前观察到 77 个后端测试、6 个前端测试全部通过；ruff / format、mypy、lock、sdist+wheel、OpenAPI 类型生成、前端 typecheck / lint / production build、Swift build 均退出 0。保留 1 条 Starlette/httpx 弃用提示及 3 条既有 React effect lint 警告。
 
-## Browser replay with isolated synthetic material
+## 真实 UI 复演
 
-Replay workspace: `/tmp/summit-m1-fix-replay-nwyhoS` (synthetic only).
+完整隔离路径和步骤见 DEV 自测证据。真实浏览器复演覆盖 C06 的单项目多稿、部分与全部确认；C10 外部编辑、旧证据失效、重新确认及增量索引恢复；C08 目标外部变化的冲突保护、稿件保存 / 重新确认及最新正文检索。材料全部是本地合成文本。
 
-1. Start the browser preview and create a new workspace at that path.
-2. Create line `模拟业务线` and project `用户选定的模拟项目`.
-3. Save one note with H2 sections `预算` and `时间`. Select the one source and the one project, then explicitly generate drafts. The UI showed two independently reviewable drafts with one source each.
-4. Confirm `预算` only. `时间` remained pending. Confirm it afterward to continue the page-update replay.
-5. Edit the confirmed `时间.md` outside the app, changing `周五` to `周六`. Reload and open the page: the UI showed `待确认`, the current body, and `确认当前版本`. Confirm it and observe the page return to confirmed status.
-6. Save another one-section note, generate its draft, select the existing `时间` page, and save the target selection. Edit that page externally from `周六` to `周一` while the draft is open. Confirming the draft returned a conflict; the UI displayed the externally changed body and disabled confirmation until `采用当前页面作为比较基准` was clicked. Save the draft and confirm again. The original external edit was not overwritten before explicit rebase.
-7. All material, facts, and workspace state in this replay are synthetic and local. The replay did not initialize any real “场地与酒店” content.
+## 尚未完成或未测
 
-## Verification evidence at the fixed SHA
+- 独立 QA 对 M1 Foundation 基础门禁及 M1.1–M1.5 必测项尚未完成；需要独立报告逐项给出 PASS / FAIL / NOT_RUN / BLOCKED。
+- QA 仍需重点复验 C03 全部结构管理操作、C05 状态与重复生成防护、C06、C07、C08/C10 浏览器路径、C11/C12 缓存与失败重建保护、C13/C14 的 M1 部分、C23 原子恢复，以及固定版本命令和原生服务归属。
+- C13 历史会话 UI、C14 断流恢复 / 历史引用 UI 属 M3；C25 DMG、干净机器安装和发版身份属 M4；均不得记作 M1 PASS。
+- 真实“场地与酒店”材料确认、真实模型质量、真实飞书权限 / 写入、五个实际工作日、双机往返未测且需要各自授权门。
+- 1 条 Starlette/httpx 弃用提示和 3 条前端 effect lint 警告保留；未通过隐藏警告或降低期望获得绿灯。
 
-- `uv run ruff check src tests scripts`: passed.
-- `uv run ruff format --check src tests scripts`: passed.
-- `uv run mypy src`: passed, 22 source files.
-- `uv run pytest -q`: **72 passed**, one Starlette `TestClient` / httpx deprecation warning.
-- `uv lock --check`: passed.
-- `uv build`: source distribution and wheel built.
-- `npm test`: **4 passed** across 3 files.
-- `npm run typecheck`: passed.
-- `npm run build`: passed.
-- `npm run lint`: exited 0, with three existing `react/set-state-in-effect` warnings in `ProjectsView`, `TodayView`, and `AskView`.
-- `swift build`: passed.
-- Browser UI replay: C06, C08, and C10 flows above were manually exercised in the local UI.
-- C03/C13/C14 additions are covered by automated service/integration tests; this is developer evidence, not independent acceptance.
-- Local preview listeners were checked absent after stopping the preview and again after native app `⌘Q`.
+## QA 交接
 
-## Not tested / remaining gates
-
-- Independent Luna review of the new fixed SHA and a new report covering M1.1–M1.5.
-- C03 full structural matrix (all line/project edits, moves, and deletion cases) requires independent review; the added developer test covers archive/search and nonempty deletion.
-- C13 historical session UI and C14 disconnect recovery / old citation UI are M3 work and were not tested here. The M1 retrieval and stream portions are listed above.
-- Native `.app` archive, DMG, clean-machine install, restart, and release identity verification (M4). The development wrapper Quit check does not cover those packaged scenarios.
-- Real business sample confirmation and initialization; real model quality, credentials, costs, Feishu read/write, or task creation.
-- Five-day single-device use and two-device round trip.
-- The Starlette/httpx deprecation and three frontend lint warnings remain visible; no check was relaxed.
-
-## QA handoff
-
-Use an independent checkout/worktree at exactly `7b41ca272b14c38a7b6ebf0e9766766749ccf001`. Read `docs/handoff/TESTER.md` and `docs/quality/ACCEPTANCE.md`; record each relevant result with evidence. In particular, re-run C08/C10 against the new SHA, review the revised C06 boundary, and report C03/C06/C13/C14 scope without filling historical M3 or native M4 gaps as passes. Do not edit implementation code or infer independent approval from this handoff.
+使用源码仓库外的独立 worktree / checkout，固定 ref 为 `73ec81a06f2557c006f98ff88fa81b08d14ef315`；测试者只在自己的隔离目录使用模拟库 / profile、增补测试和新报告，不修改 `src/`、`web/`、`native/` 产品实现。读取 `docs/handoff/TESTER.md` 与 `docs/quality/ACCEPTANCE.md`，覆盖 Foundation 和 M1.1–M1.5 Must 场景，区分跨阶段已实现部分与 M3/M4 未测项。报告新建于 `docs/quality/reports/`，保留两份旧报告。若发现缺陷，把复现、严重度和证据交回执行者；修复后对新固定 SHA 复验修复项与相关回归。

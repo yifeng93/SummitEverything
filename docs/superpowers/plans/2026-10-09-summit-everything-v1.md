@@ -10,6 +10,10 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
+## 当前阶段记录（2026-10-09）
+
+M1.1–M1.5 的 DEV 实现已进入本轮 M1 收口：修复 C05 来源 / 作业 / 稿件状态及防重复整理，补齐 C07 冲突结果正文，验证 C06、C08、C10 真实 WebUI 流程，并修复本地开发服务端口隔离和退出清理。候选版本、命令和未测范围见 [进展账本](../../implementation/PROGRESS.md) 与 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。当前只处理 M1 独立验收与复验，不开始 M2–M5。以下历史实施任务描述保留作为范围基线，不能覆盖最新进展。
+
 ## 全局执行规则与验收门
 
 当前 Foundation 只建立共同信任门禁。最早未实施任务为 M1.1；既有代码不是应用原型。
