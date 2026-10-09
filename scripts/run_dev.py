@@ -58,9 +58,7 @@ def main() -> int:
                 env=env,
             )
         )
-        children.append(
-            subprocess.Popen(["npm", "run", "dev"], cwd=ROOT / "web", env=env)
-        )
+        children.append(subprocess.Popen(["npm", "run", "dev"], cwd=ROOT / "web", env=env))
 
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
