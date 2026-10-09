@@ -113,10 +113,12 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 文件：integrations/feishu/{auth,materials,calendar}.py、api/routes/feishu.py、web 对应功能。
 
-- [ ] 复用 SWB OAuth / session 经验，长期秘密交钥匙串，state 绑定发起会话；scope、redirect 和 endpoint 用实际注册配置。
-- [ ] 测试完整响应、过期 token、拒绝、分页、逐字稿文件内容、只获取被选材料；列表不调模型。
-- [ ] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
+- [x] Fake 范围落实 SWB OAuth / session 经验，长期秘密交钥匙串，state 绑定发起会话；scope、redirect 和 endpoint 用实际注册配置。
+- [x] 测试完整响应、过期 token、拒绝、分页、逐字稿文件内容、只获取被选材料；列表不调模型。
+- [x] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
 - [ ] 账户准备好后验证真实 scope、列表和正文读取；缺失权限给具体指引，保留手动文字入口。
+
+**M2.1 当前结果：** Fake 模拟范围 DEV完成待验收，代码 `e4f382956ab1beb381ab75ed5b1fab22c79bd682` / `72612e641dd00a34c71f8424adbbf3b622309891`；真实 OAuth / user scope / 钥匙串配置仍由外部门验收，不能据 Fake 通过勾选真实账户步骤。见 [进展账本](../../implementation/PROGRESS.md) 与 M2.1 任务报告。
 
 ### M2.2：正式任务与独立 action
 
