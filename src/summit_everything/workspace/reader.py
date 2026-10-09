@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -64,12 +65,12 @@ def _expected_location(manifest: WorkspaceManifest, metadata: dict[str, Any]) ->
     if not isinstance(title, str) or not title.strip():
         raise WorkspaceError("Page title is required")
     role = metadata.get("role")
-    if role in {"source", "draft", "system"}:
+    if isinstance(role, str) and role in {"source", "draft", "system"}:
         return cast(StorageName, role)
     if role != "knowledge":
         raise WorkspaceError("Page role must be knowledge, source, draft, or system")
     kind = metadata.get("kind")
-    if kind not in KINDS:
+    if not isinstance(kind, str) or kind not in KINDS:
         raise WorkspaceError("Page kind is not supported")
     if kind in {"log", "thought"}:
         line_value, project_value = metadata.get("line_id"), metadata.get("project_id")
@@ -118,6 +119,11 @@ def _page_paths(root: Path, manifest: WorkspaceManifest) -> list[Path]:
         journal_root = root / directory
         if journal_root.exists():
             paths.extend(journal_root.rglob("*.md"))
+    for path in paths:
+        if path.is_symlink():
+            raise WorkspaceError("Markdown page symlink is not allowed")
+        if not path.resolve().is_relative_to(root):
+            raise WorkspaceError("Markdown page escapes the workspace root")
     return sorted(set(paths))
 
 
@@ -158,7 +164,12 @@ def _approval_state(metadata: dict[str, Any], body: str, area: StorageName) -> A
 
 
 def _snapshot(
-    root: Path, path: Path, metadata: dict[str, Any], body: str, area: StorageName
+    root: Path,
+    path: Path,
+    metadata: dict[str, Any],
+    body: str,
+    area: StorageName,
+    raw: bytes,
 ) -> PageSnapshot:
     try:
         page_id = UUID(str(metadata["id"]))
@@ -174,20 +185,28 @@ def _snapshot(
         storage_area=area,
         approval_state=_approval_state(metadata, body, area),
         validity=str(metadata.get("validity", "current")),
+        raw_sha256=hashlib.sha256(raw).hexdigest(),
     )
 
 
 def list_pages(root: Path) -> list[PageSnapshot]:
     root = root.resolve()
+    from summit_everything.workspace.writer import WorkspaceWriteConflict, WorkspaceWriter
+
+    try:
+        WorkspaceWriter().recover(root)
+    except WorkspaceWriteConflict as exc:
+        raise WorkspaceError(str(exc), 409) from exc
     manifest = load_manifest(root)
     pages: list[PageSnapshot] = []
     seen: set[UUID] = set()
     for path in _page_paths(root, manifest):
-        metadata, body = _split_markdown(path.read_bytes())
+        raw = path.read_bytes()
+        metadata, body = _split_markdown(raw)
         area = _validate_location(root, manifest, path, metadata)
         if area != "formal":
             continue
-        snapshot = _snapshot(root, path, metadata, body, area)
+        snapshot = _snapshot(root, path, metadata, body, area, raw)
         if snapshot.page_id in seen:
             raise WorkspaceError("Workspace contains duplicate page IDs")
         seen.add(snapshot.page_id)

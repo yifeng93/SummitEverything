@@ -46,6 +46,7 @@
 | GET /pages；GET /pages/{id} | PageSnapshot；引用打开可附 expected_content_sha256，旧版本返回内容已更新 |
 | POST /pages | 明确直接撰写并确认的 metadata / body、confirmation_id → MutationResult；新增基准为空 |
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
+| POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |
 | POST /journal/{kind} | kind:log/thought，正文、可选关联、confirmation_id；复用 PageWriter，不另写落盘 |
 | POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型 |
 | POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节，汇报跳过文件 |

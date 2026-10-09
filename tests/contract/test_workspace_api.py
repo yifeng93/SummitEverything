@@ -253,3 +253,189 @@ def test_page_reader_rejects_duplicate_page_ids(tmp_path: Path) -> None:
 
     assert response.status_code == 422
     assert "duplicate page IDs" in response.json()["error"]["message"]
+
+
+def test_page_reader_rejects_markdown_symlink_outside_workspace(tmp_path: Path) -> None:
+    api = client()
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    open_new_workspace(api, tmp_path / "new")
+    line = api.post("/api/v1/lines", json={"name": "路径线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "路径项目", "operation_id": "project"},
+    ).json()
+    outside = tmp_path / "outside.md"
+    outside.write_text(
+        "---\n"
+        "id: 00000000-0000-4000-8000-000000000999\ntitle: 外部页面\n"
+        "role: knowledge\nkind: object\n"
+        f"line_id: {line['id']}\nproject_id: {project['id']}\n---\nprivate canary\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "new" / project["directory"] / "linked.md").symlink_to(outside)
+
+    response = api.get("/api/v1/pages")
+
+    assert response.status_code == 422
+    assert "symlink" in response.json()["error"]["message"]
+
+
+def test_malformed_frontmatter_is_a_validation_error_not_a_server_crash(tmp_path: Path) -> None:
+    api = client()
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    open_new_workspace(api, tmp_path / "new")
+    line = api.post("/api/v1/lines", json={"name": "格式线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "格式项目", "operation_id": "project"},
+    ).json()
+    malformed = tmp_path / "new" / project["directory"] / "malformed.md"
+    malformed.write_text(
+        "---\nid: 00000000-0000-4000-8000-000000000876\ntitle: malformed\n"
+        "role: [knowledge]\nkind: object\n"
+        f"line_id: {line['id']}\nproject_id: {project['id']}\n---\nbody\n",
+        encoding="utf-8",
+    )
+
+    response = api.get("/api/v1/pages")
+
+    assert response.status_code == 422
+
+
+def test_page_confirmation_route_writes_only_after_explicit_confirmation(tmp_path: Path) -> None:
+    api = client()
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    open_new_workspace(api, tmp_path / "new")
+    line = api.post("/api/v1/lines", json={"name": "确认线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "确认项目", "operation_id": "project"},
+    ).json()
+    metadata = {
+        "id": "00000000-0000-4000-8000-000000000234",
+        "title": "待确认事实",
+        "role": "knowledge",
+        "kind": "object",
+        "line_id": line["id"],
+        "project_id": project["id"],
+        "approval": {"confirmed": True},
+    }
+    payload = {
+        "metadata": metadata,
+        "body": "这是一份隔离模拟稿。\n",
+        "confirmation_id": "operator-explicitly-confirmed",
+        "operation_id": "confirm-page",
+    }
+
+    result = api.post("/api/v1/pages", json=payload)
+
+    assert result.status_code == 201, result.text
+    snapshot = api.get(f"/api/v1/pages/{metadata['id']}").json()
+    assert snapshot["approval_state"] == "confirmed"
+    assert snapshot["metadata"]["approval"]["confirmation_id"] == payload["confirmation_id"]
+    assert snapshot["metadata"]["approval"]["version"] == 1
+    assert "raw_sha256" not in snapshot
+
+
+def test_page_confirmation_refuses_stale_review_base(tmp_path: Path) -> None:
+    api = client()
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    open_new_workspace(api, tmp_path / "new")
+    line = api.post("/api/v1/lines", json={"name": "确认线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "确认项目", "operation_id": "project"},
+    ).json()
+    metadata = {
+        "id": "00000000-0000-4000-8000-000000000235",
+        "title": "待确认事实",
+        "role": "knowledge",
+        "kind": "object",
+        "line_id": line["id"],
+        "project_id": project["id"],
+    }
+    created = api.post(
+        "/api/v1/pages",
+        json={
+            "metadata": metadata,
+            "body": "第一稿。\n",
+            "confirmation_id": "first-confirmation",
+            "operation_id": "page-create",
+        },
+    )
+    assert created.status_code == 201, created.text
+    snapshot = api.get(f"/api/v1/pages/{metadata['id']}").json()
+    page_path = tmp_path / "new" / snapshot["relative_path"]
+    page_path.write_text(
+        page_path.read_text(encoding="utf-8").replace("第一稿", "外部编辑"), encoding="utf-8"
+    )
+    assert api.get(f"/api/v1/pages/{metadata['id']}").json()["approval_state"] == "invalid"
+
+    response = api.post(
+        f"/api/v1/pages/{metadata['id']}/confirmations",
+        json={
+            "metadata": metadata,
+            "body": "覆盖稿。\n",
+            "expected_base_sha256": snapshot["content_sha256"],
+            "confirmation_id": "second-confirmation",
+            "operation_id": "page-update",
+        },
+    )
+
+    assert response.status_code == 409
+    assert "外部编辑" in page_path.read_text(encoding="utf-8")
+
+
+def test_page_move_route_keeps_same_project_references_valid(tmp_path: Path) -> None:
+    api = client()
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    open_new_workspace(api, tmp_path / "new")
+    line = api.post("/api/v1/lines", json={"name": "移动线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "移动项目", "operation_id": "project"},
+    ).json()
+    target_metadata = {
+        "id": "00000000-0000-4000-8000-000000000441",
+        "title": "目标页",
+        "role": "knowledge",
+        "kind": "object",
+        "line_id": line["id"],
+        "project_id": project["id"],
+    }
+    source = api.post(
+        "/api/v1/pages",
+        json={
+            "metadata": target_metadata,
+            "body": "可移动事实。\n",
+            "confirmation_id": "target-confirmation",
+            "operation_id": "create-target",
+        },
+    )
+    assert source.status_code == 201
+    link_metadata = {
+        **target_metadata,
+        "id": "00000000-0000-4000-8000-000000000442",
+        "title": "引用页",
+    }
+    api.post(
+        "/api/v1/pages",
+        json={
+            "metadata": link_metadata,
+            "body": "链接 [目标](目标页.md)。\n",
+            "confirmation_id": "link-confirmation",
+            "operation_id": "create-link",
+        },
+    )
+    destination = f"{project['directory']}/历史/目标页.md"
+
+    moved = api.post(
+        f"/api/v1/pages/{target_metadata['id']}/moves",
+        json={"destination_relative_path": destination, "operation_id": "move-page"},
+    )
+
+    assert moved.status_code == 200, moved.text
+    assert api.get(f"/api/v1/pages/{target_metadata['id']}").json()["relative_path"] == destination
+    link_snapshot = api.get(f"/api/v1/pages/{link_metadata['id']}").json()
+    assert "[目标](历史/目标页.md)" in link_snapshot["body"]
+    assert link_snapshot["approval_state"] == "confirmed"

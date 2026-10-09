@@ -3,7 +3,7 @@
 import os
 import secrets
 from pathlib import Path
-from typing import Annotated, cast
+from typing import Annotated, Any, cast
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
@@ -14,6 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from summit_everything.domain.models import (
     LineRecord,
+    MutationResult,
     PageSnapshot,
     ProjectRecord,
     WorkspaceContext,
@@ -32,6 +33,11 @@ from summit_everything.workspace.manifest import (
     update_project,
 )
 from summit_everything.workspace.reader import list_pages, read_page
+from summit_everything.workspace.writer import (
+    PageWriter,
+    WorkspaceWriteConflict,
+    WorkspaceWriter,
+)
 
 
 class RequestModel(BaseModel):
@@ -65,6 +71,23 @@ class ProjectPatch(RequestModel):
     name: str | None = Field(default=None, min_length=1)
     archived: bool | None = None
     operation_id: str = Field(min_length=1)
+
+
+class PageCreate(RequestModel):
+    metadata: dict[str, Any]
+    body: str
+    confirmation_id: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+
+
+class PageConfirmation(PageCreate):
+    expected_base_sha256: str = Field(pattern="^[0-9a-f]{64}$")
+
+
+class PageMove(RequestModel):
+    destination_relative_path: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+    structure_confirmation_id: str | None = None
 
 
 class LoopbackOnly(BaseHTTPMiddleware):
@@ -114,6 +137,19 @@ def create_app(*, session_token: str | None = None, profile_root: Path | None = 
                     "code": "workspace_error",
                     "message": str(exc),
                     "request_id": _request.state.request_id,
+                }
+            },
+        )
+
+    @app.exception_handler(WorkspaceWriteConflict)
+    async def conflict_error_handler(request: Request, exc: WorkspaceWriteConflict) -> JSONResponse:
+        return JSONResponse(
+            status_code=409,
+            content={
+                "error": {
+                    "code": "version_conflict",
+                    "message": str(exc),
+                    "request_id": request.state.request_id,
                 }
             },
         )
@@ -245,11 +281,58 @@ def create_app(*, session_token: str | None = None, profile_root: Path | None = 
     ) -> list[PageSnapshot]:
         return list_pages(Path(workspace.root))
 
+    @app.post("/api/v1/pages", status_code=201, dependencies=[Depends(authenticated)])
+    def page_create(
+        payload: PageCreate,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        return PageWriter().confirm(
+            Path(workspace.root),
+            metadata=payload.metadata,
+            body=payload.body,
+            confirmation_id=payload.confirmation_id,
+            operation_id=payload.operation_id,
+        )
+
     @app.get("/api/v1/pages/{page_id}", dependencies=[Depends(authenticated)])
     def page_get(
         page_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> PageSnapshot:
         return read_page(Path(workspace.root), page_id)
+
+    @app.post("/api/v1/pages/{page_id}/confirmations", dependencies=[Depends(authenticated)])
+    def page_confirmation(
+        page_id: UUID,
+        payload: PageConfirmation,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        if str(payload.metadata.get("id")) != str(page_id):
+            raise HTTPException(
+                status_code=422,
+                detail={"code": "validation_error", "message": "Page ID does not match the route"},
+            )
+        return PageWriter().confirm(
+            Path(workspace.root),
+            metadata=payload.metadata,
+            body=payload.body,
+            confirmation_id=payload.confirmation_id,
+            operation_id=payload.operation_id,
+            expected_base_sha256=payload.expected_base_sha256,
+        )
+
+    @app.post("/api/v1/pages/{page_id}/moves", dependencies=[Depends(authenticated)])
+    def page_move(
+        page_id: UUID,
+        payload: PageMove,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        return WorkspaceWriter().move_page(
+            Path(workspace.root),
+            page_id,
+            payload.destination_relative_path,
+            operation_id=payload.operation_id,
+            structure_confirmation_id=payload.structure_confirmation_id,
+        )
 
     return app
 

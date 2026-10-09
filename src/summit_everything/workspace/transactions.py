@@ -47,6 +47,15 @@ def atomic_write(path: Path, content: bytes) -> None:
             os.unlink(temp_name)
 
 
+def atomic_delete(path: Path) -> None:
+    path.unlink()
+    directory_fd = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
 def digest(data: bytes | None) -> str | None:
     return hashlib.sha256(data).hexdigest() if data is not None else None
 

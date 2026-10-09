@@ -54,3 +54,12 @@ class PageSnapshot(BaseModel):
     storage_area: Literal["formal", "source", "draft", "system"]
     approval_state: Literal["confirmed", "pending", "invalid"]
     validity: str = "current"
+    raw_sha256: str = Field(exclude=True)
+
+
+class MutationResult(BaseModel):
+    operation_id: str
+    state: Literal["succeeded"] = "succeeded"
+    changed_paths: list[str]
+    page_versions: dict[str, str] = Field(default_factory=dict)
+    saved_locally: bool = True

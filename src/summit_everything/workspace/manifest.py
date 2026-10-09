@@ -165,6 +165,12 @@ def create_workspace(
 
 def open_workspace(root: Path, profile_root: Path) -> WorkspaceContext:
     root = root.expanduser().resolve()
+    from summit_everything.workspace.writer import WorkspaceWriteConflict, WorkspaceWriter
+
+    try:
+        WorkspaceWriter().recover(root)
+    except WorkspaceWriteConflict as exc:
+        raise WorkspaceError(str(exc), 409) from exc
     manifest = load_manifest(root)
     return WorkspaceContext(
         workspace_id=manifest.workspace_id,
