@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-09：M1.1–M1.5 的本地知识闭环已完成 DEV 实现，并补修来源处理状态、重复整理、冲突结果表达与本地服务生命周期。当前候选版本正在独立验收；验收通过前不宣告 M1 收口。飞书、真实模型质量验收与可安装 DMG 尚未实现。详见 [进展账本](docs/implementation/PROGRESS.md) 和 [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
+2026-10-09：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。受测代码为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；详见 [独立复验报告](docs/quality/reports/2026-10-09-M1-close-retest-f349fe6.md)、[进展账本](docs/implementation/PROGRESS.md) 和 [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M2 尚未开始，可以从隔离模拟环境中的飞书日常流程开始；真实飞书读取 / 写入、真实模型质量验收和可安装 DMG 仍未完成，并受各自确认门约束。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -31,7 +31,7 @@ uv lock --check
 uv build
 ~~~
 
-当前测试只覆盖已实现的契约切片，不代表 M1 或产品验收通过。DMG / WebUI 构建命令将在相应阶段实现后补充。
+上面的自动检查是开发者命令；M1 模拟范围另有独立 QA 证据，二者范围和结果见进展账本。它们不代表真实飞书、真实模型质量、DMG、五日试用或双机验收通过。
 
 ### 本地 WebUI 开发预览（M1）
 
@@ -49,7 +49,7 @@ uv run python scripts/run_dev.py
 cd native && swift run
 ~~~
 
-WebUI 支持主线 / 项目 / 页面浏览、随手记、文字导入、显式 FakeLLM 整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引与变更计划均需用户在界面确认。
+WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式 FakeLLM 整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引与变更计划均需用户在界面确认。
 
 开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。真实模型、飞书和真实业务材料仍未接入。
 
