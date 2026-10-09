@@ -6,7 +6,7 @@
 - **Product baseline:** `PRODUCT-SPEC.md`, 2026-10-09 decisions.
 - **Fixed code SHA:** `f364c0122a1a74580009bf9342e6e864df6d975d` (`feat(m1): complete local knowledge loop UI`).
 - **Branch at implementation:** `codex/project-foundation`.
-- **Working tree after implementation commit:** clean. The progress and this handoff are recorded in a following documentation-only commit.
+- **Working tree:** implementation code remains at the fixed SHA above; this follow-up adds native-shell verification evidence only.
 - **Independent QA:** not run. Do not treat the DEV checks below as an acceptance pass.
 
 ## What is implemented
@@ -33,7 +33,7 @@ uv run python scripts/run_dev.py
 
 Open `http://127.0.0.1:5173`. The script creates an ephemeral session token, starts the API on `127.0.0.1:8793` and Vite on `127.0.0.1:5173`, and stops both services on Ctrl+C. Readiness can be checked at `http://127.0.0.1:8793/api/v1/health`.
 
-The native development shell command is `cd native && swift run`. It bootstraps the same services and offers the native folder chooser. The shell compiled successfully, but its window was not opened in this run because the Mac was locked.
+The native development shell command is `cd native && swift run`. After unlock, a temporary debug `.app` wrapper around the `swift build` output rendered the SwiftUI window and embedded WebUI; switching to workspace setup and selecting the synthetic replay folder through the native chooser populated the setup path field. No workspace was created through that picker flow. Separately, `cd native && swift run` started its own API and Vite services; `/api/v1/health` returned `ready`. Interrupting that terminal-launched process with Ctrl+C left its child services running. I sent SIGTERM to the `run_dev.py` parent I had started, and confirmed both listeners stopped. Closing the normal app window / choosing Quit while it owns the services still needs verification.
 
 ## Browser replay with synthetic data
 
@@ -63,11 +63,14 @@ This replay was performed in a temporary folder under the system temp directory.
 - `npm run lint`: exited 0, with three `react/set-state-in-effect` warnings on async initial data loading effects in `ProjectsView`, `TodayView`, and `AskView`.
 - `swift build`: passed.
 - Browser replay: the actual app was used through the local WebUI; after an external page edit, a query against stale indexed content returned no citation.
+- Native shell spot check: launched temporary debug wrapper, rendered the WebUI, opened the native folder chooser, selected the already-created synthetic replay workspace, and observed its path in setup. No real user files were opened.
+- Native service startup: `cd native && swift run` launched API + Vite; health returned `{"service":"ready","workspace_open":false,"version":"1.0.0"}`. Ctrl+C did not stop the child listeners; after SIGTERM to this test's `run_dev.py` parent, both API and Vite listeners were absent.
 
 ## Not tested / remaining gates
 
 - Independent Luna QA against this fixed SHA and `docs/quality/ACCEPTANCE.md` has not run.
-- The macOS shell was compiled but not launched or interactively tested because the machine was locked during the run.
+- Native shell normal UI Quit / close-window cleanup is not verified. The terminal Ctrl+C path left API and Vite child processes running, which were stopped manually; independent QA should exercise normal application termination and report this observation.
+- The picker test did not create or initialize a workspace.
 - No `.app` archive, DMG, clean-machine install, update, restart, or release identity verification; these belong to M4.
 - No real business material or “场地与酒店” sample confirmation / workspace initialization.
 - No real cloud model quality, credential, cost, Feishu read/write, or real task creation test.
