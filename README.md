@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-09：产品决议、架构契约、全 v1 实施计划、独立验收手册和交接提示词已建立。代码只有无 I/O 的内容指纹及检索资格骨架；没有应用服务、界面、飞书连接或可安装 DMG。
+2026-10-09：产品决议、架构契约、全 v1 实施计划、独立验收手册和交接提示词已建立。M1.1 已提供本地 FastAPI 工作库 API；WebUI、飞书连接和可安装 DMG 尚未实现。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -31,7 +31,18 @@ uv lock --check
 uv build
 ~~~
 
-当前测试只证明基础信任契约，不代表产品验收通过。应用启动、前端和打包命令由 M1 / M4 实现后补到这里，不能用不存在的命令伪装可运行产品。
+当前测试只覆盖已实现的契约切片，不代表 M1 或产品验收通过。DMG / WebUI 构建命令将在相应阶段实现后补充。
+
+### 本地 API 开发预览（M1.1）
+
+设置一个随机的本机会话 token 后启动 FastAPI：
+
+~~~sh
+export SUMMIT_SESSION_TOKEN='replace-with-a-random-local-token'
+uv run uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 8793
+~~~
+
+`GET http://127.0.0.1:8793/api/v1/health` 可检查 readiness；业务 API 需要 `Authorization: Bearer $SUMMIT_SESSION_TOKEN`。当前命令只启动本地后端，还没有 WebUI、启动器或安装包。
 
 ## 与原项目的关系
 
