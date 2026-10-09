@@ -3,39 +3,52 @@ import { afterEach, expect, it, vi } from 'vitest'
 import type { Page } from '../api/client'
 import { PageReader } from './PageReader'
 
-afterEach(() => {
-  cleanup()
-  vi.unstubAllGlobals()
+afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+
+it('adds a relative link to a confirmed page and saves it only after explicit confirmation', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
+  const page: Page = { page_id: 'page-1', relative_path: 'line/project/facts.md', metadata: { id: 'page-1', title: 'Facts', role: 'knowledge', kind: 'topic', line_id: 'line-1', project_id: 'project-1' }, body: 'Current facts', content_sha256: 'a'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current' }
+  const target = { ...page, page_id: 'page-2', relative_path: 'line/project/related.md', metadata: { ...page.metadata, id: 'page-2', title: 'Related' }, body: 'Related body' }
+  const savedBodies: string[] = []
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => [] }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => [page, target] }
+    if (url.endsWith('/confirmations')) { savedBodies.push(String(init?.body)); return { ok: true, status: 200, json: async () => ({}) } }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<PageReader page={page} onClose={vi.fn()} onReload={vi.fn(async () => {})} />)
+
+  fireEvent.change(await screen.findByLabelText('链接到页面'), { target: { value: 'page-2' } })
+  fireEvent.click(screen.getByRole('button', { name: '插入链接' }))
+  const body = screen.getByLabelText('检查并确认正文') as HTMLTextAreaElement
+  expect(body.value).toContain('[Related](related.md)')
+  expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('/confirmations'), expect.anything())
+  fireEvent.click(screen.getByRole('button', { name: '确认新版本' }))
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/pages/page-1/confirmations', expect.objectContaining({ method: 'POST' })))
+  expect(JSON.parse(savedBodies[0]).body).toContain('[Related](related.md)')
 })
 
-it('lets the user review and reconfirm the current externally edited page version', async () => {
-  vi.stubGlobal('crypto', { randomUUID: () => 'confirmation-operation-id' })
-  const page = {
-    page_id: 'page-id',
-    relative_path: 'line/project/fact.md',
-    metadata: { id: 'page-id', title: '合同事实', role: 'knowledge', kind: 'topic', line_id: 'line-id', project_id: 'project-id', approval: { confirmation_id: 'old-proof' } },
-    body: '合同金额是 999 元。',
-    content_sha256: 'a'.repeat(64),
-    raw_sha256: 'b'.repeat(64),
-    storage_area: 'formal',
-    approval_state: 'invalid',
-    validity: 'current',
-  } as Page
-  const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ state: 'succeeded' }) })
-  vi.stubGlobal('fetch', fetchMock)
-  const onReload = vi.fn().mockResolvedValue(undefined)
-  render(<PageReader page={page} onClose={vi.fn()} onReload={onReload} />)
-
-  expect(screen.getByText(/目前不会用于知识问答/)).toBeTruthy()
-  fireEvent.change(screen.getByLabelText('页面正文'), { target: { value: '合同金额是 999 元，已核对最新合同。' } })
-  fireEvent.click(screen.getByRole('button', { name: '确认当前版本' }))
-
-  await waitFor(() => expect(onReload).toHaveBeenCalledOnce())
-  const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit]
-  expect(url).toBe('/api/v1/pages/page-id/confirmations')
-  expect(JSON.parse(String(options.body))).toMatchObject({
-    metadata: { id: 'page-id', title: '合同事实', approval: { confirmation_id: 'old-proof' } },
-    body: '合同金额是 999 元，已核对最新合同。',
-    expected_base_sha256: page.content_sha256,
+it('moves a confirmed page into the selected project and records cross-project confirmation', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
+  const page: Page = { page_id: 'page-1', relative_path: 'line/project-a/facts.md', metadata: { id: 'page-1', title: 'Facts', role: 'knowledge', kind: 'topic', line_id: 'line-1', project_id: 'project-a' }, body: 'Current facts', content_sha256: 'a'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current' }
+  const projects = [{ id: 'project-b', line_id: 'line-1', name: 'Project B', directory: 'line/project-b', overview_id: 'overview-b', archived: false }]
+  const moveBodies: string[] = []
+  const onClose = vi.fn()
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => projects }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => [page] }
+    if (url.endsWith('/moves')) { moveBodies.push(String(init?.body)); return { ok: true, status: 200, json: async () => ({}) } }
+    throw new Error(`Unexpected request ${url}`)
   })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<PageReader page={page} onClose={onClose} onReload={vi.fn(async () => {})} />)
+
+  fireEvent.change(await screen.findByLabelText('移动到项目'), { target: { value: 'project-b' } })
+  fireEvent.click(screen.getByRole('button', { name: '移动页面' }))
+  await waitFor(() => expect(onClose).toHaveBeenCalled())
+  expect(JSON.parse(moveBodies[0])).toMatchObject({ destination_relative_path: 'line/project-b/facts.md', operation_id: 'operation-id', structure_confirmation_id: 'operation-id' })
 })
