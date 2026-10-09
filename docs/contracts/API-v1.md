@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：实施基准，尚未实现 HTTP 服务。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：实施基准；M1.1–M1.3 路由已实现，其余路由按计划分阶段交付。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -48,14 +48,14 @@
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
 | POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |
 | POST /journal/{kind} | kind:log/thought，正文、可选关联、confirmation_id；复用 PageWriter，不另写落盘 |
-| POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型 |
-| POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节，汇报跳过文件 |
-| GET /intake/items | 可见待整理列表，不调用模型 |
-| POST /intake/jobs | 明确选择的 item_ids、operation_id → Job；允许模型，生成多个稿与 action |
-| GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消，保留已保存结果和未知外部状态 |
-| GET /drafts；GET /drafts/{id}；PATCH /drafts/{id} | 完整稿、差异、来源与冲突；编辑带稿件版本 |
-| POST /drafts/{id}/confirmations | confirmation_id、expected_base_sha256、重要冲突处理结果 → MutationResult |
-| GET /actions；POST /actions/{id}/executions | 明确批准的 action / payload hash、confirmation_id → Job / receipt |
+| POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型（已实现） |
+| POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节（已实现，20 MB 上限） |
+| GET /intake/items | 可见待整理列表，不调用模型（已实现） |
+| POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目 → Job；FakeLLM 生成多个稿与 action 候选（已实现） |
+| GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消（已实现；同步 provider 当前无法中断运行中的调用） |
+| GET /drafts；GET /drafts/{id}；PATCH /drafts/{id} | 完整稿、来源、冲突；编辑带稿件版本（已实现） |
+| POST /drafts/{id}/confirmations | confirmation_id、expected_version、重要冲突处理结果 → MutationResult（已实现） |
+| GET /actions；POST /actions/{id}/executions | 候选只读列表已实现；明确批准的 action / payload hash → Job / receipt 后续阶段 |
 | POST /actions | kind、payload、operation_id → proposed Action；供手动任务表单及项目进度建议使用，只保存本地候选，不执行外部写 |
 | POST /actions/{id}/reconciliations | 只读核实未知远端结果；没有证据时仍 unknown |
 | GET /integrations/feishu/status | 权限 / 登录状态，无 token 值 |

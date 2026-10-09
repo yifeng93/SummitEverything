@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-09：产品决议、架构契约、全 v1 实施计划、独立验收手册和交接提示词已建立。M1.1 已提供本地 FastAPI 工作库 API；WebUI、飞书连接和可安装 DMG 尚未实现。
+2026-10-09：M1.1–M1.3 本地后端切片已实现：工作库与组织管理、显式确认写入、原件收件队列、FakeLLM 整理任务和逐稿审核 API。WebUI、检索问答、飞书连接和可安装 DMG 尚未实现；阶段仍待独立验收。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -33,7 +33,7 @@ uv build
 
 当前测试只覆盖已实现的契约切片，不代表 M1 或产品验收通过。DMG / WebUI 构建命令将在相应阶段实现后补充。
 
-### 本地 API 开发预览（M1.1）
+### 本地 API 开发预览（M1.1–M1.3）
 
 设置一个随机的本机会话 token 后启动 FastAPI：
 
@@ -42,7 +42,7 @@ export SUMMIT_SESSION_TOKEN='replace-with-a-random-local-token'
 uv run uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 8793
 ~~~
 
-`GET http://127.0.0.1:8793/api/v1/health` 可检查 readiness；业务 API 需要 `Authorization: Bearer $SUMMIT_SESSION_TOKEN`。当前命令只启动本地后端，还没有 WebUI、启动器或安装包。
+`GET http://127.0.0.1:8793/api/v1/health` 可检查 readiness；业务 API 需要 `Authorization: Bearer $SUMMIT_SESSION_TOKEN`。本地 API 支持线 / 项目 / 页面、来源保存与列表、显式 FakeLLM 整理、完整稿编辑及用户确认。文件导入仅接受 UTF-8 文本内容的 TXT / Markdown，最大 20 MB。当前命令只启动本地后端，还没有 WebUI、启动器或安装包。
 
 ## 与原项目的关系
 

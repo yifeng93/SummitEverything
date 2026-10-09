@@ -6,19 +6,36 @@ from pathlib import Path
 from typing import Annotated, Any, cast
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+)
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from summit_everything.domain.models import (
+    ActionCandidate,
+    Draft,
+    IntakeItem,
+    IntakeJob,
     LineRecord,
     MutationResult,
     PageSnapshot,
     ProjectRecord,
     WorkspaceContext,
 )
+from summit_everything.intake.review import IntakeReviewService
+from summit_everything.intake.sources import IntakeService
+from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.workspace.manifest import (
     WorkspaceError,
     create_line,
@@ -90,6 +107,32 @@ class PageMove(RequestModel):
     structure_confirmation_id: str | None = None
 
 
+class IntakeTextRequest(RequestModel):
+    text: str = Field(min_length=1)
+    filename: str = Field(default="paste.txt", min_length=1)
+    operation_id: str = Field(min_length=1)
+
+
+class IntakeJobRequest(RequestModel):
+    item_ids: list[UUID] = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+    line_id: UUID
+    project_id: UUID
+
+
+class DraftPatchRequest(RequestModel):
+    expected_version: int = Field(ge=1)
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+
+
+class DraftConfirmationRequest(RequestModel):
+    expected_version: int = Field(ge=1)
+    confirmation_id: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+    conflict_resolutions: dict[str, str] = Field(default_factory=dict)
+
+
 class LoopbackOnly(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):  # type: ignore[no-untyped-def]
         request.state.request_id = secrets.token_hex(8)
@@ -102,7 +145,12 @@ class LoopbackOnly(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-def create_app(*, session_token: str | None = None, profile_root: Path | None = None) -> FastAPI:
+def create_app(
+    *,
+    session_token: str | None = None,
+    profile_root: Path | None = None,
+    review_service: IntakeReviewService | None = None,
+) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.add_middleware(LoopbackOnly)
     app.state.session_token = session_token or secrets.token_urlsafe(32)
@@ -110,6 +158,10 @@ def create_app(*, session_token: str | None = None, profile_root: Path | None = 
         profile_root or Path.home() / "Library/Application Support/SummitEverything"
     )
     app.state.workspace = None
+    intake_service = IntakeService()
+    review = review_service or IntakeReviewService(FakeLLM())
+    app.state.intake_service = intake_service
+    app.state.review_service = review
 
     def authenticated(authorization: str | None = Header(default=None)) -> None:
         expected = f"Bearer {app.state.session_token}"
@@ -148,6 +200,19 @@ def create_app(*, session_token: str | None = None, profile_root: Path | None = 
             content={
                 "error": {
                     "code": "version_conflict",
+                    "message": str(exc),
+                    "request_id": request.state.request_id,
+                }
+            },
+        )
+
+    @app.exception_handler(LLMProviderError)
+    async def provider_error_handler(request: Request, exc: LLMProviderError) -> JSONResponse:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": {
+                    "code": "provider_error",
                     "message": str(exc),
                     "request_id": request.state.request_id,
                 }
@@ -333,6 +398,115 @@ def create_app(*, session_token: str | None = None, profile_root: Path | None = 
             operation_id=payload.operation_id,
             structure_confirmation_id=payload.structure_confirmation_id,
         )
+
+    @app.post("/api/v1/intake/items", status_code=201, dependencies=[Depends(authenticated)])
+    def intake_text(
+        payload: IntakeTextRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> IntakeItem:
+        return intake_service.add_text(
+            Path(workspace.root),
+            payload.text,
+            filename=payload.filename,
+            operation_id=payload.operation_id,
+        )
+
+    @app.post("/api/v1/intake/files", status_code=201, dependencies=[Depends(authenticated)])
+    async def intake_file(
+        operation_id: Annotated[str, Form(min_length=1)],
+        file: Annotated[UploadFile, File()],
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> IntakeItem:
+        raw = await file.read(20 * 1024 * 1024 + 1)
+        if len(raw) > 20 * 1024 * 1024:
+            raise HTTPException(
+                status_code=413,
+                detail={"code": "file_too_large", "message": "File must be 20 MB or smaller"},
+            )
+        return intake_service.add_file(
+            Path(workspace.root),
+            raw,
+            filename=file.filename or "source.txt",
+            operation_id=operation_id,
+        )
+
+    @app.get("/api/v1/intake/items", dependencies=[Depends(authenticated)])
+    def intake_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[IntakeItem]:
+        return intake_service.list_items(Path(workspace.root))
+
+    @app.post("/api/v1/intake/jobs", status_code=201, dependencies=[Depends(authenticated)])
+    def intake_job_create(
+        payload: IntakeJobRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> IntakeJob:
+        return review.create_job(
+            Path(workspace.root),
+            payload.item_ids,
+            operation_id=payload.operation_id,
+            line_id=payload.line_id,
+            project_id=payload.project_id,
+        )
+
+    @app.get("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])
+    def intake_job_get(
+        job_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> IntakeJob:
+        return review.get_job(Path(workspace.root), job_id)
+
+    @app.delete("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])
+    def intake_job_cancel(
+        job_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> IntakeJob:
+        return review.cancel_job(Path(workspace.root), job_id)
+
+    @app.get("/api/v1/drafts", dependencies=[Depends(authenticated)])
+    def drafts(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[Draft]:
+        return review.list_drafts(Path(workspace.root))
+
+    @app.get("/api/v1/drafts/{draft_id}", dependencies=[Depends(authenticated)])
+    def draft_get(
+        draft_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> Draft:
+        return review.get_draft(Path(workspace.root), draft_id)
+
+    @app.patch("/api/v1/drafts/{draft_id}", dependencies=[Depends(authenticated)])
+    def draft_patch(
+        draft_id: UUID,
+        payload: DraftPatchRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Draft:
+        return review.edit_draft(
+            Path(workspace.root),
+            draft_id,
+            expected_version=payload.expected_version,
+            title=payload.title,
+            body=payload.body,
+        )
+
+    @app.post("/api/v1/drafts/{draft_id}/confirmations", dependencies=[Depends(authenticated)])
+    def draft_confirmation(
+        draft_id: UUID,
+        payload: DraftConfirmationRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        return review.confirm_draft(
+            Path(workspace.root),
+            draft_id,
+            expected_version=payload.expected_version,
+            confirmation_id=payload.confirmation_id,
+            operation_id=payload.operation_id,
+            conflict_resolutions=payload.conflict_resolutions,
+        )
+
+    @app.get("/api/v1/actions", dependencies=[Depends(authenticated)])
+    def action_candidates(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[ActionCandidate]:
+        return review.list_actions(Path(workspace.root))
 
     return app
 

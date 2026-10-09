@@ -63,3 +63,59 @@ class MutationResult(BaseModel):
     changed_paths: list[str]
     page_versions: dict[str, str] = Field(default_factory=dict)
     saved_locally: bool = True
+
+
+class SourceRecord(OpenModel):
+    source_id: UUID
+    role: Literal["source"] = "source"
+    original_relative_path: str
+    filename: str
+    sha256: str
+    created_at: datetime
+
+
+class IntakeItem(OpenModel):
+    item_id: UUID
+    source_id: UUID
+    title: str
+    filename: str
+    original_relative_path: str
+    created_at: datetime
+    state: Literal["pending", "processing", "completed", "cancelled"] = "pending"
+
+
+class Draft(OpenModel):
+    draft_id: UUID
+    input_ids: list[UUID]
+    target_page_id: UUID | None = None
+    metadata: dict[str, Any]
+    body: str
+    expected_base_sha256: str | None = None
+    important_conflicts: list[dict[str, Any]] = Field(default_factory=list)
+    action_suggestions: list[dict[str, Any]] = Field(default_factory=list)
+    conflict_resolutions: dict[str, Literal["adopt", "unresolved"]] = Field(default_factory=dict)
+    source_ids: list[UUID]
+    state: Literal["pending", "confirmed", "cancelled"] = "pending"
+    created_at: datetime
+    version: int = 1
+
+
+class IntakeJob(OpenModel):
+    job_id: UUID
+    item_ids: list[UUID]
+    request_hash: str
+    state: Literal["running", "completed", "failed", "cancelled"]
+    draft_ids: list[UUID] = Field(default_factory=list)
+    action_candidates: list[dict[str, Any]] = Field(default_factory=list)
+    error: str | None = None
+    created_at: datetime
+
+
+class ActionCandidate(OpenModel):
+    action_id: UUID
+    kind: Literal["todo", "progress_change"]
+    description: str
+    related_project_id: UUID | None = None
+    state: Literal["proposed"] = "proposed"
+    source_draft_id: UUID
+    created_at: datetime
