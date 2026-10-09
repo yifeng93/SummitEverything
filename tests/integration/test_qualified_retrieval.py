@@ -8,7 +8,12 @@ from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
-from summit_everything.workspace.manifest import create_line, create_project, create_workspace
+from summit_everything.workspace.manifest import (
+    WorkspaceError,
+    create_line,
+    create_project,
+    create_workspace,
+)
 from summit_everything.workspace.reader import list_pages
 from summit_everything.workspace.writer import PageWriter
 
@@ -158,6 +163,73 @@ def test_unchanged_chunks_reuse_embedding_and_plan_reports_cost(tmp_path: Path) 
     assert second.reused_chunks == first.indexed_chunks
     assert embedding.calls == calls_after_first_build
     assert second.active_fingerprint == "fake-v1"
+
+
+def test_archiving_project_keeps_its_confirmed_knowledge_searchable(tmp_path: Path) -> None:
+    from summit_everything.workspace.manifest import delete_project, update_project
+
+    root, _line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    page_id, _ = approve_page(
+        root,
+        _line_id,
+        project_id,
+        body="雪松案例的最终交付地点是东馆。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    update_project(
+        root,
+        UUID(project_id),
+        name=None,
+        archived=True,
+        operation_id="archive-project",
+    )
+    answer = retrieval.query(
+        root, "雪松案例最终交付地点", fingerprint="fake-v1", purpose=RetrievalPurpose.CURRENT
+    )
+
+    assert answer.citations
+    assert answer.citations[0].page_id == page_id
+    assert "东馆" in answer.text
+    try:
+        delete_project(root, UUID(project_id), "delete-nonempty-project")
+    except WorkspaceError as error:
+        assert error.status_code == 409
+    else:
+        raise AssertionError("a nonempty archived project was deleted")
+
+
+def test_current_and_history_queries_label_superseded_knowledge(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    superseded_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="旧合同版本的付款日是六月一日。",
+        title="旧付款安排",
+        metadata_extra={"validity": "superseded"},
+    )
+    current_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="现行合同版本的付款日是七月一日。",
+        title="现行付款安排",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    current = retrieval.query(
+        root, "合同版本付款日六月一日", fingerprint="fake-v1", purpose=RetrievalPurpose.CURRENT
+    )
+    history = retrieval.query(
+        root, "合同版本付款日六月一日", fingerprint="fake-v1", purpose=RetrievalPurpose.HISTORY
+    )
+
+    assert superseded_id not in {citation.page_id for citation in current.citations}
+    old_citation = next(c for c in history.citations if c.page_id == superseded_id)
+    assert old_citation.validity == "superseded"
 
 
 def test_neighbor_pages_are_rechecked_before_they_become_citations(tmp_path: Path) -> None:

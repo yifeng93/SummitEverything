@@ -16,6 +16,7 @@ from uuid import UUID
 import yaml
 
 from summit_everything.domain.content import (
+    RetrievalPurpose,
     StorageArea,
     content_sha256,
     retrieval_eligibility,
@@ -481,6 +482,11 @@ class PageWriter:
             approved_metadata,
             clean_body,
             area=StorageArea.FORMAL,
+            purpose=(
+                RetrievalPurpose.HISTORY
+                if approved_metadata.get("validity") == "superseded"
+                else RetrievalPurpose.CURRENT
+            ),
         )
         if not eligibility.eligible:
             raise WorkspaceError(f"Page cannot be confirmed: {eligibility.reason}")
