@@ -81,3 +81,11 @@ DeepSeek、Qwen embedding 和 Qwen rerank 是独立 provider。Qwen 3.7 重排�
 使用 uv.lock、前端 lockfile 和可复现打包。只引入本阶段实际需要的依赖；不为换技术而重写已验证算法，也不为复用而搬入旧架构。
 
 M4 强制构建 WebUI 后打包；包内记录应用版本、build、源码提交 / dirty、前端指纹及必要依赖清单。新 bundle / profile 与旧应用隔离；首次交付内部 DMG，不自动覆盖旧安装或发布更新 feed。
+
+## M2.1 Fake 飞书边界
+
+`integrations/feishu/provider.py` 定义配置、user 凭据接口与 DTO；`fake.py` 提供无网络合成分页、文件和日程；`service.py` 实现本机会话 state、权限门禁、响应验证及选择导入。API 通过 create_app 参数注入 provider/store/config，默认 Fake + MemoryCredentialStore；配置 mode 只接受 fake，启动环境不能切换真实实现。不存在真实 OAuth / Feishu HTTP 客户端。
+
+OAuth state 只在本进程内保存，绑定本次服务会话 token 的身份，超时与消费由锁保护。callback 地址精确匹配配置；不为了开发端口重写用户注册地址。凭据不进入工作库或浏览器。SourceStore 的 optional external_identity 在 source record 与可恢复意图中保留，手写输入继续使用原幂等 hash 规则。
+
+材料导入以规范化 ID 集合 hash 认领 journal；独立导入文件锁串行化同库批次，原件写入仍使用 SourceStore 的库身份锁和原子恢复。已保存 source/item 在恢复时按稳定 ID 复用，不再次拉取正文；每项完成结果随后保存，完成 receipt 重放不依赖授权或网络。工作库保留此业务来源 / 意图证据；token 与 OAuth state 均不同步。

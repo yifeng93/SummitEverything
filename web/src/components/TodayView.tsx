@@ -1,3 +1,4 @@
+import { FeishuPanel } from './FeishuPanel'
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   api,
@@ -165,6 +166,7 @@ export function TodayView({ onError }: Props) {
 
       <div className="today-grid">
         <div className="today-main">
+          <FeishuPanel onImported={refresh} />
           <section className="panel capture-panel">
             <div className="panel-heading"><div><h2>随手记</h2><p>记录原文不会调用模型，也不会自动写入正式知识。</p></div><span className="panel-index">01</span></div>
             <form onSubmit={saveIntake}>

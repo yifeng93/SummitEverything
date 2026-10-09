@@ -69,3 +69,11 @@ Must FAIL、未关闭 P0 / P1 阻止相关阶段通过。真实门未测时只�
 缺陷写：阶段、代码 SHA、案例 ID、严重度、最小材料、复现步骤、预期 / 实际、证据、建议边界。
 
 测试者可增加独立黑盒测试，但不改产品代码，不因为实现现状而改期望。实现者修复并提交新 SHA；新报告标明修复项及受影响回归，旧报告保留。
+
+## M2.1 Fake 复验（C15 与日历）
+
+启动与完整检查命令见 README 的 M2.1 节；使用空的隔离工作库。点击模拟授权，搜索并筛选 owner/shared，换页选定材料、取消选择；确认列表不产生 intake/job/draft/page。再只导入所选，读取 sources API 并核对原字节、SHA-256 与 external_identity；检查队列为 pending、仍无稿件 / 页面。重放 operation_id 不重复原件，换 payload 必须 409。日历明确指定 2026-10-09 至 2026-10-10 与 Asia/Shanghai，检查日程 / 空态 / 分页。
+
+`tests/integration/test_feishu.py` 使用真实 API / SourceStore / 隔离库，外部边界 Fake：多页、空页、visibility、只取选择正文、失败逐项、denied/expired/scope/404/malformed/timeout/unavailable、UTF-8 / 类型 / 安全文件名 / 大小、state 重放 / 到期 / 跨运行 / callback 地址 / Origin、授权 Bearer 门、重启幂等及原件写后中断恢复。`FeishuPanel.test.tsx` 覆盖真实组件的失败授权、分页选择、部分结果、取消与日历空 / 错误态。
+
+实现者自测不填写独立 QA 通过。真实 Feishu 用户权限、账户登录、真实材料与钥匙串持久化均未测；任务写属于 M2.2。

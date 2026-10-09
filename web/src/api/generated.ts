@@ -454,6 +454,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/integrations/feishu/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Status */
+        get: operations["feishu_status_api_v1_integrations_feishu_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/authorizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Feishu Authorize */
+        post: operations["feishu_authorize_api_v1_integrations_feishu_authorizations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Callback */
+        get: operations["feishu_callback_api_v1_integrations_feishu_callback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/materials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Materials */
+        get: operations["feishu_materials_api_v1_integrations_feishu_materials_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Feishu Imports */
+        post: operations["feishu_imports_api_v1_integrations_feishu_imports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Calendar */
+        get: operations["feishu_calendar_api_v1_integrations_feishu_calendar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -493,12 +595,45 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** AuthorizationStart */
+        AuthorizationStart: {
+            /** Authorization Url */
+            authorization_url: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+        };
         /** Body_intake_file_api_v1_intake_files_post */
         Body_intake_file_api_v1_intake_files_post: {
             /** Operation Id */
             operation_id: string;
             /** File */
             file: string;
+        };
+        /** CalendarEvent */
+        CalendarEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+            /**
+             * End
+             * Format: date-time
+             */
+            end: string;
+        };
+        /** CalendarPage */
+        CalendarPage: {
+            /** Items */
+            items: components["schemas"]["CalendarEvent"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+            /** Timezone */
+            timezone: string;
         };
         /** Draft */
         Draft: {
@@ -578,10 +713,58 @@ export interface components {
             /** Expected Base Sha256 */
             expected_base_sha256?: string | null;
         };
+        /** FeishuStatus */
+        FeishuStatus: {
+            /**
+             * Mode
+             * @default fake
+             */
+            mode: string;
+            /** Authorized */
+            authorized: boolean;
+            /**
+             * Token Type
+             * @default user
+             */
+            token_type: string;
+            /** Scopes */
+            scopes: string[];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ImportOutcome */
+        ImportOutcome: {
+            /** Material Id */
+            material_id: string;
+            /** State */
+            state: string;
+            /** Item Id */
+            item_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /** Message */
+            message?: string | null;
+        };
+        /** ImportRequest */
+        ImportRequest: {
+            /** Material Ids */
+            material_ids: string[];
+            /** Operation Id */
+            operation_id: string;
+        };
+        /** ImportResult */
+        ImportResult: {
+            /** Operation Id */
+            operation_id: string;
+            /** State */
+            state: string;
+            /** Outcomes */
+            outcomes: components["schemas"]["ImportOutcome"][];
         };
         /** IndexPlan */
         IndexPlan: {
@@ -784,6 +967,36 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** Material */
+        Material: {
+            /** Material Id */
+            material_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Kind
+             * @default minute
+             * @constant
+             */
+            kind: "minute";
+            /**
+             * Visibility
+             * @enum {string}
+             */
+            visibility: "owner" | "shared";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** MaterialPage */
+        MaterialPage: {
+            /** Items */
+            items: components["schemas"]["Material"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
         /** MutationResult */
         MutationResult: {
             /** Operation Id */
@@ -949,6 +1162,10 @@ export interface components {
         };
         /** SourceRecord */
         SourceRecord: {
+            /** External Identity */
+            external_identity?: {
+                [key: string]: string;
+            } | null;
             /**
              * Source Id
              * Format: uuid
@@ -2213,6 +2430,209 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_status_api_v1_integrations_feishu_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeishuStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_authorize_api_v1_integrations_feishu_authorizations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthorizationStart"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_callback_api_v1_integrations_feishu_callback_get: {
+        parameters: {
+            query: {
+                state: string;
+                code?: string | null;
+                error?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeishuStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_materials_api_v1_integrations_feishu_materials_get: {
+        parameters: {
+            query?: {
+                query?: string;
+                visibility?: ("owner" | "shared") | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_imports_api_v1_integrations_feishu_imports_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_calendar_api_v1_integrations_feishu_calendar_get: {
+        parameters: {
+            query: {
+                start: string;
+                end: string;
+                timezone: string;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarPage"];
                 };
             };
             /** @description Validation Error */
