@@ -6,8 +6,8 @@
 - **Product baseline:** `docs/product/PRODUCT-SPEC.md`, decisions confirmed 2026-10-09.
 - **Fixed code SHA:** `7b41ca272b14c38a7b6ebf0e9766766749ccf001`.
 - **Branch:** `codex/project-foundation`.
-- **Working tree at handoff:** clean. The SHA is a local commit; it has not been pushed.
-- **Prior independent QA:** report `docs/quality/reports/2026-10-09-M1-f364c01.md`, report commit `c4f755f648324bf714000e2765fa99917909692b`, tested the old implementation SHA `f364c0122a1a74580009bf9342e6e864df6d975d`. It reported C08/C10 FAIL and C03/C06/C13/C14 incomplete. That report remains valid for its fixed SHA; it is not a result for this remediation SHA.
+- **Implementation commit:** the fixed code SHA is the implementation checkpoint; later documentation commits on this branch record QA history and handoff updates.
+- **Prior independent QA:** two reports test the old implementation SHA `f364c0122a1a74580009bf9342e6e864df6d975d`. `docs/quality/reports/2026-10-09-M1-f364c01.md` (commit `c4f755f648324bf714000e2765fa99917909692b`) reports C08/C10 FAIL and C03/C06/C13/C14 incomplete. `docs/quality/reports/2026-10-09-M1.1-M1.5-f364c01.md` (commit `51b3654`) reports C05/C06/C13 FAIL, C08/C10 PASS, and C03/C07/C11/C12/C14 incomplete. The reports disagree on some case outcomes and remain separate evidence for their fixed SHA; neither is a result for this remediation SHA.
 - **Independent review of this SHA:** not run. Do not mark M1 QA passed based on the self-check below.
 
 ## Remediation summary
