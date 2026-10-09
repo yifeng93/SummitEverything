@@ -65,6 +65,13 @@ def test_workspace_creation_retry_reuses_the_same_identity(tmp_path: Path) -> No
 
     assert first.status_code == retry.status_code == 201
     assert retry.json()["workspace_id"] == first.json()["workspace_id"]
+    different_payload = {**payload, "name": "Different name"}
+    conflict = api.post(
+        "/api/v1/workspaces",
+        headers={"Authorization": f"Bearer {TOKEN}"},
+        json=different_payload,
+    )
+    assert conflict.status_code == 409
 
 
 def test_workspace_mutations_require_session_token(tmp_path: Path) -> None:
