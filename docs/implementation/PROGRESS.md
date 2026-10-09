@@ -5,7 +5,7 @@
 | 阶段 | 实施状态 | 独立验收 | 备注 |
 |---|---|---|---|
 | Foundation | 本轮完成文档与核心门禁骨架，自检证据见报告 | 尚未独立验收 | 没有应用服务 / UI / DMG |
-| M1 本地闭环 | 进行中 | 未开始 | M1.1–M1.3 DEV 切片已提交，继续推进 M1.4–M1.5 |
+| M1 本地闭环 | 进行中 | 未开始 | M1.1–M1.4 DEV 切片已提交，继续推进 M1.5 |
 | M2 飞书 / 日常 | 未开始 | 未开始 | 真实权限与写动作门独立记录 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
@@ -30,8 +30,9 @@
 | M1.1 DTO、库打开、组织管理 | DEV完成待验收 | `005e7a4`（本地提交） | `uv run pytest -q`：32 passed；ruff、mypy、`uv lock --check`、`uv build` 均退出 0。契约测试覆盖 C02 的临时库创建 / legacy 拒绝 / 初始化重试 / 组织改名 / 页面归属校验部分。 | 合成线、项目和页面；没有真实业务内容或外部调用 | 仅 M1.1；不代表 M1 DEV 门或 C02 全场景通过。TestClient 有 Starlette 关于 httpx 的弃用提示，待依赖更新评估。 |
 | M1.2 可靠本地写入与用户确认 | DEV完成待验收 | `ce650ba0516b36753aeb94b246cdc1714a8901e8` | 当前完整自动套件 `uv run pytest -q`：50 passed；ruff、mypy、`uv lock --check`、`uv build` 均退出 0。集成覆盖批准写入、过期基准拒绝、幂等、原子多文件恢复、移动与相对链接维护。 | 全部为临时隔离库与合成事实；无真实 provider / 飞书动作 | 未填写独立验收结果。模拟检查不等于 M1 DEV 门完成。 |
 | M1.3 来源、随手记录和多稿整理 | DEV完成待验收 | `4a1fc293bbc6520cb6819cbc1902f53841cc6fea` | `uv run pytest -q`：59 passed；ruff、mypy、`uv lock --check`、`uv build` 均退出 0。覆盖原字节保存、TXT/MD 与 UTF-8 限制、零模型读取、显式 FakeLLM 多稿、malformed/timeout 边界、冲突分项处理、逐稿确认、仅候选 action、本机 API 流程。 | 临时隔离库、合成文本与 FakeLLM；无真实模型或飞书调用 | 作业运行中断后保留 running 状态；同步 Fake provider 调用不能运行时取消。Starlette TestClient/httpx 弃用提示仍存在。没有 UI。 |
+| M1.4 增量索引、问答与引用门禁 | DEV完成待验收 | `0aae5a2718a792b7e9b35afaf401987ed1d9ccaa` | `uv run pytest -q`：64 passed；ruff、mypy、`uv lock --check`、`uv build` 均退出 0。覆盖 source/draft 排除、中文多候选检索、外部编辑及重新批准的旧 chunk 拒绝、邻页复验、分块嵌入复用、过期计划拒绝、model-change 失败保留旧索引。 | SQLite 位于隔离 profile；Fake embedding / rerank / answer，无网络模型或费用 | M1.4 service 尚未接到 WebUI/API；历史 purpose 沿共享门禁实现但需进一步外部复验。Starlette 弃用提示仍存在。 |
 
-下一步：M1.4 增量索引、基本问答与引用，再推进 M1.5 WebUI。M1.1–M1.3 等待独立 QA，M1 独立 QA 尚未运行。
+下一步：M1.5 将检索、知识浏览、随手记、待整理和稿件审核接入 WebUI，形成 M1 本地闭环。M1.1–M1.4 等待独立 QA，M1 独立 QA 尚未运行。
 
 ## 更新格式
 
