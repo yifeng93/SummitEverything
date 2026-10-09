@@ -89,7 +89,8 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] 按复用地图吸收 SK 分块 / SQLite / 混合召回；重写所有旧目录与 type 判断。
 - [x] 测试：原件与无批准页零召回；外部修改立即阻止旧片段；新版本批准后旧 chunk 仍拒绝；邻页及引用同样受检；不变分块不重复嵌入。
 - [x] 实现显式首次 / full / model_change 计划和费用估计，批准变化自动增量；不同 fingerprint 不混用，重建失败不破坏旧代。
-- [x] Fake embedding / rerank / answer 完成可复验闭环；真实 provider adapter 按独立协议实现，真实质量测试另列授权门。
+- [x] Fake embedding / rerank / answer 完成可复验闭环。
+- [ ] 真实 provider adapter 按独立协议实现；真实质量测试另列授权门。
 
 ### M1.5：真实 WebUI 与首个可运行应用
 
