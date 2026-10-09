@@ -6,7 +6,7 @@
 - **固定代码 SHA：** `73ec81a06f2557c006f98ff88fa81b08d14ef315`。
 - **分支：** `codex/m1-close`。
 - **材料边界：** 只用隔离模拟工作库与 Fake providers；没有导入真实“场地与酒店”材料、付费模型或真实飞书。
-- **自测证据：** `.local/m1-close/evidence/dev-self-check.md`（忽略文件，只保留在此 worktree；摘要同时记录于本交接）。
+- **DEV 自测记录：** [2026-10-09-M1-close-DEV.md](../quality/reports/2026-10-09-M1-close-DEV.md)（已提交，不是独立 QA 报告）。详细隔离运行记录另保存在 ignored `.local/m1-close/evidence/dev-self-check.md`。
 - **独立 QA：** 尚未运行。不得用执行者自测、浏览器复演或旧报告替代独立结论。
 
 ## 修复摘要
