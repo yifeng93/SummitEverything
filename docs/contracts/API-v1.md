@@ -9,6 +9,7 @@
 - Action：action_id、kind（feishu_task_create / feishu_task_update / feishu_task_complete / project_progress）、payload、payload_sha256、state、confirmation_id、provider_result。
 - MutationResult：operation_id、state、changed_paths、page_versions、saved_locally。没有自动 cloud_synced 字段。
 - Job：job_id、kind、state（queued / running / succeeded / failed / unknown / cancelled）、progress、result、error。进度不虚构百分比，取消不保证远端未计费。
+- IntakeItem：item_id、source_id、title、filename、original_relative_path、state（pending / processing / reviewing / completed / failed / cancelled）、latest_job_id。状态反映最新整理作业与其稿件，不由前端猜测。
 - Citation：page_id、content_sha256、chunk_id、heading、excerpt、validity；客户端用稳定页面路由打开，不信任任意文件 URL。
 - Answer：answer_id、question、text、citations、inferences、missing_information、purpose、index_status。infer / advice 不伪装来源事实。
 
@@ -51,7 +52,7 @@
 | POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型（已实现） |
 | POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节（已实现，20 MB 上限） |
 | GET /intake/items | 可见待整理列表，不调用模型（已实现） |
-| POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目 → Job；FakeLLM 生成多个稿与 action 候选（已实现） |
+| POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目、可选 reprocess=true → Job；FakeLLM 生成多个稿与 action 候选（已实现）。有未审核稿或正在运行的来源拒绝新作业；完成、失败、取消的来源必须由用户明确选择重新整理，且使用新的 operation_id。相同 operation_id 重试只返回原作业状态，不重复调用 provider。 |
 | GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消（已实现；同步 provider 当前无法中断运行中的调用） |
 | GET /drafts；GET /drafts/{id}；PATCH /drafts/{id} | 完整稿、来源、冲突；编辑带稿件版本（已实现） |
 | POST /drafts/{id}/confirmations | confirmation_id、expected_version、重要冲突处理结果 → MutationResult（已实现） |
@@ -86,6 +87,8 @@
 在聚合上下文、邻页扩展和引用阶段读取 PageSnapshot，再用统一 gate 加缓存版本复验。索引未就绪或部分更新时返回 index_status，不能用旧片段补齐缺失证据。
 
 用户角色与记忆只改变问答上下文 / 表达，不允许去掉证据边界、执行写动作或把助手建议写入正式页。
+
+冲突稿必须逐项选择一个已展示的依据或明确标为 unresolved；正式正文会附加“冲突处理结果”，记录选择或说明未决尚未成为确定事实。确认页与已确认稿件保存同一最终正文。
 
 ## 对接测试边界
 

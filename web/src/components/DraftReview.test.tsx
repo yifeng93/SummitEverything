@@ -75,3 +75,25 @@ it('shows a changed target and requires an explicit current-version baseline bef
     body: draft.body,
   })
 })
+
+it('previews how an unresolved conflict will be recorded in the confirmed page', () => {
+  const draft = {
+    draft_id: 'conflict-draft',
+    input_ids: ['input-id'],
+    target_page_id: null,
+    metadata: { id: 'conflict-draft', title: '状态事实', role: 'knowledge', kind: 'topic' },
+    body: '原文中的状态仍不明确。',
+    expected_base_sha256: null,
+    important_conflicts: [{ id: 'status-conflict', question: '状态是否已确认？', alternatives: ['已确认', '仍待确认'] }],
+    action_suggestions: [],
+    conflict_resolutions: {},
+    source_ids: ['source-id'],
+    state: 'pending',
+    created_at: '2026-10-09T00:00:00Z',
+    version: 1,
+  } as Draft
+  render(<DraftReview draft={draft} pages={[]} onError={vi.fn()} onConfirmed={vi.fn()} onUpdated={vi.fn()} />)
+
+  fireEvent.click(screen.getByLabelText(/暂时未决/))
+  expect(screen.getByLabelText('确认结果预览').textContent).toContain('状态是否已确认？：暂时未决')
+})

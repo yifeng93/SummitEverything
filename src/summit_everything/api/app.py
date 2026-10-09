@@ -127,6 +127,7 @@ class IntakeJobRequest(RequestModel):
     operation_id: str = Field(min_length=1)
     line_id: UUID
     project_id: UUID
+    reprocess: bool = False
 
 
 class DraftPatchRequest(RequestModel):
@@ -187,8 +188,11 @@ def create_app(
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.add_middleware(LoopbackOnly)
     app.state.session_token = session_token or secrets.token_urlsafe(32)
-    app.state.profile_root = (
-        profile_root or Path.home() / "Library/Application Support/SummitEverything"
+    app.state.profile_root = profile_root or Path(
+        os.environ.get(
+            "SUMMIT_PROFILE_ROOT",
+            str(Path.home() / "Library/Application Support/SummitEverything"),
+        )
     )
     app.state.workspace = None
     intake_service = IntakeService()
@@ -286,7 +290,12 @@ def create_app(
     @app.get("/api/v1/health")
     def health() -> dict[str, str | bool]:
         workspace = app.state.workspace
-        return {"service": "ready", "workspace_open": workspace is not None, "version": "1.0.0"}
+        return {
+            "service": "ready",
+            "workspace_open": workspace is not None,
+            "version": "1.0.0",
+            "run_id": os.environ.get("SUMMIT_RUN_ID", "unmanaged"),
+        }
 
     @app.post("/api/v1/workspaces", status_code=201, dependencies=[Depends(authenticated)])
     def workspace_open(payload: WorkspaceRequest) -> WorkspaceContext:
@@ -522,6 +531,7 @@ def create_app(
             operation_id=payload.operation_id,
             line_id=payload.line_id,
             project_id=payload.project_id,
+            reprocess=payload.reprocess,
         )
 
     @app.get("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])

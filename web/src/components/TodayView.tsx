@@ -127,6 +127,7 @@ export function TodayView({ onError }: Props) {
   async function organize() {
     if (!selected.length || !selectedLineId || !selectedProjectId) return
     const key = 'job:' + selected.slice().sort().join(',')
+    const reprocess = items.some((item) => selected.includes(item.item_id) && item.state !== 'pending')
     setBusy(true)
     try {
       await api.post('/intake/jobs', {
@@ -134,11 +135,14 @@ export function TodayView({ onError }: Props) {
         line_id: selectedLineId,
         project_id: selectedProjectId,
         operation_id: operation(key),
+        reprocess,
       })
       finish(key)
       setSelected([])
       await refresh()
     } catch (cause) {
+      finish(key)
+      await refresh()
       onError(cause instanceof Error ? cause.message : '无法整理所选来源')
     } finally {
       setBusy(false)
@@ -146,6 +150,8 @@ export function TodayView({ onError }: Props) {
   }
 
   const active = drafts.find((draft) => draft.draft_id === activeDraft) ?? null
+  const selectedItems = items.filter((item) => selected.includes(item.item_id))
+  const reprocessing = selectedItems.some((item) => item.state !== 'pending')
   const selectedLineId = lineId || lines[0]?.id || ''
   const availableProjects = projects.filter((project) => project.line_id === selectedLineId && !project.archived)
   const selectedProjectId = projectId || availableProjects[0]?.id || ''
@@ -187,10 +193,10 @@ export function TodayView({ onError }: Props) {
                   {items.map((item) => (
                     <li key={item.item_id}>
                       <label className="source-row">
-                        <input type="checkbox" checked={selected.includes(item.item_id)} onChange={(event) => setSelected((current) => event.target.checked ? [...current, item.item_id] : current.filter((id) => id !== item.item_id))} />
+                        <input type="checkbox" checked={selected.includes(item.item_id)} disabled={item.state === 'processing' || item.state === 'reviewing'} onChange={(event) => setSelected((current) => event.target.checked ? [...current, item.item_id] : current.filter((id) => id !== item.item_id))} />
                         <span className="file-glyph" aria-hidden="true">文</span>
                         <span className="source-title"><strong>{item.title}</strong><small>{item.filename} · {new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span>
-                        <span className="status-label">待处理</span>
+                        <span className="status-label">{{pending: '待整理', processing: '整理中', reviewing: '待审核', completed: '已完成', failed: '整理失败', cancelled: '已取消'}[item.state]}</span>
                       </label>
                     </li>
                   ))}
@@ -198,8 +204,9 @@ export function TodayView({ onError }: Props) {
                 <div className="organize-row">
                   <label className="compact-field"><span>主线</span><select value={selectedLineId} onChange={(event) => { setLineId(event.target.value); setProjectId('') }}><option value="">选择主线</option>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label>
                   <label className="compact-field"><span>项目</span><select value={selectedProjectId} onChange={(event) => setProjectId(event.target.value)}><option value="">选择项目</option>{availableProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
-                  <button className="button primary" disabled={!selected.length || !selectedProjectId || busy} onClick={organize}>整理所选 · {selected.length}</button>
+                  <button className="button primary" disabled={!selected.length || !selectedProjectId || busy || selectedItems.some((item) => item.state === 'processing' || item.state === 'reviewing')} onClick={organize}>{reprocessing ? '重新整理所选' : '整理所选'} · {selected.length}</button>
                 </div>
+                {reprocessing && <p className="helper-line">已处理的来源会再次调用整理流程并生成新稿；原件与既有稿件会保留。</p>}
                 {(!lines.length || !availableProjects.length) && <p className="helper-line">整理前请先在“项目与知识”建立主线和项目。</p>}
               </>
             )}

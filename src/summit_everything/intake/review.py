@@ -18,15 +18,35 @@ from summit_everything.domain.models import (
     IntakeJob,
     MutationResult,
 )
+from summit_everything.intake.sources import SourceStore
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.reader import read_page
-from summit_everything.workspace.transactions import atomic_write
+from summit_everything.workspace.transactions import atomic_write, workspace_lock
 from summit_everything.workspace.writer import PageWriter, WorkspaceWriteConflict
 
 
 def _state_root(root: Path) -> Path:
     return root / ".summit-everything"
+
+
+def _conflict_outcome_body(draft: Draft, resolutions: dict[str, str]) -> str:
+    if not draft.important_conflicts:
+        return draft.body
+
+    def plain_text(value: str) -> str:
+        return " ".join(value.replace("`", "'").split())
+
+    lines = ["## 冲突处理结果"]
+    for conflict in draft.important_conflicts:
+        question = plain_text(str(conflict["question"]))
+        choice = resolutions[str(conflict["id"])]
+        if choice == "unresolved":
+            alternatives = "；".join(plain_text(str(value)) for value in conflict["alternatives"])
+            lines.append(f"- {question}：暂时未决，尚未作为确定事实；可选依据：{alternatives}。")
+        else:
+            lines.append(f"- {question}：用户选择采用：{plain_text(choice)}。")
+    return f"{draft.body.rstrip()}\n\n" + "\n".join(lines) + "\n"
 
 
 @contextmanager
@@ -56,6 +76,7 @@ class IntakeReviewService:
         operation_id: str,
         line_id: UUID,
         project_id: UUID,
+        reprocess: bool = False,
     ) -> IntakeJob:
         root = root.resolve()
         if not operation_id.strip() or not item_ids or len(set(item_ids)) != len(item_ids):
@@ -65,55 +86,77 @@ class IntakeReviewService:
         if project is None or project.line_id != line_id or project.archived:
             raise WorkspaceError("Choose an active project in the selected line")
         job_id = uuid5(manifest.workspace_id, f"intake-job:{operation_id}")
+        request: dict[str, object] = {
+            "item_ids": [str(item_id) for item_id in item_ids],
+            "line_id": str(line_id),
+            "project_id": str(project_id),
+        }
+        if reprocess:
+            request["reprocess"] = True
         request_hash = hashlib.sha256(
             json.dumps(
-                {
-                    "item_ids": [str(item_id) for item_id in item_ids],
-                    "line_id": str(line_id),
-                    "project_id": str(project_id),
-                },
+                request,
                 sort_keys=True,
                 separators=(",", ":"),
             ).encode("utf-8")
         ).hexdigest()
         jobs_root = _state_root(root) / "intake" / "jobs"
         job_path = jobs_root / f"{job_id}.json"
-        if job_path.exists():
-            prior = IntakeJob.model_validate_json(job_path.read_text(encoding="utf-8"))
-            if prior.request_hash != request_hash:
-                raise WorkspaceWriteConflict("Job operation ID was reused for different inputs")
-            return prior
-        items = self._load_items(root)
-        selected = [items.get(item_id) for item_id in item_ids]
-        if any(item is None or item.state != "pending" for item in selected):
-            raise WorkspaceError("Every selected intake item must be pending")
-        inputs: list[tuple[UUID, UUID, str]] = []
-        for item in selected:
-            assert item is not None
-            source_path = (root / item.original_relative_path).resolve()
-            if not source_path.is_relative_to(root) or not source_path.is_file():
-                raise WorkspaceError("An intake original is missing or outside the workspace")
-            source_bytes = source_path.read_bytes()
-            source_id, source_digest = self._source_identity(root, item.source_id)
-            if (
-                source_id != item.source_id
-                or hashlib.sha256(source_bytes).hexdigest() != source_digest
-            ):
-                raise WorkspaceError("An intake original no longer matches its source record")
-            try:
-                text = source_bytes.decode("utf-8")
-            except UnicodeDecodeError as exc:
-                raise WorkspaceError("Only UTF-8 text sources can be organized") from exc
-            inputs.append((item.item_id, item.source_id, text))
-        job = IntakeJob(
-            job_id=job_id,
-            item_ids=item_ids,
-            request_hash=request_hash,
-            state="running",
-            created_at=datetime.now(UTC),
-        )
-        jobs_root.mkdir(parents=True, exist_ok=True)
-        atomic_write(job_path, job.model_dump_json(indent=2).encode())
+        with workspace_lock(root):
+            if job_path.exists():
+                prior = IntakeJob.model_validate_json(job_path.read_text(encoding="utf-8"))
+                if prior.request_hash != request_hash:
+                    raise WorkspaceWriteConflict("Job operation ID was reused for different inputs")
+                return prior
+            items = self._load_items(root)
+            selected = [items.get(item_id) for item_id in item_ids]
+            if any(item is None for item in selected):
+                raise WorkspaceError("Every selected intake item must exist")
+            source_store = SourceStore()
+            for item in selected:
+                assert item is not None
+                state = source_store.derived_state(root, item)
+                if state in {"processing", "reviewing"}:
+                    raise WorkspaceError(
+                        "This source already has an active job or drafts awaiting review"
+                    )
+                if state != "pending" and not reprocess:
+                    raise WorkspaceError(
+                        "This source was already processed; explicitly choose reprocess "
+                        "to organize it again"
+                    )
+            inputs: list[tuple[UUID, UUID, str]] = []
+            for item in selected:
+                assert item is not None
+                source_path = (root / item.original_relative_path).resolve()
+                if not source_path.is_relative_to(root) or not source_path.is_file():
+                    raise WorkspaceError("An intake original is missing or outside the workspace")
+                source_bytes = source_path.read_bytes()
+                source_id, source_digest = self._source_identity(root, item.source_id)
+                if (
+                    source_id != item.source_id
+                    or hashlib.sha256(source_bytes).hexdigest() != source_digest
+                ):
+                    raise WorkspaceError("An intake original no longer matches its source record")
+                try:
+                    text = source_bytes.decode("utf-8")
+                except UnicodeDecodeError as exc:
+                    raise WorkspaceError("Only UTF-8 text sources can be organized") from exc
+                inputs.append((item.item_id, item.source_id, text))
+            job = IntakeJob(
+                job_id=job_id,
+                item_ids=item_ids,
+                request_hash=request_hash,
+                state="running",
+                created_at=datetime.now(UTC),
+            )
+            jobs_root.mkdir(parents=True, exist_ok=True)
+            atomic_write(job_path, job.model_dump_json(indent=2).encode())
+            for item in selected:
+                assert item is not None
+                item_path = _state_root(root) / "intake" / "items" / f"{item.item_id}.json"
+                updated = item.model_copy(update={"state": "processing", "latest_job_id": job_id})
+                atomic_write(item_path, updated.model_dump_json(indent=2).encode())
         try:
             proposals = self.provider.organize(inputs)
             covered_inputs: set[int] = set()
@@ -183,10 +226,12 @@ class IntakeReviewService:
                 }
             )
             atomic_write(job_path, completed.model_dump_json(indent=2).encode())
+            SourceStore().refresh_items(root, item_ids)
             return completed
         except Exception as exc:
             failed = job.model_copy(update={"state": "failed", "error": str(exc)[:500]})
             atomic_write(job_path, failed.model_dump_json(indent=2).encode())
+            SourceStore().refresh_items(root, item_ids)
             raise
 
     def get_job(self, root: Path, job_id: UUID) -> IntakeJob:
@@ -312,18 +357,24 @@ class IntakeReviewService:
             }
             if conflict_resolutions:
                 page_metadata["conflict_resolutions"] = conflict_resolutions
+            final_body = _conflict_outcome_body(draft, conflict_resolutions)
             result = self.page_writer.confirm(
                 root,
                 metadata=page_metadata,
-                body=draft.body,
+                body=final_body,
                 confirmation_id=confirmation_id,
                 operation_id=operation_id,
                 expected_base_sha256=draft.expected_base_sha256,
             )
             confirmed = draft.model_copy(
-                update={"state": "confirmed", "conflict_resolutions": conflict_resolutions}
+                update={
+                    "state": "confirmed",
+                    "body": final_body,
+                    "conflict_resolutions": conflict_resolutions,
+                }
             )
             atomic_write(path, confirmed.model_dump_json(indent=2).encode())
+            SourceStore().refresh_items(root, draft.input_ids)
             return result
 
     def _load_items(self, root: Path) -> dict[UUID, IntakeItem]:

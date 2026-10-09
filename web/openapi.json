@@ -2365,11 +2365,25 @@
             "enum": [
               "pending",
               "processing",
+              "reviewing",
               "completed",
+              "failed",
               "cancelled"
             ],
             "title": "State",
             "default": "pending"
+          },
+          "latest_job_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Job Id"
           }
         },
         "additionalProperties": true,
@@ -2482,6 +2496,11 @@
             "type": "string",
             "format": "uuid",
             "title": "Project Id"
+          },
+          "reprocess": {
+            "type": "boolean",
+            "title": "Reprocess",
+            "default": false
           }
         },
         "additionalProperties": false,

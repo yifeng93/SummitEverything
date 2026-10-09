@@ -35,6 +35,8 @@
 
 这不是固定项目集合。项目内不强制类型子目录；页面标题可读，重名生成明确不覆盖的文件名。conventions.md 是本契约的人类可读说明，不是自由执行的脚本。
 
+每条待处理项以 `state` 表达来源到整理作业 / 稿件的当前关系：`pending`（尚未整理）、`processing`（整理作业进行中）、`reviewing`（已有待审核稿）、`completed`（关联稿件均已确认）、`failed`（整理失败）、`cancelled`（用户取消）。`latest_job_id` 指向最近一次显式整理。只有 `pending` 可直接整理；完成、失败或取消的来源需要明确的重新整理动作，处理中或待审核来源始终拒绝重复生成。旧库没有 `latest_job_id` 时由作业记录恢复状态。
+
 ## 2. 页面元数据与正文
 
 正式页使用 YAML frontmatter。最少 id、title、role: knowledge、kind；普通页和项目总览需要 line_id、project_id。log / thought 可以不绑定，也可以只关联线。其他项目用 related_project_ids 或正文链接引用，不能新增第二个平等主归属。
@@ -62,6 +64,8 @@ API / reader 验证 UUID、字段类型、所属项目存在、物理目录与�
 ## 3. 原件与稿件
 
 导入原件保存原始字节和 SHA-256；粘贴文字也形成来源记录。机器来源目录记录 role: source，UI 标识“原件 / 不进入检索”；不为了标记而篡改原文件字节。
+
+用户选择冲突依据或标记未决后，正式正文也记录该结果；未决结果明确写为尚未确定事实。原件与待审稿不会因状态变化而删除。
 
 原件目录和 system / draft 存储区是硬排除层；任何正文、frontmatter、模型输出或伪造 approval 都不能覆盖路径判定。其他位置明确 role: source 的页面也排除。
 

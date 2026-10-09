@@ -669,7 +669,9 @@ export interface components {
              * @default pending
              * @enum {string}
              */
-            state: "pending" | "processing" | "completed" | "cancelled";
+            state: "pending" | "processing" | "reviewing" | "completed" | "failed" | "cancelled";
+            /** Latest Job Id */
+            latest_job_id?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -721,6 +723,11 @@ export interface components {
              * Format: uuid
              */
             project_id: string;
+            /**
+             * Reprocess
+             * @default false
+             */
+            reprocess: boolean;
         };
         /** IntakeTextRequest */
         IntakeTextRequest: {

@@ -139,6 +139,18 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
               <label><input type="radio" name={conflict.id} checked={resolutions[conflict.id] === 'unresolved'} onChange={() => setResolutions((current) => ({ ...current, [conflict.id]: 'unresolved' }))} /> 暂时未决</label>
             </fieldset>
           ))}
+          {conflicts.some((conflict) => resolutions[conflict.id]) && (
+            <div className="conflict-outcome-preview" aria-label="确认结果预览">
+              <strong>确认后正文会记录</strong>
+              <ul>{conflicts.filter((conflict) => resolutions[conflict.id]).map((conflict) => (
+                <li key={conflict.id}>
+                  {conflict.question}：{resolutions[conflict.id] === 'unresolved'
+                    ? '暂时未决，尚未作为确定事实'
+                    : `用户选择采用：${resolutions[conflict.id]}`}
+                </li>
+              ))}</ul>
+            </div>
+          )}
         </div>
       )}
       <div className="review-actions">

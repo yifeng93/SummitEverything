@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid5
 
-from summit_everything.domain.models import IntakeItem, SourceDetail, SourceRecord
+from summit_everything.domain.models import Draft, IntakeItem, IntakeJob, SourceDetail, SourceRecord
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.transactions import atomic_write, workspace_lock
 
@@ -84,12 +84,74 @@ class SourceStore:
         items: list[IntakeItem] = []
         if not items_root.exists():
             return items
-        for path in sorted(items_root.glob("*.json")):
-            try:
-                items.append(IntakeItem.model_validate_json(path.read_text(encoding="utf-8")))
-            except (OSError, ValueError) as exc:
-                raise WorkspaceError("An intake queue item is invalid") from exc
+        with workspace_lock(root):
+            for path in sorted(items_root.glob("*.json")):
+                try:
+                    item = IntakeItem.model_validate_json(path.read_text(encoding="utf-8"))
+                    state = self.derived_state(root, item)
+                    if item.state != state:
+                        item = item.model_copy(update={"state": state})
+                        atomic_write(path, item.model_dump_json(indent=2).encode())
+                    items.append(item)
+                except (OSError, ValueError) as exc:
+                    raise WorkspaceError("An intake queue item is invalid") from exc
         return sorted(items, key=lambda item: (item.created_at, str(item.item_id)))
+
+    def refresh_items(self, root: Path, item_ids: list[UUID] | None = None) -> None:
+        root = root.resolve()
+        items_root = root / ".summit-everything" / "intake" / "items"
+        if not items_root.exists():
+            return
+        selected_ids = {str(item_id) for item_id in item_ids} if item_ids is not None else None
+        with workspace_lock(root):
+            for path in sorted(items_root.glob("*.json")):
+                try:
+                    item = IntakeItem.model_validate_json(path.read_text(encoding="utf-8"))
+                    if selected_ids is not None and str(item.item_id) not in selected_ids:
+                        continue
+                    state = self.derived_state(root, item)
+                    if item.state != state:
+                        updated = item.model_copy(update={"state": state})
+                        atomic_write(path, updated.model_dump_json(indent=2).encode())
+                except (OSError, ValueError) as exc:
+                    raise WorkspaceError("An intake queue item is invalid") from exc
+
+    def derived_state(self, root: Path, item: IntakeItem) -> str:
+        jobs_root = root / ".summit-everything" / "intake" / "jobs"
+        if not jobs_root.exists():
+            return item.state
+        jobs: list[IntakeJob] = []
+        for path in jobs_root.glob("*.json"):
+            try:
+                job = IntakeJob.model_validate_json(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                raise WorkspaceError("An intake job is invalid") from exc
+            if item.item_id in job.item_ids:
+                jobs.append(job)
+        if not jobs:
+            return item.state
+        if item.latest_job_id is not None:
+            latest = next((job for job in jobs if job.job_id == item.latest_job_id), None)
+            if latest is None:
+                raise WorkspaceError("An intake item refers to a missing job")
+        else:
+            latest = max(jobs, key=lambda job: (job.created_at, str(job.job_id)))
+        if latest.state == "running":
+            return "processing"
+        if latest.state == "failed":
+            return "failed"
+        if latest.state == "cancelled":
+            return "cancelled"
+        drafts_root = root / ".summit-everything" / "drafts"
+        for draft_id in latest.draft_ids:
+            draft_path = drafts_root / f"{draft_id}.json"
+            try:
+                draft = Draft.model_validate_json(draft_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                raise WorkspaceError("An intake job refers to an invalid draft") from exc
+            if draft.state == "pending":
+                return "reviewing"
+        return "completed"
 
     def get_source(self, root: Path, source_id: UUID) -> SourceDetail:
         root = root.resolve()

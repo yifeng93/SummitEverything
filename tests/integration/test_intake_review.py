@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from threading import Event, Thread
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -92,6 +93,178 @@ def test_explicit_job_creates_reviewable_draft_and_partial_confirmation(tmp_path
     )
     assert confirmed.state == "succeeded"
     assert len(review.list_drafts(root, pending_only=True)) == 1
+
+
+def test_source_with_pending_draft_is_not_pending_or_reorganized_again(tmp_path: Path) -> None:
+    root = make_workspace(tmp_path / "workspace")
+    line = create_line(root, "模拟主线", "line")
+    project = create_project(root, line.id, "模拟项目", "project")
+    intake = IntakeService()
+    item = intake.add_text(root, "单份来源。", filename="source.txt", operation_id="source")
+    review = IntakeReviewService(FakeLLM())
+
+    first_job = review.create_job(
+        root,
+        [item.item_id],
+        operation_id="first-organize",
+        line_id=line.id,
+        project_id=project.id,
+    )
+
+    assert intake.list_items(root)[0].state == "reviewing"
+    assert intake.list_items(root)[0].latest_job_id == first_job.job_id
+    try:
+        review.create_job(
+            root,
+            [item.item_id],
+            operation_id="second-organize",
+            line_id=line.id,
+            project_id=project.id,
+        )
+    except ValueError as exc:
+        assert "in progress" in str(exc).lower() or "review" in str(exc).lower()
+    else:
+        raise AssertionError("a source with an unreviewed draft created duplicate drafts")
+    assert review.get_job(root, first_job.job_id).draft_ids == first_job.draft_ids
+    assert len(review.list_drafts(root)) == 1
+
+    draft = review.get_draft(root, first_job.draft_ids[0])
+    review.confirm_draft(
+        root,
+        draft.draft_id,
+        expected_version=draft.version,
+        confirmation_id="confirm-source",
+        operation_id="write-source",
+        conflict_resolutions={},
+    )
+    assert intake.list_items(root)[0].state == "completed"
+    try:
+        review.create_job(
+            root,
+            [item.item_id],
+            operation_id="third-organize",
+            line_id=line.id,
+            project_id=project.id,
+        )
+    except ValueError as exc:
+        assert "reprocess" in str(exc).lower() or "already" in str(exc).lower()
+    else:
+        raise AssertionError("a completed source was silently organized again")
+
+    repeated = review.create_job(
+        root,
+        [item.item_id],
+        operation_id="intentional-reprocess",
+        line_id=line.id,
+        project_id=project.id,
+        reprocess=True,
+    )
+    assert repeated.state == "completed"
+    assert intake.list_items(root)[0].state == "reviewing"
+    assert intake.list_items(root)[0].latest_job_id == repeated.job_id
+
+
+def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path: Path) -> None:
+    root = make_workspace(tmp_path / "workspace")
+    line = create_line(root, "模拟主线", "line")
+    project = create_project(root, line.id, "模拟项目", "project")
+    intake = IntakeService()
+    item = intake.add_text(root, "可重试来源。", filename="retry.txt", operation_id="retry-source")
+    failing_review = IntakeReviewService(FakeLLM(scenario="timeout"))
+
+    try:
+        failing_review.create_job(
+            root,
+            [item.item_id],
+            operation_id="failed-job",
+            line_id=line.id,
+            project_id=project.id,
+        )
+    except LLMProviderError:
+        pass
+    else:
+        raise AssertionError("the configured provider failure was hidden")
+
+    assert intake.list_items(root)[0].state == "failed"
+    retry_review = IntakeReviewService(FakeLLM())
+    try:
+        retry_review.create_job(
+            root,
+            [item.item_id],
+            operation_id="retry-without-confirmation",
+            line_id=line.id,
+            project_id=project.id,
+        )
+    except ValueError as exc:
+        assert "reprocess" in str(exc).lower()
+    else:
+        raise AssertionError("a failed source was retried without an explicit reprocess choice")
+
+    retried = retry_review.create_job(
+        root,
+        [item.item_id],
+        operation_id="explicit-retry",
+        line_id=line.id,
+        project_id=project.id,
+        reprocess=True,
+    )
+    assert retried.state == "completed"
+    assert intake.list_items(root)[0].state == "reviewing"
+
+
+def test_in_progress_source_cannot_start_a_second_job(tmp_path: Path) -> None:
+    root = make_workspace(tmp_path / "workspace")
+    line = create_line(root, "模拟主线", "line")
+    project = create_project(root, line.id, "模拟项目", "project")
+    intake = IntakeService()
+    item = intake.add_text(
+        root, "正在整理的来源。", filename="active.txt", operation_id="active-source"
+    )
+    started = Event()
+    release = Event()
+
+    class BlockingProvider(FakeLLM):
+        def organize(self, inputs):  # type: ignore[no-untyped-def]
+            started.set()
+            assert release.wait(timeout=5)
+            return super().organize(inputs)
+
+    review = IntakeReviewService(BlockingProvider())
+    errors: list[BaseException] = []
+
+    def organize_first() -> None:
+        try:
+            review.create_job(
+                root,
+                [item.item_id],
+                operation_id="active-job",
+                line_id=line.id,
+                project_id=project.id,
+            )
+        except BaseException as exc:
+            errors.append(exc)
+
+    worker = Thread(target=organize_first)
+    worker.start()
+    assert started.wait(timeout=5)
+    assert intake.list_items(root)[0].state == "processing"
+    try:
+        review.create_job(
+            root,
+            [item.item_id],
+            operation_id="duplicate-active-job",
+            line_id=line.id,
+            project_id=project.id,
+        )
+    except ValueError as exc:
+        assert "active" in str(exc).lower()
+    else:
+        raise AssertionError("an in-progress source accepted another organization job")
+    release.set()
+    worker.join(timeout=5)
+    assert not worker.is_alive()
+    assert not errors
+    assert intake.list_items(root)[0].state == "reviewing"
 
 
 def test_job_retry_rejects_changed_target_and_provider_schema_rejects_paths(
@@ -189,6 +362,35 @@ def test_important_conflict_blocks_confirmation_until_marked_unresolved(tmp_path
         conflict_resolutions={draft.important_conflicts[0]["id"]: "unresolved"},
     )
     assert result.state == "succeeded"
+    confirmed_page = list_pages(root)[0]
+    assert "## 冲突处理结果" in confirmed_page.body
+    assert "状态是否已确认？" in confirmed_page.body
+    assert "暂时未决" in confirmed_page.body
+
+    selected_item = IntakeService().add_text(
+        root, "另一条状态材料。", filename="selected.txt", operation_id="selected-source"
+    )
+    selected_review = IntakeReviewService(FakeLLM(scenario="conflict"))
+    selected_job = selected_review.create_job(
+        root,
+        [selected_item.item_id],
+        operation_id="organize-selected-conflict",
+        line_id=line.id,
+        project_id=project.id,
+    )
+    selected_draft = selected_review.get_draft(root, selected_job.draft_ids[0])
+    selected_review.confirm_draft(
+        root,
+        selected_draft.draft_id,
+        expected_version=selected_draft.version,
+        confirmation_id="choose-confirmed",
+        operation_id="write-confirmed-choice",
+        conflict_resolutions={"status-conflict": "已确认"},
+    )
+    selected_page = next(
+        page for page in list_pages(root) if page.page_id == selected_draft.draft_id
+    )
+    assert "用户选择采用：已确认" in selected_page.body
 
 
 def test_bad_file_type_and_changed_retry_are_rejected(tmp_path: Path) -> None:
@@ -471,6 +673,7 @@ def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> No
     )
     assert item_response.status_code == 201, item_response.text
     item = item_response.json()
+    assert item["state"] == "pending"
     assert (workspace / item["original_relative_path"]).read_bytes() == original
     assert len(api.get("/api/v1/intake/items").json()) == 1
     assert provider.calls == 0
@@ -485,6 +688,7 @@ def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> No
     )
     assert job_response.status_code == 201, job_response.text
     assert provider.calls == 1
+    assert api.get("/api/v1/intake/items").json()[0]["state"] == "reviewing"
     draft_id = job_response.json()["draft_ids"][0]
     draft = api.get(f"/api/v1/drafts/{draft_id}").json()
     response = api.post(
@@ -497,6 +701,31 @@ def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> No
         },
     )
     assert response.status_code == 200, response.text
+    assert api.get("/api/v1/intake/items").json()[0]["state"] == "completed"
+    duplicate = api.post(
+        "/api/v1/intake/jobs",
+        json={
+            "item_ids": [item["item_id"]],
+            "operation_id": "organize-again",
+            "line_id": line["id"],
+            "project_id": project["id"],
+        },
+    )
+    assert duplicate.status_code == 422
+    assert provider.calls == 1
+    explicit_reprocess = api.post(
+        "/api/v1/intake/jobs",
+        json={
+            "item_ids": [item["item_id"]],
+            "operation_id": "explicit-reprocess",
+            "line_id": line["id"],
+            "project_id": project["id"],
+            "reprocess": True,
+        },
+    )
+    assert explicit_reprocess.status_code == 201, explicit_reprocess.text
+    assert provider.calls == 2
+    assert api.get("/api/v1/intake/items").json()[0]["state"] == "reviewing"
     pages = api.get("/api/v1/pages").json()
     assert len(pages) == 1
     assert sum(page["approval_state"] == "confirmed" for page in pages) == 1
@@ -527,13 +756,13 @@ def test_one_selected_project_can_receive_multiple_drafts_from_one_source(tmp_pa
 
     assert job.state == "completed"
     assert len(job.draft_ids) == 2
+    assert intake.list_items(root)[0].state == "reviewing"
     assert len(drafts) == 2
     assert all(draft.input_ids == [item.item_id] for draft in drafts)
     assert all(draft.source_ids == [item.source_id] for draft in drafts)
     assert all(draft.metadata["project_id"] == str(selected_project.id) for draft in drafts)
     assert all(draft.metadata["project_id"] != str(other_project.id) for draft in drafts)
     assert {draft.metadata["title"] for draft in drafts} == {"预算", "时间"}
-
     accepted = review.confirm_draft(
         root,
         drafts[0].draft_id,
@@ -544,4 +773,15 @@ def test_one_selected_project_can_receive_multiple_drafts_from_one_source(tmp_pa
     )
     assert accepted.state == "succeeded"
     assert len(review.list_drafts(root, pending_only=True)) == 1
+    assert intake.list_items(root)[0].state == "reviewing"
+    remaining = review.list_drafts(root, pending_only=True)[0]
+    review.confirm_draft(
+        root,
+        remaining.draft_id,
+        expected_version=remaining.version,
+        confirmation_id="confirm-second-topic",
+        operation_id="confirm-second-topic",
+        conflict_resolutions={},
+    )
+    assert intake.list_items(root)[0].state == "completed"
     assert not review.list_actions(root)

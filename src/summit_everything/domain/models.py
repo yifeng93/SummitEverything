@@ -86,7 +86,10 @@ class IntakeItem(OpenModel):
     filename: str
     original_relative_path: str
     created_at: datetime
-    state: Literal["pending", "processing", "completed", "cancelled"] = "pending"
+    state: Literal["pending", "processing", "reviewing", "completed", "failed", "cancelled"] = (
+        "pending"
+    )
+    latest_job_id: UUID | None = None
 
 
 class Draft(OpenModel):
