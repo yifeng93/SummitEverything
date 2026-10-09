@@ -6,11 +6,12 @@
 
 - 2026-10-09：整理并纳入两份针对旧实现 SHA `f364c0122a1a74580009bf9342e6e864df6d975d` 的独立验收原报告；同步记录报告结论差异、模拟材料边界和新实现 SHA `7b41ca272b14c38a7b6ebf0e9766766749ccf001` 待独立复验状态。没有据开发自测宣告 M1 通过。
 - 2026-10-09：本轮修复 C05 来源 / 整理作业 / 稿件状态与重复生成门禁、补充 C07 最终正文结果、修复本地开发服务身份及退出清理，更新 API / 工作库契约、执行 / 测试交接和当前阶段计划。候选代码固定在 `73ec81a06f2557c006f98ff88fa81b08d14ef315`；DEV 命令与浏览器 / 原生复演证据见 [自测记录](../quality/reports/2026-10-09-M1-close-DEV.md)。独立 QA 尚未完成，M1 未宣告收口。
+- 2026-10-09：首轮独立 QA 在 `73ec81a` 发现 C03 P1；执行者补齐目录管理与页面移动 / 链接 UI，并在最终受测代码 SHA `f349fe6cb5da86c3fdafff11738e2a55335d8874` 重新提交 QA。独立复验 M1 模拟范围通过，P0/P1=0、P2=1；PR #1 以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main，合并后完整检查通过。报告与外部门边界见下方记录。
 
 | 阶段 | 实施状态 | 独立验收 | 备注 |
 |---|---|---|---|
-| Foundation | 本轮完成文档与核心门禁骨架，自检证据见报告 | 尚未独立验收 | 没有应用服务 / UI / DMG |
-| M1 本地闭环 | DEV完成待验收 | 当前候选 `73ec81a06f2557c006f98ff88fa81b08d14ef315` 尚未独立验收 | 两份旧 SHA 报告仍保留；C05 / C07 和 runner 生命周期有新补修，M1 收口须等独立 QA、缺陷复验及合并后验证 |
+| Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
+| M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
 | M2 飞书 / 日常 | 未开始 | 未开始 | 真实权限与写动作门独立记录 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
@@ -52,9 +53,9 @@
 
 | 任务 | 实施状态 | 实现代码 SHA | 检查 / 覆盖 | 材料边界 | 备注 |
 |---|---|---|---|---|---|
-| C05 来源状态与重复整理修复 | DEV完成待验收 | `4939abc`，包含于候选 `73ec81a06f2557c006f98ff88fa81b08d14ef315` | `uv run pytest -q`：77 passed；来源状态覆盖 pending / processing / reviewing / completed / failed / cancelled、部分确认、全部确认、失败显式重试与完成后显式重新处理；真实 UI 显示多稿审核中与完成状态。 | FakeLLM 与隔离工作库 / profile | 新操作 ID 不能绕过在途或待审状态；失败或完成后重处理需要明确选项。待独立 QA。 |
-| C07 冲突最终正文 | DEV完成待验收 | `4939abc`，包含于候选 `73ec81a06f2557c006f98ff88fa81b08d14ef315` | 测试覆盖选择 / 明确未决写入正式正文；未决明确为非确定事实；前端显示预期最终处理结果。 | FakeLLM 与隔离工作库 | 需 QA 独立复核案例期望。 |
-| 本地运行壳身份 / 清理 | DEV完成待验收 | `73ec81a` | runner 测试 2 passed：独立端口与 profile、API 端口冲突不误杀其他服务、SIGTERM 后监听关闭；本机 UI 真实复演最后窗口关闭、正常 Quit 与 swift run Ctrl+C 后均无本轮服务残留。 | 单独端口 8823/5183、8825/5185；.local 临时 profile / 工作库 | 不代表 DMG、干净机器安装或发布验收。 |
+| C05 来源状态与重复整理修复 | QA通过（模拟范围） | `4939abc`，包含于最终受测候选 `f349fe6` | `uv run pytest -q`：77 passed；来源状态覆盖 pending / processing / reviewing / completed / failed / cancelled、部分确认、全部确认、失败显式重试与完成后显式重新处理；真实 UI 显示多稿审核中与完成状态。 | FakeLLM 与独立模拟工作库 / profile | QA 确认新 operation ID 不能绕过在途 / 待审门禁，失败或完成后的重处理须明确操作。 |
+| C07 冲突最终正文 | QA通过（模拟范围） | `4939abc`，包含于最终受测候选 `f349fe6` | 测试覆盖选择 / 明确未决写入正式正文；未决明确为非确定事实；前端显示预期最终处理结果；见最终 QA 案例矩阵。 | FakeLLM 与隔离工作库 | 真实冲突方案、样板质量仍待真实外部门。 |
+| 本地运行壳身份 / 清理 | QA通过（M1 开发壳范围） | `73ec81a`，包含于最终受测候选 `f349fe6` | 独立端口 / profile、防止误连、端口冲突不误杀、正常 Quit、关闭最后窗口及 Ctrl+C 清理都在隔离环境验证。 | 单独端口与模拟 profile / 工作库 | 不代表 DMG、干净机器安装或发布验收。 |
 | 全量 M1 DEV 检查 | DEV完成待验收 | `73ec81a06f2557c006f98ff88fa81b08d14ef315` | 后端 77 项、前端 6 项、ruff / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、前端 build、swift build 全部退出 0；浏览器覆盖 C06/C08/C10 端到端流程。细节见 [最新交接](../handoff/LATEST-IMPLEMENTATION.md)。 | 全部模拟与 Fake | 保留 1 条 Starlette/httpx 弃用提示和 3 条既有 frontend effect lint 警告。 |
 
 ### C03 界面补修候选（当前固定代码 SHA `f349fe6cb5da86c3fdafff11738e2a55335d8874`）
@@ -63,6 +64,12 @@
 |---|---|---|---|---|---|
 | C03 目录和页面结构 UI | QA通过（模拟范围） | `f349fe6cb5da86c3fdafff11738e2a55335d8874` | 真实浏览器覆盖稳定 ID 改名、显式链接确认、跨项目移动与入站链接修复、归档知识检索 / 恢复、非空项目和主线删除拒绝。 | QA 独立 workspace/profile + Fake provider | 首轮 `73ec81a` 的 C03 FAIL/P1 已关闭。保留 1 个 P2：两条非空删除拒绝提示为英文，后续 UI 本地化安排见 QA 报告。 |
 | M1 自动检查与矩阵 | QA通过（模拟范围） | `f349fe6cb5da86c3fdafff11738e2a55335d8874` | 后端 77 passed；前端 10 passed；ruff / format、mypy、lock、uv build、OpenAPI 类型生成、前端 typecheck / lint / build 通过；Swift 在父 SHA 通过且 f349 无 native 差异。逐项结果见 [独立复验报告](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。 | Fake providers 与模拟内容 | P0/P1=0；1 Starlette/httpx deprecation 与 3 条 React effect lint warning 不影响命令退出。M2–M5 和真实外部门未测。 |
+
+### main 合并与最终树检查
+
+- PR [#1](https://github.com/yifeng93/SummitEverything/pull/1) 以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合并。远端 `main` 包含独立复验固定代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 与两份 QA 报告。
+- 在合并后的独立 main checkout 完成最终复跑：后端 77 passed；前端 10 passed；OpenAPI 类型生成、typecheck、lint、production build、ruff check / format、mypy、lock check、uv build、Swift build 均退出 0。未发现实现树差异。保留 1 条 Starlette/httpx deprecation 与 3 条既有 React effect lint warning。
+- 独立报告将两条非空删除拒绝提示仍为英文记为 P2，具体影响与后续本地化安排见 QA 报告；该项不阻断 M1。
 
 真实业务样板、真实模型、飞书、五日实际工作及双机仍由各自授权门控制；执行者不填写 QA 通过。
 
