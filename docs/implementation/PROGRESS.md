@@ -61,8 +61,8 @@
 
 | 任务 | 实施状态 | 实现代码 SHA | 检查 / 覆盖 | 材料边界 | 备注 |
 |---|---|---|---|---|---|
-| C03 目录和页面结构 UI | DEV完成待验收 | `f349fe6cb5da86c3fdafff11738e2a55335d8874` | 真实浏览器创建 / 改名 / 归档 / 归档检索 / 恢复；前端新增改名稳定 ID、归档恢复、非空删除拒绝、跨项目移动和相对链接确认测试；前端 10 项测试通过。 | 隔离 profile 与模拟工作库 | 首次独立报告 C03 FAIL/P1；f349 新 SHA 的独立浏览器复验正在进行，尚不记 QA通过。 |
-| M1 自动检查复跑 | DEV完成待验收 | `34522507f2c5c9856ed859f0593e1967190cae41` | 后端 77 passed；前端 10 passed；ruff / format、mypy、lock、uv build、OpenAPI 类型生成、前端 typecheck / lint / build、Swift build 均退出 0。 | Fake providers 与模拟内容 | 保留 1 条 Starlette/httpx 弃用提示和 3 条既有 React effect lint 警告。 |
+| C03 目录和页面结构 UI | QA通过（模拟范围） | `f349fe6cb5da86c3fdafff11738e2a55335d8874` | 真实浏览器覆盖稳定 ID 改名、显式链接确认、跨项目移动与入站链接修复、归档知识检索 / 恢复、非空项目和主线删除拒绝。 | QA 独立 workspace/profile + Fake provider | 首轮 `73ec81a` 的 C03 FAIL/P1 已关闭。保留 1 个 P2：两条非空删除拒绝提示为英文，后续 UI 本地化安排见 QA 报告。 |
+| M1 自动检查与矩阵 | QA通过（模拟范围） | `f349fe6cb5da86c3fdafff11738e2a55335d8874` | 后端 77 passed；前端 10 passed；ruff / format、mypy、lock、uv build、OpenAPI 类型生成、前端 typecheck / lint / build 通过；Swift 在父 SHA 通过且 f349 无 native 差异。逐项结果见 [独立复验报告](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。 | Fake providers 与模拟内容 | P0/P1=0；1 Starlette/httpx deprecation 与 3 条 React effect lint warning 不影响命令退出。M2–M5 和真实外部门未测。 |
 
 真实业务样板、真实模型、飞书、五日实际工作及双机仍由各自授权门控制；执行者不填写 QA 通过。
 

@@ -2,13 +2,13 @@
 
 ## 固定候选
 
-- **阶段：** M1.1–M1.5 DEV 收口；首次独立 QA 发现 C03 P1，已修复并交固定提交复验。
+- **阶段：** M1.1–M1.5 DEV 与独立模拟验收通过；等待 PR 合并到 main。
 - **首次 QA 固定代码 SHA：** `73ec81a06f2557c006f98ff88fa81b08d14ef315`。
 - **当前修复候选代码 SHA：** `f349fe6cb5da86c3fdafff11738e2a55335d8874`。
 - **分支：** `codex/m1-close`。
 - **材料边界：** 只用隔离模拟工作库与 Fake providers；没有导入真实“场地与酒店”材料、付费模型或真实飞书。
 - **DEV 自测记录：** [2026-10-09-M1-close-DEV.md](../quality/reports/2026-10-09-M1-close-DEV.md)（已提交，不是独立 QA 报告）。详细隔离运行记录另保存在 ignored `.local/m1-close/evidence/dev-self-check.md`。
-- **独立 QA：** 首次报告已提交 QA 分支，发现 C03 真实界面缺少主线 / 项目重命名、归档、删除及页面移动 / 链接，结论 FAIL/P1。当前 SHA 已补齐界面，由同一 QA 在新 checkout 复验。报告导入与最终 addendum 待复验完成。
+- **独立 QA：** 首轮发现 C03 P1，已由执行者修复；同一 QA 在新 checkout 的 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 上复验通过。报告：[首次失败记录](../quality/reports/2026-10-09-M1-close-73ec81a.md)、[最终复验报告](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。M1 模拟范围 P0/P1=0；报告记录 1 个 P2 英文删除拒绝提示及后续本地化安排。
 
 ## 修复摘要
 
@@ -40,12 +40,11 @@ uv run python scripts/run_dev.py
 
 ## 尚未完成或未测
 
-- 独立 QA 正在复验当前 SHA 的 M1 Foundation 基础门禁及 M1.1–M1.5 必测项；首次 QA 的 C03 P1 在复验通过前保持未关闭。
-- QA 必须浏览器复验 C03 页面移动、既有链接修复与新增链接二次确认；并确认 C05、C06、C07、C08/C10、C11/C12、C13/C14 的 M1 部分、C23 原子恢复以及固定版本命令和原生服务归属。
+- M1 独立模拟验收已通过，详情按案例见最终复验报告。受测实现固定 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；执行者后续提交均为文档和 QA 报告导入。
 - C13 历史会话 UI、C14 断流恢复 / 历史引用 UI 属 M3；C25 DMG、干净机器安装和发版身份属 M4；均不得记作 M1 PASS。
 - 真实“场地与酒店”材料确认、真实模型质量、真实飞书权限 / 写入、五个实际工作日、双机往返未测且需要各自授权门。
 - 1 条 Starlette/httpx 弃用提示和 3 条前端 effect lint 警告保留；未通过隐藏警告或降低期望获得绿灯。
 
 ## QA 交接
 
-使用源码仓库外的独立 worktree / checkout，固定 ref 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；测试者只在自己的隔离目录使用模拟库 / profile、增补测试和新报告，不修改 `src/`、`web/`、`native/` 产品实现。读取 `docs/handoff/TESTER.md` 与 `docs/quality/ACCEPTANCE.md`，覆盖 Foundation 和 M1.1–M1.5 Must 场景，区分跨阶段已实现部分与 M3/M4 未测项。报告新建于 `docs/quality/reports/`，保留两份旧报告。若发现缺陷，把复现、严重度和证据交回执行者；修复后对新固定 SHA 复验修复项与相关回归。
+独立验收在源码仓库外的 `/Users/yifengstudio/.codex/worktrees/qa-m1-close-r3` 固定到 `f349fe6cb5da86c3fdafff11738e2a55335d8874`。报告与隔离模拟 UI 证据已保存；不修改产品实现。M2/M3/M4/M5 场景和真实外部门按最终复验报告保持 NOT_RUN。
