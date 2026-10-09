@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 from uuid import UUID
 
@@ -30,6 +31,7 @@ class DraftProposal(BaseModel):
     title: str = Field(min_length=1)
     kind: Literal["object", "case", "topic", "decision"] = "topic"
     body: str = Field(min_length=1)
+    input_indexes: list[int] = Field(default_factory=list)
     important_conflicts: list[ImportantConflict] = Field(default_factory=list)
     action_suggestions: list[ActionSuggestion] = Field(default_factory=list)
 
@@ -62,22 +64,48 @@ class FakeLLM:
                         alternatives=["已确认", "仍待确认"],
                     )
                 ]
-            proposals.append(
-                DraftProposal(
-                    title=f"模拟整理稿 {index + 1}",
-                    kind="topic",
-                    body=f"## 来源摘要\n\n{text.strip()}\n",
-                    important_conflicts=conflict,
-                    action_suggestions=(
-                        [
-                            ActionSuggestion(
-                                kind="todo",
-                                description="仅供用户决定是否另行创建任务",
-                            )
-                        ]
-                        if self.scenario == "action" and index == 0
-                        else []
-                    ),
+            sections = re.split(r"(?m)(?=^## .+$)", text.strip())
+            headed_sections = [section.strip() for section in sections if section.startswith("## ")]
+            if headed_sections:
+                for section in headed_sections:
+                    title, _, body = section.partition("\n")
+                    proposals.append(
+                        DraftProposal(
+                            title=title.removeprefix("## ").strip(),
+                            kind="topic",
+                            body=f"{title}\n{body.strip()}\n",
+                            input_indexes=[index],
+                            important_conflicts=conflict,
+                            action_suggestions=(
+                                [
+                                    ActionSuggestion(
+                                        kind="todo",
+                                        description="仅供用户决定是否另行创建任务",
+                                    )
+                                ]
+                                if self.scenario == "action" and index == 0 and not proposals
+                                else []
+                            ),
+                        )
+                    )
+            else:
+                proposals.append(
+                    DraftProposal(
+                        title=f"模拟整理稿 {index + 1}",
+                        kind="topic",
+                        body=f"## 来源摘要\n\n{text.strip()}\n",
+                        input_indexes=[index],
+                        important_conflicts=conflict,
+                        action_suggestions=(
+                            [
+                                ActionSuggestion(
+                                    kind="todo",
+                                    description="仅供用户决定是否另行创建任务",
+                                )
+                            ]
+                            if self.scenario == "action" and index == 0
+                            else []
+                        ),
+                    )
                 )
-            )
         return proposals

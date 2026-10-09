@@ -21,13 +21,15 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
   const [busy, setBusy] = useState(false)
   const [source, setSource] = useState<SourceDetail | null>(null)
   const operationIds = useRef<Record<string, string>>({})
-  const target = pages.find((page) => page.page_id === targetId && page.approval_state === 'confirmed')
+  const target = pages.find((page) => page.page_id === targetId)
+  const staleBase = Boolean(target && target.content_sha256 !== baseHash)
+  const targetNeedsConfirmation = Boolean(target && target.approval_state !== 'confirmed')
   const candidates = useMemo(
     () => pages.filter((page) =>
-      page.approval_state === 'confirmed'
+      (page.approval_state === 'confirmed' || page.page_id === targetId)
       && String(page.metadata.project_id ?? '') === String(draft.metadata.project_id ?? ''),
     ),
-    [pages, draft.metadata.project_id],
+    [pages, draft.metadata.project_id, targetId],
   )
   const dirty = title !== String(draft.metadata.title ?? '') || body !== draft.body
     || targetId !== (draft.target_page_id ?? '') || baseHash !== (draft.expected_base_sha256 ?? '')
@@ -79,7 +81,11 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
       onError('')
       await onConfirmed()
     } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '无法确认稿件')
+      const message = cause instanceof Error ? cause.message : '无法确认稿件'
+      if (message.includes('页面已变化') || message.includes('changed since it was reviewed')) {
+        await onUpdated()
+      }
+      onError(message)
     } finally {
       setBusy(false)
     }
@@ -92,14 +98,28 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
       <label className="compact-field target-select"><span>整理到</span>
         <select value={targetId} onChange={(event) => void selectTarget(event.target.value)}>
           <option value="">新建知识页</option>
-          {candidates.map((page) => <option key={page.page_id} value={page.page_id}>{String(page.metadata.title ?? '未命名页面')}</option>)}
+          {candidates.map((page) => <option key={page.page_id} value={page.page_id}>
+            {String(page.metadata.title ?? '未命名页面')}{page.approval_state === 'invalid' ? ' · 需要重新确认' : ''}
+          </option>)}
         </select>
       </label>
       {target && (
-        <div className="diff-view">
-          <div><span>当前版本</span><pre>{target.body}</pre></div>
-          <div><span>审核稿</span><pre>{body}</pre></div>
-        </div>
+        <>
+          {(staleBase || targetNeedsConfirmation) && (
+            <div className="form-error" role="status">
+              <p>目标页面已变化或需要重新确认。当前正文尚未被覆盖，请检查下方版本对比。</p>
+              {staleBase ? (
+                <button className="text-button" disabled={busy} onClick={() => setBaseHash(target.content_sha256)}>
+                  采用当前页面作为比较基准
+                </button>
+              ) : <span>当前正文已作为比较基准；确认时仍会检查是否再次发生变化。</span>}
+            </div>
+          )}
+          <div className="diff-view">
+            <div><span>当前版本</span><pre>{target.body}</pre></div>
+            <div><span>审核稿</span><pre>{body}</pre></div>
+          </div>
+        </>
       )}
       <label className="field"><span>正文</span><textarea value={body} rows={9} onChange={(event) => setBody(event.target.value)} /></label>
       <div className="source-reference">
@@ -125,7 +145,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
         <span>{dirty ? '有尚未保存的修改' : '来源与稿件保持关联'}</span>
         <div className="button-row">
           <button className="button secondary" disabled={!dirty || busy} onClick={() => void saveDraft().catch((cause) => onError(cause instanceof Error ? cause.message : '无法保存稿件'))}>保存修改</button>
-          <button className="button primary" disabled={busy} onClick={confirmDraft}>{busy ? '正在保存…' : '确认并写入知识库'}</button>
+          <button className="button primary" disabled={busy || staleBase} onClick={confirmDraft}>{busy ? '正在保存…' : '确认并写入知识库'}</button>
         </div>
       </div>
     </section>

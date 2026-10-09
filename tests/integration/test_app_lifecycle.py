@@ -72,8 +72,10 @@ def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
         for block in answer.text.split("\n\n")
         if block.startswith("data: ")
     ]
+    assert [event["seq"] for event in events] == list(range(1, len(events) + 1))
     assert [event["type"] for event in events][0] == "status"
     assert [event["type"] for event in events][-1] == "completed"
+    assert sum(event["type"] in {"completed", "error"} for event in events) == 1
     citation = next(event["data"] for event in events if event["type"] == "citation")
     assert citation["page_id"] == page_id
 
@@ -176,3 +178,110 @@ def test_query_cancel_emits_terminal_error_without_completed_answer(tmp_path: Pa
     assert events[-1]["type"] == "error"
     assert events[-1]["data"]["code"] == "cancelled"
     assert not any(event["type"] == "completed" for event in events)
+
+
+def test_external_edit_can_be_reconfirmed_from_current_page_snapshot(tmp_path: Path) -> None:
+    token = "m1-reconfirm-token"
+    store = IndexStore(tmp_path / "profile" / "index.sqlite3")
+    query_service = QueryService(store)
+    app = create_app(
+        session_token=token,
+        profile_root=tmp_path / "profiles",
+        query_service=query_service,
+    )
+    api = TestClient(app)
+    api.headers.update({"Authorization": f"Bearer {token}"})
+    root = tmp_path / "workspace"
+    assert (
+        api.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(root),
+                "mode": "create",
+                "name": "重新确认模拟库",
+                "operation_id": "workspace",
+            },
+        ).status_code
+        == 201
+    )
+    line = api.post("/api/v1/lines", json={"name": "模拟线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "模拟项目", "operation_id": "project"},
+    ).json()
+    page_id = "00000000-0000-4000-8000-000000000902"
+    metadata = {
+        "id": page_id,
+        "title": "模拟事实",
+        "role": "knowledge",
+        "kind": "topic",
+        "line_id": line["id"],
+        "project_id": project["id"],
+    }
+    assert (
+        api.post(
+            "/api/v1/pages",
+            json={
+                "metadata": metadata,
+                "body": "蓝松项目预算是 123 元。",
+                "confirmation_id": "approve-v1",
+                "operation_id": "page-v1",
+            },
+        ).status_code
+        == 201
+    )
+    fingerprint = "fake-reconfirm-v1"
+    plan = api.post(
+        "/api/v1/index/plans", json={"mode": "initial", "fingerprint": fingerprint}
+    ).json()
+    assert api.post("/api/v1/index/jobs", json=plan).status_code == 200
+    snapshot = api.get(f"/api/v1/pages/{page_id}").json()
+    path = root / snapshot["relative_path"]
+    path.write_text(path.read_text(encoding="utf-8").replace("123 元", "999 元"), encoding="utf-8")
+
+    changed = api.get(f"/api/v1/pages/{page_id}").json()
+    stale = api.post(
+        "/api/v1/queries",
+        json={"question": "蓝松项目预算", "fingerprint": fingerprint, "purpose": "current"},
+    )
+    stale_events = [
+        json.loads(block.removeprefix("data: ").strip())
+        for block in stale.text.split("\n\n")
+        if block.startswith("data: ")
+    ]
+    assert changed["approval_state"] == "invalid"
+    assert not any(event["type"] == "citation" for event in stale_events)
+
+    confirmation = api.post(
+        f"/api/v1/pages/{page_id}/confirmations",
+        json={
+            "metadata": changed["metadata"],
+            "body": changed["body"] + "\n已按外部合同复核。",
+            "expected_base_sha256": changed["content_sha256"],
+            "confirmation_id": "approve-current-v2",
+            "operation_id": "page-v2",
+        },
+    )
+    assert confirmation.status_code == 200, confirmation.text
+    assert api.get(f"/api/v1/pages/{page_id}").json()["approval_state"] == "confirmed"
+    still_stale = api.post(
+        "/api/v1/queries",
+        json={"question": "蓝松项目预算", "fingerprint": fingerprint, "purpose": "current"},
+    )
+    stale_events = [
+        json.loads(block.removeprefix("data: ").strip())
+        for block in still_stale.text.split("\n\n")
+        if block.startswith("data: ")
+    ]
+    assert not any(event["type"] == "citation" for event in stale_events)
+
+    incremental = api.post(
+        "/api/v1/index/plans", json={"mode": "incremental", "fingerprint": fingerprint}
+    ).json()
+    assert api.post("/api/v1/index/jobs", json=incremental).status_code == 200
+    current = api.post(
+        "/api/v1/queries",
+        json={"question": "蓝松项目预算", "fingerprint": fingerprint, "purpose": "current"},
+    )
+    assert "999 元" in current.text
+    assert "123 元" not in current.text

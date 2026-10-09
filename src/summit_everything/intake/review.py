@@ -11,7 +11,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid5
 
-from summit_everything.domain.content import StorageArea, retrieval_eligibility
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
@@ -117,13 +116,21 @@ class IntakeReviewService:
         atomic_write(job_path, job.model_dump_json(indent=2).encode())
         try:
             proposals = self.provider.organize(inputs)
-            if len(proposals) != len(inputs):
-                raise LLMProviderError("Provider returned an unexpected proposal count")
+            covered_inputs: set[int] = set()
+            for proposal in proposals:
+                if not proposal.input_indexes or len(set(proposal.input_indexes)) != len(
+                    proposal.input_indexes
+                ):
+                    raise LLMProviderError("Every proposal must identify its source inputs")
+                if any(index < 0 or index >= len(inputs) for index in proposal.input_indexes):
+                    raise LLMProviderError("Provider returned an unknown source input")
+                covered_inputs.update(proposal.input_indexes)
+            if covered_inputs != set(range(len(inputs))):
+                raise LLMProviderError("Every selected input must appear in a proposal")
             drafts: list[Draft] = []
             actions: list[ActionCandidate] = []
-            for index, (proposal, (item_id, source_id, _text)) in enumerate(
-                zip(proposals, inputs, strict=True)
-            ):
+            for index, proposal in enumerate(proposals):
+                proposal_inputs = [inputs[source_index] for source_index in proposal.input_indexes]
                 draft_id = uuid5(job_id, f"draft:{index}")
                 metadata = {
                     "id": str(draft_id),
@@ -135,7 +142,7 @@ class IntakeReviewService:
                 }
                 draft = Draft(
                     draft_id=draft_id,
-                    input_ids=[item_id],
+                    input_ids=[item_id for item_id, _source_id, _text in proposal_inputs],
                     metadata=metadata,
                     body=proposal.body,
                     important_conflicts=[
@@ -146,7 +153,9 @@ class IntakeReviewService:
                         suggestion.model_dump(mode="json")
                         for suggestion in proposal.action_suggestions
                     ],
-                    source_ids=[source_id],
+                    source_ids=list(
+                        dict.fromkeys(source_id for _item_id, source_id, _text in proposal_inputs)
+                    ),
                     created_at=datetime.now(UTC),
                 )
                 draft_path = _state_root(root) / "drafts" / f"{draft_id}.json"
@@ -251,13 +260,10 @@ class IntakeReviewService:
                 metadata["id"] = str(draft.draft_id)
             else:
                 target = read_page(root, target_page_id)
-                if target.approval_state != "confirmed" or target.storage_area != "formal":
+                if target.storage_area != "formal" or target.approval_state == "pending":
                     raise WorkspaceError("Only confirmed knowledge pages can be updated")
-                eligibility = retrieval_eligibility(
-                    target.metadata, target.body, area=StorageArea.FORMAL
-                )
-                if not eligibility.eligible or target.content_sha256 != expected_base_sha256:
-                    raise WorkspaceWriteConflict("Target page changed since it was selected")
+                if target.content_sha256 != expected_base_sha256:
+                    raise WorkspaceWriteConflict("目标页面已变化，请检查当前版本后再继续审核。")
                 if any(
                     metadata.get(key) != target.metadata.get(key)
                     for key in ("line_id", "project_id")

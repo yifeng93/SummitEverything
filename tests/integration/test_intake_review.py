@@ -314,6 +314,129 @@ def test_review_can_update_an_authoritative_page_with_its_current_version(tmp_pa
     assert len([page for page in pages if page.page_id == UUID(metadata["id"])]) == 1
 
 
+def test_stale_review_target_can_be_rebased_only_after_explicit_conflict(tmp_path: Path) -> None:
+    token = "stale-review-token"
+    review = IntakeReviewService(FakeLLM())
+    api = TestClient(
+        create_app(
+            session_token=token,
+            profile_root=tmp_path / "profiles",
+            review_service=review,
+        )
+    )
+    api.headers.update({"Authorization": f"Bearer {token}"})
+    root = tmp_path / "workspace"
+    assert (
+        api.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(root),
+                "mode": "create",
+                "name": "冲突模拟库",
+                "operation_id": "workspace",
+            },
+        ).status_code
+        == 201
+    )
+    line = api.post("/api/v1/lines", json={"name": "模拟线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "模拟项目", "operation_id": "project"},
+    ).json()
+    page_id = "00000000-0000-4000-8000-000000000901"
+    created = api.post(
+        "/api/v1/pages",
+        json={
+            "metadata": {
+                "id": page_id,
+                "title": "权威事实",
+                "role": "knowledge",
+                "kind": "topic",
+                "line_id": line["id"],
+                "project_id": project["id"],
+            },
+            "body": "合同金额是 123 元。",
+            "confirmation_id": "confirm-original",
+            "operation_id": "create-original",
+        },
+    )
+    assert created.status_code == 201, created.text
+    original = api.get(f"/api/v1/pages/{page_id}").json()
+    item = api.post(
+        "/api/v1/intake/items",
+        json={"text": "合同金额更新为 456 元。", "filename": "update.txt", "operation_id": "input"},
+    ).json()
+    job = api.post(
+        "/api/v1/intake/jobs",
+        json={
+            "item_ids": [item["item_id"]],
+            "line_id": line["id"],
+            "project_id": project["id"],
+            "operation_id": "organize",
+        },
+    ).json()
+    draft_id = job["draft_ids"][0]
+    draft = api.get(f"/api/v1/drafts/{draft_id}").json()
+    assert (
+        api.patch(
+            f"/api/v1/drafts/{draft_id}",
+            json={
+                "expected_version": draft["version"],
+                "title": draft["metadata"]["title"],
+                "body": "合同金额更新为 456 元。",
+                "target_page_id": page_id,
+                "expected_base_sha256": original["content_sha256"],
+            },
+        ).status_code
+        == 200
+    )
+    page_path = root / original["relative_path"]
+    external_text = page_path.read_text(encoding="utf-8").replace("123 元", "999 元")
+    page_path.write_text(external_text, encoding="utf-8")
+    current = api.get(f"/api/v1/pages/{page_id}").json()
+
+    stale_edit = api.patch(
+        f"/api/v1/drafts/{draft_id}",
+        json={
+            "expected_version": draft["version"] + 1,
+            "title": "审核后的权威事实",
+            "body": "合同金额更新为 456 元。",
+            "target_page_id": page_id,
+            "expected_base_sha256": original["content_sha256"],
+        },
+    )
+
+    assert stale_edit.status_code == 409
+    assert "页面已变化" in stale_edit.json()["error"]["message"]
+    assert "999 元" in page_path.read_text(encoding="utf-8")
+    assert api.get(f"/api/v1/drafts/{draft_id}").json()["state"] == "pending"
+
+    rebased = api.patch(
+        f"/api/v1/drafts/{draft_id}",
+        json={
+            "expected_version": draft["version"] + 1,
+            "title": "审核后的权威事实",
+            "body": "合同金额更新为 456 元。",
+            "target_page_id": page_id,
+            "expected_base_sha256": current["content_sha256"],
+        },
+    )
+    assert rebased.status_code == 200, rebased.text
+    confirmed = api.post(
+        f"/api/v1/drafts/{draft_id}/confirmations",
+        json={
+            "expected_version": rebased.json()["version"],
+            "confirmation_id": "confirm-after-rebase",
+            "operation_id": "confirm-after-rebase",
+            "conflict_resolutions": {},
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    final_page = api.get(f"/api/v1/pages/{page_id}").json()
+    assert final_page["approval_state"] == "confirmed"
+    assert final_page["body"] == "合同金额更新为 456 元。"
+
+
 def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> None:
     token = "m1-acceptance-token"
     provider = FakeLLM()
@@ -377,3 +500,48 @@ def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> No
     pages = api.get("/api/v1/pages").json()
     assert len(pages) == 1
     assert sum(page["approval_state"] == "confirmed" for page in pages) == 1
+
+
+def test_one_selected_project_can_receive_multiple_drafts_from_one_source(tmp_path: Path) -> None:
+    root = make_workspace(tmp_path / "workspace")
+    line = create_line(root, "模拟主线", "line")
+    selected_project = create_project(root, line.id, "用户选定项目", "selected-project")
+    other_project = create_project(root, line.id, "相似名称的其他项目", "other-project")
+    intake = IntakeService()
+    item = intake.add_text(
+        root,
+        "## 预算\n\n预算上限为 100 元。\n\n## 时间\n\n计划在周五完成。\n",
+        filename="multi-topic.md",
+        operation_id="multi-topic-source",
+    )
+    review = IntakeReviewService(FakeLLM())
+
+    job = review.create_job(
+        root,
+        [item.item_id],
+        operation_id="multi-topic-job",
+        line_id=line.id,
+        project_id=selected_project.id,
+    )
+    drafts = review.list_drafts(root, pending_only=True)
+
+    assert job.state == "completed"
+    assert len(job.draft_ids) == 2
+    assert len(drafts) == 2
+    assert all(draft.input_ids == [item.item_id] for draft in drafts)
+    assert all(draft.source_ids == [item.source_id] for draft in drafts)
+    assert all(draft.metadata["project_id"] == str(selected_project.id) for draft in drafts)
+    assert all(draft.metadata["project_id"] != str(other_project.id) for draft in drafts)
+    assert {draft.metadata["title"] for draft in drafts} == {"预算", "时间"}
+
+    accepted = review.confirm_draft(
+        root,
+        drafts[0].draft_id,
+        expected_version=1,
+        confirmation_id="accept-one-topic",
+        operation_id="accept-one-topic",
+        conflict_resolutions={},
+    )
+    assert accepted.state == "succeeded"
+    assert len(review.list_drafts(root, pending_only=True)) == 1
+    assert not review.list_actions(root)

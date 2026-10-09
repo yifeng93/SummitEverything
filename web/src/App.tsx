@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type Page, type Workspace } from './api/client'
 import { AskView } from './components/AskView'
 import { ProjectsView } from './components/ProjectsView'
+import { PageReader } from './components/PageReader'
 import { TodayView } from './components/TodayView'
 import { WorkspaceGate } from './components/WorkspaceGate'
 import './App.css'
@@ -79,15 +80,12 @@ export default function App() {
         </header>
         {error && <div role="alert" className="global-alert">{error}</div>}
         {page ? (
-          <article className="page-reader">
-            <button className="back-link" onClick={() => setPage(null)}>← 返回</button>
-            <div className="page-meta">
-              <span>{page.approval_state === 'confirmed' ? '已确认知识' : '待确认'}</span>
-              <span>{page.relative_path}</span>
-            </div>
-            <h1>{String(page.metadata.title ?? '未命名页面')}</h1>
-            <pre className="page-body">{page.body}</pre>
-          </article>
+          <PageReader
+            key={`${page.page_id}:${page.content_sha256}`}
+            page={page}
+            onClose={() => setPage(null)}
+            onReload={() => openPage(page.page_id)}
+          />
         ) : section === 'today' ? (
           <TodayView onError={setError} />
         ) : section === 'projects' ? (
