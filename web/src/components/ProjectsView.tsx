@@ -72,6 +72,7 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
     if (!selectedLine || !lineName.trim()) return
     await mutate(`/lines/${selectedLine.id}`, () => api.patch(`/lines/${selectedLine.id}`, { name: lineName.trim(), operation_id: newOperationId() }))
     setEditingLine(false)
+    setLineName('')
   }
 
   async function saveProjectName(event: FormEvent) {
@@ -80,6 +81,7 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
     if (!selected || !projectName.trim()) return
     await mutate(`/projects/${selected.id}`, () => api.patch(`/projects/${selected.id}`, { name: projectName.trim(), operation_id: newOperationId() }))
     setEditingProject(false)
+    setProjectName('')
   }
 
   async function mutate(_path: string, action: () => Promise<unknown>) {

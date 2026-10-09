@@ -47,12 +47,14 @@ it('renames a line and project while keeping their stable IDs', async () => {
   fireEvent.change(screen.getByLabelText('主线名称'), { target: { value: '改名主线' } })
   fireEvent.click(screen.getByRole('button', { name: '保存主线' }))
   await waitFor(() => expect(screen.getAllByText('改名主线').length).toBeGreaterThan(0))
+  expect((screen.getByPlaceholderText('新增主线名称') as HTMLInputElement).value).toBe('')
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/lines/line-1', expect.objectContaining({ method: 'PATCH' }))
 
   fireEvent.click(screen.getByRole('button', { name: '重命名项目' }))
   fireEvent.change(screen.getByLabelText('项目名称'), { target: { value: '改名项目' } })
   fireEvent.click(screen.getByRole('button', { name: '保存项目' }))
   await waitFor(() => expect(screen.getAllByText('改名项目').length).toBeGreaterThan(0))
+  expect((screen.getByPlaceholderText('新项目名称') as HTMLInputElement).value).toBe('')
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/projects/project-1', expect.objectContaining({ method: 'PATCH' }))
 })
 

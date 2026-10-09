@@ -8,6 +8,7 @@ export function PageReader({ page, onClose, onReload }: Props) {
   const [body, setBody] = useState(page.body)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [pages, setPages] = useState<Page[]>([])
   const [moveProject, setMoveProject] = useState('')
@@ -70,7 +71,7 @@ export function PageReader({ page, onClose, onReload }: Props) {
     setTitle(String(page.metadata.title ?? ''))
     setBody(`${page.body.trimEnd()}\n\n[${String(target.metadata.title ?? '相关页面')}](${relative})\n`)
     setLinkPage('')
-    setError('链接已加入正文，请检查后确认新版本。')
+    setNotice('链接已加入正文，请检查后确认新版本。')
   }
 
   return (
@@ -95,7 +96,8 @@ export function PageReader({ page, onClose, onReload }: Props) {
           </div>
         </section>
       ) : <>
-        {error && <p role="status" className="success-note">{error}</p>}
+        {error && <p role="alert" className="form-error">{error}</p>}
+        {notice && <p role="status" className="success-note">{notice}</p>}
         <pre className="page-body">{page.body}</pre>
         <section className="page-structure-actions" aria-label="页面组织操作">
           <label className="field"><span>移动到项目</span><select aria-label="移动到项目" value={moveProject} onChange={(event) => setMoveProject(event.target.value)}><option value="">选择项目</option>{projects.filter((project) => project.id !== String(page.metadata.project_id ?? '')).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
