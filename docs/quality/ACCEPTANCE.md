@@ -86,6 +86,8 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 新建项目不生成概览页；从项目目录明确创建，重开；更新必须带当前内容版本，旧版本409且原正文保留。概览可以相对链接权威事实页。创建 / 更新 / 直接确认日志与思考后，核对 project progress 版本与值均未变；再通过 M2.2 独立 progress action 确认能单独改变。此处 DEV 测试不是独立 QA 结论。
 
+已有索引时，日志、思考、项目概览、稿件批准、直接页面确认和外部编辑重新确认都应自动对同一 fingerprint 增量更新；首次索引仍需用户确认。检查 MutationResult 的 index_update 与 `/index/status` 的 state，覆盖未启用、成功、失败 / 中断。增量不得重嵌未变内容或触发 full / model_change。失败后索引 state 应为 stale，旧 SQLite chunk 经版本资格门不得成为当前引用；C04/C10/C11/C12/C13/C23 保持独立验收。
+
 
 ## M2.2 Fake 复验（C16–C18）
 
@@ -93,7 +95,9 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 1. 未确认、模型建议或知识批准均零任务写 / 零进度变化。手动标题、显式无日期 / 全天 / 带偏移时间后审阅 exact 值，确认仍不执行，另点执行才调用 Fake。确认后编辑使原确认失效，必须新 ID 重新确认。
 2. 同 ID/hash 多次执行、双击和并发只一次副作用；进行中202 + Location。改变 hash409，两个有效 action 可同标题。已完成任务再完成直接成功，无第二次 PATCH；只选 due 时标题 / 描述不变。
+   创建 / 编辑响应须与明确请求字段一致，容许 timestamp int/string 的合法归一化；明确清空描述 / 日期按返回对象验证。同 GUID 旧对象、未生效字段或 completed_at=0 均不能记 succeeded，转 unknown 后不重发。
 3. 注入远端已写后 Timeout、响应损坏、真实子进程退出；重启保留 Fake remote 文件，running→unknown，无证据不重发，不按标题猜成功。只读核实确切 Fake 证据 / 用户独立明确 outcome，可终结并保留 evidence；同核实 ID重放，变更依据409。迟到响应不得覆盖明确终态。
+   Fake `task_result` 只有在 client_token、动作类型、目标和返回字段均匹配当前动作时才构成证据；普通 FeishuTask、无关任务或冲突结果保持 unknown。此 Fake 契约不表示真实 Feishu 有按 client_token 查询端点。
 4. 完成回执跨月摘要后重启可查 / 防重；unknown/running 不压掉。摘要写后删 active 中断允许相同副本，损坏hash或冲突副本必须409。
 5. 候选转换保留 draft/source，旧 GET /actions 数组兼容；新列表cursor/limit分页。进度动作锁 + expected_version + write_intent，只独立确认后改进度，旧版本失败不覆盖；模拟写后丢回执可读本地 writer evidence。
 

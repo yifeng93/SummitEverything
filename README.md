@@ -49,7 +49,7 @@ uv run python scripts/run_dev.py
 cd native && swift run
 ~~~
 
-WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式 FakeLLM 整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引与变更计划均需用户在界面确认。
+WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式 FakeLLM 整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；已有索引后，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新，并显示实际更新状态。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
 
 开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。真实模型、飞书和真实业务材料仍未接入。M2.1 默认仅启用无网络的 FakeFeishu 与进程内凭据存储，不能通过环境配置切换真实 provider。
 
@@ -83,7 +83,7 @@ M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host
 
 只用空的隔离工作库与上述 Fake 模拟授权。“今日 / 飞书任务与独立动作”可读取任务、填写创建表单、只选所改字段编辑、拟定完成或项目进度变化。必须先审阅最终值，再点击“独立确认此动作”，随后明确执行；知识确认、列表刷新和建议都不执行动作。任务标题和日期方式由用户填写；没有默认截止日期。日期保留用户原文、全天标志和 IANA 时区；具体时间要求显式时区偏移一致。
 
-结果未知时只读核实或记录用户独立提供的明确结果；不重发未知动作、不按标题猜成功。动作记录可分页读取及重启恢复。模拟远端任务文件 `simulated_remote_tasks.json` 位于系统临时目录下明确命名的 `summit-simulated-feishu-remote-*`，不在工作库 / profile 的任务账本；正式任务事实由 provider 返回，本地仅保存提议和执行证据。重启后须重新模拟授权；模拟远端和本地回执仍可读取。
+结果未知时只读核实或记录用户独立提供的明确结果；不重发未知动作、不按标题猜成功。任务创建 / 编辑 / 完成的回执会核对目标与请求字段，完成必须有非零完成时间。Fake 核实证据绑定当前 client token、动作类型、目标和实际返回字段；普通任务对象不能核实动作。动作记录可分页读取及重启恢复。模拟远端任务文件 `simulated_remote_tasks.json` 位于系统临时目录下明确命名的 `summit-simulated-feishu-remote-*`，不在工作库 / profile 的任务账本；正式任务事实由 provider 返回，本地仅保存提议和执行证据。重启后须重新模拟授权；模拟远端和本地回执仍可读取。
 
 ~~~sh
 uv run pytest -q tests/integration/test_actions.py
@@ -91,7 +91,7 @@ uv run pytest -q tests/integration/test_intake_review.py tests/integration/test_
 npm --prefix web test -- TasksPanel.test.tsx
 ~~~
 
-全天日期的真实 Task v2 timestamp 提取规则未从可访问的一手文档确证；当前午夜转换仅为 Fake 约定，不可直接用于真实 adapter。Fake `task_result` 是模拟执行证据查询，未声称飞书存在按 client_token 查结果的真实端点。真实任务、账号、凭据 / 钥匙串与协议验收未测。DEV 证据见 [M2.2 任务报告](.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。
+全天日期的真实 Task v2 timestamp 提取规则未从可访问的一手文档确证；当前午夜转换仅为 Fake 约定，不可直接用于真实 adapter。Fake `task_result` 是合成动作证据查询，未声称飞书存在按 client_token 查结果的真实端点。没有可验证查询证据时动作保持 unknown。真实任务、账号、凭据 / 钥匙串与协议验收未测。DEV 证据见 [M2.2 任务报告](.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。
 
 ### M2.3 日志、思考与项目概览
 

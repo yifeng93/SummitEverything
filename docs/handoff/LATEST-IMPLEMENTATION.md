@@ -1,15 +1,17 @@
 # 最新实现交接
 
-## M2.1–M2.3 最终 DEV 固定候选
+## M2 阶段 A — Fake-only 整改与独立复验
 
-- **代码 SHA：** `09398fcae597b2478001d40aedf580ea91322c11`；分支 `codex/m2-feishu-actions-journal`；基线 `393e63ac95be3ebbee916fcd2c911ed3dec8e86d`。
-- **状态：** DEV完成待独立验收。M2.1 / M2.2 的窄范围代码审查已完成；M2.2 P2 空白核实依据已修复并复核。自动检查与实际 WebUI 复演记录在 [M2 DEV 报告](../quality/reports/2026-10-10-M2-DEV.md)。
-- **文档 checkpoint：** `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`，包含汇总报告、进展账本、验收矩阵、计划与本交接。后续这条 SHA 指针提交只用于把 checkpoint 写进当前交接，不改变该文档包 SHA。
-- **验证摘要：** 后端 135 passed；Web 8 个文件 / 31 测试 passed；ruff / format / mypy / lock / uv build、OpenAPI 类型生成、前端 typecheck / lint / build、Swift build 通过。保留 1 条既有 Starlette/httpx deprecation 和 3 条既有 React effect lint warnings。
-- **边界：** WebUI 主流程与 unknown 故障恢复已实际复演；原生壳 UI 因 CUA 无法安全绑定本候选窗口而未验证。当前固定代码仍仅实现并启用 Fake providers，没有访问真实 Feishu、模型或业务材料，也没有创建真实任务。用户已准备真实 Feishu App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain，并可参与测试、补充配置；资源可用不代表已集成或已测，真实调用和外部写入须由后续评估明确范围。
-- **当前远端交接：** 本文随用户授权的本次提交推送到 `origin/codex/m2-feishu-actions-journal`。未创建 PR / merge，没有启动 M3–M5。
-- **独立 QA 交接：** 另建 checkout/worktree 并固定到上面代码 SHA。不得在此共同目录切换分支或修改实现；使用 [TESTER 手册](TESTER.md)、[验收矩阵](../quality/ACCEPTANCE.md) 和 M2 DEV 报告。原生壳 UI 需由独立验收者在能确认路径属于本固定候选的窗口补测。
-- **下一阶段评定：** [给 GPT-6.1 Sol 的 M2 进度评定提示词](PROMPT-M2-ASSESSMENT-SOL-6.1.md)，包含用户确认的真实测试条件准备情况，不包含 secret 值。
+- **当前代码 SHA：** `d113cf43268982b747e8833c7d936b586156d92a`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
+- **原候选：** `09398fcae597b2478001d40aedf580ea91322c11`。原候选 QA 测试与报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`；A-01 P0、A-02–A-04 P1、A-05 P2 复现结果见 [原候选定向 QA](../quality/reports/2026-10-10-M2-stage-a-original-qa.md)。报告结论保持原样。
+- **当前状态：** 执行者已修复 A-01 至 A-05 并提交可测试代码；自测结果见 [阶段 A 修复 DEV 报告](../quality/reports/2026-10-10-M2-stage-a-fix-dev.md)。独立完整 QA 固定在 `d113cf4` 的隔离 checkout 中进行，报告未回收，不能标“QA通过”。
+- **初始文档 checkpoint：** M2 核心规格 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`；执行交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。本阶段更新文档将在修复代码之后单独提交；它不改变受测代码 SHA。
+- **自测摘要：** Python 142 passed；Web 8 files / 32 tests；Ruff、format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build 与 Swift build 退出 0。保留 1 条既有 Starlette/httpx 弃用警告和 3 条既有 React effect lint 警告。以上不是独立 QA 结论。
+- **边界与待办：** 最终浏览器流程 / console 证据、候选原生壳窗口 / Quit / 进程清理仍由独立 QA 实测并记录；按验收矩阵核对 C09、C15–C18、C04/C10/C11/C12/C13/C23。PR、main 合并与合并后复验尚未发生；Stage A 完成条件未满足。
+- **真实门：** 当前只有 Fake providers；本轮未访问真实 Feishu、付费模型、真实业务材料或 Keychain，未执行 DMG、五日或双机验证。用户备好的真实资源未被消费；真实门继续 NOT_RUN。
+- **阶段边界：** 未启动 M3–M5；阶段 A 结束后等待用户将最终报告交独立技术评定者，再决定阶段 B/C。
+
+以下 `M1` 区域为历史交接记录。
 
 下文保留 M1 独立 QA 历史。
 

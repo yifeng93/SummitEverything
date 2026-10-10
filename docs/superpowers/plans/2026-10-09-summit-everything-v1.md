@@ -10,15 +10,15 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
-## 当前阶段记录（2026-10-09）
+## 当前阶段记录（2026-10-10）
 
-M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main；最终报告、P2 和未测边界见 [进展账本](../../implementation/PROGRESS.md) 与 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。当前可开始 M2，先做 Fake provider 流程与模拟验收。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。以下 M1 勾选反映已验收范围；M2–M5 保留为未实施计划。
+M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main。M2.1–M2.3 Fake-only 原始代码 `09398fcae597b2478001d40aedf580ea91322c11` 的独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2；执行者已修复并固定新代码 SHA `d113cf43268982b747e8833c7d936b586156d92a`，最终独立完整 QA 正在该 SHA 的独立 checkout 进行。当前只是 DEV 完成 / 独立复验待结论，尚未达到阶段 A 通过或 main 合并条件。本计划继续作为全 v1 规格，不启动 M3–M5。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。
 
 ## 全局执行规则与验收门
 
-Foundation 与 M1 的模拟验收门已通过；最早未实施任务为 M2.1。当前代码包含 M1 本地应用闭环，不应再按初始框架状态开始 M1.1。
+Foundation 与 M1 的模拟验收门已通过。当前 M2.1–M2.3 阶段 A 由 `09398fc` 定向复现缺陷，修复代码固定于 `d113cf4` 并交独立验收；阶段门仍未通过，main 尚未整合。不得从旧计划勾选状态或 DEV 自动检查推断阶段 QA 已通过，也不启动 M3–M5。
 
-每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为用真实浏览器测试。
+每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为由独立 QA 用真实浏览器检查。
 
 当前 Python 通用检查：
 
@@ -113,7 +113,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 文件：integrations/feishu/{auth,materials,calendar}.py、api/routes/feishu.py、web 对应功能。
 
-- [x] Fake 范围落实 SWB OAuth / session 经验，长期秘密交钥匙串，state 绑定发起会话；scope、redirect 和 endpoint 用实际注册配置。
+- [x] Fake 范围落实 OAuth / session 边界，state 绑定发起会话；scope、redirect 和 endpoint 使用配置值。凭据目前只由进程内 `MemoryCredentialStore` 保存；OS Keychain adapter、设置入口和持久化尚未实现（NOT_RUN）。
 - [x] 测试完整响应、过期 token、拒绝、分页、逐字稿文件内容、只获取被选材料；列表不调模型。
 - [x] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
 - [ ] 账户准备好后验证真实 scope、列表和正文读取；缺失权限给具体指引，保留手动文字入口。
