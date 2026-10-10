@@ -1,0 +1,60 @@
+{
+  "action_id": "b9905f0f-2380-4ea1-bb91-3763a325f0c0",
+  "initial_ui": "最终动作：创建飞书任务\n任务标题\nQA R4 unknown timeout\n任务描述\nSynthetic C16 no-resend UI evidence run11\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果\n动作与执行证据详情",
+  "remote_count_before_replay": 10,
+  "replay": {
+    "http_status": 200,
+    "action_id": "b9905f0f-2380-4ea1-bb91-3763a325f0c0",
+    "state": "unknown"
+  },
+  "remote_count_after_replay": 10,
+  "replay_ui": "最终动作：创建飞书任务\n任务标题\nQA R4 unknown timeout\n任务描述\nSynthetic C16 no-resend UI evidence run11\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果\n动作与执行证据详情",
+  "archive_records_visible": "飞书任务与独立动作\n\nFake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。\n\n刷新飞书任务\n新建飞书任务\n拟定项目进度变化\n查看动作记录\n动作记录\n创建飞书任务 · 结果未知，请核实；此动作不会重发。\n创建飞书任务 · 结果未知，请核实；此动作不会重发。\n创建飞书任务 · 结果未知，请核实；此动作不会重发。\n改变项目进度 · 动作已成功\n创建飞书任务 · 结果未知，请核实；此动作不会重发。\n创建飞书任务 · 动作已成功\n创建飞书任务 · 动作已成功\n创建飞书任务 · 动作已成功\n创建飞书任务 · 动作已成功\n创建飞书任务 · 结果未知，请核实；此动作不会重发。\n最终动作：创建飞书任务\n任务标题\nQA R4 unknown timeout\n任务描述\nSynthetic C16 no-resend UI evidence run11\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果\n动作与执行证据详情",
+  "archive_unknown_detail": {
+    "action_id": "b9905f0f-2380-4ea1-bb91-3763a325f0c0",
+    "text": "最终动作：创建飞书任务\n任务标题\nQA R4 unknown timeout\n任务描述\nSynthetic C16 no-resend UI evidence run11\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果\n动作与执行证据详情"
+  },
+  "network": [
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/b9905f0f-2380-4ea1-bb91-3763a325f0c0/executions",
+      "query": "",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "b9905f0f-2380-4ea1-bb91-3763a325f0c0",
+        "kind": "feishu_task_create",
+        "state": "unknown"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "query": "<redacted>",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/b9905f0f-2380-4ea1-bb91-3763a325f0c0",
+      "query": "",
+      "http_status": 200,
+      "response": {
+        "action_id": "b9905f0f-2380-4ea1-bb91-3763a325f0c0",
+        "kind": "feishu_task_create",
+        "state": "unknown"
+      }
+    }
+  ],
+  "network_count": 3,
+  "console": {
+    "log": 2,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  }
+}

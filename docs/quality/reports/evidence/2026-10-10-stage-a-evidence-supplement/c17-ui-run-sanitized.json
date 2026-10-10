@@ -1,0 +1,570 @@
+{
+  "run_id": "qa-stage-a-evidence-supplement-run7",
+  "origin": "http://127.0.0.1:5173",
+  "api_port": 18917,
+  "web_port": 5173,
+  "cdp_port": 19317,
+  "isolated_profile": ".local/qa/stage-a-evidence-20261010-run7/chrome-profile",
+  "cases": [
+    {
+      "id": "6caf8379-67da-409a-83f5-17a804ea81de",
+      "formValues": {
+        "title": "",
+        "inputs": [
+          {
+            "type": "text",
+            "value": "QA supplement no due"
+          },
+          {
+            "type": "textarea",
+            "value": "Synthetic UI evidence: c17-no-due"
+          },
+          {
+            "type": "select-one",
+            "value": "none"
+          }
+        ],
+        "text": "创建飞书任务\n任务标题\n任务描述\n截止日期方式\n明确选择日期方式\n不设截止日期\n全天日期\n具体时间\n审阅任务内容"
+      },
+      "previewText": "最终动作：创建飞书任务\n任务标题\nQA supplement no due\n任务描述\nSynthetic UI evidence: c17-no-due\n截止日期\n不设截止日期\n\n待独立确认\n\n独立确认此动作\n修改动作内容\n动作与执行证据详情",
+      "finalUi": {
+        "fields": "任务标题\nQA supplement no due\n任务描述\nSynthetic UI evidence: c17-no-due\n截止日期\n不设截止日期",
+        "state": "动作已成功"
+      }
+    },
+    {
+      "id": "8455dc87-c509-4257-a68b-3a8db59f49f5",
+      "formValues": {
+        "title": "",
+        "inputs": [
+          {
+            "type": "text",
+            "value": "QA supplement all-day"
+          },
+          {
+            "type": "textarea",
+            "value": "Synthetic UI evidence: c17-all-day"
+          },
+          {
+            "type": "select-one",
+            "value": "all_day"
+          },
+          {
+            "type": "date",
+            "value": "2026-10-14"
+          },
+          {
+            "type": "text",
+            "value": "Asia/Shanghai"
+          }
+        ],
+        "text": "创建飞书任务\n任务标题\n任务描述\n截止日期方式\n明确选择日期方式\n不设截止日期\n全天日期\n具体时间\n截止日期\n日期时区\n\n时间按您填写的偏移量与时区核对，不猜开始或截止日期。\n\n审阅任务内容"
+      },
+      "previewText": "最终动作：创建飞书任务\n任务标题\nQA supplement all-day\n任务描述\nSynthetic UI evidence: c17-all-day\n截止日期\n2026-10-14 · 全天 · Asia/Shanghai\n\n待独立确认\n\n独立确认此动作\n修改动作内容\n动作与执行证据详情",
+      "finalUi": {
+        "fields": "任务标题\nQA supplement all-day\n任务描述\nSynthetic UI evidence: c17-all-day\n截止日期\n2026-10-14 · 全天 · Asia/Shanghai",
+        "state": "动作已成功"
+      }
+    },
+    {
+      "id": "c592eee6-250f-4f75-92b7-0f3b25d68a98",
+      "formValues": {
+        "title": "",
+        "inputs": [
+          {
+            "type": "text",
+            "value": "QA supplement offset time"
+          },
+          {
+            "type": "textarea",
+            "value": "Synthetic UI evidence: c17-offset-time"
+          },
+          {
+            "type": "select-one",
+            "value": "time"
+          },
+          {
+            "type": "text",
+            "value": "2026-10-15T09:30:00+08:00"
+          },
+          {
+            "type": "text",
+            "value": "Asia/Shanghai"
+          }
+        ],
+        "text": "创建飞书任务\n任务标题\n任务描述\n截止日期方式\n明确选择日期方式\n不设截止日期\n全天日期\n具体时间\n截止日期\n日期时区\n\n时间按您填写的偏移量与时区核对，不猜开始或截止日期。\n\n审阅任务内容"
+      },
+      "previewText": "最终动作：创建飞书任务\n任务标题\nQA supplement offset time\n任务描述\nSynthetic UI evidence: c17-offset-time\n截止日期\n2026-10-15T09:30:00+08:00 · 具体时间 · Asia/Shanghai\n\n待独立确认\n\n独立确认此动作\n修改动作内容\n动作与执行证据详情",
+      "finalUi": {
+        "fields": "任务标题\nQA supplement offset time\n任务描述\nSynthetic UI evidence: c17-offset-time\n截止日期\n2026-10-15T09:30:00+08:00 · 具体时间 · Asia/Shanghai",
+        "state": "动作已成功"
+      }
+    },
+    {
+      "id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+      "formValues": {
+        "title": "",
+        "inputs": [
+          {
+            "type": "text",
+            "value": "QA supplement mismatch"
+          },
+          {
+            "type": "textarea",
+            "value": "Synthetic UI evidence: c17-mismatch"
+          },
+          {
+            "type": "select-one",
+            "value": "time"
+          },
+          {
+            "type": "text",
+            "value": "2026-10-16T11:00:00+08:00"
+          },
+          {
+            "type": "text",
+            "value": "Asia/Shanghai"
+          }
+        ],
+        "text": "创建飞书任务\n任务标题\n任务描述\n截止日期方式\n明确选择日期方式\n不设截止日期\n全天日期\n具体时间\n截止日期\n日期时区\n\n时间按您填写的偏移量与时区核对，不猜开始或截止日期。\n\n审阅任务内容"
+      },
+      "previewText": "最终动作：创建飞书任务\n任务标题\nQA supplement mismatch\n任务描述\nSynthetic UI evidence: c17-mismatch\n截止日期\n2026-10-16T11:00:00+08:00 · 具体时间 · Asia/Shanghai\n\n待独立确认\n\n独立确认此动作\n修改动作内容\n动作与执行证据详情",
+      "finalUi": {
+        "fields": "任务标题\nQA supplement mismatch\n任务描述\nSynthetic UI evidence: c17-mismatch\n截止日期\n2026-10-16T11:00:00+08:00 · 具体时间 · Asia/Shanghai",
+        "state": "结果未知，请核实；此动作不会重发。"
+      }
+    }
+  ],
+  "mismatch": {
+    "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+    "count_before_replay": 4,
+    "count_after_replay": 4,
+    "replay": {
+      "http_status": 200,
+      "body": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "state": "unknown"
+      }
+    },
+    "reconciliation_ui": {
+      "fields": "任务标题\nQA supplement mismatch\n任务描述\nSynthetic UI evidence: c17-mismatch\n截止日期\n2026-10-16T11:00:00+08:00 · 具体时间 · Asia/Shanghai",
+      "state": "动作已成功"
+    }
+  },
+  "fake_remote_fields": [
+    {
+      "guid": "446f6b9b-20a4-4419-86d5-ba5b2b48136a",
+      "summary": "QA supplement no due",
+      "description": "Synthetic UI evidence: c17-no-due",
+      "due": null,
+      "completed_at": 0
+    },
+    {
+      "guid": "b0c4c2b1-c5fe-4b10-891f-36d5562bdee7",
+      "summary": "QA supplement all-day",
+      "description": "Synthetic UI evidence: c17-all-day",
+      "due": {
+        "timestamp": 1791907200000,
+        "is_all_day": true
+      },
+      "completed_at": 0
+    },
+    {
+      "guid": "d68783e2-b684-43bc-8847-78897b6778e2",
+      "summary": "QA supplement offset time",
+      "description": "Synthetic UI evidence: c17-offset-time",
+      "due": {
+        "timestamp": 1792027800000,
+        "is_all_day": false
+      },
+      "completed_at": 0
+    },
+    {
+      "guid": "fe3ceb16-2a18-4203-aeaf-53895cc180c6",
+      "summary": "QA supplement mismatch",
+      "description": "Synthetic UI evidence: c17-mismatch",
+      "due": {
+        "timestamp": 1792119600000,
+        "is_all_day": false
+      },
+      "completed_at": 0
+    }
+  ],
+  "cdp_events": [
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "query": "",
+      "body": {},
+      "http_status": 201,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "<inline-resource-redacted>",
+      "query": "",
+      "http_status": 200,
+      "response": "<body omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/integrations/feishu/authorizations",
+      "query": "",
+      "body": {},
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "query": "<redacted>",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "query": "",
+      "body": {
+        "action_id": "6caf8379-67da-409a-83f5-17a804ea81de",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA supplement no due",
+          "description": "Synthetic UI evidence: c17-no-due",
+          "due": null
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "6caf8379-67da-409a-83f5-17a804ea81de",
+        "kind": "feishu_task_create",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/6caf8379-67da-409a-83f5-17a804ea81de/confirmations",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "6caf8379-67da-409a-83f5-17a804ea81de",
+        "kind": "feishu_task_create",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/6caf8379-67da-409a-83f5-17a804ea81de/executions",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "6caf8379-67da-409a-83f5-17a804ea81de",
+        "kind": "feishu_task_create",
+        "state": "succeeded"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "query": "",
+      "body": {
+        "action_id": "8455dc87-c509-4257-a68b-3a8db59f49f5",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA supplement all-day",
+          "description": "Synthetic UI evidence: c17-all-day",
+          "due": {
+            "value": "2026-10-14",
+            "is_all_day": true,
+            "timezone": "Asia/Shanghai"
+          }
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "8455dc87-c509-4257-a68b-3a8db59f49f5",
+        "kind": "feishu_task_create",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/8455dc87-c509-4257-a68b-3a8db59f49f5/confirmations",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "8455dc87-c509-4257-a68b-3a8db59f49f5",
+        "kind": "feishu_task_create",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/8455dc87-c509-4257-a68b-3a8db59f49f5/executions",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "8455dc87-c509-4257-a68b-3a8db59f49f5",
+        "kind": "feishu_task_create",
+        "state": "succeeded"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "query": "",
+      "body": {
+        "action_id": "c592eee6-250f-4f75-92b7-0f3b25d68a98",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA supplement offset time",
+          "description": "Synthetic UI evidence: c17-offset-time",
+          "due": {
+            "value": "2026-10-15T09:30:00+08:00",
+            "is_all_day": false,
+            "timezone": "Asia/Shanghai"
+          }
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "c592eee6-250f-4f75-92b7-0f3b25d68a98",
+        "kind": "feishu_task_create",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/c592eee6-250f-4f75-92b7-0f3b25d68a98/confirmations",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "c592eee6-250f-4f75-92b7-0f3b25d68a98",
+        "kind": "feishu_task_create",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/c592eee6-250f-4f75-92b7-0f3b25d68a98/executions",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "c592eee6-250f-4f75-92b7-0f3b25d68a98",
+        "kind": "feishu_task_create",
+        "state": "succeeded"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "query": "",
+      "body": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA supplement mismatch",
+          "description": "Synthetic UI evidence: c17-mismatch",
+          "due": {
+            "value": "2026-10-16T11:00:00+08:00",
+            "is_all_day": false,
+            "timezone": "Asia/Shanghai"
+          }
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/a615dff8-e0f9-4548-9c86-e4fe61cc1707/confirmations",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/a615dff8-e0f9-4548-9c86-e4fe61cc1707/executions",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "state": "unknown"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/a615dff8-e0f9-4548-9c86-e4fe61cc1707/executions",
+      "query": "",
+      "body": {
+        "payload_sha256": "<redacted>",
+        "confirmation_id": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "state": "unknown"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/a615dff8-e0f9-4548-9c86-e4fe61cc1707/reconciliations",
+      "query": "",
+      "body": {},
+      "http_status": 200,
+      "response": {
+        "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+        "kind": "feishu_task_create",
+        "state": "succeeded"
+      }
+    }
+  ],
+  "console_counts": {
+    "log": 2,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  }
+}

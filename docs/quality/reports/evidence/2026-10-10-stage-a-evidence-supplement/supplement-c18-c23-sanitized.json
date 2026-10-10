@@ -1,0 +1,373 @@
+{
+  "run_id": "qa-stage-a-evidence-supplement-run7-c18-c23",
+  "c18": {
+    "knowledge_confirmed_before_this_capture": true,
+    "form": "改变项目进度\n进度项目\n选择项目\nQA Supplement Project\nQA Supplement Project run8\nQA Supplement Project run9\nQA Supplement Project run10\n\n当前进度：尚未记录\n\n新的项目进度\n审阅进度变化",
+    "projects_before_progress": {
+      "status": 200,
+      "projects": [
+        {
+          "id": "8a1cf462-2c8c-5a20-9d0d-92380a35c4b6",
+          "name": "QA Supplement Project",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        },
+        {
+          "id": "7cdab9ed-bb7d-52a2-af7d-ab02243a2c2c",
+          "name": "QA Supplement Project run8",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        },
+        {
+          "id": "5d8a57d5-b8de-5a92-8523-0548753c7851",
+          "name": "QA Supplement Project run9",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        },
+        {
+          "id": "27242e58-6eda-5722-9f7e-b74107143639",
+          "name": "QA Supplement Project run10",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        }
+      ]
+    },
+    "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+    "preview": "最终动作：改变项目进度\n项目\nQA Supplement Project run10\n新的项目进度\n独立确认后的进度\n\n尚未记录 → 独立确认后的进度\n\n待独立确认\n\n独立确认此动作\n修改动作内容\n动作与执行证据详情",
+    "projects_after_confirm": {
+      "status": 200,
+      "body": [
+        {
+          "id": "8a1cf462-2c8c-5a20-9d0d-92380a35c4b6",
+          "line_id": "c568495c-0aef-5d7c-976c-1a34fe199eb3",
+          "name": "QA Supplement Project",
+          "directory": "QA-Supplement-Line/QA-Supplement-Project",
+          "overview_id": "3e1ed0ac-d1ff-591d-b68a-56c3b4343469",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0,
+          "progress_confirmation_id": null
+        },
+        {
+          "id": "7cdab9ed-bb7d-52a2-af7d-ab02243a2c2c",
+          "line_id": "fcaeb525-40e4-54bf-a15d-57422ab1a192",
+          "name": "QA Supplement Project run8",
+          "directory": "QA-Supplement-Line-run8/QA-Supplement-Project-run8",
+          "overview_id": "2e89dea7-7e62-5480-be84-b8e86c97827f",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0,
+          "progress_confirmation_id": null
+        },
+        {
+          "id": "5d8a57d5-b8de-5a92-8523-0548753c7851",
+          "line_id": "2eb88545-adef-55ee-b071-db5b4faecae3",
+          "name": "QA Supplement Project run9",
+          "directory": "QA-Supplement-Line-run9/QA-Supplement-Project-run9",
+          "overview_id": "380041ec-71de-54b1-8deb-d615cc226a04",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0,
+          "progress_confirmation_id": null
+        },
+        {
+          "id": "27242e58-6eda-5722-9f7e-b74107143639",
+          "line_id": "fc2e6a1b-a610-5b56-930c-932dd3bbc0f1",
+          "name": "QA Supplement Project run10",
+          "directory": "QA-Supplement-Line-run10/QA-Supplement-Project-run10",
+          "overview_id": "9681a3cf-f14f-5ba5-a15c-ec18640aaf89",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0,
+          "progress_confirmation_id": null
+        }
+      ]
+    },
+    "final_ui": "最终动作：改变项目进度\n项目\nQA Supplement Project run10\n新的项目进度\n独立确认后的进度\n\n尚未记录 → 独立确认后的进度\n\n动作已成功\n\n动作与执行证据详情",
+    "projects_after_execute": {
+      "status": 200,
+      "projects": [
+        {
+          "id": "8a1cf462-2c8c-5a20-9d0d-92380a35c4b6",
+          "name": "QA Supplement Project",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        },
+        {
+          "id": "7cdab9ed-bb7d-52a2-af7d-ab02243a2c2c",
+          "name": "QA Supplement Project run8",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        },
+        {
+          "id": "5d8a57d5-b8de-5a92-8523-0548753c7851",
+          "name": "QA Supplement Project run9",
+          "archived": false,
+          "progress": "",
+          "progress_version": 0
+        },
+        {
+          "id": "27242e58-6eda-5722-9f7e-b74107143639",
+          "name": "QA Supplement Project run10",
+          "archived": false,
+          "progress": "独立确认后的进度",
+          "progress_version": 1
+        }
+      ]
+    }
+  },
+  "c23": {
+    "records_ui": "飞书任务与独立动作\n\nFake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。\n\n刷新飞书任务\n新建飞书任务\n拟定项目进度变化\n查看动作记录\n最终动作：改变项目进度\n项目\nQA Supplement Project run10\n新的项目进度\n独立确认后的进度\n\n尚未记录 → 独立确认后的进度\n\n动作已成功\n\n动作与执行证据详情",
+    "archive_listing": {
+      "status": 200,
+      "record_count": 10,
+      "records": [
+        {
+          "action_id": "08bfd640-9a7b-4975-895e-9e1279a4aa15",
+          "kind": "feishu_task_create",
+          "state": "unknown"
+        },
+        {
+          "action_id": "11e08117-2479-47c8-a031-f269364aa36e",
+          "kind": "feishu_task_create",
+          "state": "unknown"
+        },
+        {
+          "action_id": "2013d804-fb8c-4717-885d-fe730198f2d4",
+          "kind": "feishu_task_create",
+          "state": "unknown"
+        },
+        {
+          "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+          "kind": "project_progress",
+          "state": "succeeded"
+        },
+        {
+          "action_id": "3e6885ee-5360-46bc-b881-b282f3a4e055",
+          "kind": "feishu_task_create",
+          "state": "unknown"
+        },
+        {
+          "action_id": "6caf8379-67da-409a-83f5-17a804ea81de",
+          "kind": "feishu_task_create",
+          "state": "succeeded"
+        },
+        {
+          "action_id": "8455dc87-c509-4257-a68b-3a8db59f49f5",
+          "kind": "feishu_task_create",
+          "state": "succeeded"
+        },
+        {
+          "action_id": "a615dff8-e0f9-4548-9c86-e4fe61cc1707",
+          "kind": "feishu_task_create",
+          "state": "succeeded"
+        },
+        {
+          "action_id": "c592eee6-250f-4f75-92b7-0f3b25d68a98",
+          "kind": "feishu_task_create",
+          "state": "succeeded"
+        },
+        {
+          "action_id": "db253cec-be6d-4e75-bf8d-1188af1ec465",
+          "kind": "feishu_task_create",
+          "state": "unknown"
+        }
+      ]
+    },
+    "action_id": "08bfd640-9a7b-4975-895e-9e1279a4aa15",
+    "reopened_ui": "最终动作：创建飞书任务\n任务标题\nQA R4 unknown timeout\n任务描述\nSynthetic C16 UI no-resend evidence\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果\n动作与执行证据详情"
+  },
+  "network": [
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "8a1cf462-2c8c-5a20-9d0d-92380a35c4b6",
+            "name": "QA Supplement Project",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "7cdab9ed-bb7d-52a2-af7d-ab02243a2c2c",
+            "name": "QA Supplement Project run8",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "5d8a57d5-b8de-5a92-8523-0548753c7851",
+            "name": "QA Supplement Project run9",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "27242e58-6eda-5722-9f7e-b74107143639",
+            "name": "QA Supplement Project run10",
+            "progress": "",
+            "progress_version": 0
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "query": "",
+      "body": {
+        "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+        "kind": "project_progress",
+        "payload": {
+          "project_id": "27242e58-6eda-5722-9f7e-b74107143639",
+          "expected_version": 0,
+          "progress": "独立确认后的进度"
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+        "kind": "project_progress",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/31483476-2522-47ea-bb7d-e0dec8f968b2/confirmations",
+      "query": "",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+        "kind": "project_progress",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "8a1cf462-2c8c-5a20-9d0d-92380a35c4b6",
+            "name": "QA Supplement Project",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "7cdab9ed-bb7d-52a2-af7d-ab02243a2c2c",
+            "name": "QA Supplement Project run8",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "5d8a57d5-b8de-5a92-8523-0548753c7851",
+            "name": "QA Supplement Project run9",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "27242e58-6eda-5722-9f7e-b74107143639",
+            "name": "QA Supplement Project run10",
+            "progress": "",
+            "progress_version": 0
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/31483476-2522-47ea-bb7d-e0dec8f968b2/executions",
+      "query": "",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+        "kind": "project_progress",
+        "state": "succeeded"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "8a1cf462-2c8c-5a20-9d0d-92380a35c4b6",
+            "name": "QA Supplement Project",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "7cdab9ed-bb7d-52a2-af7d-ab02243a2c2c",
+            "name": "QA Supplement Project run8",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "5d8a57d5-b8de-5a92-8523-0548753c7851",
+            "name": "QA Supplement Project run9",
+            "progress": "",
+            "progress_version": 0
+          },
+          {
+            "id": "27242e58-6eda-5722-9f7e-b74107143639",
+            "name": "QA Supplement Project run10",
+            "progress": "独立确认后的进度",
+            "progress_version": 1
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "query": "<redacted>",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "query": "",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/31483476-2522-47ea-bb7d-e0dec8f968b2",
+      "query": "",
+      "http_status": 200,
+      "response": {
+        "action_id": "31483476-2522-47ea-bb7d-e0dec8f968b2",
+        "kind": "project_progress",
+        "state": "succeeded"
+      }
+    }
+  ],
+  "network_count": 9,
+  "console": {
+    "log": 2,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  }
+}
