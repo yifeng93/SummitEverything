@@ -450,9 +450,33 @@ def create_app(
     def runtime_for(workspace: WorkspaceContext) -> ModelRuntime:
         return ModelRuntime(settings_store(workspace).read(), credential_vault(workspace))
 
+    def ensure_remote_calls_allowed(
+        workspace: WorkspaceContext, providers: tuple[str, ...]
+    ) -> None:
+        settings = settings_store(workspace).read()
+        if settings.mode != "real":
+            return
+        selected: dict[str, Any] = {
+            "llm": settings.llm,
+            "embedding": settings.embedding,
+            "rerank": settings.rerank,
+        }
+        if any(
+            selected[name].provider != "fake" and selected[name].enabled
+            for name in providers
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "provider_disabled",
+                    "message": "真实业务调用当前关闭；仅允许单次合成连接检查。",
+                },
+            )
+
     def review_for(workspace: WorkspaceContext) -> IntakeReviewService:
         if review_service is not None:
             return review_service
+        ensure_remote_calls_allowed(workspace, ("llm",))
         return IntakeReviewService(runtime_for(workspace).llm())
 
     def fingerprint_is_current(workspace: WorkspaceContext, fingerprint: str) -> bool:
@@ -464,6 +488,8 @@ def create_app(
     def query_for(workspace: WorkspaceContext, *, remote: bool = False) -> QueryService:
         if query_service is not None:
             return query_service
+        if remote:
+            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
         providers = runtime_for(workspace) if remote else None
         return QueryService(
             IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"),
@@ -1017,6 +1043,7 @@ def create_app(
         payload: IndexPlan,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IndexResult:
+        ensure_remote_calls_allowed(workspace, ("embedding",))
         if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
             raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
         return query_for(workspace, remote=True).execute_plan(Path(workspace.root), payload)
@@ -1033,6 +1060,7 @@ def create_app(
         payload: QueryRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> StreamingResponse:
+        ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
         request_id = str(payload.request_id or uuid4())
         if request_id in cancellations:
             raise HTTPException(

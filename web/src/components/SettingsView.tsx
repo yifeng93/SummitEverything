@@ -28,7 +28,7 @@ const disabledReasons: Record<string, string> = {
   date_and_result_proof_unverified: '任务日期语义和写入结果核实方式尚未确认。',
   offline_default: '当前使用离线 Fake；此路径不会访问真实 provider。',
   provider_not_configured: '已选 provider；真实模式与本机密钥尚未完成配置。',
-  stage_c_authorization_required: '已配置，但需完成逐项外部操作授权后才能使用。',
+  limited_synthetic_smoke_only: '已配置；仅开放一次合成连接检查，真实业务调用仍关闭。',
 }
 
 function credentialAccountId(settings: Settings, provider: string): string {

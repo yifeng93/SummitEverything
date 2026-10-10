@@ -406,21 +406,21 @@ def provider_settings_payload(
             "feishu_task_read": "protocol_unverified",
             "feishu_task_write": "date_and_result_proof_unverified",
             "llm": (
-                "stage_c_authorization_required"
+                "limited_synthetic_smoke_only"
                 if llm_configured and settings.mode == "real"
                 else "offline_default"
                 if settings.llm.provider == "fake"
                 else "provider_not_configured"
             ),
             "embedding": (
-                "stage_c_authorization_required"
+                "limited_synthetic_smoke_only"
                 if embedding_configured and settings.mode == "real"
                 else "offline_default"
                 if settings.embedding.provider == "fake"
                 else "provider_not_configured"
             ),
             "rerank": (
-                "stage_c_authorization_required"
+                "limited_synthetic_smoke_only"
                 if rerank_configured and settings.mode == "real"
                 else "offline_default"
                 if settings.rerank.provider == "fake"
