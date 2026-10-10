@@ -286,7 +286,8 @@ def test_concurrent_running_is_durable_before_provider_call(tmp_path):
         assert entered.wait(5)
         try:
             second = execute(c, action)
-            assert second.status_code == 200 and second.json()["state"] == "running"
+            assert second.status_code == 202 and second.json()["state"] == "running"
+            assert second.headers["location"] == PREFIX + "/" + action["action_id"]
         finally:
             release.set()
         assert future.result().json()["state"] == "succeeded"

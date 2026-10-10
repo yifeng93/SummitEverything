@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, Query, Response
 
 from summit_everything.domain.models import WorkspaceContext
 from summit_everything.intake.actions import (
@@ -66,10 +66,15 @@ def register_actions(
     @app.post("/api/v1/actions/{action_id}/executions", dependencies=[Depends(authenticated)])
     def execute_action(
         action_id: UUID,
+        response: Response,
         payload: ActionConfirmation,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Action:
-        return actions.execute(Path(workspace.root), action_id, payload)
+        result = actions.execute(Path(workspace.root), action_id, payload)
+        if result.state == "running":
+            response.status_code = 202
+            response.headers["Location"] = f"/api/v1/actions/{action_id}"
+        return result
 
     @app.post("/api/v1/actions/{action_id}/reconciliations", dependencies=[Depends(authenticated)])
     def reconcile_action(
