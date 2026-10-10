@@ -4,9 +4,14 @@
 
 ## 当前状态与下一步
 
-阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；此后本轮整理仅文档和 Git 引用。完整证据与当前授权边界见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。当前下一步为[B/C 提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)：B 实现真实适配 / 配置 / Keychain 并独立离线验收；C 在 B 通过且用户逐项授权后执行。B/C 与 M3–M5 未开始。
+阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。隔离 worktree `codex/stage-b-real-providers` 中的 B 候选仍 DEV 进行中，已接通模型操作路径、合成 callback 配置、本地 provider 设置、Fake-only user token 刷新轮换与登出，以及离线验证的 embedding generation 原子切换；Feishu 真实 adapter、持久化 user token Keychain 生命周期、原生 Keychain 故障生命周期、真实账户维度验证和独立 QA 尚未完成。候选没有固定 SHA / PR。用户已确认是 Feishu app 管理员且可开通权限，scope 可用性不构成阻塞；协议和 token 语义仍需核实。除已授权且尚未执行的有限 smoke 外，更广 C 操作仍需 B QA 和逐项授权；M3–M5 未开始。完整证据与边界见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
+
+授权更新（2026-10-10）：用户愿意通过本地安全入口提供 API keys，并已授权有限的 Feishu OAuth 接入与合成数据模型冒烟：最多一次 code exchange、必要时一次 refresh，DeepSeek chat / Model Studio embedding / rerank 各最多一次 synthetic request。执行前查官方现价并估算；提示词建议 CNY 5 为保守操作上限（不是用户指定预算，若无法界定在该额度内只询问更高上限）。这不授权读取真实材料、日历或 task，不授权将真实业务内容发送给模型，也不授权 task 写入。详细约束见[Sol 阶段 B 独立评估提示词](../handoff/PROMPT-STAGE-B-SOL-REVIEW.md)和[Luna 执行提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
 
 ## 历史更新记录（按各条当时的固定版本理解）
+
+- 2026-10-10：Stage B 候选开发进行中。设置/Keychain 与模型 adapter 的离线测试目前通过；Real/Fake 能力摘要保持 disabled，模型 adapter 未接入真实调用路径。Feishu 动态官方文档页未能读取正文，OAuth / scopes / 数据字段与时间映射仍待核验，因此没有启用真实 Feishu 请求。开发浏览器已用隔离合成 workspace 验证设置与合成 Keychain 保存/删除；浏览器 DevTools 专用 MCP 不可用，原生壳 UI 因 Mac 当前锁定未复演。候选 SHA、完整检查和独立 QA 尚待完成；详情见最新交接及本轮 DEV 报告。
+- 2026-10-10（Stage B 续）：接通显式整理 / 索引 / 问答的模型运行时，并加上设置指纹校验、真实 embedding 手动索引门、Model Studio account-specific base URL 配置与用户提供的 localhost `/callback` Fake flow。用户确认 Feishu app 管理员可授予权限，scope 开通不是 blocker；仍未调用外部 provider。Fake token 生命周期覆盖 refresh-before-expiry、刷新 token 轮换、失效 refresh 和登出 API/UI。本轮新增独立 `KeychainCredentialStore`，区分用户 token 与 app secret，并用内存 SecretBackend 验证重启、轮换、注销、profile/App ID 隔离和损坏数据处理；它尚未接入 FeishuService 或 real OAuth。官方 LarkSuite SDK 源码确认 OAuth v2 token 路径与 JSON 请求/响应形状；官方文档页面仍未返回可读正文，scope、授权参数、expiry/revoke 和业务 endpoint 语义仍需核实。全后端 190 passed、前端 36 passed、ruff / format / mypy / lock / package / API types / Web typecheck-lint-build / Swift build 检查通过；保留 1 条 Starlette deprecation 和 3 条既有 React lint warnings。隔离 IAB 复演记录 Fake Feishu 授权、断开和重载后未授权；[复演证据](../quality/reports/evidence/2026-10-10-stage-b-browser/replay.md)。截图未归档，完整 DevTools / native evidence 仍欠缺。候选未固定、真实 B3 未实现、独立 QA 未开始；详见 [当前 DEV 报告](../quality/reports/2026-10-10-STAGE-B-partial-DEV.md)。
 
 - 2026-10-10：独立 QA 对修复源码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 完成 Fake-only M2.1–M2.3 阶段 A 验收，最终报告原提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`（第四轮）；原候选初验及各轮复验报告提交为 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`、`bb5231d5d31a64f57605bf8443f5f57752aac50d`、`91b0a93c615b3a16f5cf428b7f131a443d3ff59e`、`7f785c033bb96a43ae50ad6cf55b9c20474db85b`、`0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。PR #4 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 已在独立 main checkout 完成全矩阵检查和 8 项关键冒烟；详细结论见 [合并后核验记录](../quality/reports/2026-10-10-M2-stage-a-postmerge.md)。A-01–A-05 与本阶段 Fake-only MUST PASS，未关闭 P0/P1/P2=0；OAuth cancel UI 变体 NOT_RUN，API denial 已覆盖。真实门 NOT_RUN，M3–M5 未开始。
 - 2026-10-10：阶段 A 原候选 `09398fcae597b2478001d40aedf580ea91322c11` 经独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2（报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`）。执行者在 `codex/m2-stage-a-closeout` 修复并固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82`；后端 142 passed，前端 32 passed，静态检查、类型、构建及 Swift build 通过，保留 1 条 Starlette/httpx 弃用警告和 3 条既有 React lint 警告。索引错误日志限制为工作库 UUID 与异常类型；A-01 查询回归使用正文独特词检验真实引用门。A-01–A-05 当前仅为 DEV 修复状态，独立完整复验、真实浏览器 / 原生壳复演、PR 与 main 合并均待完成；详见 [阶段 A 修复 DEV 报告](../quality/reports/2026-10-10-M2-stage-a-fix-dev.md)。
@@ -21,11 +26,19 @@
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
-| B 真实适配 / 本地配置 | 未开始 | NOT_RUN | 不等于真实协议验收 |
+| B 真实适配 / 本地配置 | DEV 进行中（候选未固定） | NOT_RUN | 原子本机设置、fail-closed macOS Keychain 边界、设置 UI、Fake token 生命周期、stub-tested 模型 adapters 与显式调用路径部分实现；真实 Feishu 未实现。Feishu 协议证据缺口继续阻断对应能力 |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
+
+### Stage B current worktree (2026-10-10)
+
+- Branch: `codex/stage-b-real-providers`; isolated checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`; parent baseline `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d`. Candidate remains dirty and has no fixed implementation SHA.
+- Implemented in the candidate: typed local provider settings with Fake default, atomic profile-local settings writes, fail-closed macOS Keychain access, hashed per-account Keychain item identity, browser settings controls, and stub-tested DeepSeek / Model Studio adapters wired to explicit organize/index/query operations. Model Studio base URLs can target validated HTTPS Alibaba Cloud hosts and are part of the embedding fingerprint. Real embedding approval indexing is explicit; Fake compatibility remains stable. No real provider calls.
+- Browser replay used a synthetic Keychain item and deleted it afterward; a later isolated replay saved local Model Studio URLs and the user's registered callback shape with synthetic IDs, then completed Fake authorization. A separate local browser run exercised Fake Feishu disconnect and reload persistence; the sanitized route/status record is in the Stage B browser evidence note. CUA screenshot bytes, full DevTools console/HAR and network manifest are not archived. Native shell UI replay, Keychain denial/lock/restart, Feishu user-token isolation, and real Keychain account-switch replay are not verified. Account-key hashing has only memory-backend unit/API coverage.
+- Feishu real adapters remain unimplemented. The user is an app administrator and can grant permissions, so scope availability is not a blocker. Fake-only refresh/rotation/logout coverage exists; real OAuth endpoints and user-token Keychain persistence, minutes content endpoint, calendar interval mapping, Task date/clear semantics and lost-write result proof remain unresolved. Related capabilities remain disabled.
+- B QA, independent review, fixed candidate, PR/main integration and all Stage C operations are NOT_RUN. Current detailed ledger: [LATEST-IMPLEMENTATION](../handoff/LATEST-IMPLEMENTATION.md), [ACCEPTANCE](../quality/ACCEPTANCE.md), [protocol matrix](../architecture/PROVIDER-PROTOCOL-MATRIX.md).
 
 ## 接手与环境
 

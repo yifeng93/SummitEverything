@@ -26,6 +26,8 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 
 ## 后续报告纪律
 
-阶段 B/C 尚未启动，真实 Feishu / 模型 / 材料 / Keychain / DMG / 五日 / 双机仍 NOT_RUN。用户已准备资源不改变这些状态。
+Stage B DEV 正在隔离 worktree 中进行；当前是部分实现，未固定候选、未独立审查 / QA、未整合。Stage C 尚未启动。真实 Feishu / 模型 / 材料 / 外部任务 / DMG / 五日 / 双机仍 NOT_RUN。用户已准备资源不改变这些状态。
+
+- Stage B partial DEV: [2026-10-10 report](2026-10-10-STAGE-B-partial-DEV.md) — dirty candidate at baseline `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d`; offline self-check passed (Python 185, Web 36); model runtime, synthetic callback config, Fake token refresh/logout, and a local Fake Feishu disconnect/reload replay are documented. Replay details: [browser evidence note](evidence/2026-10-10-stage-b-browser/replay.md). Real Feishu adapters incomplete; no independent review / QA or integration.
 
 新增报告必须记录代码 SHA、文档 checkpoint、QA 提交、PR / main 关系；分别记录 DEV、自测、独立审查、独立 QA、WebUI、原生开发壳、真实协议与质量。按 [REPORT-TEMPLATE](../REPORT-TEMPLATE.md)填写，维护本索引。保留历史 FAIL；追加整改 / 复验，不把旧文件重写成成功。证据只提交脱敏副本，harness 指纹必须是实际执行字节，manifest 必须与当前归档字节匹配。

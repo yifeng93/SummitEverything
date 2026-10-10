@@ -80,7 +80,7 @@ Must FAIL、未关闭 P0 / P1 阻止相关阶段通过。真实门未测时只�
 
 启动与完整检查命令见 README 的 M2.1 节；使用空的隔离工作库。点击模拟授权，搜索并筛选 owner/shared，换页选定材料、取消选择；确认列表不产生 intake/job/draft/page。再只导入所选，读取 sources API 并核对原字节、SHA-256 与 external_identity；检查队列为 pending、仍无稿件 / 页面。重放 operation_id 不重复原件，换 payload 必须 409。日历明确指定 2026-10-09 至 2026-10-10 与 Asia/Shanghai，检查日程 / 空态 / 分页。
 
-`tests/integration/test_feishu.py` 使用真实 API / SourceStore / 隔离库，外部边界 Fake：多页、空页、visibility、只取选择正文、失败逐项、denied/expired/scope/404/malformed/timeout/unavailable、UTF-8 / 类型 / 安全文件名 / 大小、state 重放 / 到期 / 跨运行 / callback 地址 / Origin、授权 Bearer 门、重启幂等及原件写后中断恢复。`FeishuPanel.test.tsx` 覆盖真实组件的失败授权、分页选择、部分结果、取消与日历空 / 错误态。
+`tests/integration/test_feishu.py` 使用真实 API / SourceStore / 隔离库，外部边界 Fake：多页、空页、visibility、只取选择正文、失败逐项、denied/expired/scope/404/malformed/timeout/unavailable、UTF-8 / 类型 / 安全文件名 / 大小、state 重放 / 到期 / 跨运行 / callback 地址 / Origin、授权 Bearer 门、refresh token 轮换与失效、logout、重启幂等及原件写后中断恢复。`FeishuPanel.test.tsx` 覆盖真实组件的失败授权、退出授权、分页选择、部分结果、取消与日历空 / 错误态。
 
 实现者自测不填写独立 QA 通过。真实 Feishu 用户权限、账户登录、真实材料与钥匙串持久化均未测；任务写属于 M2.2。
 
@@ -161,15 +161,15 @@ PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main
 
 | ID | 阶段 / 当前结果 | 可观察、可复验的退出标准 |
 |---|---|---|
-| B01 | 协议 / NOT_RUN | 官方文档、核对日期、scope / 日期 / 分页 / 幂等与结果核实能力有映射和 fixture；不能证实的能力明确阻断 |
-| B02 | 配置与凭据 / NOT_RUN | 非秘密配置与秘密分离；真实 Keychain adapter 用专用合成项验证存取、拒绝、锁定、重启、注销与隔离；不读取用户已有项；秘密不进入 API / 日志 / Git / 前端 storage |
-| B03 | Feishu / NOT_RUN | OAuth / user scope / refresh、材料、日历、task GET/POST/PATCH 真实 HTTP adapter 在 stub 协议反例下通过；日期 / 清空 / 完成和回执核实准确；unknown 不重发、不猜成功 |
-| B04 | 模型与检索 / NOT_RUN | 真实 LLM / embedding / rerank adapter 的离线协议、错误、输出、维度 / fingerprint / 原子索引、stale 引用和外发资格反例通过；不宣称真实服务或完整 M3 已通过 |
-| B05 | 独立 QA / NOT_RUN | 固定 SHA，完整适用检查、实际 WebUI、必要原生 Keychain / 配置路径与 Stage A MUST 回归；实际 harness 指纹、console / network、脱敏证据 / manifest 可复演；独立审查与 QA 分开记录 |
+| B01 | DEV 部分 / 独立 QA NOT_RUN | 已记录 DeepSeek / Model Studio 官方映射、用户提供的 Feishu tenant/user scopes 和管理员可授予权限。官方 LarkSuite SDK 源码确认 OAuth v2 token 路径与 JSON request/response 字段；Feishu token 官方页未返回可读正文，token 生命周期 / revoke、数据 endpoint scopes、材料 / 日历 / task 字段、时间语义及结果核实证据仍待核验。不能证实的能力必须明确阻断 |
+| B02 | DEV 部分 / 独立 QA NOT_RUN | 已实现 profile 设置、原子更新、Keychain item 的 profile/provider/account 标识摘要隔离与 Web 设置 UI；隔离浏览器用合成条目完成保存 / 删除。新增 `KeychainCredentialStore` 并通过 5 项 MemorySecretBackend 离线测试，覆盖重启、轮换、注销、profile/App ID 隔离、app-secret 分离和损坏值处理；尚未接入服务生命周期。原生 UI、Keychain 拒绝 / 锁定 / 重启和真实 Keychain 多 profile 隔离仍需复验。最终需证明秘密不进入 API response / 日志 / Git / 前端 storage |
+| B03 | Feishu / NOT_RUN | Fake token lifecycle 与独立 Keychain token store 有离线覆盖，但 store 未接线；真实 OAuth / user scope / refresh、材料、日历、task GET/POST/PATCH HTTP adapters 及协议反例尚未实现。日期 / 清空 / 完成和回执核实准确；unknown 不重发、不猜成功 |
+| B04 | DEV 部分 / 独立 QA NOT_RUN | 当前候选有 stub-tested LLM / embedding / rerank adapters、grounded answer、批量 embedding 与 fingerprint，并接入明确的整理 / 索引 / 问答动作；真实 embedding 的审批后自动索引会延后为显式计划。最终仍须覆盖协议、错误、维度 / fingerprint / 原子索引、stale 引用和外发资格反例；不宣称真实服务或完整 M3 已通过 |
+| B05 | DEV 部分 / 独立 QA NOT_RUN | 候选未固定 SHA。隔离 WebUI 复演覆盖本地模型端点设置、合成 `localhost:8765/callback` Fake 授权，以及断开授权后重载仍未授权；请求路径 / 状态记录见 [Stage B browser replay](reports/evidence/2026-10-10-stage-b-browser/replay.md)。CUA 截图未归档，完整 DevTools console/HAR、原生设置与 Keychain 故障生命周期仍 NOT_RUN。最终需要固定 SHA、完整适用检查、实际 WebUI、原生 Keychain / 配置路径与 Stage A MUST 回归；脱敏证据 / manifest 可复演；独立审查与 QA 分开记录 |
 | B06 | 整合 / NOT_RUN | 阻断缺陷已独立复验关闭，原 FAIL 保留；PR / main 可追溯受测提交，合并源码树一致、证据匹配、适当冒烟通过；真实门仍 NOT_RUN |
-| R01 | 授权 / NOT_RUN | 用户逐项确认目的、数据、目标、范围、请求 / 写入次数、费用上限和停止条件；秘密经安全本地入口；DEV / QA 总预算明确 |
-| R02 | 真实只读 / NOT_RUN | 固定 B 受测 SHA；真实 OAuth / scope / 刷新 / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送 |
-| R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
+| R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
+| R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
+| R03 | 有限合成冒烟已授权 / NOT_RUN | 每个模型端点最多一次 synthetic input；执行前核对当前官方价格，按建议 CNY 5 总额上限执行，若无法可靠界定费用只询问额度。该 smoke 只验证连接 / 协议，不证明质量；真实材料质量评定与业务内容发送另需授权 |
 | R04 | 真实任务 / NOT_RUN | 独立确认创建 / 编辑 / 完成；各日期语义与清空、目标 / 字段和 GET 回读证实；journal 核实 / unknown 不重发；遗留测试资源及处理责任明确 |
 | R05 | C 整合 / NOT_RUN | 固定代码 / 文档 / 独立 QA / manifest / PR / main 关系清楚；所有适用必需真实项通过，否则为部分完成或 BLOCKED；代码变更后对应门重新复验 |
 
