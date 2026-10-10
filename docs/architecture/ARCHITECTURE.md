@@ -27,7 +27,7 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 | native/ | 薄 macOS 壳与生命周期测试 |
 | tests/ | 单元、契约、集成和去标识材料 |
 
-当前只存在 domain/content.py。目录按首次实现需要创建，不创建一批空函数或互相转发的服务。
+当前已实现 M1 本地闭环及 M2.1–M2.3 Fake-only 工作流，包含 API、workspace、intake、retrieval、integrations、WebUI 和薄原生壳；具体文件以源码和最新交接为准。B 尚需真实 provider、设置与 Keychain，M3 的历史 / 角色 / 记忆及 M4 包仍未完成。不要创建无实际用途的空服务。
 
 工作库 context 至少携带 workspace_id、root、local_profile_dir。API 的活动工作库绑定到服务 context，请求不能提交任意绝对路径跳过 root 边界。
 

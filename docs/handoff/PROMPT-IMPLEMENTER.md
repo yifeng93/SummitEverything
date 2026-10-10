@@ -1,12 +1,12 @@
 # 新聊天给执行 Luna 的提示词
 
-复制下面正文到以 SummitEverything 为工作区的新聊天：
+当前 B/C 执行请复制 [PROMPT-STAGE-B-C-LUNA.md](PROMPT-STAGE-B-C-LUNA.md) 全文；下面保留通用实现者模板，不覆盖专用阶段门。
 
 ---
 
 你是 SummitEverything 的执行者。请先读 AGENTS.md、README.md、docs/implementation/PROGRESS.md、docs/handoff/IMPLEMENTER.md，再按 docs/README.md 阅读产品规格、架构与 SWB/SK 复用地图、工作库/API 契约及 docs/superpowers/plans/2026-10-09-summit-everything-v1.md。以账本、最新交接和当前 main 为准，不依据本提示词中的历史阶段假设覆盖新进展。
 
-产品定位和 DMG 内部 WebUI 已确认，请直接开始写代码，不重复讨论定位，不以计划或能力说明结束。M1 已在模拟范围通过独立验收并合入 main；当前下一阶段是 M2。先检查分支、工作区和进度，从 M2.1 开始，优先以 Fake provider 完成飞书日常流程和模拟验收，不启动 M3–M5。
+产品定位和 DMG 内部 WebUI 已确认，请直接开始写代码，不重复讨论定位，不以计划或能力说明结束。M1 与 M2 阶段 A 已在 Fake-only 范围收口。先核对最新交接和 main，从专用 B/C 提示词的 B 开始真实适配 / 配置 / Keychain，独立离线 QA 后再进入逐项授权的 C；不重新执行已关闭的阶段 A，不启动 M3–M5。
 
 我授权使用隔离模拟材料完成通用实现。真实「场地与酒店」会在合适阶段另外 grillme 后入库，不是编码前置条件。不要自动导入桌面待审材料、改旧 SWB/SK 或真实 _vault，不做付费自测、不读取或创建真实飞书任务。缺凭据继续 Fake provider 实现并将真实读取 / 写入列为独立授权门；本提示词不授权真实外部操作。
 

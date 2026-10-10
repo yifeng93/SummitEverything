@@ -4,6 +4,12 @@
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
+## 当前结论与范围（2026-10-10）
+
+阶段 A Fake-only 已收口，最终修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。第四轮截图的部分 UI 证明已撤回，不能只读旧 PASS 摘要；按[报告索引](reports/README.md)组合纠正、补验与修复复验结果。C18 的 409b FAIL 保留，在 309 修复行为上关闭。最新交接中的全量检查、前端补充检查和独立 UI 验证分别记录；未运行的检查保持 NOT_RUN。
+
+B/C 追加门见本文末尾；完整 C01–C31 和原 MUST 不变。B 是适配实现与离线验收，C 是用户授权下的真实 provider 场景，均不能替代 M3 完整业务、M4 安装包 / 五日或 M5 双机。
+
 ## 验收准备
 
 读取 LATEST-IMPLEMENTATION 的完整代码 SHA，使用独立 checkout。先运行当前可用检查，再运行交接里真实存在的后端 / 前端 / 打包命令。环境与 fixture 都在隔离目录，禁止请求旧运行 App 或使用旧真实 _vault。
@@ -91,7 +97,7 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 ## M2.2 Fake 复验（C16–C18）
 
-实现者检查为 DEV 证据，独立 QA 尚未执行。命令：`uv run pytest -q tests/integration/test_actions.py`；`npm --prefix web test -- TasksPanel.test.tsx`；M1 / M2.1 回归沿用 README 全量命令。
+此节列 Fake 复演期望；开发时尚未执行独立 QA，当前报告链和恢复路径补验见下方。命令：`uv run pytest -q tests/integration/test_actions.py`；`npm --prefix web test -- TasksPanel.test.tsx`；M1 / M2.1 回归沿用 README 全量命令。
 
 1. 未确认、模型建议或知识批准均零任务写 / 零进度变化。手动标题、显式无日期 / 全天 / 带偏移时间后审阅 exact 值，确认仍不执行，另点执行才调用 Fake。确认后编辑使原确认失效，必须新 ID 重新确认。
 2. 同 ID/hash 多次执行、双击和并发只一次副作用；进行中202 + Location。改变 hash409，两个有效 action 可同标题。已完成任务再完成直接成功，无第二次 PATCH；只选 due 时标题 / 描述不变。
@@ -114,11 +120,11 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 - 原生壳 UI NOT_RUN：运行的开发服务端口就绪，但 CUA 同名选择命中另一个 M1 QA checkout 的窗口，且显示 readiness error；执行者未操作那个 QA 实例。当前固定候选需在独立 QA checkout 用能确认归属的原生窗口补验。
 - 本次 CUA 浏览器 console 日志未导出，不作零 warning/error 声明。真实 Feishu、真实材料 / 任务 / 模型、Keychain、DMG、五日及双机全部 NOT_RUN。
 
-2026-10-10 用户更新：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain 均已准备，用户可配合提供配置并参与测试。上述真实门仍是 NOT_RUN，因为固定候选仅 Fake provider；“条件可用”不代表已实现、已操作或已通过。下一轮评估需判断先做固定 SHA 独立 QA，还是先补真实 adapter / 配置路径与隔离；任何真实登录、材料发送、付费模型调用或飞书 task 写入都应列出具体数据、目标、范围与成本，再由用户逐项确认。
+2026-10-10 用户更新：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain 均已准备，用户可配合提供配置并参与测试。上述真实门仍是 NOT_RUN，因为固定候选仅 Fake provider；“条件可用”不代表已实现、已操作或已通过。该轮待评估项现已由 Stage A 独立 QA 收口，当前先做 B 的真实 adapter / 配置路径与隔离；任何真实登录、材料发送、付费模型调用或飞书 task 写入都应列出具体数据、目标、范围与成本，再由用户逐项确认。
 
 自动检查在固定候选全量复跑通过：后端 135 passed；前端 8 个文件 / 31 项通过；ruff / format / mypy / lock / uv build / Swift build / typecheck / Web build 通过。保留 1 条 Starlette/httpx 弃用提示与 3 条既有 React effect lint warning。以上均为 DEV 证据，待独立验收者在固定代码 SHA 上复核。
 
-## M2.1–M2.3 阶段 A 最终独立 Fake-only QA
+## M2.1–M2.3 原第四轮独立 Fake-only QA（历史结论，须结合后续纠正）
 
 - **最终受测源码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`。
 - **最终独立 QA 报告：** [第四轮最终复验](reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)，报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`，结论为 **PASS（Fake-only M2.1–M2.3）**。最终 QA checkout 与执行环境独立于实现 checkout；未修改产品 `src`、`web` 或测试实现。
@@ -148,3 +154,23 @@ QA 提交链：409b 初验 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0` → 脱敏
 两轮均为隔离 Fake-only 工作库 / 浏览器；没有有意调用真实飞书、模型、材料、凭据或业务操作。最终 309 复演只观察到 loopback sockets；409b 初次候选曾连本机代理，是否转发不可判定，详见报告。此结果仅补足恢复路径 UI 证据，不代表重新执行整体 Stage A 或真实门；真实环境继续 NOT_RUN。
 
 PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main。独立 checkout 对该 SHA 核验：修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199` 是祖先；`src/tests/web/native` 与修复源码树一致；初验和修复复验报告、测试 harness、screenshots 及 evidence manifest 均已进入 main，manifest 全条目重算匹配。此合并后核验未重跑整体自动矩阵；固定候选 UI 修复的组件测试、typecheck 和 Web build 在 PR 前均退出 0。
+
+## 阶段 B / C 追加门（尚未执行）
+
+本节细化真实适配与受控真实验收，不替换 C01–C31、不降低原 MUST；当前每项 **NOT_RUN**。结果需链接固定候选的独立 QA 报告及证据，不能仅把下表改成 PASS。完整步骤与依赖见 [B/C 提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
+
+| ID | 阶段 / 当前结果 | 可观察、可复验的退出标准 |
+|---|---|---|
+| B01 | 协议 / NOT_RUN | 官方文档、核对日期、scope / 日期 / 分页 / 幂等与结果核实能力有映射和 fixture；不能证实的能力明确阻断 |
+| B02 | 配置与凭据 / NOT_RUN | 非秘密配置与秘密分离；真实 Keychain adapter 用专用合成项验证存取、拒绝、锁定、重启、注销与隔离；不读取用户已有项；秘密不进入 API / 日志 / Git / 前端 storage |
+| B03 | Feishu / NOT_RUN | OAuth / user scope / refresh、材料、日历、task GET/POST/PATCH 真实 HTTP adapter 在 stub 协议反例下通过；日期 / 清空 / 完成和回执核实准确；unknown 不重发、不猜成功 |
+| B04 | 模型与检索 / NOT_RUN | 真实 LLM / embedding / rerank adapter 的离线协议、错误、输出、维度 / fingerprint / 原子索引、stale 引用和外发资格反例通过；不宣称真实服务或完整 M3 已通过 |
+| B05 | 独立 QA / NOT_RUN | 固定 SHA，完整适用检查、实际 WebUI、必要原生 Keychain / 配置路径与 Stage A MUST 回归；实际 harness 指纹、console / network、脱敏证据 / manifest 可复演；独立审查与 QA 分开记录 |
+| B06 | 整合 / NOT_RUN | 阻断缺陷已独立复验关闭，原 FAIL 保留；PR / main 可追溯受测提交，合并源码树一致、证据匹配、适当冒烟通过；真实门仍 NOT_RUN |
+| R01 | 授权 / NOT_RUN | 用户逐项确认目的、数据、目标、范围、请求 / 写入次数、费用上限和停止条件；秘密经安全本地入口；DEV / QA 总预算明确 |
+| R02 | 真实只读 / NOT_RUN | 固定 B 受测 SHA；真实 OAuth / scope / 刷新 / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送 |
+| R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
+| R04 | 真实任务 / NOT_RUN | 独立确认创建 / 编辑 / 完成；各日期语义与清空、目标 / 字段和 GET 回读证实；journal 核实 / unknown 不重发；遗留测试资源及处理责任明确 |
+| R05 | C 整合 / NOT_RUN | 固定代码 / 文档 / 独立 QA / manifest / PR / main 关系清楚；所有适用必需真实项通过，否则为部分完成或 BLOCKED；代码变更后对应门重新复验 |
+
+范围外的 DMG、五日、双机及 M3–M5 依原矩阵单独判断。资源已准备不是授权或 PASS；没有执行或未获授权的项保留 NOT_RUN / BLOCKED。P0/P1 与阻断 MUST 的缺陷不能带入下一阶段，P2 不得隐瞒或自行降级。

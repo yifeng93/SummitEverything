@@ -2,7 +2,11 @@
 
 初始记录：2026-10-09。实现者维护，验收者另写报告；状态不从测试数量推断。
 
-## 更新记录
+## 当前状态与下一步
+
+阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；此后本轮整理仅文档和 Git 引用。完整证据与当前授权边界见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。当前下一步为[B/C 提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)：B 实现真实适配 / 配置 / Keychain 并独立离线验收；C 在 B 通过且用户逐项授权后执行。B/C 与 M3–M5 未开始。
+
+## 历史更新记录（按各条当时的固定版本理解）
 
 - 2026-10-10：独立 QA 对修复源码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 完成 Fake-only M2.1–M2.3 阶段 A 验收，最终报告原提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`（第四轮）；原候选初验及各轮复验报告提交为 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`、`bb5231d5d31a64f57605bf8443f5f57752aac50d`、`91b0a93c615b3a16f5cf428b7f131a443d3ff59e`、`7f785c033bb96a43ae50ad6cf55b9c20474db85b`、`0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。PR #4 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 已在独立 main checkout 完成全矩阵检查和 8 项关键冒烟；详细结论见 [合并后核验记录](../quality/reports/2026-10-10-M2-stage-a-postmerge.md)。A-01–A-05 与本阶段 Fake-only MUST PASS，未关闭 P0/P1/P2=0；OAuth cancel UI 变体 NOT_RUN，API denial 已覆盖。真实门 NOT_RUN，M3–M5 未开始。
 - 2026-10-10：阶段 A 原候选 `09398fcae597b2478001d40aedf580ea91322c11` 经独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2（报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`）。执行者在 `codex/m2-stage-a-closeout` 修复并固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82`；后端 142 passed，前端 32 passed，静态检查、类型、构建及 Swift build 通过，保留 1 条 Starlette/httpx 弃用警告和 3 条既有 React lint 警告。索引错误日志限制为工作库 UUID 与异常类型；A-01 查询回归使用正文独特词检验真实引用门。A-01–A-05 当前仅为 DEV 修复状态，独立完整复验、真实浏览器 / 原生壳复演、PR 与 main 合并均待完成；详见 [阶段 A 修复 DEV 报告](../quality/reports/2026-10-10-M2-stage-a-fix-dev.md)。
@@ -16,14 +20,16 @@
 |---|---|---|---|
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
-| M2 阶段 A（Fake-only） | 已合入 main | QA通过（模拟范围） | 受测源码 `32da67e9c0280e3dae18fd374e30c925565b0b82`；PR #4 merge `0789f9ebfee4a0352e2818510055a252ba374daf`；独立合并后检查通过，真实门 NOT_RUN |
+| M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
+| B 真实适配 / 本地配置 | 未开始 | NOT_RUN | 不等于真实协议验收 |
+| C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 
-## 当前下一步
+## 接手与环境
 
-M1 与 M2 阶段 A 已在各自 Fake / 模拟材料验收范围内合入 main。M2 固定受测源码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 的最终独立报告为 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`；PR #4 于 `0789f9ebfee4a0352e2818510055a252ba374daf` 合并，合并后自动矩阵与关键路径冒烟通过。结论和命令见[合并后核验记录](../quality/reports/2026-10-10-M2-stage-a-postmerge.md)。真实 Feishu、模型、材料与 Keychain 条件虽由用户备妥，本轮未接入或调用；真实门继续 NOT_RUN。M3–M5 未开始。
+从整理后的 main 创建短期 `codex/` 功能分支；先验证它包含上述收口基线且记录完整执行 SHA。旧代码 / QA 分支已归档，含原始本地证据的 checkout 固定保留，不作为新功能起点。处置和恢复方法见[整理记录](2026-10-10-STAGE-A-CLEANUP.md)。
 
 ## 独立验收报告（旧 SHA）
 
@@ -103,7 +109,7 @@ allowed 状态为 未开始 / 进行中 / DEV完成待验收 / 验收未通过 /
 - C16–C18：19 个新增真实 API / 文件 / 锁 / writer / 子进程测试，10 个 TodayView / TasksPanel 组件测试；完整后端126 passed（保留1既有弃用warning）、前端28 passed，ruff / format / mypy / lock / uv build / OpenAPI / typecheck / lint / web build退出0（lint保留3既有warning）。
 - 隔离 IAB 真实浏览器创建（无日期）及完成均经审阅、独立确认、另行执行、provider刷新；控制台warn/error0。断流、并发、子进程及跨月由服务测试覆盖。非独立QA。
 - 本地 receipt 保留确切意图 / 证据，不维护本地正式任务库；Fake远端在库/profile外。原候选关联兼容，知识确认与进度分开。全天真实timestamp规则 / Fake结果查询的真实等价物仍未核证，不声称真实协议通过。实际账户 / 凭据 / 任务均未调用。
-- 详细提交、红绿命令、请求映射、文件与concerns见 [M2.2任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。M2.2 当前等待独立 QA；后续 M2.3 开发记录见下节。
+- 详细提交、红绿命令、请求映射、文件与concerns见 [M2.2任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。记录该条时 M2.2 等待独立 QA；当前阶段 A 收口状态见顶部，后续切片历史见下节。
 
 M2.2 独立审查 P2 追加修复：`UserOutcome.evidence` 现在去除首尾空白并拒绝无实质内容，API 回归验证拒绝请求后 action 仍为 unknown；红测初次以 200 接受空白证据，修复后该用例通过。单独代码提交 `c552d143f051efe13ebfcdd29815e776147794aa`；动作集成测试 19 passed，mypy 通过。详细追加证据见 [M2.2 review fix](../quality/reports/2026-10-10-M2.2-review-fix.md)。
 

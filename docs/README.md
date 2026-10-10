@@ -18,14 +18,21 @@
 - [API 契约 v1](contracts/API-v1.md)：对象、错误、版本冲突、操作幂等和路由。
 - [全 v1 实施计划](superpowers/plans/2026-10-09-summit-everything-v1.md)：各阶段的任务、测试和退出门。
 
+## 当前交接与证据
+
+- [最新交接](handoff/LATEST-IMPLEMENTATION.md)：最终受测代码、收口 main、范围及下一步。
+- [B/C 完整可执行提示词](handoff/PROMPT-STAGE-B-C-LUNA.md)：真实适配、离线 QA、逐项授权真实验收与整合。
+- [报告索引](quality/reports/README.md)：阶段 A 历史 FAIL、截图纠正及修复复验的组合方式。
+- [环境整理记录](implementation/2026-10-10-STAGE-A-CLEANUP.md)：分支、worktree、归档和恢复方法。
+
 ## 两个 Luna 的操作入口
 
 - [实现者手册](handoff/IMPLEMENTER.md)、[可复制执行提示词](handoff/PROMPT-IMPLEMENTER.md)。
 - [独立验收手册](handoff/TESTER.md)、[可复制验收提示词](handoff/PROMPT-TESTER.md)。
-- [Sol 6.1 进度综合评估提示词](handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)：基于 M2 固定代码 SHA 评定现状和下一阶段；用户已准备真实测试资源。
+- [Sol 6.1 进度综合评估提示词](handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)：历史 M2 固定候选评估入口；当前下一步使用 B/C 提示词。
 - [验收矩阵](quality/ACCEPTANCE.md)、[报告模板](quality/REPORT-TEMPLATE.md)。
 - [进展账本](implementation/PROGRESS.md)：执行者更新；不把开发自测写成独立验收通过。
-- [本次框架核验](quality/FOUNDATION-VERIFICATION.md)：仅说明当前基础代码与文档检查。
+- [本次框架核验](quality/FOUNDATION-VERIFICATION.md)：仅说明历史基础代码与文档检查。
 
 ## 权威与变更
 

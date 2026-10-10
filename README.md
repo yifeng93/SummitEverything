@@ -6,7 +6,9 @@
 
 ## 当前状态
 
-2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。M2.1–M2.3 阶段 A Fake-only 独立 QA 已通过，受测源码固定于 `32da67e9c0280e3dae18fd374e30c925565b0b82`；未关闭 P0/P1/P2=0。PR #4 已以 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 `main`，独立 main checkout 的完整自动检查和关键行为冒烟通过。真实飞书应用配置、模型、材料和 Keychain 虽已备妥，本轮未消费或调用；真实 Feishu、模型/embedding/rerank、Keychain、DMG、五日试用和双机仍为 NOT_RUN。详见[最终独立 QA 报告](docs/quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[合并后核验记录](docs/quality/reports/2026-10-10-M2-stage-a-postmerge.md)、[进展账本](docs/implementation/PROGRESS.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) 与[验收矩阵](docs/quality/ACCEPTANCE.md)。阶段 B/C 仍未开始。
+2026-10-10：M1 与 M2.1–M2.3 阶段 A 已在 Fake-only 范围完成独立验收并合入 main。最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。C18 恢复 UI 的旧 FAIL 和修复后 PASS 分别保留；截图撤回、故障恢复和并发证据见[报告索引](docs/quality/reports/README.md)。当前仅有 Fake providers 和内存凭据；真实资源虽已准备，真实 adapter、配置和 Keychain 尚未实现，真实环境门仍 NOT_RUN。
+
+下一步按[B/C 执行提示词](docs/handoff/PROMPT-STAGE-B-C-LUNA.md)先完成 B 的适配与离线独立 QA，再经逐项授权做 C 的受控真实验收。B/C 与 M3–M5 尚未开始，DMG、五日和双机仍有独立门。[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)记录固定 SHA 和证据边界；[工作环境整理](docs/implementation/2026-10-10-STAGE-A-CLEANUP.md)记录旧分支 / worktree 归档。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -31,7 +33,7 @@ uv lock --check
 uv build
 ~~~
 
-上面的自动检查是开发者命令；M1 模拟范围另有独立 QA 证据，M2 的执行者证据见 M2 DEV 报告。它们不代表真实飞书、真实模型质量、原生壳 UI、DMG、五日试用或双机验收通过。
+这些是检查命令，不单独构成阶段通过。M1 / M2 阶段 A 的独立报告、原生开发壳 UI 和后续修复范围见报告索引；真实飞书、真实模型质量、Keychain、DMG、五日及双机仍未通过相应门。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 

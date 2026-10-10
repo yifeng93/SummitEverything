@@ -12,11 +12,11 @@
 
 ## 当前阶段记录（2026-10-10）
 
-M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main。M2.1–M2.3 Fake-only 原始代码 `09398fcae597b2478001d40aedf580ea91322c11` 的独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2；修复代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 已由独立 QA 复验通过（最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`），并以 PR #4 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 main。独立 main checkout 完整自动检查和关键行为冒烟通过，详见[合并后核验记录](../../quality/reports/2026-10-10-M2-stage-a-postmerge.md)。本计划继续作为全 v1 规格；不启动 M3–M5。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。
+M1 与 M2 阶段 A 在 Fake-only 范围已收口，最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。原阶段 A 代码 `32da67e` 及各轮记录仅证明其对应范围；撤回截图、恢复补验与 C18 修复报告见[报告索引](../../quality/reports/README.md)。本轮维护后从最新 main 记录完整 SHA，再按[B/C 提示词](../../handoff/PROMPT-STAGE-B-C-LUNA.md)执行。
 
 ## 全局执行规则与验收门
 
-Foundation、M1 与 M2 阶段 A 的模拟验收门已通过。M2.1–M2.3 原候选 `09398fc` 定向复现缺陷；修复源码 `32da67e` 经独立 Fake-only QA 和 PR #4 合并后核验。当前仅此模拟范围关闭；本计划中的全 v1 MUST 保持有效，不得从自动检查推断真实外部门通过，也不启动 M3–M5。
+B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。B 尚未开始：配置 / 凭据 / Keychain → Feishu 真实适配与模型适配 → 独立离线 QA。C 尚未开始：B 通过后逐项批准真实操作，验证具体协议与模型质量。C 仅前置验证 M4 的部分外部门，不能提前标记 M3、DMG、真实样板初始化、五日或双机完成。
 
 每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为由独立 QA 用真实浏览器检查。
 
@@ -30,7 +30,7 @@ uv run mypy src
 uv lock --check
 ~~~
 
-新增依赖先核对官方协议 / API，更新 lock。M1 建立 web/package.json 中 dev、build、test、typecheck 脚本，验收再使用实际 npm 命令；M4 建立打包脚本。不能引用不存在的命令作为通过证据。
+新增依赖先核对官方协议 / API，更新 lock。M1 已建立 web/package.json 的实际脚本，前端验收使用 README 命令；M4 建立打包脚本。不能引用不存在的命令作为通过证据。
 
 两个门分开：DEV 是实现者自测与交接；QA 是另一 Luna 对固定提交独立复验。M4 / M5 另有真实人工门。无凭据只会使相应外部场景未测，不阻塞模拟实现；未测不得成为通过。
 
