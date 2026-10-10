@@ -1,0 +1,245 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "cdp-c16-initial-sanitized.json",
+      "size_bytes": 5126,
+      "sha256": "a7c238a1b324ae0fd2639da002e8cb15a6dc0933b1c7a4adc82fbbbab682d9b7"
+    },
+    {
+      "path": "cdp-c16-overlap-sanitized.json",
+      "size_bytes": 5325,
+      "sha256": "c601e07426e19c65ba465018d4bc5e306dffdfa208ead804d5797bedaf5931af"
+    },
+    {
+      "path": "cdp-c16-recovery-concurrency-sanitized.json",
+      "size_bytes": 10868,
+      "sha256": "18715ead5ab3767451a4b62f2bc72b4d586e53a3f64ab7cea1fe809371217c72"
+    },
+    {
+      "path": "cdp-c18-final-visible-succeeded.json",
+      "size_bytes": 2259,
+      "sha256": "05655e60fda9384bd0572295c090478a21a35e88e3aef707cf98c4371000ad84"
+    },
+    {
+      "path": "cdp-c18-lost-receipt-sanitized.json",
+      "size_bytes": 3007,
+      "sha256": "31f491538930c1488e6bc5a85c1bd9c99e7f94240deb5f1948f6db935634fea7"
+    },
+    {
+      "path": "cdp-c18-recovery-c23-interrupted-sanitized.json",
+      "size_bytes": 14099,
+      "sha256": "8aabb267c31465615b66f00099751f63e475f0d5db58e851046d50d110e67ea2"
+    },
+    {
+      "path": "cdp-c23-recovery-sanitized.json",
+      "size_bytes": 8227,
+      "sha256": "6222b517ec08b93f9316c3fa2a47e5359e1c787c0e8b7231fa065984cfb25973"
+    },
+    {
+      "path": "harness/__pycache__/sitecustomize.cpython-312.pyc",
+      "size_bytes": 8560,
+      "sha256": "d7a43a1cbef203c8a3d54c80016aeaa62ad47995a846a1918a2882f5bd4a9425"
+    },
+    {
+      "path": "harness/cdp-c16-overlap.mjs",
+      "size_bytes": 7546,
+      "sha256": "72ea0579f7f25d2ff17372cd24d3699a15f113b5d0f10593bc46c2886d8c90a7"
+    },
+    {
+      "path": "harness/cdp-c16.mjs",
+      "size_bytes": 8070,
+      "sha256": "fee35e79980d2f48414e59725b74d221e3e21fc993918016e0649291f11b5f2d"
+    },
+    {
+      "path": "harness/cdp-c18-continue.mjs",
+      "size_bytes": 5495,
+      "sha256": "52a592265a99070653e7f541f9712f0f7d902d9c098b9d785657d5e119330aa8"
+    },
+    {
+      "path": "harness/cdp-c18-final-capture.mjs",
+      "size_bytes": 2753,
+      "sha256": "26bdc550d8db1751b0264017fe28c65e02adf57fce97e87b9d064ef0ba8197bb"
+    },
+    {
+      "path": "harness/cdp-c18-first.mjs",
+      "size_bytes": 8342,
+      "sha256": "43a1707f1cb96f3e08c69f39ca25b2da1efcfd12f6c55f65add4cbacb6d3eb33"
+    },
+    {
+      "path": "harness/cdp-c18-recover-c23-run.mjs",
+      "size_bytes": 9620,
+      "sha256": "ce2e54dc08fb316ebb979b6f059530815485bf30d78533e6a905a57b22e48f3f"
+    },
+    {
+      "path": "harness/cdp-c23-recover.mjs",
+      "size_bytes": 5735,
+      "sha256": "74e694c39b0fbaf5bf419e6e7aa9373cdd8068739a03ccdc41e404c9252adcb9"
+    },
+    {
+      "path": "harness/cdp-recovery-concurrency.mjs",
+      "size_bytes": 9940,
+      "sha256": "4e2e199255ab768d5a6c77ec809c82ee7bdf2fe5f690238a65ab709dc9ba2bf8"
+    },
+    {
+      "path": "harness/sitecustomize.py",
+      "size_bytes": 5068,
+      "sha256": "1999b5634acdc4d38928a38eba9703e4a6d740eb018959f19e4dcd3d9d0397d3"
+    },
+    {
+      "path": "runtime-audit.json",
+      "size_bytes": 1512,
+      "sha256": "55e8e6b4ba3ec682b879d896b8211f32637338a54d1dac2d8d1dbe177025bb86"
+    },
+    {
+      "path": "screenshots/c16-confirmation-after.png",
+      "size_bytes": 140722,
+      "sha256": "d784513fcf306c2c75c8834620b290f264511b08073accf69c05a5266f864e3a"
+    },
+    {
+      "path": "screenshots/c16-confirmation-before.png",
+      "size_bytes": 140359,
+      "sha256": "ff4f0520190555c34893e37391a7bcb9d52a0f5091f23f574ca355a05b0c9e32"
+    },
+    {
+      "path": "screenshots/c16-crash-read-only-reconciled-success.png",
+      "size_bytes": 171737,
+      "sha256": "80e4a7ed4edb97ffe264072c09540f8db6f7ef1b15f44b5d57112360d85087b4"
+    },
+    {
+      "path": "screenshots/c16-crash-restarted-unknown.png",
+      "size_bytes": 148697,
+      "sha256": "6972c8e9869d6ee121f07a1ec31497a1261a6505f17737a1fc0222f0c345e029"
+    },
+    {
+      "path": "screenshots/c16-double-confirmed.png",
+      "size_bytes": 176452,
+      "sha256": "8c3cab4e661bd30d8f3b1d09fc66b0f588c860c90b6b2af430490c0b6ce770af"
+    },
+    {
+      "path": "screenshots/c16-double-in-flight-ui.png",
+      "size_bytes": 175485,
+      "sha256": "3baf53286a0f65702cc95f99902b93a486489b7cf83f309404b8ff97f6807a0c"
+    },
+    {
+      "path": "screenshots/c16-double-proposed.png",
+      "size_bytes": 172535,
+      "sha256": "e2ed8a1a5d462450a14fcbff7813561c72e037c7533d6d5454e52c3e1518e452"
+    },
+    {
+      "path": "screenshots/c16-double-terminal-succeeded.png",
+      "size_bytes": 180584,
+      "sha256": "384f34e5b2dee1f56abf3fc565535e43d88d9e5c71ee1c5020a8f2cd48381d30"
+    },
+    {
+      "path": "screenshots/c16-overlap-confirmation-after.png",
+      "size_bytes": 151951,
+      "sha256": "9de66bc87a2879a0b587bee3fa9b13d2d2f5f84a762f15c1863b0988be0921dc"
+    },
+    {
+      "path": "screenshots/c16-overlap-confirmation-before.png",
+      "size_bytes": 151606,
+      "sha256": "c9ffb1ff47db187be6151bbf065a6018c904037513516f3a58ef9cc898af332f"
+    },
+    {
+      "path": "screenshots/c16-overlap-running-ui.png",
+      "size_bytes": 150398,
+      "sha256": "f7b8b580806bcdf19310890c9685cb3362cffa3e1a14c3f8db5dc12f23141e17"
+    },
+    {
+      "path": "screenshots/c16-overlap-terminal-success.png",
+      "size_bytes": 147025,
+      "sha256": "abed4e2bf816b1ae52d028be6d2bea063a32b0617e3e2a893e39c45363b9f527"
+    },
+    {
+      "path": "screenshots/c16-ui-after-process-exit.png",
+      "size_bytes": 143285,
+      "sha256": "30eb68d7420d54a6a6946dd74d3ec89528d2421541c9e0076e4f67f05abbb80a"
+    },
+    {
+      "path": "screenshots/c18-read-only-local-writer-proof-succeeded.png",
+      "size_bytes": 155162,
+      "sha256": "7704c85309a01fb15a2328479357138ff35a89c0d125c7c4b77d066e82f2d305"
+    },
+    {
+      "path": "screenshots/c18-receipt-confirmation-after.png",
+      "size_bytes": 183064,
+      "sha256": "ec936147e7bcf776334e55d20a3983446d9147da7c306abb378e38a6f5bc5fc3"
+    },
+    {
+      "path": "screenshots/c18-receipt-confirmation-before.png",
+      "size_bytes": 176651,
+      "sha256": "20ba7cc7bf376ab69f76f2b0c33462bdbef1417329c04f438b2cc483f4007771"
+    },
+    {
+      "path": "screenshots/c18-receipt-lost-running-visible.png",
+      "size_bytes": 179174,
+      "sha256": "76d54fccee4c3897489211a2f533448a5eed086c09a8d887d97bd3cafd906f7c"
+    },
+    {
+      "path": "screenshots/c18-receipt-progress-form-before-review.png",
+      "size_bytes": 130328,
+      "sha256": "a39d23c8d8633dfa5d7cee328efe5420c0002fac95932c4070da34dd1bae4a44"
+    },
+    {
+      "path": "screenshots/c18-receipt-proposed-form.png",
+      "size_bytes": 129371,
+      "sha256": "3e2739b8dfdf198872ec724582a068e6e5b9946cb9393b1554efadc24e84876d"
+    },
+    {
+      "path": "screenshots/c18-reconciled-succeeded-final.png",
+      "size_bytes": 152860,
+      "sha256": "8a6358bf32699bdc6f543e70c18aec618b7eb28072d442762d786e764dd86756"
+    },
+    {
+      "path": "screenshots/c18-restart-unknown-after-local-write.png",
+      "size_bytes": 156435,
+      "sha256": "f57cc99c7177dfe7d97192f58bea640a612ab9c80be59dfeaa6dc90d31d79c1c"
+    },
+    {
+      "path": "screenshots/c23-atomic-confirmation-after.png",
+      "size_bytes": 158588,
+      "sha256": "92c2d503688fc5fbf655a678b2c8aa1bef55def0c81be6d61b403ec040d98452"
+    },
+    {
+      "path": "screenshots/c23-atomic-confirmation-before.png",
+      "size_bytes": 158239,
+      "sha256": "88cbc22324ff2199945b3bff9b90e42d550243dd0919b2c161c5628f6af0c866"
+    },
+    {
+      "path": "screenshots/c23-atomic-form-before-review.png",
+      "size_bytes": 138906,
+      "sha256": "c5e4e97fec132227295e387883a723acb43f223200eac19bca8fd1c08d0a71cf"
+    },
+    {
+      "path": "screenshots/c23-atomic-read-only-no-proof-still-unknown.png",
+      "size_bytes": 156557,
+      "sha256": "06d4f2b7e0f09c25e0854ee19d3093167d13e4afca3ab9f0a8aa0515babec6c8"
+    },
+    {
+      "path": "screenshots/c23-atomic-restarted-unknown-retained.png",
+      "size_bytes": 156571,
+      "sha256": "295f737f972c705ae2aa0b82ca7667bf22b57fd668f06d3d83ac89f711192a06"
+    },
+    {
+      "path": "screenshots/c23-atomic-write-interrupted-running-retained.png",
+      "size_bytes": 151822,
+      "sha256": "257fce5f0dc19ccf2f39276536cff59ffd67942d1b15ec1df6160f91b4a70dd7"
+    },
+    {
+      "path": "screenshots/fake-authorized.png",
+      "size_bytes": 131145,
+      "sha256": "a63391ba3d889ef5db0f87894d9b72d448aa9031b5810e319a598f3719aa41a7"
+    },
+    {
+      "path": "screenshots/workspace-create-form.png",
+      "size_bytes": 58905,
+      "sha256": "a151943337f07e42347b015d96aab27b194a38531104e17920b377f8922aee0d"
+    },
+    {
+      "path": "screenshots/workspace-open-form.png",
+      "size_bytes": 56542,
+      "sha256": "80f88264e01e631ddc0d22d488d68397312218742e70333ca9766a06a29d02f7"
+    }
+  ]
+}

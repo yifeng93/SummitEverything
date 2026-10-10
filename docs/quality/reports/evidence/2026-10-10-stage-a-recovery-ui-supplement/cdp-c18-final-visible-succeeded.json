@@ -1,0 +1,16 @@
+{
+  "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+  "ui": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n本地写入成功，回执待恢复 → 本地写入成功，回执待恢复\n\n动作已成功\n\n执行中断，等待核实。\n\n未找到明确执行证据，仍为未知。\n\n动作审计证据已记录。\n\n动作与执行证据详情\n{\n  \"action_id\": \"ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd\",\n  \"kind\": \"project_progress\",\n  \"payload\": {\n    \"project_id\": \"48da1d52-9846-5046-9e50-9fe62237cdf7\",\n    \"expected_version\": 0,\n    \"progress\": \"本地写入成功，回执待恢复\"\n  },\n  \"payload_sha256\": \"c43b417a3687e22f62380f307831afcf1065254e4c5586982a5dff3afbd854ca\",\n  \"confirmation_id\": \"0a86591b-4862-459a-ad8b-08356578fa13\",\n  \"state\": \"succeeded\",\n  \"candidate_id\": null,\n  \"source_draft_id\": null,\n  \"source_ids\": [],\n  \"created_at\": \"2026-10-10T07:56:02.627880Z\",\n  \"confirmed_at\": \"2026-10-10T07:56:02.912310Z\",\n  \"started_at\": \"2026-10-10T07:56:03.198055Z\",\n  \"finished_at\": \"2026-10-10T07:56:53.446506Z\",\n  \"attempt_session\": \"<redacted>\",\n  \"provider_result\": {\n    \"project_id\": \"48da1d52-9846-5046-9e50-9fe62237cdf7\",\n    \"progress\": \"本地写入成功，回执待恢复\",\n    \"progress_version\": 1\n  },\n  \"evidence\": [\n    {\n      \"kind\": \"interrupted\",\n      \"at\": \"2026-10-10T07:56:53.129002+00:00\"\n    },\n    {\n      \"kind\": \"provider_lookup\",\n      \"at\": \"2026-10-10T07:56:53.446499+00:00\",\n      \"found\": false,\n      \"verified\": false,\n      \"result\": null\n    },\n    {\n      \"kind\": \"local_writer_receipt\",\n      \"operation_id\": \"progress:a2196bee-64d2-5445-8fb3-8a452cc2bde7\",\n      \"request_hash\": \"b0b2009b408f5632b76323845ecf046ff17c21e3a66f26d851870f6191223bc1\",\n      \"at\": \"2026-10-10T07:56:53.445375+00:00\"\n    }\n  ]\n}",
+  "network": [
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "http_status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/0e93b2a2-c2a4-41a4-8528-263d8ff26c46",
+      "http_status": 200
+    }
+  ]
+}
