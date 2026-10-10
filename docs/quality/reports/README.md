@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## Stage B 最新评定（2026-10-10）
+
+[Sol独立DEV候选评估](2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)：开始时dirty base `ba0d330…`，后按用户授权原样固定实现 `1fede419…` 和开发文档 `4966a682…`。原矩阵后端190/前端36通过，独立反例后端10/前端1 FAIL；P0=2/P1=10/P2=1，尚未达到正式固定SHA QA入口。真实服务、用户Keychain、真实材料操作0；无PR/main整合。本条更新后文旧“未固定/未审查”状态，不追认正式QA。实际harness与失败log见[证据目录](evidence/2026-10-10-stage-b-sol-dev-review/README.md)；[下一执行Luna提示词](../../handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)要求修复、完成B、新SHA正式独立QA后再整合。
+
 ## 当前证据如何组合
 
 Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。之后环境整理只改文档。不能单独拿第四轮旧 PASS 摘要代表当前全部证据；须结合以下追加纠正和修复复验。

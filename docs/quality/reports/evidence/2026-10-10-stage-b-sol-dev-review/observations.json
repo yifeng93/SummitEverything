@@ -1,0 +1,59 @@
+{
+  "kind": "independent-dev-candidate-review-not-formal-qa",
+  "date": "2026-10-10",
+  "timezone": "Asia/Shanghai",
+  "initial_head": "ba0d330820d5d98b7e17e86cad5007b5a3a16c1d",
+  "initial_dirty": true,
+  "initial_changed_untracked_files": 46,
+  "code_checkpoint": "1fede419a49b76c2f82e392be2803597cedab1f2",
+  "developer_document_checkpoint": "4966a6824bcc98b065e754e2e7a27d3f94a1539c",
+  "snapshot_file_hashes_matched_after_commit": 390,
+  "original_checks": {
+    "pytest": "190 passed, 1 existing deprecation warning",
+    "ruff_check": "exit 0",
+    "ruff_format": "exit 0, 48 files",
+    "mypy": "exit 0, 32 source files",
+    "lock": "exit 0, 37 packages",
+    "vitest": "9 files / 36 passed",
+    "typecheck": "exit 0",
+    "lint": "exit 0, 3 existing warnings",
+    "web_build": "exit 0",
+    "swift_build": "exit 0",
+    "openapi_and_types": "exit 0, byte identical to candidate",
+    "diff_check": "exit 0",
+    "uv_build_clean_source": "exit 0"
+  },
+  "independent_counterexamples": {
+    "backend_main": {
+      "exit": 1,
+      "failed": 8
+    },
+    "backend_additional": {
+      "exit": 1,
+      "failed": 2
+    },
+    "frontend": {
+      "exit": 1,
+      "failed": 1
+    }
+  },
+  "uv_build_first_attempt": {
+    "exit": 2,
+    "reason": "parallel Swift .build temporary symlink included in a Git-free snapshot sdist; sequential clean-source copy succeeded"
+  },
+  "guards": "sitecustomize blocks non-loopback Python socket connect/connect_ex and MacOSKeychainBackend init/get/set/delete; tests inject synthetic memory or stub subclasses",
+  "scope_limits": [
+    "no real providers",
+    "no user Keychain access",
+    "no business materials",
+    "no manual browser replay this review",
+    "no native settings/Keychain replay",
+    "no fixed-SHA formal QA"
+  ],
+  "archived_log_sanitization": [
+    "generated synthetic OAuth state redacted",
+    "temporary review-root path normalized; raw outputs stay temporary",
+    "stdout line-end whitespace and trailing blank lines normalized; additional harness final newline normalized and replayed: 2 FAIL"
+  ],
+  "passed_check_evidence": "tool transcript and this recorded summary; no raw stdout archive for the passed matrix"
+}

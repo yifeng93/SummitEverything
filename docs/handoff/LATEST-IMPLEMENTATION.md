@@ -1,5 +1,13 @@
 # 最新实现交接
 
+## 2026-10-10 Sol 独立 DEV 评估追加（以本条解释后文旧候选状态）
+
+用户在评估中授权核验后提交、推送。原实现已原样固定为 `1fede419a49b76c2f82e392be2803597cedab1f2`，原开发文档为 `4966a6824bcc98b065e754e2e7a27d3f94a1539c`；后文“dirty / 没有候选提交”是当时记录，不能继续当当前 Git 状态。产品代码未由评定者改写；390 项快照指纹与提交后文件一致。
+
+本轮是**独立 DEV 候选评估 / 正式固定 SHA QA 尚未开始**。原矩阵后端190、前端36通过，但独立反例后端10/前端1失败；未关闭P0=2、P1=10、P2=1。真实Feishu未实现、OS Keychain/实际浏览器原生证据欠缺；不满足正式QA入口，不给B PASS，不创建PR或合并main。候选R03将质量门替换成有限smoke的改写被评定为P1，原质量标准仍须保留，不能据该改写缩减验收。
+
+完整[评估报告](../quality/reports/2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)、[反例证据](../quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/README.md)和[下一位Luna完整执行提示词](PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)。本轮真实服务/用户Keychain/真实材料操作均0；有限smoke授权未消耗。先修阻断和完成B，再固定新SHA并安排独立正式QA；本评估不能代替该QA。
+
 ## 当前交接基线（2026-10-10，阶段 A 已收口）
 
 - **受测修复代码：** `30903c4cdf73855af71a201e3edea6c535ee8199`；原阶段 A 代码为 `32da67e9c0280e3dae18fd374e30c925565b0b82`。

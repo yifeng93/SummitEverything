@@ -4,6 +4,8 @@
 
 ## 当前状态与下一步
 
+2026-10-10 Sol追加：原B实现已按用户授权保存为 `1fede419a49b76c2f82e392be2803597cedab1f2`，开发文档检查点 `4966a6824bcc98b065e754e2e7a27d3f94a1539c`。独立DEV评估发现P0=2/P1=10/P2=1；原后端190/前端36检查通过，独立反例10个后端和1个前端FAIL。正式固定SHA QA尚未开始；B不满足入口，源码未整合。下段及历史条目“没有固定SHA”是此次提交前记录。先按[新Luna提示词](../handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)修阻断、补实现和UI/原生证据，再固定新SHA正式QA；[报告及证据](../quality/reports/2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)保留FAIL与真实NOT_RUN。
+
 阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。隔离 worktree `codex/stage-b-real-providers` 中的 B 候选仍 DEV 进行中，已接通模型操作路径、合成 callback 配置、本地 provider 设置、Fake-only user token 刷新轮换与登出，以及离线验证的 embedding generation 原子切换；Feishu 真实 adapter、持久化 user token Keychain 生命周期、原生 Keychain 故障生命周期、真实账户维度验证和独立 QA 尚未完成。候选没有固定 SHA / PR。用户已确认是 Feishu app 管理员且可开通权限，scope 可用性不构成阻塞；协议和 token 语义仍需核实。除已授权且尚未执行的有限 smoke 外，更广 C 操作仍需 B QA 和逐项授权；M3–M5 未开始。完整证据与边界见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
 授权更新（2026-10-10）：用户愿意通过本地安全入口提供 API keys，并已授权有限的 Feishu OAuth 接入与合成数据模型冒烟：最多一次 code exchange、必要时一次 refresh，DeepSeek chat / Model Studio embedding / rerank 各最多一次 synthetic request。执行前查官方现价并估算；提示词建议 CNY 5 为保守操作上限（不是用户指定预算，若无法界定在该额度内只询问更高上限）。这不授权读取真实材料、日历或 task，不授权将真实业务内容发送给模型，也不授权 task 写入。详细约束见[Sol 阶段 B 独立评估提示词](../handoff/PROMPT-STAGE-B-SOL-REVIEW.md)和[Luna 执行提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
