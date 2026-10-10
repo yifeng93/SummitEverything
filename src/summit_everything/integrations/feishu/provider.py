@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+
+if TYPE_CHECKING:
+    from summit_everything.integrations.feishu.tasks import FeishuTask, TaskPage
 
 CALLBACK_PATH = "/api/v1/integrations/feishu/callback"
 
@@ -183,3 +186,11 @@ class FeishuProvider(Protocol):
         cursor: str | None,
         limit: int,
     ) -> CalendarPage: ...
+
+    def tasks(self, credentials: UserCredentials, cursor: str | None, limit: int) -> TaskPage: ...
+    def task_get(self, credentials: UserCredentials, guid: str) -> FeishuTask: ...
+    def task_create(self, credentials: UserCredentials, body: dict[str, Any]) -> FeishuTask: ...
+    def task_patch(
+        self, credentials: UserCredentials, guid: str, body: dict[str, Any], token: str
+    ) -> FeishuTask: ...
+    def task_result(self, credentials: UserCredentials, token: str) -> FeishuTask | None: ...

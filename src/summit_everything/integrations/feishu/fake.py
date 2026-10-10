@@ -1,8 +1,16 @@
 """Deterministic synthetic fixtures with no network client or external endpoint."""
 
+import fcntl
+import json
+import tempfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 from time import time
+from typing import Any
 from urllib.parse import urlencode
+from uuid import uuid4
 
 from summit_everything.integrations.feishu.provider import (
     AppCredentials,
@@ -14,6 +22,8 @@ from summit_everything.integrations.feishu.provider import (
     MaterialPage,
     UserCredentials,
 )
+from summit_everything.integrations.feishu.tasks import FeishuTask, TaskPage
+from summit_everything.workspace.transactions import atomic_write
 
 
 def _offset(cursor: str | None) -> int:
@@ -25,6 +35,80 @@ def _offset(cursor: str | None) -> int:
 
 
 class FakeFeishu:
+    def __init__(self, simulated_remote_root: Path | None = None) -> None:
+        self.simulated_remote_root = simulated_remote_root or Path(
+            tempfile.mkdtemp(prefix="summit-simulated-feishu-remote-")
+        )
+        self.simulated_remote_root.mkdir(parents=True, exist_ok=True)
+
+    @contextmanager
+    def _remote(self) -> Iterator[dict[str, Any]]:
+        with (self.simulated_remote_root / "remote.lock").open("a+b") as lock:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            path = self.simulated_remote_root / "simulated_remote_tasks.json"
+            try:
+                data = (
+                    json.loads(path.read_bytes()) if path.exists() else {"tasks": {}, "results": {}}
+                )
+                yield data
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+    def _save_remote(self, data: dict[str, Any]) -> None:
+        atomic_write(
+            self.simulated_remote_root / "simulated_remote_tasks.json", json.dumps(data).encode()
+        )
+
+    def tasks(self, credentials: UserCredentials, cursor: str | None, limit: int) -> TaskPage:
+        with self._remote() as data:
+            rows = [FeishuTask.model_validate(value) for _, value in sorted(data["tasks"].items())]
+        offset = _offset(cursor)
+        return TaskPage(
+            items=rows[offset : offset + limit],
+            next_cursor=f"fake-page-{offset + limit}" if offset + limit < len(rows) else None,
+        )
+
+    def task_get(self, credentials: UserCredentials, guid: str) -> FeishuTask:
+        with self._remote() as data:
+            if guid not in data["tasks"]:
+                raise FeishuError("not_found")
+            return FeishuTask.model_validate(data["tasks"][guid])
+
+    def task_create(self, credentials: UserCredentials, body: dict[str, Any]) -> FeishuTask:
+        with self._remote() as data:
+            token = body["client_token"]
+            if token in data["results"]:
+                return FeishuTask.model_validate(data["results"][token])
+            task = FeishuTask(
+                guid=str(uuid4()),
+                **{key: value for key, value in body.items() if key != "client_token"},
+            )
+            row = task.model_dump(mode="json")
+            data["tasks"][task.guid] = row
+            data["results"][token] = row
+            self._save_remote(data)
+            return task
+
+    def task_patch(
+        self, credentials: UserCredentials, guid: str, body: dict[str, Any], token: str
+    ) -> FeishuTask:
+        with self._remote() as data:
+            if guid not in data["tasks"]:
+                raise FeishuError("not_found")
+            row = dict(data["tasks"][guid])
+            for field in body["update_fields"]:
+                row[field] = body["task"].get(field)
+            task = FeishuTask.model_validate(row)
+            data["tasks"][guid] = task.model_dump(mode="json")
+            data["results"][token] = task.model_dump(mode="json")
+            self._save_remote(data)
+            return task
+
+    def task_result(self, credentials: UserCredentials, token: str) -> FeishuTask | None:
+        with self._remote() as data:
+            result = data["results"].get(token)
+            return FeishuTask.model_validate(result) if result else None
+
     def authorization_url(self, redirect_uri: str, state: str) -> str:
         return redirect_uri + "?" + urlencode({"code": "fake-ok", "state": state})
 
@@ -39,7 +123,7 @@ class FakeFeishu:
             access_token="synthetic-user-token",
             refresh_token="synthetic-refresh-token",
             expires_at=time() + 3600,
-            scopes=["minutes:read", "calendar:read"],
+            scopes=["minutes:read", "calendar:read", "task:task:read", "task:task:write"],
         )
 
     def materials(

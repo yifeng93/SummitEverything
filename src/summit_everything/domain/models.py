@@ -26,6 +26,9 @@ class ProjectRecord(OpenModel):
     directory: str
     overview_id: UUID
     archived: bool = False
+    progress: str = ""
+    progress_version: int = Field(default=0, ge=0)
+    progress_confirmation_id: str | None = None
 
 
 class WorkspaceManifest(OpenModel):

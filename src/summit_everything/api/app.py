@@ -1,8 +1,10 @@
 """FastAPI application factory for the local-only service."""
 
+import hashlib
 import json
 import os
 import secrets
+import tempfile
 from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
@@ -17,15 +19,17 @@ from fastapi import (
     Form,
     Header,
     HTTPException,
+    Query,
     Request,
     Response,
     UploadFile,
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from summit_everything.api.routes.actions import register_actions
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.domain.models import (
     ActionCandidate,
@@ -41,6 +45,7 @@ from summit_everything.domain.models import (
     SourceDetail,
     WorkspaceContext,
 )
+from summit_everything.intake.actions import ActionService
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeConflict, IntakeService
 from summit_everything.integrations.feishu.fake import FakeFeishu
@@ -61,6 +66,7 @@ from summit_everything.integrations.feishu.service import (
     ImportResult,
     callback_boundary,
 )
+from summit_everything.integrations.feishu.tasks import FeishuTasks
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
@@ -224,12 +230,20 @@ def create_app(
     cancellations: dict[str, Event] = {}
     config = feishu_config or FeishuConfig()
     feishu = FeishuService(
-        feishu_provider or FakeFeishu(),
+        feishu_provider
+        or FakeFeishu(
+            Path(tempfile.gettempdir())
+            / "summit-simulated-feishu-remote"
+            / hashlib.sha256(str(app.state.profile_root).encode()).hexdigest()
+        ),
         credential_store or MemoryCredentialStore(),
         config,
         app.state.session_token,
     )
     app.state.feishu_service = feishu
+    tasks = FeishuTasks(feishu)
+    actions = ActionService(tasks, secrets.token_urlsafe(32))
+    app.state.action_service = actions
 
     @app.middleware("http")
     async def origin_guard(request: Request, call_next):  # type: ignore[no-untyped-def]
@@ -291,6 +305,17 @@ def create_app(
                 detail={"code": "workspace_not_open", "message": "Open a workspace first"},
             )
         return workspace
+
+    register_actions(app, actions, tasks, authenticated, active_workspace)
+
+    @app.exception_handler(ValidationError)
+    async def payload_validation_error(_request: Request, exc: ValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {"code": "validation_error", "message": "请填写有效的动作字段和日期。"}
+            },
+        )
 
     def query_for(workspace: WorkspaceContext) -> QueryService:
         if query_service is not None:
@@ -666,8 +691,20 @@ def create_app(
     @app.get("/api/v1/actions", dependencies=[Depends(authenticated)])
     def action_candidates(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
-    ) -> list[ActionCandidate]:
-        return review.list_actions(Path(workspace.root))
+        cursor: UUID | None = None,
+        limit: int | None = Query(default=None, ge=1, le=100),
+    ) -> list[ActionCandidate] | dict[str, Any]:
+        rows = review.list_actions(Path(workspace.root))
+        if limit is None and cursor is None:
+            return rows
+        rows = sorted(rows, key=lambda row: str(row.action_id))
+        if cursor:
+            rows = [row for row in rows if str(row.action_id) > str(cursor)]
+        size = limit or 20
+        return {
+            "items": rows[:size],
+            "next_cursor": str(rows[size - 1].action_id) if len(rows) > size else None,
+        }
 
     @app.post("/api/v1/index/plans", dependencies=[Depends(authenticated)])
     def index_plan(
