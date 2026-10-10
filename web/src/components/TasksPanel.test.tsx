@@ -18,7 +18,7 @@ function boundary(state = 'succeeded', loseExecution = false) {
     if (path.includes('/tasks?')) data = { items: [{ guid: 'remote-task', summary: '远端任务', description: '保留描述', due: null, completed_at: 0 }], next_cursor: null }
     if (path.endsWith('/projects')) data = [{ id: 'project', name: '模拟项目', progress: '准备中', progress_version: 2 }, { id: 'other-project', name: '另一个模拟项目', progress: '', progress_version: 7 }]
     if (path.endsWith('/actions') && method === 'POST') { action = { ...body, state: 'proposed', payload_sha256: 'hash', confirmation_id: null, evidence: [] }; data = action }
-    if (path.includes('/actions/') && method === 'PATCH') { action = { ...action, payload: body.payload, payload_sha256: 'edited-hash', confirmation_id: null, state: 'proposed' }; data = action }
+    if (path.includes('/actions/') && method === 'PATCH') { action = { ...action, payload: body.payload, payload_sha256: 'edited-hash', confirmation_id: null, state: 'proposed', evidence: [{ kind: 'invalidated_confirmation', confirmation_id: 'old-confirmation', payload_sha256: 'old-hash', at: '2026-10-10T00:00:00Z' }] }; data = action }
     if (path.endsWith('/confirmations')) { action = { ...action, ...body, state: 'confirmed' }; data = action }
     if (path.endsWith('/executions')) { action = { ...action, state }; data = action; if (loseExecution) throw new TypeError('模拟响应丢失') }
     if (path.includes('/actions/') && method === 'GET') data = action
@@ -64,6 +64,8 @@ it('refresh/completion only propose and edit clears confirmation', async () => {
   fireEvent.click(screen.getByRole('button', { name: '保存修改并重新审阅' }))
   expect(await screen.findByRole('button', { name: '独立确认此动作' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: '执行已确认动作' })).toBeNull()
+  expect(screen.getByText('确认已失效；修改后的动作需要重新独立确认。')).toBeTruthy()
+  expect(screen.queryByText('执行中断，等待核实。')).toBeNull()
 })
 
 it('unknown offers read-only lookup evidence without executing again', async () => {
