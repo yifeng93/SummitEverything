@@ -828,3 +828,44 @@ def test_rejects_coerced_date_boolean_and_empty_confirmation_evidence(tmp_path):
         == 422
     )
     assert c.get(TASKS).json()["items"] == []
+
+
+def test_late_response_does_not_overwrite_final_user_outcome(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+
+    entered, release = Event(), Event()
+
+    class Slow(FakeFeishu):
+        def task_create(self, credentials, body):
+            entered.set()
+            assert release.wait(5)
+            return super().task_create(credentials, body)
+
+    provider = Slow(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+    approved = confirm(c, proposal(c))
+    second = client(tmp_path, root=tmp_path / "workspace", provider=provider)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(execute, c, approved)
+        assert entered.wait(5)
+        try:
+            assert second.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "unknown"
+            finalized = second.post(
+                PREFIX + "/" + approved["action_id"] + "/outcomes",
+                json={
+                    "payload_sha256": approved["payload_sha256"],
+                    "confirmation_id": "explicit-outcome",
+                    "state": "failed",
+                    "evidence": "用户独立提供的核实结果",
+                },
+            ).json()
+        finally:
+            release.set()
+        result = future.result().json()
+    assert result == finalized
+    assert second.get(PREFIX + "/" + approved["action_id"]).json() == finalized
+    assert execute(second, approved).json() == finalized
+    assert len(second.get(TASKS).json()["items"]) == 1

@@ -302,6 +302,8 @@ class ActionService:
                 item.finished_at = self.now()
         with workspace_lock(root):
             current = self._get(root, action_id)
+            if current.state in {"succeeded", "failed"}:
+                return current
             item.evidence = current.evidence
             save_receipt(root, item)
         return item

@@ -38,6 +38,12 @@ class TaskDate(StrictModel):
         return self
 
     def provider_value(self) -> dict[str, Any]:
+        """Map Fake wire values; all-day midnight is only a simulation convention.
+
+        The exact all-day date extraction rule was unavailable in official docs.
+        Keep the original date and IANA zone in the intent; a real adapter must
+        verify the rule before using this conversion. Configuration is Fake only.
+        """
         if self.is_all_day:
             from datetime import date
 

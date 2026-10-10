@@ -96,7 +96,7 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
     await run(async () => {
       if (form === 'project_progress') {
         const project = projects.find((row) => row.id === projectId)
-        await propose(form, { project_id: projectId, expected_version: action?.payload.expected_version ?? project?.progress_version ?? 0, progress })
+        await propose(form, { project_id: projectId, expected_version: action?.payload.project_id === projectId ? action.payload.expected_version : project?.progress_version ?? 0, progress })
       } else if (form === 'feishu_task_complete') {
         await propose(form, { task_guid: guid })
       } else if (form === 'feishu_task_update') {
@@ -146,6 +146,7 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
   const needsTitle = form === 'feishu_task_create' || form === 'feishu_task_update' && selectedFields.includes('summary')
   const valid = !!form && (!needsTitle || !!summary.trim()) && (!needsDate || !!dateMode && (dateMode === 'none' || !!dateValue && !!timezone)) && (form !== 'project_progress' || !!projectId && !!progress.trim()) && (form !== 'feishu_task_update' || !!selectedFields.length && !!guid) && (form !== 'feishu_task_complete' || !!guid)
   const shown = action?.kind === 'feishu_task_update' ? action.payload.task as Record<string, unknown> : action?.payload
+  const targetTask = tasks?.items.find((task) => task.guid === action?.payload.task_guid)
   const shownDate = shown?.due as Record<string, unknown> | null
   const selectedProject = projects.find((row) => row.id === String(action?.payload.project_id ?? projectId))
 
@@ -177,7 +178,7 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
       {shown?.description !== undefined && <><dt>任务描述</dt><dd>{String(shown.description) || '空描述'}</dd></>}
       {shown && Object.hasOwn(shown, 'due') && <><dt>截止日期</dt><dd>{shownDate ? String(shownDate.value) + (shownDate.is_all_day ? ' · 全天' : ' · 具体时间') + ' · ' + String(shownDate.timezone) : '不设截止日期'}</dd></>}
       {action.kind === 'feishu_task_update' && <><dt>修改范围</dt><dd>{(action.payload.update_fields as string[]).map((field) => ({summary: '标题', description: '描述', due: '截止日期'}[field])).join('、')}</dd></>}
-      {action.kind === 'feishu_task_complete' && <><dt>任务</dt><dd>{summary || guid || String(action.payload.task_guid)}</dd></>}
+      {(action.kind === 'feishu_task_complete' || action.kind === 'feishu_task_update') && <><dt>目标任务</dt><dd>{targetTask?.summary ?? String(action.payload.task_guid)}</dd></>}
       {action.kind === 'project_progress' && <><dt>项目</dt><dd>{selectedProject?.name ?? '项目'}</dd><dt>新的项目进度</dt><dd>{String(action.payload.progress)}</dd></>}
     </dl>{action.kind === 'project_progress' && <p>{selectedProject?.progress || '尚未记录'} → {String(action.payload.progress)}</p>}
     <p role="status">{states[action.state]}</p><div className="button-row">

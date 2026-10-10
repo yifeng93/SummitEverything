@@ -16,7 +16,7 @@ function boundary(state = 'succeeded', loseExecution = false) {
     if (path.endsWith('/status')) data = { mode: 'fake', authorized: true, scopes: [], token_type: 'user' }
     if (path.includes('/action-intents?')) data = { items: action ? [action] : [], next_cursor: null }
     if (path.includes('/tasks?')) data = { items: [{ guid: 'remote-task', summary: '远端任务', description: '保留描述', due: null, completed_at: 0 }], next_cursor: null }
-    if (path.endsWith('/projects')) data = [{ id: 'project', name: '模拟项目', progress: '准备中', progress_version: 2 }]
+    if (path.endsWith('/projects')) data = [{ id: 'project', name: '模拟项目', progress: '准备中', progress_version: 2 }, { id: 'other-project', name: '另一个模拟项目', progress: '', progress_version: 7 }]
     if (path.endsWith('/actions') && method === 'POST') { action = { ...body, state: 'proposed', payload_sha256: 'hash', confirmation_id: null, evidence: [] }; data = action }
     if (path.includes('/actions/') && method === 'PATCH') { action = { ...action, payload: body.payload, payload_sha256: 'edited-hash', confirmation_id: null, state: 'proposed' }; data = action }
     if (path.endsWith('/confirmations')) { action = { ...action, ...body, state: 'confirmed' }; data = action }
@@ -140,4 +140,45 @@ it('lost execution response reads the same intent and never posts another execut
   const execution = requests.find((item) => item.path.endsWith('/executions'))!
   expect(requests.some((item) => item.path === execution.path.replace('/executions', '') && item.method === 'GET')).toBe(true)
   expect(screen.queryByRole('button', { name: '执行已确认动作' })).toBeNull()
+})
+
+it('completion review reflects edited target rather than a stale task title', async () => {
+  boundary()
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
+  await screen.findByText('远端任务')
+  fireEvent.click(screen.getByRole('button', { name: '完成远端任务' }))
+  fireEvent.click(await screen.findByRole('button', { name: '修改动作内容' }))
+  fireEvent.change(screen.getByLabelText('待完成任务标识'), { target: { value: 'other-task' } })
+  fireEvent.click(screen.getByRole('button', { name: '保存修改并重新审阅' }))
+  await screen.findByRole('button', { name: '独立确认此动作' })
+  expect(screen.queryByText('远端任务', { selector: 'dd' })).toBeNull()
+  expect(screen.getByText('other-task', { selector: 'dd' })).toBeTruthy()
+})
+
+it('edit review identifies unchanged task title when only due is selected', async () => {
+  boundary()
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
+  await screen.findByText('远端任务')
+  fireEvent.click(screen.getByRole('button', { name: '编辑远端任务' }))
+  fireEvent.click(screen.getByLabelText('截止日期', { selector: 'input[type="checkbox"]' }))
+  fireEvent.change(screen.getByLabelText('截止日期方式'), { target: { value: 'none' } })
+  fireEvent.click(screen.getByRole('button', { name: '审阅任务内容' }))
+  await screen.findByRole('button', { name: '独立确认此动作' })
+  expect(screen.getByText('远端任务', { selector: 'dd' })).toBeTruthy()
+})
+
+it('changing the progress target reviews the selected project version', async () => {
+  const requests = boundary()
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '拟定项目进度变化' }))
+  fireEvent.change(screen.getByLabelText('进度项目'), { target: { value: 'project' } })
+  fireEvent.change(screen.getByLabelText('新的项目进度'), { target: { value: '已完成准备' } })
+  fireEvent.click(screen.getByRole('button', { name: '审阅进度变化' }))
+  fireEvent.click(await screen.findByRole('button', { name: '修改动作内容' }))
+  fireEvent.change(screen.getByLabelText('进度项目'), { target: { value: 'other-project' } })
+  fireEvent.click(screen.getByRole('button', { name: '保存修改并重新审阅' }))
+  await screen.findByRole('button', { name: '独立确认此动作' })
+  expect(requests.find((item) => item.method === 'PATCH')?.body).toMatchObject({ payload: { project_id: 'other-project', expected_version: 7 } })
 })
