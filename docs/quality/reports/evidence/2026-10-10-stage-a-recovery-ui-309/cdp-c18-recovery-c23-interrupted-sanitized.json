@@ -1,0 +1,531 @@
+{
+  "run_id": "qa-c18-reconcile-ui-30903c4",
+  "source_sha": "30903c4cdf73855af71a201e3edea6c535ee8199",
+  "console": {
+    "log": 4,
+    "info": 2,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "network": [
+    {
+      "method": "GET",
+      "path": "/",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/main.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/@vite/client",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/@react-refresh",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/rolldown-runtime-BvCyGRYZ.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/index.css",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/vite/dist/client/env.mjs",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/App.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react_jsx-dev-runtime.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/api/client.ts",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/AskView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/ProjectsView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/WorkspaceGate.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/JournalView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/PageReader.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/App.css",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/TodayView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/TasksPanel.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/FeishuPanel.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/DraftReview.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react-dom_client.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react-dom.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "http_status": 409,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "http_status": 409,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/favicon.svg",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "body": {
+        "mode": "open",
+        "root": "<isolated-path>"
+      },
+      "http_status": 201,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "<inline-svg-data>",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "http_status": 200,
+      "response": {
+        "authorized": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "http_status": 200,
+      "response": {
+        "authorized": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/integrations/feishu/authorizations",
+      "body": {},
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "http_status": 200,
+      "response": {
+        "authorized": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/58b29169-306e-4e15-bd34-8285d7f5182e/reconciliations",
+      "body": {},
+      "http_status": 200,
+      "response": {
+        "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+        "kind": "project_progress",
+        "state": "succeeded",
+        "evidence": [
+          {
+            "kind": "interrupted"
+          },
+          {
+            "kind": "provider_lookup",
+            "found": false
+          },
+          {
+            "kind": "local_writer_receipt"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/58b29169-306e-4e15-bd34-8285d7f5182e/executions",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+        "kind": "project_progress",
+        "state": "succeeded",
+        "evidence": [
+          {
+            "kind": "interrupted"
+          },
+          {
+            "kind": "provider_lookup",
+            "found": false
+          },
+          {
+            "kind": "local_writer_receipt"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "body": {
+        "action_id": "c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+        "kind": "project_progress",
+        "payload": {
+          "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "expected_version": 1,
+          "progress": "Atomic interruption has no write proof"
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+        "kind": "project_progress",
+        "state": "proposed",
+        "evidence": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/c4611c20-68f5-4a2c-860a-09ffb3b6cf72/confirmations",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+        "kind": "project_progress",
+        "state": "confirmed",
+        "evidence": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/c4611c20-68f5-4a2c-860a-09ffb3b6cf72/executions",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 500,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+      "http_status": 200,
+      "response": {
+        "action_id": "c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+        "kind": "project_progress",
+        "state": "running",
+        "evidence": []
+      }
+    }
+  ],
+  "c18": {
+    "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+    "confirmation_id": "<redacted>",
+    "state_after_restart": "unknown",
+    "ui_unknown": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n本地写入成功，回执待恢复 → 本地写入成功，回执待恢复\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n\n执行中断，等待核实。\n\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果\n动作与执行证据详情",
+    "disk_after_restart": {
+      "sha256": "88cf6d72ea90e5880e3194b30ef19ae89872ba32a8c2570d310ead38c9a8322a",
+      "projects": [
+        {
+          "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "name": "QA Recovery Project",
+          "progress": "本地写入成功，回执待恢复",
+          "progress_version": 1
+        }
+      ]
+    },
+    "state_after_read_only_reconcile": "succeeded",
+    "ui_reconciled": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n本地写入成功，回执待恢复 → 本地写入成功，回执待恢复\n\n动作已成功\n\n执行中断，等待核实。\n\n本地项目进度写入凭据已确认成功。\n\n动作与执行证据详情",
+    "provider_result": {
+      "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+      "progress": "本地写入成功，回执待恢复",
+      "progress_version": 1
+    },
+    "evidence": [
+      {
+        "kind": "interrupted"
+      },
+      {
+        "kind": "provider_lookup",
+        "found": false
+      },
+      {
+        "kind": "local_writer_receipt"
+      }
+    ],
+    "disk_after_reconcile": {
+      "sha256": "88cf6d72ea90e5880e3194b30ef19ae89872ba32a8c2570d310ead38c9a8322a",
+      "projects": [
+        {
+          "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "name": "QA Recovery Project",
+          "progress": "本地写入成功，回执待恢复",
+          "progress_version": 1
+        }
+      ]
+    },
+    "replay": {
+      "status": 200,
+      "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+      "state": "succeeded"
+    },
+    "disk_after_replay": {
+      "sha256": "88cf6d72ea90e5880e3194b30ef19ae89872ba32a8c2570d310ead38c9a8322a",
+      "projects": [
+        {
+          "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "name": "QA Recovery Project",
+          "progress": "本地写入成功，回执待恢复",
+          "progress_version": 1
+        }
+      ]
+    }
+  },
+  "c23": {
+    "select_project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+    "action_id": "c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+    "confirmation_id": "<redacted>",
+    "payload": {
+      "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+      "expected_version": 1,
+      "progress": "Atomic interruption has no write proof"
+    },
+    "state_before_confirmation": "proposed",
+    "state_after_confirmation": "confirmed",
+    "disk_before": {
+      "sha256": "88cf6d72ea90e5880e3194b30ef19ae89872ba32a8c2570d310ead38c9a8322a",
+      "projects": [
+        {
+          "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "name": "QA Recovery Project",
+          "progress": "本地写入成功，回执待恢复",
+          "progress_version": 1
+        }
+      ]
+    },
+    "state_after_write_interruption": {
+      "action_id": "c4611c20-68f5-4a2c-860a-09ffb3b6cf72",
+      "kind": "project_progress",
+      "payload": {
+        "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+        "expected_version": 1,
+        "progress": "Atomic interruption has no write proof"
+      },
+      "payload_sha256": "e0695546756adbda2bc662396f6cdbfadb861ec8206ea51b409af0a79add4a43",
+      "confirmation_id": "<redacted>",
+      "state": "running",
+      "candidate_id": null,
+      "source_draft_id": null,
+      "source_ids": [],
+      "created_at": "2026-10-10T08:16:45.867036Z",
+      "confirmed_at": "2026-10-10T08:16:46.176788Z",
+      "started_at": "2026-10-10T08:16:46.499595Z",
+      "finished_at": null,
+      "attempt_session": "<redacted>",
+      "provider_result": null,
+      "evidence": []
+    },
+    "ui_running": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\nAtomic interruption has no write proof\n\n本地写入成功，回执待恢复 → Atomic interruption has no write proof\n\n动作正在执行，请刷新结果\n\n刷新动作结果\n动作与执行证据详情",
+    "disk_after_interruption": {
+      "sha256": "88cf6d72ea90e5880e3194b30ef19ae89872ba32a8c2570d310ead38c9a8322a",
+      "projects": [
+        {
+          "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "name": "QA Recovery Project",
+          "progress": "本地写入成功，回执待恢复",
+          "progress_version": 1
+        }
+      ]
+    },
+    "trace": [
+      {
+        "event": "fault_fired",
+        "mode": "receipt_success_write_failure"
+      },
+      {
+        "event": "fault_fired",
+        "mode": "atomic_manifest_before_replace",
+        "target": "manifest.json",
+        "temp_written": true
+      }
+    ]
+  }
+}

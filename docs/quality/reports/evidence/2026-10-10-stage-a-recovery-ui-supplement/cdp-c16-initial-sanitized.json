@@ -1,0 +1,227 @@
+{
+  "run_id": "qa-stage-a-recovery-ui-409b907",
+  "source_sha": "409b90704046c623184846c09c873cec053e946d",
+  "console": {
+    "log": 3,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "network": [
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "body": {
+        "mode": "create",
+        "name": "QA 隔离模拟库",
+        "root": "<isolated-path>"
+      },
+      "http_status": 201,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "<inline-resource-redacted>",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "http_status": 200,
+      "response": {
+        "authorized": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "http_status": 200,
+      "response": {
+        "authorized": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/integrations/feishu/authorizations",
+      "body": {},
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "http_status": 200,
+      "response": {
+        "authorized": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "body": {
+        "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA R4 process exit",
+          "description": "Synthetic crash reconciliation, no external material",
+          "due": null
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+        "kind": "feishu_task_create",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/e82ddda6-1ac7-407e-82e4-7ee846c20e43/confirmations",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+        "kind": "feishu_task_create",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/e82ddda6-1ac7-407e-82e4-7ee846c20e43/executions",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 502,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+      "http_status": 502,
+      "response": "<omitted>"
+    }
+  ],
+  "steps": [
+    {
+      "step": "create_workspace",
+      "ui": "已连接隔离模拟库"
+    }
+  ],
+  "c16_crash": {
+    "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+    "payload_sha256": "857e970dbf26620dbe8bd051072e65a19ada01a36f67ac3683043436bf2ede0d",
+    "payload": {
+      "summary": "QA R4 process exit",
+      "description": "Synthetic crash reconciliation, no external material",
+      "due": null
+    },
+    "state_before_confirmation": "proposed",
+    "confirmation_id": "<redacted>",
+    "state_after_confirmation": "confirmed",
+    "execute_button_disabled_before": false,
+    "remote_path": "<isolated FakeFeishu remote file>",
+    "harness_trace_path": "<isolated harness trace>"
+  }
+}

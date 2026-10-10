@@ -1,0 +1,422 @@
+{
+  "run_id": "qa-stage-a-recovery-ui-409b907",
+  "source_sha": "409b90704046c623184846c09c873cec053e946d",
+  "console": {
+    "log": 4,
+    "info": 2,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "c16_crash": {
+    "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+    "confirmation_id": "<redacted>",
+    "state_after_restart": "unknown",
+    "ui_unknown": "最终动作：创建飞书任务\n任务标题\nQA R4 process exit\n任务描述\nSynthetic crash reconciliation, no external material\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n\n执行中断，等待核实。\n\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果",
+    "state_after_read_only_reconcile": "succeeded",
+    "ui_reconciled": "最终动作：创建飞书任务\n任务标题\nQA R4 process exit\n任务描述\nSynthetic crash reconciliation, no external material\n截止日期\n不设截止日期\n\n动作已成功\n\n执行中断，等待核实。\n\n已找到明确的远端执行证据。",
+    "remote_count_before_reconcile": 1,
+    "remote_count_after_reconcile": 1,
+    "provider_result": {
+      "task": {
+        "guid": "34f2de39-9171-4f72-a7a9-511126201d54",
+        "summary": "QA R4 process exit",
+        "description": "Synthetic crash reconciliation, no external material",
+        "due": null,
+        "completed_at": 0
+      }
+    },
+    "evidence": [
+      {
+        "kind": "interrupted"
+      },
+      {
+        "kind": "provider_lookup",
+        "found": true
+      }
+    ]
+  },
+  "c16_concurrent": {
+    "action_id": "b905e561-19a9-4a3d-9b78-4ac54cf30c5b",
+    "proposed_state": "proposed",
+    "payload": {
+      "summary": "QA R4 concurrent double",
+      "description": "Synthetic same-intent concurrency, one Fake side effect",
+      "due": null
+    },
+    "confirmation_id": "<redacted>",
+    "confirmed_state": "confirmed",
+    "double_click": {
+      "found": true,
+      "disabledAfterClicks": false,
+      "ariaBusy": "false"
+    },
+    "ui_during_request": "最终动作：创建飞书任务\n任务标题\nQA R4 concurrent double\n任务描述\nSynthetic same-intent concurrency, one Fake side effect\n截止日期\n不设截止日期\n\n已确认，尚未执行\n\n执行已确认动作\n修改动作内容",
+    "final_state": "succeeded",
+    "final_ui": "最终动作：创建飞书任务\n任务标题\nQA R4 concurrent double\n任务描述\nSynthetic same-intent concurrency, one Fake side effect\n截止日期\n不设截止日期\n\n动作已成功",
+    "remote_count_before": 1,
+    "remote_count_after": 2,
+    "final_provider_result": {
+      "task": {
+        "guid": "6112ff27-6523-4a07-994b-55799a425323",
+        "summary": "QA R4 concurrent double",
+        "description": "Synthetic same-intent concurrency, one Fake side effect",
+        "due": null,
+        "completed_at": 0
+      }
+    },
+    "execute_posts": 1
+  },
+  "network": [
+    {
+      "method": "GET",
+      "path": "/",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/main.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/@vite/client",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/@react-refresh",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/index.css",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/rolldown-runtime-BvCyGRYZ.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/App.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react_jsx-dev-runtime.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/vite/dist/client/env.mjs",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/api/client.ts",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/AskView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/PageReader.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/ProjectsView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/TodayView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/WorkspaceGate.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/App.css",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/JournalView.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/TasksPanel.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/FeishuPanel.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/src/components/DraftReview.tsx",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react-dom_client.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/node_modules/.vite/deps/react-dom.js",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "http_status": 200,
+      "response": {
+        "authorized": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "http_status": 200,
+      "response": {
+        "authorized": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "<inline-resource-redacted>",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "http_status": 200,
+      "response": {
+        "items": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/favicon.svg",
+      "http_status": 200,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "http_status": 200,
+      "response": {}
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/e82ddda6-1ac7-407e-82e4-7ee846c20e43/reconciliations",
+      "body": {},
+      "http_status": 200,
+      "response": {
+        "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
+        "kind": "feishu_task_create",
+        "state": "succeeded",
+        "evidence": [
+          {
+            "kind": "interrupted"
+          },
+          {
+            "kind": "provider_lookup",
+            "found": true
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "body": {
+        "action_id": "b905e561-19a9-4a3d-9b78-4ac54cf30c5b",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA R4 concurrent double",
+          "description": "Synthetic same-intent concurrency, one Fake side effect",
+          "due": null
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "b905e561-19a9-4a3d-9b78-4ac54cf30c5b",
+        "kind": "feishu_task_create",
+        "state": "proposed",
+        "evidence": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/b905e561-19a9-4a3d-9b78-4ac54cf30c5b/confirmations",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "b905e561-19a9-4a3d-9b78-4ac54cf30c5b",
+        "kind": "feishu_task_create",
+        "state": "confirmed",
+        "evidence": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/b905e561-19a9-4a3d-9b78-4ac54cf30c5b/executions",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "b905e561-19a9-4a3d-9b78-4ac54cf30c5b",
+        "kind": "feishu_task_create",
+        "state": "succeeded",
+        "evidence": []
+      }
+    }
+  ]
+}

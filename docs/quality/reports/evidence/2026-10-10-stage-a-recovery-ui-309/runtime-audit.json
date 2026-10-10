@@ -1,0 +1,23 @@
+{
+  "run_id": "qa-c18-reconcile-ui-30903c4",
+  "source_sha": "30903c4cdf73855af71a201e3edea6c535ee8199",
+  "bind_addresses": [
+    "127.0.0.1"
+  ],
+  "ports": {
+    "api": 18937,
+    "vite": 17337,
+    "cdp": 19337
+  },
+  "browser_profile": "disposable ignored .local/qa/c18-309 profile",
+  "network_restrictions": [
+    "Chrome background networking disabled",
+    "proxy disabled and bypassed",
+    "external DNS resolution blocked",
+    "crash reporting/breakpad/component updates/sync/pings disabled"
+  ],
+  "observed_during_run": "lsof showed API/Vite/CDP listeners and browser connection only on loopback; no non-loopback socket was observed",
+  "shutdown": "API, Vite and Chrome sessions stopped; post-shutdown lsof showed no listener on 18937, 17337 or 19337; process-name audit found no owned QA service/browser process",
+  "external_calls": "No real Feishu/model/business endpoint or production credential was invoked. Socket inspection is not a packet-level guarantee about all host traffic.",
+  "cleanup": "Disposable workspace, provider state, Chrome profile, logs and local session token were held under ignored .local/qa/c18-309 and removed after evidence capture."
+}
