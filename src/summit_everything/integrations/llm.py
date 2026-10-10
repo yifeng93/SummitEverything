@@ -10,6 +10,8 @@ from uuid import UUID
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
+from summit_everything.integrations.http_boundary import bounded_json_post
+
 
 class ImportantConflict(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -130,11 +132,21 @@ class DeepSeekLLM:
     max_request_bytes = 1_000_000
     max_tokens = 2048
 
-    def __init__(self, api_key: str, *, client: httpx.Client | None = None) -> None:
+    def __init__(
+        self, api_key: str, *, client: httpx.Client | None = None, max_tokens: int = 2048
+    ) -> None:
         if not api_key.strip():
             raise LLMProviderError("provider credential is not configured")
+        if not 1 <= max_tokens <= type(self).max_tokens:
+            raise ValueError("output token limit is outside the supported range")
         self._api_key = api_key
+        self.max_tokens = max_tokens
+        self._owns_client = client is None
         self._client = client or httpx.Client(timeout=30.0, follow_redirects=False)
+
+    def close(self) -> None:
+        if self._owns_client:
+            self._client.close()
 
     def organize(self, inputs: list[tuple[UUID, UUID, str]]) -> list[DraftProposal]:
         payload = {
@@ -193,10 +205,11 @@ class DeepSeekLLM:
         if len(user.encode("utf-8")) > self.max_request_bytes:
             raise LLMProviderError("provider request exceeded the size limit")
         try:
-            response = self._client.post(
+            wire = bounded_json_post(
+                self._client,
                 self.endpoint,
                 headers={"Authorization": f"Bearer {self._api_key}"},
-                json={
+                payload={
                     "model": self.model,
                     "messages": [
                         {"role": "system", "content": system},
@@ -206,13 +219,11 @@ class DeepSeekLLM:
                     "max_tokens": self.max_tokens,
                     "stream": False,
                 },
+                max_response_bytes=self.max_response_bytes,
             )
-            if len(response.content) > self.max_response_bytes:
-                raise LLMProviderError("provider response exceeded the size limit")
-            response.raise_for_status()
-            wire = response.json()
             content = wire["choices"][0]["message"]["content"]
-            if not isinstance(content, str) or not content.strip():
+            finish_reason = wire["choices"][0].get("finish_reason")
+            if finish_reason != "stop" or not isinstance(content, str) or not content.strip():
                 raise LLMProviderError("provider returned an empty response")
             return content
         except LLMProviderError:

@@ -17,13 +17,12 @@ from summit_everything.intake.actions import (
     ActionService,
     UserOutcome,
 )
-from summit_everything.integrations.feishu.tasks import FeishuTask, FeishuTasks, TaskPage
+from summit_everything.integrations.feishu.tasks import FeishuTask, TaskPage
 
 
 def register_actions(
     app: FastAPI,
-    actions: ActionService,
-    tasks: FeishuTasks,
+    actions_for: Callable[[WorkspaceContext], ActionService],
     authenticated: Callable[..., None],
     active_workspace: Callable[..., WorkspaceContext],
 ) -> None:
@@ -31,7 +30,7 @@ def register_actions(
     def propose(
         payload: ActionProposal, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> Action:
-        return actions.propose(Path(workspace.root), payload)
+        return actions_for(workspace).propose(Path(workspace.root), payload)
 
     @app.get("/api/v1/action-intents", dependencies=[Depends(authenticated)])
     def list_actions(
@@ -39,13 +38,13 @@ def register_actions(
         cursor: str | None = None,
         limit: int = Query(default=20, ge=1, le=100),
     ) -> ActionPage:
-        return actions.list(Path(workspace.root), cursor, limit)
+        return actions_for(workspace).list(Path(workspace.root), cursor, limit)
 
     @app.get("/api/v1/actions/{action_id}", dependencies=[Depends(authenticated)])
     def get_action(
         action_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> Action:
-        return actions.get(Path(workspace.root), action_id)
+        return actions_for(workspace).get(Path(workspace.root), action_id)
 
     @app.patch("/api/v1/actions/{action_id}", dependencies=[Depends(authenticated)])
     def edit_action(
@@ -53,7 +52,7 @@ def register_actions(
         payload: ActionEdit,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Action:
-        return actions.edit(Path(workspace.root), action_id, payload)
+        return actions_for(workspace).edit(Path(workspace.root), action_id, payload)
 
     @app.post("/api/v1/actions/{action_id}/confirmations", dependencies=[Depends(authenticated)])
     def confirm_action(
@@ -61,7 +60,7 @@ def register_actions(
         payload: ActionConfirmation,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Action:
-        return actions.confirm(Path(workspace.root), action_id, payload)
+        return actions_for(workspace).confirm(Path(workspace.root), action_id, payload)
 
     @app.post("/api/v1/actions/{action_id}/executions", dependencies=[Depends(authenticated)])
     def execute_action(
@@ -70,7 +69,7 @@ def register_actions(
         payload: ActionConfirmation,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Action:
-        result = actions.execute(Path(workspace.root), action_id, payload)
+        result = actions_for(workspace).execute(Path(workspace.root), action_id, payload)
         if result.state == "running":
             response.status_code = 202
             response.headers["Location"] = f"/api/v1/actions/{action_id}"
@@ -80,7 +79,7 @@ def register_actions(
     def reconcile_action(
         action_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> Action:
-        return actions.reconcile(Path(workspace.root), action_id)
+        return actions_for(workspace).reconcile(Path(workspace.root), action_id)
 
     @app.post("/api/v1/actions/{action_id}/outcomes", dependencies=[Depends(authenticated)])
     def outcome_action(
@@ -88,14 +87,18 @@ def register_actions(
         payload: UserOutcome,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Action:
-        return actions.outcome(Path(workspace.root), action_id, payload)
+        return actions_for(workspace).outcome(Path(workspace.root), action_id, payload)
 
     @app.get("/api/v1/integrations/feishu/tasks", dependencies=[Depends(authenticated)])
     def task_list(
-        cursor: str | None = None, limit: int = Query(default=20, ge=1, le=100)
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        cursor: str | None = None,
+        limit: int = Query(default=20, ge=1, le=100),
     ) -> TaskPage:
-        return tasks.list(cursor, limit)
+        return actions_for(workspace).tasks.list(cursor, limit)
 
     @app.get("/api/v1/integrations/feishu/tasks/{task_guid}", dependencies=[Depends(authenticated)])
-    def task_get(task_guid: str) -> FeishuTask:
-        return tasks.get(task_guid)
+    def task_get(
+        task_guid: str, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> FeishuTask:
+        return actions_for(workspace).tasks.get(task_guid)

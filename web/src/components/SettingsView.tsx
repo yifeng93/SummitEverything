@@ -5,6 +5,11 @@ import type { components } from '../api/generated'
 type Settings = components['schemas']['SettingsSummary']
 type LLMProvider = Settings['llm']['provider']
 type ModelProvider = Settings['embedding']['provider']
+type SmokeStatus = {
+  counts: Record<string, number>
+  limits: Record<string, number>
+  remaining: Record<string, number>
+}
 
 const secretProviders = [
   { id: 'feishu_app', label: '飞书应用密钥' },
@@ -40,6 +45,7 @@ function credentialAccountId(settings: Settings, provider: string): string {
 export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceName: string; onSwitchWorkspace: () => void }) {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [persistedSettings, setPersistedSettings] = useState<Settings | null>(null)
+  const [smokeStatus, setSmokeStatus] = useState<SmokeStatus | null>(null)
   const [secret, setSecret] = useState('')
   const [secretProvider, setSecretProvider] = useState('deepseek')
   const [error, setError] = useState('')
@@ -60,6 +66,11 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
     catch (cause) { setError(cause instanceof Error ? cause.message : '无法读取本机设置') }
   }
 
+  async function loadSmokeStatus() {
+    try { setSmokeStatus(await api.get<SmokeStatus>('/provider-smoke')) }
+    catch { setSmokeStatus(null) }
+  }
+
   useEffect(() => {
     let active = true
     api.get<Settings>('/settings')
@@ -72,8 +83,24 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
       .catch((cause: unknown) => {
         if (active) setError(cause instanceof Error ? cause.message : '无法读取本机设置')
       })
+    api.get<SmokeStatus>('/provider-smoke').then((value) => {
+      if (active) setSmokeStatus(value)
+    }).catch(() => { if (active) setSmokeStatus(null) })
     return () => { active = false }
   }, [])
+
+  async function runSmoke(path: string, operation: string) {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      await api.post('/provider-smoke/' + path, {})
+      setNotice(`${operation} 合成连接检查成功。本次请求已计入授权次数。`)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '请求结果未知；此尝试可能已计入次数。')
+    } finally {
+      await loadSmokeStatus()
+      setBusy(false)
+    }
+  }
 
   async function saveSecret(event: FormEvent) {
     event.preventDefault()
@@ -148,7 +175,7 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
       <form className="provider-settings credential-form" onSubmit={saveSecret}>
         <div className="settings-section-heading"><h2>本机密钥</h2><span>{settings.keychain_available ? '钥匙串可用' : '钥匙串不可用'}</span></div>
         {!settings.keychain_available && <p className="settings-help">当前运行环境无法访问 macOS 钥匙串。真实模式保存会失败关闭，不会写入文件或内存。</p>}
-        <label className="settings-field"><span>Provider</span><select value={secretProvider} onChange={(event) => setSecretProvider(event.target.value)}>{secretProviders.map(({ id, label }) => <option key={id} value={id}>{label} · {settings.credential_status[id] ? '已配置' : '未配置'}</option>)}</select></label>
+        <label className="settings-field"><span>Provider</span><select value={secretProvider} onChange={(event) => { setSecretProvider(event.target.value); setSecret('') }}>{secretProviders.map(({ id, label }) => <option key={id} value={id}>{label} · {settings.credential_status[id] ? '已配置' : '未配置'}</option>)}</select></label>
         <div className="settings-field"><span>当前账户标识</span><strong>{credentialAccountId(settings, secretProvider)}</strong></div>
         <label className="settings-field"><span>密钥</span><input type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} maxLength={20_000} /></label>
         <p className="settings-help">密钥只提交给本机 API 与系统钥匙串；不会进入工作库、配置文件或浏览器持久存储。</p>
@@ -161,6 +188,17 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
       <section className="provider-settings capability-list" aria-labelledby="capability-heading">
         <div className="settings-section-heading"><h2 id="capability-heading">能力状态</h2><span>当前不可对外请求</span></div>
         {Object.entries(settings.capabilities).map(([id, capability]) => <div className="capability-row" key={id}><strong>{capabilityLabels[id] ?? id}</strong><span>{capability.available ? '可用' : capability.configured ? '已配置，未启用' : '未启用'}</span><small>{disabledReasons[capability.disabled_reason ?? ''] ?? '需要单独验证。'}</small></div>)}
+      </section>
+
+      <section className="provider-settings capability-list" aria-labelledby="smoke-heading">
+        <div className="settings-section-heading"><h2 id="smoke-heading">受限合成连接检查</h2><span>每项最多一次</span></div>
+        <p className="settings-help">固定短合成 payload，仅检查接口连通与响应结构；失败、超时和未知结果也占用次数，不会自动重试。DeepSeek 最多输出 64 tokens；按当前官方高峰价估算，三项合计低于 ¥0.01（实际账单待服务方核对）。CNY 5 是提示词建议上限，不是用户设定预算。</p>
+        <div className="button-row">
+          <button className="button secondary" disabled={busy || !settings.keychain_available || !settings.credential_status.deepseek || settings.mode !== 'real' || settings.llm.provider !== 'deepseek' || !settings.llm.enabled || (smokeStatus?.remaining?.deepseek_chat ?? 0) < 1} onClick={() => void runSmoke('deepseek-chat', 'DeepSeek Chat')}>DeepSeek Chat（剩余 {smokeStatus?.remaining?.deepseek_chat ?? '…'}）</button>
+          <button className="button secondary" disabled={busy || !settings.keychain_available || !settings.credential_status.dashscope || settings.mode !== 'real' || settings.embedding.provider !== 'dashscope' || !settings.embedding.enabled || (smokeStatus?.remaining?.model_studio_embedding ?? 0) < 1} onClick={() => void runSmoke('model-studio-embedding', 'Embedding')}>Embedding（剩余 {smokeStatus?.remaining?.model_studio_embedding ?? '…'}）</button>
+          <button className="button secondary" disabled={busy || !settings.keychain_available || !settings.credential_status.dashscope || settings.mode !== 'real' || settings.rerank.provider !== 'dashscope' || !settings.rerank.enabled || (smokeStatus?.remaining?.model_studio_rerank ?? 0) < 1} onClick={() => void runSmoke('model-studio-rerank', 'Rerank')}>Rerank（剩余 {smokeStatus?.remaining?.model_studio_rerank ?? '…'}）</button>
+        </div>
+        <small>调用前先保存 Real/provider 设置并通过本机钥匙串录入密钥。检查不会发送工作库材料。</small>
       </section>
     </>}
     <div className="settings-list"><div><span>当前工作库</span><strong>{workspaceName}</strong></div><div><span>运行方式</span><strong>本机 API + WebUI</strong></div></div>

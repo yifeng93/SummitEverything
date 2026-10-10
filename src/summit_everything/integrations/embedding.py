@@ -9,6 +9,8 @@ from collections.abc import Sequence
 
 import httpx
 
+from summit_everything.integrations.http_boundary import bounded_json_post
+
 
 def tokenize(text: str) -> list[str]:
     tokens: list[str] = []
@@ -64,7 +66,12 @@ class ModelStudioEmbedding:
             raise ValueError("provider credential is not configured")
         self._api_key = api_key
         self.endpoint = base_url.rstrip("/") + "/embeddings"
+        self._owns_client = client is None
         self._client = client or httpx.Client(timeout=30.0, follow_redirects=False)
+
+    def close(self) -> None:
+        if self._owns_client:
+            self._client.close()
 
     def embed(self, text: str, *, fingerprint: str) -> list[float]:
         del fingerprint
@@ -81,15 +88,17 @@ class ModelStudioEmbedding:
         ):
             raise ValueError("embedding text is outside the supported size range")
         try:
-            response = self._client.post(
+            wire = bounded_json_post(
+                self._client,
                 self.endpoint,
                 headers={"Authorization": f"Bearer {self._api_key}"},
-                json={"model": self.model, "input": list(texts), "dimensions": self.dimensions},
+                payload={
+                    "model": self.model,
+                    "input": list(texts),
+                    "dimensions": self.dimensions,
+                },
+                max_response_bytes=8_000_000,
             )
-            if len(response.content) > 8_000_000:
-                raise ValueError("provider response exceeded the size limit")
-            response.raise_for_status()
-            wire = response.json()
             data = wire["data"]
             if wire.get("model") != self.model or not isinstance(data, list):
                 raise ValueError("provider returned an invalid response")

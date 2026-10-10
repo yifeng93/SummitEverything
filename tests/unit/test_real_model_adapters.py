@@ -1,4 +1,5 @@
 import json
+from collections.abc import Iterator
 from uuid import uuid4
 
 import httpx
@@ -10,7 +11,7 @@ from summit_everything.integrations.rerank import ModelStudioReranker
 
 
 def _client(content: str) -> httpx.Client:
-    body = {"choices": [{"message": {"content": content}}]}
+    body = {"choices": [{"message": {"content": content}, "finish_reason": "stop"}]}
     return httpx.Client(
         transport=httpx.MockTransport(
             lambda request: httpx.Response(
@@ -41,7 +42,9 @@ def test_deepseek_sends_untrusted_text_as_data_and_validates_output():
         seen.append(request)
         return httpx.Response(
             200,
-            json={"choices": [{"message": {"content": json.dumps(response)}}]},
+            json={
+                "choices": [{"message": {"content": json.dumps(response)}, "finish_reason": "stop"}]
+            },
             request=request,
         )
 
@@ -74,6 +77,70 @@ def test_deepseek_rejects_empty_malformed_or_empty_proposals(content: str):
         DeepSeekLLM("synthetic-api-key", client=_client(content)).organize(
             [(uuid4(), uuid4(), "synthetic source")]
         )
+
+
+def test_deepseek_rejects_truncated_finish_reason():
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                json={
+                    "choices": [
+                        {"message": {"content": '{"proposals": []}'}, "finish_reason": "length"}
+                    ]
+                },
+                request=request,
+            )
+        )
+    )
+    with pytest.raises(LLMProviderError):
+        DeepSeekLLM("synthetic-api-key", client=client).organize(
+            [(uuid4(), uuid4(), "synthetic source")]
+        )
+
+
+def test_deepseek_stops_at_response_limit_and_closes_stream():
+    class LargeBody(httpx.SyncByteStream):
+        closed = False
+        chunks_yielded = 0
+
+        def __iter__(self) -> Iterator[bytes]:
+            self.chunks_yielded += 1
+            yield b"x" * (DeepSeekLLM.max_response_bytes + 1)
+            self.chunks_yielded += 1
+            yield b"must not be consumed"
+
+        def close(self) -> None:
+            self.closed = True
+
+    stream = LargeBody()
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(200, stream=stream, request=request)
+        )
+    )
+    model = DeepSeekLLM("synthetic-api-key", client=client)
+    with pytest.raises(LLMProviderError):
+        model.organize([(uuid4(), uuid4(), "synthetic source")])
+    assert stream.closed is True
+    assert stream.chunks_yielded == 1
+
+
+def test_deepseek_timeout_is_sanitized_and_not_retried():
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        raise httpx.ReadTimeout("synthetic-private-response", request=request)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    with pytest.raises(LLMProviderError, match="provider request failed") as exc_info:
+        DeepSeekLLM("synthetic-api-key", client=client).organize(
+            [(uuid4(), uuid4(), "synthetic source")]
+        )
+    assert len(calls) == 1
+    assert "synthetic-private-response" not in str(exc_info.value)
+    assert "synthetic-api-key" not in str(exc_info.value)
 
 
 def test_model_studio_embedding_maps_indexes_and_validates_dimensions():

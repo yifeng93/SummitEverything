@@ -376,3 +376,269 @@ def test_disabled_real_model_status_cannot_reach_business_call_path(tmp_path):
     assert attempted.status_code == 409
     assert attempted.json()["error"]["code"] == "provider_disabled"
     assert "不得发送的普通业务正文" not in attempted.text
+
+
+def test_limited_deepseek_smoke_is_synthetic_and_one_shot(tmp_path, monkeypatch):
+    from summit_everything.integrations.llm import DeepSeekLLM, GroundedAnswer
+    from summit_everything.integrations.settings import MacOSKeychainBackend
+
+    class SyntheticKeychain(MacOSKeychainBackend):
+        def __init__(self):
+            self.values = {}
+
+        def get(self, namespace, key):
+            return self.values.get((namespace, key))
+
+        def set(self, namespace, key, value):
+            self.values[(namespace, key)] = value
+
+        def delete(self, namespace, key):
+            self.values.pop((namespace, key), None)
+
+    sent = []
+
+    def synthetic_answer(self, question, passages):
+        sent.append((question, passages))
+        return GroundedAnswer(text="连接正常", inferences=[], missing_information=[])
+
+    monkeypatch.setattr(DeepSeekLLM, "answer", synthetic_answer)
+    app = create_app(
+        session_token="synthetic-session",
+        profile_root=tmp_path / "profile",
+        secret_backend=SyntheticKeychain(),
+    )
+    client = TestClient(app)
+    headers = {"Authorization": "Bearer synthetic-session"}
+    assert (
+        client.post(
+            "/api/v1/workspaces",
+            headers=headers,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "合成冒烟库",
+                "operation_id": "open-synthetic-smoke",
+            },
+        ).status_code
+        == 201
+    )
+    configured = client.patch(
+        "/api/v1/settings",
+        headers=headers,
+        json={
+            "mode": "real",
+            "llm": {
+                "provider": "deepseek",
+                "model": "deepseek-flash",
+                "enabled": True,
+            },
+        },
+    )
+    assert configured.status_code == 200
+    assert (
+        client.put(
+            "/api/v1/credentials/deepseek",
+            headers=headers,
+            json={"account_id": "default", "secret": "synthetic-key"},
+        ).status_code
+        == 200
+    )
+
+    assert (
+        client.get("/api/v1/provider-smoke", headers=headers).json()["remaining"]["deepseek_chat"]
+        == 1
+    )
+    first = client.post("/api/v1/provider-smoke/deepseek-chat", headers=headers)
+    assert first.status_code == 200
+    assert first.json() == {
+        "state": "succeeded",
+        "operation": "deepseek_chat",
+        "attempt": 1,
+    }
+    assert sent == [
+        (
+            "请仅复述合成短语。",
+            [{"heading": "合成标题", "excerpt": "合成短语：连接正常。"}],
+        )
+    ]
+    second = client.post("/api/v1/provider-smoke/deepseek-chat", headers=headers)
+    assert second.status_code == 409
+    assert (
+        client.get("/api/v1/provider-smoke", headers=headers).json()["remaining"]["deepseek_chat"]
+        == 0
+    )
+    assert len(sent) == 1
+
+
+def test_limited_model_studio_smokes_use_fixed_candidates_and_one_shot(tmp_path, monkeypatch):
+    from summit_everything.integrations.embedding import ModelStudioEmbedding
+    from summit_everything.integrations.rerank import ModelStudioReranker
+    from summit_everything.integrations.settings import MacOSKeychainBackend
+
+    class SyntheticKeychain(MacOSKeychainBackend):
+        def __init__(self):
+            self.values = {}
+
+        def get(self, namespace, key):
+            return self.values.get((namespace, key))
+
+        def set(self, namespace, key, value):
+            self.values[(namespace, key)] = value
+
+        def delete(self, namespace, key):
+            self.values.pop((namespace, key), None)
+
+    embedding_inputs = []
+    rerank_inputs = []
+    monkeypatch.setattr(
+        ModelStudioEmbedding,
+        "embed_many",
+        lambda self, texts, *, fingerprint=None: (
+            embedding_inputs.append((texts, fingerprint)) or [[0.0] * 1024]
+        ),
+    )
+    monkeypatch.setattr(
+        ModelStudioReranker,
+        "rank",
+        lambda self, query, texts: rerank_inputs.append((query, texts)) or [(0, 1.0), (1, 0.0)],
+    )
+    app = create_app(
+        session_token="synthetic-session",
+        profile_root=tmp_path / "profile",
+        secret_backend=SyntheticKeychain(),
+    )
+    client = TestClient(app)
+    headers = {"Authorization": "Bearer synthetic-session"}
+    assert (
+        client.post(
+            "/api/v1/workspaces",
+            headers=headers,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "Model Studio 合成冒烟库",
+                "operation_id": "open-model-studio-smoke",
+            },
+        ).status_code
+        == 201
+    )
+    configured = client.patch(
+        "/api/v1/settings",
+        headers=headers,
+        json={
+            "mode": "real",
+            "embedding": {
+                "provider": "dashscope",
+                "model": "qwen3.7-text-embedding",
+                "enabled": True,
+            },
+            "rerank": {
+                "provider": "dashscope",
+                "model": "qwen3.7-text-rerank",
+                "enabled": True,
+            },
+        },
+    )
+    assert configured.status_code == 200
+    assert (
+        client.put(
+            "/api/v1/credentials/dashscope",
+            headers=headers,
+            json={"account_id": "default", "secret": "synthetic-model-studio-key"},
+        ).status_code
+        == 200
+    )
+
+    embedding = client.post("/api/v1/provider-smoke/model-studio-embedding", headers=headers)
+    rerank = client.post("/api/v1/provider-smoke/model-studio-rerank", headers=headers)
+    assert embedding.status_code == rerank.status_code == 200
+    assert embedding_inputs == [(["synthetic connection check"], None)]
+    assert rerank_inputs == [
+        (
+            "synthetic connection query",
+            ["synthetic candidate alpha", "synthetic candidate beta"],
+        )
+    ]
+    assert (
+        client.post("/api/v1/provider-smoke/model-studio-embedding", headers=headers).status_code
+        == 409
+    )
+    assert (
+        client.post("/api/v1/provider-smoke/model-studio-rerank", headers=headers).status_code
+        == 409
+    )
+
+
+def test_failed_smoke_attempt_consumes_its_authorized_slot(tmp_path, monkeypatch):
+    from summit_everything.integrations.llm import DeepSeekLLM
+    from summit_everything.integrations.settings import MacOSKeychainBackend
+
+    class SyntheticKeychain(MacOSKeychainBackend):
+        def __init__(self):
+            self.values = {}
+
+        def get(self, namespace, key):
+            return self.values.get((namespace, key))
+
+        def set(self, namespace, key, value):
+            self.values[(namespace, key)] = value
+
+        def delete(self, namespace, key):
+            self.values.pop((namespace, key), None)
+
+    calls = []
+
+    def fail_once(self, question, passages):
+        calls.append((question, passages))
+        raise RuntimeError("synthetic secret body must not appear")
+
+    monkeypatch.setattr(DeepSeekLLM, "answer", fail_once)
+    app = create_app(
+        session_token="synthetic-session",
+        profile_root=tmp_path / "profile",
+        secret_backend=SyntheticKeychain(),
+    )
+    client = TestClient(app)
+    headers = {"Authorization": "Bearer synthetic-session"}
+    assert (
+        client.post(
+            "/api/v1/workspaces",
+            headers=headers,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "失败冒烟模拟库",
+                "operation_id": "open-failed-smoke",
+            },
+        ).status_code
+        == 201
+    )
+    assert (
+        client.patch(
+            "/api/v1/settings",
+            headers=headers,
+            json={
+                "mode": "real",
+                "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
+            },
+        ).status_code
+        == 200
+    )
+    assert (
+        client.put(
+            "/api/v1/credentials/deepseek",
+            headers=headers,
+            json={"account_id": "default", "secret": "synthetic-key"},
+        ).status_code
+        == 200
+    )
+
+    failed = client.post("/api/v1/provider-smoke/deepseek-chat", headers=headers)
+    assert failed.status_code == 502
+    assert "synthetic secret body" not in failed.text
+    assert (
+        client.get("/api/v1/provider-smoke", headers=headers).json()["remaining"]["deepseek_chat"]
+        == 0
+    )
+    assert client.post("/api/v1/provider-smoke/deepseek-chat", headers=headers).status_code == 409
+    assert len(calls) == 1

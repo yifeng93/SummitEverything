@@ -514,6 +514,7 @@ def test_workspace_and_app_identity_scope_feishu_state(tmp_path: Path) -> None:
     first_service = c.app.state.feishu_service
     authorize(c)
     assert c.get(PREFIX + "/status").json()["authorized"] is True
+    assert c.get(PREFIX + "/tasks").status_code == 200
 
     assert (
         c.post(
@@ -529,12 +530,14 @@ def test_workspace_and_app_identity_scope_feishu_state(tmp_path: Path) -> None:
     )
     assert c.app.state.feishu_service is not first_service
     assert c.get(PREFIX + "/status").json()["authorized"] is False
+    assert c.get(PREFIX + "/tasks").status_code == 401
 
     c.post(
         "/api/v1/workspaces",
         json={"root": str(tmp_path / "workspace"), "mode": "open", "operation_id": "reopen-1"},
     )
     assert c.get(PREFIX + "/status").json()["authorized"] is True
+    assert c.get(PREFIX + "/tasks").status_code == 200
 
     start = c.post(PREFIX + "/authorizations", json={}).json()
     old_url = urlsplit(start["authorization_url"])

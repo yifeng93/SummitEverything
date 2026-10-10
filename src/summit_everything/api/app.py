@@ -51,6 +51,7 @@ from summit_everything.domain.models import (
 from summit_everything.intake.actions import ActionService
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeConflict, IntakeService
+from summit_everything.integrations.embedding import ModelStudioEmbedding
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.feishu.provider import (
     CalendarPage,
@@ -70,7 +71,14 @@ from summit_everything.integrations.feishu.service import (
     callback_boundary,
 )
 from summit_everything.integrations.feishu.tasks import FeishuTasks
-from summit_everything.integrations.llm import FakeLLM, LLMProviderError
+from summit_everything.integrations.llm import DeepSeekLLM, FakeLLM, LLMProviderError
+from summit_everything.integrations.provider_smoke import (
+    SMOKE_LIMITS,
+    SmokeLimitReached,
+    reserve_smoke_call,
+    smoke_counts,
+)
+from summit_everything.integrations.rerank import ModelStudioReranker
 from summit_everything.integrations.runtime import ModelRuntime
 from summit_everything.integrations.settings import (
     CredentialVault,
@@ -246,6 +254,20 @@ class LoopbackOnly(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+class CallbackAccessLogFilter(logging.Filter):
+    """Remove OAuth callback query parameters from Uvicorn access logs."""
+
+    _callback_paths = {"/callback", "/api/v1/integrations/feishu/callback"}
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        args = record.args
+        if isinstance(args, tuple) and len(args) >= 3:
+            path = args[2]
+            if isinstance(path, str) and path.partition("?")[0] in self._callback_paths:
+                record.args = (*args[:2], path.partition("?")[0] + "?[redacted]", *args[3:])
+        return True
+
+
 def create_app(
     *,
     session_token: str | None = None,
@@ -258,6 +280,9 @@ def create_app(
     feishu_config: FeishuConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
+    access_logger = logging.getLogger("uvicorn.access")
+    if not any(isinstance(item, CallbackAccessLogFilter) for item in access_logger.filters):
+        access_logger.addFilter(CallbackAccessLogFilter())
     app.add_middleware(LoopbackOnly)
     app.state.session_token = session_token or secrets.token_urlsafe(32)
     app.state.profile_root = profile_root or Path(
@@ -280,6 +305,7 @@ def create_app(
     cancellations: dict[str, Event] = {}
     config = feishu_config or FeishuConfig()
     feishu_services: dict[tuple[str, str, str], FeishuService] = {}
+    action_services: dict[int, ActionService] = {}
     feishu_services_lock = Lock()
     feishu = FeishuService(
         feishu_provider
@@ -293,9 +319,6 @@ def create_app(
         app.state.session_token,
     )
     app.state.feishu_service = feishu
-    tasks = FeishuTasks(feishu)
-    actions = ActionService(tasks, secrets.token_urlsafe(32))
-    app.state.action_service = actions
 
     @app.middleware("http")
     async def origin_guard(request: Request, call_next):  # type: ignore[no-untyped-def]
@@ -399,6 +422,16 @@ def create_app(
         app.state.feishu_service = service
         return service
 
+    def actions_for(workspace: WorkspaceContext) -> ActionService:
+        service = feishu_for(workspace)
+        with feishu_services_lock:
+            actions = action_services.get(id(service))
+            if actions is None:
+                actions = ActionService(FeishuTasks(service), app.state.session_token)
+                action_services[id(service)] = actions
+        app.state.action_service = actions
+        return actions
+
     def credential_vault(workspace: WorkspaceContext) -> CredentialVault:
         backend = app.state.secret_backend
         namespace = (
@@ -419,7 +452,7 @@ def create_app(
         if expected is None or account_id != expected:
             raise SettingsError("validation_error")
 
-    register_actions(app, actions, tasks, authenticated, active_workspace)
+    register_actions(app, actions_for, authenticated, active_workspace)
 
     @app.exception_handler(SettingsError)
     async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
@@ -461,10 +494,7 @@ def create_app(
             "embedding": settings.embedding,
             "rerank": settings.rerank,
         }
-        if any(
-            selected[name].provider != "fake" and selected[name].enabled
-            for name in providers
-        ):
+        if any(selected[name].provider != "fake" and selected[name].enabled for name in providers):
             raise HTTPException(
                 status_code=409,
                 detail={
@@ -545,6 +575,148 @@ def create_app(
         validate_credential_account(workspace, provider, payload.account_id)
         credential_vault(workspace).delete(provider, account_id=payload.account_id)
         return Response(status_code=204)
+
+    @app.get("/api/v1/provider-smoke", dependencies=[Depends(authenticated)])
+    def provider_smoke_status(
+        _workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        counts = smoke_counts(Path(app.state.profile_root))
+        return {
+            "counts": counts,
+            "limits": SMOKE_LIMITS,
+            "remaining": {key: SMOKE_LIMITS[key] - counts[key] for key in SMOKE_LIMITS},
+        }
+
+    def require_smoke_provider(workspace: WorkspaceContext, operation: str) -> ModelRuntime:
+        settings = settings_store(workspace).read()
+        requirement = {
+            "deepseek_chat": settings.mode == "real"
+            and settings.llm.provider == "deepseek"
+            and settings.llm.enabled,
+            "model_studio_embedding": settings.mode == "real"
+            and settings.embedding.provider == "dashscope"
+            and settings.embedding.enabled,
+            "model_studio_rerank": settings.mode == "real"
+            and settings.rerank.provider == "dashscope"
+            and settings.rerank.enabled,
+        }.get(operation, False)
+        if not requirement:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "provider_not_configured",
+                    "message": "请先保存并配置对应 provider。",
+                },
+            )
+        return runtime_for(workspace)
+
+    def reserve_smoke(operation: str) -> int:
+        try:
+            return reserve_smoke_call(Path(app.state.profile_root), operation)
+        except SmokeLimitReached:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "smoke_limit_reached", "message": "此合成连接检查次数已用完。"},
+            ) from None
+        except RuntimeError:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "smoke_ledger_unavailable",
+                    "message": "本地调用记录不可用；已停止请求。",
+                },
+            ) from None
+
+    @app.post("/api/v1/provider-smoke/deepseek-chat", dependencies=[Depends(authenticated)])
+    def smoke_deepseek_chat(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        runtime = require_smoke_provider(workspace, "deepseek_chat")
+        provider = runtime.llm(max_tokens=64)
+        if not isinstance(provider, DeepSeekLLM):
+            raise HTTPException(status_code=409, detail="所选 provider 不支持此检查。")
+        try:
+            attempt = reserve_smoke("deepseek_chat")
+            provider.answer(
+                "请仅复述合成短语。",
+                [{"heading": "合成标题", "excerpt": "合成短语：连接正常。"}],
+            )
+            return {"state": "succeeded", "operation": "deepseek_chat", "attempt": attempt}
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "code": "provider_smoke_failed",
+                    "message": "请求已计入一次尝试；结果未知，不会自动重发。",
+                },
+            ) from None
+        finally:
+            provider.close()
+
+    @app.post(
+        "/api/v1/provider-smoke/model-studio-embedding", dependencies=[Depends(authenticated)]
+    )
+    def smoke_model_studio_embedding(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        runtime = require_smoke_provider(workspace, "model_studio_embedding")
+        provider = runtime.embedding()
+        if not isinstance(provider, ModelStudioEmbedding):
+            raise HTTPException(status_code=409, detail="所选 provider 不支持此检查。")
+        try:
+            attempt = reserve_smoke("model_studio_embedding")
+            provider.embed_many(["synthetic connection check"], fingerprint=None)
+            return {
+                "state": "succeeded",
+                "operation": "model_studio_embedding",
+                "attempt": attempt,
+            }
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "code": "provider_smoke_failed",
+                    "message": "请求已计入一次尝试；结果未知，不会自动重发。",
+                },
+            ) from None
+        finally:
+            provider.close()
+
+    @app.post("/api/v1/provider-smoke/model-studio-rerank", dependencies=[Depends(authenticated)])
+    def smoke_model_studio_rerank(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        runtime = require_smoke_provider(workspace, "model_studio_rerank")
+        provider = runtime.reranker()
+        if not isinstance(provider, ModelStudioReranker):
+            raise HTTPException(status_code=409, detail="所选 provider 不支持此检查。")
+        try:
+            attempt = reserve_smoke("model_studio_rerank")
+            provider.rank(
+                "synthetic connection query",
+                ["synthetic candidate alpha", "synthetic candidate beta"],
+            )
+            return {
+                "state": "succeeded",
+                "operation": "model_studio_rerank",
+                "attempt": attempt,
+            }
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "code": "provider_smoke_failed",
+                    "message": "请求已计入一次尝试；结果未知，不会自动重发。",
+                },
+            ) from None
+        finally:
+            provider.close()
 
     def index_after_approval(
         workspace: WorkspaceContext, mutation: MutationResult

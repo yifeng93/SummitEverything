@@ -18,13 +18,13 @@ class ModelRuntime:
         self.settings = settings
         self.vault = vault
 
-    def llm(self) -> FakeLLM | DeepSeekLLM:
+    def llm(self, *, max_tokens: int = 2048) -> FakeLLM | DeepSeekLLM:
         selected = self.settings.llm
         if self.settings.mode == "fake" or selected.provider == "fake":
             return FakeLLM()
         if not selected.enabled:
             raise LLMProviderError("selected model provider is disabled")
-        return DeepSeekLLM(self._credential("deepseek", selected.account_id))
+        return DeepSeekLLM(self._credential("deepseek", selected.account_id), max_tokens=max_tokens)
 
     def embedding(self) -> FakeEmbedding | ModelStudioEmbedding:
         selected = self.settings.embedding

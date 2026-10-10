@@ -7,6 +7,7 @@ import math
 import httpx
 
 from summit_everything.integrations.embedding import tokenize
+from summit_everything.integrations.http_boundary import bounded_json_post
 
 
 class FakeReranker:
@@ -38,7 +39,12 @@ class ModelStudioReranker:
             raise ValueError("provider credential is not configured")
         self._api_key = api_key
         self.endpoint = base_url.rstrip("/") + "/services/rerank/text-rerank/text-rerank"
+        self._owns_client = client is None
         self._client = client or httpx.Client(timeout=30.0, follow_redirects=False)
+
+    def close(self) -> None:
+        if self._owns_client:
+            self._client.close()
 
     def score(self, query: str, text: str) -> float:
         result = self.rank(query, [text])
@@ -55,22 +61,20 @@ class ModelStudioReranker:
         if request_bytes > self.max_request_bytes:
             raise ValueError("rerank request exceeded the size limit")
         try:
-            response = self._client.post(
+            wire = bounded_json_post(
+                self._client,
                 self.endpoint,
                 headers={
                     "Authorization": f"Bearer {self._api_key}",
                     "Content-Type": "application/json",
                 },
-                json={
+                payload={
                     "model": self.model,
                     "input": {"query": query, "documents": texts},
                     "parameters": {"return_documents": False},
                 },
+                max_response_bytes=8_000_000,
             )
-            if len(response.content) > 8_000_000:
-                raise ValueError("provider response exceeded the size limit")
-            response.raise_for_status()
-            wire = response.json()
             results = wire["output"]["results"]
             if not isinstance(results, list) or len(results) != len(texts):
                 raise ValueError("provider returned incomplete rerank results")

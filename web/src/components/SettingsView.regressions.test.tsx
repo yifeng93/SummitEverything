@@ -62,3 +62,28 @@ it('waits for the saved account id before storing its API key', async () => {
   fireEvent.click(saveKey)
   await waitFor(() => expect(accountId).toBe('new-account'))
 })
+
+it('calls only the fixed DeepSeek smoke route when one attempt remains', async () => {
+  const state = {
+    mode: 'real', model_studio_account_id: 'synthetic-account',
+    feishu: { app_id: '', redirect_uri: '' },
+    llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'default', enabled: true },
+    embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', enabled: false },
+    rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/api/v1', enabled: false },
+    credential_status: { feishu_app: false, deepseek: true, dashscope: false },
+    capabilities: {}, keychain_available: true,
+  }
+  const smoke = { counts: { deepseek_chat: 0, model_studio_embedding: 0, model_studio_rerank: 0 }, limits: { deepseek_chat: 1, model_studio_embedding: 1, model_studio_rerank: 1 }, remaining: { deepseek_chat: 1, model_studio_embedding: 1, model_studio_rerank: 1 } }
+  const fetchMock = vi.fn(async (url: unknown, init?: RequestInit) => {
+    void init
+    if (String(url).endsWith('/provider-smoke/deepseek-chat')) return { ok: true, status: 200, json: async () => ({ state: 'succeeded' }) }
+    if (String(url).endsWith('/provider-smoke')) return { ok: true, status: 200, json: async () => smoke }
+    return { ok: true, status: 200, json: async () => state }
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  const button = await screen.findByRole('button', { name: 'DeepSeek Chat（剩余 1）' })
+  expect((button as HTMLButtonElement).disabled).toBe(false)
+  fireEvent.click(button)
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/provider-smoke/deepseek-chat', expect.objectContaining({ method: 'POST' })))
+})
