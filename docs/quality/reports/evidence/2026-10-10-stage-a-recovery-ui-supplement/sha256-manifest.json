@@ -37,11 +37,6 @@
       "sha256": "6222b517ec08b93f9316c3fa2a47e5359e1c787c0e8b7231fa065984cfb25973"
     },
     {
-      "path": "harness/__pycache__/sitecustomize.cpython-312.pyc",
-      "size_bytes": 8560,
-      "sha256": "d7a43a1cbef203c8a3d54c80016aeaa62ad47995a846a1918a2882f5bd4a9425"
-    },
-    {
       "path": "harness/cdp-c16-overlap.mjs",
       "size_bytes": 7546,
       "sha256": "72ea0579f7f25d2ff17372cd24d3699a15f113b5d0f10593bc46c2886d8c90a7"
