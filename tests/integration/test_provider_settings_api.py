@@ -71,6 +71,18 @@ def test_settings_reads_and_updates_are_local_and_redact_secret(tmp_path):
         headers=headers,
         json={"account_id": "team-account"},
     )
+    assert deleted.status_code == 422
+    client.patch(
+        "/api/v1/settings",
+        headers=headers,
+        json={"llm": {"account_id": "team-account"}},
+    )
+    deleted = client.request(
+        "DELETE",
+        "/api/v1/credentials/deepseek",
+        headers=headers,
+        json={"account_id": "team-account"},
+    )
     assert deleted.status_code == 204
     assert all(
         "synthetic-secret" not in path.read_text()
@@ -102,6 +114,46 @@ def test_settings_reject_unknown_fields_and_credentials_require_auth(tmp_path):
         json={"arbitrary_url": "http://localhost/"},
     )
     assert bad_patch.status_code == 422
+
+
+def test_secret_must_match_saved_model_studio_account(tmp_path):
+    client = TestClient(
+        create_app(
+            session_token="synthetic-session",
+            profile_root=tmp_path / "profile",
+            secret_backend=MemorySecretBackend(),
+        )
+    )
+    headers = {"Authorization": "Bearer synthetic-session"}
+    opened = client.post(
+        "/api/v1/workspaces",
+        headers=headers,
+        json={
+            "root": str(tmp_path / "workspace"),
+            "mode": "create",
+            "name": "模拟库",
+            "operation_id": "open-model-studio-credentials",
+        },
+    )
+    assert opened.status_code == 201
+    client.patch(
+        "/api/v1/settings",
+        headers=headers,
+        json={"model_studio_account_id": "saved-account"},
+    )
+    mismatched = client.put(
+        "/api/v1/credentials/dashscope",
+        headers=headers,
+        json={"account_id": "unsaved-account", "secret": "synthetic-key"},
+    )
+    assert mismatched.status_code == 422
+    saved = client.put(
+        "/api/v1/credentials/dashscope",
+        headers=headers,
+        json={"account_id": "saved-account", "secret": "synthetic-key"},
+    )
+    assert saved.status_code == 200
+    assert client.get("/api/v1/settings", headers=headers).json()["credential_status"]["dashscope"]
 
 
 def test_unavailable_keychain_fails_closed_without_file_fallback(tmp_path):

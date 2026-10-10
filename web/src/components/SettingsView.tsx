@@ -39,21 +39,36 @@ function credentialAccountId(settings: Settings, provider: string): string {
 
 export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceName: string; onSwitchWorkspace: () => void }) {
   const [settings, setSettings] = useState<Settings | null>(null)
+  const [persistedSettings, setPersistedSettings] = useState<Settings | null>(null)
   const [secret, setSecret] = useState('')
   const [secretProvider, setSecretProvider] = useState('deepseek')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+  const accountMatchesSavedSettings = Boolean(
+    settings && persistedSettings &&
+    credentialAccountId(settings, secretProvider) === credentialAccountId(persistedSettings, secretProvider),
+  )
 
   async function load() {
-    try { setSettings(await api.get<Settings>('/settings')); setError('') }
+    try {
+      const value = await api.get<Settings>('/settings')
+      setSettings(value)
+      setPersistedSettings(value)
+      setError('')
+    }
     catch (cause) { setError(cause instanceof Error ? cause.message : '无法读取本机设置') }
   }
 
   useEffect(() => {
     let active = true
     api.get<Settings>('/settings')
-      .then((value) => { if (active) setSettings(value) })
+      .then((value) => {
+        if (active) {
+          setSettings(value)
+          setPersistedSettings(value)
+        }
+      })
       .catch((cause: unknown) => {
         if (active) setError(cause instanceof Error ? cause.message : '无法读取本机设置')
       })
@@ -64,8 +79,9 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
     event.preventDefault()
     setBusy(true); setError(''); setNotice('')
     try {
-      if (!settings) return
-      await api.put('/credentials/' + secretProvider, { account_id: credentialAccountId(settings, secretProvider), secret })
+      if (!settings || !persistedSettings) return
+      if (!accountMatchesSavedSettings) throw new Error('请先保存账户标识，再为该账户录入密钥。')
+      await api.put('/credentials/' + secretProvider, { account_id: credentialAccountId(persistedSettings, secretProvider), secret })
       setSecret('')
       setNotice('密钥已保存到本机钥匙串。页面不会再次显示密钥。')
       await load()
@@ -76,8 +92,9 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
   async function removeSecret() {
     setBusy(true); setError(''); setNotice('')
     try {
-      if (!settings) return
-      await api.delete('/credentials/' + secretProvider, { account_id: credentialAccountId(settings, secretProvider) })
+      if (!settings || !persistedSettings) return
+      if (!accountMatchesSavedSettings) throw new Error('请先保存账户标识，再管理该账户的密钥。')
+      await api.delete('/credentials/' + secretProvider, { account_id: credentialAccountId(persistedSettings, secretProvider) })
       setNotice('此工作库 profile 的本应用密钥已从钥匙串删除。')
       await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法删除钥匙串密钥') }
@@ -91,12 +108,14 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
     try {
       const updated = await api.patch<Settings>('/settings', {
         mode: settings.mode,
+        model_studio_account_id: settings.model_studio_account_id,
         feishu: settings.feishu,
         llm: settings.llm,
         embedding: settings.embedding,
         rerank: settings.rerank,
       })
       setSettings(updated)
+      setPersistedSettings(updated)
       setNotice('设置已保存在本机。保存过程没有联系 provider。模型变更不会自动重建索引。')
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法保存设置') }
     finally { setBusy(false) }
@@ -134,8 +153,8 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
         <label className="settings-field"><span>密钥</span><input type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} maxLength={20_000} /></label>
         <p className="settings-help">密钥只提交给本机 API 与系统钥匙串；不会进入工作库、配置文件或浏览器持久存储。</p>
         <div className="button-row">
-          <button className="button secondary" disabled={busy || !secret}>保存到钥匙串</button>
-          <button className="button secondary" type="button" disabled={busy || !settings.credential_status[secretProvider]} onClick={removeSecret}>删除本机密钥</button>
+          <button className="button secondary" disabled={busy || !secret || !accountMatchesSavedSettings}>保存到钥匙串</button>
+          <button className="button secondary" type="button" disabled={busy || !accountMatchesSavedSettings || !settings.credential_status[secretProvider]} onClick={removeSecret}>删除本机密钥</button>
         </div>
       </form>
 

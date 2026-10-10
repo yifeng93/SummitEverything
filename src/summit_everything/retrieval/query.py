@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from threading import Event
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import UUID, uuid4
 
 from summit_everything.domain.content import (
@@ -344,12 +344,12 @@ class QueryService:
     def _qualified_chunks(
         self,
         root: Path,
-        chunks: list[dict[str, object]],
+        chunks: list[dict[str, Any]],
         *,
         purpose: RetrievalPurpose,
-    ) -> list[dict[str, object]]:
+    ) -> list[dict[str, Any]]:
         page_eligibility: dict[UUID, bool] = {}
-        qualified: list[dict[str, object]] = []
+        qualified: list[dict[str, Any]] = []
         for chunk in chunks:
             page_id = chunk["page_id"]
             if not isinstance(page_id, UUID):

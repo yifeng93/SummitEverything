@@ -366,6 +366,18 @@ def create_app(
         )
         return CredentialVault(namespace, backend)
 
+    def validate_credential_account(
+        workspace: WorkspaceContext, provider: str, account_id: str
+    ) -> None:
+        settings = settings_store(workspace).read()
+        expected = {
+            "feishu_app": settings.feishu.app_id or "default",
+            "deepseek": settings.llm.account_id,
+            "dashscope": settings.model_studio_account_id,
+        }.get(provider)
+        if expected is None or account_id != expected:
+            raise SettingsError("validation_error")
+
     register_actions(app, actions, tasks, authenticated, active_workspace)
 
     @app.exception_handler(SettingsError)
@@ -465,6 +477,7 @@ def create_app(
         payload: CredentialRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, object]:
+        validate_credential_account(workspace, provider, payload.account_id)
         credential_vault(workspace).put(
             provider, payload.secret.get_secret_value(), account_id=payload.account_id
         )
@@ -476,6 +489,7 @@ def create_app(
         payload: CredentialAccountRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Response:
+        validate_credential_account(workspace, provider, payload.account_id)
         credential_vault(workspace).delete(provider, account_id=payload.account_id)
         return Response(status_code=204)
 
