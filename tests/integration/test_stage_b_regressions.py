@@ -1,16 +1,21 @@
 """Independent DEV review counterexamples. Synthetic data; no provider network/Keychain."""
 
 import json
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
+from uuid import uuid4
 
 import httpx
+import pytest
 from fastapi.testclient import TestClient
 from test_qualified_retrieval import approve_page, create_test_workspace
 
 from summit_everything.api.app import create_app
+from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import ModelStudioReranker
 from summit_everything.integrations.settings import MemorySecretBackend
-from summit_everything.retrieval.query import QueryService
+from summit_everything.retrieval.query import QueryCancelled, QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.reader import list_pages
 
@@ -103,3 +108,118 @@ def test_query_with_101_chunks_uses_bounded_candidates(tmp_path):
     sent = json.loads(seen[0].content)["input"]["documents"]
     assert answer.citations
     assert 0 < len(sent) <= 20
+
+
+def test_cancel_after_embedding_suppresses_later_provider_calls(tmp_path):
+    root, _ = _workspace(tmp_path)
+    entered, release = Event(), Event()
+    calls = []
+
+    class BlockingEmbedding(FakeEmbedding):
+        def embed(self, text, *, fingerprint):
+            entered.set()
+            assert release.wait(5)
+            return super().embed(text, fingerprint=fingerprint)
+
+    class SpyRerank:
+        def rank(self, question, texts):
+            calls.append("rerank")
+            return [(i, 1.0) for i in range(len(texts))]
+
+    class SpyAnswer:
+        def answer(self, question, passages):
+            calls.append("answer")
+            return GroundedAnswer(text="合成回答")
+
+    store = IndexStore(tmp_path / "index.sqlite3")
+    QueryService(store).rebuild(root, fingerprint=FP)
+    service = QueryService(
+        store,
+        embedding=BlockingEmbedding(),
+        reranker=SpyRerank(),
+        answer_provider=SpyAnswer(),
+    )
+    client = _client(tmp_path, service=service)
+    assert _open(client, root, "open").status_code == 201
+    query_id = str(uuid4())
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(
+            client.post,
+            "/api/v1/queries",
+            headers=HEADERS,
+            json={"question": "合成地点", "fingerprint": FP, "request_id": query_id},
+        )
+        assert entered.wait(5)
+        cancellation = client.delete(f"/api/v1/queries/{query_id}", headers=HEADERS)
+        assert cancellation.status_code == 202
+        assert "仍可能完成并计费" in cancellation.json()["message"]
+        release.set()
+        response = future.result(timeout=5)
+    assert '"code": "cancelled"' in response.text
+    assert '"type": "completed"' not in response.text
+    assert calls == []
+
+
+def test_cancel_during_rerank_suppresses_answer_provider(tmp_path):
+    root, _ = _workspace(tmp_path)
+    entered, release = Event(), Event()
+    calls = []
+
+    class BlockingReranker:
+        def rank(self, question, texts):
+            entered.set()
+            assert release.wait(5)
+            return [(i, 1.0) for i in range(len(texts))]
+
+    class SpyAnswer:
+        def answer(self, question, passages):
+            calls.append("answer")
+            return GroundedAnswer(text="合成回答")
+
+    store = IndexStore(tmp_path / "index.sqlite3")
+    QueryService(store).rebuild(root, fingerprint=FP)
+    service = QueryService(store, reranker=BlockingReranker(), answer_provider=SpyAnswer())
+    cancelled = Event()
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(
+            service.query,
+            root,
+            "合成地点",
+            fingerprint=FP,
+            cancelled=cancelled,
+        )
+        assert entered.wait(5)
+        cancelled.set()
+        release.set()
+        with pytest.raises(QueryCancelled):
+            future.result(timeout=5)
+    assert calls == []
+
+
+def test_cancel_during_answer_provider_discards_generated_answer(tmp_path):
+    root, _ = _workspace(tmp_path)
+    entered, release = Event(), Event()
+
+    class BlockingAnswerer:
+        def answer(self, question, passages):
+            entered.set()
+            assert release.wait(5)
+            return GroundedAnswer(text="合成回答")
+
+    store = IndexStore(tmp_path / "index.sqlite3")
+    QueryService(store).rebuild(root, fingerprint=FP)
+    service = QueryService(store, answer_provider=BlockingAnswerer())
+    cancelled = Event()
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(
+            service.query,
+            root,
+            "合成地点",
+            fingerprint=FP,
+            cancelled=cancelled,
+        )
+        assert entered.wait(5)
+        cancelled.set()
+        release.set()
+        with pytest.raises(QueryCancelled):
+            future.result(timeout=5)

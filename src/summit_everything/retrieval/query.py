@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from threading import Event
 from typing import Protocol
 from uuid import UUID, uuid4
 
@@ -23,6 +24,10 @@ from summit_everything.workspace.reader import list_pages, read_page
 
 class IndexPlanStale(ValueError):
     """Workspace content changed after the user reviewed an index plan."""
+
+
+class QueryCancelled(Exception):
+    """The client cancelled a query before its next provider operation."""
 
 
 class EmbeddingProvider(Protocol):
@@ -175,7 +180,9 @@ class QueryService:
         fingerprint: str,
         purpose: RetrievalPurpose = RetrievalPurpose.CURRENT,
         limit: int = 5,
+        cancelled: Event | None = None,
     ) -> Answer:
+        self._check_cancelled(cancelled)
         root = root.resolve()
         manifest = load_manifest(root)
         if self.store.active_fingerprint(manifest.workspace_id) != fingerprint:
@@ -198,6 +205,7 @@ class QueryService:
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
         query_vector = self.embedding.embed(question, fingerprint=fingerprint)
+        self._check_cancelled(cancelled)
         dense = sorted(
             chunks,
             key=lambda item: cosine_similarity(query_vector, item["vector"]),
@@ -207,7 +215,9 @@ class QueryService:
         candidates = qualified[:20]
         if not candidates:
             return self._empty_answer(question, purpose, "没有找到经确认且仍为当前版本的相关资料。")
+        self._check_cancelled(cancelled)
         reranked = self.reranker.rank(question, [str(item["text"]) for item in candidates])
+        self._check_cancelled(cancelled)
         if len(reranked) != len(candidates):
             raise ValueError("Reranker returned an incomplete ranking")
         lexical_scores: dict[str, float] = {}
@@ -285,7 +295,9 @@ class QueryService:
             {"heading": citation.heading or "页面内容", "excerpt": citation.excerpt}
             for citation in citations
         ]
+        self._check_cancelled(cancelled)
         answer = self.answer_provider.answer(question, passages) if self.answer_provider else None
+        self._check_cancelled(cancelled)
         if not self._citations_are_current(root, citations, purpose=purpose):
             return self._empty_answer(
                 question,
@@ -395,6 +407,11 @@ class QueryService:
             is not None
             for citation in citations
         )
+
+    @staticmethod
+    def _check_cancelled(cancelled: Event | None) -> None:
+        if cancelled is not None and cancelled.is_set():
+            raise QueryCancelled()
 
     @staticmethod
     def _empty_answer(question: str, purpose: RetrievalPurpose, message: str) -> Answer:

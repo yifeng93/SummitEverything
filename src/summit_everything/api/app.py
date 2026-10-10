@@ -83,7 +83,7 @@ from summit_everything.integrations.settings import (
     embedding_fingerprint,
     provider_settings_payload,
 )
-from summit_everything.retrieval.query import AnswerProvider, QueryService
+from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
     WorkspaceError,
@@ -1022,6 +1022,7 @@ def create_app(
                     payload.question,
                     fingerprint=payload.fingerprint,
                     purpose=RetrievalPurpose(payload.purpose),
+                    cancelled=cancelled,
                 )
                 if cancelled.is_set():
                     seq += 1
@@ -1039,6 +1040,9 @@ def create_app(
                     yield event(seq, "delta", {"text": answer.text[offset : offset + 120]})
                 seq += 1
                 yield event(seq, "completed", answer.model_dump(mode="json"))
+            except QueryCancelled:
+                seq += 1
+                yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
             except Exception as exc:
                 seq += 1
                 yield event(seq, "error", {"code": "query_error", "message": str(exc)})
@@ -1062,7 +1066,11 @@ def create_app(
                 detail={"code": "not_found", "message": "查询已结束或不存在"},
             )
         cancellation.set()
-        return {"request_id": str(request_id), "state": "cancellation_requested"}
+        return {
+            "request_id": str(request_id),
+            "state": "cancellation_requested",
+            "message": "已发出的模型请求仍可能完成并计费；不会启动后续阶段或自动重发。",
+        }
 
     prefix = "/api/v1/integrations/feishu"
 
