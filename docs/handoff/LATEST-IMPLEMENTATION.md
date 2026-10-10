@@ -2,9 +2,9 @@
 
 ## M2 阶段 A — Fake-only 整改与独立复验
 
-- **当前代码 SHA：** `d113cf43268982b747e8833c7d936b586156d92a`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
+- **当前代码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
 - **原候选：** `09398fcae597b2478001d40aedf580ea91322c11`。原候选 QA 测试与报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`；A-01 P0、A-02–A-04 P1、A-05 P2 复现结果见 [原候选定向 QA](../quality/reports/2026-10-10-M2-stage-a-original-qa.md)。报告结论保持原样。
-- **当前状态：** 执行者已修复 A-01 至 A-05 并提交可测试代码；自测结果见 [阶段 A 修复 DEV 报告](../quality/reports/2026-10-10-M2-stage-a-fix-dev.md)。独立完整 QA 固定在 `d113cf4` 的隔离 checkout 中进行，报告未回收，不能标“QA通过”。
+- **当前状态：** 执行者已修复 A-01 至 A-05 并提交可测试代码；自测结果见 [阶段 A 修复 DEV 报告](../quality/reports/2026-10-10-M2-stage-a-fix-dev.md)。独立完整 QA 固定在 `32da67e` 的隔离 checkout 中进行，报告未回收，不能标“QA通过”。
 - **初始文档 checkpoint：** M2 核心规格 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`；执行交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。本阶段更新文档将在修复代码之后单独提交；它不改变受测代码 SHA。
 - **自测摘要：** Python 142 passed；Web 8 files / 32 tests；Ruff、format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build 与 Swift build 退出 0。保留 1 条既有 Starlette/httpx 弃用警告和 3 条既有 React effect lint 警告。以上不是独立 QA 结论。
 - **边界与待办：** 最终浏览器流程 / console 证据、候选原生壳窗口 / Quit / 进程清理仍由独立 QA 实测并记录；按验收矩阵核对 C09、C15–C18、C04/C10/C11/C12/C13/C23。PR、main 合并与合并后复验尚未发生；Stage A 完成条件未满足。

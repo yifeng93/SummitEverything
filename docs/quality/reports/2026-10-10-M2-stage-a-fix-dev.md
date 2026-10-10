@@ -10,8 +10,9 @@
 - 原候选独立 QA 代码对象：`09398fc`；QA 测试 / 报告提交：`f64c565b7c5105867e0c19e7e1e716dc726f8ff7`，独立分支 `codex/qa-m2-stage-a-original`。报告：[原候选定向 QA](2026-10-10-M2-stage-a-original-qa.md)。
 - 整改分支：`codex/m2-stage-a-closeout`，初始文档头 `53ad048`。
 - 修复实现提交：`7e3ed6062fe44a9f0f16a284686d6c9d00f9326e`。
-- 最终固定修复代码 SHA：`d113cf43268982b747e8833c7d936b586156d92a`，在 `7e3ed60` 后增加异常日志脱敏和回归：索引失败只记工作库 UUID、异常类型，不写异常消息 / traceback；测试断言异常中的合成敏感探针未进入日志。本代码提交包含整改、回归测试、OpenAPI / TS 生成文件与 Fake-only UI 提示，不含本 DEV 文档。
-- 当前文档在代码提交之后单独提交；独立复验报告应引用代码 SHA `d113cf4`，不得把后续文档 SHA 写成受测实现。
+- 安全日志修订：`d113cf43268982b747e8833c7d936b586156d92a`，索引失败只记工作库 UUID、异常类型，不写异常消息 / traceback；测试断言异常中的合成敏感探针未进入日志。
+- 最终固定代码 SHA：`32da67e9c0280e3dae18fd374e30c925565b0b82`，在 `d113cf4` 后修正 A-01 回归问答，使查询与 superseded 概览正文共享独特词 `鲸蓝九七`，实际检验不能引用。该代码提交包含整改、回归测试、OpenAPI / TS 生成文件与 Fake-only UI 提示，不含本 DEV 文档。
+- 当前文档在代码提交之后单独提交；独立复验报告应引用代码 SHA `32da67e`，不得把后续文档 SHA 写成受测实现。
 
 ## 缺陷处置与本地证据
 
@@ -30,7 +31,7 @@
 | 命令 | 结果 |
 |---|---|
 | `UV_PROJECT_ENVIRONMENT=.venv uv sync --frozen --group dev` | PASS，使用锁定依赖；无依赖升级 |
-| `UV_PROJECT_ENVIRONMENT=.venv uv run --frozen pytest -q` | PASS，最终 SHA `d113cf4` 上 142 passed；1 条既有 Starlette/httpx 弃用警告 |
+| `UV_PROJECT_ENVIRONMENT=.venv uv run --frozen pytest -q` | `d113cf4` 上 142 passed；A-01 更正后的最终代码 `32da67e` 已复跑该定向测试并通过。完整固定 SHA 矩阵交独立 QA；1 条既有 Starlette/httpx 弃用警告 |
 | `UV_PROJECT_ENVIRONMENT=.venv uv run --frozen ruff check src tests scripts` | PASS |
 | `UV_PROJECT_ENVIRONMENT=.venv uv run --frozen ruff format --check src tests scripts` | PASS |
 | `UV_PROJECT_ENVIRONMENT=.venv uv run --frozen mypy src` | PASS，30 source files |
