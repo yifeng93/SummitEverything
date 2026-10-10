@@ -1,0 +1,21 @@
+{
+  "run_id": "qa-stage-a-evidence-supplement-run7",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-evidence/SummitEverything",
+  "base_sha": "5351a3ac6f9b6a64fd4916b06cd9269a7628bc09",
+  "product_candidate_sha": "32da67e9c0280e3dae18fd374e30c925565b0b82",
+  "network_scope": "loopback only; Fake Feishu provider; synthetic workspace/profile; no external provider/model/credential/material calls",
+  "isolated_profile": ".local/qa/stage-a-evidence-20261010-run7/chrome-profile",
+  "listeners_before_cleanup": [
+    {"pid": 45692, "process": "uvicorn", "address": "127.0.0.1:18917", "role": "API"},
+    {"pid": 45705, "process": "vite", "address": "127.0.0.1:5173", "role": "web UI"},
+    {"pid": 45708, "process": "Chrome headless", "address": "127.0.0.1:19317", "role": "CDP; isolated profile"}
+  ],
+  "cleanup": {
+    "signal": "SIGTERM",
+    "processes_checked_after_stop": [45692, 45705, 45708],
+    "ps_processes_remaining": 0,
+    "listeners_remaining_on_18917_5173_19317": 0,
+    "isolated_profile": "retained under ignored .local/qa for possible review/replay; contains synthetic disposable data only"
+  },
+  "external_calls": 0
+}
