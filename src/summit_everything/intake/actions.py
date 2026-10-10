@@ -67,6 +67,14 @@ class UserOutcome(ActionConfirmation):
     state: Literal["succeeded", "failed"]
     evidence: str = Field(min_length=1, max_length=2000)
 
+    @field_validator("evidence")
+    @classmethod
+    def substantive_evidence(cls, value: str) -> str:
+        evidence = value.strip()
+        if not evidence:
+            raise ValueError("请提供非空的核实依据。")
+        return evidence
+
 
 class Action(StrictModel):
     action_id: UUID

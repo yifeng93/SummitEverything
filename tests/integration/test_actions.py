@@ -744,6 +744,17 @@ def test_edit_requires_fresh_confirmation_and_outcome_replay(tmp_path):
     )
     latest = confirm(c, edit)
     assert execute(c, latest).json()["state"] == "unknown"
+    blank_evidence = c.post(
+        PREFIX + "/" + latest["action_id"] + "/outcomes",
+        json={
+            "payload_sha256": latest["payload_sha256"],
+            "confirmation_id": "blank-evidence",
+            "state": "failed",
+            "evidence": "  \n  ",
+        },
+    )
+    assert blank_evidence.status_code == 422
+    assert c.get(PREFIX + "/" + latest["action_id"]).json()["state"] == "unknown"
     outcome = {
         "payload_sha256": latest["payload_sha256"],
         "confirmation_id": "outcome-id",
