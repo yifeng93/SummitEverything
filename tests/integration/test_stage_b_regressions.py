@@ -1,10 +1,14 @@
 """Independent DEV review counterexamples. Synthetic data; no provider network/Keychain."""
 
+import json
+
+import httpx
 from fastapi.testclient import TestClient
 from test_qualified_retrieval import approve_page, create_test_workspace
 
 from summit_everything.api.app import create_app
 from summit_everything.integrations.llm import GroundedAnswer
+from summit_everything.integrations.rerank import ModelStudioReranker
 from summit_everything.integrations.settings import MemorySecretBackend
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
@@ -69,3 +73,33 @@ def test_citations_must_be_rechecked_after_answer_provider_returns(tmp_path):
     answer = query.query(root, "合成地点", fingerprint=FP)
     assert not answer.citations, answer.model_dump()
     assert "北馆" not in answer.text
+
+
+def test_query_with_101_chunks_uses_bounded_candidates(tmp_path):
+    root, _ = _workspace(
+        tmp_path,
+        body="\n\n".join(f"## Section {i}\n合成地点 {i}。" for i in range(101)),
+    )
+    query = QueryService(IndexStore(tmp_path / "index.sqlite3"))
+    result = query.rebuild(root, fingerprint=FP)
+    assert result.indexed_chunks == 101
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        count = len(json.loads(request.content)["input"]["documents"])
+        return httpx.Response(
+            200,
+            json={
+                "output": {"results": [{"index": i, "relevance_score": 1.0} for i in range(count)]}
+            },
+        )
+
+    query.reranker = ModelStudioReranker(
+        "synthetic-key",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    answer = query.query(root, "合成地点", fingerprint=FP)
+    sent = json.loads(seen[0].content)["input"]["documents"]
+    assert answer.citations
+    assert 0 < len(sent) <= 20
