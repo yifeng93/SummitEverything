@@ -118,7 +118,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
 - [ ] 账户准备好后验证真实 scope、列表和正文读取；缺失权限给具体指引，保留手动文字入口。
 
-**M2.1 当前结果：** Fake 模拟范围 DEV完成待验收；最终整体代码固定于 `09398fcae597b2478001d40aedf580ea91322c11`。真实 OAuth / user scope / 钥匙串配置仍由外部门验收，不能据 Fake 通过勾选真实账户步骤。见 [进展账本](../../implementation/PROGRESS.md)、[M2 DEV 报告](../../quality/reports/2026-10-10-M2-DEV.md) 与 M2.1 任务报告。
+**M2.1 初始开发记录（阶段 A 独立 QA 后重开）：** Fake 模拟范围的 DEV 检查点曾固定于 `09398fcae597b2478001d40aedf580ea91322c11`；该 SHA 后续发现阶段 A 缺陷，当前修复与 QA 状态见本计划顶部、[进展账本](../../implementation/PROGRESS.md) 和 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。真实 OAuth / user scope / 钥匙串配置仍属外部验收门，不因 Fake 开发自测勾选真实账户步骤。
 
 ### M2.2：正式任务与独立 action
 
@@ -129,7 +129,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] UI 独立任务确认卡和日期输入，不猜日期、不用知识确认代替 task / project_progress 确认。
 - [x] 使用模拟 provider 验证跨重启 / 月归档后幂等。真实外部写未测，仍只允许用户明确指定的测试任务。
 
-M2.2 DEV完成待验收；初始代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`，P2 修复 `c552d143f051efe13ebfcdd29815e776147794aa`，最终固定候选为 `09398fcae597b2478001d40aedf580ea91322c11`。19 个后端集成测试及前端组件测试通过；真实全天 timestamp 规则及真实执行证据查询未验证，不能直接照搬 Fake 映射。详见任务报告和 [M2 DEV 报告](../../quality/reports/2026-10-10-M2-DEV.md)；未据此标记阶段 QA通过。
+**M2.2 初始开发记录（阶段 A 独立 QA 后重开）：** 初始代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`，P2 修复 `c552d143f051efe13ebfcdd29815e776147794aa`，当时的整体候选为 `09398fcae597b2478001d40aedf580ea91322c11`；该 SHA 后续发现阶段 A 缺陷。当前修复及新 SHA 独立复验状态见本计划顶部。真实全天 timestamp 规则及真实执行证据查询仍未验证，Fake 映射不得直接用于真实 adapter。
 
 ### M2.3：工作日志、思考与项目总览
 
