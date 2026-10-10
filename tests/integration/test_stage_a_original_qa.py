@@ -67,7 +67,7 @@ def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Pat
         "source_refs": ["synthetic:fixture-1"],
         "custom_qa_field": {"preserve": True},
     }
-    original_body = "独特事实：蓝色火车从合成站出发。"
+    original_body = "独特事实：蓝色火车从鲸蓝九七站出发。"
     PageWriter().confirm(
         root,
         metadata=metadata,
@@ -99,7 +99,7 @@ def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Pat
     )
     answer = index.query(
         root,
-        "独特词鲸蓝九七是什么",
+        "鲸蓝九七站发生了什么？",
         fingerprint="fake-qa-v1",
         purpose=RetrievalPurpose.CURRENT,
     )
