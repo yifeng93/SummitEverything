@@ -352,9 +352,11 @@ def create_app(
             root = Path(workspace.root)
             plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
             service.execute_plan(root, plan)
-        except Exception:
-            logging.getLogger(__name__).exception(
-                "Incremental index update failed for workspace %s", workspace.workspace_id
+        except Exception as exc:
+            logging.getLogger(__name__).error(
+                "Incremental index update failed for workspace %s (%s)",
+                workspace.workspace_id,
+                type(exc).__name__,
             )
             return mutation.model_copy(update={"index_update": "update_failed"})
         return mutation.model_copy(update={"index_update": "updated"})

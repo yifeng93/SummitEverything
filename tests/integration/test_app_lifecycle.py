@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Event
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 from summit_everything.api.app import create_app
@@ -19,14 +20,14 @@ TOKEN = "m1-lifecycle-token"
 
 
 def test_failed_automatic_incremental_index_is_visible_and_stale_chunks_are_rejected(
-    tmp_path: Path,
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     class FailingEmbedding(FakeEmbedding):
         fail = False
 
         def embed(self, text: str, *, fingerprint: str) -> list[float]:
             if self.fail:
-                raise RuntimeError("synthetic Fake embedding interruption")
+                raise RuntimeError("synthetic-private-probe embedding interruption")
             return super().embed(text, fingerprint=fingerprint)
 
     profile = tmp_path / "profiles"
@@ -87,6 +88,7 @@ def test_failed_automatic_incremental_index_is_visible_and_stale_chunks_are_reje
     )
     assert new_page.status_code == 201
     assert new_page.json()["index_update"] == "update_failed"
+    assert "synthetic-private-probe" not in caplog.text
     status = api.get("/api/v1/index/status").json()
     assert status["state"] == "stale" and status["stale_pages"] == 1
 
