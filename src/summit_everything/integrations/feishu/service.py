@@ -83,6 +83,8 @@ class FeishuService:
         self.clock = clock
         self._states: dict[str, tuple[str, float]] = {}
         self._state_lock = Lock()
+        self._lifecycle_lock = Lock()
+        self._generation = 0
 
     def status(self) -> FeishuStatus:
         credentials = self.credentials.get()
@@ -92,7 +94,11 @@ class FeishuService:
         )
 
     def logout(self) -> None:
-        self.credentials.delete()
+        with self._lifecycle_lock:
+            self._generation += 1
+            with self._state_lock:
+                self._states.clear()
+            self.credentials.delete()
 
     def authorize(self) -> AuthorizationStart:
         state = secrets.token_urlsafe(32)
@@ -114,8 +120,10 @@ class FeishuService:
     ) -> FeishuStatus:
         if callback_uri != self.config.redirect_uri:
             raise FeishuError("invalid_redirect")
-        with self._state_lock:
-            entry = self._states.pop(state, None)
+        with self._lifecycle_lock:
+            with self._state_lock:
+                entry = self._states.pop(state, None)
+            generation = self._generation
         if entry is None or entry[0] != self.session_identity or entry[1] <= self.clock():
             raise FeishuError("invalid_state")
         if error is not None:
@@ -130,28 +138,32 @@ class FeishuService:
         )
         if not isinstance(credentials, UserCredentials) or credentials.expires_at <= self.clock():
             raise FeishuError("malformed_response")
-        self.credentials.put(credentials)
+        with self._lifecycle_lock:
+            if generation != self._generation:
+                raise FeishuError("invalid_state")
+            self.credentials.put(credentials)
         return self.status()
 
     def _user(self, scope: str) -> UserCredentials:
-        credentials = self.credentials.get()
-        if credentials is None:
-            raise FeishuError("not_authorized")
-        if credentials.token_type != "user" or scope not in credentials.scopes:
-            raise FeishuError("missing_scope")
-        if credentials.expires_at <= self.clock() + 60:
-            current = credentials
-            credentials = self._call(lambda: self.provider.refresh(current))
-            if (
-                not isinstance(credentials, UserCredentials)
-                or credentials.token_type != "user"
-                or credentials.expires_at <= self.clock()
-            ):
-                raise FeishuError("token_expired")
-            if scope not in credentials.scopes:
+        with self._lifecycle_lock:
+            credentials = self.credentials.get()
+            if credentials is None:
+                raise FeishuError("not_authorized")
+            if credentials.token_type != "user" or scope not in credentials.scopes:
                 raise FeishuError("missing_scope")
-            self.credentials.put(credentials)
-        return credentials
+            if credentials.expires_at <= self.clock() + 60:
+                current = credentials
+                credentials = self._call(lambda: self.provider.refresh(current))
+                if (
+                    not isinstance(credentials, UserCredentials)
+                    or credentials.token_type != "user"
+                    or credentials.expires_at <= self.clock()
+                ):
+                    raise FeishuError("token_expired")
+                if scope not in credentials.scopes:
+                    raise FeishuError("missing_scope")
+                self.credentials.put(credentials)
+            return credentials
 
     def _call[T](self, call: Callable[[], T]) -> T:
         try:

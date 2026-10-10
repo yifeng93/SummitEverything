@@ -509,3 +509,72 @@ def test_capture_validation_failure_continues_batch(
     assert result.json()["outcomes"][0]["error_code"] == "malformed_response"
     assert result.json()["outcomes"][1]["state"] == "succeeded"
     assert "synthetic-rejected-source" not in result.text
+
+
+def test_logout_invalidates_pending_authorization_state(tmp_path: Path) -> None:
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import FeishuConfig, MemoryCredentialStore
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    service = FeishuService(
+        FakeFeishu(tmp_path / "remote"), MemoryCredentialStore(), FeishuConfig(), "session"
+    )
+    start = service.authorize()
+    state = parse_qs(urlsplit(start.authorization_url).query)["state"][0]
+
+    service.logout()
+
+    from summit_everything.integrations.feishu.provider import FeishuError
+
+    with pytest.raises(FeishuError) as exc_info:
+        service.callback(state, "fake-ok", None, service.config.redirect_uri)
+    assert exc_info.value.code == "invalid_state"
+
+
+def test_logout_during_code_exchange_cannot_restore_old_token(tmp_path: Path) -> None:
+    from threading import Event, Thread
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import (
+        FeishuConfig,
+        FeishuError,
+        MemoryCredentialStore,
+        UserCredentials,
+    )
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    entered = Event()
+    release = Event()
+
+    class DelayedExchange(FakeFeishu):
+        def exchange(self, code: str, redirect_uri: str, app_credentials=None):
+            entered.set()
+            assert release.wait(2)
+            return UserCredentials(
+                access_token="synthetic-old-access",
+                refresh_token="synthetic-old-refresh",
+                expires_at=4_000_000_000,
+                scopes=["minutes:read"],
+            )
+
+    store = MemoryCredentialStore()
+    service = FeishuService(DelayedExchange(tmp_path / "remote"), store, FeishuConfig(), "session")
+    state = parse_qs(urlsplit(service.authorize().authorization_url).query)["state"][0]
+    errors: list[str] = []
+
+    def callback() -> None:
+        try:
+            service.callback(state, "fake-ok", None, service.config.redirect_uri)
+        except FeishuError as exc:
+            errors.append(exc.code)
+
+    thread = Thread(target=callback)
+    thread.start()
+    assert entered.wait(2)
+    service.logout()
+    release.set()
+    thread.join(2)
+
+    assert not thread.is_alive()
+    assert errors == ["invalid_state"]
+    assert store.get() is None
