@@ -146,3 +146,5 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 QA 提交链：409b 初验 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0` → 脱敏 `eae0f22dce4c7f15d97bd7d5cc1e17f7d7b148f4` → 生成字节码清理 / 补记 `1d62e24` / `1f0639a` → 修复 SHA 复验 `2d6254c4c2717857fda8ccaa97c210b41e0c695e`；串接后的 QA 分支树提交为 `998b4d2fa1165cecb71c9baf8ff6610a516d3df0`。初验与修复复验 manifest 分别为 `64f77d13a0bcc0f9b1a4089641df056937647e5b375c3ab3925dab49349f8c10`（47 项）和 `599190944efaf82861b5d571b2364524ec1a06829d5055b1cadd0f0b6453e66f`（26 项），均逐项校验。撤回的重复截图、空项目选择 proposal 画面及 `__pycache__` 不作为证据；历史报告未改写。
 
 两轮均为隔离 Fake-only 工作库 / 浏览器；没有有意调用真实飞书、模型、材料、凭据或业务操作。最终 309 复演只观察到 loopback sockets；409b 初次候选曾连本机代理，是否转发不可判定，详见报告。此结果仅补足恢复路径 UI 证据，不代表重新执行整体 Stage A 或真实门；真实环境继续 NOT_RUN。
+
+PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main。独立 checkout 对该 SHA 核验：修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199` 是祖先；`src/tests/web/native` 与修复源码树一致；初验和修复复验报告、测试 harness、screenshots 及 evidence manifest 均已进入 main，manifest 全条目重算匹配。此合并后核验未重跑整体自动矩阵；固定候选 UI 修复的组件测试、typecheck 和 Web build 在 PR 前均退出 0。
