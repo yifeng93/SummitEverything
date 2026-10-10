@@ -1,6 +1,19 @@
 # 最新实现交接
 
-## M2 阶段 A — Fake-only 整改与独立复验
+## 当前交接基线（2026-10-10，阶段 A 已收口）
+
+- **受测修复代码：** `30903c4cdf73855af71a201e3edea6c535ee8199`；原阶段 A 代码为 `32da67e9c0280e3dae18fd374e30c925565b0b82`。
+- **收口 main：** `117086eb2075726730cd7aa62ea0b61498e96f0c`，包含 PR #7 修复 / QA 整合 `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 和 PR #8 文档更新。后续本轮整理只修改文档和 Git 引用；实际接手时记录整理后的完整 main SHA，并确认产品代码树与 `30903c4` 一致。
+- **结论：** M1 与 M2.1–M2.3 阶段 A 在 Fake-only 范围完成独立验收。409b 的 C18 P2 保留为历史 FAIL；在 30903c4 上独立复验关闭。C16 崩溃 / 重启 / 并发、C18 丢回执恢复、C23 无成功证明保持 unknown 的必需 UI 证据已补齐。旧重复 / 错配截图与无法追溯脚本指纹不作为证明。
+- **独立证据：** [恢复路径初验](../quality/reports/2026-10-10-M2-stage-a-recovery-ui-supplement.md)、[C18 修复复验](../quality/reports/2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md)、[报告索引](../quality/reports/README.md)。初验 / 复验 manifest 分别 47 / 26 项匹配。
+- **检查范围：** 原受测代码已有后端 142 / 前端 32 项及完整检查记录；恢复 UI 独立 QA 的自动检查为 NOT_RUN。技术评定者在最终 main 的独立临时 checkout 复跑前端 33 项、typecheck、Web build，通过；没有把它写成整体后端重新验收。1 条历史后端弃用提示和 3 条历史 lint warning 仍保留。
+- **下一阶段：** [B/C 执行提示词](PROMPT-STAGE-B-C-LUNA.md)。B 是真实 adapter、配置 / Keychain 和离线独立 QA；C 必须先通过 B，再经逐项授权进行受控真实验收。B/C 尚未开始，M3–M5 尚未开始。
+- **当前缺失：** 真实 Feishu HTTP / OAuth / user scope、真实模型 / embedding / rerank 与生产凭据配置 / Keychain adapter。资源已准备不表示这些实现存在；真实协议、真实材料和模型质量、DMG、五日和双机门仍 NOT_RUN。
+- **权限：** 通用开发、自测、独立 QA 和源码整合可进行；真实登录 / 读取、材料发送、付费调用、真实 task 写入需列目的、数据、目标、范围、费用，并由用户执行前逐项确认。秘密只经安全本地入口 / Keychain 录入。
+- **工作环境：** 主 checkout 使用 main；旧分支归档引用、本地 Git bundle 和证据 worktree 处置见 [整理记录](../implementation/2026-10-10-STAGE-A-CLEANUP.md)。不要复用旧 QA profile、凭据或服务。
+
+
+## 历史交接：M2 阶段 A — 以下 SHA / 检查只对应当时版本
 
 ### 恢复路径 UI 补验（2026-10-10）
 
@@ -10,16 +23,16 @@
 - **证据限制与范围：** 两轮均为隔离浏览器、合成工作库与 Fake providers；最终 309 复演全程仅观察到 loopback sockets。409b 初次候选 Chrome曾连接本机代理 `127.0.0.1:7890`，无法证明代理是否转发，故初报保留该限制。没有有意调用真实飞书、模型、业务材料或凭据；本轮没有真实业务外部操作。独立 UI console/network、请求响应、磁盘指纹、同一 action_id 与撤回重复截图说明见报告。该补验不重跑原生壳或整体 Stage A 自动矩阵。
 - **合并后核验：** PR #7 以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main；SSH 读取的远端 `main` 在本次核验时为该 SHA。独立 detached checkout 固定于该 merge commit，确认 `30903c4cdf73855af71a201e3edea6c535ee8199` 为祖先，且 `src/tests/web/native` 与受测修复 SHA 完全一致；两份补验报告均存在，47 项和 26 项 manifest 均逐项匹配。之后仅文档 ledger 更新不改变受测源码树。阶段 B/C 与 M3–M5 未开始。
 
-- **当前代码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
+- **该轮代码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
 - **原候选：** `09398fcae597b2478001d40aedf580ea91322c11`。原候选 QA 测试与报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`；A-01 P0、A-02–A-04 P1、A-05 P2 复现结果见 [原候选定向 QA](../quality/reports/2026-10-10-M2-stage-a-original-qa.md)。报告结论保持原样。
-- **当前状态：** Fake-only M2.1–M2.3 阶段 A 已由独立 QA 在固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 复验通过；最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。原候选缺陷初验及后续各轮复验报告均保留，结论与受测 SHA 对应。
-- **初始文档 checkpoint：** M2 核心规格 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`；执行交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。本阶段更新文档将在修复代码之后单独提交；它不改变受测代码 SHA。
+- **该轮状态：** Fake-only M2.1–M2.3 阶段 A 已由独立 QA 在固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 复验通过；最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。原候选缺陷初验及后续各轮复验报告均保留，结论与受测 SHA 对应。
+- **初始文档 checkpoint：** M2 核心规格 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`；执行交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。该轮文档已在修复代码后提交；最新基线见本文顶部。
 - **自测摘要：** Python 142 passed；Web 8 files / 32 tests；Ruff、format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build 与 Swift build 退出 0。保留 1 条既有 Starlette/httpx 弃用警告和 3 条既有 React effect lint 警告。以上不是独立 QA 结论。
 - **独立验收摘要：** A-01–A-05 与阶段 A Fake-only MUST 场景通过；未关闭 P0/P1/P2=0。浏览器 Fake 流程和 console、原生开发壳归属 / 窗口 / Quit / 退出清理均有独立报告和证据。API 没有 OAuth cancel UI 控件的变体记 NOT_RUN，API denial 已覆盖。
 - **合并与合并后核验：** PR #4 以 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 main。独立 checkout 固定于该 SHA，自动检查全绿；Python 142 passed、Web 32 passed，另有关键路径 8 项冒烟通过。合并树 `src/tests/web/native` 与 QA 固定源码树一致。详细命令和结果见[合并后核验记录](../quality/reports/2026-10-10-M2-stage-a-postmerge.md)。
 - **阶段状态：** Stage A 的 Fake-only 模拟范围 QA、PR 合并和合并后核验已完成；真实 provider、材料和发布门仍 NOT_RUN，不包含在本阶段结论内。
 - **真实门：** 当前只有 Fake providers；本轮未访问真实 Feishu、付费模型、真实业务材料或 Keychain，未执行 DMG、五日或双机验证。用户备好的真实资源未被消费；真实门继续 NOT_RUN。
-- **阶段边界：** 未启动 M3–M5；阶段 A 结束后等待用户将最终报告交独立技术评定者，再决定阶段 B/C。
+- **阶段边界：** 未启动 M3–M5；该轮结束时等待技术评定；现已收口，B/C 入口见顶部。
 
 以下 `M1` 区域为历史交接记录。
 

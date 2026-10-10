@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：实施基准；M1.1–M1.3 路由已实现，其余路由按计划分阶段交付。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 完整实施基准；M1 与 M2.1–M2.3 Fake 路由已实现，真实 adapter / settings / credentials 和 M3–M5 按计划交付。下表同时包含已实现和计划路由；不得据契约条目声称设置、Keychain 或真实网络存在。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -64,7 +64,7 @@
 | POST /actions/{id}/reconciliations；POST /actions/{id}/outcomes | 只读核实未知结果；无证据保持 unknown；用户独立确认的 state / evidence / confirmation_id 才能记录明确结果 |
 | GET /integrations/feishu/status | 权限 / 登录状态，无 token 值 |
 | POST /integrations/feishu/authorizations | 创建 OAuth 登录意图，state 绑定当前本机会话 |
-| GET /integrations/feishu/callback | 验证已发起 OAuth state / redirect，存钥匙串 |
+| GET /integrations/feishu/callback | 验证已发起 OAuth state / redirect；当前 Fake 存内存，B 的真实模式需持久化到钥匙串 |
 | GET /integrations/feishu/materials | 搜索 / 分页的可见材料 metadata；不调模型 |
 | POST /integrations/feishu/imports | 用户选择的材料 ID、operation_id → 来源与 item；不隐式整理 |
 | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |

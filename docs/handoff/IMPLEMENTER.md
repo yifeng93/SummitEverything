@@ -4,9 +4,9 @@
 
 ## 开始
 
-读根 AGENTS、README、PROGRESS、产品规格、架构 / 复用地图、两个契约和全 v1 计划。明确现有代码只有信任骨架。样板未批准不阻塞模拟开发。
+读根 AGENTS、README、PROGRESS、产品规格、架构 / 复用地图、两个契约和全 v1 计划。当前 M1 与 M2 阶段 A Fake-only 已收口，不能回退到骨架开发；真实 adapter 尚缺，B/C 范围见专用提示词。样板未批准不阻塞模拟开发。
 
-先检查工作区和已有进度，保存他人修改，不 reset / checkout 覆盖。使用 codex/ 分支小步提交；当前框架分支可以继续用。当前执行状态以 `docs/implementation/PROGRESS.md` 和 `docs/handoff/LATEST-IMPLEMENTATION.md` 为准。已有候选闭环进入修复或独立验收时，先继续该固定候选，不得因文档旧模板回退到 M1.1 或启动未来阶段。
+先检查工作区和已有进度，保存他人修改，不 reset / checkout 覆盖。使用 codex/ 分支小步提交；从整理后的 main 创建短期功能分支，旧 Foundation / QA 归档引用只作历史参考。当前执行状态以 `docs/implementation/PROGRESS.md` 和 `docs/handoff/LATEST-IMPLEMENTATION.md` 为准。已有候选闭环进入修复或独立验收时，先继续该固定候选，不得因文档旧模板回退到 M1.1 或启动未来阶段。
 
 本项目不是 SWB / SK 补丁，不能去旧目录改代码。需要复用时在固定来源版本查证并移植到新 package，记录依据。
 

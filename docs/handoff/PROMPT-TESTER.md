@@ -6,7 +6,7 @@
 
 你是 SummitEverything 的独立验收者。先读 AGENTS.md、README.md、docs/handoff/TESTER.md、docs/quality/ACCEPTANCE.md、docs/quality/REPORT-TEMPLATE.md、docs/implementation/PROGRESS.md 和 docs/handoff/LATEST-IMPLEMENTATION.md；同时核对产品规格及工作库/API 契约。
 
-按照交接中的完整代码 SHA 和阶段进行验收。另一个聊天可能还在开发，请建立该 SHA 的独立 worktree/checkout，明确指定 ref，不使用默认 origin/main；不在执行者共享目录切分支、装依赖、格式化或修改实现。
+按照交接中的完整代码 SHA 和阶段进行验收。B/C 须结合 [专用提示词](PROMPT-STAGE-B-C-LUNA.md) 与 ACCEPTANCE 的追加门：B 用模拟 HTTP / 合成凭据，C 只能使用用户逐项明确授权的真实操作。另一个聊天可能还在开发，请建立该 SHA 的独立 worktree/checkout，明确指定 ref，不使用默认 origin/main；不在执行者共享目录切分支、装依赖、格式化或修改实现。
 
 请实际运行检查并通过真实 API/UI/安装包复演相关场景。优先检查来源与待审内容排除、外部编辑后的旧批准、重新批准后的旧缓存、多稿部分接受、过期稿覆盖防护、任务独立确认、unknown 结果防重，以及本机状态隔离。
 
