@@ -20,6 +20,27 @@ it('shows Feishu authorization and never claims success after denied callback', 
   expect(screen.queryByText('已授权')).toBeNull()
 })
 
+it('clears the local authorization when the user disconnects Feishu', async () => {
+  let authorized = true
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input)
+    if (path.endsWith('/status')) return { ok: true, status: 200, json: async () => ({ mode: 'fake', authorized, scopes: [], token_type: 'user' }) }
+    if (path.endsWith('/authorizations') && init?.method === 'DELETE') {
+      authorized = false
+      return { ok: true, status: 204, json: async () => undefined }
+    }
+    return { ok: true, status: 200, json: async () => [] }
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<TodayView onError={vi.fn()} />)
+  await screen.findByText('已授权')
+
+  fireEvent.click(screen.getByRole('button', { name: '断开飞书授权' }))
+
+  expect(await screen.findByText('未授权')).toBeTruthy()
+  expect(fetchMock).toHaveBeenCalledWith('/api/v1/integrations/feishu/authorizations', expect.objectContaining({ method: 'DELETE' }))
+})
+
 it('lists metadata, imports only explicit selection, and shows partial outcomes', async () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'selected-operation' })
   const imported: unknown[] = []
@@ -127,4 +148,22 @@ it('blocks callback destinations outside the narrow local OAuth boundary', async
     await expect(api.oauthCallback(url)).rejects.toThrow('授权回调地址无效')
   }
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+it('allows the registered localhost slash-callback path', async () => {
+  const { api } = await import('../api/client')
+  const destination = 'http://localhost:8765/callback?state=synthetic-state&code=fake-ok'
+  const fetchMock = vi.fn(async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ mode: 'fake', authorized: true, scopes: [], token_type: 'user' }),
+  }))
+  vi.stubGlobal('fetch', fetchMock)
+
+  const result = await api.oauthCallback<{ authorized: boolean }>(destination)
+
+  expect(result.authorized).toBe(true)
+  expect(fetchMock).toHaveBeenCalledWith(destination, {
+    credentials: 'omit', redirect: 'error', cache: 'no-store',
+  })
 })

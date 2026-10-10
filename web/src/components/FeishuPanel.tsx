@@ -58,6 +58,16 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
     finally { setBusy(false) }
   }
 
+  async function logout() {
+    setBusy(true); setError('')
+    try {
+      await api.delete<void>(prefix + '/authorizations')
+      setStatus((current) => current ? { ...current, authorized: false, scopes: [] } : current)
+      setAuthProblem(null); setMaterials(null); setCalendar(null); setSelected([])
+    } catch (cause) { setError(cause instanceof Error ? cause.message : '断开飞书授权失败') }
+    finally { setBusy(false) }
+  }
+
   async function loadMaterials(cursor?: string) {
     setBusy(true); setError('')
     try {
@@ -96,7 +106,7 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
 
   return <section className="panel feishu-panel">
     <div className="panel-heading"><div><h2>飞书日常</h2><p>模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。</p></div><span className="status-label">{authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '已授权' : '未授权'}</span></div>
-    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>模拟授权飞书</button></div>
+    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>模拟授权飞书</button>{status?.authorized && <button className="button secondary" disabled={busy} onClick={logout}>断开飞书授权</button>}</div>
     {error && <p role="alert" className="helper-line">{error}</p>}
     <h3>材料</h3>
     <form className="organize-row" onSubmit={(event) => { event.preventDefault(); setSelected([]); void loadMaterials() }}>

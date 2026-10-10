@@ -91,6 +91,9 @@ class FeishuService:
             authorized=authorized, scopes=credentials.scopes if authorized and credentials else []
         )
 
+    def logout(self) -> None:
+        self.credentials.delete()
+
     def authorize(self) -> AuthorizationStart:
         state = secrets.token_urlsafe(32)
         with self._state_lock:
@@ -134,10 +137,20 @@ class FeishuService:
         credentials = self.credentials.get()
         if credentials is None:
             raise FeishuError("not_authorized")
-        if credentials.expires_at <= self.clock():
-            raise FeishuError("token_expired")
         if credentials.token_type != "user" or scope not in credentials.scopes:
             raise FeishuError("missing_scope")
+        if credentials.expires_at <= self.clock() + 60:
+            current = credentials
+            credentials = self._call(lambda: self.provider.refresh(current))
+            if (
+                not isinstance(credentials, UserCredentials)
+                or credentials.token_type != "user"
+                or credentials.expires_at <= self.clock()
+            ):
+                raise FeishuError("token_expired")
+            if scope not in credentials.scopes:
+                raise FeishuError("missing_scope")
+            self.credentials.put(credentials)
         return credentials
 
     def _call[T](self, call: Callable[[], T]) -> T:

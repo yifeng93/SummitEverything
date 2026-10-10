@@ -552,7 +552,7 @@ def test_task_scopes_paging_errors_and_provider_v2_mapping(tmp_path):
         == "succeeded"
     )
     assert len(provider.requests) == before
-    expired = credentials.model_copy(update={"expires_at": 0})
+    expired = credentials.model_copy(update={"expires_at": 0, "refresh_token": "expired"})
     c.app.state.feishu_service.credentials.put(expired)
     assert c.get(TASKS).status_code == 401
 

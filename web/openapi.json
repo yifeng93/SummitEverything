@@ -729,6 +729,234 @@
         }
       }
     },
+    "/api/v1/settings": {
+      "get": {
+        "summary": "Get Settings",
+        "operationId": "get_settings_api_v1_settings_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Patch Settings",
+        "operationId": "patch_settings_api_v1_settings_patch",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderSettingsPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/credentials/{provider}": {
+      "put": {
+        "summary": "Put Credential",
+        "operationId": "put_credential_api_v1_credentials__provider__put",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Put Credential Api V1 Credentials  Provider  Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Credential",
+        "operationId": "delete_credential_api_v1_credentials__provider__delete",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Health",
@@ -2805,6 +3033,114 @@
             }
           }
         }
+      },
+      "delete": {
+        "summary": "Feishu Logout",
+        "operationId": "feishu_logout_api_v1_integrations_feishu_authorizations_delete",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/callback": {
+      "get": {
+        "summary": "Feishu Callback",
+        "operationId": "feishu_callback_callback_get",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "State"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Code"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeishuStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/integrations/feishu/callback": {
@@ -3580,6 +3916,78 @@
         ],
         "title": "CalendarPage"
       },
+      "CapabilityState": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "available",
+          "configured",
+          "disabled_reason"
+        ],
+        "title": "CapabilityState"
+      },
+      "CredentialAccountRequest": {
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Account Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account_id"
+        ],
+        "title": "CredentialAccountRequest"
+      },
+      "CredentialRequest": {
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Account Id"
+          },
+          "secret": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "format": "password",
+            "title": "Secret",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account_id",
+          "secret"
+        ],
+        "title": "CredentialRequest"
+      },
       "Draft": {
         "properties": {
           "draft_id": {
@@ -3775,6 +4183,107 @@
           "body"
         ],
         "title": "DraftPatchRequest"
+      },
+      "EmbeddingSettings": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "dashscope"
+            ],
+            "title": "Provider",
+            "default": "fake"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "qwen3.7-text-embedding"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "region": {
+            "type": "string",
+            "const": "cn",
+            "title": "Region",
+            "default": "cn"
+          },
+          "dimensions": {
+            "type": "integer",
+            "maximum": 4096.0,
+            "minimum": 1.0,
+            "title": "Dimensions",
+            "default": 1024
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url",
+            "default": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EmbeddingSettings"
+      },
+      "FeishuSettings": {
+        "properties": {
+          "app_id": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "App Id",
+            "default": ""
+          },
+          "redirect_uri": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Redirect Uri",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FeishuSettings"
+      },
+      "FeishuSettingsPatch": {
+        "properties": {
+          "app_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Id"
+          },
+          "redirect_uri": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redirect Uri"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FeishuSettingsPatch"
       },
       "FeishuStatus": {
         "properties": {
@@ -4026,7 +4535,14 @@
             "title": "Estimated Tokens"
           },
           "estimated_cost": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Estimated Cost",
             "default": 0
           }
@@ -4400,6 +4916,104 @@
         ],
         "title": "JournalRequest"
       },
+      "LLMSettings": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "deepseek"
+            ],
+            "title": "Provider",
+            "default": "fake"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "deepseek-flash"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "account_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Account Id",
+            "default": "default"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LLMSettings"
+      },
+      "LLMSettingsPatch": {
+        "properties": {
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fake",
+                  "deepseek"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "deepseek-flash"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "account_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Id"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LLMSettingsPatch"
+      },
       "LineCreate": {
         "properties": {
           "name": {
@@ -4539,6 +5153,90 @@
         ],
         "title": "MaterialPage"
       },
+      "ModelStudioSettingsPatch": {
+        "properties": {
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fake",
+                  "dashscope"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "qwen3.7-text-embedding",
+                  "qwen3.7-text-rerank"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "cn"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 4096.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelStudioSettingsPatch"
+      },
       "MutationResult": {
         "properties": {
           "operation_id": {
@@ -4577,7 +5275,8 @@
                 "enum": [
                   "not_enabled",
                   "updated",
-                  "update_failed"
+                  "update_failed",
+                  "manual_required"
                 ]
               },
               {
@@ -4952,6 +5651,81 @@
         ],
         "title": "ProviderDue"
       },
+      "ProviderSettingsPatch": {
+        "properties": {
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fake",
+                  "real"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "model_studio_account_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Studio Account Id"
+          },
+          "feishu": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeishuSettingsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "llm": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LLMSettingsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "embedding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelStudioSettingsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rerank": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelStudioSettingsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ProviderSettingsPatch"
+      },
       "QueryRequest": {
         "properties": {
           "question": {
@@ -4993,6 +5767,122 @@
           "fingerprint"
         ],
         "title": "QueryRequest"
+      },
+      "RerankSettings": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "dashscope"
+            ],
+            "title": "Provider",
+            "default": "fake"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "qwen3.7-text-rerank"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "region": {
+            "type": "string",
+            "const": "cn",
+            "title": "Region",
+            "default": "cn"
+          },
+          "dimensions": {
+            "type": "integer",
+            "maximum": 4096.0,
+            "minimum": 1.0,
+            "title": "Dimensions",
+            "default": 1024
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url",
+            "default": "https://dashscope.aliyuncs.com/api/v1"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RerankSettings"
+      },
+      "SettingsSummary": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "real"
+            ],
+            "title": "Mode"
+          },
+          "model_studio_account_id": {
+            "type": "string",
+            "title": "Model Studio Account Id"
+          },
+          "feishu": {
+            "$ref": "#/components/schemas/FeishuSettings"
+          },
+          "llm": {
+            "$ref": "#/components/schemas/LLMSettings"
+          },
+          "embedding": {
+            "$ref": "#/components/schemas/EmbeddingSettings"
+          },
+          "rerank": {
+            "$ref": "#/components/schemas/RerankSettings"
+          },
+          "capabilities": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CapabilityState"
+            },
+            "type": "object",
+            "title": "Capabilities"
+          },
+          "credential_status": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Credential Status"
+          },
+          "keychain_available": {
+            "type": "boolean",
+            "title": "Keychain Available"
+          },
+          "embedding_fingerprint": {
+            "type": "string",
+            "title": "Embedding Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "model_studio_account_id",
+          "feishu",
+          "llm",
+          "embedding",
+          "rerank",
+          "capabilities",
+          "credential_status",
+          "keychain_available",
+          "embedding_fingerprint"
+        ],
+        "title": "SettingsSummary"
       },
       "SourceDetail": {
         "properties": {

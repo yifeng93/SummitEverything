@@ -142,6 +142,16 @@ class FakeFeishu:
             scopes=["minutes:read", "calendar:read", "task:task:read", "task:task:write"],
         )
 
+    def refresh(self, credentials: UserCredentials) -> UserCredentials:
+        if not credentials.refresh_token.startswith("synthetic-refresh-token"):
+            raise FeishuError("token_expired")
+        return UserCredentials(
+            access_token="synthetic-user-token-refreshed",
+            refresh_token="synthetic-refresh-token-refreshed",
+            expires_at=time() + 3600,
+            scopes=credentials.scopes,
+        )
+
     def materials(
         self,
         credentials: UserCredentials,

@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from threading import Event
 from typing import Annotated, Any, Literal, cast
+from urllib.parse import urlsplit
 from uuid import UUID, uuid4, uuid5
 
 from fastapi import (
@@ -27,7 +28,7 @@ from fastapi import (
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from summit_everything.api.routes.actions import register_actions
@@ -69,7 +70,20 @@ from summit_everything.integrations.feishu.service import (
 )
 from summit_everything.integrations.feishu.tasks import FeishuTasks
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
-from summit_everything.retrieval.query import QueryService
+from summit_everything.integrations.runtime import ModelRuntime
+from summit_everything.integrations.settings import (
+    CredentialVault,
+    MacOSKeychainBackend,
+    ProviderSettingsPatch,
+    SecretBackend,
+    SettingsError,
+    SettingsStore,
+    SettingsSummary,
+    UnavailableSecretBackend,
+    embedding_fingerprint,
+    provider_settings_payload,
+)
+from summit_everything.retrieval.query import AnswerProvider, QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
     WorkspaceError,
@@ -210,6 +224,15 @@ class JournalAssistResponse(BaseModel):
     body: str
 
 
+class CredentialRequest(RequestModel):
+    account_id: str = Field(min_length=1, max_length=200)
+    secret: SecretStr = Field(min_length=1, max_length=20_000, repr=False)
+
+
+class CredentialAccountRequest(RequestModel):
+    account_id: str = Field(min_length=1, max_length=200)
+
+
 class LoopbackOnly(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):  # type: ignore[no-untyped-def]
         request.state.request_id = secrets.token_hex(8)
@@ -230,6 +253,7 @@ def create_app(
     query_service: QueryService | None = None,
     feishu_provider: FeishuProvider | None = None,
     credential_store: CredentialStore | None = None,
+    secret_backend: SecretBackend | None = None,
     feishu_config: FeishuConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
@@ -241,6 +265,12 @@ def create_app(
             str(Path.home() / "Library/Application Support/SummitEverything"),
         )
     )
+    if secret_backend is None:
+        try:
+            secret_backend = MacOSKeychainBackend()
+        except SettingsError:
+            secret_backend = UnavailableSecretBackend()
+    app.state.secret_backend = secret_backend
     app.state.workspace = None
     intake_service = IntakeService()
     review = review_service or IntakeReviewService(FakeLLM())
@@ -275,7 +305,7 @@ def create_app(
                 },
             )
         response = await call_next(request)
-        if request.url.path == "/api/v1/integrations/feishu/callback":
+        if request.url.path in {"/api/v1/integrations/feishu/callback", "/callback"}:
             response.headers["Cache-Control"] = "no-store"
             if origin is not None:
                 response.headers["Access-Control-Allow-Origin"] = origin
@@ -325,7 +355,35 @@ def create_app(
             )
         return workspace
 
+    def settings_store(workspace: WorkspaceContext) -> SettingsStore:
+        return SettingsStore(Path(workspace.local_profile_dir) / "provider-settings.json")
+
+    def credential_vault(workspace: WorkspaceContext) -> CredentialVault:
+        backend = app.state.secret_backend
+        namespace = (
+            "com.summiteverything.credentials."
+            + hashlib.sha256(str(Path(workspace.local_profile_dir).resolve()).encode()).hexdigest()
+        )
+        return CredentialVault(namespace, backend)
+
     register_actions(app, actions, tasks, authenticated, active_workspace)
+
+    @app.exception_handler(SettingsError)
+    async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
+        status = 422 if exc.code == "validation_error" else 503
+        message = "设置或凭据无法使用，请检查本机配置和钥匙串状态。"
+        if exc.code == "validation_error":
+            message = "设置字段或凭据无效。"
+        return JSONResponse(
+            status_code=status,
+            content={
+                "error": {
+                    "code": exc.code,
+                    "message": message,
+                    "request_id": request.state.request_id,
+                }
+            },
+        )
 
     @app.exception_handler(ValidationError)
     async def payload_validation_error(_request: Request, exc: ValidationError) -> JSONResponse:
@@ -336,18 +394,101 @@ def create_app(
             },
         )
 
-    def query_for(workspace: WorkspaceContext) -> QueryService:
+    def runtime_for(workspace: WorkspaceContext) -> ModelRuntime:
+        return ModelRuntime(settings_store(workspace).read(), credential_vault(workspace))
+
+    def review_for(workspace: WorkspaceContext) -> IntakeReviewService:
+        if review_service is not None:
+            return review_service
+        return IntakeReviewService(runtime_for(workspace).llm())
+
+    def fingerprint_is_current(workspace: WorkspaceContext, fingerprint: str) -> bool:
+        settings = settings_store(workspace).read()
+        if settings.mode == "fake" and settings.embedding.provider == "fake":
+            return True
+        return fingerprint == embedding_fingerprint(settings.embedding, mode=settings.mode)
+
+    def query_for(workspace: WorkspaceContext, *, remote: bool = False) -> QueryService:
         if query_service is not None:
             return query_service
-        return QueryService(IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"))
+        providers = runtime_for(workspace) if remote else None
+        return QueryService(
+            IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"),
+            embedding=providers.embedding() if providers else None,
+            reranker=providers.reranker() if providers else None,
+            answer_provider=(
+                cast(AnswerProvider, providers.llm())
+                if providers
+                and settings_store(workspace).read().mode == "real"
+                and settings_store(workspace).read().llm.provider != "fake"
+                else None
+            ),
+        )
+
+    @app.get("/api/v1/settings", dependencies=[Depends(authenticated)])
+    def get_settings(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> SettingsSummary:
+        settings = settings_store(workspace).read()
+        return provider_settings_payload(settings, credential_vault(workspace))
+
+    @app.patch("/api/v1/settings", dependencies=[Depends(authenticated)])
+    def patch_settings(
+        payload: ProviderSettingsPatch,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> SettingsSummary:
+        nonlocal config
+        try:
+            settings = settings_store(workspace).update(payload.model_dump(exclude_unset=True))
+        except ValidationError as exc:
+            raise SettingsError("validation_error") from exc
+        if payload.feishu is not None:
+            redirect_uri = settings.feishu.redirect_uri or config.redirect_uri
+            app_id = settings.feishu.app_id or config.app_id
+            parsed_callback = urlsplit(redirect_uri)
+            callback_origin = f"{parsed_callback.scheme}://{parsed_callback.netloc}"
+            config = config.model_copy(
+                update={
+                    "app_id": app_id,
+                    "redirect_uri": redirect_uri,
+                    "allowed_origins": tuple(
+                        dict.fromkeys((*config.allowed_origins, callback_origin))
+                    ),
+                }
+            )
+            feishu.config = config
+        return provider_settings_payload(settings, credential_vault(workspace))
+
+    @app.put("/api/v1/credentials/{provider}", dependencies=[Depends(authenticated)])
+    def put_credential(
+        provider: str,
+        payload: CredentialRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        credential_vault(workspace).put(
+            provider, payload.secret.get_secret_value(), account_id=payload.account_id
+        )
+        return {"provider": provider, "configured": True}
+
+    @app.delete("/api/v1/credentials/{provider}", dependencies=[Depends(authenticated)])
+    def delete_credential(
+        provider: str,
+        payload: CredentialAccountRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        credential_vault(workspace).delete(provider, account_id=payload.account_id)
+        return Response(status_code=204)
 
     def index_after_approval(
         workspace: WorkspaceContext, mutation: MutationResult
     ) -> MutationResult:
+        settings = settings_store(workspace).read()
         service = query_for(workspace)
         fingerprint = service.store.active_fingerprint(workspace.workspace_id)
         if fingerprint is None:
             return mutation.model_copy(update={"index_update": "not_enabled"})
+        if settings.mode == "real" and settings.embedding.provider != "fake":
+            return mutation.model_copy(update={"index_update": "manual_required"})
         try:
             root = Path(workspace.root)
             plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
@@ -599,10 +740,10 @@ def create_app(
     @app.post("/api/v1/journal/assist", dependencies=[Depends(authenticated)])
     def journal_assist(
         payload: JournalAssistRequest,
-        _workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> JournalAssistResponse:
         try:
-            proposals = review.provider.organize([(uuid4(), uuid4(), payload.text)])
+            proposals = review_for(workspace).provider.organize([(uuid4(), uuid4(), payload.text)])
         except LLMProviderError as exc:
             raise HTTPException(
                 status_code=502, detail="AI 辅助暂时不可用；已保存内容未更改。"
@@ -733,7 +874,7 @@ def create_app(
         payload: IntakeJobRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IntakeJob:
-        return review.create_job(
+        return review_for(workspace).create_job(
             Path(workspace.root),
             payload.item_ids,
             operation_id=payload.operation_id,
@@ -823,6 +964,8 @@ def create_app(
         payload: IndexPlanRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IndexPlan:
+        if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
+            raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
         return query_for(workspace).plan(
             Path(workspace.root), fingerprint=payload.fingerprint, mode=payload.mode
         )
@@ -832,7 +975,9 @@ def create_app(
         payload: IndexPlan,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IndexResult:
-        return query_for(workspace).execute_plan(Path(workspace.root), payload)
+        if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
+            raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
+        return query_for(workspace, remote=True).execute_plan(Path(workspace.root), payload)
 
     @app.get("/api/v1/index/status", dependencies=[Depends(authenticated)])
     def index_status(
@@ -868,7 +1013,11 @@ def create_app(
             try:
                 seq += 1
                 yield event(seq, "status", {"state": "retrieving"})
-                answer = query_for(workspace).query(
+                if query_service is None and not fingerprint_is_current(
+                    workspace, payload.fingerprint
+                ):
+                    raise ValueError("provider settings changed; refresh the index settings")
+                answer = query_for(workspace, remote=True).query(
                     Path(workspace.root),
                     payload.question,
                     fingerprint=payload.fingerprint,
@@ -925,7 +1074,13 @@ def create_app(
     def feishu_authorize() -> AuthorizationStart:
         return feishu.authorize()
 
+    @app.delete(prefix + "/authorizations", status_code=204, dependencies=[Depends(authenticated)])
+    def feishu_logout() -> Response:
+        feishu.logout()
+        return Response(status_code=204)
+
     @app.get(prefix + "/callback")
+    @app.get("/callback")
     def feishu_callback(
         request: Request, state: str, code: str | None = None, error: str | None = None
     ) -> FeishuStatus:

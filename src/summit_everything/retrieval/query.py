@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Protocol
 from uuid import UUID, uuid4
 
 from summit_everything.domain.content import (
@@ -12,6 +13,7 @@ from summit_everything.domain.content import (
 )
 from summit_everything.domain.models import Answer, Citation, IndexPlan, IndexResult, PageSnapshot
 from summit_everything.integrations.embedding import FakeEmbedding, cosine_similarity
+from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import FakeReranker
 from summit_everything.retrieval.chunking import TextChunk, chunk_markdown
 from summit_everything.retrieval.store import IndexStore
@@ -23,16 +25,32 @@ class IndexPlanStale(ValueError):
     """Workspace content changed after the user reviewed an index plan."""
 
 
+class EmbeddingProvider(Protocol):
+    def embed(self, text: str, *, fingerprint: str) -> list[float]: ...
+
+    def embed_many(self, texts: list[str], *, fingerprint: str) -> list[list[float]]: ...
+
+
+class RerankerProvider(Protocol):
+    def rank(self, query: str, texts: list[str]) -> list[tuple[int, float]]: ...
+
+
+class AnswerProvider(Protocol):
+    def answer(self, question: str, passages: list[dict[str, str]]) -> GroundedAnswer: ...
+
+
 class QueryService:
     def __init__(
         self,
         store: IndexStore,
-        embedding: FakeEmbedding | None = None,
-        reranker: FakeReranker | None = None,
+        embedding: EmbeddingProvider | None = None,
+        reranker: RerankerProvider | None = None,
+        answer_provider: AnswerProvider | None = None,
     ) -> None:
         self.store = store
         self.embedding = embedding or FakeEmbedding()
         self.reranker = reranker or FakeReranker()
+        self.answer_provider = answer_provider
 
     def status(self, root: Path) -> dict[str, int | str | None]:
         manifest = load_manifest(root)
@@ -81,7 +99,7 @@ class QueryService:
             page_ids=[page.page_id for page in eligible],
             page_versions={str(page.page_id): page.content_sha256 for page in eligible},
             estimated_tokens=sum(max(1, len(page.body) // 4) for page in eligible),
-            estimated_cost=0,
+            estimated_cost=0 if fingerprint == "summit-fake-embedding-v1" else None,
         )
 
     def execute_plan(self, root: Path, plan: IndexPlan) -> IndexResult:
@@ -112,15 +130,28 @@ class QueryService:
         ) or set(current_pages) != set(plan.page_ids):
             raise IndexPlanStale("Workspace pages changed after the index plan was reviewed")
         existing = self.store.existing_chunks(manifest.workspace_id, plan.fingerprint)
-        embedded: list[tuple[TextChunk, list[float]]] = []
-        embedded_count = 0
+        prepared: list[tuple[TextChunk, list[float] | None]] = []
         for page in current_pages.values():
             for chunk in chunk_markdown(page.page_id, page.content_sha256, page.body):
-                vector = existing.get(chunk.chunk_id)
-                if vector is None:
-                    vector = self.embedding.embed(chunk.text, fingerprint=plan.fingerprint)
-                    embedded_count += 1
-                embedded.append((chunk, vector))
+                prepared.append((chunk, existing.get(chunk.chunk_id)))
+        missing = [chunk for chunk, vector in prepared if vector is None]
+        newly_embedded: list[list[float]] = []
+        batch_size = getattr(self.embedding, "max_batch_size", 20)
+        for offset in range(0, len(missing), batch_size):
+            batch = missing[offset : offset + batch_size]
+            newly_embedded.extend(
+                self.embedding.embed_many(
+                    [chunk.text for chunk in batch], fingerprint=plan.fingerprint
+                )
+            )
+        if len(newly_embedded) != len(missing):
+            raise ValueError("Embedding provider returned an incomplete batch")
+        missing_vectors = iter(newly_embedded)
+        embedded = [
+            (chunk, vector if vector is not None else next(missing_vectors))
+            for chunk, vector in prepared
+        ]
+        embedded_count = len(missing)
         self.store.replace_generation(manifest.workspace_id, plan.fingerprint, embedded)
         return IndexResult(
             indexed_pages=len(current_pages),
@@ -172,18 +203,24 @@ class QueryService:
             key=lambda item: cosine_similarity(query_vector, item["vector"]),
             reverse=True,
         )
-        lexical = sorted(
-            chunks,
-            key=lambda item: self.reranker.score(question, item["text"]),
-            reverse=True,
-        )
+        reranked = self.reranker.rank(question, [str(item["text"]) for item in chunks])
+        if len(reranked) != len(chunks):
+            raise ValueError("Reranker returned an incomplete ranking")
+        lexical_scores: dict[str, float] = {}
+        lexical = []
+        for index, score in reranked:
+            if index < 0 or index >= len(chunks) or chunks[index]["chunk_id"] in lexical_scores:
+                raise ValueError("Reranker returned an invalid candidate index")
+            item = chunks[index]
+            lexical.append(item)
+            lexical_scores[str(item["chunk_id"])] = score
         ranks: dict[str, float] = {}
         for rank, item in enumerate(dense, start=1):
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
         for rank, item in enumerate(lexical, start=1):
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
         ranked = sorted(chunks, key=lambda item: ranks[item["chunk_id"]], reverse=True)
-        relevant = [item for item in ranked if self.reranker.score(question, item["text"]) > 0]
+        relevant = [item for item in ranked if lexical_scores.get(str(item["chunk_id"]), 0) > 0]
         related_ids = self._related_page_ids(root, relevant[: min(limit, 3)])
         ranked = relevant
         if related_ids:
@@ -236,14 +273,25 @@ class QueryService:
                 index_status="ready",
                 missing_information=["已缓存的资料版本与当前工作库不一致，或当前资格检查未通过。"],
             )
-        passages = []
-        for citation in citations:
-            passages.append(f"【{citation.heading or '页面内容'}】\n{citation.excerpt}")
+        passages = [
+            {"heading": citation.heading or "页面内容", "excerpt": citation.excerpt}
+            for citation in citations
+        ]
+        answer = self.answer_provider.answer(question, passages) if self.answer_provider else None
         return Answer(
             answer_id=uuid4(),
             question=question,
-            text="根据以下已确认资料：\n\n" + "\n\n".join(passages),
+            text=(
+                answer.text
+                if answer is not None
+                else "根据以下已确认资料：\n\n"
+                + "\n\n".join(
+                    f"【{passage['heading']}】\n{passage['excerpt']}" for passage in passages
+                )
+            ),
             citations=citations,
+            inferences=answer.inferences if answer is not None else [],
+            missing_information=answer.missing_information if answer is not None else [],
             purpose=purpose.value,
             index_status="ready",
         )

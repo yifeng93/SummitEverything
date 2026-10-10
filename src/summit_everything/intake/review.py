@@ -9,6 +9,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Protocol
 from uuid import UUID, uuid5
 
 from summit_everything.domain.models import (
@@ -19,11 +20,15 @@ from summit_everything.domain.models import (
     MutationResult,
 )
 from summit_everything.intake.sources import SourceStore
-from summit_everything.integrations.llm import FakeLLM, LLMProviderError
+from summit_everything.integrations.llm import DraftProposal, FakeLLM, LLMProviderError
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.reader import read_page
 from summit_everything.workspace.transactions import atomic_write, workspace_lock
 from summit_everything.workspace.writer import PageWriter, WorkspaceWriteConflict
+
+
+class OrganizeProvider(Protocol):
+    def organize(self, inputs: list[tuple[UUID, UUID, str]]) -> list[DraftProposal]: ...
 
 
 def _state_root(root: Path) -> Path:
@@ -63,7 +68,7 @@ def _draft_lock(root: Path, draft_id: UUID) -> Iterator[None]:
 
 class IntakeReviewService:
     def __init__(
-        self, provider: FakeLLM | None = None, page_writer: PageWriter | None = None
+        self, provider: OrganizeProvider | None = None, page_writer: PageWriter | None = None
     ) -> None:
         self.provider = provider or FakeLLM()
         self.page_writer = page_writer or PageWriter()

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal, Protocol
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+
+from summit_everything.integrations.settings import SecretBackend
 
 if TYPE_CHECKING:
     from summit_everything.integrations.feishu.tasks import (
@@ -110,6 +113,7 @@ class UserCredentials(BaseModel):
 class CredentialStore(Protocol):
     def get(self) -> UserCredentials | None: ...
     def put(self, credentials: UserCredentials) -> None: ...
+    def delete(self) -> None: ...
     def get_app(self) -> AppCredentials | None: ...
     def put_app(self, credentials: AppCredentials) -> None: ...
 
@@ -127,11 +131,71 @@ class MemoryCredentialStore:
     def put(self, credentials: UserCredentials) -> None:
         self._credentials = credentials
 
+    def delete(self) -> None:
+        self._credentials = None
+
     def get_app(self) -> AppCredentials | None:
         return self._app_credentials
 
     def put_app(self, credentials: AppCredentials) -> None:
         self._app_credentials = credentials
+
+
+class KeychainCredentialStore:
+    """Persist Feishu user tokens and app secret through a SecretBackend.
+
+    The backend is expected to be an OS credential store in application mode.
+    Account item names contain only a digest of the Feishu app ID so neither
+    tokens nor app identity are written to ordinary workspace files.
+    """
+
+    def __init__(self, profile: str, app_id: str, backend: SecretBackend) -> None:
+        if not profile.strip() or len(profile) > 200 or not app_id.strip() or len(app_id) > 200:
+            raise ValueError("Feishu credential identity is invalid")
+        self.namespace = f"{profile}:feishu"
+        self.backend = backend
+        app_hash = hashlib.sha256(app_id.encode("utf-8")).hexdigest()
+        self.user_item_key = f"user:{app_hash}"
+        self.app_item_key = f"app:{app_hash}"
+        self._app_id = app_id
+
+    def get(self) -> UserCredentials | None:
+        value = self.backend.get(self.namespace, self.user_item_key)
+        if value is None:
+            return None
+        try:
+            return UserCredentials.model_validate_json(value)
+        except Exception:
+            raise ValueError("stored Feishu credentials are invalid") from None
+
+    def put(self, credentials: UserCredentials) -> None:
+        self.backend.set(
+            self.namespace,
+            self.user_item_key,
+            credentials.model_dump_json(),
+        )
+
+    def delete(self) -> None:
+        self.backend.delete(self.namespace, self.user_item_key)
+
+    def get_app(self) -> AppCredentials | None:
+        value = self.backend.get(self.namespace, self.app_item_key)
+        if value is None:
+            return None
+        try:
+            secret = SecretStr(value)
+            return AppCredentials(app_id=self._app_id, app_secret=secret)
+        except Exception:
+            raise ValueError("stored Feishu application credentials are invalid") from None
+
+    def put_app(self, credentials: AppCredentials) -> None:
+        if credentials.app_id != self._app_id:
+            raise ValueError("Feishu application identity does not match this store")
+        self.backend.set(
+            self.namespace,
+            self.app_item_key,
+            credentials.app_secret.get_secret_value(),
+        )
 
 
 class Material(BaseModel):
@@ -172,6 +236,7 @@ class FeishuProvider(Protocol):
     def exchange(
         self, code: str, redirect_uri: str, app_credentials: AppCredentials | None = None
     ) -> UserCredentials: ...
+    def refresh(self, credentials: UserCredentials) -> UserCredentials: ...
     def materials(
         self,
         credentials: UserCredentials,

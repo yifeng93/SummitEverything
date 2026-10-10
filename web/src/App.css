@@ -115,6 +115,18 @@ h3 { color: var(--ink); margin: 0; font-size: 13px; font-weight: 600; }
 
 .tasks-panel .task-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0; flex-wrap: wrap; }
 .task-row small { display: block; margin-top: .5rem; color: var(--muted); }
+.provider-settings { display: grid; gap: 1rem; max-width: 760px; margin: 1.5rem 0; padding: 1.25rem; border: 1px solid var(--line); background: var(--surface); }
+.settings-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: .75rem; }
+.settings-section-heading h2 { margin: 0; font-size: 1rem; }
+.settings-section-heading span, .settings-help { color: var(--muted); font-size: .8rem; }
+.settings-field { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr); align-items: center; gap: 1rem; }
+.settings-field > span { font-size: .875rem; }
+.settings-field input, .settings-field select { min-width: 0; width: 100%; padding: .65rem .75rem; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: #fff; font: inherit; }
+.settings-help { margin: 0; line-height: 1.5; }
+.settings-notice { max-width: 760px; padding: .75rem; border-left: 3px solid var(--green); background: #f0f5f0; font-size: .875rem; }
+.capability-row { display: grid; grid-template-columns: 1fr auto; gap: .2rem 1rem; padding: .65rem 0; border-bottom: 1px solid var(--line); }
+.capability-row span, .capability-row small { color: var(--muted); font-size: .8rem; }
+.capability-row small { grid-column: 1 / -1; }
 .action-form { display: grid; gap: 1rem; margin-top: 1.5rem; }
 .action-form label { display: grid; gap: .5rem; }
 .action-form fieldset { display: flex; gap: 1rem; flex-wrap: wrap; border: 1px solid var(--line); padding: 1rem; }
@@ -125,3 +137,9 @@ h3 { color: var(--ink); margin: 0; font-size: 13px; font-weight: 600; }
 .action-detail dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .action-detail details { margin-top: 1rem; }
 .action-detail pre { overflow: auto; max-height: 20rem; font-size: .75rem; }
+
+@media (max-width: 560px) {
+  .primary-nav { grid-template-columns: repeat(5, 1fr); }
+  .settings-field { grid-template-columns: 1fr; gap: .4rem; }
+  .provider-settings { padding: 1rem; }
+}

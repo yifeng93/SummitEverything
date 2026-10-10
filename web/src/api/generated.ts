@@ -159,6 +159,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings */
+        get: operations["get_settings_api_v1_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Settings */
+        patch: operations["patch_settings_api_v1_settings_patch"];
+        trace?: never;
+    };
+    "/api/v1/credentials/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Credential */
+        put: operations["put_credential_api_v1_credentials__provider__put"];
+        post?: never;
+        /** Delete Credential */
+        delete: operations["delete_credential_api_v1_credentials__provider__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -654,6 +690,24 @@ export interface paths {
         put?: never;
         /** Feishu Authorize */
         post: operations["feishu_authorize_api_v1_integrations_feishu_authorizations_post"];
+        /** Feishu Logout */
+        delete: operations["feishu_logout_api_v1_integrations_feishu_authorizations_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Callback */
+        get: operations["feishu_callback_callback_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -903,6 +957,30 @@ export interface components {
             /** Timezone */
             timezone: string;
         };
+        /** CapabilityState */
+        CapabilityState: {
+            /** Available */
+            available: boolean;
+            /** Configured */
+            configured: boolean;
+            /** Disabled Reason */
+            disabled_reason: string | null;
+        };
+        /** CredentialAccountRequest */
+        CredentialAccountRequest: {
+            /** Account Id */
+            account_id: string;
+        };
+        /** CredentialRequest */
+        CredentialRequest: {
+            /** Account Id */
+            account_id: string;
+            /**
+             * Secret
+             * Format: password
+             */
+            secret: string;
+        };
         /** Draft */
         Draft: {
             /**
@@ -980,6 +1058,58 @@ export interface components {
             target_page_id?: string | null;
             /** Expected Base Sha256 */
             expected_base_sha256?: string | null;
+        };
+        /** EmbeddingSettings */
+        EmbeddingSettings: {
+            /**
+             * Provider
+             * @default fake
+             * @enum {string}
+             */
+            provider: "fake" | "dashscope";
+            /** Model */
+            model?: "qwen3.7-text-embedding" | null;
+            /**
+             * Region
+             * @default cn
+             * @constant
+             */
+            region: "cn";
+            /**
+             * Dimensions
+             * @default 1024
+             */
+            dimensions: number;
+            /**
+             * Base Url
+             * @default https://dashscope.aliyuncs.com/compatible-mode/v1
+             */
+            base_url: string;
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+        };
+        /** FeishuSettings */
+        FeishuSettings: {
+            /**
+             * App Id
+             * @default
+             */
+            app_id: string;
+            /**
+             * Redirect Uri
+             * @default
+             */
+            redirect_uri: string;
+        };
+        /** FeishuSettingsPatch */
+        FeishuSettingsPatch: {
+            /** App Id */
+            app_id?: string | null;
+            /** Redirect Uri */
+            redirect_uri?: string | null;
         };
         /** FeishuStatus */
         FeishuStatus: {
@@ -1083,7 +1213,7 @@ export interface components {
              * Estimated Cost
              * @default 0
              */
-            estimated_cost: number;
+            estimated_cost: number | null;
         };
         /** IndexPlanRequest */
         IndexPlanRequest: {
@@ -1237,6 +1367,38 @@ export interface components {
             /** Operation Id */
             operation_id: string;
         };
+        /** LLMSettings */
+        LLMSettings: {
+            /**
+             * Provider
+             * @default fake
+             * @enum {string}
+             */
+            provider: "fake" | "deepseek";
+            /** Model */
+            model?: "deepseek-flash" | null;
+            /**
+             * Account Id
+             * @default default
+             */
+            account_id: string;
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+        };
+        /** LLMSettingsPatch */
+        LLMSettingsPatch: {
+            /** Provider */
+            provider?: ("fake" | "deepseek") | null;
+            /** Model */
+            model?: "deepseek-flash" | null;
+            /** Account Id */
+            account_id?: string | null;
+            /** Enabled */
+            enabled?: boolean | null;
+        };
         /** LineCreate */
         LineCreate: {
             /** Name */
@@ -1295,6 +1457,21 @@ export interface components {
             /** Next Cursor */
             next_cursor?: string | null;
         };
+        /** ModelStudioSettingsPatch */
+        ModelStudioSettingsPatch: {
+            /** Provider */
+            provider?: ("fake" | "dashscope") | null;
+            /** Model */
+            model?: ("qwen3.7-text-embedding" | "qwen3.7-text-rerank") | null;
+            /** Region */
+            region?: "cn" | null;
+            /** Dimensions */
+            dimensions?: number | null;
+            /** Base Url */
+            base_url?: string | null;
+            /** Enabled */
+            enabled?: boolean | null;
+        };
         /** MutationResult */
         MutationResult: {
             /** Operation Id */
@@ -1317,7 +1494,7 @@ export interface components {
              */
             saved_locally: boolean;
             /** Index Update */
-            index_update?: ("not_enabled" | "updated" | "update_failed") | null;
+            index_update?: ("not_enabled" | "updated" | "update_failed" | "manual_required") | null;
         };
         /** PageConfirmation */
         PageConfirmation: {
@@ -1471,6 +1648,17 @@ export interface components {
             /** Is All Day */
             is_all_day: boolean;
         };
+        /** ProviderSettingsPatch */
+        ProviderSettingsPatch: {
+            /** Mode */
+            mode?: ("fake" | "real") | null;
+            /** Model Studio Account Id */
+            model_studio_account_id?: string | null;
+            feishu?: components["schemas"]["FeishuSettingsPatch"] | null;
+            llm?: components["schemas"]["LLMSettingsPatch"] | null;
+            embedding?: components["schemas"]["ModelStudioSettingsPatch"] | null;
+            rerank?: components["schemas"]["ModelStudioSettingsPatch"] | null;
+        };
         /** QueryRequest */
         QueryRequest: {
             /** Question */
@@ -1485,6 +1673,64 @@ export interface components {
             purpose: "current" | "history";
             /** Request Id */
             request_id?: string | null;
+        };
+        /** RerankSettings */
+        RerankSettings: {
+            /**
+             * Provider
+             * @default fake
+             * @enum {string}
+             */
+            provider: "fake" | "dashscope";
+            /** Model */
+            model?: "qwen3.7-text-rerank" | null;
+            /**
+             * Region
+             * @default cn
+             * @constant
+             */
+            region: "cn";
+            /**
+             * Dimensions
+             * @default 1024
+             */
+            dimensions: number;
+            /**
+             * Base Url
+             * @default https://dashscope.aliyuncs.com/api/v1
+             */
+            base_url: string;
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+        };
+        /** SettingsSummary */
+        SettingsSummary: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "fake" | "real";
+            /** Model Studio Account Id */
+            model_studio_account_id: string;
+            feishu: components["schemas"]["FeishuSettings"];
+            llm: components["schemas"]["LLMSettings"];
+            embedding: components["schemas"]["EmbeddingSettings"];
+            rerank: components["schemas"]["RerankSettings"];
+            /** Capabilities */
+            capabilities: {
+                [key: string]: components["schemas"]["CapabilityState"];
+            };
+            /** Credential Status */
+            credential_status: {
+                [key: string]: boolean;
+            };
+            /** Keychain Available */
+            keychain_available: boolean;
+            /** Embedding Fingerprint */
+            embedding_fingerprint: string;
         };
         /** SourceDetail */
         SourceDetail: {
@@ -2020,6 +2266,148 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FeishuTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_settings_api_v1_settings_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_settings_api_v1_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderSettingsPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_credential_api_v1_credentials__provider__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CredentialRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_credential_api_v1_credentials__provider__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CredentialAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -3272,6 +3660,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthorizationStart"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_logout_api_v1_integrations_feishu_authorizations_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_callback_callback_get: {
+        parameters: {
+            query: {
+                state: string;
+                code?: string | null;
+                error?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeishuStatus"];
                 };
             };
             /** @description Validation Error */

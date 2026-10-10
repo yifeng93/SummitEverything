@@ -112,6 +112,7 @@ def test_oauth_invalid_replay_origin_and_cross_run(tmp_path: Path) -> None:
     for method, route, data in [
         ("GET", "/status", None),
         ("POST", "/authorizations", {}),
+        ("DELETE", "/authorizations", None),
         ("GET", "/materials", None),
         ("POST", "/imports", {}),
         ("GET", "/calendar", None),
@@ -128,6 +129,59 @@ def test_denied_authorization_never_reports_success(tmp_path: Path) -> None:
     state = parse_qs(url.query)["state"][0]
     denied = c.get(PREFIX + "/callback", params={"state": state, "error": "access_denied"})
     assert denied.status_code == 403 and denied.json()["error"]["code"] == "authorization_denied"
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
+    assert c.get(PREFIX + "/materials").status_code == 401
+
+
+def test_user_api_refreshes_near_expiry_and_persists_rotated_refresh_token(tmp_path: Path) -> None:
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import (
+        FeishuConfig,
+        MemoryCredentialStore,
+        UserCredentials,
+    )
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    class RotatingFake(FakeFeishu):
+        refresh_input: UserCredentials | None = None
+
+        def refresh(self, credentials: UserCredentials) -> UserCredentials:
+            self.refresh_input = credentials
+            return UserCredentials(
+                access_token="synthetic-access-2",
+                refresh_token="synthetic-refresh-2",
+                expires_at=2000,
+                scopes=credentials.scopes,
+            )
+
+    store = MemoryCredentialStore()
+    store.put(
+        UserCredentials(
+            access_token="synthetic-access-1",
+            refresh_token="synthetic-refresh-1",
+            expires_at=1050,
+            scopes=["minutes:read"],
+        )
+    )
+    provider = RotatingFake(tmp_path / "remote")
+    service = FeishuService(provider, store, FeishuConfig(), "session", clock=lambda: 1000)
+
+    service.materials("", None, None, 10)
+
+    assert provider.refresh_input is not None
+    assert provider.refresh_input.refresh_token == "synthetic-refresh-1"
+    assert store.get() is not None
+    assert store.get().access_token == "synthetic-access-2"
+    assert store.get().refresh_token == "synthetic-refresh-2"
+
+
+def test_logout_clears_user_authorization(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    authorize(c)
+
+    response = c.delete(PREFIX + "/authorizations")
+
+    assert response.status_code == 204
     assert c.get(PREFIX + "/status").json()["authorized"] is False
     assert c.get(PREFIX + "/materials").status_code == 401
 
@@ -193,7 +247,9 @@ def test_expiry_missing_scope_and_safe_provider_errors(tmp_path: Path) -> None:
     authorize(c)
     service = c.app.state.feishu_service
     credentials = service.credentials.get()
-    service.credentials.put(credentials.model_copy(update={"expires_at": 0}))
+    service.credentials.put(
+        credentials.model_copy(update={"expires_at": 0, "refresh_token": "expired"})
+    )
     assert c.get(PREFIX + "/materials").json()["error"]["code"] == "token_expired"
     assert c.get(PREFIX + "/status").json()["authorized"] is False
     authorize(c)

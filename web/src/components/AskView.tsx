@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, type Citation, type IndexPlan, type IndexResult } from '../api/client'
+import type { components } from '../api/generated'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
 type IndexStatus = { fingerprint: string | null; pages: number; chunks: number; state: 'not_ready' | 'ready' | 'stale'; current_pages: number; stale_pages: number }
@@ -9,7 +10,7 @@ type StreamEvent = {
   type: 'status' | 'citation' | 'delta' | 'completed' | 'error'
   data: Record<string, unknown>
 }
-const fingerprint = 'summit-fake-embedding-v1'
+type Settings = components['schemas']['SettingsSummary']
 
 export function AskView({ onError, onOpenPage }: Props) {
   const [status, setStatus] = useState<IndexStatus | null>(null)
@@ -36,8 +37,11 @@ export function AskView({ onError, onOpenPage }: Props) {
   async function createPlan() {
     setResult(null)
     try {
+      const settings = await api.get<Settings>('/settings')
+      const fingerprint = settings.embedding_fingerprint
+      const mode = !status?.fingerprint ? 'initial' : status.fingerprint === fingerprint ? 'incremental' : 'model_change'
       const next = await api.post<IndexPlan>('/index/plans', {
-        mode: status?.fingerprint ? 'incremental' : 'initial',
+        mode,
         fingerprint,
       })
       setPlan(next)
@@ -71,10 +75,11 @@ export function AskView({ onError, onOpenPage }: Props) {
     setRequestId(queryId)
     onError('')
     try {
+      const settings = await api.get<Settings>('/settings')
       const response = await fetch('/api/v1/queries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, fingerprint, purpose: 'current', request_id: queryId }),
+        body: JSON.stringify({ question, fingerprint: settings.embedding_fingerprint, purpose: 'current', request_id: queryId }),
         signal: controller.signal,
       })
       if (!response.ok || !response.body) throw new Error('知识问答暂不可用。')
@@ -144,7 +149,7 @@ export function AskView({ onError, onOpenPage }: Props) {
       {plan && (
         <section className="plan-card" aria-live="polite">
           <div><strong>索引计划待确认</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个页面</span></div>
-          <p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；本地 Fake embedding 费用为 ¥0。</p>
+          <p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{plan.estimated_cost === null ? '当前无法估算 provider 费用，请先在控制台确认预算。' : '本机 Fake embedding 费用为 ¥0。'}</p>
           <button className="text-button" onClick={() => setPlan(null)}>取消计划</button>
         </section>
       )}
@@ -156,7 +161,7 @@ export function AskView({ onError, onOpenPage }: Props) {
           <textarea id="knowledge-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：这个项目已经确认的地点和联系人有哪些？" rows={3} />
           {streaming ? <button type="button" className="button secondary" onClick={cancel}>停止回答</button> : <button className="button primary" disabled={!question.trim()}>开始检索</button>}
         </div>
-        <small>答案使用本地模拟检索，不会访问云端模型。</small>
+        <small>真实模式下，开始检索会将问题发送到当前配置的模型服务。</small>
       </form>
 
       {(answer || citations.length > 0) && (
