@@ -1,0 +1,205 @@
+{
+  "fixed_product_source_sha": "32da67e9c0280e3dae18fd374e30c925565b0b82",
+  "qa_checkout_head": "7f785c033bb96a43ae50ad6cf55b9c20474db85b",
+  "current_service": {
+    "api_port": 18828,
+    "api_pid": 39469,
+    "web_port": 15228,
+    "vite_pid": 39484,
+    "cdp_port": 19239,
+    "chrome_pid": 38642,
+    "chrome_profile": ".local/qa/stage-a-final-round4/chrome-profile",
+    "run_id": "2f60531c240f9d64a60cb17d9bc12202"
+  },
+  "current_fake_remote_counts": {
+    "tasks": 7,
+    "results": 9
+  },
+  "trace_sha256": "a9623dacebfca62623a47fea12e58d84458345a6142c7728a9f2cbb89c941e5e",
+  "fault_fired_events": [
+    {
+      "action_id": "5ec1eb11-8557-4d8d-b77a-3ac52dfd03d9",
+      "event": "fault_fired",
+      "mode": "receipt_success_write_failure"
+    },
+    {
+      "event": "fault_fired",
+      "mode": "atomic_manifest_before_replace",
+      "target": "manifest.json",
+      "temp_written": true
+    },
+    {
+      "event": "fault_fired",
+      "mode": "archive_after_summary_before_delete",
+      "target": "summary.json"
+    },
+    {
+      "event": "fault_fired",
+      "mode": "archive_delete_interruption",
+      "target": "48b28bb1-ddc4-41ac-95f2-d265f80333e2.json"
+    }
+  ],
+  "c16": {
+    "concurrent_action_id": "4f0b121b-e77b-4cfb-ae57-548d271b2aef",
+    "confirmed_execute_calls": 2,
+    "provider_task_create_count": 1,
+    "process_exit_action_id": "19756e0c-dc0c-43cf-9767-264c206cf979",
+    "fake_remote_counts_after_crash": {
+      "tasks": 2,
+      "results": 2
+    },
+    "restart_state": "unknown",
+    "readonly_reconcile_state": "succeeded",
+    "screenshots": [
+      "c16-concurrent-final.png",
+      "c16-unknown-ui-before-reconcile.png",
+      "c16-crash-reconciled.png"
+    ]
+  },
+  "c17": {
+    "completed_action_ids": [
+      "d38731b6-01d8-4e2b-962e-4c85b88dc0ce",
+      "938f7a81-0210-49a6-9c9e-76daeb975973"
+    ],
+    "completion_task_patch_counts": [
+      1,
+      0
+    ],
+    "description_clear_action_id": "7310ec4b-3305-40fb-8672-979d62fcbc38",
+    "mismatch_action_id": "ec28b7c4-2841-4356-9e4e-7f599d6e9da1",
+    "mismatch_state_transition": [
+      "unknown",
+      "succeeded_after_readonly_reconcile"
+    ],
+    "remote_counts_before_mismatch": {
+      "tasks": 5,
+      "results": 7
+    },
+    "remote_counts_after_mismatch_and_reconcile": {
+      "tasks": 6,
+      "results": 8
+    },
+    "mismatch_final_state": "succeeded after read-only reconciliation",
+    "mismatch_action_payload_sha256": "ec1f5ef77699255232899301ea29be8db01581547ebbe48c1b1e0d3a70748e16",
+    "mismatch_task_create_trace_count": 1
+  },
+  "c18": {
+    "workspace": {
+      "workspace_name": "Stage A round four Fake QA",
+      "workspace_id": "5bd94293-c65a-46a7-b947-e36e0b13b0aa",
+      "projects": [
+        {
+          "project_id": "d3de4127-b58d-5c20-9c11-ebac493da1fd",
+          "name": "R4 Progress Approval Project",
+          "progress": "Synthetic milestone two: receipt recovery must not apply twice.",
+          "progress_version": 2
+        }
+      ],
+      "manifest_sha256": "5214981778c62d73e849bb04ad06397e0fb4c5a9802de72e758ea4757cefb33a"
+    },
+    "knowledge_approved_title": "R4 confirmed synthetic knowledge",
+    "progress_before_knowledge_approval": {
+      "progress": "",
+      "version": 0
+    },
+    "progress_after_knowledge_approval": {
+      "progress": "",
+      "version": 0
+    },
+    "first_action_id": "aa57303d-350e-486c-8b8b-96fa429cf6fb",
+    "stale_version_action_id": "a0b96d9b-44af-4974-bbf5-33b98807bd03",
+    "stale_version_result": "failed/version_conflict",
+    "receipt_failure_action_id": "5ec1eb11-8557-4d8d-b77a-3ac52dfd03d9",
+    "receipt_failure_after_restart_reconcile": {
+      "action_id": "5ec1eb11-8557-4d8d-b77a-3ac52dfd03d9",
+      "kind": "project_progress",
+      "state": "succeeded",
+      "payload_sha256": "7a3d472a7255508b80dc481e25295efce64f22ae1b9b30d088043d0ff79f2504",
+      "finished_at": "2026-10-10T06:11:45.562078Z",
+      "provider_result": {
+        "progress_version": 2
+      },
+      "receipt_sha256": "bd44b4847ca88dfa2b96b03bd1daee0b0adc74d5d733be9225accf29d12972db"
+    },
+    "progress_after_receipt_recovery": {
+      "progress": "Synthetic milestone two: receipt recovery must not apply twice.",
+      "version": 2
+    },
+    "same_action_replay_kept_version": 2,
+    "operation_journal_count": 1
+  },
+  "c23_atomic_interruption": {
+    "workspace": {
+      "workspace_name": "Round4 C23 atomic isolated",
+      "workspace_id": "81e80d13-c1b8-4da7-aa20-6458139f3860",
+      "projects": [
+        {
+          "project_id": "a6715563-4470-5d1a-8b7a-7ad993b3dcc8",
+          "name": "C23 Atomic Synthetic Project",
+          "progress": "",
+          "progress_version": 0
+        }
+      ],
+      "manifest_sha256": "60ff7ba08c4b961fde76eb657cd60fd480baecf516522c5105bd3c71cb830d34"
+    },
+    "action_id": "42f39143-e7f5-420d-93f3-fee80782d12e",
+    "action": {
+      "action_id": "42f39143-e7f5-420d-93f3-fee80782d12e",
+      "kind": "project_progress",
+      "state": "unknown",
+      "payload_sha256": "d92e8a0803b91eeb6a3ced197ae89a4ccff5ad0d54b438308b35fce8c1aaae9c",
+      "finished_at": null,
+      "provider_result": {},
+      "receipt_sha256": "cde0124dc528cdc1ce8e37b66370d59120db86b13572591e8f6083b3ae8fded6"
+    },
+    "manifest_project_progress_version": 0,
+    "transaction_journal": {
+      "path": ".local/qa/stage-a-final-round4/workspace-c23-atomic/.summit-everything/transactions/e1de4abf0307b0450c9ba0336bec2a5fe84064f238ec606268afd49200dc5ee8.json",
+      "operation_id": "progress:b86be816-e95d-55f0-a71e-7c5432c14131",
+      "state": "running",
+      "expected_hash": "60ff7ba08c4b961fde76eb657cd60fd480baecf516522c5105bd3c71cb830d34",
+      "request_hash": "c78ef4128db61139fca44d67817697de34ae91024503084d348a0f33149ece35",
+      "relative_path": ".summit-everything/manifest.json",
+      "sha256": "a2408ff438a532b4dc2fa4d1db9557308f064c4cbaae0b8aa96d1a8daaaeb4bf"
+    },
+    "screenshots": [
+      "c23-atomic-interruption-result.png",
+      "c23-atomic-unknown-detail.png",
+      "c23-atomic-no-proof.png"
+    ]
+  },
+  "c23_archive": {
+    "workspace": {
+      "workspace_name": "Round4 C23 archive isolated",
+      "workspace_id": "c531d8d3-1806-438a-a1de-cace54ee2aef",
+      "projects": [
+        {
+          "project_id": "bb4b5e57-476c-5998-8ea4-9f00495f9daa",
+          "name": "C23 Archive Synthetic Project",
+          "progress": "Archive summary interruption probe.",
+          "progress_version": 1
+        }
+      ],
+      "manifest_sha256": "946b951541f4ded45dc25ec9771922c56a81432f34a86c8822943878fc9c0c09"
+    },
+    "action_id": "48b28bb1-ddc4-41ac-95f2-d265f80333e2",
+    "active_receipt_absent_after_recovery": true,
+    "month_summary_count": 1,
+    "summary_action_state": "succeeded",
+    "archive_controls": [
+      "archive_after_summary_before_delete",
+      "archive_delete_interruption"
+    ],
+    "conflict_copy_response": 409,
+    "corrupt_summary_response": 409,
+    "restored_summary_sha256": "15cfaa348cb7cb409042250340a096da80a0b596151455ceb4c4fadb852ffedb",
+    "unresolved_action_id": "468ec045-546a-431c-927a-9d04e1e9639d",
+    "unresolved_action_state": "unknown",
+    "unresolved_active_receipt_sha256": "d8e63da5294dea75590f9b19b5a1a62f53aba510c3ddf612dbcad057b0e8d263",
+    "summary_kept_only_completed_action": true,
+    "unknown_retained_while_archiving": true,
+    "archive_summary_action_ids": [
+      "48b28bb1-ddc4-41ac-95f2-d265f80333e2"
+    ]
+  }
+}

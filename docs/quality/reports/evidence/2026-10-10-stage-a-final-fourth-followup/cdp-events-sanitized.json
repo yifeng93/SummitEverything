@@ -1,0 +1,53 @@
+{
+  "target_origin": "http://127.0.0.1:15228",
+  "profile": ".local/qa/stage-a-final-round4/chrome-profile",
+  "capture_window_ms": 2400,
+  "network": {
+    "response_count": 41,
+    "failed_request_count": 0,
+    "routes": {
+      "GET http://127.0.0.1:15228/ 200": 1,
+      "GET http://127.0.0.1:15228/@react-refresh 200": 1,
+      "GET http://127.0.0.1:15228/@vite/client 200": 1,
+      "GET http://127.0.0.1:15228/api/v1/actions 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/drafts 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/intake/items 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/integrations/feishu/status 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/lines 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/pages 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/projects 200": 2,
+      "GET http://127.0.0.1:15228/api/v1/workspaces/current 200": 2,
+      "GET http://127.0.0.1:15228/favicon.svg 200": 1,
+      "GET http://127.0.0.1:15228/node_modules/.vite/deps/react_jsx-dev-runtime.js 200": 1,
+      "GET http://127.0.0.1:15228/node_modules/.vite/deps/react-dom_client.js 200": 1,
+      "GET http://127.0.0.1:15228/node_modules/.vite/deps/react-dom.js 200": 1,
+      "GET http://127.0.0.1:15228/node_modules/.vite/deps/react.js 200": 1,
+      "GET http://127.0.0.1:15228/node_modules/.vite/deps/rolldown-runtime-BvCyGRYZ.js 200": 1,
+      "GET http://127.0.0.1:15228/node_modules/vite/dist/client/env.mjs 200": 1,
+      "GET http://127.0.0.1:15228/src/api/client.ts 200": 1,
+      "GET http://127.0.0.1:15228/src/App.css 200": 1,
+      "GET http://127.0.0.1:15228/src/App.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/AskView.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/DraftReview.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/FeishuPanel.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/JournalView.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/PageReader.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/ProjectsView.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/TasksPanel.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/TodayView.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/components/WorkspaceGate.tsx 200": 1,
+      "GET http://127.0.0.1:15228/src/index.css 200": 1,
+      "GET http://127.0.0.1:15228/src/main.tsx 200": 1,
+      "GET inline-resource<data> 200": 1
+    },
+    "failed_destinations": []
+  },
+  "console_counts": {
+    "log": 4,
+    "info": 2,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "console_warning_error_exception_events": []
+}
