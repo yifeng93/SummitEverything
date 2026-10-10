@@ -18,7 +18,7 @@ class StrictModel(BaseModel):
 
 class TaskDate(StrictModel):
     value: str
-    is_all_day: bool
+    is_all_day: bool = Field(strict=True)
     timezone: str
 
     @model_validator(mode="after")

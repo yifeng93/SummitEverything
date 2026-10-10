@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID, uuid5
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from summit_everything.integrations.feishu.provider import FeishuError
 from summit_everything.integrations.feishu.tasks import (
@@ -35,7 +35,7 @@ ActionKind = Literal[
 
 class ProgressPayload(StrictModel):
     project_id: UUID
-    expected_version: int = Field(ge=0)
+    expected_version: int = Field(ge=0, strict=True)
     progress: str = Field(min_length=1, max_length=2000)
 
 
@@ -54,6 +54,13 @@ class ActionEdit(StrictModel):
 class ActionConfirmation(StrictModel):
     payload_sha256: str = Field(pattern="^[0-9a-f]{64}$")
     confirmation_id: str = Field(min_length=1, max_length=200)
+
+    @field_validator("confirmation_id")
+    @classmethod
+    def nonempty_confirmation(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("请提供明确确认标识。")
+        return value
 
 
 class UserOutcome(ActionConfirmation):

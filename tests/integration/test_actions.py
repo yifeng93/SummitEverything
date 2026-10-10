@@ -797,3 +797,34 @@ def test_late_response_preserves_cross_session_reconciliation_evidence(tmp_path)
     assert result["state"] == "succeeded"
     assert {"interrupted", "provider_lookup"}.issubset({e["kind"] for e in result["evidence"]})
     assert len(second.get(TASKS).json()["items"]) == 1
+
+
+def test_rejects_coerced_date_boolean_and_empty_confirmation_evidence(tmp_path):
+    c = client(tmp_path)
+    assert (
+        c.post(
+            PREFIX,
+            json={
+                "action_id": str(uuid4()),
+                "kind": "feishu_task_create",
+                "payload": {
+                    "summary": "任务",
+                    "due": {
+                        "value": "2026-10-13",
+                        "timezone": "Asia/Shanghai",
+                        "is_all_day": "true",
+                    },
+                },
+            },
+        ).status_code
+        == 422
+    )
+    action = proposal(c)
+    assert (
+        c.post(
+            PREFIX + "/" + action["action_id"] + "/confirmations",
+            json={"payload_sha256": action["payload_sha256"], "confirmation_id": "   "},
+        ).status_code
+        == 422
+    )
+    assert c.get(TASKS).json()["items"] == []
