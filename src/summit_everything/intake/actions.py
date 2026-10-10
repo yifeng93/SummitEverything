@@ -90,7 +90,7 @@ class ActionPage(StrictModel):
 def payload_hash(kind: str, payload: dict[str, Any]) -> str:
     return hashlib.sha256(
         json.dumps(
-            {"kind": kind, "payload": payload},
+            payload,
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
@@ -160,6 +160,7 @@ class ActionService:
             if prior:
                 if (
                     prior.payload_sha256 != fingerprint
+                    or prior.kind != request.kind
                     or prior.candidate_id != request.candidate_id
                 ):
                     raise WorkspaceWriteConflict("同一动作已用于另一组内容。")
@@ -199,6 +200,15 @@ class ActionService:
             if item.state not in {"proposed", "confirmed"}:
                 raise WorkspaceWriteConflict("已执行或结果未知的动作不能修改。")
             validate_payload(item.kind, request.payload)
+            if item.confirmation_id:
+                item.evidence.append(
+                    {
+                        "kind": "invalidated_confirmation",
+                        "confirmation_id": item.confirmation_id,
+                        "payload_sha256": item.payload_sha256,
+                        "at": self.now().isoformat(),
+                    }
+                )
             item.payload = request.payload
             item.payload_sha256 = payload_hash(item.kind, request.payload)
             item.state = "proposed"
@@ -219,6 +229,12 @@ class ActionService:
                 if item.confirmation_id == request.confirmation_id:
                     return item
                 raise WorkspaceWriteConflict("动作已有独立确认或执行结果。")
+            if any(
+                e.get("kind") == "invalidated_confirmation"
+                and e.get("confirmation_id") == request.confirmation_id
+                for e in item.evidence
+            ):
+                raise WorkspaceWriteConflict("原确认已失效，请重新独立确认。")
             item.state = "confirmed"
             item.confirmation_id = request.confirmation_id
             item.confirmed_at = self.now()
@@ -278,6 +294,8 @@ class ActionService:
             if item.state == "failed":
                 item.finished_at = self.now()
         with workspace_lock(root):
+            current = self._get(root, action_id)
+            item.evidence = current.evidence
             save_receipt(root, item)
         return item
 
@@ -286,7 +304,34 @@ class ActionService:
         if item.state != "unknown":
             return item
         task = None
-        if item.kind != "project_progress":
+        local_evidence = None
+        if item.kind == "project_progress":
+            operation_id = "progress:" + self.token(root, item)
+            key = hashlib.sha256(operation_id.encode()).hexdigest()
+            journal = root / ".summit-everything/transactions" / f"{key}.json"
+            if journal.exists():
+                try:
+                    receipt = json.loads(journal.read_bytes())
+                    if (
+                        receipt.get("operation_id") == operation_id
+                        and receipt.get("relative_path") == ".summit-everything/manifest.json"
+                    ):
+                        if receipt.get("state") == "succeeded" or (
+                            receipt.get("state") == "running"
+                            and receipt.get("request_hash")
+                            == hashlib.sha256(
+                                (root / ".summit-everything/manifest.json").read_bytes()
+                            ).hexdigest()
+                        ):
+                            local_evidence = {
+                                "kind": "local_writer_receipt",
+                                "operation_id": operation_id,
+                                "request_hash": receipt["request_hash"],
+                                "at": self.now().isoformat(),
+                            }
+                except (OSError, ValueError, KeyError, AttributeError):
+                    raise WorkspaceError("本地写入凭据损坏，请人工核实。", 409) from None
+        else:
             task = self.tasks.lookup(self.token(root, item))
         with workspace_lock(root):
             item = self._get(root, action_id)
@@ -300,6 +345,15 @@ class ActionService:
                     "task": task.model_dump(mode="json") if task else None,
                 }
             )
+            if local_evidence is not None:
+                item.evidence.append(local_evidence)
+                item.state = "succeeded"
+                item.finished_at = self.now()
+                item.provider_result = {
+                    "project_id": item.payload["project_id"],
+                    "progress": item.payload["progress"],
+                    "progress_version": item.payload["expected_version"] + 1,
+                }
             if task is not None:
                 item.state = "succeeded"
                 item.finished_at = self.now()
@@ -311,6 +365,17 @@ class ActionService:
         with workspace_lock(root):
             item = self._get(root, action_id)
             self._hash(item, request.payload_sha256)
+            for recorded in item.evidence:
+                if (
+                    recorded.get("kind") == "user_outcome"
+                    and recorded.get("confirmation_id") == request.confirmation_id
+                ):
+                    if (
+                        recorded.get("text") == request.evidence
+                        and recorded.get("state") == request.state
+                    ):
+                        return item
+                    raise WorkspaceWriteConflict("核实确认已用于不同结果或依据。")
             if item.state != "unknown":
                 raise WorkspaceWriteConflict("只有未知结果需要人工核实。")
             item.evidence.append(

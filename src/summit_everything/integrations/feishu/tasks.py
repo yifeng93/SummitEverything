@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from summit_everything.integrations.feishu.provider import FeishuError
+from summit_everything.integrations.feishu.provider import FeishuError, UserCredentials
 from summit_everything.integrations.feishu.service import FeishuService
 
 
@@ -46,7 +46,7 @@ class TaskDate(StrictModel):
             )
         else:
             value = datetime.fromisoformat(self.value)
-        return {"timestamp": int(value.timestamp() * 1000), "is_all_day": self.is_all_day}
+        return {"timestamp": str(int(value.timestamp() * 1000)), "is_all_day": self.is_all_day}
 
 
 class TaskCreate(StrictModel):
@@ -114,15 +114,24 @@ class FeishuTasks:
     def __init__(self, session: FeishuService) -> None:
         self.session = session
 
+    def _reader(self) -> UserCredentials:
+        credentials = self.session.credentials.get()
+        scope = (
+            "task:task:write"
+            if credentials and "task:task:write" in credentials.scopes
+            else "task:task:read"
+        )
+        return self.session._user(scope)
+
     def list(self, cursor: str | None, limit: int) -> TaskPage:
-        user = self.session._user("task:task:read")
+        user = self._reader()
         result = self.session._call(lambda: self.session.provider.tasks(user, cursor, limit))
         if not isinstance(result, TaskPage) or len(result.items) > limit:
             raise FeishuError("malformed_response")
         return result
 
     def get(self, guid: str) -> FeishuTask:
-        user = self.session._user("task:task:read")
+        user = self._reader()
         return self._task(
             self.session._call(lambda: self.session.provider.task_get(user, guid)), guid
         )
@@ -150,7 +159,7 @@ class FeishuTasks:
             if current.completed_at:
                 return current
             body = {
-                "task": {"completed_at": int(self.session.clock() * 1000)},
+                "task": {"completed_at": str(int(self.session.clock() * 1000))},
                 "update_fields": ["completed_at"],
             }
         else:
@@ -167,6 +176,6 @@ class FeishuTasks:
         )
 
     def lookup(self, token: str) -> FeishuTask | None:
-        user = self.session._user("task:task:read")
+        user = self._reader()
         value = self.session._call(lambda: self.session.provider.task_result(user, token))
         return None if value is None else self._task(value)

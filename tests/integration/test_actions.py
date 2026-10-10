@@ -533,8 +533,9 @@ def test_task_scopes_paging_errors_and_provider_v2_mapping(tmp_path):
     assert c.get(TASKS + "?cursor=bad").status_code == 422
     assert c.get(TASKS + "/missing").status_code == 404
     credentials.scopes.remove("task:task:read")
+    credentials.scopes.remove("task:task:write")
     assert c.get(TASKS).status_code == 403
-    credentials.scopes.append("task:task:read")
+    credentials.scopes.extend(["task:task:read", "task:task:write"])
     guid = created["provider_result"]["task"]["guid"]
     complete = execute(
         c, confirm(c, proposal(c, kind="feishu_task_complete", payload={"task_guid": guid}))
@@ -594,3 +595,205 @@ def test_patch_bad_response_is_unknown_and_selected_only_validation(tmp_path):
     assert execute(c, update).json()["state"] == "unknown"
     assert execute(c, update).json()["state"] == "unknown"
     assert c.get(TASKS + "/" + guid).json()["summary"] == "改后"
+
+
+def test_rest_time_strings_write_scope_reads_and_canonical_payload_hash(tmp_path):
+    import hashlib
+    import json
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+
+    class Capture(FakeFeishu):
+        bodies = []
+
+        def task_create(self, credentials, body):
+            self.bodies.append(body)
+            return super().task_create(credentials, body)
+
+        def task_patch(self, credentials, guid, body, token):
+            self.bodies.append(body)
+            return super().task_patch(credentials, guid, body, token)
+
+    provider = Capture(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+    payload = {
+        "summary": "协议日期",
+        "due": {
+            "value": "2026-10-13T09:00:00+08:00",
+            "is_all_day": False,
+            "timezone": "Asia/Shanghai",
+        },
+    }
+    proposed = proposal(c, payload=payload)
+    expected = hashlib.sha256(
+        json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode()
+    ).hexdigest()
+    assert proposed["payload_sha256"] == expected
+    created = execute(c, confirm(c, proposed)).json()
+    assert provider.bodies[0]["due"]["timestamp"] == "1791853200000"
+    credentials = c.app.state.feishu_service.credentials.get()
+    credentials.scopes.remove("task:task:read")
+    assert c.get(TASKS).status_code == 200
+    guid = created["provider_result"]["task"]["guid"]
+    assert (
+        execute(
+            c, confirm(c, proposal(c, kind="feishu_task_complete", payload={"task_guid": guid}))
+        ).json()["state"]
+        == "succeeded"
+    )
+    assert isinstance(provider.bodies[-1]["task"]["completed_at"], str)
+
+
+def test_local_progress_lost_receipt_recovers_from_writer_evidence(tmp_path, monkeypatch):
+    import summit_everything.intake.actions as actions_module
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.workspace.action_receipts import save_receipt as real_save
+
+    root = tmp_path / "workspace"
+    provider = FakeFeishu(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+    line = c.post("/api/v1/lines", json={"name": "线", "operation_id": "line"}).json()
+    project = c.post(
+        "/api/v1/projects", json={"name": "项目", "line_id": line["id"], "operation_id": "project"}
+    ).json()
+    approved = confirm(
+        c,
+        proposal(
+            c,
+            kind="project_progress",
+            payload={"project_id": project["id"], "expected_version": 0, "progress": "本地已完成"},
+        ),
+    )
+
+    def lose_finished_receipt(root, item):
+        if item.state == "succeeded":
+            raise OSError("synthetic interrupted receipt")
+        real_save(root, item)
+
+    monkeypatch.setattr(actions_module, "save_receipt", lose_finished_receipt)
+    import pytest
+
+    with pytest.raises(OSError):
+        execute(c, approved)
+    monkeypatch.setattr(actions_module, "save_receipt", real_save)
+    restarted = client(tmp_path, root=root, provider=provider)
+    assert restarted.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "unknown"
+    assert restarted.get("/api/v1/projects").json()[0]["progress_version"] == 1
+    resolved = restarted.post(
+        PREFIX + "/" + approved["action_id"] + "/reconciliations", json={}
+    ).json()
+    assert resolved["state"] == "succeeded"
+    assert resolved["evidence"][-1]["kind"] == "local_writer_receipt"
+    assert execute(restarted, approved).json()["state"] == "succeeded"
+    assert restarted.get("/api/v1/projects").json()[0]["progress_version"] == 1
+
+
+def test_summary_write_interruption_keeps_receipts_and_unknown(tmp_path, monkeypatch):
+    from datetime import UTC, datetime
+
+    import summit_everything.workspace.action_receipts as receipts
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.workspace.transactions import workspace_lock
+
+    c = client(tmp_path, provider=FakeFeishu(tmp_path / "remote"))
+    first = execute(c, confirm(c, proposal(c))).json()
+    root = tmp_path / "workspace"
+
+    def interruption(path):
+        raise OSError("simulated archive deletion interruption")
+
+    monkeypatch.setattr(receipts, "atomic_delete", interruption)
+    import pytest
+
+    with workspace_lock(root), pytest.raises(OSError):
+        receipts.archive_completed(root, datetime(2027, 1, 1, tzinfo=UTC))
+    monkeypatch.undo()
+    assert c.get(PREFIX + "/" + first["action_id"]).json() == first
+    assert execute(c, first).json() == first
+    assert len(c.get(TASKS).json()["items"]) == 1
+
+
+def test_edit_requires_fresh_confirmation_and_outcome_replay(tmp_path):
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+
+    class Timeout(FakeFeishu):
+        def task_create(self, credentials, body):
+            raise TimeoutError()
+
+    c = client(tmp_path, provider=Timeout(tmp_path / "remote"))
+    approved = confirm(c, proposal(c))
+    edit = c.patch(
+        PREFIX + "/" + approved["action_id"],
+        json={
+            "expected_payload_sha256": approved["payload_sha256"],
+            "payload": {"summary": "新内容", "due": None},
+        },
+    ).json()
+    assert (
+        c.post(
+            PREFIX + "/" + approved["action_id"] + "/confirmations",
+            json={
+                "payload_sha256": edit["payload_sha256"],
+                "confirmation_id": approved["confirmation_id"],
+            },
+        ).status_code
+        == 409
+    )
+    latest = confirm(c, edit)
+    assert execute(c, latest).json()["state"] == "unknown"
+    outcome = {
+        "payload_sha256": latest["payload_sha256"],
+        "confirmation_id": "outcome-id",
+        "state": "failed",
+        "evidence": "明确核实未执行",
+    }
+    result = c.post(PREFIX + "/" + latest["action_id"] + "/outcomes", json=outcome)
+    assert result.status_code == 200
+    assert (
+        c.post(PREFIX + "/" + latest["action_id"] + "/outcomes", json=outcome).json()
+        == result.json()
+    )
+    assert (
+        c.post(
+            PREFIX + "/" + latest["action_id"] + "/outcomes",
+            json={**outcome, "evidence": "改变依据"},
+        ).status_code
+        == 409
+    )
+
+
+def test_late_response_preserves_cross_session_reconciliation_evidence(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+
+    entered, release = Event(), Event()
+
+    class Slow(FakeFeishu):
+        def task_create(self, credentials, body):
+            entered.set()
+            assert release.wait(5)
+            return super().task_create(credentials, body)
+
+    provider = Slow(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+    approved = confirm(c, proposal(c))
+    second = client(tmp_path, root=tmp_path / "workspace", provider=provider)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(execute, c, approved)
+        assert entered.wait(5)
+        try:
+            assert second.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "unknown"
+            reconciled = second.post(
+                PREFIX + "/" + approved["action_id"] + "/reconciliations", json={}
+            ).json()
+            assert reconciled["state"] == "unknown"
+        finally:
+            release.set()
+        result = future.result().json()
+    assert result["state"] == "succeeded"
+    assert {"interrupted", "provider_lookup"}.issubset({e["kind"] for e in result["evidence"]})
+    assert len(second.get(TASKS).json()["items"]) == 1
