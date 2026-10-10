@@ -12,11 +12,11 @@
 
 ## 当前阶段记录（2026-10-10）
 
-M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main。M2.1–M2.3 Fake-only 原始代码 `09398fcae597b2478001d40aedf580ea91322c11` 的独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2；执行者修复后，固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 已由独立 QA 复验通过（最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`）。当前进行合并前审查与 PR / main 合并后核验；完成前不宣告阶段 A 整体关闭。本计划继续作为全 v1 规格，不启动 M3–M5。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。
+M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main。M2.1–M2.3 Fake-only 原始代码 `09398fcae597b2478001d40aedf580ea91322c11` 的独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2；修复代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 已由独立 QA 复验通过（最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`），并以 PR #4 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 main。独立 main checkout 完整自动检查和关键行为冒烟通过，详见[合并后核验记录](../../quality/reports/2026-10-10-M2-stage-a-postmerge.md)。本计划继续作为全 v1 规格；不启动 M3–M5。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。
 
 ## 全局执行规则与验收门
 
-Foundation 与 M1 的模拟验收门已通过。M2.1–M2.3 阶段 A 原候选 `09398fc` 定向复现缺陷，修复代码 `32da67e` 已通过独立 Fake-only QA；PR 合并和 main 合并后核验仍是阶段 A 退出条件。本计划中的全 v1 MUST 保持有效，不得从自动检查推断真实外部门通过，也不启动 M3–M5。
+Foundation、M1 与 M2 阶段 A 的模拟验收门已通过。M2.1–M2.3 原候选 `09398fc` 定向复现缺陷；修复源码 `32da67e` 经独立 Fake-only QA 和 PR #4 合并后核验。当前仅此模拟范围关闭；本计划中的全 v1 MUST 保持有效，不得从自动检查推断真实外部门通过，也不启动 M3–M5。
 
 每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为由独立 QA 用真实浏览器检查。
 
@@ -139,7 +139,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] 提供自由正文、可选关联和显式 AI 辅助；建议独立可编辑 / 可取消，不自动覆盖已保存内容。
 - [x] 项目总览用稳定 overview_id 经明确确认创建 / 版本保护更新，目录可重开导航；具体事实可链接子页，不生成重复总库。
 
-M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选固定于 `09398fcae597b2478001d40aedf580ea91322c11`。该候选的日志、思考、概览问题已在阶段 A 修复；固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 的独立 Fake-only QA 已通过，原候选与最终复验报告链见 [阶段 A QA 报告](../../quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md) 和最新交接。PR 与合并后核验仍待完成。
+M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选固定于 `09398fcae597b2478001d40aedf580ea91322c11`。该候选的问题已在阶段 A 修复；固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 独立 Fake-only QA、PR #4 合并及合并后核验均通过。原候选与最终复验报告链见[阶段 A QA 报告](../../quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[合并后核验记录](../../quality/reports/2026-10-10-M2-stage-a-postmerge.md)和最新交接。
 
 **M2 DEV 门（历史开发记录）：** 当时 WebUI Fake 日常流程、任务 unknown 防重与重启恢复通过；原生壳 UI 尚未由执行者完成归属复演。之后阶段 A 独立 QA 已在固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 完成 Fake-only 验收，当前合并状态见本计划顶部与最新交接。真实 read / write 仍单独列示。
 
