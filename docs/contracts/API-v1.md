@@ -48,7 +48,9 @@
 | POST /pages | 明确直接撰写并确认的 metadata / body、confirmation_id → MutationResult；新增基准为空 |
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
 | POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |
-| POST /journal/{kind} | kind:log/thought，正文、可选关联、confirmation_id；复用 PageWriter，不另写落盘 |
+| POST /journal/{kind} | kind:log/thought，正文、可选关联、confirmation_id、operation_id；页面 ID 稳定派生于工作库与操作意图，复用 PageWriter，重试同结果、异正文 409 |
+| POST /journal/assist | 用户明确请求后返回分离的可编辑建议；不保存、不批准；失败不影响已保存页面 |
+| POST /projects/{id}/overview/confirmations | 显式确认新建或更新稳定 overview_id 页面；更新必须提交当前 expected_content_sha256，过期版本 409；独立于项目进度 Action |
 | POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型（已实现） |
 | POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节（已实现，20 MB 上限） |
 | GET /intake/items | 可见待整理列表，不调用模型（已实现） |

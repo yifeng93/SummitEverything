@@ -12,14 +12,14 @@
 |---|---|---|---|
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
-| M2 飞书 / 日常 | 进行中；M2.1 / M2.2 DEV完成待验收 | 未开始 | M2.1 Fake 授权 / 材料 / 日历、M2.2 独立任务动作已实现；M2.3 未开始，真实权限与写动作门独立记录 |
+| M2 飞书 / 日常 | 进行中；M2.1–M2.3 DEV完成待验收 | 未开始 | Fake 模拟流程已覆盖；真实权限与写动作门独立记录 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 
 ## 当前下一步
 
-M1 已在模拟材料与 Fake providers 范围内完成独立验收并合入 main。最终受测代码 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`，独立报告为 [M1 close retest](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。M2.1 / M2.2 已实现 Fake provider 流程，均为 DEV完成待验收；待主执行复核固定 SHA 与独立 QA，随后推进 M2.3。真实飞书读取与写入仍须经过单独授权门，M3–M5 未开始。
+M1 已在模拟材料与 Fake providers 范围内完成独立验收并合入 main。最终受测代码 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`，独立报告为 [M1 close retest](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。M2.1–M2.3 均已有开发者自测候选，待固定 SHA 独立验收；M2.2 已追加空白核实依据审查修复。真实飞书读取与写入仍须经过单独授权门，M3–M5 未开始。
 
 ## 独立验收报告（旧 SHA）
 
@@ -93,8 +93,18 @@ allowed 状态为 未开始 / 进行中 / DEV完成待验收 / 验收未通过 /
 
 ## M2.2 正式任务与独立动作
 
-- 状态：DEV完成待验收，Fake 模拟范围；固定代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`。M2.3 未开始，未启动 M3–M5、未 push / PR。
+- 状态：DEV完成待验收，Fake 模拟范围；基线候选 `a7f76e4d188dad607ac069047e76ffaa3135707d`，审查修复见 `c552d143f051efe13ebfcdd29815e776147794aa`。未启动 M3–M5、未 push / PR。
 - C16–C18：19 个新增真实 API / 文件 / 锁 / writer / 子进程测试，10 个 TodayView / TasksPanel 组件测试；完整后端126 passed（保留1既有弃用warning）、前端28 passed，ruff / format / mypy / lock / uv build / OpenAPI / typecheck / lint / web build退出0（lint保留3既有warning）。
 - 隔离 IAB 真实浏览器创建（无日期）及完成均经审阅、独立确认、另行执行、provider刷新；控制台warn/error0。断流、并发、子进程及跨月由服务测试覆盖。非独立QA。
 - 本地 receipt 保留确切意图 / 证据，不维护本地正式任务库；Fake远端在库/profile外。原候选关联兼容，知识确认与进度分开。全天真实timestamp规则 / Fake结果查询的真实等价物仍未核证，不声称真实协议通过。实际账户 / 凭据 / 任务均未调用。
-- 详细提交、红绿命令、请求映射、文件与concerns见 [M2.2任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。下一步主执行会话复核固定SHA / 独立QA，随后M2.3。
+- 详细提交、红绿命令、请求映射、文件与concerns见 [M2.2任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。M2.2 当前等待独立 QA；后续 M2.3 开发记录见下节。
+
+M2.2 独立审查 P2 追加修复：`UserOutcome.evidence` 现在去除首尾空白并拒绝无实质内容，API 回归验证拒绝请求后 action 仍为 unknown；红测初次以 200 接受空白证据，修复后该用例通过。单独代码提交 `c552d143f051efe13ebfcdd29815e776147794aa`；动作集成测试 19 passed，mypy 通过。详细追加证据见 [M2.2 review fix](../quality/reports/2026-10-10-M2.2-review-fix.md)。
+
+## M2.3 日志、思考与项目概览
+
+- 状态：DEV完成待验收（合成工作库 / FakeLLM）；固定代码 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`。M2.2 独立 P2 修复随后作为单独提交 `c552d143f051efe13ebfcdd29815e776147794aa`，没有混入 M2.3 代码提交。
+- 工作日志 / 思考复用 PageWriter；workspace+operation 派生稳定页面 ID，同请求重试重放、改正文 409；新增并发和 app restart 模拟丢响应回放。日志入口支持无关联、仅主线、主线+项目。AI 仅显式调用 FakeLLM，建议保持独立可编辑；普通保存和列表刷新零调用，取消 / 超时失败不改已存正文。
+- 项目概览使用预分配 overview_id，只有用户显式创建；更新提交 expected content hash，旧版本 409。目录可重开导航，知识保存不会写入项目进度字段。
+- 后端新集成 9 项及 PageWriter / intake / writer 回归合计 37 passed；UI 组件 6 passed；ruff / format / mypy、OpenAPI Types、前端 typecheck / build 通过。lint 保留原有三条 React effect 警告；1 条 Starlette/httpx deprecation。浏览器开发者复演记录在 [M2.3 DEV 报告](../quality/reports/2026-10-10-M2.3-DEV.md)。无独立 QA。
+- 真实模型、业务材料、飞书账户 / scopes / 读写、真实任务副作用、Keychain、DMG、M3–M5 与独立 QA 均未运行。

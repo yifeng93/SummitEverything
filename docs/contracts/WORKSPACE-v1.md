@@ -53,6 +53,8 @@ kind 的值与 UI 名称：
 | log | 工作日志 |
 | thought | 工作思考 |
 
+日志 / 思考直接确认时复用 PageWriter。相同 operation_id / confirmation_id / 正文重试只落一页，操作号复用到不同内容返回冲突。主线与项目关联可选；项目必须属于所选主线。项目概览使用 manifest 中预分配的 overview_id，仅在用户显式确认时创建；更新提交当前内容 hash，旧版本不能覆盖新内容。概览依旧是普通知识页面，其批准不改变项目进度；归档状态也不改变页面有效性。
+
 可选业务字段：summary、tags、aliases、date、created_at、updated_at、business_status、source_refs、related_project_ids、superseded_by。业务标签自由。日期以 ISO 字符串写入；解析器把 YAML date / datetime 转成 ISO 字符串。
 
 validity 为 current（默认）、superseded、invalid，表达知识效力；业务完成或项目归档不自动修改它。business_status 不强制枚举，按业务需要填写；模型不能通过它改变项目进度。

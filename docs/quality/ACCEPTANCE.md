@@ -80,6 +80,12 @@ Must FAIL、未关闭 P0 / P1 阻止相关阶段通过。真实门未测时只�
 
 M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请求实际注册目的地且不跟随 redirect / 携带凭据；检查 callback allowlist CORS / no-store、非法外部地址拒绝。导入合法材料与“ .txt”等被来源 writer 拒绝的名称，必须逐项失败且其余继续。模拟 token_expired / not_authorized 后查看界面状态并确认读取按钮关闭，missing_scope 显示权限不足且没有虚构成功；检查合成 AppCredentials 与 user token 隔离、配置无秘密、状态 / 错误 / 授权 URL 无秘密。
 
+## M2.3 Fake 复验（C09 / C18）
+
+使用合成库分别直接保存日志与思考，验证无关联、仅关联主线、主线加项目；列表刷新零模型调用。显式 AI 辅助后编辑 / 取消建议，确认 suggestion 不写页面；保存成功后从日志列表重开。重复相同 operation_id / confirmation_id / payload（含并发）只写一页，重试响应相同；改变 payload 需 409。用失效主线或不属于该主线的项目验证拒绝。
+
+新建项目不生成概览页；从项目目录明确创建，重开；更新必须带当前内容版本，旧版本409且原正文保留。概览可以相对链接权威事实页。创建 / 更新 / 直接确认日志与思考后，核对 project progress 版本与值均未变；再通过 M2.2 独立 progress action 确认能单独改变。此处 DEV 测试不是独立 QA 结论。
+
 
 ## M2.2 Fake 复验（C16–C18）
 

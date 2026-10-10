@@ -91,3 +91,7 @@ OAuth state 只在本进程内保存，绑定本次服务会话 token 的身份�
 材料导入以规范化 ID 集合 hash 认领 journal；独立导入文件锁串行化同库批次，原件写入仍使用 SourceStore 的库身份锁和原子恢复。已保存 source/item 在恢复时按稳定 ID 复用，不再次拉取正文；每项完成结果随后保存，完成 receipt 重放不依赖授权或网络。工作库保留此业务来源 / 意图证据；token 与 OAuth state 均不同步。
 
 M2.1 审查修正：应用秘密与 user token 分开储存在 CredentialStore 的 get_app/put_app 与 get/put 接口；AppCredentials 使用 SecretStr 并校验配置 app_id，provider exchange 接收此后端接口对象，默认 Fake 不读取真实秘密。仅有 synthetic-memory 实现；无真实 Feishu HTTP adapter、账户配置或 OS Keychain adapter / 权限流。前端保留注册 callback 绝对目的地，直接以无凭据、禁止重定向请求本机固定 callback；API 只为 allowlist Origin 的 callback 提供读取 header（含错误），不为其余业务降低 Bearer 门。
+
+## M2.3 日志、思考与项目概览
+
+日志 / 思考通过同一 PageWriter 保存，页面 ID 由 workspace identity 与 operation ID 稳定派生，writer journal 负责相同意图重放和 payload 冲突保护。AI 辅助只在用户显式点击后调用 FakeLLM，建议留在独立编辑状态；保存仍须显式确认。项目概览沿用项目创建时预分配的 overview_id，仅确认后写入；更新需匹配当前 content hash。目录读取、概览批准和日志保存均不触发项目进度 action。
