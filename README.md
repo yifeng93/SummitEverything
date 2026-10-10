@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。M2.1–M2.3 已完成 Fake-only 开发者自测，固定代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`，**DEV 完成待独立验收**。自动检查和 WebUI 真实浏览器复演完成；原生壳 UI 尚未验证。M2.1 / M2.2 窄范围代码审查已完成，不能代替阶段 QA。用户已准备真实飞书应用 ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain，并可随时参与测试和补充配置；这些资源尚未在本轮使用，具体协议实现、测试材料范围及外部动作仍需评估和逐项确认。DMG、五日试用和双机仍未完成。详见 [M2 DEV 报告](docs/quality/reports/2026-10-10-M2-DEV.md)、[进展账本](docs/implementation/PROGRESS.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) 和 [Sol 6.1 进度评估提示词](docs/handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)。
+2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。M2.1–M2.3 阶段 A 的 Fake-only 独立 QA 已通过，受测源码固定于 `32da67e9c0280e3dae18fd374e30c925565b0b82`；P0/P1/P2 未关闭项为 0。阶段 A 整改分支正在经 PR 合入 `main`，合并后复核尚待完成。真实飞书应用配置、模型、材料和 Keychain 虽已备妥，本轮未消费或调用；真实 Feishu、模型/embedding/rerank、Keychain、DMG、五日试用和双机仍为 NOT_RUN。详见[最终独立 QA 报告](docs/quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[进展账本](docs/implementation/PROGRESS.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) 与[验收矩阵](docs/quality/ACCEPTANCE.md)。阶段 B/C 仍未开始。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -104,4 +104,4 @@ uv run pytest -q tests/integration/test_journal_overviews.py
 npm --prefix web test -- JournalView.test.tsx ProjectsView.test.tsx
 ~~~
 
-此切片只用模拟工作库与 FakeLLM；没有执行真实模型、真实材料、真实飞书或任务写入。M2.3 DEV 报告和 [汇总 M2 DEV 报告](docs/quality/reports/2026-10-10-M2-DEV.md)记录 UI 复演与未测项，阶段仍待独立验收。
+此切片只用模拟工作库与 FakeLLM；没有执行真实模型、真实材料、真实飞书或任务写入。M2.3 DEV 报告和 [汇总 M2 DEV 报告](docs/quality/reports/2026-10-10-M2-DEV.md)保留开发时的 UI 复演与未测项；阶段 A 当前独立验收结果见上方状态与[验收矩阵](docs/quality/ACCEPTANCE.md)。

@@ -117,3 +117,16 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 2026-10-10 用户更新：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain 均已准备，用户可配合提供配置并参与测试。上述真实门仍是 NOT_RUN，因为固定候选仅 Fake provider；“条件可用”不代表已实现、已操作或已通过。下一轮评估需判断先做固定 SHA 独立 QA，还是先补真实 adapter / 配置路径与隔离；任何真实登录、材料发送、付费模型调用或飞书 task 写入都应列出具体数据、目标、范围与成本，再由用户逐项确认。
 
 自动检查在固定候选全量复跑通过：后端 135 passed；前端 8 个文件 / 31 项通过；ruff / format / mypy / lock / uv build / Swift build / typecheck / Web build 通过。保留 1 条 Starlette/httpx 弃用提示与 3 条既有 React effect lint warning。以上均为 DEV 证据，待独立验收者在固定代码 SHA 上复核。
+
+## M2.1–M2.3 阶段 A 最终独立 Fake-only QA
+
+- **最终受测源码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`。
+- **最终独立 QA 报告：** [第四轮最终复验](reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)，报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`，结论为 **PASS（Fake-only M2.1–M2.3）**。最终 QA checkout 与执行环境独立于实现 checkout；未修改产品 `src`、`web` 或测试实现。
+- **报告链：** 原候选初验 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`（固定 `09398fcae597b2478001d40aedf580ea91322c11`）→ 第一轮最终候选报告 `bb5231d5d31a64f57605bf8443f5f57752aac50d` → 第二轮补充 `91b0a93c615b3a16f5cf428b7f131a443d3ff59e` → 第三轮补充 `7f785c033bb96a43ae50ad6cf55b9c20474db85b` → 第四轮最终报告 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。各轮旧报告原样保留，第四轮 PASS 不覆盖历史失败或未测观察。
+- **缺陷结论：** A-01 至 A-04 原候选反例均已由实现修复，并在最终候选行为回归和独立复验中通过；A-05 的 journal 审批展示、外部编辑重新确认和文档状态已复验。最终 Fake QA 未关闭 P0/P1/P2=0。初验和整改细节分别见原候选报告及 [修复 DEV 报告](reports/2026-10-10-M2-stage-a-fix-dev.md)。
+- **场景结论：** C09、C15、C16、C17、C18、C23 为 PASS（按报告跨轮聚合）；关联 C04/C10/C11/C12/C13 与知识保存 / 索引资格门按最终报告及第三轮证据核对。C16 覆盖一次性副作用、重启、异 payload 拒绝和 unknown 不重发；C17 覆盖字段核验、合法规范化、明确清空、完成幂等和无效响应；C18 覆盖知识与进度分离、版本冲突和回执恢复；C23 覆盖真实文件写中断、归档中断、冲突副本与损坏回执。具体逐步证据、API / 磁盘断言、截图、CDP 摘要及复演步骤均在报告的 evidence 子目录和 `replay.md`。
+- **UI 限制：** 当前没有 OAuth cancel UI 控件，因此该 UI 变体 **NOT_RUN**；Fake API denial/state rejection 通过。此项不是当前 Fake gate 的产品缺陷。
+- **浏览器与原生壳：** 最终浏览器使用隔离 Chrome profile 和本地 Fake 服务；最终限定捕获窗中 41 个本地响应、0 个失败请求、0 console warning/error/runtime exception。原生开发壳窗口、目录选择、候选身份、Quit / 最后窗口清理与启动失败反馈在第二轮 follow-up 有独立候选证据。各自证据和观察范围见相应报告；final fourth round 没有重跑原生壳。
+- **自动检查：** 固定源码完整自动矩阵见第一轮报告；后端 142 passed、前端 8 个测试文件 / 32 项通过，ruff check / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build、Swift build 与 `git diff --check` 均退出 0。第四轮新增指定后端集成测试 43 passed，保留 1 条既有 Starlette/httpx TestClient deprecation；原有 3 条 React effect lint warning 保留。无依赖或 lock 变更。
+- **真实门：** 真实 Feishu 登录 / scope / task 读写、真实材料、真实 LLM / embedding / rerank、Keychain、DMG、五日试用、双机继续 **NOT_RUN**；用户准备的资源没有被读取或消费。本结论只覆盖 Fake 模拟范围。
+- **整合状态：** 本记录在合并前维护。PR、main merge SHA 与独立 main checkout 合并后检查需在阶段 A 最终交接中追加；该状态未完成前不据本节单独宣布阶段 A 完整关闭。
