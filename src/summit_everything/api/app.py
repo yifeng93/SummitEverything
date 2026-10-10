@@ -623,14 +623,23 @@ def create_app(
         project = next((item for item in manifest.projects if item.id == project_id), None)
         if project is None:
             raise WorkspaceError("Project not found", 404)
-        metadata = {
+        existing_page = next(
+            (
+                page
+                for page in list_pages(Path(workspace.root))
+                if page.page_id == project.overview_id
+            ),
+            None,
+        )
+        metadata = dict(existing_page.metadata) if existing_page is not None else {}
+        metadata.update({
             "id": str(project.overview_id),
             "title": payload.title,
             "role": "knowledge",
             "kind": "project_overview",
             "line_id": str(project.line_id),
             "project_id": str(project.id),
-        }
+        })
         return PageWriter().confirm(
             Path(workspace.root),
             metadata=metadata,
