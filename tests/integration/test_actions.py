@@ -598,6 +598,120 @@ def test_patch_bad_response_is_unknown_and_selected_only_validation(tmp_path):
     assert c.get(TASKS + "/" + guid).json()["summary"] == "改后"
 
 
+def test_task_results_validate_requested_fields_and_explicit_clears(tmp_path):
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+
+    class InaccurateResponses(FakeFeishu):
+        wrong_create = False
+        stale_patch = False
+        patch_calls = 0
+
+        def task_create(self, credentials, body):
+            result = super().task_create(credentials, body)
+            if self.wrong_create:
+                return result.model_copy(update={"summary": "provider returned another title"})
+            return result
+
+        def task_patch(self, credentials, guid, body, token):
+            self.patch_calls += 1
+            before = super().task_get(credentials, guid)
+            result = super().task_patch(credentials, guid, body, token)
+            return before if self.stale_patch else result
+
+    provider = InaccurateResponses(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+
+    provider.wrong_create = True
+    inaccurate = execute(
+        c, confirm(c, proposal(c, payload={"summary": "请求标题", "due": None}))
+    ).json()
+    assert inaccurate["state"] == "unknown"
+    assert execute(c, c.get(PREFIX + "/" + inaccurate["action_id"]).json()).json() == inaccurate
+    provider.wrong_create = False
+
+    created = execute(
+        c,
+        confirm(
+            c,
+            proposal(
+                c,
+                payload={
+                    "summary": "保留标题",
+                    "description": "稍后清空",
+                    "due": {"value": "2026-10-12", "is_all_day": True, "timezone": "Asia/Shanghai"},
+                },
+            ),
+        ),
+    ).json()
+    guid = created["provider_result"]["task"]["guid"]
+    provider.stale_patch = True
+    changed = proposal(
+        c,
+        kind="feishu_task_update",
+        payload={"task_guid": guid, "task": {"summary": "改后"}, "update_fields": ["summary"]},
+    )
+    changed = confirm(c, changed)
+    uncertain = execute(c, changed).json()
+    assert uncertain["state"] == "unknown"
+    calls = provider.patch_calls
+    assert execute(c, changed).json() == uncertain
+    assert provider.patch_calls == calls
+    assert c.get(TASKS + "/" + guid).json()["summary"] == "改后"
+    provider.stale_patch = False
+
+    cleared = confirm(
+        c,
+        proposal(
+            c,
+            kind="feishu_task_update",
+            payload={
+                "task_guid": guid,
+                "task": {"description": "", "due": None},
+                "update_fields": ["description", "due"],
+            },
+        ),
+    )
+    result = execute(c, cleared).json()
+    assert result["state"] == "succeeded"
+    task = c.get(TASKS + "/" + guid).json()
+    assert task["summary"] == "改后" and task["description"] == "" and task["due"] is None
+
+
+def test_reconciliation_rejects_execution_evidence_with_another_token(tmp_path):
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.tasks import TaskExecutionEvidence
+
+    class DelayedCreate(FakeFeishu):
+        token = None
+
+        def task_create(self, credentials, body):
+            self.token = body["client_token"]
+            super().task_create(credentials, body)
+            raise TimeoutError()
+
+        def task_result(self, credentials, token):
+            evidence = super().task_result(credentials, token)
+            assert isinstance(evidence, TaskExecutionEvidence)
+            return evidence.model_copy(update={"client_token": "another-action-token"})
+
+    provider = DelayedCreate(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+    approved = confirm(c, proposal(c))
+    uncertain = execute(c, approved).json()
+    assert uncertain["state"] == "unknown"
+    assert provider.token is not None
+
+    reconciled = c.post(PREFIX + "/" + approved["action_id"] + "/reconciliations", json={}).json()
+    assert reconciled["state"] == "unknown"
+    lookup = next(
+        evidence for evidence in reconciled["evidence"] if evidence["kind"] == "provider_lookup"
+    )
+    assert lookup["verified"] is False
+    assert len(c.get(TASKS).json()["items"]) == 1
+    assert execute(c, approved).json()["state"] == "unknown"
+    assert len(c.get(TASKS).json()["items"]) == 1
+
+
 def test_rest_time_strings_write_scope_reads_and_canonical_payload_hash(tmp_path):
     import hashlib
     import json

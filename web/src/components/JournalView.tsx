@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { api, newOperationId, type Line, type Page, type Project } from '../api/client'
+import { api, indexUpdateMessage, newOperationId, type Line, type MutationResult, type Page, type Project } from '../api/client'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string) => void }
+
+function pageStatus(page: Page): string {
+  if (page.approval_state !== 'confirmed') return '需要重新确认'
+  if (page.validity === 'superseded') return '已被替代'
+  if (page.validity === 'invalid') return '已失效'
+  return '已确认'
+}
 
 export function JournalView({ onError, onOpenPage }: Props) {
   const [kind, setKind] = useState<'log' | 'thought'>('log')
@@ -14,6 +21,7 @@ export function JournalView({ onError, onOpenPage }: Props) {
   const [pages, setPages] = useState<Page[]>([])
   const [suggestion, setSuggestion] = useState<{ title: string; body: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState('')
   const pendingSave = useRef<{ signature: string; operation: string } | null>(null)
 
   const refresh = useCallback(async () => {
@@ -40,10 +48,11 @@ export function JournalView({ onError, onOpenPage }: Props) {
     if (pendingSave.current?.signature !== signature) pendingSave.current = { signature, operation: newOperationId() }
     setBusy(true)
     try {
-      await api.post(`/journal/${kind}`, {
+      const result = await api.post<MutationResult>(`/journal/${kind}`, {
         title: title.trim(), body, line_id: lineId || null, project_id: projectId || null,
         confirmation_id: pendingSave.current.operation, operation_id: pendingSave.current.operation,
       })
+      setNotice(indexUpdateMessage(result.index_update) ?? '')
       pendingSave.current = null
       setTitle(''); setBody(''); setSuggestion(null); await refresh()
     } catch (cause) { onError(cause instanceof Error ? cause.message : '无法保存记录') }
@@ -76,6 +85,7 @@ export function JournalView({ onError, onOpenPage }: Props) {
       </form>
       {suggestion && <section className="journal-suggestion"><h2>可编辑建议 · 尚未保存</h2><button className="text-button" onClick={() => setSuggestion(null)}>取消建议</button><label className="field"><span>建议标题</span><input value={suggestion.title} onChange={(event) => setSuggestion({ ...suggestion, title: event.target.value })} /></label><label className="field"><span>建议正文</span><textarea rows={6} value={suggestion.body} onChange={(event) => setSuggestion({ ...suggestion, body: event.target.value })} /></label><button className="button secondary" onClick={() => { setTitle(suggestion.title); setBody(suggestion.body); setSuggestion(null) }}>采用到编辑区</button></section>}
     </div>
-    <section className="journal-history"><h2>已保存的记录</h2>{pages.length === 0 ? <p className="muted">暂无日志或思考。</p> : <ul className="knowledge-page-list">{pages.map((page) => <li key={page.page_id}><button onClick={() => onOpenPage(page.page_id)}><span className="page-type-mark">{page.metadata.kind === 'log' ? '记' : '想'}</span><span><strong>{String(page.metadata.title)}</strong><small>已确认 · 本机保存</small></span><span aria-hidden="true">›</span></button></li>)}</ul>}</section>
+    {notice && <p role="status" className={notice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{notice}</p>}
+    <section className="journal-history"><h2>已保存的记录</h2>{pages.length === 0 ? <p className="muted">暂无日志或思考。</p> : <ul className="knowledge-page-list">{pages.map((page) => <li key={page.page_id}><button onClick={() => onOpenPage(page.page_id)}><span className="page-type-mark">{page.metadata.kind === 'log' ? '记' : '想'}</span><span><strong>{String(page.metadata.title ?? '未命名记录')}</strong><small>{pageStatus(page)} · 本机保存</small></span><span aria-hidden="true">›</span></button></li>)}</ul>}</section>
   </section>
 }

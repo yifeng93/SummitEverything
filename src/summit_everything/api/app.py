@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import logging
 import os
 import secrets
 import tempfile
@@ -340,6 +341,24 @@ def create_app(
             return query_service
         return QueryService(IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"))
 
+    def index_after_approval(
+        workspace: WorkspaceContext, mutation: MutationResult
+    ) -> MutationResult:
+        service = query_for(workspace)
+        fingerprint = service.store.active_fingerprint(workspace.workspace_id)
+        if fingerprint is None:
+            return mutation.model_copy(update={"index_update": "not_enabled"})
+        try:
+            root = Path(workspace.root)
+            plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
+            service.execute_plan(root, plan)
+        except Exception:
+            logging.getLogger(__name__).exception(
+                "Incremental index update failed for workspace %s", workspace.workspace_id
+            )
+            return mutation.model_copy(update={"index_update": "update_failed"})
+        return mutation.model_copy(update={"index_update": "updated"})
+
     @app.exception_handler(WorkspaceError)
     async def workspace_error_handler(_request: Request, exc: WorkspaceError) -> JSONResponse:
         return JSONResponse(
@@ -516,12 +535,15 @@ def create_app(
         payload: PageCreate,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=payload.metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=payload.metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+            ),
         )
 
     @app.get("/api/v1/pages/{page_id}", dependencies=[Depends(authenticated)])
@@ -546,13 +568,16 @@ def create_app(
                 status_code=422,
                 detail={"code": "validation_error", "message": "Page ID does not match the route"},
             )
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=payload.metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
-            expected_base_sha256=payload.expected_base_sha256,
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=payload.metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+                expected_base_sha256=payload.expected_base_sha256,
+            ),
         )
 
     @app.post("/api/v1/pages/{page_id}/moves", dependencies=[Depends(authenticated)])
@@ -601,12 +626,15 @@ def create_app(
             metadata["line_id"] = str(payload.line_id)
         if payload.project_id is not None:
             metadata["project_id"] = str(payload.project_id)
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+            ),
         )
 
     @app.post(
@@ -632,21 +660,26 @@ def create_app(
             None,
         )
         metadata = dict(existing_page.metadata) if existing_page is not None else {}
-        metadata.update({
-            "id": str(project.overview_id),
-            "title": payload.title,
-            "role": "knowledge",
-            "kind": "project_overview",
-            "line_id": str(project.line_id),
-            "project_id": str(project.id),
-        })
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
-            expected_base_sha256=payload.expected_content_sha256,
+        metadata.update(
+            {
+                "id": str(project.overview_id),
+                "title": payload.title,
+                "role": "knowledge",
+                "kind": "project_overview",
+                "line_id": str(project.line_id),
+                "project_id": str(project.id),
+            }
+        )
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+                expected_base_sha256=payload.expected_content_sha256,
+            ),
         )
 
     @app.post("/api/v1/intake/items", status_code=201, dependencies=[Depends(authenticated)])
@@ -753,13 +786,16 @@ def create_app(
         payload: DraftConfirmationRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
-        return review.confirm_draft(
-            Path(workspace.root),
-            draft_id,
-            expected_version=payload.expected_version,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
-            conflict_resolutions=payload.conflict_resolutions,
+        return index_after_approval(
+            workspace,
+            review.confirm_draft(
+                Path(workspace.root),
+                draft_id,
+                expected_version=payload.expected_version,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+                conflict_resolutions=payload.conflict_resolutions,
+            ),
         )
 
     @app.get("/api/v1/actions", dependencies=[Depends(authenticated)])
@@ -800,8 +836,7 @@ def create_app(
     def index_status(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, int | str | None]:
-        store = IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3")
-        return store.status(workspace.workspace_id)
+        return query_for(workspace).status(Path(workspace.root))
 
     @app.post("/api/v1/queries", dependencies=[Depends(authenticated)])
     def query_stream(

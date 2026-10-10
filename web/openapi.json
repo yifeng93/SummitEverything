@@ -4569,6 +4569,22 @@
             "type": "boolean",
             "title": "Saved Locally",
             "default": true
+          },
+          "index_update": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "not_enabled",
+                  "updated",
+                  "update_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index Update"
           }
         },
         "type": "object",

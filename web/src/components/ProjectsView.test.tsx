@@ -107,7 +107,7 @@ it('creates a project overview only after an explicit confirmation and then open
   const overviewPage = { page_id: 'overview-1', relative_path: '模拟主线/模拟项目/概览.md', metadata: { id: 'overview-1', title: '模拟项目 概览', role: 'knowledge', kind: 'project_overview', line_id: 'line-1', project_id: 'project-1' }, body: '目标', content_sha256: 'e'.repeat(64), raw_sha256: 'f'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current' }
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
-    if (url.endsWith('/projects/project-1/overview/confirmations') && init?.method === 'POST') { created = true; return { ok: true, status: 201, json: async () => ({ saved_locally: true }) } }
+    if (url.endsWith('/projects/project-1/overview/confirmations') && init?.method === 'POST') { created = true; return { ok: true, status: 201, json: async () => ({ saved_locally: true, index_update: 'updated' }) } }
     if (url.endsWith('/lines')) return { ok: true, status: 200, json: async () => lines }
     if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => projects }
     if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => created ? [overviewPage] : [] }
@@ -119,6 +119,7 @@ it('creates a project overview only after an explicit confirmation and then open
   fireEvent.change(screen.getByLabelText('目标、整体判断、进展背景与事实链接'), { target: { value: '目标' } })
   fireEvent.click(screen.getByRole('button', { name: '确认并创建概览' }))
   await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/overview/confirmations') && init?.method === 'POST')).toBe(true))
+  expect(await screen.findByText('本机索引已更新。')).toBeTruthy()
   fireEvent.click(await screen.findByRole('button', { name: '打开概览' }))
   expect(onOpenPage).toHaveBeenCalledWith('overview-1')
 })

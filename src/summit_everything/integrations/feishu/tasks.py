@@ -170,25 +170,25 @@ class FeishuTasks:
         self, kind: str, payload: dict[str, Any], result: FeishuTask
     ) -> FeishuTask:
         if kind == "feishu_task_create":
-            request = TaskCreate.model_validate(payload)
+            create_request = TaskCreate.model_validate(payload)
             matches = (
-                result.summary == request.summary
-                and result.description == request.description
-                and self._matches_due(request.due, result.due)
+                result.summary == create_request.summary
+                and result.description == create_request.description
+                and self._matches_due(create_request.due, result.due)
             )
         elif kind == "feishu_task_update":
-            request = TaskUpdate.model_validate(payload)
-            changes = request.task
-            matches = result.guid == request.task_guid
-            if "summary" in request.update_fields:
+            update_request = TaskUpdate.model_validate(payload)
+            changes = update_request.task
+            matches = result.guid == update_request.task_guid
+            if "summary" in update_request.update_fields:
                 matches = matches and result.summary == changes.summary
-            if "description" in request.update_fields:
+            if "description" in update_request.update_fields:
                 matches = matches and result.description == changes.description
-            if "due" in request.update_fields:
+            if "due" in update_request.update_fields:
                 matches = matches and self._matches_due(changes.due, result.due)
         elif kind == "feishu_task_complete":
-            request = TaskComplete.model_validate(payload)
-            matches = result.guid == request.task_guid and result.completed_at > 0
+            complete_request = TaskComplete.model_validate(payload)
+            matches = result.guid == complete_request.task_guid and result.completed_at > 0
         else:
             raise FeishuError("malformed_response")
         if not matches:
@@ -229,7 +229,7 @@ class FeishuTasks:
         )
         return self._validate_result(kind, payload, result)
 
-    def lookup(self, token: str) -> FeishuTask | None:
+    def lookup(self, token: str) -> TaskExecutionEvidence | None:
         user = self._reader()
         value = self.session._call(lambda: self.session.provider.task_result(user, token))
         if value is None:

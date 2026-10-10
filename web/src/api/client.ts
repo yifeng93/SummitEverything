@@ -11,6 +11,14 @@ export type SourceDetail = components['schemas']['SourceDetail']
 export type Citation = components['schemas']['Citation']
 export type IndexPlan = components['schemas']['IndexPlan']
 export type IndexResult = components['schemas']['IndexResult']
+export type MutationResult = components['schemas']['MutationResult']
+
+export function indexUpdateMessage(status: MutationResult['index_update']): string | null {
+  if (status === 'updated') return '本机索引已更新。'
+  if (status === 'update_failed') return '内容已保存；索引更新未完成，旧版本内容不会作为当前依据。'
+  if (status === 'not_enabled') return '内容已保存；首次索引仍需你在知识问答中确认。'
+  return null
+}
 
 type ErrorEnvelope = { error?: { code?: string; message?: string } }
 

@@ -66,6 +66,7 @@ class MutationResult(BaseModel):
     changed_paths: list[str]
     page_versions: dict[str, str] = Field(default_factory=dict)
     saved_locally: bool = True
+    index_update: Literal["not_enabled", "updated", "update_failed"] | None = None
 
 
 class SourceRecord(OpenModel):

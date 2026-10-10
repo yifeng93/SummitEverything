@@ -1316,6 +1316,8 @@ export interface components {
              * @default true
              */
             saved_locally: boolean;
+            /** Index Update */
+            index_update?: ("not_enabled" | "updated" | "update_failed") | null;
         };
         /** PageConfirmation */
         PageConfirmation: {

@@ -11,10 +11,95 @@ from fastapi.testclient import TestClient
 from summit_everything.api.app import create_app
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.domain.models import Answer
+from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 
 TOKEN = "m1-lifecycle-token"
+
+
+def test_failed_automatic_incremental_index_is_visible_and_stale_chunks_are_rejected(
+    tmp_path: Path,
+) -> None:
+    class FailingEmbedding(FakeEmbedding):
+        fail = False
+
+        def embed(self, text: str, *, fingerprint: str) -> list[float]:
+            if self.fail:
+                raise RuntimeError("synthetic Fake embedding interruption")
+            return super().embed(text, fingerprint=fingerprint)
+
+    profile = tmp_path / "profiles"
+    embedding = FailingEmbedding()
+    service = QueryService(IndexStore(profile / "index.sqlite3"), embedding=embedding)
+    api = TestClient(create_app(session_token=TOKEN, profile_root=profile, query_service=service))
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    root = tmp_path / "workspace"
+    opened = api.post(
+        "/api/v1/workspaces",
+        json={"root": str(root), "mode": "create", "name": "索引中断模拟", "operation_id": "ws"},
+    )
+    assert opened.status_code == 201, opened.text
+    line = api.post("/api/v1/lines", json={"name": "合成线", "operation_id": "line"}).json()
+    project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+    ).json()
+    baseline = api.post(
+        "/api/v1/pages",
+        json={
+            "metadata": {
+                "id": str(uuid4()),
+                "title": "基线知识",
+                "role": "knowledge",
+                "kind": "topic",
+                "line_id": line["id"],
+                "project_id": project["id"],
+            },
+            "body": "稳定内容琥珀四二。",
+            "confirmation_id": "base-confirmation",
+            "operation_id": "base-write",
+        },
+    )
+    assert baseline.status_code == 201
+    assert baseline.json()["index_update"] == "not_enabled"
+    initial = api.post(
+        "/api/v1/index/plans", json={"mode": "initial", "fingerprint": "fake-failure-v1"}
+    ).json()
+    assert api.post("/api/v1/index/jobs", json=initial).status_code == 200
+
+    embedding.fail = True
+    new_page = api.post(
+        "/api/v1/pages",
+        json={
+            "metadata": {
+                "id": str(uuid4()),
+                "title": "中断知识",
+                "role": "knowledge",
+                "kind": "topic",
+                "line_id": line["id"],
+                "project_id": project["id"],
+            },
+            "body": "新内容不应从旧索引引用独特词海蓝八六。",
+            "confirmation_id": "new-confirmation",
+            "operation_id": "new-write",
+        },
+    )
+    assert new_page.status_code == 201
+    assert new_page.json()["index_update"] == "update_failed"
+    status = api.get("/api/v1/index/status").json()
+    assert status["state"] == "stale" and status["stale_pages"] == 1
+
+    events_response = api.post(
+        "/api/v1/queries",
+        json={"question": "海蓝八六是什么", "fingerprint": "fake-failure-v1", "purpose": "current"},
+    )
+    events = [
+        json.loads(block.removeprefix("data: ").strip())
+        for block in events_response.text.split("\n\n")
+        if block.startswith("data: ")
+    ]
+    assert not any(event["type"] == "citation" for event in events)
 
 
 def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
@@ -91,26 +176,18 @@ def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
         },
     )
     assert update.status_code == 200, update.text
-    stale = api.post(
-        "/api/v1/queries",
-        json={"question": "银杏项目会议地点", "fingerprint": fingerprint, "purpose": "current"},
-    )
-    stale_events = [
-        json.loads(block.removeprefix("data: ").strip())
-        for block in stale.text.split("\n\n")
-        if block.startswith("data: ")
-    ]
-    assert not any(event["type"] == "citation" for event in stale_events)
-
-    incremental = api.post(
-        "/api/v1/index/plans", json={"mode": "incremental", "fingerprint": fingerprint}
-    )
-    assert incremental.status_code == 200, incremental.text
-    assert api.post("/api/v1/index/jobs", json=incremental.json()).status_code == 200
+    assert update.json()["index_update"] == "updated"
+    assert api.get("/api/v1/index/status").json()["state"] == "ready"
     fresh = api.post(
         "/api/v1/queries",
         json={"question": "银杏项目会议地点", "fingerprint": fingerprint, "purpose": "current"},
     )
+    fresh_events = [
+        json.loads(block.removeprefix("data: ").strip())
+        for block in fresh.text.split("\n\n")
+        if block.startswith("data: ")
+    ]
+    assert any(event["type"] == "citation" for event in fresh_events)
     assert "西馆" in fresh.text
     assert "北馆" not in fresh.text
 
@@ -263,25 +340,17 @@ def test_external_edit_can_be_reconfirmed_from_current_page_snapshot(tmp_path: P
         },
     )
     assert confirmation.status_code == 200, confirmation.text
+    assert confirmation.json()["index_update"] == "updated"
     assert api.get(f"/api/v1/pages/{page_id}").json()["approval_state"] == "confirmed"
-    still_stale = api.post(
-        "/api/v1/queries",
-        json={"question": "蓝松项目预算", "fingerprint": fingerprint, "purpose": "current"},
-    )
-    stale_events = [
-        json.loads(block.removeprefix("data: ").strip())
-        for block in still_stale.text.split("\n\n")
-        if block.startswith("data: ")
-    ]
-    assert not any(event["type"] == "citation" for event in stale_events)
-
-    incremental = api.post(
-        "/api/v1/index/plans", json={"mode": "incremental", "fingerprint": fingerprint}
-    ).json()
-    assert api.post("/api/v1/index/jobs", json=incremental).status_code == 200
     current = api.post(
         "/api/v1/queries",
         json={"question": "蓝松项目预算", "fingerprint": fingerprint, "purpose": "current"},
     )
+    current_events = [
+        json.loads(block.removeprefix("data: ").strip())
+        for block in current.text.split("\n\n")
+        if block.startswith("data: ")
+    ]
+    assert any(event["type"] == "citation" for event in current_events)
     assert "999 元" in current.text
     assert "123 元" not in current.text

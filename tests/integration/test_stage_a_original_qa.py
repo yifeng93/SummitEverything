@@ -21,13 +21,16 @@ from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.writer import PageWriter
 
 
-def make_workspace(tmp_path: Path, provider=None) -> tuple[TestClient, Path, str]:
+def make_workspace(
+    tmp_path: Path, provider=None, query_service: QueryService | None = None
+) -> tuple[TestClient, Path, str]:
     token = "qa-synthetic-token"
     api = TestClient(
         create_app(
             session_token=token,
             profile_root=tmp_path / "profile",
             feishu_provider=provider,
+            query_service=query_service,
         )
     )
     api.headers.update({"Authorization": f"Bearer {token}"})
@@ -86,6 +89,7 @@ def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Pat
         },
     )
     assert response.status_code == 201, response.text
+    assert response.json()["index_update"] == "updated"
     after = api.get(f"/api/v1/pages/{ids['overview']}").json()
     metadata_preserved = (
         after["metadata"].get("validity") == "superseded"
@@ -93,9 +97,6 @@ def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Pat
         and after["metadata"].get("source_refs") == ["synthetic:fixture-1"]
         and after["metadata"].get("custom_qa_field") == {"preserve": True}
     )
-    # Simulate the index refresh that would occur after an accepted page edit.
-    incremental = index.plan(root, fingerprint="fake-qa-v1", mode="incremental")
-    index.execute_plan(root, incremental)
     answer = index.query(
         root,
         "独特词鲸蓝九七是什么",
@@ -176,6 +177,8 @@ def test_a02_same_guid_uncompleted_task_is_not_successful_completion(tmp_path: P
         guid,
     )
     assert actual.completed_at == 0
+
+
 def test_a03_unrelated_task_does_not_reconcile_unknown_create_as_success(tmp_path: Path) -> None:
     class TimeoutWithUnrelatedEvidence(FakeFeishu):
         unrelated: FeishuTask | None = None
@@ -238,9 +241,9 @@ def test_a03_unrelated_task_does_not_reconcile_unknown_create_as_success(tmp_pat
 
 
 def test_a04_approved_journal_is_incrementally_indexed_without_manual_job(tmp_path: Path) -> None:
-    api, root, workspace_id = make_workspace(tmp_path)
+    service = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"))
+    api, root, workspace_id = make_workspace(tmp_path, query_service=service)
     ids = add_project(api)
-    service = QueryService(IndexStore(tmp_path / "profile" / workspace_id / "index.sqlite3"))
     PageWriter().confirm(
         root,
         metadata={
@@ -257,6 +260,7 @@ def test_a04_approved_journal_is_incrementally_indexed_without_manual_job(tmp_pa
     )
     service.rebuild(root, fingerprint="fake-qa-v1")
     before = service.store.status(UUID(workspace_id))
+    before_embeddings = service.embedding.calls
     saved = api.post(
         "/api/v1/journal/log",
         json={
@@ -269,7 +273,20 @@ def test_a04_approved_journal_is_incrementally_indexed_without_manual_job(tmp_pa
     assert saved.status_code == 201, saved.text
     after = service.store.status(UUID(workspace_id))
     assert after["pages"] == before["pages"] + 1
+    assert saved.json()["index_update"] == "updated"
+    assert service.embedding.calls == before_embeddings + 1
+    replay = api.post(
+        "/api/v1/journal/log",
+        json={
+            "title": "自动索引独特事实",
+            "body": "蓝色玻璃鲸的代号是独特词鲸蓝九七。",
+            "confirmation_id": "journal-confirmation",
+            "operation_id": "journal-operation",
+        },
+    )
+    assert replay.status_code == 201 and replay.json()["index_update"] == "updated"
+    assert service.embedding.calls == before_embeddings + 1
     answer = service.query(
         root, "代号是什么", fingerprint="fake-qa-v1", purpose=RetrievalPurpose.CURRENT
     )
-    assert any("鲸蓝九七" in citation.snippet for citation in answer.citations)
+    assert any("鲸蓝九七" in citation.excerpt for citation in answer.citations)

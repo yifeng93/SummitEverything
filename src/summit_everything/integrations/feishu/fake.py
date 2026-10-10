@@ -120,9 +120,7 @@ class FakeFeishu:
             self._save_remote(data)
             return task
 
-    def task_result(
-        self, credentials: UserCredentials, token: str
-    ) -> TaskExecutionEvidence | None:
+    def task_result(self, credentials: UserCredentials, token: str) -> TaskExecutionEvidence | None:
         with self._remote() as data:
             result = data["results"].get(token)
             return TaskExecutionEvidence.model_validate(result) if result else None
