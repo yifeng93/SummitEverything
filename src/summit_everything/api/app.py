@@ -1,13 +1,17 @@
 """FastAPI application factory for the local-only service."""
 
+import hashlib
 import json
+import logging
 import os
 import secrets
+import tempfile
 from collections.abc import Iterator
+from datetime import datetime
 from pathlib import Path
 from threading import Event
 from typing import Annotated, Any, Literal, cast
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 
 from fastapi import (
     Depends,
@@ -16,15 +20,17 @@ from fastapi import (
     Form,
     Header,
     HTTPException,
+    Query,
     Request,
     Response,
     UploadFile,
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from summit_everything.api.routes.actions import register_actions
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.domain.models import (
     ActionCandidate,
@@ -40,8 +46,28 @@ from summit_everything.domain.models import (
     SourceDetail,
     WorkspaceContext,
 )
+from summit_everything.intake.actions import ActionService
 from summit_everything.intake.review import IntakeReviewService
-from summit_everything.intake.sources import IntakeService
+from summit_everything.intake.sources import IntakeConflict, IntakeService
+from summit_everything.integrations.feishu.fake import FakeFeishu
+from summit_everything.integrations.feishu.provider import (
+    CalendarPage,
+    CredentialStore,
+    FeishuConfig,
+    FeishuError,
+    FeishuProvider,
+    MaterialPage,
+    MemoryCredentialStore,
+)
+from summit_everything.integrations.feishu.service import (
+    AuthorizationStart,
+    FeishuService,
+    FeishuStatus,
+    ImportRequest,
+    ImportResult,
+    callback_boundary,
+)
+from summit_everything.integrations.feishu.tasks import FeishuTasks
 from summit_everything.integrations.llm import FakeLLM, LLMProviderError
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
@@ -54,6 +80,7 @@ from summit_everything.workspace.manifest import (
     delete_project,
     list_lines,
     list_projects,
+    load_manifest,
     open_workspace,
     update_line,
     update_project,
@@ -166,6 +193,23 @@ class JournalRequest(RequestModel):
     operation_id: str = Field(min_length=1)
 
 
+class ProjectOverviewConfirmation(RequestModel):
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+    confirmation_id: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+    expected_content_sha256: str | None = Field(default=None, pattern="^[0-9a-f]{64}$")
+
+
+class JournalAssistRequest(RequestModel):
+    text: str = Field(min_length=1)
+
+
+class JournalAssistResponse(BaseModel):
+    title: str
+    body: str
+
+
 class LoopbackOnly(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):  # type: ignore[no-untyped-def]
         request.state.request_id = secrets.token_hex(8)
@@ -184,6 +228,9 @@ def create_app(
     profile_root: Path | None = None,
     review_service: IntakeReviewService | None = None,
     query_service: QueryService | None = None,
+    feishu_provider: FeishuProvider | None = None,
+    credential_store: CredentialStore | None = None,
+    feishu_config: FeishuConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.add_middleware(LoopbackOnly)
@@ -200,6 +247,66 @@ def create_app(
     app.state.intake_service = intake_service
     app.state.review_service = review
     cancellations: dict[str, Event] = {}
+    config = feishu_config or FeishuConfig()
+    feishu = FeishuService(
+        feishu_provider
+        or FakeFeishu(
+            Path(tempfile.gettempdir())
+            / "summit-simulated-feishu-remote"
+            / hashlib.sha256(str(app.state.profile_root).encode()).hexdigest()
+        ),
+        credential_store or MemoryCredentialStore(),
+        config,
+        app.state.session_token,
+    )
+    app.state.feishu_service = feishu
+    tasks = FeishuTasks(feishu)
+    actions = ActionService(tasks, secrets.token_urlsafe(32))
+    app.state.action_service = actions
+
+    @app.middleware("http")
+    async def origin_guard(request: Request, call_next):  # type: ignore[no-untyped-def]
+        origin = request.headers.get("origin")
+        if origin is not None and origin not in config.allowed_origins:
+            return JSONResponse(
+                status_code=403,
+                content={
+                    "error": {"code": "forbidden_origin", "message": "只允许配置的本机页面访问。"}
+                },
+            )
+        response = await call_next(request)
+        if request.url.path == "/api/v1/integrations/feishu/callback":
+            response.headers["Cache-Control"] = "no-store"
+            if origin is not None:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Vary"] = "Origin"
+        return response
+
+    @app.exception_handler(FeishuError)
+    async def feishu_error_handler(request: Request, exc: FeishuError) -> JSONResponse:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "error": {
+                    "code": exc.code,
+                    "message": exc.message,
+                    "request_id": request.state.request_id,
+                }
+            },
+        )
+
+    @app.exception_handler(IntakeConflict)
+    async def intake_conflict_handler(request: Request, exc: IntakeConflict) -> JSONResponse:
+        return JSONResponse(
+            status_code=409,
+            content={
+                "error": {
+                    "code": "intent_conflict",
+                    "message": str(exc),
+                    "request_id": request.state.request_id,
+                }
+            },
+        )
 
     def authenticated(authorization: str | None = Header(default=None)) -> None:
         expected = f"Bearer {app.state.session_token}"
@@ -218,10 +325,41 @@ def create_app(
             )
         return workspace
 
+    register_actions(app, actions, tasks, authenticated, active_workspace)
+
+    @app.exception_handler(ValidationError)
+    async def payload_validation_error(_request: Request, exc: ValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {"code": "validation_error", "message": "请填写有效的动作字段和日期。"}
+            },
+        )
+
     def query_for(workspace: WorkspaceContext) -> QueryService:
         if query_service is not None:
             return query_service
         return QueryService(IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"))
+
+    def index_after_approval(
+        workspace: WorkspaceContext, mutation: MutationResult
+    ) -> MutationResult:
+        service = query_for(workspace)
+        fingerprint = service.store.active_fingerprint(workspace.workspace_id)
+        if fingerprint is None:
+            return mutation.model_copy(update={"index_update": "not_enabled"})
+        try:
+            root = Path(workspace.root)
+            plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
+            service.execute_plan(root, plan)
+        except Exception as exc:
+            logging.getLogger(__name__).error(
+                "Incremental index update failed for workspace %s (%s)",
+                workspace.workspace_id,
+                type(exc).__name__,
+            )
+            return mutation.model_copy(update={"index_update": "update_failed"})
+        return mutation.model_copy(update={"index_update": "updated"})
 
     @app.exception_handler(WorkspaceError)
     async def workspace_error_handler(_request: Request, exc: WorkspaceError) -> JSONResponse:
@@ -399,12 +537,15 @@ def create_app(
         payload: PageCreate,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=payload.metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=payload.metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+            ),
         )
 
     @app.get("/api/v1/pages/{page_id}", dependencies=[Depends(authenticated)])
@@ -429,13 +570,16 @@ def create_app(
                 status_code=422,
                 detail={"code": "validation_error", "message": "Page ID does not match the route"},
             )
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=payload.metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
-            expected_base_sha256=payload.expected_base_sha256,
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=payload.metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+                expected_base_sha256=payload.expected_base_sha256,
+            ),
         )
 
     @app.post("/api/v1/pages/{page_id}/moves", dependencies=[Depends(authenticated)])
@@ -452,14 +596,30 @@ def create_app(
             structure_confirmation_id=payload.structure_confirmation_id,
         )
 
+    @app.post("/api/v1/journal/assist", dependencies=[Depends(authenticated)])
+    def journal_assist(
+        payload: JournalAssistRequest,
+        _workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> JournalAssistResponse:
+        try:
+            proposals = review.provider.organize([(uuid4(), uuid4(), payload.text)])
+        except LLMProviderError as exc:
+            raise HTTPException(
+                status_code=502, detail="AI 辅助暂时不可用；已保存内容未更改。"
+            ) from exc
+        if not proposals:
+            raise HTTPException(status_code=502, detail="AI 辅助没有返回建议；已保存内容未更改。")
+        return JournalAssistResponse(title=proposals[0].title, body=proposals[0].body)
+
     @app.post("/api/v1/journal/{kind}", status_code=201, dependencies=[Depends(authenticated)])
     def journal_create(
         kind: Literal["log", "thought"],
         payload: JournalRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
+        manifest = load_manifest(Path(workspace.root))
         metadata: dict[str, Any] = {
-            "id": str(UUID(bytes=secrets.token_bytes(16), version=4)),
+            "id": str(uuid5(manifest.workspace_id, f"journal:{kind}:{payload.operation_id}")),
             "title": payload.title,
             "role": "knowledge",
             "kind": kind,
@@ -468,12 +628,60 @@ def create_app(
             metadata["line_id"] = str(payload.line_id)
         if payload.project_id is not None:
             metadata["project_id"] = str(payload.project_id)
-        return PageWriter().confirm(
-            Path(workspace.root),
-            metadata=metadata,
-            body=payload.body,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+            ),
+        )
+
+    @app.post(
+        "/api/v1/projects/{project_id}/overview/confirmations",
+        status_code=201,
+        dependencies=[Depends(authenticated)],
+    )
+    def project_overview_confirm(
+        project_id: UUID,
+        payload: ProjectOverviewConfirmation,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        manifest = load_manifest(Path(workspace.root))
+        project = next((item for item in manifest.projects if item.id == project_id), None)
+        if project is None:
+            raise WorkspaceError("Project not found", 404)
+        existing_page = next(
+            (
+                page
+                for page in list_pages(Path(workspace.root))
+                if page.page_id == project.overview_id
+            ),
+            None,
+        )
+        metadata = dict(existing_page.metadata) if existing_page is not None else {}
+        metadata.update(
+            {
+                "id": str(project.overview_id),
+                "title": payload.title,
+                "role": "knowledge",
+                "kind": "project_overview",
+                "line_id": str(project.line_id),
+                "project_id": str(project.id),
+            }
+        )
+        return index_after_approval(
+            workspace,
+            PageWriter().confirm(
+                Path(workspace.root),
+                metadata=metadata,
+                body=payload.body,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+                expected_base_sha256=payload.expected_content_sha256,
+            ),
         )
 
     @app.post("/api/v1/intake/items", status_code=201, dependencies=[Depends(authenticated)])
@@ -580,20 +788,35 @@ def create_app(
         payload: DraftConfirmationRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
-        return review.confirm_draft(
-            Path(workspace.root),
-            draft_id,
-            expected_version=payload.expected_version,
-            confirmation_id=payload.confirmation_id,
-            operation_id=payload.operation_id,
-            conflict_resolutions=payload.conflict_resolutions,
+        return index_after_approval(
+            workspace,
+            review.confirm_draft(
+                Path(workspace.root),
+                draft_id,
+                expected_version=payload.expected_version,
+                confirmation_id=payload.confirmation_id,
+                operation_id=payload.operation_id,
+                conflict_resolutions=payload.conflict_resolutions,
+            ),
         )
 
     @app.get("/api/v1/actions", dependencies=[Depends(authenticated)])
     def action_candidates(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
-    ) -> list[ActionCandidate]:
-        return review.list_actions(Path(workspace.root))
+        cursor: UUID | None = None,
+        limit: int | None = Query(default=None, ge=1, le=100),
+    ) -> list[ActionCandidate] | dict[str, Any]:
+        rows = review.list_actions(Path(workspace.root))
+        if limit is None and cursor is None:
+            return rows
+        rows = sorted(rows, key=lambda row: str(row.action_id))
+        if cursor:
+            rows = [row for row in rows if str(row.action_id) > str(cursor)]
+        size = limit or 20
+        return {
+            "items": rows[:size],
+            "next_cursor": str(rows[size - 1].action_id) if len(rows) > size else None,
+        }
 
     @app.post("/api/v1/index/plans", dependencies=[Depends(authenticated)])
     def index_plan(
@@ -615,8 +838,7 @@ def create_app(
     def index_status(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, int | str | None]:
-        store = IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3")
-        return store.status(workspace.workspace_id)
+        return query_for(workspace).status(Path(workspace.root))
 
     @app.post("/api/v1/queries", dependencies=[Depends(authenticated)])
     def query_stream(
@@ -693,7 +915,77 @@ def create_app(
         cancellation.set()
         return {"request_id": str(request_id), "state": "cancellation_requested"}
 
+    prefix = "/api/v1/integrations/feishu"
+
+    @app.get(prefix + "/status", dependencies=[Depends(authenticated)])
+    def feishu_status() -> FeishuStatus:
+        return feishu.status()
+
+    @app.post(prefix + "/authorizations", dependencies=[Depends(authenticated)])
+    def feishu_authorize() -> AuthorizationStart:
+        return feishu.authorize()
+
+    @app.get(prefix + "/callback")
+    def feishu_callback(
+        request: Request, state: str, code: str | None = None, error: str | None = None
+    ) -> FeishuStatus:
+        return feishu.callback(state, code, error, callback_boundary(str(request.url)))
+
+    @app.get(prefix + "/materials", dependencies=[Depends(authenticated)])
+    def feishu_materials(
+        query: str = "",
+        visibility: Literal["owner", "shared"] | None = None,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> MaterialPage:
+        if not 1 <= limit <= 30 or len(query) > 500 or (cursor and len(cursor) > 500):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "材料筛选无效。"}
+            )
+        return feishu.materials(query, visibility, cursor, limit)
+
+    @app.post(prefix + "/imports", dependencies=[Depends(authenticated)])
+    def feishu_imports(
+        payload: ImportRequest, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> ImportResult:
+        try:
+            return feishu.imports(Path(workspace.root), payload)
+        except ValueError as exc:
+            if isinstance(exc, IntakeConflict):
+                raise
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "材料选择无效。"}
+            ) from None
+
+    @app.get(prefix + "/calendar", dependencies=[Depends(authenticated)])
+    def feishu_calendar(
+        start: datetime, end: datetime, timezone: str, cursor: str | None = None, limit: int = 20
+    ) -> CalendarPage:
+        if not 1 <= limit <= 30 or (cursor and len(cursor) > 500):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "日历分页无效。"}
+            )
+        try:
+            return feishu.calendar(start, end, timezone, cursor, limit)
+        except ValueError:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"}
+            ) from None
+
     return app
 
 
-app = create_app(session_token=os.environ.get("SUMMIT_SESSION_TOKEN"))
+app = create_app(
+    session_token=os.environ.get("SUMMIT_SESSION_TOKEN"),
+    feishu_config=FeishuConfig(
+        redirect_uri=os.environ.get(
+            "SUMMIT_FEISHU_REDIRECT_URI",
+            f"http://127.0.0.1:{os.environ.get('SUMMIT_WEB_PORT', '5173')}"
+            "/api/v1/integrations/feishu/callback",
+        ),
+        allowed_origins=(
+            f"http://127.0.0.1:{os.environ.get('SUMMIT_WEB_PORT', '5173')}",
+            f"http://127.0.0.1:{os.environ.get('SUMMIT_API_PORT', '8793')}",
+        ),
+    ),
+)

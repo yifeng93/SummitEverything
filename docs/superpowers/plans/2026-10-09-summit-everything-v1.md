@@ -10,15 +10,15 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
-## 当前阶段记录（2026-10-09）
+## 当前阶段记录（2026-10-10）
 
-M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main；最终报告、P2 和未测边界见 [进展账本](../../implementation/PROGRESS.md) 与 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。当前可开始 M2，先做 Fake provider 流程与模拟验收。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。以下 M1 勾选反映已验收范围；M2–M5 保留为未实施计划。
+M1.1–M1.5 的 DEV 实现及模拟范围独立验收已完成。最终受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已通过独立 QA，并以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main。M2.1–M2.3 Fake-only 原始代码 `09398fcae597b2478001d40aedf580ea91322c11` 的独立定向 QA 发现 A-01 P0、A-02–A-04 P1 和 A-05 P2；执行者修复后，固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 已由独立 QA 复验通过（最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`）。当前进行合并前审查与 PR / main 合并后核验；完成前不宣告阶段 A 整体关闭。本计划继续作为全 v1 规格，不启动 M3–M5。真实飞书读取 / 写入、真实模型质量、DMG、五日试用及双机仍未完成并受各自确认门约束。
 
 ## 全局执行规则与验收门
 
-Foundation 与 M1 的模拟验收门已通过；最早未实施任务为 M2.1。当前代码包含 M1 本地应用闭环，不应再按初始框架状态开始 M1.1。
+Foundation 与 M1 的模拟验收门已通过。M2.1–M2.3 阶段 A 原候选 `09398fc` 定向复现缺陷，修复代码 `32da67e` 已通过独立 Fake-only QA；PR 合并和 main 合并后核验仍是阶段 A 退出条件。本计划中的全 v1 MUST 保持有效，不得从自动检查推断真实外部门通过，也不启动 M3–M5。
 
-每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为用真实浏览器测试。
+每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为由独立 QA 用真实浏览器检查。
 
 当前 Python 通用检查：
 
@@ -113,29 +113,35 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 文件：integrations/feishu/{auth,materials,calendar}.py、api/routes/feishu.py、web 对应功能。
 
-- [ ] 复用 SWB OAuth / session 经验，长期秘密交钥匙串，state 绑定发起会话；scope、redirect 和 endpoint 用实际注册配置。
-- [ ] 测试完整响应、过期 token、拒绝、分页、逐字稿文件内容、只获取被选材料；列表不调模型。
-- [ ] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
+- [x] Fake 范围落实 OAuth / session 边界，state 绑定发起会话；scope、redirect 和 endpoint 使用配置值。凭据目前只由进程内 `MemoryCredentialStore` 保存；OS Keychain adapter、设置入口和持久化尚未实现（NOT_RUN）。
+- [x] 测试完整响应、过期 token、拒绝、分页、逐字稿文件内容、只获取被选材料；列表不调模型。
+- [x] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
 - [ ] 账户准备好后验证真实 scope、列表和正文读取；缺失权限给具体指引，保留手动文字入口。
+
+**M2.1 初始开发记录（阶段 A 独立 QA 后重开）：** Fake 模拟范围的 DEV 检查点曾固定于 `09398fcae597b2478001d40aedf580ea91322c11`；该 SHA 后续发现阶段 A 缺陷，当前修复与 QA 状态见本计划顶部、[进展账本](../../implementation/PROGRESS.md) 和 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。真实 OAuth / user scope / 钥匙串配置仍属外部验收门，不因 Fake 开发自测勾选真实账户步骤。
 
 ### M2.2：正式任务与独立 action
 
 文件：integrations/feishu/tasks.py、intake/actions.py、workspace/action_receipts.py、api/routes/actions.py。
 
-- [ ] 测试：未确认零外部写、重复执行同意图只建一次、不同 payload 冲突、HTTP 超时后不重 POST、完成态重复完成成功。
-- [ ] 实现 action ledger / receipt、原子认领、确认与运行、核实 unknown，以及创建 / 编辑 / 完成。
-- [ ] UI 独立任务确认卡和日期输入，不猜日期、不用知识确认代替 task / project_progress 确认。
-- [ ] 使用模拟 provider 验证跨重启 / 月归档后幂等。真实外部写只用用户明确指定的测试任务。
+- [x] 测试：未确认零外部写、重复执行同意图只建一次、不同 payload 冲突、HTTP 超时后不重 POST、完成态重复完成成功。
+- [x] 实现 action ledger / receipt、原子认领、确认与运行、核实 unknown，以及创建 / 编辑 / 完成。
+- [x] UI 独立任务确认卡和日期输入，不猜日期、不用知识确认代替 task / project_progress 确认。
+- [x] 使用模拟 provider 验证跨重启 / 月归档后幂等。真实外部写未测，仍只允许用户明确指定的测试任务。
+
+**M2.2 初始开发记录（阶段 A 独立 QA 后重开）：** 初始代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`，P2 修复 `c552d143f051efe13ebfcdd29815e776147794aa`，当时的整体候选为 `09398fcae597b2478001d40aedf580ea91322c11`；该 SHA 后续发现阶段 A 缺陷。当前修复及新 SHA 独立复验状态见本计划顶部。真实全天 timestamp 规则及真实执行证据查询仍未验证，Fake 映射不得直接用于真实 adapter。
 
 ### M2.3：工作日志、思考与项目总览
 
 文件：intake/journal.py、api/routes/journal.py、web 对应入口。
 
-- [ ] 测试：日志 / 思考不绑项目可保存，关联线 / 项目也可；直接确认落盘使用同一 PageWriter；不调模型；项目进度不被自动改。
-- [ ] 提供自由正文、可选关联和显式 AI 辅助；取消辅助不影响本地已保存记录。
-- [ ] 项目总览业务内容可确认，导航从目录展示；具体事实引用子页，不生成一份重复总库。
+- [x] 测试：日志 / 思考不绑项目可保存，关联线 / 项目也可；直接确认落盘使用同一 PageWriter；浏览不调模型；项目进度不被自动改。
+- [x] 提供自由正文、可选关联和显式 AI 辅助；建议独立可编辑 / 可取消，不自动覆盖已保存内容。
+- [x] 项目总览用稳定 overview_id 经明确确认创建 / 版本保护更新，目录可重开导航；具体事实可链接子页，不生成重复总库。
 
-**M2 DEV 门：** 模拟飞书日常流、授权失败与 unknown 防重通过；单独列真实 read / write 的结果。QA 核对没有本地第二套正式待办。
+M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选固定于 `09398fcae597b2478001d40aedf580ea91322c11`。该候选的日志、思考、概览问题已在阶段 A 修复；固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 的独立 Fake-only QA 已通过，原候选与最终复验报告链见 [阶段 A QA 报告](../../quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md) 和最新交接。PR 与合并后核验仍待完成。
+
+**M2 DEV 门（历史开发记录）：** 当时 WebUI Fake 日常流程、任务 unknown 防重与重启恢复通过；原生壳 UI 尚未由执行者完成归属复演。之后阶段 A 独立 QA 已在固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 完成 Fake-only 验收，当前合并状态见本计划顶部与最新交接。真实 read / write 仍单独列示。
 
 ## M3 — 完整问答与连续工作
 

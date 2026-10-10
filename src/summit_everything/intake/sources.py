@@ -20,7 +20,7 @@ class IntakeConflict(ValueError):
     """An intake retry does not match its original user intent."""
 
 
-def _safe_filename(filename: str) -> str:
+def safe_source_filename(filename: str) -> str:
     basename = Path(filename.replace("\\", "/")).name
     cleaned = re.sub(r"[^\w.() -]+", "_", basename, flags=re.UNICODE).strip(" .")
     if not cleaned or Path(cleaned).suffix.lower() not in {".txt", ".md"}:
@@ -34,9 +34,17 @@ def _operation_path(root: Path, operation_id: str) -> Path:
 
 
 class SourceStore:
-    def capture(self, root: Path, raw: bytes, filename: str, operation_id: str) -> IntakeItem:
+    def capture(
+        self,
+        root: Path,
+        raw: bytes,
+        filename: str,
+        operation_id: str,
+        *,
+        external_identity: dict[str, str] | None = None,
+    ) -> IntakeItem:
         root = root.resolve()
-        filename = _safe_filename(filename)
+        filename = safe_source_filename(filename)
         if not operation_id.strip():
             raise WorkspaceError("Intake operation ID is required")
         digest = hashlib.sha256(raw).hexdigest()
@@ -51,7 +59,9 @@ class SourceStore:
         with workspace_lock(root):
             if journal_path.exists():
                 intent = self._read_intent(journal_path)
-                if intent.get("request_hash") != self._request_hash(raw, filename):
+                if intent.get("request_hash") != self._request_hash(
+                    raw, filename, external_identity
+                ):
                     raise IntakeConflict("operation_id was already used for different intake")
                 return self._resume(root, journal_path, intent)
             manifest = load_manifest(root)
@@ -62,8 +72,9 @@ class SourceStore:
             original_path = f"原件/{month}/{source_id}-{filename}"
             intent = {
                 "schema": "intake-source-v1",
+                "external_identity": external_identity,
                 "operation_id": operation_id,
-                "request_hash": self._request_hash(raw, filename),
+                "request_hash": self._request_hash(raw, filename, external_identity),
                 "source_id": str(source_id),
                 "item_id": str(item_id),
                 "filename": filename,
@@ -191,9 +202,15 @@ class SourceStore:
                 if intent.get("state") != "succeeded":
                     self._resume(root, path, intent)
 
-    def _request_hash(self, raw: bytes, filename: str) -> str:
+    def _request_hash(
+        self, raw: bytes, filename: str, external_identity: dict[str, str] | None = None
+    ) -> str:
         payload = json.dumps(
-            {"sha256": hashlib.sha256(raw).hexdigest(), "filename": filename},
+            {
+                "sha256": hashlib.sha256(raw).hexdigest(),
+                "filename": filename,
+                **({"external_identity": external_identity} if external_identity else {}),
+            },
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
@@ -254,6 +271,7 @@ class SourceStore:
             filename=intent["filename"],
             sha256=intent["sha256"],
             created_at=created_at,
+            external_identity=intent.get("external_identity"),
         )
         source_index = root / ".summit-everything" / "sources" / f"{month}.json"
         existing_records: list[dict[str, Any]] = []

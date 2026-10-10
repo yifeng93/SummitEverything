@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, newOperationId, type Page, type Project } from '../api/client'
+import { api, indexUpdateMessage, newOperationId, type MutationResult, type Page, type Project } from '../api/client'
 
 type Props = { page: Page; onClose: () => void; onReload: () => Promise<void> }
 
@@ -26,13 +26,14 @@ export function PageReader({ page, onClose, onReload }: Props) {
     setBusy(true)
     setError('')
     try {
-      await api.post('/pages/' + page.page_id + '/confirmations', {
+      const result = await api.post<MutationResult>('/pages/' + page.page_id + '/confirmations', {
         metadata: { ...page.metadata, title },
         body,
         confirmation_id: newOperationId(),
         operation_id: newOperationId(),
         expected_base_sha256: page.content_sha256,
       })
+      setNotice(indexUpdateMessage(result.index_update) ?? '')
       await onReload()
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : '无法确认此页面'
@@ -97,7 +98,7 @@ export function PageReader({ page, onClose, onReload }: Props) {
         </section>
       ) : <>
         {error && <p role="alert" className="form-error">{error}</p>}
-        {notice && <p role="status" className="success-note">{notice}</p>}
+        {notice && <p role="status" className={notice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{notice}</p>}
         <pre className="page-body">{page.body}</pre>
         <section className="page-structure-actions" aria-label="页面组织操作">
           <label className="field"><span>移动到项目</span><select aria-label="移动到项目" value={moveProject} onChange={(event) => setMoveProject(event.target.value)}><option value="">选择项目</option>{projects.filter((project) => project.id !== String(page.metadata.project_id ?? '')).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>

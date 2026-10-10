@@ -4,6 +4,161 @@
  */
 
 export interface paths {
+    "/api/v1/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Action Candidates */
+        get: operations["action_candidates_api_v1_actions_get"];
+        put?: never;
+        /** Propose */
+        post: operations["propose_api_v1_actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/action-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Actions */
+        get: operations["list_actions_api_v1_action_intents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Action */
+        get: operations["get_action_api_v1_actions__action_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Action */
+        patch: operations["edit_action_api_v1_actions__action_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Action */
+        post: operations["confirm_action_api_v1_actions__action_id__confirmations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}/executions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Execute Action */
+        post: operations["execute_action_api_v1_actions__action_id__executions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}/reconciliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile Action */
+        post: operations["reconcile_action_api_v1_actions__action_id__reconciliations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}/outcomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Outcome Action */
+        post: operations["outcome_action_api_v1_actions__action_id__outcomes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Task List */
+        get: operations["task_list_api_v1_integrations_feishu_tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/tasks/{task_guid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Task Get */
+        get: operations["task_get_api_v1_integrations_feishu_tasks__task_guid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -196,6 +351,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/journal/assist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Journal Assist */
+        post: operations["journal_assist_api_v1_journal_assist_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/journal/{kind}": {
         parameters: {
             query?: never;
@@ -207,6 +379,23 @@ export interface paths {
         put?: never;
         /** Journal Create */
         post: operations["journal_create_api_v1_journal__kind__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/overview/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Project Overview Confirm */
+        post: operations["project_overview_confirm_api_v1_projects__project_id__overview_confirmations_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -352,23 +541,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/actions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Action Candidates */
-        get: operations["action_candidates_api_v1_actions_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/index/plans": {
         parameters: {
             query?: never;
@@ -454,10 +626,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/integrations/feishu/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Status */
+        get: operations["feishu_status_api_v1_integrations_feishu_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/authorizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Feishu Authorize */
+        post: operations["feishu_authorize_api_v1_integrations_feishu_authorizations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Callback */
+        get: operations["feishu_callback_api_v1_integrations_feishu_callback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/materials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Materials */
+        get: operations["feishu_materials_api_v1_integrations_feishu_materials_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Feishu Imports */
+        post: operations["feishu_imports_api_v1_integrations_feishu_imports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/feishu/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feishu Calendar */
+        get: operations["feishu_calendar_api_v1_integrations_feishu_calendar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Action */
+        Action: {
+            /**
+             * Action Id
+             * Format: uuid
+             */
+            action_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "feishu_task_create" | "feishu_task_update" | "feishu_task_complete" | "project_progress";
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Payload Sha256 */
+            payload_sha256: string;
+            /** Confirmation Id */
+            confirmation_id?: string | null;
+            /**
+             * State
+             * @default proposed
+             * @enum {string}
+             */
+            state: "proposed" | "confirmed" | "running" | "succeeded" | "failed" | "unknown";
+            /** Candidate Id */
+            candidate_id?: string | null;
+            /** Source Draft Id */
+            source_draft_id?: string | null;
+            /** Source Ids */
+            source_ids?: string[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Confirmed At */
+            confirmed_at?: string | null;
+            /** Started At */
+            started_at?: string | null;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Attempt Session */
+            attempt_session?: string | null;
+            /** Provider Result */
+            provider_result?: {
+                [key: string]: unknown;
+            } | null;
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            }[];
+        };
         /** ActionCandidate */
         ActionCandidate: {
             /**
@@ -493,12 +821,87 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ActionConfirmation */
+        ActionConfirmation: {
+            /** Payload Sha256 */
+            payload_sha256: string;
+            /** Confirmation Id */
+            confirmation_id: string;
+        };
+        /** ActionEdit */
+        ActionEdit: {
+            /** Expected Payload Sha256 */
+            expected_payload_sha256: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+        };
+        /** ActionPage */
+        ActionPage: {
+            /** Items */
+            items: components["schemas"]["Action"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** ActionProposal */
+        ActionProposal: {
+            /**
+             * Action Id
+             * Format: uuid
+             */
+            action_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "feishu_task_create" | "feishu_task_update" | "feishu_task_complete" | "project_progress";
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Candidate Id */
+            candidate_id?: string | null;
+        };
+        /** AuthorizationStart */
+        AuthorizationStart: {
+            /** Authorization Url */
+            authorization_url: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+        };
         /** Body_intake_file_api_v1_intake_files_post */
         Body_intake_file_api_v1_intake_files_post: {
             /** Operation Id */
             operation_id: string;
             /** File */
             file: string;
+        };
+        /** CalendarEvent */
+        CalendarEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+            /**
+             * End
+             * Format: date-time
+             */
+            end: string;
+        };
+        /** CalendarPage */
+        CalendarPage: {
+            /** Items */
+            items: components["schemas"]["CalendarEvent"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+            /** Timezone */
+            timezone: string;
         };
         /** Draft */
         Draft: {
@@ -578,10 +981,76 @@ export interface components {
             /** Expected Base Sha256 */
             expected_base_sha256?: string | null;
         };
+        /** FeishuStatus */
+        FeishuStatus: {
+            /**
+             * Mode
+             * @default fake
+             */
+            mode: string;
+            /** Authorized */
+            authorized: boolean;
+            /**
+             * Token Type
+             * @default user
+             */
+            token_type: string;
+            /** Scopes */
+            scopes: string[];
+        };
+        /** FeishuTask */
+        FeishuTask: {
+            /** Guid */
+            guid: string;
+            /** Summary */
+            summary: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            due?: components["schemas"]["ProviderDue"] | null;
+            /**
+             * Completed At
+             * @default 0
+             */
+            completed_at: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ImportOutcome */
+        ImportOutcome: {
+            /** Material Id */
+            material_id: string;
+            /** State */
+            state: string;
+            /** Item Id */
+            item_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /** Message */
+            message?: string | null;
+        };
+        /** ImportRequest */
+        ImportRequest: {
+            /** Material Ids */
+            material_ids: string[];
+            /** Operation Id */
+            operation_id: string;
+        };
+        /** ImportResult */
+        ImportResult: {
+            /** Operation Id */
+            operation_id: string;
+            /** State */
+            state: string;
+            /** Outcomes */
+            outcomes: components["schemas"]["ImportOutcome"][];
         };
         /** IndexPlan */
         IndexPlan: {
@@ -741,6 +1210,18 @@ export interface components {
             /** Operation Id */
             operation_id: string;
         };
+        /** JournalAssistRequest */
+        JournalAssistRequest: {
+            /** Text */
+            text: string;
+        };
+        /** JournalAssistResponse */
+        JournalAssistResponse: {
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+        };
         /** JournalRequest */
         JournalRequest: {
             /** Title */
@@ -784,6 +1265,36 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** Material */
+        Material: {
+            /** Material Id */
+            material_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Kind
+             * @default minute
+             * @constant
+             */
+            kind: "minute";
+            /**
+             * Visibility
+             * @enum {string}
+             */
+            visibility: "owner" | "shared";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** MaterialPage */
+        MaterialPage: {
+            /** Items */
+            items: components["schemas"]["Material"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
         /** MutationResult */
         MutationResult: {
             /** Operation Id */
@@ -805,6 +1316,8 @@ export interface components {
              * @default true
              */
             saved_locally: boolean;
+            /** Index Update */
+            index_update?: ("not_enabled" | "updated" | "update_failed") | null;
         };
         /** PageConfirmation */
         PageConfirmation: {
@@ -888,6 +1401,19 @@ export interface components {
             /** Operation Id */
             operation_id: string;
         };
+        /** ProjectOverviewConfirmation */
+        ProjectOverviewConfirmation: {
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Confirmation Id */
+            confirmation_id: string;
+            /** Operation Id */
+            operation_id: string;
+            /** Expected Content Sha256 */
+            expected_content_sha256?: string | null;
+        };
         /** ProjectPatch */
         ProjectPatch: {
             /** Name */
@@ -923,8 +1449,27 @@ export interface components {
              * @default false
              */
             archived: boolean;
+            /**
+             * Progress
+             * @default
+             */
+            progress: string;
+            /**
+             * Progress Version
+             * @default 0
+             */
+            progress_version: number;
+            /** Progress Confirmation Id */
+            progress_confirmation_id?: string | null;
         } & {
             [key: string]: unknown;
+        };
+        /** ProviderDue */
+        ProviderDue: {
+            /** Timestamp */
+            timestamp: number;
+            /** Is All Day */
+            is_all_day: boolean;
         };
         /** QueryRequest */
         QueryRequest: {
@@ -949,6 +1494,10 @@ export interface components {
         };
         /** SourceRecord */
         SourceRecord: {
+            /** External Identity */
+            external_identity?: {
+                [key: string]: string;
+            } | null;
             /**
              * Source Id
              * Format: uuid
@@ -973,6 +1522,27 @@ export interface components {
             created_at: string;
         } & {
             [key: string]: unknown;
+        };
+        /** TaskPage */
+        TaskPage: {
+            /** Items */
+            items: components["schemas"]["FeishuTask"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** UserOutcome */
+        UserOutcome: {
+            /** Payload Sha256 */
+            payload_sha256: string;
+            /** Confirmation Id */
+            confirmation_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "succeeded" | "failed";
+            /** Evidence */
+            evidence: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -1077,6 +1647,392 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    action_candidates_api_v1_actions_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionCandidate"][] | {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    propose_api_v1_actions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionProposal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_actions_api_v1_action_intents_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_action_api_v1_actions__action_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_action_api_v1_actions__action_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_action_api_v1_actions__action_id__confirmations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionConfirmation"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    execute_action_api_v1_actions__action_id__executions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionConfirmation"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_action_api_v1_actions__action_id__reconciliations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    outcome_action_api_v1_actions__action_id__outcomes_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserOutcome"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Action"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_list_api_v1_integrations_feishu_tasks_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_get_api_v1_integrations_feishu_tasks__task_guid__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                task_guid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeishuTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -1612,6 +2568,41 @@ export interface operations {
             };
         };
     };
+    journal_assist_api_v1_journal_assist_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JournalAssistRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalAssistResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     journal_create_api_v1_journal__kind__post: {
         parameters: {
             query?: never;
@@ -1626,6 +2617,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["JournalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MutationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_overview_confirm_api_v1_projects__project_id__overview_confirmations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectOverviewConfirmation"];
             };
         };
         responses: {
@@ -2022,37 +3050,6 @@ export interface operations {
             };
         };
     };
-    action_candidates_api_v1_actions_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActionCandidate"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     index_plan_api_v1_index_plans_post: {
         parameters: {
             query?: never;
@@ -2213,6 +3210,209 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_status_api_v1_integrations_feishu_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeishuStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_authorize_api_v1_integrations_feishu_authorizations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthorizationStart"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_callback_api_v1_integrations_feishu_callback_get: {
+        parameters: {
+            query: {
+                state: string;
+                code?: string | null;
+                error?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeishuStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_materials_api_v1_integrations_feishu_materials_get: {
+        parameters: {
+            query?: {
+                query?: string;
+                visibility?: ("owner" | "shared") | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_imports_api_v1_integrations_feishu_imports_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feishu_calendar_api_v1_integrations_feishu_calendar_get: {
+        parameters: {
+            query: {
+                start: string;
+                end: string;
+                timezone: string;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarPage"];
                 };
             };
             /** @description Validation Error */

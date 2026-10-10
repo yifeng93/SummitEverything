@@ -1,3 +1,5 @@
+import { TasksPanel } from './TasksPanel'
+import { FeishuPanel } from './FeishuPanel'
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   api,
@@ -6,8 +8,10 @@ import {
   type Draft,
   type IntakeItem,
   type Line,
+  type MutationResult,
   type Page,
   type Project,
+  indexUpdateMessage,
 } from '../api/client'
 import { DraftReview } from './DraftReview'
 
@@ -26,6 +30,7 @@ export function TodayView({ onError }: Props) {
   const [projectId, setProjectId] = useState('')
   const [activeDraft, setActiveDraft] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [indexNotice, setIndexNotice] = useState('')
   const [today] = useState(() => new Date())
   const operations = useRef<Record<string, string>>({})
 
@@ -89,12 +94,13 @@ export function TodayView({ onError }: Props) {
     const key = 'journal:' + text
     setBusy(true)
     try {
-      await api.post('/journal/log', {
+      const result = await api.post<MutationResult>('/journal/log', {
         title: text.trim().split('\n')[0].slice(0, 60) || '工作日志',
         body: text,
         confirmation_id: operation(key + ':confirmation'),
         operation_id: operation(key),
       })
+      setIndexNotice(indexUpdateMessage(result.index_update) ?? '')
       finish(key)
       finish(key + ':confirmation')
       setText('')
@@ -165,6 +171,8 @@ export function TodayView({ onError }: Props) {
 
       <div className="today-grid">
         <div className="today-main">
+          <FeishuPanel onImported={refresh} />
+          <TasksPanel projects={projects} candidates={actions} />
           <section className="panel capture-panel">
             <div className="panel-heading"><div><h2>随手记</h2><p>记录原文不会调用模型，也不会自动写入正式知识。</p></div><span className="panel-index">01</span></div>
             <form onSubmit={saveIntake}>
@@ -181,6 +189,7 @@ export function TodayView({ onError }: Props) {
                 </div>
               </div>
             </form>
+            {indexNotice && <p role="status" className={indexNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{indexNotice}</p>}
           </section>
 
           <section className="panel queue-panel">
@@ -233,7 +242,7 @@ export function TodayView({ onError }: Props) {
                 draft={active}
                 pages={pages}
                 onError={onError}
-                onConfirmed={async () => { setActiveDraft(null); await refresh() }}
+                onConfirmed={async (indexStatus) => { setIndexNotice(indexStatus); setActiveDraft(null); await refresh() }}
                 onUpdated={async () => { await refresh() }}
               />
             )}

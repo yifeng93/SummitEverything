@@ -1,0 +1,19 @@
+{
+  "fixed_source_sha": "32da67e9c0280e3dae18fd374e30c925565b0b82",
+  "qa_checkout_head_before_report": "7f785c033bb96a43ae50ad6cf55b9c20474db85b",
+  "service_runs": [
+    {"scenario": "initial C16/C17 and C18 setup", "api_pid": 38908, "api_port": 18828, "web_port": 15228, "cdp_port": 19239, "run_id": "3175466ef844c3b99aca48a80995d470"},
+    {"scenario": "C18 receipt write interruption and recovery", "api_pid": 39317, "api_port": 18828, "web_port": 15228, "cdp_port": 19239, "run_id": "not captured in this run; action attempt_session and PID/args are preserved in workspace receipt and runner output"},
+    {"scenario": "C23 atomic/archive/mismatch follow-up", "api_pid": 39469, "vite_pid": 39484, "api_port": 18828, "web_port": 15228, "cdp_port": 19239, "run_id": "2f60531c240f9d64a60cb17d9bc12202"}
+  ],
+  "chrome": {"pid": 38642, "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "profile": ".local/qa/stage-a-final-round4/chrome-profile", "cdp_port": 19239, "origin": "http://127.0.0.1:15228/", "profile_was_not_default": true},
+  "cleanup": {
+    "runner_session_stopped": true,
+    "chrome_pid_terminated_after_args_check": 38642,
+    "ports_audited_closed": [18806, 15206, 15211, 18811, 8793, 5173, 18828, 15228, 19239],
+    "round_four_native_candidate_launched": false,
+    "native_results_refer_to_prior_follow-up_only": true,
+    "old_m1_pid_23745_touched": false,
+    "default_browser_profile_touched": false
+  }
+}

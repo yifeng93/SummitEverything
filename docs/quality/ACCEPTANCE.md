@@ -69,3 +69,64 @@ Must FAIL、未关闭 P0 / P1 阻止相关阶段通过。真实门未测时只�
 缺陷写：阶段、代码 SHA、案例 ID、严重度、最小材料、复现步骤、预期 / 实际、证据、建议边界。
 
 测试者可增加独立黑盒测试，但不改产品代码，不因为实现现状而改期望。实现者修复并提交新 SHA；新报告标明修复项及受影响回归，旧报告保留。
+
+## M2.1 Fake 复验（C15 与日历）
+
+启动与完整检查命令见 README 的 M2.1 节；使用空的隔离工作库。点击模拟授权，搜索并筛选 owner/shared，换页选定材料、取消选择；确认列表不产生 intake/job/draft/page。再只导入所选，读取 sources API 并核对原字节、SHA-256 与 external_identity；检查队列为 pending、仍无稿件 / 页面。重放 operation_id 不重复原件，换 payload 必须 409。日历明确指定 2026-10-09 至 2026-10-10 与 Asia/Shanghai，检查日程 / 空态 / 分页。
+
+`tests/integration/test_feishu.py` 使用真实 API / SourceStore / 隔离库，外部边界 Fake：多页、空页、visibility、只取选择正文、失败逐项、denied/expired/scope/404/malformed/timeout/unavailable、UTF-8 / 类型 / 安全文件名 / 大小、state 重放 / 到期 / 跨运行 / callback 地址 / Origin、授权 Bearer 门、重启幂等及原件写后中断恢复。`FeishuPanel.test.tsx` 覆盖真实组件的失败授权、分页选择、部分结果、取消与日历空 / 错误态。
+
+实现者自测不填写独立 QA 通过。真实 Feishu 用户权限、账户登录、真实材料与钥匙串持久化均未测；任务写属于 M2.2。
+
+M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请求实际注册目的地且不跟随 redirect / 携带凭据；检查 callback allowlist CORS / no-store、非法外部地址拒绝。导入合法材料与“ .txt”等被来源 writer 拒绝的名称，必须逐项失败且其余继续。模拟 token_expired / not_authorized 后查看界面状态并确认读取按钮关闭，missing_scope 显示权限不足且没有虚构成功；检查合成 AppCredentials 与 user token 隔离、配置无秘密、状态 / 错误 / 授权 URL 无秘密。
+
+## M2.3 Fake 复验（C09 / C18）
+
+使用合成库分别直接保存日志与思考，验证无关联、仅关联主线、主线加项目；列表刷新零模型调用。显式 AI 辅助后编辑 / 取消建议，确认 suggestion 不写页面；保存成功后从日志列表重开。重复相同 operation_id / confirmation_id / payload（含并发）只写一页，重试响应相同；改变 payload 需 409。用失效主线或不属于该主线的项目验证拒绝。
+
+新建项目不生成概览页；从项目目录明确创建，重开；更新必须带当前内容版本，旧版本409且原正文保留。概览可以相对链接权威事实页。创建 / 更新 / 直接确认日志与思考后，核对 project progress 版本与值均未变；再通过 M2.2 独立 progress action 确认能单独改变。此处 DEV 测试不是独立 QA 结论。
+
+已有索引时，日志、思考、项目概览、稿件批准、直接页面确认和外部编辑重新确认都应自动对同一 fingerprint 增量更新；首次索引仍需用户确认。检查 MutationResult 的 index_update 与 `/index/status` 的 state，覆盖未启用、成功、失败 / 中断。增量不得重嵌未变内容或触发 full / model_change。失败后索引 state 应为 stale，旧 SQLite chunk 经版本资格门不得成为当前引用；C04/C10/C11/C12/C13/C23 保持独立验收。
+
+
+## M2.2 Fake 复验（C16–C18）
+
+实现者检查为 DEV 证据，独立 QA 尚未执行。命令：`uv run pytest -q tests/integration/test_actions.py`；`npm --prefix web test -- TasksPanel.test.tsx`；M1 / M2.1 回归沿用 README 全量命令。
+
+1. 未确认、模型建议或知识批准均零任务写 / 零进度变化。手动标题、显式无日期 / 全天 / 带偏移时间后审阅 exact 值，确认仍不执行，另点执行才调用 Fake。确认后编辑使原确认失效，必须新 ID 重新确认。
+2. 同 ID/hash 多次执行、双击和并发只一次副作用；进行中202 + Location。改变 hash409，两个有效 action 可同标题。已完成任务再完成直接成功，无第二次 PATCH；只选 due 时标题 / 描述不变。
+   创建 / 编辑响应须与明确请求字段一致，容许 timestamp int/string 的合法归一化；明确清空描述 / 日期按返回对象验证。同 GUID 旧对象、未生效字段或 completed_at=0 均不能记 succeeded，转 unknown 后不重发。
+3. 注入远端已写后 Timeout、响应损坏、真实子进程退出；重启保留 Fake remote 文件，running→unknown，无证据不重发，不按标题猜成功。只读核实确切 Fake 证据 / 用户独立明确 outcome，可终结并保留 evidence；同核实 ID重放，变更依据409。迟到响应不得覆盖明确终态。
+   Fake `task_result` 只有在 client_token、动作类型、目标和返回字段均匹配当前动作时才构成证据；普通 FeishuTask、无关任务或冲突结果保持 unknown。此 Fake 契约不表示真实 Feishu 有按 client_token 查询端点。
+4. 完成回执跨月摘要后重启可查 / 防重；unknown/running 不压掉。摘要写后删 active 中断允许相同副本，损坏hash或冲突副本必须409。
+5. 候选转换保留 draft/source，旧 GET /actions 数组兼容；新列表cursor/limit分页。进度动作锁 + expected_version + write_intent，只独立确认后改进度，旧版本失败不覆盖；模拟写后丢回执可读本地 writer evidence。
+
+实际账号权限、真实 GET/POST/PATCH、真实全天日期提取 / 时间 normalization、真实 token 查询能力、凭据 / OS Keychain、DMG、真实材料和模型质量均 NOT_RUN。全天 Fake 午夜约定不是真实协议验收。2026-10-10 最终 UI 树复演：独立临时 workspace/profile，创建（显式无日期）→确认→执行→refresh，完成→确认→执行→refresh 已完成；控制台warn/error为0。异常 / 并发 / 子进程路径由真实服务和文件测试覆盖，未声称浏览器全部复演。
+
+## M2 固定候选执行者复演（代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`）
+
+执行者完整命令、UI 场景、隔离目录、run identity 和边界见 [M2 DEV 报告](reports/2026-10-10-M2-DEV.md)。此节记录执行者证据，不能代替独立 QA：
+
+- C15：实际 WebUI 进行了模拟授权、材料选择/取消/单条导入、待整理状态，以及日历日期范围、空态和反向区间验证。root 复演未覆盖授权拒绝/过期、provider 错误源的日历态或真实 UI 分页；相应 API / 组件 Fake 用例存在。
+- C16–C17：实际 WebUI 完成无日期任务创建、字段编辑与全天日期修改、独立审阅 / 确认 / 执行、完成态重复操作。Fake 注入分别在写入后与写入前抛 timeout；前者只读核实后成功，后者保持 unknown；刷新与重启后没有再次写入。M2.2 P2“空白核实依据”已独立修复并复核。
+- C18：知识批准、task action 与 project_progress action 分离；项目进度单独确认后变化，日志/思考/概览写入不会隐式改变进度。C09 日志 / 思考关联组合、显式 Fake AI 建议取消和项目概览链接 / 版本更新亦在 WebUI 实际操作。
+- 最后一次 `invalidated_confirmation` UI 描述误标已由回归测试修复；当前提示要求修改后重新独立确认。
+- 原生壳 UI NOT_RUN：运行的开发服务端口就绪，但 CUA 同名选择命中另一个 M1 QA checkout 的窗口，且显示 readiness error；执行者未操作那个 QA 实例。当前固定候选需在独立 QA checkout 用能确认归属的原生窗口补验。
+- 本次 CUA 浏览器 console 日志未导出，不作零 warning/error 声明。真实 Feishu、真实材料 / 任务 / 模型、Keychain、DMG、五日及双机全部 NOT_RUN。
+
+2026-10-10 用户更新：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain 均已准备，用户可配合提供配置并参与测试。上述真实门仍是 NOT_RUN，因为固定候选仅 Fake provider；“条件可用”不代表已实现、已操作或已通过。下一轮评估需判断先做固定 SHA 独立 QA，还是先补真实 adapter / 配置路径与隔离；任何真实登录、材料发送、付费模型调用或飞书 task 写入都应列出具体数据、目标、范围与成本，再由用户逐项确认。
+
+自动检查在固定候选全量复跑通过：后端 135 passed；前端 8 个文件 / 31 项通过；ruff / format / mypy / lock / uv build / Swift build / typecheck / Web build 通过。保留 1 条 Starlette/httpx 弃用提示与 3 条既有 React effect lint warning。以上均为 DEV 证据，待独立验收者在固定代码 SHA 上复核。
+
+## M2.1–M2.3 阶段 A 最终独立 Fake-only QA
+
+- **最终受测源码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`。
+- **最终独立 QA 报告：** [第四轮最终复验](reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)，报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`，结论为 **PASS（Fake-only M2.1–M2.3）**。最终 QA checkout 与执行环境独立于实现 checkout；未修改产品 `src`、`web` 或测试实现。
+- **报告链：** 原候选初验 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`（固定 `09398fcae597b2478001d40aedf580ea91322c11`）→ 第一轮最终候选报告 `bb5231d5d31a64f57605bf8443f5f57752aac50d` → 第二轮补充 `91b0a93c615b3a16f5cf428b7f131a443d3ff59e` → 第三轮补充 `7f785c033bb96a43ae50ad6cf55b9c20474db85b` → 第四轮最终报告 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。各轮旧报告原样保留，第四轮 PASS 不覆盖历史失败或未测观察。
+- **缺陷结论：** A-01 至 A-04 原候选反例均已由实现修复，并在最终候选行为回归和独立复验中通过；A-05 的 journal 审批展示、外部编辑重新确认和文档状态已复验。最终 Fake QA 未关闭 P0/P1/P2=0。初验和整改细节分别见原候选报告及 [修复 DEV 报告](reports/2026-10-10-M2-stage-a-fix-dev.md)。
+- **场景结论：** C09、C15、C16、C17、C18、C23 为 PASS（按报告跨轮聚合）；关联 C04/C10/C11/C12/C13 与知识保存 / 索引资格门按最终报告及第三轮证据核对。C16 覆盖一次性副作用、重启、异 payload 拒绝和 unknown 不重发；C17 覆盖字段核验、合法规范化、明确清空、完成幂等和无效响应；C18 覆盖知识与进度分离、版本冲突和回执恢复；C23 覆盖真实文件写中断、归档中断、冲突副本与损坏回执。具体逐步证据、API / 磁盘断言、截图、CDP 摘要及复演步骤均在报告的 evidence 子目录和 `replay.md`。
+- **UI 限制：** 当前没有 OAuth cancel UI 控件，因此该 UI 变体 **NOT_RUN**；Fake API denial/state rejection 通过。此项不是当前 Fake gate 的产品缺陷。
+- **浏览器与原生壳：** 最终浏览器使用隔离 Chrome profile 和本地 Fake 服务；最终限定捕获窗中 41 个本地响应、0 个失败请求、0 console warning/error/runtime exception。原生开发壳窗口、目录选择、候选身份、Quit / 最后窗口清理与启动失败反馈在第二轮 follow-up 有独立候选证据。各自证据和观察范围见相应报告；final fourth round 没有重跑原生壳。
+- **自动检查：** 固定源码完整自动矩阵见第一轮报告；后端 142 passed、前端 8 个测试文件 / 32 项通过，ruff check / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build、Swift build 与 `git diff --check` 均退出 0。第四轮新增指定后端集成测试 43 passed，保留 1 条既有 Starlette/httpx TestClient deprecation；原有 3 条 React effect lint warning 保留。无依赖或 lock 变更。
+- **真实门：** 真实 Feishu 登录 / scope / task 读写、真实材料、真实 LLM / embedding / rerank、Keychain、DMG、五日试用、双机继续 **NOT_RUN**；用户准备的资源没有被读取或消费。本结论只覆盖 Fake 模拟范围。
+- **整合状态：** 本记录在合并前维护。PR、main merge SHA 与独立 main checkout 合并后检查需在阶段 A 最终交接中追加；该状态未完成前不据本节单独宣布阶段 A 完整关闭。

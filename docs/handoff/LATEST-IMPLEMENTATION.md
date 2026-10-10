@@ -1,5 +1,21 @@
 # 最新实现交接
 
+## M2 阶段 A — Fake-only 整改与独立复验
+
+- **当前代码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
+- **原候选：** `09398fcae597b2478001d40aedf580ea91322c11`。原候选 QA 测试与报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`；A-01 P0、A-02–A-04 P1、A-05 P2 复现结果见 [原候选定向 QA](../quality/reports/2026-10-10-M2-stage-a-original-qa.md)。报告结论保持原样。
+- **当前状态：** Fake-only M2.1–M2.3 阶段 A 已由独立 QA 在固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 复验通过；最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。原候选缺陷初验及后续各轮复验报告均保留，结论与受测 SHA 对应。
+- **初始文档 checkpoint：** M2 核心规格 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`；执行交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。本阶段更新文档将在修复代码之后单独提交；它不改变受测代码 SHA。
+- **自测摘要：** Python 142 passed；Web 8 files / 32 tests；Ruff、format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build 与 Swift build 退出 0。保留 1 条既有 Starlette/httpx 弃用警告和 3 条既有 React effect lint 警告。以上不是独立 QA 结论。
+- **独立验收摘要：** A-01–A-05 与阶段 A Fake-only MUST 场景通过；未关闭 P0/P1/P2=0。浏览器 Fake 流程和 console、原生开发壳归属 / 窗口 / Quit / 退出清理均有独立报告和证据。API 没有 OAuth cancel UI 控件的变体记 NOT_RUN，API denial 已覆盖。
+- **边界与待办：** 当前正在进行合并前审查、PR、main 合并与独立 main checkout 复核；这些完成前不宣告阶段 A 完整闭环。
+- **真实门：** 当前只有 Fake providers；本轮未访问真实 Feishu、付费模型、真实业务材料或 Keychain，未执行 DMG、五日或双机验证。用户备好的真实资源未被消费；真实门继续 NOT_RUN。
+- **阶段边界：** 未启动 M3–M5；阶段 A 结束后等待用户将最终报告交独立技术评定者，再决定阶段 B/C。
+
+以下 `M1` 区域为历史交接记录。
+
+下文保留 M1 独立 QA 历史。
+
 ## 固定候选
 
 - **阶段：** M1.1–M1.5 DEV、独立模拟验收及 main 合并后检查均通过。
@@ -60,4 +76,4 @@ uv run python scripts/run_dev.py
 
 ## 下一阶段
 
-M1 已收口，当前可以开始 M2，首个任务为 M2.1。先在隔离模拟环境使用 Fake Feishu provider 完成授权失败、材料选择 / 分页 / 正文读取和日历流程，再交独立 QA。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。
+此处保留阶段 A 开始前的历史交接状态：当时 M2.1–M2.3 等待固定 SHA 独立 QA，原代码 SHA 为 `09398fcae597b2478001d40aedf580ea91322c11`，核心文档 checkpoint 为 `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`。最新阶段状态见本文件顶部；真实资源的边界与 M3–M5 暂缓决议仍有效。

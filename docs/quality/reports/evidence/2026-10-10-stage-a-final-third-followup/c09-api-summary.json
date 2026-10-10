@@ -1,0 +1,40 @@
+{
+  "source": "read-only same-origin GET /api/v1/pages after UI saves; IDs and bodies omitted",
+  "records": [
+    {
+      "title": "QA R3 C09 line only",
+      "kind": "log",
+      "association": "line only",
+      "approval_state": "confirmed",
+      "validity": "current"
+    },
+    {
+      "title": "QA R3 C09 verified project log",
+      "kind": "log",
+      "association": "line + project",
+      "approval_state": "confirmed",
+      "validity": "current"
+    },
+    {
+      "title": "QA R3 C09 unassociated thought",
+      "kind": "thought",
+      "association": "none",
+      "approval_state": "confirmed",
+      "validity": "current"
+    },
+    {
+      "title": "QA R3 C09 associated thought",
+      "kind": "thought",
+      "association": "line + project",
+      "approval_state": "confirmed",
+      "validity": "current"
+    },
+    {
+      "title": "QA Round 3 A05 external edit",
+      "kind": "log",
+      "association": "none",
+      "approval_state": "invalid after external edit",
+      "validity": "current"
+    }
+  ]
+}

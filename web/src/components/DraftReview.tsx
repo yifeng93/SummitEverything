@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
-import { api, newOperationId, type Draft, type Page, type SourceDetail } from '../api/client'
+import { api, indexUpdateMessage, newOperationId, type Draft, type MutationResult, type Page, type SourceDetail } from '../api/client'
 
 type Conflict = { id: string; question: string; alternatives: string[] }
 type Props = {
   draft: Draft
   pages: Page[]
   onError: (message: string) => void
-  onConfirmed: () => Promise<void>
+  onConfirmed: (indexStatus: string) => Promise<void>
   onUpdated: () => Promise<void>
 }
 
@@ -20,6 +20,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
   const [resolutions, setResolutions] = useState<Record<string, string>>(draft.conflict_resolutions ?? {})
   const [busy, setBusy] = useState(false)
   const [source, setSource] = useState<SourceDetail | null>(null)
+  const [indexNotice, setIndexNotice] = useState('')
   const operationIds = useRef<Record<string, string>>({})
   const target = pages.find((page) => page.page_id === targetId)
   const staleBase = Boolean(target && target.content_sha256 !== baseHash)
@@ -70,16 +71,17 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
     try {
       const current = dirty ? await saveDraft() : draft
       const expectedVersion = dirty ? current.version : version
-      await api.post('/drafts/' + draft.draft_id + '/confirmations', {
+      const result = await api.post<MutationResult>('/drafts/' + draft.draft_id + '/confirmations', {
         expected_version: expectedVersion,
         confirmation_id: op(key + ':confirmation'),
         operation_id: op(key),
         conflict_resolutions: resolutions,
       })
+      setIndexNotice(indexUpdateMessage(result.index_update) ?? '')
       delete operationIds.current[key]
       delete operationIds.current[key + ':confirmation']
       onError('')
-      await onConfirmed()
+      await onConfirmed(indexUpdateMessage(result.index_update) ?? '')
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : '无法确认稿件'
       if (message.includes('页面已变化') || message.includes('changed since it was reviewed')) {
@@ -93,6 +95,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
 
   return (
     <section className="draft-review" aria-label="审核稿编辑">
+      {indexNotice && <p role="status" className={indexNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{indexNotice}</p>}
       <div className="review-topline"><span>完整审核稿</span><span>{draft.source_ids.length} 个原始来源</span></div>
       <label className="field"><span>页面标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
       <label className="compact-field target-select"><span>整理到</span>

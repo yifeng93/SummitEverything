@@ -26,6 +26,9 @@ class ProjectRecord(OpenModel):
     directory: str
     overview_id: UUID
     archived: bool = False
+    progress: str = ""
+    progress_version: int = Field(default=0, ge=0)
+    progress_confirmation_id: str | None = None
 
 
 class WorkspaceManifest(OpenModel):
@@ -63,9 +66,11 @@ class MutationResult(BaseModel):
     changed_paths: list[str]
     page_versions: dict[str, str] = Field(default_factory=dict)
     saved_locally: bool = True
+    index_update: Literal["not_enabled", "updated", "update_failed"] | None = None
 
 
 class SourceRecord(OpenModel):
+    external_identity: dict[str, str] | None = None
     source_id: UUID
     role: Literal["source"] = "source"
     original_relative_path: str

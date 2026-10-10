@@ -34,6 +34,31 @@ class QueryService:
         self.embedding = embedding or FakeEmbedding()
         self.reranker = reranker or FakeReranker()
 
+    def status(self, root: Path) -> dict[str, int | str | None]:
+        manifest = load_manifest(root)
+        status = self.store.status(manifest.workspace_id)
+        fingerprint = status["fingerprint"]
+        if fingerprint is None:
+            return {**status, "state": "not_ready", "current_pages": 0, "stale_pages": 0}
+        current = {
+            str(page.page_id): page.content_sha256
+            for page in self._eligible_pages(list_pages(root), purpose=RetrievalPurpose.HISTORY)
+        }
+        indexed = {
+            str(chunk["page_id"]): str(chunk["content_sha256"])
+            for chunk in self.store.get_chunks(manifest.workspace_id, str(fingerprint))
+        }
+        stale = sum(
+            current.get(page_id) != indexed.get(page_id)
+            for page_id in current.keys() | indexed.keys()
+        )
+        return {
+            **status,
+            "state": "ready" if stale == 0 else "stale",
+            "current_pages": len(current),
+            "stale_pages": stale,
+        }
+
     def plan(self, root: Path, *, fingerprint: str, mode: str) -> IndexPlan:
         if not fingerprint.strip():
             raise WorkspaceError("Model fingerprint is required")

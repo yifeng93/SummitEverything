@@ -1,0 +1,1238 @@
+[
+  {
+    "method": "Runtime.executionContextCreated",
+    "params": {
+      "context": {
+        "id": 1,
+        "origin": "http://127.0.0.1:15203",
+        "name": "",
+        "uniqueId": "-2778457092777018842.4178767772021944913",
+        "auxData": {
+          "isDefault": true,
+          "type": "default",
+          "frameId": "D1550B9A2FCFF7147D8A974357AB5C56"
+        }
+      }
+    }
+  },
+  {
+    "method": "Runtime.consoleAPICalled",
+    "params": {
+      "type": "debug",
+      "args": [
+        {
+          "type": "string",
+          "value": "[vite] connecting..."
+        }
+      ],
+      "executionContextId": 1,
+      "timestamp": 1791601748840.316,
+      "stackTrace": {
+        "callFrames": [
+          {
+            "functionName": "",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 934,
+            "columnNumber": 8
+          }
+        ]
+      }
+    }
+  },
+  {
+    "method": "Runtime.consoleAPICalled",
+    "params": {
+      "type": "debug",
+      "args": [
+        {
+          "type": "string",
+          "value": "[vite] connected."
+        }
+      ],
+      "executionContextId": 1,
+      "timestamp": 1791601748844.502,
+      "stackTrace": {
+        "callFrames": [
+          {
+            "functionName": "handleMessage",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 1047,
+            "columnNumber": 11
+          },
+          {
+            "functionName": "",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 663,
+            "columnNumber": 41
+          },
+          {
+            "functionName": "dequeue",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 685,
+            "columnNumber": 7
+          },
+          {
+            "functionName": "",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 677,
+            "columnNumber": 8
+          },
+          {
+            "functionName": "enqueue",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 671,
+            "columnNumber": 9
+          },
+          {
+            "functionName": "",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 663,
+            "columnNumber": 27
+          },
+          {
+            "functionName": "onMessage",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 96,
+            "columnNumber": 5
+          },
+          {
+            "functionName": "",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:15203/@vite/client",
+            "lineNumber": 214,
+            "columnNumber": 4
+          }
+        ]
+      }
+    }
+  },
+  {
+    "method": "Runtime.consoleAPICalled",
+    "params": {
+      "type": "info",
+      "args": [
+        {
+          "type": "string",
+          "value": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools"
+        },
+        {
+          "type": "string",
+          "value": "font-weight:bold"
+        }
+      ],
+      "executionContextId": 1,
+      "timestamp": 1791601748872.089,
+      "stackTrace": {
+        "callFrames": [
+          {
+            "functionName": "",
+            "scriptId": "8",
+            "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+            "lineNumber": 15804,
+            "columnNumber": 48
+          },
+          {
+            "functionName": "",
+            "scriptId": "8",
+            "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+            "lineNumber": 15841,
+            "columnNumber": 3
+          },
+          {
+            "functionName": "",
+            "scriptId": "13",
+            "url": "http://127.0.0.1:15203/node_modules/.vite/deps/rolldown-runtime-BvCyGRYZ.js?v=cf228cae",
+            "lineNumber": 1,
+            "columnNumber": 48
+          },
+          {
+            "functionName": "",
+            "scriptId": "8",
+            "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+            "lineNumber": 15846,
+            "columnNumber": 18
+          },
+          {
+            "functionName": "",
+            "scriptId": "13",
+            "url": "http://127.0.0.1:15203/node_modules/.vite/deps/rolldown-runtime-BvCyGRYZ.js?v=cf228cae",
+            "lineNumber": 1,
+            "columnNumber": 48
+          },
+          {
+            "functionName": "",
+            "scriptId": "8",
+            "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+            "lineNumber": 15849,
+            "columnNumber": 15
+          }
+        ]
+      }
+    }
+  },
+  {
+    "method": "Network.requestWillBeSent",
+    "params": {
+      "requestId": "23878.44",
+      "loaderId": "ED2B19BC5F23809EAFF6B4CC3A50D0B4",
+      "documentURL": "http://127.0.0.1:15203/",
+      "request": {
+        "url": "http://127.0.0.1:15203/api/v1/index/status",
+        "method": "GET",
+        "headers": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:15203/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "mixedContentType": "none",
+        "initialPriority": "High",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "isSameSite": true
+      },
+      "timestamp": 157628.56747,
+      "wallTime": 1791601776.272427,
+      "initiator": {
+        "type": "script",
+        "stack": {
+          "callFrames": [
+            {
+              "functionName": "request",
+              "scriptId": "14",
+              "url": "http://127.0.0.1:15203/src/api/client.ts",
+              "lineNumber": 54,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "get",
+              "scriptId": "14",
+              "url": "http://127.0.0.1:15203/src/api/client.ts",
+              "lineNumber": 62,
+              "columnNumber": 16
+            },
+            {
+              "functionName": "",
+              "scriptId": "15",
+              "url": "http://127.0.0.1:15203/src/components/AskView.tsx",
+              "lineNumber": 19,
+              "columnNumber": 23
+            },
+            {
+              "functionName": "",
+              "scriptId": "15",
+              "url": "http://127.0.0.1:15203/src/components/AskView.tsx",
+              "lineNumber": 26,
+              "columnNumber": 7
+            },
+            {
+              "functionName": "react_stack_bottom_frame",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 14177,
+              "columnNumber": 12
+            },
+            {
+              "functionName": "runWithFiberInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 943,
+              "columnNumber": 65
+            },
+            {
+              "functionName": "commitHookEffectListMount",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 6900,
+              "columnNumber": 152
+            },
+            {
+              "functionName": "commitHookPassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 6935,
+              "columnNumber": 54
+            },
+            {
+              "functionName": "commitPassiveMountOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8312,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "recursivelyTraversePassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8299,
+              "columnNumber": 312
+            },
+            {
+              "functionName": "commitPassiveMountOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8371,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "recursivelyTraversePassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8299,
+              "columnNumber": 312
+            },
+            {
+              "functionName": "commitPassiveMountOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8371,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "recursivelyTraversePassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8299,
+              "columnNumber": 312
+            },
+            {
+              "functionName": "commitPassiveMountOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8311,
+              "columnNumber": 5
+            },
+            {
+              "functionName": "recursivelyTraversePassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8299,
+              "columnNumber": 312
+            },
+            {
+              "functionName": "commitPassiveMountOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8371,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "recursivelyTraversePassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8299,
+              "columnNumber": 312
+            },
+            {
+              "functionName": "commitPassiveMountOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8321,
+              "columnNumber": 5
+            },
+            {
+              "functionName": "flushPassiveEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9582,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "flushPendingEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9543,
+              "columnNumber": 10
+            },
+            {
+              "functionName": "flushSpawnedWork",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9520,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "commitRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9333,
+              "columnNumber": 435
+            },
+            {
+              "functionName": "completeRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9298,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "completeRootWhenReady",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8799,
+              "columnNumber": 3
+            },
+            {
+              "functionName": "performWorkOnRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8771,
+              "columnNumber": 7
+            },
+            {
+              "functionName": "performSyncWorkOnRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9841,
+              "columnNumber": 3
+            },
+            {
+              "functionName": "flushSyncWorkAcrossRoots_impl",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9758,
+              "columnNumber": 301
+            },
+            {
+              "functionName": "processRootScheduleInMicrotask",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9779,
+              "columnNumber": 100
+            },
+            {
+              "functionName": "",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9852,
+              "columnNumber": 149
+            }
+          ]
+        }
+      },
+      "redirectHasExtraInfo": false,
+      "type": "Fetch",
+      "frameId": "D1550B9A2FCFF7147D8A974357AB5C56",
+      "hasUserGesture": false
+    }
+  },
+  {
+    "method": "Network.requestWillBeSent",
+    "params": {
+      "requestId": "23878.45",
+      "loaderId": "ED2B19BC5F23809EAFF6B4CC3A50D0B4",
+      "documentURL": "http://127.0.0.1:15203/",
+      "request": {
+        "url": "http://127.0.0.1:15203/api/v1/index/status",
+        "method": "GET",
+        "headers": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:15203/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "mixedContentType": "none",
+        "initialPriority": "High",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "isSameSite": true
+      },
+      "timestamp": 157628.567656,
+      "wallTime": 1791601776.272567,
+      "initiator": {
+        "type": "script",
+        "stack": {
+          "callFrames": [
+            {
+              "functionName": "request",
+              "scriptId": "14",
+              "url": "http://127.0.0.1:15203/src/api/client.ts",
+              "lineNumber": 54,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "get",
+              "scriptId": "14",
+              "url": "http://127.0.0.1:15203/src/api/client.ts",
+              "lineNumber": 62,
+              "columnNumber": 16
+            },
+            {
+              "functionName": "",
+              "scriptId": "15",
+              "url": "http://127.0.0.1:15203/src/components/AskView.tsx",
+              "lineNumber": 19,
+              "columnNumber": 23
+            },
+            {
+              "functionName": "",
+              "scriptId": "15",
+              "url": "http://127.0.0.1:15203/src/components/AskView.tsx",
+              "lineNumber": 26,
+              "columnNumber": 7
+            },
+            {
+              "functionName": "react_stack_bottom_frame",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 14177,
+              "columnNumber": 12
+            },
+            {
+              "functionName": "runWithFiberInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 943,
+              "columnNumber": 65
+            },
+            {
+              "functionName": "commitHookEffectListMount",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 6900,
+              "columnNumber": 152
+            },
+            {
+              "functionName": "commitHookPassiveMountEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 6935,
+              "columnNumber": 54
+            },
+            {
+              "functionName": "reconnectPassiveEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8400,
+              "columnNumber": 5
+            },
+            {
+              "functionName": "doubleInvokeEffectsOnFiber",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9698,
+              "columnNumber": 180
+            },
+            {
+              "functionName": "runWithFiberInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 943,
+              "columnNumber": 65
+            },
+            {
+              "functionName": "recursivelyTraverseAndDoubleInvokeEffectsInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9691,
+              "columnNumber": 70
+            },
+            {
+              "functionName": "recursivelyTraverseAndDoubleInvokeEffectsInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9691,
+              "columnNumber": 138
+            },
+            {
+              "functionName": "recursivelyTraverseAndDoubleInvokeEffectsInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9691,
+              "columnNumber": 138
+            },
+            {
+              "functionName": "recursivelyTraverseAndDoubleInvokeEffectsInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9691,
+              "columnNumber": 138
+            },
+            {
+              "functionName": "recursivelyTraverseAndDoubleInvokeEffectsInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9691,
+              "columnNumber": 138
+            },
+            {
+              "functionName": "commitDoubleInvokeEffectsInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9706,
+              "columnNumber": 3
+            },
+            {
+              "functionName": "flushPassiveEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9583,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "flushPendingEffects",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9543,
+              "columnNumber": 10
+            },
+            {
+              "functionName": "flushSpawnedWork",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9520,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "commitRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9333,
+              "columnNumber": 435
+            },
+            {
+              "functionName": "completeRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9298,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "completeRootWhenReady",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8799,
+              "columnNumber": 3
+            },
+            {
+              "functionName": "performWorkOnRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 8771,
+              "columnNumber": 7
+            },
+            {
+              "functionName": "performSyncWorkOnRoot",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9841,
+              "columnNumber": 3
+            },
+            {
+              "functionName": "flushSyncWorkAcrossRoots_impl",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9758,
+              "columnNumber": 301
+            },
+            {
+              "functionName": "processRootScheduleInMicrotask",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9779,
+              "columnNumber": 100
+            },
+            {
+              "functionName": "",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9852,
+              "columnNumber": 149
+            }
+          ]
+        }
+      },
+      "redirectHasExtraInfo": false,
+      "type": "Fetch",
+      "frameId": "D1550B9A2FCFF7147D8A974357AB5C56",
+      "hasUserGesture": false
+    }
+  },
+  {
+    "method": "Network.requestWillBeSentExtraInfo",
+    "params": {
+      "requestId": "23878.44",
+      "associatedCookies": [],
+      "headers": {
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Connection": "keep-alive",
+        "Host": "127.0.0.1:15203",
+        "Referer": "http://127.0.0.1:15203/",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"macOS\""
+      },
+      "connectTiming": {
+        "requestTime": 157628.567832
+      },
+      "clientSecurityState": {
+        "initiatorIsSecureContext": true,
+        "initiatorIPAddressSpace": "Loopback",
+        "localNetworkAccessRequestPolicy": "PermissionBlock"
+      },
+      "siteHasCookieInOtherPartition": false
+    }
+  },
+  {
+    "method": "Network.responseReceivedExtraInfo",
+    "params": {
+      "requestId": "23878.44",
+      "blockedCookies": [],
+      "headers": {
+        "Vary": "Origin",
+        "connection": "close",
+        "content-length": "113",
+        "content-type": "application/json",
+        "date": "Sat, 10 Oct 2026 03:09:35 GMT",
+        "server": "uvicorn"
+      },
+      "resourceIPAddressSpace": "Loopback",
+      "statusCode": 200,
+      "headersText": "HTTP/1.1 200 OK\r\nVary: Origin\r\ndate: Sat, 10 Oct 2026 03:09:35 GMT\r\nserver: uvicorn\r\ncontent-length: 113\r\ncontent-type: application/json\r\nconnection: close\r\n\r\n",
+      "cookiePartitionKey": {
+        "topLevelSite": "http://127.0.0.1",
+        "hasCrossSiteAncestor": false
+      },
+      "cookiePartitionKeyOpaque": false,
+      "exemptedCookies": []
+    }
+  },
+  {
+    "method": "Network.responseReceived",
+    "params": {
+      "requestId": "23878.44",
+      "loaderId": "ED2B19BC5F23809EAFF6B4CC3A50D0B4",
+      "timestamp": 157628.574043,
+      "type": "Fetch",
+      "response": {
+        "url": "http://127.0.0.1:15203/api/v1/index/status",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-length": "113",
+          "date": "Sat, 10 Oct 2026 03:09:35 GMT",
+          "content-type": "application/json",
+          "Vary": "Origin",
+          "server": "uvicorn",
+          "connection": "close"
+        },
+        "mimeType": "application/json",
+        "charset": "",
+        "connectionReused": false,
+        "connectionId": 1428,
+        "remoteIPAddress": "127.0.0.1",
+        "remotePort": 15203,
+        "fromDiskCache": false,
+        "fromServiceWorker": false,
+        "fromPrefetchCache": false,
+        "encodedDataLength": 159,
+        "timing": {
+          "requestTime": 157628.567832,
+          "proxyStart": -1,
+          "proxyEnd": -1,
+          "dnsStart": 0.078,
+          "dnsEnd": 0.194,
+          "connectStart": 0.194,
+          "connectEnd": 0.343,
+          "sslStart": -1,
+          "sslEnd": -1,
+          "workerStart": -1,
+          "workerReady": -1,
+          "workerFetchStart": -1,
+          "workerRespondWithSettled": -1,
+          "sendStart": 0.374,
+          "sendEnd": 0.402,
+          "pushStart": 0,
+          "pushEnd": 0,
+          "receiveHeadersStart": 5.952,
+          "receiveHeadersEnd": 6.006
+        },
+        "responseTime": 1791601776278.669,
+        "protocol": "http/1.1",
+        "alternateProtocolUsage": "unspecifiedReason",
+        "securityState": "secure"
+      },
+      "hasExtraInfo": true,
+      "frameId": "D1550B9A2FCFF7147D8A974357AB5C56"
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.44",
+      "timestamp": 157628.57416,
+      "dataLength": 113,
+      "encodedDataLength": 113
+    }
+  },
+  {
+    "method": "Network.loadingFinished",
+    "params": {
+      "requestId": "23878.44",
+      "timestamp": 157628.573984,
+      "encodedDataLength": 272
+    }
+  },
+  {
+    "method": "Network.requestWillBeSentExtraInfo",
+    "params": {
+      "requestId": "23878.45",
+      "associatedCookies": [],
+      "headers": {
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Connection": "keep-alive",
+        "Host": "127.0.0.1:15203",
+        "Referer": "http://127.0.0.1:15203/",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"macOS\""
+      },
+      "connectTiming": {
+        "requestTime": 157628.56814
+      },
+      "clientSecurityState": {
+        "initiatorIsSecureContext": true,
+        "initiatorIPAddressSpace": "Loopback",
+        "localNetworkAccessRequestPolicy": "PermissionBlock"
+      },
+      "siteHasCookieInOtherPartition": false
+    }
+  },
+  {
+    "method": "Network.responseReceivedExtraInfo",
+    "params": {
+      "requestId": "23878.45",
+      "blockedCookies": [],
+      "headers": {
+        "Vary": "Origin",
+        "connection": "close",
+        "content-length": "113",
+        "content-type": "application/json",
+        "date": "Sat, 10 Oct 2026 03:09:35 GMT",
+        "server": "uvicorn"
+      },
+      "resourceIPAddressSpace": "Loopback",
+      "statusCode": 200,
+      "headersText": "HTTP/1.1 200 OK\r\nVary: Origin\r\ndate: Sat, 10 Oct 2026 03:09:35 GMT\r\nserver: uvicorn\r\ncontent-length: 113\r\ncontent-type: application/json\r\nconnection: close\r\n\r\n",
+      "cookiePartitionKey": {
+        "topLevelSite": "http://127.0.0.1",
+        "hasCrossSiteAncestor": false
+      },
+      "cookiePartitionKeyOpaque": false,
+      "exemptedCookies": []
+    }
+  },
+  {
+    "method": "Network.responseReceived",
+    "params": {
+      "requestId": "23878.45",
+      "loaderId": "ED2B19BC5F23809EAFF6B4CC3A50D0B4",
+      "timestamp": 157628.579301,
+      "type": "Fetch",
+      "response": {
+        "url": "http://127.0.0.1:15203/api/v1/index/status",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-length": "113",
+          "date": "Sat, 10 Oct 2026 03:09:35 GMT",
+          "content-type": "application/json",
+          "Vary": "Origin",
+          "server": "uvicorn",
+          "connection": "close"
+        },
+        "mimeType": "application/json",
+        "charset": "",
+        "connectionReused": false,
+        "connectionId": 1433,
+        "remoteIPAddress": "127.0.0.1",
+        "remotePort": 15203,
+        "fromDiskCache": false,
+        "fromServiceWorker": false,
+        "fromPrefetchCache": false,
+        "encodedDataLength": 159,
+        "timing": {
+          "requestTime": 157628.56814,
+          "proxyStart": -1,
+          "proxyEnd": -1,
+          "dnsStart": 6.336,
+          "dnsEnd": 6.348,
+          "connectStart": 6.348,
+          "connectEnd": 6.516,
+          "sslStart": -1,
+          "sslEnd": -1,
+          "workerStart": -1,
+          "workerReady": -1,
+          "workerFetchStart": -1,
+          "workerRespondWithSettled": -1,
+          "sendStart": 6.561,
+          "sendEnd": 6.593,
+          "pushStart": 0,
+          "pushEnd": 0,
+          "receiveHeadersStart": 10.9,
+          "receiveHeadersEnd": 10.96
+        },
+        "responseTime": 1791601776283.927,
+        "protocol": "http/1.1",
+        "alternateProtocolUsage": "unspecifiedReason",
+        "securityState": "secure"
+      },
+      "hasExtraInfo": true,
+      "frameId": "D1550B9A2FCFF7147D8A974357AB5C56"
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.45",
+      "timestamp": 157628.579574,
+      "dataLength": 113,
+      "encodedDataLength": 0
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.45",
+      "timestamp": 157628.579697,
+      "dataLength": 0,
+      "encodedDataLength": 113
+    }
+  },
+  {
+    "method": "Network.loadingFinished",
+    "params": {
+      "requestId": "23878.45",
+      "timestamp": 157628.579578,
+      "encodedDataLength": 272
+    }
+  },
+  {
+    "method": "Network.requestWillBeSentExtraInfo",
+    "params": {
+      "requestId": "23878.46",
+      "associatedCookies": [],
+      "headers": {
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Connection": "keep-alive",
+        "Content-Length": "143",
+        "Content-Type": "application/json",
+        "Host": "127.0.0.1:15203",
+        "Origin": "http://127.0.0.1:15203",
+        "Referer": "http://127.0.0.1:15203/",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"macOS\""
+      },
+      "connectTiming": {
+        "requestTime": 157629.383431
+      },
+      "clientSecurityState": {
+        "initiatorIsSecureContext": true,
+        "initiatorIPAddressSpace": "Loopback",
+        "localNetworkAccessRequestPolicy": "PermissionBlock"
+      },
+      "siteHasCookieInOtherPartition": false
+    }
+  },
+  {
+    "method": "Network.requestWillBeSent",
+    "params": {
+      "requestId": "23878.46",
+      "loaderId": "ED2B19BC5F23809EAFF6B4CC3A50D0B4",
+      "documentURL": "http://127.0.0.1:15203/",
+      "request": {
+        "url": "http://127.0.0.1:15203/api/v1/queries",
+        "method": "POST",
+        "headers": {
+          "sec-ch-ua-platform": "\"macOS\"",
+          "Referer": "http://127.0.0.1:15203/",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\"",
+          "Content-Type": "application/json",
+          "sec-ch-ua-mobile": "?0"
+        },
+        "postData": "{\"question\":\"琥珀岛四二\",\"fingerprint\":\"summit-fake-embedding-v1\",\"purpose\":\"current\",\"request_id\":\"eff75d6e-00db-44ff-b7e9-87b3f43126e4\"}",
+        "hasPostData": true,
+        "postDataEntries": [
+          {
+            "bytes": "eyJxdWVzdGlvbiI6IueQpeePgOWym+Wbm+S6jCIsImZpbmdlcnByaW50Ijoic3VtbWl0LWZha2UtZW1iZWRkaW5nLXYxIiwicHVycG9zZSI6ImN1cnJlbnQiLCJyZXF1ZXN0X2lkIjoiZWZmNzVkNmUtMDBkYi00NGZmLWI3ZTktODdiM2Y0MzEyNmU0In0="
+          }
+        ],
+        "mixedContentType": "none",
+        "initialPriority": "High",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "isSameSite": true
+      },
+      "timestamp": 157629.383067,
+      "wallTime": 1791601777.088025,
+      "initiator": {
+        "type": "script",
+        "stack": {
+          "callFrames": [
+            {
+              "functionName": "ask",
+              "scriptId": "15",
+              "url": "http://127.0.0.1:15203/src/components/AskView.tsx",
+              "lineNumber": 64,
+              "columnNumber": 26
+            },
+            {
+              "functionName": "executeDispatch",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9905,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "runWithFiberInDEV",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 943,
+              "columnNumber": 65
+            },
+            {
+              "functionName": "processDispatchQueue",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 9931,
+              "columnNumber": 26
+            },
+            {
+              "functionName": "",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 10200,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "batchedUpdates$1",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 2144,
+              "columnNumber": 11
+            },
+            {
+              "functionName": "dispatchEventForPluginEventSystem",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 10004,
+              "columnNumber": 3
+            },
+            {
+              "functionName": "dispatchEvent",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 12512,
+              "columnNumber": 28
+            },
+            {
+              "functionName": "dispatchDiscreteEvent",
+              "scriptId": "8",
+              "url": "http://127.0.0.1:15203/node_modules/.vite/deps/react-dom_client.js?v=cf228cae",
+              "lineNumber": 12494,
+              "columnNumber": 55
+            },
+            {
+              "functionName": "",
+              "scriptId": "27",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 268
+            },
+            {
+              "functionName": "",
+              "scriptId": "27",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 289
+            }
+          ]
+        }
+      },
+      "redirectHasExtraInfo": false,
+      "type": "Fetch",
+      "frameId": "D1550B9A2FCFF7147D8A974357AB5C56",
+      "hasUserGesture": false
+    }
+  },
+  {
+    "method": "Network.responseReceivedExtraInfo",
+    "params": {
+      "requestId": "23878.46",
+      "blockedCookies": [],
+      "headers": {
+        "Access-Control-Allow-Origin": "http://127.0.0.1:15203",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin",
+        "cache-control": "no-cache",
+        "connection": "close",
+        "content-type": "text/event-stream; charset=utf-8",
+        "date": "Sat, 10 Oct 2026 03:09:36 GMT",
+        "server": "uvicorn",
+        "x-accel-buffering": "no"
+      },
+      "resourceIPAddressSpace": "Loopback",
+      "statusCode": 200,
+      "headersText": "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: http://127.0.0.1:15203\r\nVary: Origin\r\ndate: Sat, 10 Oct 2026 03:09:36 GMT\r\nserver: uvicorn\r\ncache-control: no-cache\r\nx-accel-buffering: no\r\ncontent-type: text/event-stream; charset=utf-8\r\nconnection: close\r\nTransfer-Encoding: chunked\r\n\r\n",
+      "cookiePartitionKey": {
+        "topLevelSite": "http://127.0.0.1",
+        "hasCrossSiteAncestor": false
+      },
+      "cookiePartitionKeyOpaque": false,
+      "exemptedCookies": []
+    }
+  },
+  {
+    "method": "Network.responseReceived",
+    "params": {
+      "requestId": "23878.46",
+      "loaderId": "ED2B19BC5F23809EAFF6B4CC3A50D0B4",
+      "timestamp": 157629.388631,
+      "type": "Fetch",
+      "response": {
+        "url": "http://127.0.0.1:15203/api/v1/queries",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "Transfer-Encoding": "chunked",
+          "cache-control": "no-cache",
+          "x-accel-buffering": "no",
+          "connection": "close",
+          "Access-Control-Allow-Origin": "http://127.0.0.1:15203",
+          "date": "Sat, 10 Oct 2026 03:09:36 GMT",
+          "content-type": "text/event-stream; charset=utf-8",
+          "Vary": "Origin",
+          "server": "uvicorn"
+        },
+        "mimeType": "text/event-stream",
+        "charset": "utf-8",
+        "connectionReused": false,
+        "connectionId": 1440,
+        "remoteIPAddress": "127.0.0.1",
+        "remotePort": 15203,
+        "fromDiskCache": false,
+        "fromServiceWorker": false,
+        "fromPrefetchCache": false,
+        "encodedDataLength": 283,
+        "timing": {
+          "requestTime": 157629.383431,
+          "proxyStart": -1,
+          "proxyEnd": -1,
+          "dnsStart": 0.086,
+          "dnsEnd": 0.111,
+          "connectStart": 0.111,
+          "connectEnd": 0.402,
+          "sslStart": -1,
+          "sslEnd": -1,
+          "workerStart": -1,
+          "workerReady": -1,
+          "workerFetchStart": -1,
+          "workerRespondWithSettled": -1,
+          "sendStart": 0.489,
+          "sendEnd": 0.558,
+          "pushStart": 0,
+          "pushEnd": 0,
+          "receiveHeadersStart": 4.899,
+          "receiveHeadersEnd": 4.947
+        },
+        "responseTime": 1791601777093.222,
+        "protocol": "http/1.1",
+        "alternateProtocolUsage": "unspecifiedReason",
+        "securityState": "secure"
+      },
+      "hasExtraInfo": true,
+      "frameId": "D1550B9A2FCFF7147D8A974357AB5C56"
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.46",
+      "timestamp": 157629.388886,
+      "dataLength": 123,
+      "encodedDataLength": 129
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.46",
+      "timestamp": 157629.394888,
+      "dataLength": 441,
+      "encodedDataLength": 448
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.46",
+      "timestamp": 157629.395169,
+      "dataLength": 234,
+      "encodedDataLength": 240
+    }
+  },
+  {
+    "method": "Network.dataReceived",
+    "params": {
+      "requestId": "23878.46",
+      "timestamp": 157629.397226,
+      "dataLength": 770,
+      "encodedDataLength": 777
+    }
+  },
+  {
+    "method": "Network.loadingFinished",
+    "params": {
+      "requestId": "23878.46",
+      "timestamp": 157629.395652,
+      "encodedDataLength": 1882
+    }
+  },
+  {
+    "method": "Page.frameResized",
+    "params": {}
+  },
+  {
+    "method": "Page.frameResized",
+    "params": {}
+  },
+  {
+    "method": "Network.webSocketFrameSent",
+    "params": {
+      "requestId": "23878.22",
+      "timestamp": 157631.14152,
+      "response": {
+        "opcode": 1,
+        "mask": true,
+        "payloadData": "{\"type\":\"ping\"}"
+      }
+    }
+  }
+]

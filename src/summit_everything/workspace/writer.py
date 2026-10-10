@@ -533,3 +533,46 @@ class PageWriter:
         if target.exists():
             raise WorkspaceWriteConflict("A page already occupies the generated path")
         return target.relative_to(root).as_posix()
+
+
+class ProjectProgressWriter:
+    """One confirmed local action changes only business progress in the manifest."""
+
+    def apply(
+        self,
+        root: Path,
+        *,
+        project_id: UUID,
+        expected_version: int,
+        progress: str,
+        operation_id: str,
+        confirmation_id: str,
+    ) -> dict[str, Any]:
+        from summit_everything.workspace.transactions import write_intent
+
+        if not confirmation_id.strip():
+            raise WorkspaceWriteConflict("项目进度需要独立确认。")
+        with workspace_lock(root):
+            manifest = load_manifest(root)
+            project = next((row for row in manifest.projects if row.id == project_id), None)
+            if project is None:
+                raise WorkspaceError("项目不存在。", 404)
+            current = int(getattr(project, "progress_version", 0))
+            if current != expected_version:
+                raise WorkspaceWriteConflict("项目进度已变化，请重新查看。")
+            project.progress = progress
+            project.progress_version = current + 1
+            project.progress_confirmation_id = confirmation_id
+            path = root / ".summit-everything/manifest.json"
+            write_intent(
+                root,
+                operation_id,
+                path,
+                _read_digest(path),
+                manifest.model_dump_json(indent=2).encode(),
+            )
+            return {
+                "project_id": str(project_id),
+                "progress": progress,
+                "progress_version": current + 1,
+            }

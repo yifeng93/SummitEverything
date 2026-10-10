@@ -1,0 +1,35 @@
+{
+  "scope": "synthetic Fake workspace only",
+  "project_progress": "Fake-only milestone recorded for C18 separation check.",
+  "progress_version": 1,
+  "overview_present": true,
+  "actions": [
+    {
+      "kind": "feishu_task_create",
+      "summary": "QA unknown recovery task",
+      "state": "succeeded",
+      "provider_result_present": true,
+      "evidence_kinds": [
+        "provider_lookup"
+      ],
+      "progress_version": null
+    },
+    {
+      "kind": "feishu_task_create",
+      "summary": "QA synthetic double-confirm task",
+      "state": "succeeded",
+      "provider_result_present": true,
+      "evidence_kinds": [],
+      "progress_version": null
+    },
+    {
+      "kind": "project_progress",
+      "summary": null,
+      "state": "succeeded",
+      "provider_result_present": true,
+      "evidence_kinds": [],
+      "progress_version": 1
+    }
+  ],
+  "recovery_limitation": "Unknown task action eventually has one Fake remote provider record and a read-only verified receipt. The exact remote count before and after the read-only click was not separately captured as a counter artifact; no second create click was made."
+}

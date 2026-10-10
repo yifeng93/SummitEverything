@@ -1,0 +1,32 @@
+{"event": "harness_ready", "pid": 38611, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "harness_ready", "pid": 38612, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"counts": {"results": 0, "tasks": 0}, "event": "task_create_before", "summary": "QA R4 concurrent double"}
+{"counts": {"results": 1, "tasks": 1}, "event": "task_create_persisted", "summary": "QA R4 concurrent double"}
+{"event": "harness_ready", "pid": 38827, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "harness_ready", "pid": 38828, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"counts": {"results": 1, "tasks": 1}, "event": "task_create_before", "summary": "QA R4 process exit"}
+{"counts": {"results": 2, "tasks": 2}, "event": "task_create_persisted", "summary": "QA R4 process exit"}
+{"counts": {"results": 2, "tasks": 2}, "event": "task_create_process_exit_after_persist", "summary": "QA R4 process exit"}
+{"event": "harness_ready", "pid": 38907, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "harness_ready", "pid": 38908, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"counts": {"results": 2, "tasks": 2}, "event": "task_create_before", "summary": "QA R4 no due"}
+{"counts": {"results": 3, "tasks": 3}, "event": "task_create_persisted", "summary": "QA R4 no due"}
+{"counts": {"results": 3, "tasks": 3}, "event": "task_create_before", "summary": "QA R4 all day"}
+{"counts": {"results": 4, "tasks": 4}, "event": "task_create_persisted", "summary": "QA R4 all day"}
+{"counts": {"results": 4, "tasks": 4}, "event": "task_create_before", "summary": "QA R4 offset time"}
+{"counts": {"results": 5, "tasks": 5}, "event": "task_create_persisted", "summary": "QA R4 offset time"}
+{"event": "task_patch_before", "task_guid": "de3b3d45-f5cd-49c9-af6e-91140674c1c3", "update_fields": ["description"]}
+{"event": "task_patch_after", "task_guid": "de3b3d45-f5cd-49c9-af6e-91140674c1c3", "update_fields": ["description"]}
+{"event": "task_patch_before", "task_guid": "de3b3d45-f5cd-49c9-af6e-91140674c1c3", "update_fields": ["completed_at"]}
+{"event": "task_patch_after", "task_guid": "de3b3d45-f5cd-49c9-af6e-91140674c1c3", "update_fields": ["completed_at"]}
+{"action_id": "5ec1eb11-8557-4d8d-b77a-3ac52dfd03d9", "event": "fault_fired", "mode": "receipt_success_write_failure"}
+{"event": "harness_ready", "pid": 39316, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "harness_ready", "pid": 39317, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "fault_fired", "mode": "atomic_manifest_before_replace", "target": "manifest.json", "temp_written": true}
+{"event": "harness_ready", "pid": 39468, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "harness_ready", "pid": 39469, "remote_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-round4/remote"}
+{"event": "fault_fired", "mode": "archive_after_summary_before_delete", "target": "summary.json"}
+{"event": "fault_fired", "mode": "archive_delete_interruption", "target": "48b28bb1-ddc4-41ac-95f2-d265f80333e2.json"}
+{"counts": {"results": 7, "tasks": 5}, "event": "task_create_before", "summary": "QA R4 mismatch result"}
+{"counts": {"results": 8, "tasks": 6}, "event": "task_create_persisted", "summary": "QA R4 mismatch result"}
+{"event": "task_create_mismatch_response", "summary": "QA R4 mismatch result"}

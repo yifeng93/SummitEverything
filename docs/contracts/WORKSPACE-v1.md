@@ -53,6 +53,8 @@ kind 的值与 UI 名称：
 | log | 工作日志 |
 | thought | 工作思考 |
 
+日志 / 思考直接确认时复用 PageWriter。相同 operation_id / confirmation_id / 正文重试只落一页，操作号复用到不同内容返回冲突。主线与项目关联可选；项目必须属于所选主线。项目概览使用 manifest 中预分配的 overview_id，仅在用户显式确认时创建；更新提交当前内容 hash，旧版本不能覆盖新内容。概览依旧是普通知识页面，其批准不改变项目进度；归档状态也不改变页面有效性。
+
 可选业务字段：summary、tags、aliases、date、created_at、updated_at、business_status、source_refs、related_project_ids、superseded_by。业务标签自由。日期以 ISO 字符串写入；解析器把 YAML date / datetime 转成 ISO 字符串。
 
 validity 为 current（默认）、superseded、invalid，表达知识效力；业务完成或项目归档不自动修改它。business_status 不强制枚举，按业务需要填写；模型不能通过它改变项目进度。
@@ -147,3 +149,14 @@ OneDrive 客户端负责同步。应用报告“已保存到本机”，不报�
 「场地与酒店」通过后续一次性业务 grillme 确认。只有最终确认页经正式写路径初始化，不把四份待审来源文件复制到新库；原桌面文件保留。
 
 这不改变普通导入保留原件的规则，也不允许测试 agent 自动写真实样板或把真实样板提交到测试 fixtures。
+
+
+## M2.2 回执实际落盘补充
+
+`.summit-everything/action_receipts/active/<action UUID>.json` 保存 exact payload / SHA-256、kind、候选 / 来源关联、确认及时间、attempt_session、状态、安全 provider_result 与 evidence。完成后的旧月份进入 `completed/YYYY-MM/summary.json`，schema=`action-receipt-month-v1`、items 按 UUID；先原子 replace 汇总，再删 active，删除中断造成的完全相同副本允许，冲突副本 / 内容 hash 损坏阻止写。当前按真实 receipt 扫描查找，未另加可失效的索引缓存。
+
+proposed / confirmed / running / unknown 无 TTL；仅 succeeded / failed 且 finished_at 属旧月份的记录归月。新进程看到另一 attempt_session 的 running 原子改 unknown，不重发。每次 receipt 认领 / 修改使用同库身份锁；网络期间不持库锁。未知可只读核实，终态 / 人工依据保留，迟到返回不能覆盖已明确终态。
+
+ProjectRecord 追加可兼容默认字段 progress（空文本）、progress_version（0）、progress_confirmation_id（null）。独立 project_progress 将预期版本与确认一起写既有 manifest writer transaction；中断恢复可读 write_intent 的 request_hash / operation_id 与磁盘结果核对，不重新应用业务进度。知识正文和进度不共享确认。
+
+旧 `.summit-everything/actions` 候选保留不改；用户审阅转换后，新 receipt 记录 candidate_id、source_draft_id、source_ids。候选文本不解释为可执行命令或批准。Fake 的 `simulated_remote_tasks.json` 在产品库 / profile 之外的临时模拟目录，包含合成 task 事实及执行结果证据；工作库 receipt 的任务投影只说明执行当时返回，不是第二套任务数据库。

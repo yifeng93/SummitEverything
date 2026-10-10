@@ -22,6 +22,7 @@
 
 - [实现者手册](handoff/IMPLEMENTER.md)、[可复制执行提示词](handoff/PROMPT-IMPLEMENTER.md)。
 - [独立验收手册](handoff/TESTER.md)、[可复制验收提示词](handoff/PROMPT-TESTER.md)。
+- [Sol 6.1 进度综合评估提示词](handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)：基于 M2 固定代码 SHA 评定现状和下一阶段；用户已准备真实测试资源。
 - [验收矩阵](quality/ACCEPTANCE.md)、[报告模板](quality/REPORT-TEMPLATE.md)。
 - [进展账本](implementation/PROGRESS.md)：执行者更新；不把开发自测写成独立验收通过。
 - [本次框架核验](quality/FOUNDATION-VERIFICATION.md)：仅说明当前基础代码与文档检查。

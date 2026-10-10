@@ -1,0 +1,44 @@
+[
+  {
+    "event": "provider_init"
+  },
+  {
+    "counts": {
+      "results": 0,
+      "tasks": 0
+    },
+    "event": "task_create_before",
+    "summary": "QA round3 unknown exact count"
+  },
+  {
+    "counts": {
+      "results": 1,
+      "tasks": 1
+    },
+    "event": "task_create_persisted",
+    "summary": "QA round3 unknown exact count"
+  },
+  {
+    "counts": {
+      "results": 1,
+      "tasks": 1
+    },
+    "event": "synthetic_timeout_raised",
+    "summary": "QA round3 unknown exact count"
+  },
+  {
+    "counts": {
+      "results": 1,
+      "tasks": 1
+    },
+    "event": "task_result_read_before"
+  },
+  {
+    "counts": {
+      "results": 1,
+      "tasks": 1
+    },
+    "event": "task_result_read_after",
+    "found": true
+  }
+]

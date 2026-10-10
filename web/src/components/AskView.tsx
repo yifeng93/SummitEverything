@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, type Citation, type IndexPlan, type IndexResult } from '../api/client'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
-type IndexStatus = { fingerprint: string | null; pages: number; chunks: number }
+type IndexStatus = { fingerprint: string | null; pages: number; chunks: number; state: 'not_ready' | 'ready' | 'stale'; current_pages: number; stale_pages: number }
 type StreamEvent = {
   request_id: string
   seq: number
@@ -132,8 +132,8 @@ export function AskView({ onError, onOpenPage }: Props) {
       </div>
       <section className="index-status-panel">
         <div className="index-status-copy">
-          <span className={status?.fingerprint ? 'index-state ready' : 'index-state'}>{status?.fingerprint ? '本机索引已就绪' : '还没有本机索引'}</span>
-          <p>{status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块 · ' + status.fingerprint : '创建计划会展示本次范围与估算，再由你确认运行。'}</p>
+          <span className={status?.state === 'ready' ? 'index-state ready' : 'index-state'}>{status?.state === 'stale' ? '本机索引有待更新' : status?.fingerprint ? '本机索引已就绪' : '还没有本机索引'}</span>
+          <p>{status?.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。可确认增量计划更新。` : status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块 · ' + status.fingerprint : '创建计划会展示本次范围与估算，再由你确认运行。'}</p>
         </div>
         <div className="index-actions">
           {!plan ? <button className="button secondary" onClick={createPlan}>准备索引计划</button> : (
