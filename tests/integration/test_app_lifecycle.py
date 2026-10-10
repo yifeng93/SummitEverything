@@ -199,7 +199,17 @@ def test_query_cancel_emits_terminal_error_without_completed_answer(tmp_path: Pa
     release = Event()
 
     class BlockingQuery(QueryService):
-        def query(self, root, question, *, fingerprint, purpose=RetrievalPurpose.CURRENT, limit=5):
+        def query(
+            self,
+            root,
+            question,
+            *,
+            fingerprint,
+            purpose=RetrievalPurpose.CURRENT,
+            limit=5,
+            cancelled=None,
+        ):
+            del cancelled
             started.set()
             assert release.wait(3)
             return Answer(

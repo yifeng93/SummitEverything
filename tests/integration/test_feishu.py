@@ -450,6 +450,18 @@ def test_configured_callback_other_port_and_cors_is_preserved(tmp_path: Path) ->
         base_url="http://127.0.0.1:5173",
         headers={"Authorization": "Bearer local"},
     )
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace"),
+                "name": "模拟",
+                "mode": "create",
+                "operation_id": "open",
+            },
+        ).status_code
+        == 201
+    )
     url = c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"]
     assert url.startswith(config.redirect_uri + "?")
     response = c.get(url, headers={"Authorization": "", "Origin": "http://127.0.0.1:5173"})
@@ -475,6 +487,18 @@ def test_app_secret_boundary_isolated_from_user_tokens_and_responses(tmp_path: P
         base_url="http://127.0.0.1:5173",
         headers={"Authorization": "Bearer local"},
     )
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace"),
+                "name": "模拟",
+                "mode": "create",
+                "operation_id": "open",
+            },
+        ).status_code
+        == 201
+    )
     authorize(c)
     for response in [
         c.get(PREFIX + "/status"),
@@ -483,6 +507,49 @@ def test_app_secret_boundary_isolated_from_user_tokens_and_responses(tmp_path: P
     ]:
         assert "synthetic-app-secret" not in response.text
     assert store.get_app() == credentials and store.get().token_type == "user"
+
+
+def test_workspace_and_app_identity_scope_feishu_state(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    first_service = c.app.state.feishu_service
+    authorize(c)
+    assert c.get(PREFIX + "/status").json()["authorized"] is True
+
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace-2"),
+                "name": "另一个模拟库",
+                "mode": "create",
+                "operation_id": "open-2",
+            },
+        ).status_code
+        == 201
+    )
+    assert c.app.state.feishu_service is not first_service
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
+
+    c.post(
+        "/api/v1/workspaces",
+        json={"root": str(tmp_path / "workspace"), "mode": "open", "operation_id": "reopen-1"},
+    )
+    assert c.get(PREFIX + "/status").json()["authorized"] is True
+
+    start = c.post(PREFIX + "/authorizations", json={}).json()
+    old_url = urlsplit(start["authorization_url"])
+    old_state = parse_qs(old_url.query)["state"][0]
+    changed = c.patch(
+        "/api/v1/settings",
+        json={"feishu": {"app_id": "synthetic-different-app"}},
+    )
+    assert changed.status_code == 200
+    rejected = c.get(
+        PREFIX + "/callback",
+        params={"state": old_state, "code": "fake-ok"},
+    )
+    assert rejected.status_code == 400
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
 
 
 def test_capture_validation_failure_continues_batch(

@@ -59,7 +59,7 @@ class FeishuConfig(BaseModel):
             or parts.hostname not in {"127.0.0.1", "::1", "localhost"}
             or parts.username
             or parts.password
-            or parts.path != CALLBACK_PATH
+            or parts.path not in {CALLBACK_PATH, "/callback"}
             or parts.query
             or parts.fragment
             or not parts.port
