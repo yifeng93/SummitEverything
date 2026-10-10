@@ -81,7 +81,7 @@
     "progress": "本地写入成功，回执待恢复"
   },
   "state_before_confirmation": "proposed",
-  "confirmation_id": "0a86591b-4862-459a-ad8b-08356578fa13",
+  "confirmation_id": "<redacted>",
   "state_after_confirmation": "confirmed",
   "ui_after_lost": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n尚未记录 → 本地写入成功，回执待恢复\n\n动作正在执行，请刷新结果\n\n刷新动作结果",
   "disk_after_write": {

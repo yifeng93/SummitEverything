@@ -41,3 +41,7 @@ At cleanup, API, Vite, Chrome, and its network helper were terminated. Ports `18
 ## Evidence integrity
 
 `evidence/2026-10-10-stage-a-recovery-ui-supplement/sha256-manifest.json` hashes every committed file under that evidence directory except the manifest itself. All entries were recomputed after sanitization; all 30 PNG hashes are unique. JSON/JavaScript/Python artifacts were scanned for unredacted `attempt_session`, access/refresh token, client secret, and callback-state assignments; no such values remain. The manifest is intentionally not self-hashed.
+
+### Post-commit evidence redaction correction
+
+A post-commit audit found that the initial QA commit's JSON sidecars retained standalone `confirmation_id` fields even though request bodies had been redacted. A follow-up cleanup commit replaces these fields (including UI-detail excerpts) with `<redacted>` and regenerates the evidence manifest. The 409b findings and expected results are unchanged. The initial commit is retained as requested; its historical tree contains the first draft, while the current branch tree is the sanitized artifact set. Local Vision OCR scanned the committed screenshots for confirmation/session/credential field labels and found no matching visible lines; all screenshots also received manual visual review.

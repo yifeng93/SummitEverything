@@ -398,7 +398,7 @@
   ],
   "c18": {
     "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
-    "confirmation_id": "0a86591b-4862-459a-ad8b-08356578fa13",
+    "confirmation_id": "<redacted>",
     "state_after_restart": "unknown",
     "ui_unknown": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n本地写入成功，回执待恢复 → 本地写入成功，回执待恢复\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n\n执行中断，等待核实。\n\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果",
     "disk_after_restart": {
@@ -452,7 +452,7 @@
   "c23": {
     "select_project_id": "48da1d52-9846-5046-9e50-9fe62237cdf7",
     "action_id": "0e93b2a2-c2a4-41a4-8528-263d8ff26c46",
-    "confirmation_id": "f28588b3-4041-474d-b60f-671771ad90b7",
+    "confirmation_id": "<redacted>",
     "payload": {
       "project_id": "48da1d52-9846-5046-9e50-9fe62237cdf7",
       "expected_version": 1,
@@ -480,7 +480,7 @@
         "progress": "Atomic interruption has no write proof"
       },
       "payload_sha256": "211cf9411aac01b559a767cd62463dd0fa15c02e093f7ea852759057c8a1a44a",
-      "confirmation_id": "f28588b3-4041-474d-b60f-671771ad90b7",
+      "confirmation_id": "<redacted>",
       "state": "running",
       "candidate_id": null,
       "source_draft_id": null,

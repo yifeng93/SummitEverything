@@ -218,7 +218,7 @@
       "due": null
     },
     "state_before_confirmation": "proposed",
-    "confirmation_id": "cc8dd944-caec-4b97-8e79-2a25580f3e26",
+    "confirmation_id": "<redacted>",
     "state_after_confirmation": "confirmed",
     "execute_button_disabled_before": false,
     "remote_path": "<isolated FakeFeishu remote file>",

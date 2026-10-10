@@ -10,7 +10,7 @@
   },
   "c16_crash": {
     "action_id": "e82ddda6-1ac7-407e-82e4-7ee846c20e43",
-    "confirmation_id": "cc8dd944-caec-4b97-8e79-2a25580f3e26",
+    "confirmation_id": "<redacted>",
     "state_after_restart": "unknown",
     "ui_unknown": "最终动作：创建飞书任务\n任务标题\nQA R4 process exit\n任务描述\nSynthetic crash reconciliation, no external material\n截止日期\n不设截止日期\n\n结果未知，请核实；此动作不会重发。\n\n刷新动作结果\n只读核实远端结果\n\n执行中断，等待核实。\n\n核实结果\n确认已成功\n确认未成功\n人工核实依据\n独立确认并记录核实结果",
     "state_after_read_only_reconcile": "succeeded",
@@ -44,7 +44,7 @@
       "description": "Synthetic same-intent concurrency, one Fake side effect",
       "due": null
     },
-    "confirmation_id": "7204f4c7-15dd-48c5-b505-d61e3cd89e90",
+    "confirmation_id": "<redacted>",
     "confirmed_state": "confirmed",
     "double_click": {
       "found": true,
