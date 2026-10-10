@@ -1,0 +1,98 @@
+{
+  "run_id": "qa-stage-a-recovery-ui-409b907",
+  "case": "C18 receipt lost after local progress write",
+  "network": [
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "body": {
+        "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+        "kind": "project_progress",
+        "payload": {
+          "project_id": "48da1d52-9846-5046-9e50-9fe62237cdf7",
+          "expected_version": 0,
+          "progress": "本地写入成功，回执待恢复"
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+        "kind": "project_progress",
+        "state": "proposed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd/confirmations",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "response": {
+        "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+        "kind": "project_progress",
+        "state": "confirmed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd/executions",
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 500,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+      "http_status": 200,
+      "response": {
+        "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+        "kind": "project_progress",
+        "state": "running"
+      }
+    }
+  ],
+  "console": {
+    "log": 2,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "disk_before": {
+    "sha256": "0cd454cd3452fa88342b8ff32a5014cceae7ea8fdb643cc8fe4b74ab09a1cf78",
+    "projects": [
+      {
+        "id": "48da1d52-9846-5046-9e50-9fe62237cdf7",
+        "name": "QA Recovery Project",
+        "progress": "",
+        "progress_version": 0
+      }
+    ]
+  },
+  "action_id": "ed8a32f0-9580-4e8a-a1d1-c2f9bfeecefd",
+  "payload": {
+    "project_id": "48da1d52-9846-5046-9e50-9fe62237cdf7",
+    "expected_version": 0,
+    "progress": "本地写入成功，回执待恢复"
+  },
+  "state_before_confirmation": "proposed",
+  "confirmation_id": "<redacted>",
+  "state_after_confirmation": "confirmed",
+  "ui_after_lost": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n尚未记录 → 本地写入成功，回执待恢复\n\n动作正在执行，请刷新结果\n\n刷新动作结果",
+  "disk_after_write": {
+    "sha256": "b0b2009b408f5632b76323845ecf046ff17c21e3a66f26d851870f6191223bc1",
+    "projects": [
+      {
+        "id": "48da1d52-9846-5046-9e50-9fe62237cdf7",
+        "name": "QA Recovery Project",
+        "progress": "本地写入成功，回执待恢复",
+        "progress_version": 1
+      }
+    ]
+  }
+}

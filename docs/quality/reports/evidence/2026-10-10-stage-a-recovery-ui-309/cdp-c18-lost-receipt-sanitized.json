@@ -1,0 +1,105 @@
+{
+  "run_id": "qa-c18-reconcile-ui-30903c4",
+  "source_sha": "30903c4cdf73855af71a201e3edea6c535ee8199",
+  "case": "C18 local progress persisted, success receipt write interrupted",
+  "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+  "network": [
+    {
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "body": {
+        "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+        "kind": "project_progress",
+        "payload": {
+          "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+          "expected_version": 0,
+          "progress": "本地写入成功，回执待恢复"
+        }
+      },
+      "http_status": 201,
+      "response": {
+        "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+        "kind": "project_progress",
+        "state": "proposed",
+        "evidence": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/58b29169-306e-4e15-bd34-8285d7f5182e/confirmations",
+      "body": {},
+      "http_status": 200,
+      "response": {
+        "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+        "kind": "project_progress",
+        "state": "confirmed",
+        "evidence": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/actions/58b29169-306e-4e15-bd34-8285d7f5182e/executions",
+      "body": {},
+      "http_status": 500,
+      "response": "<omitted>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions/58b29169-306e-4e15-bd34-8285d7f5182e",
+      "http_status": 200,
+      "response": {
+        "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+        "kind": "project_progress",
+        "state": "running",
+        "evidence": []
+      }
+    }
+  ],
+  "console": {
+    "log": 2,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "disk_before": {
+    "sha256": "9e766f46cc745874be66845579261506af6a0dea7418d8e246effbe7d55c35d5",
+    "projects": [
+      {
+        "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+        "name": "QA Recovery Project",
+        "progress": "",
+        "progress_version": 0
+      }
+    ]
+  },
+  "action_id": "58b29169-306e-4e15-bd34-8285d7f5182e",
+  "payload": {
+    "project_id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+    "expected_version": 0,
+    "progress": "本地写入成功，回执待恢复"
+  },
+  "state_proposed": "proposed",
+  "state_confirmed": "confirmed",
+  "ui_receipt_lost": "最终动作：改变项目进度\n项目\nQA Recovery Project\n新的项目进度\n本地写入成功，回执待恢复\n\n尚未记录 → 本地写入成功，回执待恢复\n\n动作正在执行，请刷新结果\n\n刷新动作结果\n动作与执行证据详情",
+  "disk_after_write": {
+    "sha256": "88cf6d72ea90e5880e3194b30ef19ae89872ba32a8c2570d310ead38c9a8322a",
+    "projects": [
+      {
+        "id": "4c7a8b3c-d0dd-5411-9b9e-26278224d5c2",
+        "name": "QA Recovery Project",
+        "progress": "本地写入成功，回执待恢复",
+        "progress_version": 1
+      }
+    ]
+  },
+  "trace": [
+    {
+      "event": "harness_ready"
+    },
+    {
+      "event": "fault_fired",
+      "mode": "receipt_success_write_failure"
+    }
+  ]
+}

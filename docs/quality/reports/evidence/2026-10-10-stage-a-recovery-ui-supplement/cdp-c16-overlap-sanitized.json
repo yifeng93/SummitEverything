@@ -1,0 +1,162 @@
+{
+  "run_id": "qa-stage-a-recovery-ui-409b907",
+  "source_sha": "409b90704046c623184846c09c873cec053e946d",
+  "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+  "payload": {
+    "summary": "QA R4 concurrent double",
+    "description": "Synthetic overlapping same action request for UI review only",
+    "due": null
+  },
+  "state_before_confirmation": "proposed",
+  "console": {
+    "log": 2,
+    "info": 1,
+    "warning": 0,
+    "error": 0,
+    "exception": 0
+  },
+  "network": [
+    {
+      "request_id": "54740.675",
+      "method": "POST",
+      "path": "/api/v1/integrations/feishu/authorizations",
+      "started_at_monotonic": 175052.398074,
+      "body": {},
+      "http_status": 200,
+      "responded_at_monotonic": 175052.401392,
+      "response": {}
+    },
+    {
+      "request_id": "54740.676",
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "started_at_monotonic": 175052.401689,
+      "http_status": 200,
+      "responded_at_monotonic": 175052.404253,
+      "response": {}
+    },
+    {
+      "request_id": "54740.677",
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "started_at_monotonic": 175052.51278,
+      "body": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "payload": {
+          "summary": "QA R4 concurrent double",
+          "description": "Synthetic overlapping same action request for UI review only",
+          "due": null
+        }
+      },
+      "http_status": 201,
+      "responded_at_monotonic": 175052.517655,
+      "response": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "state": "proposed"
+      }
+    },
+    {
+      "request_id": "54740.678",
+      "method": "POST",
+      "path": "/api/v1/actions/a861d859-b2f9-424a-84d5-829ec42b969d/confirmations",
+      "started_at_monotonic": 175052.823952,
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "responded_at_monotonic": 175052.82929,
+      "response": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "state": "confirmed"
+      }
+    },
+    {
+      "request_id": "54740.680",
+      "method": "POST",
+      "path": "/api/v1/actions/a861d859-b2f9-424a-84d5-829ec42b969d/executions",
+      "started_at_monotonic": 175053.225325,
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 202,
+      "responded_at_monotonic": 175053.231347,
+      "response": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "state": "running"
+      }
+    },
+    {
+      "request_id": "54740.679",
+      "method": "POST",
+      "path": "/api/v1/actions/a861d859-b2f9-424a-84d5-829ec42b969d/executions",
+      "started_at_monotonic": 175053.144186,
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "responded_at_monotonic": 175055.668685,
+      "response": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "state": "succeeded"
+      }
+    }
+  ],
+  "confirmation_id": "<redacted>",
+  "state_after_confirmation": "confirmed",
+  "second_overlap_response": {
+    "status": 202,
+    "state": "running",
+    "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+    "received_after_ms": 7,
+    "location_path": "/api/v1/actions/a861d859-b2f9-424a-84d5-829ec42b969d"
+  },
+  "during_ui": "最终动作：创建飞书任务\n任务标题\nQA R4 concurrent double\n任务描述\nSynthetic overlapping same action request for UI review only\n截止日期\n不设截止日期\n\n已确认，尚未执行\n\n执行已确认动作\n修改动作内容",
+  "final_ui": "最终动作：创建飞书任务\n任务标题\nQA R4 concurrent double\n任务描述\nSynthetic overlapping same action request for UI review only\n截止日期\n不设截止日期\n\n动作已成功",
+  "final_state": "succeeded",
+  "remote_count_before": 2,
+  "remote_count_after": 3,
+  "execute_requests": [
+    {
+      "request_id": "54740.680",
+      "method": "POST",
+      "path": "/api/v1/actions/a861d859-b2f9-424a-84d5-829ec42b969d/executions",
+      "started_at_monotonic": 175053.225325,
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 202,
+      "responded_at_monotonic": 175053.231347,
+      "response": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "state": "running"
+      }
+    },
+    {
+      "request_id": "54740.679",
+      "method": "POST",
+      "path": "/api/v1/actions/a861d859-b2f9-424a-84d5-829ec42b969d/executions",
+      "started_at_monotonic": 175053.144186,
+      "body": {
+        "confirmation_id": "<redacted>",
+        "payload_sha256": "<redacted>"
+      },
+      "http_status": 200,
+      "responded_at_monotonic": 175055.668685,
+      "response": {
+        "action_id": "a861d859-b2f9-424a-84d5-829ec42b969d",
+        "kind": "feishu_task_create",
+        "state": "succeeded"
+      }
+    }
+  ]
+}

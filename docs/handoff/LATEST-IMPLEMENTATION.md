@@ -2,6 +2,14 @@
 
 ## M2 阶段 A — Fake-only 整改与独立复验
 
+### 恢复路径 UI 补验（2026-10-10）
+
+- **固定基线与修复代码：** 补验从当时 `main` 固定 SHA `409b90704046c623184846c09c873cec053e946d` 开始；该 SHA 在 C18 local-writer receipt 恢复后出现同一动作同时显示成功和“仍为未知”的 P2 UI 矛盾。执行者单独提交修复 `30903c4cdf73855af71a201e3edea6c535ee8199`，只涉及 TasksPanel 状态文案和组件回归测试。
+- **独立报告链：** 固定 409b 的补验初报 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0` 保留 C18 UI FAIL。后续脱敏 / 证据清理提交依次为 `eae0f22dce4c7f15d97bd7d5cc1e17f7d7b148f4`、`1d62e24`、`1f0639a`；初报的当前证据树 manifest SHA-256 为 `64f77d13a0bcc0f9b1a4089641df056937647e5b375c3ab3925dab49349f8c10`。独立验收者将新 SHA 的复验报告提交为 `2d6254c4c2717857fda8ccaa97c210b41e0c695e`，再将其以 cherry-pick 方式串接进同一 QA 分支，分支报告树提交 `998b4d2fa1165cecb71c9baf8ff6610a516d3df0`。309 证据 manifest SHA-256 为 `599190944efaf82861b5d571b2364524ec1a06829d5055b1cadd0f0b6453e66f`。报告及可复演 harness 位于 `docs/quality/reports/` 与相邻 `evidence/` 目录。
+- **补验结论：** 固定 409b 的 C16 崩溃后 unknown→只读核实成功、确认状态、双击及真实重叠请求 UI 过渡均 PASS；C23 manifest replace 前原子写中断后 unknown/no-resend PASS。固定 309 的 C18 receipt-loss→restart unknown→只读核实 succeeded→同 ID replay PASS：UI 只显示成功，本地 manifest / progress_version 重放前后不变。固定 309 的 C23 no-proof 负对照仍为 unknown。自动测试未在独立复验中重跑，状态为 NOT_RUN；实现者对 309 修复提交的组件与指定集成测试自测见其提交记录。该补验不改变原固定 409b 初报的 FAIL 事实，只表示缺陷在新 SHA 已整改并复验。
+- **证据限制与范围：** 两轮均为隔离浏览器、合成工作库与 Fake providers；最终 309 复演全程仅观察到 loopback sockets。409b 初次候选 Chrome曾连接本机代理 `127.0.0.1:7890`，无法证明代理是否转发，故初报保留该限制。没有有意调用真实飞书、模型、业务材料或凭据；本轮没有真实业务外部操作。独立 UI console/network、请求响应、磁盘指纹、同一 action_id 与撤回重复截图说明见报告。该补验不重跑原生壳或整体 Stage A 自动矩阵。
+- **整合状态：** 修复代码与独立 QA 报告正在通过本阶段 PR 整合；PR 和合并后实际 main SHA 以最终 closeout 记录为准。阶段 B/C 与 M3–M5 未开始。
+
 - **当前代码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`，分支 `codex/m2-stage-a-closeout`，基线为原 M2 交接头 `53ad04829bbf71bf010eb9aa2a652c3f0845c1eb`。
 - **原候选：** `09398fcae597b2478001d40aedf580ea91322c11`。原候选 QA 测试与报告提交 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`；A-01 P0、A-02–A-04 P1、A-05 P2 复现结果见 [原候选定向 QA](../quality/reports/2026-10-10-M2-stage-a-original-qa.md)。报告结论保持原样。
 - **当前状态：** Fake-only M2.1–M2.3 阶段 A 已由独立 QA 在固定代码 SHA `32da67e9c0280e3dae18fd374e30c925565b0b82` 复验通过；最终报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。原候选缺陷初验及后续各轮复验报告均保留，结论与受测 SHA 对应。

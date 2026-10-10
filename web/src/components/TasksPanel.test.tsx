@@ -4,7 +4,7 @@ import { TodayView } from './TodayView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
-function boundary(state = 'succeeded', loseExecution = false) {
+function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgress = false) {
   let action: Record<string, unknown> | null = null
   const requests: { path: string; method: string; body: Record<string, unknown> }[] = []
   let next = 0
@@ -20,9 +20,21 @@ function boundary(state = 'succeeded', loseExecution = false) {
     if (path.endsWith('/actions') && method === 'POST') { action = { ...body, state: 'proposed', payload_sha256: 'hash', confirmation_id: null, evidence: [] }; data = action }
     if (path.includes('/actions/') && method === 'PATCH') { action = { ...action, payload: body.payload, payload_sha256: 'edited-hash', confirmation_id: null, state: 'proposed', evidence: [{ kind: 'invalidated_confirmation', confirmation_id: 'old-confirmation', payload_sha256: 'old-hash', at: '2026-10-10T00:00:00Z' }] }; data = action }
     if (path.endsWith('/confirmations')) { action = { ...action, ...body, state: 'confirmed' }; data = action }
-    if (path.endsWith('/executions')) { action = { ...action, state }; data = action; if (loseExecution) throw new TypeError('模拟响应丢失') }
-    if (path.includes('/actions/') && method === 'GET') data = action
-    if (path.endsWith('/reconciliations')) { action = { ...action, evidence: [{ kind: 'provider_lookup', found: false }], state: 'unknown' }; data = action }
+    if (path.endsWith('/executions')) {
+      action = { ...action, state: recoverLocalProgress ? 'running' : state }; data = action
+      if (recoverLocalProgress) return { ok: false, status: 500, json: async () => ({ error: { message: '本地回执写入失败' } }) }
+      if (loseExecution) throw new TypeError('模拟响应丢失')
+    }
+    if (path.includes('/actions/') && method === 'GET') {
+      if (recoverLocalProgress && action?.state === 'running') action = { ...action, state: 'unknown' }
+      data = action
+    }
+    if (path.endsWith('/reconciliations')) {
+      action = recoverLocalProgress
+        ? { ...action, evidence: [{ kind: 'provider_lookup', found: false }, { kind: 'local_writer_receipt', operation_id: 'progress:intent-1' }], provider_result: { project_id: 'project', progress: '已完成准备', progress_version: 3 }, state: 'succeeded' }
+        : { ...action, evidence: [{ kind: 'provider_lookup', found: false }], state: 'unknown' }
+      data = action
+    }
     return { ok: true, status: 200, json: async () => data }
   }))
   return requests
@@ -81,6 +93,24 @@ it('unknown offers read-only lookup evidence without executing again', async () 
   expect(await screen.findByText('未找到明确执行证据，仍为未知。')).toBeTruthy()
   expect(requests.filter((item) => item.path.endsWith('/executions'))).toHaveLength(1)
   expect(screen.queryByRole('button', { name: '执行已确认动作' })).toBeNull()
+})
+
+it('clears the stale unknown lookup message when local progress writer evidence resolves success', async () => {
+  const requests = boundary('unknown', false, true)
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '拟定项目进度变化' }))
+  fireEvent.change(screen.getByLabelText('进度项目'), { target: { value: 'project' } })
+  fireEvent.change(screen.getByLabelText('新的项目进度'), { target: { value: '已完成准备' } })
+  fireEvent.click(screen.getByRole('button', { name: '审阅进度变化' }))
+  fireEvent.click(await screen.findByRole('button', { name: '独立确认此动作' }))
+  fireEvent.click(await screen.findByRole('button', { name: '执行已确认动作' }))
+  expect(await screen.findByText('结果未知，请核实；此动作不会重发。')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '只读核实远端结果' }))
+  expect(await screen.findByText('动作已成功')).toBeTruthy()
+  expect(screen.queryByText('未找到明确执行证据，仍为未知。')).toBeNull()
+  expect(screen.getByText('本地项目进度写入凭据已确认成功。')).toBeTruthy()
+  expect(screen.getByText(/"state": "succeeded"/, { selector: 'pre' })).toBeTruthy()
+  expect(requests.filter((item) => item.path.endsWith('/executions'))).toHaveLength(1)
 })
 
 it('progress shows exact version and requires its own confirmation', async () => {

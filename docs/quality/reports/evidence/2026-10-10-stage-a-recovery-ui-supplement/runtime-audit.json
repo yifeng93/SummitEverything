@@ -1,0 +1,27 @@
+{
+  "run_id": "qa-stage-a-recovery-ui-409b907",
+  "tested_source_sha": "409b90704046c623184846c09c873cec053e946d",
+  "worktree_branch": "codex/qa-stage-a-recovery-ui-supplement",
+  "loopback_ports": [
+    18927,
+    17327,
+    19327
+  ],
+  "chrome_locked_profile": "<ignored isolated profile; deleted at cleanup>",
+  "active_chrome_flags": [
+    "--disable-background-networking",
+    "--disable-crash-reporter",
+    "--disable-breakpad",
+    "--disable-component-update",
+    "--disable-sync",
+    "--no-pings",
+    "--no-proxy-server",
+    "--proxy-bypass-list=*",
+    "host resolver blocks non-loopback names",
+    "--remote-debugging-address=127.0.0.1"
+  ],
+  "initial_candidate_caveat": "An early Chrome profile was started before network-isolation flags; lsof recorded a connection to local proxy 127.0.0.1:7890 and Chrome was stopped. Proxy forwarding cannot be determined from this evidence. Later locked Chrome had only loopback sockets.",
+  "external_business_calls": "None intended; all API/provider interactions were loopback/Fake. Due to the early local-proxy caveat, the report does not assert a network-wide zero-external-request guarantee for the entire attempt.",
+  "shutdown": "API, Vite, Chrome and helper processes were terminated; follow-up process/socket audit found no listeners on 18927/17327/19327.",
+  "terminal_redaction": "API shutdown stdout included a Fake callback query state. It was not written to evidence or committed; callback state is omitted from all checked-in records."
+}
