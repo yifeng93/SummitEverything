@@ -24,7 +24,7 @@
 - [x] B5.1 Full offline checks (DEV candidate)
 - [ ] B5.2 Partial: synthetic browser workspace/settings smoke-controls replay done; screenshot archive and full network evidence missing. Native candidate NOT_RUN (window loaded a different QA worktree)
 - [ ] B5.3 Independent code review
-- [ ] B5.4 Source SHA fixed; independent formal QA pending because Feishu B implementation/protocol gates remain incomplete
+- [ ] B5.4 Source SHA `7dc7114595704f34ba386c96324dffa77d529ba4` fixed; independent formal QA pending because Feishu B implementation/protocol gates remain incomplete
 
 ## Phase 6: Independent QA and integration
 - [ ] B6.1 Independent fixed-SHA QA (pending B implementation completion; no result claimed)
@@ -45,4 +45,4 @@
 - B2.1 implemented in DEV: atomic profile settings, strict allowlist validation, Fake default. B2.2/B2.3 partial: macOS Keychain backend and settings page exist; synthetic browser save/delete and Fake Feishu authorize/logout/reload replays are documented. Native shell, deny/lock/restart, archived screenshots and full browser DevTools evidence are missing.
 - B3 partial: Fake token refresh/rotation and logout work through service/API/UI tests. A durable token store passes offline tests but is not service-wired; actual OAuth and data endpoints remain unavailable pending implementation and evidence.
 - B4 partial: stub-tested adapters are wired to explicit model call paths; atomic SQLite generation replacement and failed model-change preservation are covered offline. Live dimension behavior and full failure/cancellation lifecycle coverage remain open.
-- B5 offline checks pass and source SHA is fixed; browser replay only establishes synthetic UI state and is not fully archived. Native candidate evidence, independent review/QA and integration are pending; Stage B is incomplete. C remains NOT_RUN; no real provider requests were made.
+- B5 offline checks pass on source SHA `7dc7114595704f34ba386c96324dffa77d529ba4`; browser replay only establishes synthetic UI state and is not fully archived. Native candidate evidence, independent review/QA and integration are pending; Stage B is incomplete. C remains NOT_RUN; no real provider requests were made.

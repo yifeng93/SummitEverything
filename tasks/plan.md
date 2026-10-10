@@ -55,7 +55,7 @@ Implement and offline-verify the real provider adapters and local configuration 
 - [x] B5.1 Full offline checks pass in DEV (Python, Web API generation/tests/typecheck/lint/build, lock, Python package build, Swift build); existing warnings are recorded separately.
 - [ ] B5.2 Partial: browser settings/smoke-control state was replayed in an isolated synthetic workspace; screenshot bytes, archived DevTools/network manifest are missing. Native window loaded a different QA worktree (5173), so candidate native evidence is NOT_RUN. Keychain fault paths remain untested.
 - [ ] B5.3 Complete independent code review and fix required findings in separate commits; keep DEV, review, QA and actual-provider results distinct.
-- [ ] B5.4 Source candidate is fixed in commits after this ledger update; QA handoff is pending because B implementation is incomplete. If resumed, QA must use a fresh context and checkout at the exact recorded source SHA, without re-running authorized paid smoke.
+- [ ] B5.4 Source candidate `7dc7114595704f34ba386c96324dffa77d529ba4` is fixed; docs checkpoint was recorded after it and the current docs commit is the checkout entrypoint. QA handoff is pending because B implementation is incomplete. If resumed, QA must use a fresh context and checkout at the exact source SHA, without re-running authorized paid smoke.
 
 ### Phase 6: Independent QA and source integration
 

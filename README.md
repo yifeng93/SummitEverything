@@ -6,9 +6,9 @@
 
 ## 当前状态
 
-2026-10-10：M1 与 M2.1–M2.3 阶段 A 已在 Fake-only 范围完成独立验收并合入 main。最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。C18 恢复 UI 的旧 FAIL 和修复后 PASS 分别保留；截图撤回、故障恢复和并发证据见[报告索引](docs/quality/reports/README.md)。本分支当前开发 Stage B 候选：加入本机设置、macOS Keychain 凭据边界、operation-scoped 模型 provider 调用，以及 Fake-only Feishu 用户 token 刷新/登出生命周期。模型动作仍需显式操作；Feishu 真实 adapter 未实现。候选尚未独立验收或合入；所有真实环境门仍 NOT_RUN。
+2026-10-10：M1 与 M2.1–M2.3 阶段 A 已在 Fake-only 范围完成独立验收并合入 main。最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。C18 恢复 UI 的旧 FAIL 和修复后 PASS 分别保留；截图撤回、故障恢复和并发证据见[报告索引](docs/quality/reports/README.md)。Stage B 当前源码候选为 `7dc7114595704f34ba386c96324dffa77d529ba4`，DEV 检查已完成，但真实 Feishu OAuth / material / calendar / task adapters、Keychain 服务生命周期及部分浏览器/原生证据仍缺；独立正式 QA 尚未开始，不能视为 B 通过。三种限额合成模型 smoke 路由已实现但调用次数均为 0；真实业务模型路径保持服务端禁用。详情见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)和[报告索引](docs/quality/reports/README.md)。
 
-下一步按[B/C 执行提示词](docs/handoff/PROMPT-STAGE-B-C-LUNA.md)完成 B 的剩余 provider wiring、协议门、离线独立 QA，再经逐项授权做 C 的受控真实验收。B/C 与 M3–M5 尚未完成，DMG、五日和双机仍有独立门。[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)记录固定 SHA 和证据边界；[工作环境整理](docs/implementation/2026-10-10-STAGE-A-CLEANUP.md)记录旧分支 / worktree 归档。
+下一步补齐 Feishu 官方协议证据、真实 adapter 与 Keychain 生命周期，再补足候选浏览器 / 原生证据并由独立上下文进行固定 SHA QA；当前 B 尚不满足正式验收入口。B 通过后才安排逐项授权的 C 受控真实验收。B/C 与 M3–M5 尚未完成，DMG、五日和双机仍有独立门。[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)记录固定 SHA 和证据边界；[工作环境整理](docs/implementation/2026-10-10-STAGE-A-CLEANUP.md)记录历史 QA worktree / 证据归档。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -53,7 +53,7 @@ cd native && swift run
 
 WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式模型整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；Fake 模式已有索引时，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新。真实 embedding 下审批只提示用户另行查看并确认索引计划。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
 
-开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。默认仍为 Fake/offline；设置读取和保存不会联网。真实模式下，显式运行整理、索引或提问会调用所选模型；Feishu OAuth / 数据 adapter、真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
+开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。默认仍为 Fake/offline；设置读取和保存不会联网。当前 Stage B 候选即使启用 Real provider，普通整理、索引和问答的真实模型请求也会被服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter、真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
 
 ## 与原项目的关系
 
