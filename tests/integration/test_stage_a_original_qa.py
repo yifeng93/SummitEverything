@@ -165,7 +165,7 @@ def test_a02_same_guid_uncompleted_task_is_not_successful_completion(tmp_path: P
             "confirmation_id": confirmed["confirmation_id"],
         },
     ).json()
-    assert result["state"] == "succeeded"
+    assert result["state"] == "unknown"
     actual = provider.task_get(
         UserCredentials(
             access_token="synthetic",
@@ -175,10 +175,7 @@ def test_a02_same_guid_uncompleted_task_is_not_successful_completion(tmp_path: P
         ),
         guid,
     )
-    assert actual.completed_at != 0
-    assert result["state"] == "succeeded"
-
-
+    assert actual.completed_at == 0
 def test_a03_unrelated_task_does_not_reconcile_unknown_create_as_success(tmp_path: Path) -> None:
     class TimeoutWithUnrelatedEvidence(FakeFeishu):
         unrelated: FeishuTask | None = None

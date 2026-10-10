@@ -149,6 +149,45 @@ class FeishuTasks:
             raise FeishuError("malformed_response")
         return result
 
+    @staticmethod
+    def _matches_due(expected: TaskDate | None, actual: ProviderDue | None) -> bool:
+        if expected is None:
+            return actual is None
+        wire_due = expected.provider_value()
+        return actual is not None and (
+            actual.timestamp == int(wire_due["timestamp"])
+            and actual.is_all_day == wire_due["is_all_day"]
+        )
+
+    def _validate_result(
+        self, kind: str, payload: dict[str, Any], result: FeishuTask
+    ) -> FeishuTask:
+        if kind == "feishu_task_create":
+            request = TaskCreate.model_validate(payload)
+            matches = (
+                result.summary == request.summary
+                and result.description == request.description
+                and self._matches_due(request.due, result.due)
+            )
+        elif kind == "feishu_task_update":
+            request = TaskUpdate.model_validate(payload)
+            changes = request.task
+            matches = result.guid == request.task_guid
+            if "summary" in request.update_fields:
+                matches = matches and result.summary == changes.summary
+            if "description" in request.update_fields:
+                matches = matches and result.description == changes.description
+            if "due" in request.update_fields:
+                matches = matches and self._matches_due(changes.due, result.due)
+        elif kind == "feishu_task_complete":
+            request = TaskComplete.model_validate(payload)
+            matches = result.guid == request.task_guid and result.completed_at > 0
+        else:
+            raise FeishuError("malformed_response")
+        if not matches:
+            raise FeishuError("malformed_response")
+        return result
+
     def execute(self, kind: str, payload: dict[str, Any], token: str) -> FeishuTask:
         user = self.session._user("task:task:write")
         if kind == "feishu_task_create":
@@ -157,9 +196,10 @@ class FeishuTasks:
             if data.due is not None:
                 body["due"] = data.due.provider_value()
             body["client_token"] = token
-            return self._task(
+            result = self._task(
                 self.session._call(lambda: self.session.provider.task_create(user, body))
             )
+            return self._validate_result(kind, payload, result)
         if kind == "feishu_task_complete":
             current = self.get(payload["task_guid"])
             if current.completed_at:
@@ -174,12 +214,13 @@ class FeishuTasks:
             if change.task.due is not None:
                 values["due"] = change.task.due.provider_value()
             body = {"task": values, "update_fields": change.update_fields}
-        return self._task(
+        result = self._task(
             self.session._call(
                 lambda: self.session.provider.task_patch(user, payload["task_guid"], body, token)
             ),
             payload["task_guid"],
         )
+        return self._validate_result(kind, payload, result)
 
     def lookup(self, token: str) -> FeishuTask | None:
         user = self._reader()
