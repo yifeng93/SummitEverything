@@ -3,6 +3,7 @@
 ## 2026-10-10 Luna Stage B follow-up（当前）
 
 - **固定源码候选：** `7dc7114595704f34ba386c96324dffa77d529ba4`，分支 `codex/stage-b-real-providers`，隔离 checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`。该 SHA 精确固定本轮产品源码和测试；交接 / 接受标准 / 执行账本的文档 checkpoint 是其后的独立文档提交。不要把 DEV 自测写成独立 QA。
+- **Git 发布 / 清理：** 本轮源码与文档提交已 fast-forward 推送到 `origin/codex/stage-b-real-providers`；没有 PR 或 main 合并。当前唯一活跃 feature branch 是这条 Stage B 分支。清除了已不存在的 `ssh` remote 所留下、且已包含于 main 的本地 `ssh/main` 跟踪引用；其他 detached worktree 均是历史 QA 快照，保留以维护证据链。
 - **本轮修复：** 修复 Sol SB-01/02 候选外发资格与发布前资格/版本复核；SB-03 阶段取消；SB-04 有界 rerank 候选；SB-05/06 按 workspace/profile/config 隔离 Feishu 生命周期并让 task/action 使用当前 workspace service；SB-07/08 logout、callback、refresh 并发防旧 token 写回；SB-09 保存并绑定 Model Studio account；SB-10 阻止真实业务模型请求而保留限额合成 smoke；SB-11 增加流式 body cap、超时、无重试/重定向、错误脱敏；SB-12 恢复原 R03 质量验收；SB-13 更新矩阵、账本与报告历史纠正。每项均为 DEV 自测，尚未独立复验。
 - **有限 smoke 实现状态：** DeepSeek chat、Model Studio embedding、rerank 有独立固定合成 payload endpoint 与 app-profile 原子次数账本（每类最多1次），业务路径服务端仍为 disabled。Feishu OAuth smoke endpoint 未实现。真实调用计数为0；用户未在此候选输入密钥；未发生本轮外部模型或 Feishu 请求。不得将预授权解释为已调用或 B/C PASS。
 - **自动检查：** `uv run pytest -q` 213 passed；`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv lock --check`、`git diff --check`、`uv build`、`npm --prefix web run api:types`、Web 39 tests / typecheck / lint / build、`swift build --package-path native` 均退出 0。保留 1 条 Starlette/httpx deprecation 与 3 条已有 React `set-state-in-effect` lint warnings。
