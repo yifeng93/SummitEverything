@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from threading import Event
 from typing import Annotated, Any, Literal, cast
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 
 from fastapi import (
     Depends,
@@ -79,6 +79,7 @@ from summit_everything.workspace.manifest import (
     delete_project,
     list_lines,
     list_projects,
+    load_manifest,
     open_workspace,
     update_line,
     update_project,
@@ -189,6 +190,23 @@ class JournalRequest(RequestModel):
     project_id: UUID | None = None
     confirmation_id: str = Field(min_length=1)
     operation_id: str = Field(min_length=1)
+
+
+class ProjectOverviewConfirmation(RequestModel):
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+    confirmation_id: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+    expected_content_sha256: str | None = Field(default=None, pattern="^[0-9a-f]{64}$")
+
+
+class JournalAssistRequest(RequestModel):
+    text: str = Field(min_length=1)
+
+
+class JournalAssistResponse(BaseModel):
+    title: str
+    body: str
 
 
 class LoopbackOnly(BaseHTTPMiddleware):
@@ -551,14 +569,30 @@ def create_app(
             structure_confirmation_id=payload.structure_confirmation_id,
         )
 
+    @app.post("/api/v1/journal/assist", dependencies=[Depends(authenticated)])
+    def journal_assist(
+        payload: JournalAssistRequest,
+        _workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> JournalAssistResponse:
+        try:
+            proposals = review.provider.organize([(uuid4(), uuid4(), payload.text)])
+        except LLMProviderError as exc:
+            raise HTTPException(
+                status_code=502, detail="AI 辅助暂时不可用；已保存内容未更改。"
+            ) from exc
+        if not proposals:
+            raise HTTPException(status_code=502, detail="AI 辅助没有返回建议；已保存内容未更改。")
+        return JournalAssistResponse(title=proposals[0].title, body=proposals[0].body)
+
     @app.post("/api/v1/journal/{kind}", status_code=201, dependencies=[Depends(authenticated)])
     def journal_create(
         kind: Literal["log", "thought"],
         payload: JournalRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
+        manifest = load_manifest(Path(workspace.root))
         metadata: dict[str, Any] = {
-            "id": str(UUID(bytes=secrets.token_bytes(16), version=4)),
+            "id": str(uuid5(manifest.workspace_id, f"journal:{kind}:{payload.operation_id}")),
             "title": payload.title,
             "role": "knowledge",
             "kind": kind,
@@ -573,6 +607,37 @@ def create_app(
             body=payload.body,
             confirmation_id=payload.confirmation_id,
             operation_id=payload.operation_id,
+        )
+
+    @app.post(
+        "/api/v1/projects/{project_id}/overview/confirmations",
+        status_code=201,
+        dependencies=[Depends(authenticated)],
+    )
+    def project_overview_confirm(
+        project_id: UUID,
+        payload: ProjectOverviewConfirmation,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MutationResult:
+        manifest = load_manifest(Path(workspace.root))
+        project = next((item for item in manifest.projects if item.id == project_id), None)
+        if project is None:
+            raise WorkspaceError("Project not found", 404)
+        metadata = {
+            "id": str(project.overview_id),
+            "title": payload.title,
+            "role": "knowledge",
+            "kind": "project_overview",
+            "line_id": str(project.line_id),
+            "project_id": str(project.id),
+        }
+        return PageWriter().confirm(
+            Path(workspace.root),
+            metadata=metadata,
+            body=payload.body,
+            confirmation_id=payload.confirmation_id,
+            operation_id=payload.operation_id,
+            expected_base_sha256=payload.expected_content_sha256,
         )
 
     @app.post("/api/v1/intake/items", status_code=201, dependencies=[Depends(authenticated)])

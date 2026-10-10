@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, newOperationId, type Line, type Page, type Project } from '../api/client'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string) => void }
@@ -11,10 +11,14 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
   const [projectId, setProjectId] = useState('')
   const [lineName, setLineName] = useState('')
   const [projectName, setProjectName] = useState('')
+  const [overviewTitle, setOverviewTitle] = useState('')
+  const [overviewBody, setOverviewBody] = useState('')
+  const [editingOverview, setEditingOverview] = useState(false)
   const [editingLine, setEditingLine] = useState(false)
   const [editingProject, setEditingProject] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [busy, setBusy] = useState(false)
+  const pendingOverview = useRef<{ signature: string; operation: string } | null>(null)
 
   const refresh = useCallback(async () => {
     try {
@@ -96,6 +100,26 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
   const projectRows = projects.filter((project) => project.line_id === selectedLineId && (showArchived || !project.archived))
   const selectedProjectId = projectId || projectRows[0]?.id || ''
   const visiblePages = pages.filter((page) => String(page.metadata.project_id ?? '') === selectedProjectId)
+  const selectedProject = projects.find((project) => project.id === selectedProjectId)
+  const overview = selectedProject ? pages.find((page) => page.page_id === selectedProject.overview_id) : undefined
+
+  async function saveOverview(event: FormEvent) {
+    event.preventDefault()
+    if (!selectedProject || !overviewTitle.trim() || !overviewBody.trim()) return
+    const signature = JSON.stringify([selectedProject.id, overviewTitle.trim(), overviewBody, overview?.content_sha256 ?? null])
+    if (pendingOverview.current?.signature !== signature) pendingOverview.current = { signature, operation: newOperationId() }
+    setBusy(true)
+    try {
+      await api.post(`/projects/${selectedProject.id}/overview/confirmations`, {
+        title: overviewTitle.trim(), body: overviewBody, confirmation_id: pendingOverview.current.operation,
+        operation_id: pendingOverview.current.operation, expected_content_sha256: overview?.content_sha256 ?? null,
+      })
+      pendingOverview.current = null
+      setEditingOverview(false)
+      await refresh()
+    } catch (cause) { onError(cause instanceof Error ? cause.message : '无法保存项目概览') }
+    finally { setBusy(false) }
+  }
 
   return (
     <section className="content-wrap projects-view">
@@ -155,6 +179,8 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
           )}
           {selectedProjectId && (
             <section className="page-list-section">
+              <div className="directory-title"><h2>项目概览</h2>{overview ? <button className="text-button" onClick={() => onOpenPage(overview.page_id)}>打开概览</button> : <span>尚未创建</span>}</div>
+              {!editingOverview ? <div className="overview-actions"><p className="muted">概述项目目标、判断与进展背景，并链接到事实页面。</p><button className="button secondary" onClick={() => { setOverviewTitle(overview ? String(overview.metadata.title ?? '') : selectedProject?.name + ' 概览'); setOverviewBody(overview?.body ?? ''); setEditingOverview(true) }}>{overview ? '编辑项目概览' : '创建项目概览'}</button></div> : <form className="overview-editor" onSubmit={(event) => void saveOverview(event)}><label className="field"><span>概览标题</span><input value={overviewTitle} onChange={(event) => setOverviewTitle(event.target.value)} /></label><label className="field"><span>目标、整体判断、进展背景与事实链接</span><textarea rows={8} value={overviewBody} onChange={(event) => setOverviewBody(event.target.value)} placeholder="自由编写 Markdown；事实请链接到对应权威页面。" /></label><div className="journal-actions"><button type="button" className="button secondary" onClick={() => setEditingOverview(false)}>取消</button><button className="button primary" disabled={busy || !overviewTitle.trim() || !overviewBody.trim()}>{overview ? '确认并保存概览' : '确认并创建概览'}</button></div></form>}
               <div className="directory-title"><h2>页面</h2><span>{visiblePages.length}</span></div>
               {visiblePages.length === 0 ? <p className="muted">这个项目还没有知识页面。已确认的整理稿会显示在这里。</p> : (
                 <ul className="knowledge-page-list">

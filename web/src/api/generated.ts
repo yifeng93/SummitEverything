@@ -351,6 +351,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/journal/assist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Journal Assist */
+        post: operations["journal_assist_api_v1_journal_assist_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/journal/{kind}": {
         parameters: {
             query?: never;
@@ -362,6 +379,23 @@ export interface paths {
         put?: never;
         /** Journal Create */
         post: operations["journal_create_api_v1_journal__kind__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/overview/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Project Overview Confirm */
+        post: operations["project_overview_confirm_api_v1_projects__project_id__overview_confirmations_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1176,6 +1210,18 @@ export interface components {
             /** Operation Id */
             operation_id: string;
         };
+        /** JournalAssistRequest */
+        JournalAssistRequest: {
+            /** Text */
+            text: string;
+        };
+        /** JournalAssistResponse */
+        JournalAssistResponse: {
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+        };
         /** JournalRequest */
         JournalRequest: {
             /** Title */
@@ -1352,6 +1398,19 @@ export interface components {
             name: string;
             /** Operation Id */
             operation_id: string;
+        };
+        /** ProjectOverviewConfirmation */
+        ProjectOverviewConfirmation: {
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Confirmation Id */
+            confirmation_id: string;
+            /** Operation Id */
+            operation_id: string;
+            /** Expected Content Sha256 */
+            expected_content_sha256?: string | null;
         };
         /** ProjectPatch */
         ProjectPatch: {
@@ -2507,6 +2566,41 @@ export interface operations {
             };
         };
     };
+    journal_assist_api_v1_journal_assist_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JournalAssistRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalAssistResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     journal_create_api_v1_journal__kind__post: {
         parameters: {
             query?: never;
@@ -2521,6 +2615,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["JournalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MutationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_overview_confirm_api_v1_projects__project_id__overview_confirmations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectOverviewConfirmation"];
             };
         };
         responses: {

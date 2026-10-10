@@ -1620,6 +1620,62 @@
         }
       }
     },
+    "/api/v1/journal/assist": {
+      "post": {
+        "summary": "Journal Assist",
+        "operationId": "journal_assist_api_v1_journal_assist_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalAssistRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalAssistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/journal/{kind}": {
       "post": {
         "summary": "Journal Create",
@@ -1661,6 +1717,72 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/JournalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MutationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/overview/confirmations": {
+      "post": {
+        "summary": "Project Overview Confirm",
+        "operationId": "project_overview_confirm_api_v1_projects__project_id__overview_confirmations_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectOverviewConfirmation"
               }
             }
           }
@@ -4188,6 +4310,39 @@
         ],
         "title": "IntakeTextRequest"
       },
+      "JournalAssistRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "JournalAssistRequest"
+      },
+      "JournalAssistResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "body"
+        ],
+        "title": "JournalAssistResponse"
+      },
       "JournalRequest": {
         "properties": {
           "title": {
@@ -4612,6 +4767,51 @@
           "operation_id"
         ],
         "title": "ProjectCreate"
+      },
+      "ProjectOverviewConfirmation": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Body"
+          },
+          "confirmation_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Confirmation Id"
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Operation Id"
+          },
+          "expected_content_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Content Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "body",
+          "confirmation_id",
+          "operation_id"
+        ],
+        "title": "ProjectOverviewConfirmation"
       },
       "ProjectPatch": {
         "properties": {

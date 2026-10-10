@@ -4,12 +4,14 @@ import { AskView } from './components/AskView'
 import { ProjectsView } from './components/ProjectsView'
 import { PageReader } from './components/PageReader'
 import { TodayView } from './components/TodayView'
+import { JournalView } from './components/JournalView'
 import { WorkspaceGate } from './components/WorkspaceGate'
 import './App.css'
 
-type Section = 'today' | 'projects' | 'ask' | 'settings'
+type Section = 'today' | 'journal' | 'projects' | 'ask' | 'settings'
 const sections: { id: Section; label: string }[] = [
   { id: 'today', label: '今日' },
+  { id: 'journal', label: '日志与思考' },
   { id: 'projects', label: '项目与知识' },
   { id: 'ask', label: '知识问答' },
   { id: 'settings', label: '设置' },
@@ -90,6 +92,8 @@ export default function App() {
           <TodayView onError={setError} />
         ) : section === 'projects' ? (
           <ProjectsView onError={setError} onOpenPage={openPage} />
+        ) : section === 'journal' ? (
+          <JournalView onError={setError} onOpenPage={openPage} />
         ) : section === 'ask' ? (
           <AskView onError={setError} onOpenPage={openPage} />
         ) : (
