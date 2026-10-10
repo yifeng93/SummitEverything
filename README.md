@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。M2.1–M2.3 阶段 A 的 Fake-only 独立 QA 已通过，受测源码固定于 `32da67e9c0280e3dae18fd374e30c925565b0b82`；P0/P1/P2 未关闭项为 0。阶段 A 整改分支正在经 PR 合入 `main`，合并后复核尚待完成。真实飞书应用配置、模型、材料和 Keychain 虽已备妥，本轮未消费或调用；真实 Feishu、模型/embedding/rerank、Keychain、DMG、五日试用和双机仍为 NOT_RUN。详见[最终独立 QA 报告](docs/quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[进展账本](docs/implementation/PROGRESS.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) 与[验收矩阵](docs/quality/ACCEPTANCE.md)。阶段 B/C 仍未开始。
+2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。M2.1–M2.3 阶段 A Fake-only 独立 QA 已通过，受测源码固定于 `32da67e9c0280e3dae18fd374e30c925565b0b82`；未关闭 P0/P1/P2=0。PR #4 已以 merge commit `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 `main`，独立 main checkout 的完整自动检查和关键行为冒烟通过。真实飞书应用配置、模型、材料和 Keychain 虽已备妥，本轮未消费或调用；真实 Feishu、模型/embedding/rerank、Keychain、DMG、五日试用和双机仍为 NOT_RUN。详见[最终独立 QA 报告](docs/quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[合并后核验记录](docs/quality/reports/2026-10-10-M2-stage-a-postmerge.md)、[进展账本](docs/implementation/PROGRESS.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) 与[验收矩阵](docs/quality/ACCEPTANCE.md)。阶段 B/C 仍未开始。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 

@@ -129,4 +129,4 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 - **浏览器与原生壳：** 最终浏览器使用隔离 Chrome profile 和本地 Fake 服务；最终限定捕获窗中 41 个本地响应、0 个失败请求、0 console warning/error/runtime exception。原生开发壳窗口、目录选择、候选身份、Quit / 最后窗口清理与启动失败反馈在第二轮 follow-up 有独立候选证据。各自证据和观察范围见相应报告；final fourth round 没有重跑原生壳。
 - **自动检查：** 固定源码完整自动矩阵见第一轮报告；后端 142 passed、前端 8 个测试文件 / 32 项通过，ruff check / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build、Swift build 与 `git diff --check` 均退出 0。第四轮新增指定后端集成测试 43 passed，保留 1 条既有 Starlette/httpx TestClient deprecation；原有 3 条 React effect lint warning 保留。无依赖或 lock 变更。
 - **真实门：** 真实 Feishu 登录 / scope / task 读写、真实材料、真实 LLM / embedding / rerank、Keychain、DMG、五日试用、双机继续 **NOT_RUN**；用户准备的资源没有被读取或消费。本结论只覆盖 Fake 模拟范围。
-- **整合状态：** 本记录在合并前维护。PR、main merge SHA 与独立 main checkout 合并后检查需在阶段 A 最终交接中追加；该状态未完成前不据本节单独宣布阶段 A 完整关闭。
+- **整合状态：** PR #4 以 `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 main；受测代码树与 merge tree 的 `src/tests/web/native` 完全一致。独立 main checkout 全量复跑与关键路径冒烟结果见[合并后核验记录](reports/2026-10-10-M2-stage-a-postmerge.md)。
