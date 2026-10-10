@@ -203,15 +203,23 @@ class QueryService:
             key=lambda item: cosine_similarity(query_vector, item["vector"]),
             reverse=True,
         )
-        reranked = self.reranker.rank(question, [str(item["text"]) for item in chunks])
-        if len(reranked) != len(chunks):
+        qualified = self._qualified_chunks(root, dense, purpose=purpose)
+        candidates = qualified[:20]
+        if not candidates:
+            return self._empty_answer(question, purpose, "没有找到经确认且仍为当前版本的相关资料。")
+        reranked = self.reranker.rank(question, [str(item["text"]) for item in candidates])
+        if len(reranked) != len(candidates):
             raise ValueError("Reranker returned an incomplete ranking")
         lexical_scores: dict[str, float] = {}
         lexical = []
         for index, score in reranked:
-            if index < 0 or index >= len(chunks) or chunks[index]["chunk_id"] in lexical_scores:
+            if (
+                index < 0
+                or index >= len(candidates)
+                or candidates[index]["chunk_id"] in lexical_scores
+            ):
                 raise ValueError("Reranker returned an invalid candidate index")
-            item = chunks[index]
+            item = candidates[index]
             lexical.append(item)
             lexical_scores[str(item["chunk_id"])] = score
         ranks: dict[str, float] = {}
@@ -219,7 +227,7 @@ class QueryService:
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
         for rank, item in enumerate(lexical, start=1):
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
-        ranked = sorted(chunks, key=lambda item: ranks[item["chunk_id"]], reverse=True)
+        ranked = sorted(candidates, key=lambda item: ranks[item["chunk_id"]], reverse=True)
         relevant = [item for item in ranked if lexical_scores.get(str(item["chunk_id"]), 0) > 0]
         related_ids = self._related_page_ids(root, relevant[: min(limit, 3)])
         ranked = relevant
@@ -227,7 +235,7 @@ class QueryService:
             seen = {item["chunk_id"] for item in ranked}
             ranked.extend(
                 item
-                for item in chunks
+                for item in qualified
                 if item["page_id"] in related_ids and item["chunk_id"] not in seen
             )
         citations: list[Citation] = []
@@ -278,6 +286,12 @@ class QueryService:
             for citation in citations
         ]
         answer = self.answer_provider.answer(question, passages) if self.answer_provider else None
+        if not self._citations_are_current(root, citations, purpose=purpose):
+            return self._empty_answer(
+                question,
+                purpose,
+                "资料在生成期间发生变化；旧答案已失效，请重新索引后查询。",
+            )
         return Answer(
             answer_id=uuid4(),
             question=question,
@@ -314,6 +328,84 @@ class QueryService:
             if eligibility.eligible:
                 qualified.append(page)
         return qualified
+
+    def _qualified_chunks(
+        self,
+        root: Path,
+        chunks: list[dict[str, object]],
+        *,
+        purpose: RetrievalPurpose,
+    ) -> list[dict[str, object]]:
+        page_eligibility: dict[UUID, bool] = {}
+        qualified: list[dict[str, object]] = []
+        for chunk in chunks:
+            page_id = chunk["page_id"]
+            if not isinstance(page_id, UUID):
+                continue
+            if page_id not in page_eligibility:
+                page_eligibility[page_id] = (
+                    self._read_qualified_page(
+                        root,
+                        page_id,
+                        purpose=purpose,
+                        expected_content_sha256=str(chunk["content_sha256"]),
+                    )
+                    is not None
+                )
+            if page_eligibility[page_id]:
+                qualified.append(chunk)
+        return qualified
+
+    @staticmethod
+    def _read_qualified_page(
+        root: Path,
+        page_id: UUID,
+        *,
+        purpose: RetrievalPurpose,
+        expected_content_sha256: str | None = None,
+    ) -> PageSnapshot | None:
+        try:
+            page = read_page(root, page_id)
+            area = StorageArea(page.storage_area)
+        except (WorkspaceError, OSError, ValueError):
+            return None
+        eligibility = retrieval_eligibility(
+            page.metadata,
+            page.body,
+            area=area,
+            purpose=purpose,
+            expected_content_sha256=expected_content_sha256,
+        )
+        return page if eligibility.eligible else None
+
+    def _citations_are_current(
+        self,
+        root: Path,
+        citations: list[Citation],
+        *,
+        purpose: RetrievalPurpose,
+    ) -> bool:
+        return all(
+            self._read_qualified_page(
+                root,
+                citation.page_id,
+                purpose=purpose,
+                expected_content_sha256=citation.content_sha256,
+            )
+            is not None
+            for citation in citations
+        )
+
+    @staticmethod
+    def _empty_answer(question: str, purpose: RetrievalPurpose, message: str) -> Answer:
+        return Answer(
+            answer_id=uuid4(),
+            question=question,
+            text=message,
+            purpose=purpose.value,
+            index_status="ready",
+            missing_information=[message],
+        )
 
     def _related_page_ids(self, root: Path, chunks: list[dict[str, object]]) -> set[UUID]:
         related: set[UUID] = set()
