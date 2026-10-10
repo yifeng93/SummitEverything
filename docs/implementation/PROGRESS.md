@@ -114,3 +114,12 @@ M2.2 独立审查 P2 追加修复：`UserOutcome.evidence` 现在去除首尾空
 - 项目概览使用预分配 overview_id，只有用户显式创建；更新提交 expected content hash，旧版本 409。目录可重开导航，知识保存不会写入项目进度字段。
 - 后端新集成 9 项及 PageWriter / intake / writer 回归合计 37 passed；UI 组件 6 passed；ruff / format / mypy、OpenAPI Types、前端 typecheck / build 通过。lint 保留原有三条 React effect 警告；1 条 Starlette/httpx deprecation。浏览器开发者复演记录在 [M2.3 DEV 报告](../quality/reports/2026-10-10-M2.3-DEV.md)。无独立 QA。
 - 真实模型、业务材料、飞书账户 / scopes / 读写、真实任务副作用、Keychain、DMG、M3–M5 与独立 QA 均未运行。
+
+## Stage A 恢复路径 UI 独立补验（2026-10-10）
+
+- **固定对象：** 补验从 `main` SHA `409b90704046c623184846c09c873cec053e946d` 开始。C18 local-writer receipt 恢复后，同一 succeeded action 同时显示成功和“仍为未知”，记为 P2；初报固定 SHA 和 FAIL 保持不变。
+- **修复：** 执行者在 `30903c4cdf73855af71a201e3edea6c535ee8199` 修正本地 writer receipt 成功状态提示，并增加 TasksPanel 回归。此提交独立于 QA。执行者记录组件测试、全 Web 测试、typecheck、build、lint 和指定进度恢复集成测试结果；本次独立 UI 复验的自动测试为 NOT_RUN。
+- **独立报告：** 初验报告 [recovery UI supplement](../quality/reports/2026-10-10-M2-stage-a-recovery-ui-supplement.md)，初验提交 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0`；追加脱敏及生成字节码清理为 `eae0f22dce4c7f15d97bd7d5cc1e17f7d7b148f4`、`1d62e24`、`1f0639a`。修复 SHA 报告 [C18 recovery UI retest](../quality/reports/2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md)，原报告提交 `2d6254c4c2717857fda8ccaa97c210b41e0c695e`；串接后 QA 分支树提交 `998b4d2fa1165cecb71c9baf8ff6610a516d3df0`。报告分别记录产品 SHA，不将 309 PASS 回写成 409b 通过。
+- **结果：** 409b 的 C16 子进程退出/重启 unknown→只读核实 succeeded、确认转移、双击及重叠同 action 请求只产生一次 Fake 副作用，及 C23 atomic replace 前中断后 unknown/no-resend 均为 UI/API/Fake PASS。C18 在 409b 是 UI FAIL、API/Fake PASS；在 309 的新独立复验中同 action 完成 proposed→confirmed→running→重启 unknown→只读核实 succeeded→同 ID replay succeeded，界面只显示成功，本地 manifest 和 progress_version 重放前后不变。309 的 C23 no-proof 负向控制保持 unknown/no-resend。未关闭 P0/P1/P2=0（仅本补验范围）。
+- **证据完整性：** 初验 manifest SHA-256 `64f77d13a0bcc0f9b1a4089641df056937647e5b375c3ab3925dab49349f8c10`（47 项）；309 manifest SHA-256 `599190944efaf82861b5d571b2364524ec1a06829d5055b1cadd0f0b6453e66f`（26 项）。重复截图、空项目选择误作 proposal 及初次脚本字节码已追加说明 / 清理；历史报告仍保留。两份报告均有隔离 harness、console/network 摘要、状态 API 与磁盘证据。最终 309 复演网络仅观察 loopback；409b 初次候选曾连本机代理，是否转发不可判定，按初报披露。
+- **边界：** 使用合成工作库、Fake provider 和隔离浏览器；没有有意调用真实 Feishu、模型、材料、凭据或外部业务操作。此补验不重跑原生壳、整体自动矩阵或真实门。PR 整合状态请以本轮 closeout 及当前 `main` 历史核对；阶段 B/C 与 M3–M5 未开始。

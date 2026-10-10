@@ -130,3 +130,19 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 - **自动检查：** 固定源码完整自动矩阵见第一轮报告；后端 142 passed、前端 8 个测试文件 / 32 项通过，ruff check / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build、Swift build 与 `git diff --check` 均退出 0。第四轮新增指定后端集成测试 43 passed，保留 1 条既有 Starlette/httpx TestClient deprecation；原有 3 条 React effect lint warning 保留。无依赖或 lock 变更。
 - **真实门：** 真实 Feishu 登录 / scope / task 读写、真实材料、真实 LLM / embedding / rerank、Keychain、DMG、五日试用、双机继续 **NOT_RUN**；用户准备的资源没有被读取或消费。本结论只覆盖 Fake 模拟范围。
 - **整合状态：** PR #4 以 `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 main；受测代码树与 merge tree 的 `src/tests/web/native` 完全一致。独立 main checkout 全量复跑与关键路径冒烟结果见[合并后核验记录](reports/2026-10-10-M2-stage-a-postmerge.md)。
+
+### Stage A 恢复路径 UI 补验（固定基线 409b → 修复 SHA 30903c4）
+
+本补验仅追加执行结果，不修改本手册前述验收期望。固定 `409b90704046c623184846c09c873cec053e946d` 的初验报告保留 C18 P2 UI FAIL；执行者修复后的完整候选 SHA 为 `30903c4cdf73855af71a201e3edea6c535ee8199`。初验报告及证据在 [recovery UI supplement](reports/2026-10-10-M2-stage-a-recovery-ui-supplement.md)，其修复 SHA 独立复验见 [C18 recovery UI retest](reports/2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md)。
+
+| 案例与固定 SHA | UI | API | 磁盘 / Fake | 自动测试 | 结果 |
+|---|---|---|---|---|---|
+| C16 子进程退出，重启 unknown→只读核实 succeeded（409b） | PASS | PASS | PASS | NOT_RUN | 同一 action_id 的 proposed/confirmed、进程退出、重启 unknown、只读核实成功均有独立状态证据；核实期间 Fake 远端计数不变。 |
+| C16 确认状态及双击/并发过渡（409b） | PASS | PASS | PASS | NOT_RUN | proposed→confirmed 有独立截图；UI 双击与两个实际重叠的同 action 请求分开记录，后者返回 running/succeeded，Fake 计数净增一次。 |
+| C18 回执丢失、重启与只读核实（409b） | **FAIL（P2）** | PASS | PASS | NOT_RUN | 同一动作最终 API/disk 为 succeeded，但 UI 同时显示“仍为未知”。初报保持失败事实。 |
+| C18 修复 SHA 30903c4 回执恢复复验 | PASS | PASS | PASS | NOT_RUN | 独立新库复演同 action：receipt write 失败后运行中；重启 unknown；只读核实后 API/UI succeeded 且显示 local_writer_receipt；同 ID replay 不改变 manifest / progress_version。旧 FAIL 只在新 SHA 的行为上关闭。 |
+| C23 atomic replace 前中断，无写入证明（409b）；309 no-proof 负向对照 | PASS | PASS | PASS | NOT_RUN | 保留具体 UI unknown/no-resend；只读核实仍 unknown；manifest / progress_version 不变且没有写入证明。 |
+
+QA 提交链：409b 初验 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0` → 脱敏 `eae0f22dce4c7f15d97bd7d5cc1e17f7d7b148f4` → 生成字节码清理 / 补记 `1d62e24` / `1f0639a` → 修复 SHA 复验 `2d6254c4c2717857fda8ccaa97c210b41e0c695e`；串接后的 QA 分支树提交为 `998b4d2fa1165cecb71c9baf8ff6610a516d3df0`。初验与修复复验 manifest 分别为 `64f77d13a0bcc0f9b1a4089641df056937647e5b375c3ab3925dab49349f8c10`（47 项）和 `599190944efaf82861b5d571b2364524ec1a06829d5055b1cadd0f0b6453e66f`（26 项），均逐项校验。撤回的重复截图、空项目选择 proposal 画面及 `__pycache__` 不作为证据；历史报告未改写。
+
+两轮均为隔离 Fake-only 工作库 / 浏览器；没有有意调用真实飞书、模型、材料、凭据或业务操作。最终 309 复演只观察到 loopback sockets；409b 初次候选曾连本机代理，是否转发不可判定，详见报告。此结果仅补足恢复路径 UI 证据，不代表重新执行整体 Stage A 或真实门；真实环境继续 NOT_RUN。
