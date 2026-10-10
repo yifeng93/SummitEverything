@@ -9,7 +9,11 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 if TYPE_CHECKING:
-    from summit_everything.integrations.feishu.tasks import FeishuTask, TaskPage
+    from summit_everything.integrations.feishu.tasks import (
+        FeishuTask,
+        TaskExecutionEvidence,
+        TaskPage,
+    )
 
 CALLBACK_PATH = "/api/v1/integrations/feishu/callback"
 
@@ -193,4 +197,6 @@ class FeishuProvider(Protocol):
     def task_patch(
         self, credentials: UserCredentials, guid: str, body: dict[str, Any], token: str
     ) -> FeishuTask: ...
-    def task_result(self, credentials: UserCredentials, token: str) -> FeishuTask | None: ...
+    def task_result(
+        self, credentials: UserCredentials, token: str
+    ) -> TaskExecutionEvidence | None: ...

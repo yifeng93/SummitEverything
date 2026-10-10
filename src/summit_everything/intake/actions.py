@@ -320,7 +320,9 @@ class ActionService:
         item = self.get(root, action_id)
         if item.state != "unknown":
             return item
+        provider_evidence = None
         task = None
+        provider_evidence_verified = False
         local_evidence = None
         if item.kind == "project_progress":
             operation_id = "progress:" + self.token(root, item)
@@ -349,7 +351,14 @@ class ActionService:
                 except (OSError, ValueError, KeyError, AttributeError):
                     raise WorkspaceError("本地写入凭据损坏，请人工核实。", 409) from None
         else:
-            task = self.tasks.lookup(self.token(root, item))
+            token = self.token(root, item)
+            provider_evidence = self.tasks.lookup(token)
+            if provider_evidence is not None:
+                provider_evidence_verified = self.tasks.verify_lookup(
+                    item.kind, item.payload, token, provider_evidence
+                )
+                if provider_evidence_verified:
+                    task = provider_evidence.task
         with workspace_lock(root):
             item = self._get(root, action_id)
             if item.state != "unknown":
@@ -358,8 +367,13 @@ class ActionService:
                 {
                     "kind": "provider_lookup",
                     "at": self.now().isoformat(),
-                    "found": task is not None,
-                    "task": task.model_dump(mode="json") if task else None,
+                    "found": provider_evidence is not None,
+                    "verified": provider_evidence_verified,
+                    "result": (
+                        provider_evidence.model_dump(mode="json")
+                        if provider_evidence is not None
+                        else None
+                    ),
                 }
             )
             if local_evidence is not None:

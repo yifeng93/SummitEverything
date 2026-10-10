@@ -111,6 +111,13 @@ class FeishuTask(StrictModel):
     completed_at: int = Field(default=0, ge=0)
 
 
+class TaskExecutionEvidence(StrictModel):
+    client_token: str = Field(min_length=1, max_length=200)
+    kind: str = Field(pattern="^feishu_task_(create|update|complete)$")
+    target_guid: str | None = Field(default=None, min_length=1, max_length=200)
+    task: FeishuTask
+
+
 class TaskPage(StrictModel):
     items: list[FeishuTask]
     next_cursor: str | None = None
@@ -225,4 +232,26 @@ class FeishuTasks:
     def lookup(self, token: str) -> FeishuTask | None:
         user = self._reader()
         value = self.session._call(lambda: self.session.provider.task_result(user, token))
-        return None if value is None else self._task(value)
+        if value is None:
+            return None
+        try:
+            evidence = TaskExecutionEvidence.model_validate(value)
+        except ValueError:
+            return None
+        return evidence
+
+    def verify_lookup(
+        self, kind: str, payload: dict[str, Any], token: str, evidence: TaskExecutionEvidence
+    ) -> bool:
+        if evidence.client_token != token or evidence.kind != kind:
+            return False
+        if kind == "feishu_task_create":
+            if evidence.target_guid is not None:
+                return False
+        elif evidence.target_guid != payload.get("task_guid"):
+            return False
+        try:
+            self._validate_result(kind, payload, evidence.task)
+        except (FeishuError, ValueError):
+            return False
+        return True

@@ -22,7 +22,11 @@ from summit_everything.integrations.feishu.provider import (
     MaterialPage,
     UserCredentials,
 )
-from summit_everything.integrations.feishu.tasks import FeishuTask, TaskPage
+from summit_everything.integrations.feishu.tasks import (
+    FeishuTask,
+    TaskExecutionEvidence,
+    TaskPage,
+)
 from summit_everything.workspace.transactions import atomic_write
 
 
@@ -78,14 +82,19 @@ class FakeFeishu:
         with self._remote() as data:
             token = body["client_token"]
             if token in data["results"]:
-                return FeishuTask.model_validate(data["results"][token])
+                return FeishuTask.model_validate(data["results"][token]["task"])
             task = FeishuTask(
                 guid=str(uuid4()),
                 **{key: value for key, value in body.items() if key != "client_token"},
             )
             row = task.model_dump(mode="json")
             data["tasks"][task.guid] = row
-            data["results"][token] = row
+            data["results"][token] = {
+                "client_token": token,
+                "kind": "feishu_task_create",
+                "target_guid": None,
+                "task": row,
+            }
             self._save_remote(data)
             return task
 
@@ -100,14 +109,23 @@ class FakeFeishu:
                 row[field] = body["task"].get(field)
             task = FeishuTask.model_validate(row)
             data["tasks"][guid] = task.model_dump(mode="json")
-            data["results"][token] = task.model_dump(mode="json")
+            data["results"][token] = {
+                "client_token": token,
+                "kind": "feishu_task_complete"
+                if body.get("update_fields") == ["completed_at"]
+                else "feishu_task_update",
+                "target_guid": guid,
+                "task": task.model_dump(mode="json"),
+            }
             self._save_remote(data)
             return task
 
-    def task_result(self, credentials: UserCredentials, token: str) -> FeishuTask | None:
+    def task_result(
+        self, credentials: UserCredentials, token: str
+    ) -> TaskExecutionEvidence | None:
         with self._remote() as data:
             result = data["results"].get(token)
-            return FeishuTask.model_validate(result) if result else None
+            return TaskExecutionEvidence.model_validate(result) if result else None
 
     def authorization_url(self, redirect_uri: str, state: str) -> str:
         return redirect_uri + "?" + urlencode({"code": "fake-ok", "state": state})
