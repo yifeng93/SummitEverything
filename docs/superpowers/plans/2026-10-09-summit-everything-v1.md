@@ -124,10 +124,12 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 文件：integrations/feishu/tasks.py、intake/actions.py、workspace/action_receipts.py、api/routes/actions.py。
 
-- [ ] 测试：未确认零外部写、重复执行同意图只建一次、不同 payload 冲突、HTTP 超时后不重 POST、完成态重复完成成功。
-- [ ] 实现 action ledger / receipt、原子认领、确认与运行、核实 unknown，以及创建 / 编辑 / 完成。
-- [ ] UI 独立任务确认卡和日期输入，不猜日期、不用知识确认代替 task / project_progress 确认。
-- [ ] 使用模拟 provider 验证跨重启 / 月归档后幂等。真实外部写只用用户明确指定的测试任务。
+- [x] 测试：未确认零外部写、重复执行同意图只建一次、不同 payload 冲突、HTTP 超时后不重 POST、完成态重复完成成功。
+- [x] 实现 action ledger / receipt、原子认领、确认与运行、核实 unknown，以及创建 / 编辑 / 完成。
+- [x] UI 独立任务确认卡和日期输入，不猜日期、不用知识确认代替 task / project_progress 确认。
+- [x] 使用模拟 provider 验证跨重启 / 月归档后幂等。真实外部写未测，仍只允许用户明确指定的测试任务。
+
+M2.2 DEV完成待验收；代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`，19 个后端集成测试 / 10 个真实组件测试，Fake-only 浏览器复演。真实全天 timestamp 规则及真实执行证据查询未验证，不能直接照搬 Fake 映射。详见任务报告；未据此标记阶段 QA通过。
 
 ### M2.3：工作日志、思考与项目总览
 

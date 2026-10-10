@@ -1,5 +1,9 @@
 # 最新实现交接
 
+## 当前 M2.2 DEV 候选
+
+固定代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`，分支 `codex/m2-feishu-actions-journal`，基线 `83c5eb6a1ca0a121d39a2b663c9f172339b36f9b`。M2.1 session / credential / Fake provider 之上实现独立提议、编辑、确认、执行、unknown核实、跨重启 / 月汇总回执、任务表单和本地project_progress。状态DEV完成待验收；详细命令 / 证据见 [任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。后端126、前端28通过，1+3既有警告；Fake-only真实浏览器复演，无真实外部调用。全天真实timestamp语义和真实执行证据查询仍未验证。M2.3未开始；下文保留M1独立QA历史。
+
 ## 固定候选
 
 - **阶段：** M1.1–M1.5 DEV、独立模拟验收及 main 合并后检查均通过。
@@ -60,4 +64,4 @@ uv run python scripts/run_dev.py
 
 ## 下一阶段
 
-M1 已收口，当前可以开始 M2，首个任务为 M2.1。先在隔离模拟环境使用 Fake Feishu provider 完成授权失败、材料选择 / 分页 / 正文读取和日历流程，再交独立 QA。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。
+M1 已收口；M2.1 / M2.2 已提交DEV候选，主执行会话复核固定SHA并安排独立QA后按计划推进M2.3。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。

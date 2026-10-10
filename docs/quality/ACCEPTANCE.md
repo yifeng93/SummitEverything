@@ -79,3 +79,16 @@ Must FAIL、未关闭 P0 / P1 阻止相关阶段通过。真实门未测时只�
 实现者自测不填写独立 QA 通过。真实 Feishu 用户权限、账户登录、真实材料与钥匙串持久化均未测；任务写属于 M2.2。
 
 M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请求实际注册目的地且不跟随 redirect / 携带凭据；检查 callback allowlist CORS / no-store、非法外部地址拒绝。导入合法材料与“ .txt”等被来源 writer 拒绝的名称，必须逐项失败且其余继续。模拟 token_expired / not_authorized 后查看界面状态并确认读取按钮关闭，missing_scope 显示权限不足且没有虚构成功；检查合成 AppCredentials 与 user token 隔离、配置无秘密、状态 / 错误 / 授权 URL 无秘密。
+
+
+## M2.2 Fake 复验（C16–C18）
+
+实现者检查为 DEV 证据，独立 QA 尚未执行。命令：`uv run pytest -q tests/integration/test_actions.py`；`npm --prefix web test -- TasksPanel.test.tsx`；M1 / M2.1 回归沿用 README 全量命令。
+
+1. 未确认、模型建议或知识批准均零任务写 / 零进度变化。手动标题、显式无日期 / 全天 / 带偏移时间后审阅 exact 值，确认仍不执行，另点执行才调用 Fake。确认后编辑使原确认失效，必须新 ID 重新确认。
+2. 同 ID/hash 多次执行、双击和并发只一次副作用；进行中202 + Location。改变 hash409，两个有效 action 可同标题。已完成任务再完成直接成功，无第二次 PATCH；只选 due 时标题 / 描述不变。
+3. 注入远端已写后 Timeout、响应损坏、真实子进程退出；重启保留 Fake remote 文件，running→unknown，无证据不重发，不按标题猜成功。只读核实确切 Fake 证据 / 用户独立明确 outcome，可终结并保留 evidence；同核实 ID重放，变更依据409。迟到响应不得覆盖明确终态。
+4. 完成回执跨月摘要后重启可查 / 防重；unknown/running 不压掉。摘要写后删 active 中断允许相同副本，损坏hash或冲突副本必须409。
+5. 候选转换保留 draft/source，旧 GET /actions 数组兼容；新列表cursor/limit分页。进度动作锁 + expected_version + write_intent，只独立确认后改进度，旧版本失败不覆盖；模拟写后丢回执可读本地 writer evidence。
+
+实际账号权限、真实 GET/POST/PATCH、真实全天日期提取 / 时间 normalization、真实 token 查询能力、凭据 / OS Keychain、DMG、真实材料和模型质量均 NOT_RUN。全天 Fake 午夜约定不是真实协议验收。2026-10-10 最终 UI 树复演：独立临时 workspace/profile，创建（显式无日期）→确认→执行→refresh，完成→确认→执行→refresh 已完成；控制台warn/error为0。异常 / 并发 / 子进程路径由真实服务和文件测试覆盖，未声称浏览器全部复演。

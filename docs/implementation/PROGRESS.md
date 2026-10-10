@@ -12,14 +12,14 @@
 |---|---|---|---|
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
-| M2 飞书 / 日常 | 进行中；M2.1 DEV完成待验收 | 未开始 | M2.1 Fake 授权 / 材料 / 日历已实现；M2.2–M2.3 未开始，真实权限与写动作门独立记录 |
+| M2 飞书 / 日常 | 进行中；M2.1 / M2.2 DEV完成待验收 | 未开始 | M2.1 Fake 授权 / 材料 / 日历、M2.2 独立任务动作已实现；M2.3 未开始，真实权限与写动作门独立记录 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 
 ## 当前下一步
 
-M1 已在模拟材料与 Fake providers 范围内完成独立验收并合入 main。最终受测代码 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`，独立报告为 [M1 close retest](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。下一阶段可开始 M2，先实现 Fake provider 流程并独立验收；真实飞书读取与写入仍须经过单独授权门。本轮未启动 M2–M5。
+M1 已在模拟材料与 Fake providers 范围内完成独立验收并合入 main。最终受测代码 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`，独立报告为 [M1 close retest](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。M2.1 / M2.2 已实现 Fake provider 流程，均为 DEV完成待验收；待主执行复核固定 SHA 与独立 QA，随后推进 M2.3。真实飞书读取与写入仍须经过单独授权门，M3–M5 未开始。
 
 ## 独立验收报告（旧 SHA）
 
@@ -89,3 +89,12 @@ allowed 状态为 未开始 / 进行中 / DEV完成待验收 / 验收未通过 /
 ### M2.1 首轮审查修正
 
 固定修正代码 `cef2d4036b0579525c32d5746911ebf591c56a8b`：保留注册 callback 的不同端口目的地及窄 CORS 边界；来源文件名验证共享 writer 规则，坏项不阻断其余导入；过期授权与缺权限的 UI 状态分开；增加 app_id / AppCredentials / 独立合成秘密存储接口。DEV 状态仍为待验收，Fake only；无真实账户适配器、凭据入口或 OS Keychain 权限流。后端 107 passed（Feishu 30）、前端 18 passed，ruff / format / mypy 与前端 types / typecheck / lint / build 退出 0，仅保留既有警告；详细红绿和命令结果见 M2.1 DEV 报告。没有修改审查者证据。
+
+
+## M2.2 正式任务与独立动作
+
+- 状态：DEV完成待验收，Fake 模拟范围；固定代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`。M2.3 未开始，未启动 M3–M5、未 push / PR。
+- C16–C18：19 个新增真实 API / 文件 / 锁 / writer / 子进程测试，10 个 TodayView / TasksPanel 组件测试；完整后端126 passed（保留1既有弃用warning）、前端28 passed，ruff / format / mypy / lock / uv build / OpenAPI / typecheck / lint / web build退出0（lint保留3既有warning）。
+- 隔离 IAB 真实浏览器创建（无日期）及完成均经审阅、独立确认、另行执行、provider刷新；控制台warn/error0。断流、并发、子进程及跨月由服务测试覆盖。非独立QA。
+- 本地 receipt 保留确切意图 / 证据，不维护本地正式任务库；Fake远端在库/profile外。原候选关联兼容，知识确认与进度分开。全天真实timestamp规则 / Fake结果查询的真实等价物仍未核证，不声称真实协议通过。实际账户 / 凭据 / 任务均未调用。
+- 详细提交、红绿命令、请求映射、文件与concerns见 [M2.2任务报告](../../.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。下一步主执行会话复核固定SHA / 独立QA，随后M2.3。

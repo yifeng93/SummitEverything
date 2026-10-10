@@ -56,9 +56,10 @@
 | GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消（已实现；同步 provider 当前无法中断运行中的调用） |
 | GET /drafts；GET /drafts/{id}；PATCH /drafts/{id} | 完整稿、来源、冲突；编辑带稿件版本（已实现） |
 | POST /drafts/{id}/confirmations | confirmation_id、expected_version、重要冲突处理结果 → MutationResult（已实现） |
-| GET /actions；POST /actions/{id}/executions | 候选只读列表已实现；明确批准的 action / payload hash → Job / receipt 后续阶段 |
-| POST /actions | kind、payload、operation_id → proposed Action；供手动任务表单及项目进度建议使用，只保存本地候选，不执行外部写 |
-| POST /actions/{id}/reconciliations | 只读核实未知远端结果；没有证据时仍 unknown |
+| GET /actions；GET /action-intents；GET /actions/{id} | 旧候选数组兼容；显式 cursor/limit 候选分页；独立 Action 列表 / 回执按 cursor/limit 查询（M2.2 Fake 已实现） |
+| PATCH /actions/{id}；POST /actions/{id}/confirmations；POST /actions/{id}/executions | 预期 hash 编辑；最终 payload 独立确认；已确认动作原子认领后执行，进行中重放 202 + Location，其他既有状态原样返回 |
+| POST /actions | action_id、kind、payload、可选 candidate_id → proposed Action；保留候选 / 稿件 / 来源关联，仅保存意图，不执行外部写 |
+| POST /actions/{id}/reconciliations；POST /actions/{id}/outcomes | 只读核实未知结果；无证据保持 unknown；用户独立确认的 state / evidence / confirmation_id 才能记录明确结果 |
 | GET /integrations/feishu/status | 权限 / 登录状态，无 token 值 |
 | POST /integrations/feishu/authorizations | 创建 OAuth 登录意图，state 绑定当前本机会话 |
 | GET /integrations/feishu/callback | 验证已发起 OAuth state / redirect，存钥匙串 |
@@ -112,3 +113,19 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 已核对的真实协议约束仅作为适配边界：妙记搜索为 POST `/open-apis/minutes/v1/minutes/search`，分页为 page_size/page_token（最大 30），要求 user_access_token；不可把 tenant token 或其 scope 当 user scope。正文接口可返回文件，不能假设 JSON text。参见[官方妙记搜索](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/minutes-v1/minute/search)及 REUSE-MAP；本切片未发真实请求。
 
 M2.1 审查补充：前端 callback 使用返回的绝对本机地址，限定 http loopback / 固定 callback path / 单一 OAuth code或error及state 参数；不改 host / port、不携带 cookie/Bearer、不跟随 redirect。callback 仅向配置 Origin 返回 Access-Control-Allow-Origin，错误响应也保留此读取边界，Cache-Control 为 no-store；业务路由认证不变。文本文件名验证共享 SourceStore.safe_source_filename 规则；逐项 capture 验证失败转安全 malformed_response 后继续其余选择。前端保留 API error code，expired/not_authorized 使状态失效并停读，missing_scope 只标记权限不足；不把 scope 缺失误当 token 到期。
+
+
+## M2.2 已实施的独立动作与任务 Fake 契约
+
+- `POST /actions` 输入 `{action_id: UUID, kind, payload, candidate_id?}`。payload 原样保存；JSON UTF-8、ensure_ascii=false、sort_keys=true、紧凑 separators、allow_nan=false 得到 SHA-256。kind / candidate_id 独立比对。同 ID / 同值返回既有对象（201），不同值 409。不同合法 ID 允许同标题。
+- `GET /action-intents?cursor&limit` → `{items, next_cursor}`，默认20、1–100；按 action UUID 排序、跨月汇总查找。`GET /actions` 无参数保留 M1 ActionCandidate 数组；显式 cursor/limit 返回候选页。`GET /actions/{id}` 返回保存的 intent / receipt。
+- `PATCH /actions/{id}` 输入 `{expected_payload_sha256, payload}`；只允许 proposed/confirmed，改动清除确认，旧 confirmation_id 保留失效证据且不能复用。`POST /confirmations` 和 `/executions` 输入 `{payload_sha256, confirmation_id}`，hash 必须匹配、确认 ID 非空。确认不执行；执行先在库锁内保存 running 与确认，再调用 provider。进行中相同请求 202 + Location，unknown/terminal 200 返回原状态，无重写。
+- `/reconciliations` 输入 `{}`，不发送任务写。Fake 确切执行证据或本地 progress writer 凭据可确认成功；无证据仍 unknown。`/outcomes` 输入 `{payload_sha256, confirmation_id, state: succeeded/failed, evidence}`；只接受 unknown 的独立明确结果；同核实 ID / 同值可重放，不同值409。核实证据保留；迟到响应不能覆盖已明确终态。
+- TaskCreate `{summary, description?, due}`：due 必须显式给 null 或 `{value, is_all_day: 严格bool, timezone: IANA}`；标题不能空白。全天 value 是 ISO 日期；具体时间须带与 IANA 时区一致的偏移。原文和时区保留在 intent，具体时间映射为毫秒 timestamp **字符串**，不向 provider 猜发 timezone 字段。
+- TaskUpdate `{task_guid, task: {选定字段}, update_fields}`：仅 summary / description / due；update_fields 必须与给出的字段完全一致，不能重复。due:null 明确清空日期；description:"" 明确清空描述。未选字段不发送。TaskComplete `{task_guid}`：先读 provider 完成态，已完成直接成功；否则 PATCH completed_at 毫秒字符串，update_fields=[completed_at]。
+- `GET /integrations/feishu/tasks?cursor&limit`（默认20、1–100）与 `/{task_guid}` 只读 provider；TaskPage items/next_cursor。API 的 FeishuTask 为只读投影，due.timestamp / completed_at 归一为 int。读取要求 user 的 task:task:read 或 task:task:write，写要求 task:task:write；复用 M2.1 session / CredentialStore。没有本地任务状态修改入口。
+- ProjectProgress `{project_id: UUID, expected_version: 非负严格int, progress}`：独立 action 写 project manifest 的 progress / progress_version / progress_confirmation_id；锁 + 预期版本 + 既有 write_intent 事务，知识批准不调用它。
+
+真实协议只核对公开文档 / 官方 SDK，不发真实请求。Task v2 REST GET/POST `/open-apis/task/v2/tasks`、GET/PATCH `/:task_guid`、PATCH task/update_fields；provider 分页 page_size/page_token 和 items/has_more/page_token。[官方 Task 概述](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/task-v2/overview)、[官方 Python 请求模型](https://github.com/larksuite/oapi-sdk-python/tree/v2_main/lark_oapi/api/task/v2/model)、[官方 Go SDK 注释](https://pkg.go.dev/github.com/larksuite/oapi-sdk-go/v3/service/task/v2)。client_token 从 workspace UUID + action UUID 派生稳定 UUID，仅创建传给 provider；官方成功幂等窗口5分钟，不能代替本地永久禁止未知重发。PATCH 的 token 参数仅供 Fake 留执行证据，不是额外 REST 字段。
+
+**未验证的真实语义：**官方概述提示全天时间有特殊规则，可访问资料未确证其日期提取时区。当前全天午夜 timestamp 是明确的 Fake 约定，原始日期 + IANA 永久保留；真实 adapter 必须先核证并验收。Fake 精度 / 全天返回只是模拟，不代表真实 normalization。`task_result(token)` 仅为 Fake 合成证据查询；无已核实真实查询能力时必须返回无证据或安全错误并保留 unknown，不能按标题 / 列表猜成功。
