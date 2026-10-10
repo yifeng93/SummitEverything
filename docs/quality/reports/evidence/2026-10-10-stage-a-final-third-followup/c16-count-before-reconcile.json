@@ -1,0 +1,9 @@
+{
+  "phase": "unknown-state before explicit UI read-only reconciliation",
+  "remote_task_count": 1,
+  "remote_execution_result_count": 1,
+  "matching_remote_task_count": 1,
+  "local_action_state": "unknown",
+  "receipt_has_provider_result": true,
+  "receipt_evidence_count": 0
+}

@@ -1,0 +1,16 @@
+{
+  "scope": "synthetic QA workspace only",
+  "file": ".local/qa/stage-a-final-round3/workspace/工作日志/QA-Round-3-A05-external-edit.md",
+  "before_hash_method": "Reconstructed from exact logged byte replacement (QZ-R3-A05-OLD to QZ-R3-A05-NEW); raw pre-edit copy was not separately retained at mutation time.",
+  "before_sha256_reconstructed": "0a606f551a6beb81463efe8a5e57725173da4da5f7abf98c26cb47f47c51604a",
+  "after_sha256": "d02cd941616adb067364668241f64d73acdb84f5a3369c35505128430a2433bd",
+  "bytes_before": 430,
+  "bytes_after": 430,
+  "old_phrase_absent_after": true,
+  "new_phrase_present_after": true,
+  "frontmatter_after": "\nid: 52e3af6f-32f4-567c-aa93-c81f09b17c41\ntitle: QA Round 3 A05 external edit\nrole: knowledge\nkind: log\napproval:\n  version: 1\n  content_sha256: c559c242828ad91ef9808925f022783988bb3331033366ff752f62d520650628\n  confirmed_at: '2026-10-10T05:36:16.020209+00:00'\n  confirmation_id: b8ede5bb-bbfb-4669-9a3f-187a5ec4df6f\n",
+  "approval_content_sha256_before_from_frontmatter": "c559c242828ad91ef9808925f022783988bb3331033366ff752f62d520650628",
+  "UI_observation_after_edit": "Journal list badge: 需要重新确认 · 本机保存; page reader badge: 待确认; page reader displays that the page changed since last confirmation and will not be used in knowledge Q&A until checked and confirmed.",
+  "query_ui_before": "QZ-R3-A05-OLD returned a citation with the old approved page body.",
+  "query_ui_after": "Same query returned 没有找到可引用的依据 after external edit."
+}

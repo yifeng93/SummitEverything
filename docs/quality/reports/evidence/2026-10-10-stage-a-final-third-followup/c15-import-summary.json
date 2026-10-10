@@ -1,0 +1,27 @@
+{
+  "scope": "Fake provider synthetic rows; only selected body endpoints called",
+  "provider_body_calls": [
+    "qa-round3-bad-body",
+    "qa-round3-good-body",
+    "minute-1"
+  ],
+  "outcomes": [
+    {
+      "material_id": "qa-round3-good-body",
+      "result": "body timeout; no source/intake item created"
+    },
+    {
+      "material_id": "qa-round3-good-body",
+      "result": "imported to pending intake",
+      "sha256": "6023e01df0136de18172b2ca37029bf5c4134da360993a451d630891607cb469",
+      "identity_provider": "feishu-fake"
+    },
+    {
+      "material_id": "minute-1",
+      "result": "single selected body imported to pending intake",
+      "sha256": "83a0bf3f7473be0a79328eb1b7e0c7fcbaa3673c54bc2d5dedaf850234dd6e3fb",
+      "identity_provider": "feishu-fake"
+    }
+  ],
+  "note": "Bad row failed with synthetic timeout while the selected good row persisted intact; separate one-row selection imported minute-1. No live provider calls."
+}

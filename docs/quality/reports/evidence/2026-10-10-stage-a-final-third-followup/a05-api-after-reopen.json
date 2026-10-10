@@ -1,0 +1,12 @@
+{
+  "api_origin": "same-origin Vite proxy, session token added by proxy and not accessed",
+  "pages": [
+    {
+      "title": "QA Round 3 A05 external edit",
+      "approval_state": "invalid",
+      "validity": "current",
+      "content_sha256": "bc68075bb41f1930fec523848c84dedf1e5aa8299662ee2c169ff0376c7cce52",
+      "relative_path": "工作日志/QA-Round-3-A05-external-edit.md"
+    }
+  ]
+}
