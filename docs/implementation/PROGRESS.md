@@ -8,6 +8,7 @@
 - 2026-10-09：本轮修复 C05 来源 / 整理作业 / 稿件状态与重复生成门禁、补充 C07 最终正文结果、修复本地开发服务身份及退出清理，更新 API / 工作库契约、执行 / 测试交接和当前阶段计划。候选代码固定在 `73ec81a06f2557c006f98ff88fa81b08d14ef315`；DEV 命令与浏览器 / 原生复演证据见 [自测记录](../quality/reports/2026-10-09-M1-close-DEV.md)。记录该条时独立 QA 尚未完成；后续发现 C03 P1 并修复，最终 QA 与收口结果见下一条记录及下方报告。
 - 2026-10-09：首轮独立 QA 在 `73ec81a` 发现 C03 P1；执行者补齐目录管理与页面移动 / 链接 UI，并在最终受测代码 SHA `f349fe6cb5da86c3fdafff11738e2a55335d8874` 重新提交 QA。独立复验 M1 模拟范围通过，P0/P1=0、P2=1；PR #1 以 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa` 合入 main，合并后完整检查通过。报告与外部门边界见下方记录。
 - 2026-10-10：M2.1–M2.3 Fake-only 开发自测、WebUI 浏览器流程与 unknown 故障恢复复演完成；固定代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`。M2.2 审查 P2 已修复与复核。原生壳因 CUA 同名窗口命中另一 QA checkout 未能验收。阶段仍待独立 QA；真实 Feishu、Keychain、模型、DMG 等未测。详见 [M2 DEV 报告](../quality/reports/2026-10-10-M2-DEV.md)。
+- 2026-10-10（用户补充）：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、测试材料和 Keychain 均已准备好；用户可随时参与测试并补充配置。M2 固定代码尚未接入或调用这些资源，真实门继续标 NOT_RUN；后续评定应区分“测试条件已具备”和“实现/协议/真实 UI 已验证”。评估提示词见 [Sol 6.1 进度评估](../handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)。
 
 | 阶段 | 实施状态 | 独立验收 | 备注 |
 |---|---|---|---|
@@ -20,7 +21,7 @@
 
 ## 当前下一步
 
-M1 已在模拟材料与 Fake providers 范围内完成独立验收并合入 main。最终受测代码 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`，独立报告为 [M1 close retest](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。M2.1–M2.3 的 Fake-only 开发者自测、真实 WebUI 复演和 unknown 故障恢复已完成，固定代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`，等待独立 QA。原生壳窗口归属冲突使壳 UI 尚未验证；真实飞书读取与写入仍须经过单独授权门，M3–M5 未开始。
+M1 已在模拟材料与 Fake providers 范围内完成独立验收并合入 main。最终受测代码 SHA 为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`，独立报告为 [M1 close retest](../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。M2.1–M2.3 的 Fake-only 开发者自测、WebUI 复演和 unknown 故障恢复已完成，固定代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`，等待独立 QA。原生壳 UI 尚未验证。真实飞书、模型、材料与 Keychain 条件已由用户备妥但固定候选未接入或调用；应优先综合评定 M2 和真实集成的差距，再确定测试范围。M3–M5 未开始。
 
 ## 独立验收报告（旧 SHA）
 

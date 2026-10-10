@@ -6,8 +6,10 @@
 - **状态：** DEV完成待独立验收。M2.1 / M2.2 的窄范围代码审查已完成；M2.2 P2 空白核实依据已修复并复核。自动检查与实际 WebUI 复演记录在 [M2 DEV 报告](../quality/reports/2026-10-10-M2-DEV.md)。
 - **文档 checkpoint：** `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`，包含汇总报告、进展账本、验收矩阵、计划与本交接。后续这条 SHA 指针提交只用于把 checkpoint 写进当前交接，不改变该文档包 SHA。
 - **验证摘要：** 后端 135 passed；Web 8 个文件 / 31 测试 passed；ruff / format / mypy / lock / uv build、OpenAPI 类型生成、前端 typecheck / lint / build、Swift build 通过。保留 1 条既有 Starlette/httpx deprecation 和 3 条既有 React effect lint warnings。
-- **边界：** WebUI 主流程与 unknown 故障恢复已实际复演；原生壳 UI 因同名 QA checkout 窗口归属冲突未验证。Fake-only，没有访问真实 Feishu、模型或业务材料，也没有创建真实任务。没有 push / PR / merge，没有启动 M3–M5。
+- **边界：** WebUI 主流程与 unknown 故障恢复已实际复演；原生壳 UI 因 CUA 无法安全绑定本候选窗口而未验证。当前固定代码仍仅实现并启用 Fake providers，没有访问真实 Feishu、模型或业务材料，也没有创建真实任务。用户已准备真实 Feishu App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain，并可参与测试、补充配置；资源可用不代表已集成或已测，真实调用和外部写入须由后续评估明确范围。
+- **当前远端交接：** 本文随用户授权的本次提交推送到 `origin/codex/m2-feishu-actions-journal`。未创建 PR / merge，没有启动 M3–M5。
 - **独立 QA 交接：** 另建 checkout/worktree 并固定到上面代码 SHA。不得在此共同目录切换分支或修改实现；使用 [TESTER 手册](TESTER.md)、[验收矩阵](../quality/ACCEPTANCE.md) 和 M2 DEV 报告。原生壳 UI 需由独立验收者在能确认路径属于本固定候选的窗口补测。
+- **下一阶段评定：** [给 GPT-6.1 Sol 的 M2 进度评定提示词](PROMPT-M2-ASSESSMENT-SOL-6.1.md)，包含用户确认的真实测试条件准备情况，不包含 secret 值。
 
 下文保留 M1 独立 QA 历史。
 
@@ -71,4 +73,4 @@ uv run python scripts/run_dev.py
 
 ## 下一阶段
 
-M1 已收口；M2.1–M2.3 的 Fake-only 开发自测与 WebUI 复演完成，等待固定 SHA 独立 QA。M2.2 审查 P2 已修复，M2.3 UI 误标也已修复；代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`；文档 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。
+M1 已收口；M2.1–M2.3 的 Fake-only 开发自测与 WebUI 复演完成，等待固定 SHA 独立 QA。M2.2 审查 P2 已修复，M2.3 UI 误标也已修复；代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`；核心文档 checkpoint `0f8e61bd1f0523f7cb93d04ef4eddf4d2f6a25d4`。真实测试所需的 Feishu 应用配置、三类模型、材料及 Keychain 已由用户备妥，但真实 adapters / 质量与权限验收仍待评估并按具体范围执行。用户可参与并补齐逐项所需信息。不要把可用资源写成 PASS；不要启动 M3–M5。

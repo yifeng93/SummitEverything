@@ -110,4 +110,6 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 - 原生壳 UI NOT_RUN：运行的开发服务端口就绪，但 CUA 同名选择命中另一个 M1 QA checkout 的窗口，且显示 readiness error；执行者未操作那个 QA 实例。当前固定候选需在独立 QA checkout 用能确认归属的原生窗口补验。
 - 本次 CUA 浏览器 console 日志未导出，不作零 warning/error 声明。真实 Feishu、真实材料 / 任务 / 模型、Keychain、DMG、五日及双机全部 NOT_RUN。
 
+2026-10-10 用户更新：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain 均已准备，用户可配合提供配置并参与测试。上述真实门仍是 NOT_RUN，因为固定候选仅 Fake provider；“条件可用”不代表已实现、已操作或已通过。下一轮评估需判断先做固定 SHA 独立 QA，还是先补真实 adapter / 配置路径与隔离；任何真实登录、材料发送、付费模型调用或飞书 task 写入都应列出具体数据、目标、范围与成本，再由用户逐项确认。
+
 自动检查在固定候选全量复跑通过：后端 135 passed；前端 8 个文件 / 31 项通过；ruff / format / mypy / lock / uv build / Swift build / typecheck / Web build 通过。保留 1 条 Starlette/httpx 弃用提示与 3 条既有 React effect lint warning。以上均为 DEV 证据，待独立验收者在固定代码 SHA 上复核。
