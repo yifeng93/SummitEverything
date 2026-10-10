@@ -101,3 +101,7 @@ Implementation: `api/app.py`, new `api/routes/actions.py`; `domain/models.py`; n
 Documentation: README, API-v1 / WORKSPACE-v1, ACCEPTANCE C16–C18 replay, plan M2.2 checks, PROGRESS, LATEST-IMPLEMENTATION, this exact task report. Historical QA evidence is preserved; no DEV count changes independent QA status.
 
 **Concerns / untested:** real account/scope, real GET/POST/PATCH, exact all-day timestamp rule and normalization, actual client_token evidence lookup, OS Keychain/configuration, real material/model quality, native/DMG/installation, five-day work and two-machine gates; IAB native all-day control needs independent browser QA. Existing1 backend+3 frontend warnings retained. Fake-only requested implementation is complete; independent review/QA and real gates remain. Temporary own runner is stopped before final handoff; no user services killed, no external push/PR.
+
+## Independent review follow-up (2026-10-10)
+
+Reviewer found that whitespace-only user outcome evidence could resolve unknown to a terminal state. The follow-up is isolated in commit `c552d143f051efe13ebfcdd29815e776147794aa`; `UserOutcome.evidence` is stripped and rejected if blank. RED: focused route test returned 200 for blank evidence; GREEN: it now returns 422 and the action remains unknown. Full action suite: 19 passed; mypy passed. Tracked details: `docs/quality/reports/2026-10-10-M2.2-review-fix.md`. The original M2.2 implementation SHA/report was not rewritten.

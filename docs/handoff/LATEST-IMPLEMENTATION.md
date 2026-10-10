@@ -1,8 +1,15 @@
 # 最新实现交接
 
-## 当前 M2.3 DEV 候选
+## M2.1–M2.3 最终 DEV 固定候选
 
-M2.3 代码 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`，M2.2 审查 P2 另有独立修复 `c552d143f051efe13ebfcdd29815e776147794aa`。分支 `codex/m2-feishu-actions-journal`，起始基线 `2d85318c22f85aede406b72b99ebe414e8a0b647`（此前 M2.2 candidate）。M2.3 实现日志 / 思考幂等保存、显式 Fake AI 辅助、稳定项目概览和版本冲突保护。状态DEV完成待验收；测试 / UI 复演与未测门见 [M2.3 DEV 报告](../quality/reports/2026-10-10-M2.3-DEV.md)。后端新用例与复用回归37通过、M2.3组件6通过；lint保留3条既有React effect warning，后端1条既有弃用warning。实际 Feishu/模型/材料/任务均未访问。M2.2任务流仍 DEV完成待验收，真实全天时间语义及真实结果证据查询仍未验证。下文保留M1独立QA历史。
+- **代码 SHA：** `09398fcae597b2478001d40aedf580ea91322c11`；分支 `codex/m2-feishu-actions-journal`；基线 `393e63ac95be3ebbee916fcd2c911ed3dec8e86d`。
+- **状态：** DEV完成待独立验收。M2.1 / M2.2 的窄范围代码审查已完成；M2.2 P2 空白核实依据已修复并复核。自动检查与实际 WebUI 复演记录在 [M2 DEV 报告](../quality/reports/2026-10-10-M2-DEV.md)。
+- **文档 checkpoint：** 本文件和 M2 实施 / 验收记录在独立 docs commit；提交后 docs SHA 由本文件末尾补记。
+- **验证摘要：** 后端 135 passed；Web 8 个文件 / 31 测试 passed；ruff / format / mypy / lock / uv build、OpenAPI 类型生成、前端 typecheck / lint / build、Swift build 通过。保留 1 条既有 Starlette/httpx deprecation 和 3 条既有 React effect lint warnings。
+- **边界：** WebUI 主流程与 unknown 故障恢复已实际复演；原生壳 UI 因同名 QA checkout 窗口归属冲突未验证。Fake-only，没有访问真实 Feishu、模型或业务材料，也没有创建真实任务。没有 push / PR / merge，没有启动 M3–M5。
+- **独立 QA 交接：** 另建 checkout/worktree 并固定到上面代码 SHA。不得在此共同目录切换分支或修改实现；使用 [TESTER 手册](TESTER.md)、[验收矩阵](../quality/ACCEPTANCE.md) 和 M2 DEV 报告。原生壳 UI 需由独立验收者在能确认路径属于本固定候选的窗口补测。
+
+下文保留 M1 独立 QA 历史。
 
 ## 固定候选
 
@@ -64,4 +71,4 @@ uv run python scripts/run_dev.py
 
 ## 下一阶段
 
-M1 已收口；M2.1–M2.3 均提交 DEV 候选，等待独立 QA。M2.2 审查 P2 已独立修复，不与 M2.3 混合。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。
+M1 已收口；M2.1–M2.3 的 Fake-only 开发自测与 WebUI 复演完成，等待固定 SHA 独立 QA。M2.2 审查 P2 已修复，M2.3 UI 误标也已修复；代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`。独立 docs SHA：见最终文档提交后补记。真实飞书读取、写入与权限核验仍未完成；执行前需用户明确指定材料范围和动作。不要启动 M3–M5。

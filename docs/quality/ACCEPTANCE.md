@@ -98,3 +98,16 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 5. 候选转换保留 draft/source，旧 GET /actions 数组兼容；新列表cursor/limit分页。进度动作锁 + expected_version + write_intent，只独立确认后改进度，旧版本失败不覆盖；模拟写后丢回执可读本地 writer evidence。
 
 实际账号权限、真实 GET/POST/PATCH、真实全天日期提取 / 时间 normalization、真实 token 查询能力、凭据 / OS Keychain、DMG、真实材料和模型质量均 NOT_RUN。全天 Fake 午夜约定不是真实协议验收。2026-10-10 最终 UI 树复演：独立临时 workspace/profile，创建（显式无日期）→确认→执行→refresh，完成→确认→执行→refresh 已完成；控制台warn/error为0。异常 / 并发 / 子进程路径由真实服务和文件测试覆盖，未声称浏览器全部复演。
+
+## M2 固定候选执行者复演（代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`）
+
+执行者完整命令、UI 场景、隔离目录、run identity 和边界见 [M2 DEV 报告](reports/2026-10-10-M2-DEV.md)。此节记录执行者证据，不能代替独立 QA：
+
+- C15：实际 WebUI 进行了模拟授权、材料选择/取消/单条导入、待整理状态，以及日历日期范围、空态和反向区间验证。root 复演未覆盖授权拒绝/过期、provider 错误源的日历态或真实 UI 分页；相应 API / 组件 Fake 用例存在。
+- C16–C17：实际 WebUI 完成无日期任务创建、字段编辑与全天日期修改、独立审阅 / 确认 / 执行、完成态重复操作。Fake 注入分别在写入后与写入前抛 timeout；前者只读核实后成功，后者保持 unknown；刷新与重启后没有再次写入。M2.2 P2“空白核实依据”已独立修复并复核。
+- C18：知识批准、task action 与 project_progress action 分离；项目进度单独确认后变化，日志/思考/概览写入不会隐式改变进度。C09 日志 / 思考关联组合、显式 Fake AI 建议取消和项目概览链接 / 版本更新亦在 WebUI 实际操作。
+- 最后一次 `invalidated_confirmation` UI 描述误标已由回归测试修复；当前提示要求修改后重新独立确认。
+- 原生壳 UI NOT_RUN：运行的开发服务端口就绪，但 CUA 同名选择命中另一个 M1 QA checkout 的窗口，且显示 readiness error；执行者未操作那个 QA 实例。当前固定候选需在独立 QA checkout 用能确认归属的原生窗口补验。
+- 本次 CUA 浏览器 console 日志未导出，不作零 warning/error 声明。真实 Feishu、真实材料 / 任务 / 模型、Keychain、DMG、五日及双机全部 NOT_RUN。
+
+自动检查在固定候选全量复跑通过：后端 135 passed；前端 8 个文件 / 31 项通过；ruff / format / mypy / lock / uv build / Swift build / typecheck / Web build 通过。保留 1 条 Starlette/httpx 弃用提示与 3 条既有 React effect lint warning。以上均为 DEV 证据，待独立验收者在固定代码 SHA 上复核。

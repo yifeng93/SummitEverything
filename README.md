@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。受测代码为 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；详见 [独立复验报告](docs/quality/reports/2026-10-09-M1-close-retest-f349fe6.md)、[进展账本](docs/implementation/PROGRESS.md) 和 [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M2.1 / M2.2 / M2.3 已提交开发者自测候选，尚待独立验收；真实飞书读写、真实模型质量验收和可安装 DMG 仍未完成，并受各自确认门约束。
+2026-10-10：M1 本地知识闭环已在模拟材料与 Fake providers 范围内通过独立验收，并合入 `main`。M2.1–M2.3 已完成 Fake-only 开发者自测，固定代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`，**DEV 完成待独立验收**。自动检查和 WebUI 真实浏览器复演完成；原生壳 UI 因同名 QA 应用窗口冲突未验证。M2.1 / M2.2 窄范围代码审查已完成，不能代替阶段 QA。真实 Feishu、模型、业务材料、Keychain、DMG、五日试用和双机仍未完成。详见 [M2 DEV 报告](docs/quality/reports/2026-10-10-M2-DEV.md)、[进展账本](docs/implementation/PROGRESS.md) 和 [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
 
 通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
 
@@ -31,7 +31,7 @@ uv lock --check
 uv build
 ~~~
 
-上面的自动检查是开发者命令；M1 模拟范围另有独立 QA 证据，二者范围和结果见进展账本。它们不代表真实飞书、真实模型质量、DMG、五日试用或双机验收通过。
+上面的自动检查是开发者命令；M1 模拟范围另有独立 QA 证据，M2 的执行者证据见 M2 DEV 报告。它们不代表真实飞书、真实模型质量、原生壳 UI、DMG、五日试用或双机验收通过。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 
@@ -104,4 +104,4 @@ uv run pytest -q tests/integration/test_journal_overviews.py
 npm --prefix web test -- JournalView.test.tsx ProjectsView.test.tsx
 ~~~
 
-此切片只用模拟工作库与 FakeLLM；没有执行真实模型、真实材料、真实飞书或任务写入。M2.3 DEV 报告记录真实 UI 复演和未测项，阶段仍待独立验收。
+此切片只用模拟工作库与 FakeLLM；没有执行真实模型、真实材料、真实飞书或任务写入。M2.3 DEV 报告和 [汇总 M2 DEV 报告](docs/quality/reports/2026-10-10-M2-DEV.md)记录 UI 复演与未测项，阶段仍待独立验收。
