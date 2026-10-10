@@ -13,6 +13,7 @@ const states: Record<Action['state'], string> = { proposed: '待独立确认', c
 
 function evidenceSummary(item: Record<string, unknown>) {
   if (item.kind === 'provider_lookup') return item.found ? '已找到明确的远端执行证据。' : '未找到明确执行证据，仍为未知。'
+  if (item.kind === 'local_writer_receipt') return '本地项目进度写入凭据已确认成功。'
   if (item.kind === 'user_outcome') return '人工结果记录：' + String(item.text)
   if (item.kind === 'invalidated_confirmation') return '确认已失效；修改后的动作需要重新独立确认。'
   if (item.kind === 'interrupted') return '执行中断，等待核实。'
@@ -157,6 +158,7 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
   const targetTask = tasks?.items.find((task) => task.guid === action?.payload.task_guid)
   const shownDate = shown?.due as Record<string, unknown> | null
   const selectedProject = projects.find((row) => row.id === String(action?.payload.project_id ?? projectId))
+  const recoveredLocalProgress = action?.kind === 'project_progress' && action.state === 'succeeded' && action.evidence?.some((item) => item.kind === 'local_writer_receipt')
 
   return <section className="panel tasks-panel" aria-busy={busy}>
     <div className="panel-heading"><div><h2>飞书任务与独立动作</h2><p>Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。</p></div></div>
@@ -196,7 +198,7 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
       {['running', 'unknown'].includes(action.state) && <button className="button secondary" disabled={busy} onClick={() => void run(async () => setAction(await api.get<Action>('/actions/' + action.action_id)))}>刷新动作结果</button>}
       {action.state === 'unknown' && <button className="button secondary" disabled={busy} onClick={() => void run(async () => setAction(await api.post<Action>('/actions/' + action.action_id + '/reconciliations', {})))}>只读核实远端结果</button>}
     </div>
-    {action.evidence?.map((item, index) => <p key={index}>{evidenceSummary(item)}</p>)}
+    {action.evidence?.filter((item) => !(recoveredLocalProgress && item.kind === 'provider_lookup' && !item.found)).map((item, index) => <p key={index}>{evidenceSummary(item)}</p>)}
     {action.state === 'unknown' && <div className="action-form"><label>核实结果<select value={outcome} onChange={(event) => setOutcome(event.target.value as 'succeeded' | 'failed')}><option value="succeeded">确认已成功</option><option value="failed">确认未成功</option></select></label><label>人工核实依据<textarea value={evidence} onChange={(event) => setEvidence(event.target.value)} rows={3} /></label><button className="button secondary" disabled={busy || !evidence.trim()} onClick={() => void run(async () => { outcomeId.current ??= newOperationId(); setAction(await api.post<Action>('/actions/' + action.action_id + '/outcomes', { payload_sha256: action.payload_sha256, confirmation_id: outcomeId.current, state: outcome, evidence })) })}>独立确认并记录核实结果</button></div>}
     <details><summary>动作与执行证据详情</summary><pre>{JSON.stringify(action, null, 2)}</pre></details>
     </div>}
