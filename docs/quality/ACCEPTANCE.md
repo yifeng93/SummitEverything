@@ -157,20 +157,22 @@ PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main
 
 ## 阶段 B / C 追加门（尚未执行）
 
-本节细化真实适配与受控真实验收，不替换 C01–C31、不降低原 MUST；当前每项 **NOT_RUN**。结果需链接固定候选的独立 QA 报告及证据，不能仅把下表改成 PASS。完整步骤与依赖见 [B/C 提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
+本节细化真实适配与受控真实验收，不替换 C01–C31、不降低原 MUST。DEV 代码修复、自测与独立 QA 状态分开记录；候选独立 QA 尚未开始，不能仅凭 DEV 检查把下表改成 PASS。完整步骤与依赖见 [B/C 提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
 
 | ID | 阶段 / 当前结果 | 可观察、可复验的退出标准 |
 |---|---|---|
 | B01 | DEV 部分 / 独立 QA NOT_RUN | 已记录 DeepSeek / Model Studio 官方映射、用户提供的 Feishu tenant/user scopes 和管理员可授予权限。官方 LarkSuite SDK 源码确认 OAuth v2 token 路径与 JSON request/response 字段；Feishu token 官方页未返回可读正文，token 生命周期 / revoke、数据 endpoint scopes、材料 / 日历 / task 字段、时间语义及结果核实证据仍待核验。不能证实的能力必须明确阻断 |
-| B02 | DEV 部分 / 独立 QA NOT_RUN | 已实现 profile 设置、原子更新、Keychain item 的 profile/provider/account 标识摘要隔离与 Web 设置 UI；隔离浏览器用合成条目完成保存 / 删除。新增 `KeychainCredentialStore` 并通过 5 项 MemorySecretBackend 离线测试，覆盖重启、轮换、注销、profile/App ID 隔离、app-secret 分离和损坏值处理；尚未接入服务生命周期。原生 UI、Keychain 拒绝 / 锁定 / 重启和真实 Keychain 多 profile 隔离仍需复验。最终需证明秘密不进入 API response / 日志 / Git / 前端 storage |
-| B03 | Feishu / NOT_RUN | Fake token lifecycle 与独立 Keychain token store 有离线覆盖，但 store 未接线；真实 OAuth / user scope / refresh、材料、日历、task GET/POST/PATCH HTTP adapters 及协议反例尚未实现。日期 / 清空 / 完成和回执核实准确；unknown 不重发、不猜成功 |
-| B04 | DEV 部分 / 独立 QA NOT_RUN | 当前候选有 stub-tested LLM / embedding / rerank adapters、grounded answer、批量 embedding 与 fingerprint，并接入明确的整理 / 索引 / 问答动作；真实 embedding 的审批后自动索引会延后为显式计划。最终仍须覆盖协议、错误、维度 / fingerprint / 原子索引、stale 引用和外发资格反例；不宣称真实服务或完整 M3 已通过 |
-| B05 | DEV 部分 / 独立 QA NOT_RUN | 候选未固定 SHA。隔离 WebUI 复演覆盖本地模型端点设置、合成 `localhost:8765/callback` Fake 授权，以及断开授权后重载仍未授权；请求路径 / 状态记录见 [Stage B browser replay](reports/evidence/2026-10-10-stage-b-browser/replay.md)。CUA 截图未归档，完整 DevTools console/HAR、原生设置与 Keychain 故障生命周期仍 NOT_RUN。最终需要固定 SHA、完整适用检查、实际 WebUI、原生 Keychain / 配置路径与 Stage A MUST 回归；脱敏证据 / manifest 可复演；独立审查与 QA 分开记录 |
-| B06 | 整合 / NOT_RUN | 阻断缺陷已独立复验关闭，原 FAIL 保留；PR / main 可追溯受测提交，合并源码树一致、证据匹配、适当冒烟通过；真实门仍 NOT_RUN |
+| B02 | DEV 部分 / 独立 QA NOT_RUN | profile 设置、原子更新、Keychain item 的 profile/provider/account 摘要隔离与 Web 设置 UI 有实现；新保存账户绑定有 API/UI 回归。`KeychainCredentialStore` 通过 5 项 MemorySecretBackend 测试，但仍未接入真实 Feishu 服务。此轮未录入用户密钥；原生候选/Keychain 拒绝、锁定、重启和多 profile OS 验收 NOT_RUN |
+| B03 | Feishu DEV 不完整 / 独立 QA NOT_RUN | Fake token lifecycle 有离线覆盖；真实 OAuth adapter、user identity/scope、持久 Keychain service wiring、material/calendar/task HTTP adapters 均未实现。callback query access-log 脱敏有单测；真实 callback/日志浏览器流程 NOT_RUN。未证实日期/清空/完成和结果核实时对应 task 能力继续 disabled |
+| B04 | DEV 部分 / 独立 QA NOT_RUN | stub-tested LLM / embedding / rerank adapters 和明确操作接线已存在；设置的真实业务模型调用现被服务端阻断。新增各一次固定合成 payload 的单独 smoke 路由、profile 级原子限次账本、有界 HTTP 和错误处理，真实调用计数为0。原子索引、资格/stale/取消回归仍有离线覆盖；真实维度、服务质量、账单和 R03 用户评定 NOT_RUN |
+| B05 | DEV 完成部分 / 独立 QA NOT_RUN | 修复候选源码 SHA `7dc7114595704f34ba386c96324dffa77d529ba4`。后端 213、Web 39 与完整静态/构建检查通过。隔离浏览器见过合成 workspace 的设置及禁用 smoke 控件，但截图/console/network manifest 未归档；原生窗口加载另一 QA worktree，不作为候选证据，native NOT_RUN。完整 DEV 细节见 [Luna Stage B DEV](reports/2026-10-10-STAGE-B-LUNA-DEV.md) |
+| B06 | QA / 整合 / NOT_RUN | 当前代码只有 DEV 修复和自测；没有独立代码审查/固定 SHA QA报告，也没有 PR / main 合并。只有满足剩余 B 实现与协议/证据门并通过独立 QA 后才整合 |
 | R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
 | R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
-| R03 | 有限合成冒烟已授权 / NOT_RUN | 每个模型端点最多一次 synthetic input；执行前核对当前官方价格，按建议 CNY 5 总额上限执行，若无法可靠界定费用只询问额度。该 smoke 只验证连接 / 协议，不证明质量；真实材料质量评定与业务内容发送另需授权 |
+| R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
 | R04 | 真实任务 / NOT_RUN | 独立确认创建 / 编辑 / 完成；各日期语义与清空、目标 / 字段和 GET 回读证实；journal 核实 / unknown 不重发；遗留测试资源及处理责任明确 |
 | R05 | C 整合 / NOT_RUN | 固定代码 / 文档 / 独立 QA / manifest / PR / main 关系清楚；所有适用必需真实项通过，否则为部分完成或 BLOCKED；代码变更后对应门重新复验 |
 
 范围外的 DMG、五日、双机及 M3–M5 依原矩阵单独判断。资源已准备不是授权或 PASS；没有执行或未获授权的项保留 NOT_RUN / BLOCKED。P0/P1 与阻断 MUST 的缺陷不能带入下一阶段，P2 不得隐瞒或自行降级。
+
+R03 之外的有限合成连接 smoke 已由用户于 2026-10-10 另行授权：一次 Feishu OAuth code exchange、必要时一次 refresh，以及 DeepSeek chat / Model Studio embedding / rerank 各最多一次短合成请求。它只记录受限连接、协议、用量与实际费用，不能替代本行真实模型质量、预定样例、用户评定或独立 QA。执行前查当日官方价格；CNY 5 是提示词建议的保守操作上限，不是用户指定预算，超出可可靠界定范围时暂停付费调用并只询问额度。

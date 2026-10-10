@@ -2,6 +2,8 @@
 
 ## Stage B 最新评定（2026-10-10）
 
+[Luna Stage B DEV follow-up](2026-10-10-STAGE-B-LUNA-DEV.md)：修复 Sol SB-01–12 候选发现的问题并同步 SB-13，源码固定 `7dc7114595704f34ba386c96324dffa77d529ba4`。后端213 / Web39 与列出的离线构建检查通过；三个限额合成模型 smoke 均未运行，Feishu OAuth / 业务 adapters 仍不完整。浏览器截图与完整网络证据未归档，原生候选复演 NOT_RUN，Stage B 未完成，正式独立 QA pending；没有 PR/main 整合。
+
 [Sol独立DEV候选评估](2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)：开始时dirty base `ba0d330…`，后按用户授权原样固定实现 `1fede419…` 和开发文档 `4966a682…`。原矩阵后端190/前端36通过，独立反例后端10/前端1 FAIL；P0=2/P1=10/P2=1，尚未达到正式固定SHA QA入口。真实服务、用户Keychain、真实材料操作0；无PR/main整合。本条更新后文旧“未固定/未审查”状态，不追认正式QA。实际harness与失败log见[证据目录](evidence/2026-10-10-stage-b-sol-dev-review/README.md)；[下一执行Luna提示词](../../handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)要求修复、完成B、新SHA正式独立QA后再整合。
 
 ## 当前证据如何组合
@@ -30,7 +32,7 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 
 ## 后续报告纪律
 
-Stage B DEV 正在隔离 worktree 中进行；当前是部分实现，未固定候选、未独立审查 / QA、未整合。Stage C 尚未启动。真实 Feishu / 模型 / 材料 / 外部任务 / DMG / 五日 / 双机仍 NOT_RUN。用户已准备资源不改变这些状态。
+Stage B DEV 当前在隔离 worktree；源码候选 `7dc7114…` 已固定，但实现和证据仍不完整，独立 QA 尚未开始，也没有整合。Stage C 未启动。真实 Feishu / 模型请求 / 业务数据 / task 写入 / DMG / 五日 / 双机门均为 NOT_RUN。用户已准备资源不改变这些状态。
 
 - Stage B partial DEV: [2026-10-10 report](2026-10-10-STAGE-B-partial-DEV.md) — dirty candidate at baseline `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d`; offline self-check passed (Python 185, Web 36); model runtime, synthetic callback config, Fake token refresh/logout, and a local Fake Feishu disconnect/reload replay are documented. Replay details: [browser evidence note](evidence/2026-10-10-stage-b-browser/replay.md). Real Feishu adapters incomplete; no independent review / QA or integration.
 

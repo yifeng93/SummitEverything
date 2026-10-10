@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：v1 完整实施基准；M1 与 M2.1–M2.3 Fake 路由已实现。当前 Stage B 候选增加本机 profile 设置、Keychain 密钥录入/删除、有 stub 覆盖且已接入显式操作路径的 DeepSeek / Model Studio HTTP adapters，以及 Fake-only Feishu user-token refresh/logout 流程。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。Feishu 真实 OAuth / 数据 adapter 与连接测试仍未实现，相关能力显式 disabled。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 完整实施基准；M1 与 M2.1–M2.3 Fake 路由已实现。当前 Stage B 候选增加 profile 设置、Keychain 边界、stub-tested DeepSeek / Model Studio adapters 及 Fake-only Feishu 生命周期。真实业务模型调用在服务端保持 disabled；另有三个只接受固定合成输入、profile 级每 provider 限一次的模型 smoke 路由。Feishu 真实 OAuth / 数据 adapter 与实际 smoke 尚未实现。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -80,6 +80,7 @@
 | GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置；Stage B 候选已实现原子本地保存；设置读取 / 保存不联网 |
 | PUT /credentials/{provider}；DELETE /credentials/{provider} | Stage B 候选已实现显式 macOS Keychain 和测试注入边界；响应只返回 configured 状态 |
 | POST /settings/connections/{provider} | 计划路由；尚未实现。连接检查进入 Stage C 授权门，不能由刷新设置触发 |
+| GET /provider-smoke；POST /provider-smoke/deepseek-chat；POST /provider-smoke/model-studio-embedding；POST /provider-smoke/model-studio-rerank | 单独限额的合成连接 smoke；provider 在本机已保存并启用 Real 配置时可调用，固定合成输入、每个 app profile 每 provider 最多一次。尝试在出网前原子记账，失败/超时也占额，无自动重试；普通业务模型路径仍被服务端拒绝。真实 smoke 尚未执行；Feishu OAuth 没有对应 smoke 路由 |
 
 直接撰写保存是用户确认入口，不是模型可用工具。对已有页确认前以最新磁盘版本比较基准；写入 API 不能接受模型提交的 approval。
 

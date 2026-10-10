@@ -6,7 +6,7 @@
 
 2026-10-10 Sol追加：原B实现已按用户授权保存为 `1fede419a49b76c2f82e392be2803597cedab1f2`，开发文档检查点 `4966a6824bcc98b065e754e2e7a27d3f94a1539c`。独立DEV评估发现P0=2/P1=10/P2=1；原后端190/前端36检查通过，独立反例10个后端和1个前端FAIL。正式固定SHA QA尚未开始；B不满足入口，源码未整合。下段及历史条目“没有固定SHA”是此次提交前记录。先按[新Luna提示词](../handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)修阻断、补实现和UI/原生证据，再固定新SHA正式QA；[报告及证据](../quality/reports/2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)保留FAIL与真实NOT_RUN。
 
-阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。隔离 worktree `codex/stage-b-real-providers` 中的 B 候选仍 DEV 进行中，已接通模型操作路径、合成 callback 配置、本地 provider 设置、Fake-only user token 刷新轮换与登出，以及离线验证的 embedding generation 原子切换；Feishu 真实 adapter、持久化 user token Keychain 生命周期、原生 Keychain 故障生命周期、真实账户维度验证和独立 QA 尚未完成。候选没有固定 SHA / PR。用户已确认是 Feishu app 管理员且可开通权限，scope 可用性不构成阻塞；协议和 token 语义仍需核实。除已授权且尚未执行的有限 smoke 外，更广 C 操作仍需 B QA 和逐项授权；M3–M5 未开始。完整证据与边界见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
+阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。隔离 worktree `codex/stage-b-real-providers` 中 Stage B 仍 DEV 进行中：已修 Sol 反例中的检索门禁、取消、配置绑定、登出竞态、workspace task/action 隔离和 callback 日志脱敏；新增限次合成模型 smoke 与 HTTP 响应体边界。有限真实 smoke 调用计数仍均为 0；凭据尚未由用户在安全本地入口提供。Feishu 真实 OAuth / material / calendar / task adapters、真实 user token Keychain 生命周期、原生候选证据、完整真实模型质量与独立 QA 未完成。用户确认 Feishu scope 可按需开通，当前阻塞是协议 / 映射证据而非授权意愿。Stage C 的真实业务读取和写入仍需逐项授权；M3–M5 未开始。候选固定 SHA 和最终自测见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
 授权更新（2026-10-10）：用户愿意通过本地安全入口提供 API keys，并已授权有限的 Feishu OAuth 接入与合成数据模型冒烟：最多一次 code exchange、必要时一次 refresh，DeepSeek chat / Model Studio embedding / rerank 各最多一次 synthetic request。执行前查官方现价并估算；提示词建议 CNY 5 为保守操作上限（不是用户指定预算，若无法界定在该额度内只询问更高上限）。这不授权读取真实材料、日历或 task，不授权将真实业务内容发送给模型，也不授权 task 写入。详细约束见[Sol 阶段 B 独立评估提示词](../handoff/PROMPT-STAGE-B-SOL-REVIEW.md)和[Luna 执行提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
 
@@ -28,19 +28,20 @@
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
-| B 真实适配 / 本地配置 | DEV 进行中（候选未固定） | NOT_RUN | 原子本机设置、fail-closed macOS Keychain 边界、设置 UI、Fake token 生命周期、stub-tested 模型 adapters 与显式调用路径部分实现；真实 Feishu 未实现。Feishu 协议证据缺口继续阻断对应能力 |
+| B 真实适配 / 本地配置 | DEV 进行中（实现不完整） | NOT_RUN | 离线模型调用路径、单次合成 smoke 和安全响应边界部分完成；有限真实 smoke 仍0次。真实 Feishu OAuth / 读取 / 写入 adapter 与正式独立 QA 未完成 |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 
-### Stage B current worktree (2026-10-10)
+### Stage B current worktree (2026-10-10，Luna 修复候选)
 
-- Branch: `codex/stage-b-real-providers`; isolated checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`; parent baseline `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d`. Candidate remains dirty and has no fixed implementation SHA.
-- Implemented in the candidate: typed local provider settings with Fake default, atomic profile-local settings writes, fail-closed macOS Keychain access, hashed per-account Keychain item identity, browser settings controls, and stub-tested DeepSeek / Model Studio adapters wired to explicit organize/index/query operations. Model Studio base URLs can target validated HTTPS Alibaba Cloud hosts and are part of the embedding fingerprint. Real embedding approval indexing is explicit; Fake compatibility remains stable. No real provider calls.
-- Browser replay used a synthetic Keychain item and deleted it afterward; a later isolated replay saved local Model Studio URLs and the user's registered callback shape with synthetic IDs, then completed Fake authorization. A separate local browser run exercised Fake Feishu disconnect and reload persistence; the sanitized route/status record is in the Stage B browser evidence note. CUA screenshot bytes, full DevTools console/HAR and network manifest are not archived. Native shell UI replay, Keychain denial/lock/restart, Feishu user-token isolation, and real Keychain account-switch replay are not verified. Account-key hashing has only memory-backend unit/API coverage.
-- Feishu real adapters remain unimplemented. The user is an app administrator and can grant permissions, so scope availability is not a blocker. Fake-only refresh/rotation/logout coverage exists; real OAuth endpoints and user-token Keychain persistence, minutes content endpoint, calendar interval mapping, Task date/clear semantics and lost-write result proof remain unresolved. Related capabilities remain disabled.
-- B QA, independent review, fixed candidate, PR/main integration and all Stage C operations are NOT_RUN. Current detailed ledger: [LATEST-IMPLEMENTATION](../handoff/LATEST-IMPLEMENTATION.md), [ACCEPTANCE](../quality/ACCEPTANCE.md), [protocol matrix](../architecture/PROVIDER-PROTOCOL-MATRIX.md).
+- Branch: `codex/stage-b-real-providers`; isolated checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`; base `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d`. Current candidate SHA is recorded in the latest handoff after final checks.
+- Fixed Sol findings SB-01/02 and added candidate cap/re-read checks; query cancellation stops later provider stages. Settings credentials bind to the saved account. Feishu logout and refresh/callback generation checks prevent stale authorization writes. Callback access logs redact query fields; actions and task reads resolve against the active workspace service.
+- Added bounded streaming HTTP responses with explicit timeouts/no redirect/retry and finite fixed-payload DeepSeek chat, Model Studio embedding, and rerank smoke operations. Each operation has an app-profile atomic one-use ledger. Actual provider counters remain 0; no credential has been entered and no external request was made. Business model paths remain disabled server-side under the limited-smoke authorization. UI smoke controls require Real mode, a configured credential, and a remaining attempt.
+- Browser: isolated synthetic workspace showed settings and disabled smoke controls with 1 remaining each; screenshot bytes, DevTools logs and a network manifest were not archived. Native UI opened from the QA app but was served from a different QA worktree on port 5173; it is NOT candidate evidence and was not used further. Keychain denial / lock / restart, real account OAuth and real provider behavior are NOT_RUN.
+- Real Feishu OAuth, selected material content, calendar mapping, and task adapters remain unimplemented and disabled. Exact official endpoint / scope / token lifecycle and business-field mapping evidence is incomplete. R03 model quality acceptance remains intact and cannot be replaced by finite synthetic smoke.
+- Independent fixed-SHA QA has not passed; Stage B remains incomplete. No PR or main integration is authorized by this partial state. See [latest handoff](../handoff/LATEST-IMPLEMENTATION.md), [ACCEPTANCE](../quality/ACCEPTANCE.md), and [protocol matrix](../architecture/PROVIDER-PROTOCOL-MATRIX.md).
 
 ## 接手与环境
 

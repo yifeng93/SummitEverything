@@ -66,3 +66,7 @@ The test suite and HTTP fixtures are offline. These results prove only the curre
 ## Next work
 
 Continue offline Feishu DTO/Fake and callback/token fixtures while endpoint evidence is collected; keep actual Feishu operations disabled. Finish model failure/cancellation lifecycle coverage and live account dimension checks, then repeat offline and UI evidence collection on a complete fixed candidate before independent code review and QA. Do not integrate this partial candidate or claim Stage B completion.
+
+## Historical correction — 2026-10-10 follow-up
+
+The original line above saying “No real provider calls or external actions were authorized or performed” is too broad and conflicts with the earlier authorization note in this same report. Corrected interpretation: broad C0–C4 business operations were not authorized or performed; the user separately authorized only the narrow synthetic smoke listed in the authorization section, and no such smoke request has been made as of this correction. The original observations, FAIL/NOT_RUN results, and report-time evidence remain unchanged.

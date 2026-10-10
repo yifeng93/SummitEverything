@@ -1,5 +1,15 @@
 # 最新实现交接
 
+## 2026-10-10 Luna Stage B follow-up（当前）
+
+- **固定源码候选：** `7dc7114595704f34ba386c96324dffa77d529ba4`，分支 `codex/stage-b-real-providers`，隔离 checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`。该 SHA 精确固定本轮产品源码和测试；交接 / 接受标准 / 执行账本的文档 checkpoint 是其后的独立文档提交。不要把 DEV 自测写成独立 QA。
+- **本轮修复：** 修复 Sol SB-01/02 候选外发资格与发布前资格/版本复核；SB-03 阶段取消；SB-04 有界 rerank 候选；SB-05/06 按 workspace/profile/config 隔离 Feishu 生命周期并让 task/action 使用当前 workspace service；SB-07/08 logout、callback、refresh 并发防旧 token 写回；SB-09 保存并绑定 Model Studio account；SB-10 阻止真实业务模型请求而保留限额合成 smoke；SB-11 增加流式 body cap、超时、无重试/重定向、错误脱敏；SB-12 恢复原 R03 质量验收；SB-13 更新矩阵、账本与报告历史纠正。每项均为 DEV 自测，尚未独立复验。
+- **有限 smoke 实现状态：** DeepSeek chat、Model Studio embedding、rerank 有独立固定合成 payload endpoint 与 app-profile 原子次数账本（每类最多1次），业务路径服务端仍为 disabled。Feishu OAuth smoke endpoint 未实现。真实调用计数为0；用户未在此候选输入密钥；未发生本轮外部模型或 Feishu 请求。不得将预授权解释为已调用或 B/C PASS。
+- **自动检查：** `uv run pytest -q` 213 passed；`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv lock --check`、`git diff --check`、`uv build`、`npm --prefix web run api:types`、Web 39 tests / typecheck / lint / build、`swift build --package-path native` 均退出 0。保留 1 条 Starlette/httpx deprecation 与 3 条已有 React `set-state-in-effect` lint warnings。
+- **手工证据：** 开发浏览器使用隔离合成工作库，观察到设置页 smoke 计数为每项剩1且三按钮因 Fake / 未配置被禁用。截图、完整 DevTools console/network/HAR 和实际网络 manifest 没有归档；本轮浏览器只访问本机。原生 SwiftUI 窗口被发现实际加载另一个 QA worktree 的 `127.0.0.1:5173`，不是当前候选，故 native replay 明确 **NOT_RUN**；没有继续操作该窗口。原生编译成功只证明可构建。
+- **Stage B 结论：** 未完成 / 未通过。真实 Feishu OAuth、identity/scope、token Keychain service wiring、material/calendar/task HTTP adapters / 字段与结果核实仍缺协议证据和实现；B01–B04 不完整，B05 证据部分缺失。R03 真实模型质量仍 NOT_RUN。没有独立正式 B QA、PR、merge 或 main 树核验；保持 QA pending，待 B 实现和证据完整后由独立新上下文 checkout 精确源码 SHA 验收。继续保留原 C01–C31 与产品 MUST。
+- **报告与外门：** [Luna Stage B DEV 报告](../quality/reports/2026-10-10-STAGE-B-LUNA-DEV.md) 记录修复链、命令、证据边界和未完成项；[PROGRESS](../implementation/PROGRESS.md)、[ACCEPTANCE](../quality/ACCEPTANCE.md)、[任务计划](../../tasks/plan.md)、[TODO](../../tasks/todo.md)已同步。M3–M5、DMG、五日、双机均未开始。
+
 ## 2026-10-10 Sol 独立 DEV 评估追加（以本条解释后文旧候选状态）
 
 用户在评估中授权核验后提交、推送。原实现已原样固定为 `1fede419a49b76c2f82e392be2803597cedab1f2`，原开发文档为 `4966a6824bcc98b065e754e2e7a27d3f94a1539c`；后文“dirty / 没有候选提交”是当时记录，不能继续当当前 Git 状态。产品代码未由评定者改写；390 项快照指纹与提交后文件一致。
@@ -20,7 +30,7 @@
 - **权限：** 通用开发、自测、独立 QA 和源码整合可进行；真实登录 / 读取、材料发送、付费调用、真实 task 写入需列目的、数据、目标、范围、费用，并由用户执行前逐项确认。秘密只经安全本地入口 / Keychain 录入。
 - **工作环境：** 主 checkout 使用 main；旧分支归档引用、本地 Git bundle 和证据 worktree 处置见 [整理记录](../implementation/2026-10-10-STAGE-A-CLEANUP.md)。不要复用旧 QA profile、凭据或服务。
 
-## 阶段 B 当前实现记录（2026-10-10；候选未固定）
+## 阶段 B 早期实现记录（2026-10-10；由上方 Luna follow-up 更新）
 
 - **隔离位置：** `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`，分支 `codex/stage-b-real-providers`。该 checkout 以 `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d` 为 HEAD；本轮改动仍在工作树，尚无候选提交 SHA。共享 main checkout 未改。
 - **用户补充的 Feishu 配置事实：** 用户是自建应用管理员，可按需开放权限；已提供 tenant scopes（`calendar:*`、`minutes:*`、`docs:document.content:read`、`docx:document*`、`task:*` 读写等）和 user scopes（`calendar:calendar:readonly`、`minutes:minutes:readonly`、`task:task` 等）。因此 scope 开通能力不是阻塞。注册 callback `http://localhost:8765/callback` 已加入本地设置校验和 Fake 回调路由。App ID 和账户专属 URL 不写入源码；秘密均为遮蔽文本。本轮未访问账户。
