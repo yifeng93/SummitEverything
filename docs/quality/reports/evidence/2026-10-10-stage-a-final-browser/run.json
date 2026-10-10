@@ -1,0 +1,15 @@
+{
+  "tested_source_sha": "32da67e9c0280e3dae18fd374e30c925565b0b82",
+  "run_id": "qa-stage-a-final-32da67e9-20261010",
+  "api": "http://127.0.0.1:18803",
+  "web": "http://127.0.0.1:15203",
+  "workspace_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-32da67e9-20261010/workspace",
+  "workspace_id": "7eeee377-01df-4311-9a8a-48402f1180f6",
+  "profile_root": "/Users/yifengstudio/.codex/worktrees/qa-stage-a-final/SummitEverything/.local/qa/stage-a-final-32da67e9-20261010/profile",
+  "browser": "Chrome 155.0.8059.39",
+  "browser_pid": 22700,
+  "browser_user_data_dir": "/tmp/qa-stage-a-final-chrome-32da-20261010",
+  "remote_debugging": "127.0.0.1:19222",
+  "network_scope": "127.0.0.1:15203 only",
+  "data_scope": "synthetic UI records and Fake embedding; no real credentials/material/paid services"
+}
