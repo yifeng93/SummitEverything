@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-10",
+  "candidate_source_sha": "32da67e9c0280e3dae18fd374e30c925565b0b82",
+  "native_executable_sha256": "1702ef5f65d7c3bbe6853e80c356555c9ac1c3609af03a71da9bf343d643e3f5",
+  "bundle_id": "com.qa.summiteverything.stageafinalfollowup.32da67e",
+  "bundle_path": ".local/qa/stage-a-final-followup/SummitEverything-stage-a-final.app",
+  "successful_native_run": {
+    "api_port": 18806,
+    "web_port": 15206,
+    "run_id": "1296F068-807D-4FE2-80AA-2E6ED59D40BC",
+    "candidate_pid": 36567,
+    "runner_pids": [
+      36571,
+      36572
+    ],
+    "api_pid": 36573,
+    "web_pid": 36588,
+    "health": "ready",
+    "workspace_open": false
+  },
+  "startup_failure_run": {
+    "dummy_listener": "127.0.0.1:18811 HTTP 503",
+    "native_target_api_port": 18811,
+    "native_target_web_port": 15211,
+    "observed_alert": "本地服务未就绪；提示已要求检查 uv、Node.js 和仓库内 npm ci。",
+    "alert_dismissal": "candidate exec session exited with status 0"
+  },
+  "cleanup": {
+    "candidate_run_services_stopped": true,
+    "ports_checked": [
+      18806,
+      15206,
+      15211,
+      18811,
+      8793,
+      5173
+    ],
+    "listeners_remaining_at_final_audit": [],
+    "auto_relaunch_observation": "After the failed-launch alert was dismissed, a subsequent CUA getApp lookup relaunched the uniquely identified QA bundle with default ports 8793/5173. PID 36780 executable path was the QA .local bundle and runner PID 36784 cwd was the QA checkout; both were terminated. The brief 5173 UI was not used as a validation result. Old unrelated PID 23745 was not touched."
+  }
+}

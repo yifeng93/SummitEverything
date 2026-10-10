@@ -1,0 +1,172 @@
+[
+  {
+    "case": "C09 invalid line association",
+    "method": "POST",
+    "path": "/api/v1/journal/log",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "workspace_error",
+        "message": "Journal page organization does not match the registry",
+        "request_id": "a8a64255c29a9d1f"
+      }
+    }
+  },
+  {
+    "case": "C15 calendar reversed interval",
+    "method": "GET",
+    "path": "/api/v1/integrations/feishu/calendar",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "message": "请选择有效的起止时间和时区。",
+        "request_id": "a3c6f848b49b79bb"
+      }
+    }
+  },
+  {
+    "case": "C15 calendar invalid timezone",
+    "method": "GET",
+    "path": "/api/v1/integrations/feishu/calendar",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "validation_error",
+        "message": "请选择有效的起止时间和时区。",
+        "request_id": "eb3623ecf6f51e05"
+      }
+    }
+  },
+  {
+    "case": "C15 materials visible-range filter",
+    "method": "GET",
+    "path": "/api/v1/integrations/feishu/materials",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "material_id": "qa-minute-02",
+          "title": "Synthetic pagination item 02",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-04",
+          "title": "Synthetic pagination item 04",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-06",
+          "title": "Synthetic pagination item 06",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-08",
+          "title": "Synthetic pagination item 08",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-10",
+          "title": "Synthetic pagination item 10",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-12",
+          "title": "Synthetic pagination item 12",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-14",
+          "title": "Synthetic pagination item 14",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-16",
+          "title": "Synthetic pagination item 16",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-18",
+          "title": "Synthetic pagination item 18",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-20",
+          "title": "Synthetic pagination item 20",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-22",
+          "title": "Synthetic pagination item 22",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        },
+        {
+          "material_id": "qa-minute-24",
+          "title": "Synthetic pagination item 24",
+          "kind": "minute",
+          "visibility": "shared",
+          "updated_at": "2026-10-09T08:00:00+08:00"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "case": "Fake authorization start",
+    "method": "POST",
+    "path": "/api/v1/integrations/feishu/authorizations",
+    "status": 200,
+    "body": {
+      "callback": "/api/v1/integrations/feishu/callback",
+      "expires_in_seconds": 300
+    }
+  },
+  {
+    "case": "Fake authorization denied callback",
+    "method": "GET",
+    "path": "/api/v1/integrations/feishu/callback",
+    "status": 403,
+    "body": {
+      "error": {
+        "code": "authorization_denied",
+        "message": "授权已取消，请重新授权或使用文字导入。",
+        "request_id": "b3e6dd218df8f9c3"
+      }
+    }
+  },
+  {
+    "case": "C15 callback state replay",
+    "method": "GET",
+    "path": "/api/v1/integrations/feishu/callback",
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "invalid_state",
+        "message": "授权链接无效、已使用或已过期，请重新发起授权。",
+        "request_id": "b535b517a31ab75e"
+      }
+    }
+  }
+]
