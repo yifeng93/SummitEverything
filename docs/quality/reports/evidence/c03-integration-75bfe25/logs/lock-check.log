@@ -1,0 +1,4 @@
+COMMAND=uv lock --check --offline 
+Resolved 41 packages in 3ms
+
+EXIT_CODE=0

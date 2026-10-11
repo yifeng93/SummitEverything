@@ -1,0 +1,16 @@
+COMMAND=npm --prefix web test 
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/c03-integration-qa/SummitEverything/web
+
+
+ Test Files  10 passed (10)
+      Tests  45 passed (45)
+   Start at  18:54:36
+   Duration  1.39s (environment 46%, tests 36%, import 9%, transform 8%)
+
+
+EXIT_CODE=0
