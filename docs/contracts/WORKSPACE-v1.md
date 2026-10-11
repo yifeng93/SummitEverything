@@ -136,7 +136,7 @@ action_id 表示意图，不是尝试。保存 payload_sha256、确认、状态�
 
 ## 7. 本地状态与同步
 
-profile 保存 workspace_id 对应的本机路径配置、SQLite、向量、历史、角色、记忆、缓存及日志，长期凭据在钥匙串。工作库没有本机绝对路径、秘密或运行中 SQLite。
+profile 保存 workspace_id 对应的本机路径配置、索引 SQLite / 向量、问答历史、角色、记忆、缓存及日志，长期凭据在钥匙串。问答历史 SQLite 位于本机 profile，按 workspace_id 再隔离；其中的用户问题、回答、原引用 hash / excerpt、SSE 序列与 partial 不写入工作库。工作库没有本机绝对路径、秘密或运行中 SQLite。
 
 每个待处理流程只保留当前业务状态，完成后按月归档，诊断事件只写本地轮转日志。同步状态与来源 / 幂等证据不能混称“垃圾日志”直接删除。
 

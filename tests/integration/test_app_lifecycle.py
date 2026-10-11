@@ -165,6 +165,7 @@ def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
     assert sum(event["type"] in {"completed", "error"} for event in events) == 1
     citation = next(event["data"] for event in events if event["type"] == "citation")
     assert citation["page_id"] == page_id
+    conversation_id = answer.headers["x-conversation-id"]
 
     current_page = api.get(f"/api/v1/pages/{page_id}").json()
     update = api.post(
@@ -180,6 +181,11 @@ def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
     assert update.status_code == 200, update.text
     assert update.json()["index_update"] == "updated"
     assert api.get("/api/v1/index/status").json()["state"] == "ready"
+    history = api.get(f"/api/v1/conversations/{conversation_id}").json()
+    saved_citation = history["messages"][0]["citations"][0]
+    assert saved_citation["content_sha256"] == citation["content_sha256"]
+    assert saved_citation["excerpt"] == citation["excerpt"]
+    assert saved_citation["availability"] == "updated"
     fresh = api.post(
         "/api/v1/queries",
         json={"question": "银杏项目会议地点", "fingerprint": fingerprint, "purpose": "current"},
@@ -192,6 +198,9 @@ def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
     assert any(event["type"] == "citation" for event in fresh_events)
     assert "西馆" in fresh.text
     assert "北馆" not in fresh.text
+    (root / current_page["relative_path"]).unlink()
+    unavailable_history = api.get(f"/api/v1/conversations/{conversation_id}").json()
+    assert unavailable_history["messages"][0]["citations"][0]["availability"] == "unavailable"
 
 
 def test_query_cancel_emits_terminal_error_without_completed_answer(tmp_path: Path) -> None:
@@ -267,6 +276,9 @@ def test_query_cancel_emits_terminal_error_without_completed_answer(tmp_path: Pa
     assert events[-1]["type"] == "error"
     assert events[-1]["data"]["code"] == "cancelled"
     assert not any(event["type"] == "completed" for event in events)
+    history = api.get(f"/api/v1/conversations/{response.headers['x-conversation-id']}").json()
+    assert history["messages"][0]["state"] == "cancelled"
+    assert history["messages"][0]["answer"] == ""
 
 
 def test_external_edit_can_be_reconfirmed_from_current_page_snapshot(tmp_path: Path) -> None:

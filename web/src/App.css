@@ -143,3 +143,18 @@ h3 { color: var(--ink); margin: 0; font-size: 13px; font-weight: 600; }
   .settings-field { grid-template-columns: 1fr; gap: .4rem; }
   .provider-settings { padding: 1rem; }
 }
+.conversation-history, .conversation-thread { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 14px 16px; }
+.section-title-row, .conversation-history li { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.section-title-row h2, .conversation-thread > h2 { margin: 0; }
+.section-title-row > span, .history-open small { color: var(--muted); font-size: 10px; }
+.conversation-history ul { list-style: none; margin: 10px 0 0; padding: 0; }
+.conversation-history li { border-top: 1px solid var(--line); padding: 7px 5px; }
+.conversation-history li.selected { background: var(--surface-2); }
+.history-open { display: grid; gap: 3px; flex: 1; min-width: 0; border: 0; padding: 4px; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.history-open strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conversation-thread { display: grid; gap: 14px; }
+.conversation-turn { border-top: 1px solid var(--line); padding-top: 12px; }
+.user-question, .assistant-answer { display: grid; gap: 4px; }
+.user-question p { margin: 0 0 10px; white-space: pre-wrap; }
+.assistant-answer > strong { color: var(--muted); font-size: 10px; }
+.stale-citation-note { border-left: 3px solid #b27735; padding: 7px 10px; background: #fbf4e8; color: #654716; }

@@ -696,6 +696,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversation List */
+        get: operations["conversation_list_api_v1_conversations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversation Get */
+        get: operations["conversation_get_api_v1_conversations__conversation_id__get"];
+        put?: never;
+        post?: never;
+        /** Conversation Delete */
+        delete: operations["conversation_delete_api_v1_conversations__conversation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversation_id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Conversation Reopen */
+        post: operations["conversation_reopen_api_v1_conversations__conversation_id__reopen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/queries": {
         parameters: {
             query?: never;
@@ -1038,6 +1090,132 @@ export interface components {
             configured: boolean;
             /** Disabled Reason */
             disabled_reason: string | null;
+        };
+        /** Citation */
+        Citation: {
+            /**
+             * Page Id
+             * Format: uuid
+             */
+            page_id: string;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Chunk Id */
+            chunk_id: string;
+            /** Heading */
+            heading: string;
+            /** Excerpt */
+            excerpt: string;
+            /**
+             * Validity
+             * @default current
+             * @enum {string}
+             */
+            validity: "current" | "superseded" | "invalid";
+            /**
+             * Availability
+             * @default available
+             * @enum {string}
+             */
+            availability: "available" | "updated" | "unavailable";
+        };
+        /** ConversationDetail */
+        ConversationDetail: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Message Count */
+            message_count: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "completed" | "error" | "cancelled" | "interrupted";
+            /** Messages */
+            messages: components["schemas"]["ConversationMessage"][];
+        };
+        /** ConversationMessage */
+        ConversationMessage: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "completed" | "error" | "cancelled" | "interrupted";
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "current" | "history";
+            /** Citations */
+            citations?: components["schemas"]["Citation"][];
+            /** Events */
+            events?: components["schemas"]["QueryEvent"][];
+            /** Error */
+            error?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Completed At */
+            completed_at?: string | null;
+        };
+        /** ConversationPage */
+        ConversationPage: {
+            /** Items */
+            items: components["schemas"]["ConversationSummary"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** ConversationSummary */
+        ConversationSummary: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Message Count */
+            message_count: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "completed" | "error" | "cancelled" | "interrupted";
         };
         /** CredentialAccountRequest */
         CredentialAccountRequest: {
@@ -1784,6 +1962,25 @@ export interface components {
             embedding?: components["schemas"]["ModelStudioSettingsPatch"] | null;
             rerank?: components["schemas"]["ModelStudioSettingsPatch"] | null;
         };
+        /** QueryEvent */
+        QueryEvent: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Seq */
+            seq: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "status" | "citation" | "delta" | "completed" | "error";
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+        };
         /** QueryRequest */
         QueryRequest: {
             /** Question */
@@ -1798,6 +1995,8 @@ export interface components {
             purpose: "current" | "history";
             /** Request Id */
             request_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
         };
         /** RerankSettings */
         RerankSettings: {
@@ -1957,28 +2156,6 @@ export interface components {
             name?: string | null;
             /** Operation Id */
             operation_id: string;
-        };
-        /** Citation */
-        Citation: {
-            /**
-             * Page Id
-             * Format: uuid
-             */
-            page_id: string;
-            /** Content Sha256 */
-            content_sha256: string;
-            /** Chunk Id */
-            chunk_id: string;
-            /** Heading */
-            heading: string;
-            /** Excerpt */
-            excerpt: string;
-            /**
-             * Validity
-             * @default current
-             * @enum {string}
-             */
-            validity: "current" | "superseded" | "invalid";
         };
         /** Answer */
         Answer: {
@@ -3785,6 +3962,137 @@ export interface operations {
                     "application/json": {
                         [key: string]: number | string | null;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_list_api_v1_conversations_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_get_api_v1_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_delete_api_v1_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_reopen_api_v1_conversations__conversation_id__reopen_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
                 };
             };
             /** @description Validation Error */

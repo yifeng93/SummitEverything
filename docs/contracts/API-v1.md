@@ -72,7 +72,7 @@
 | POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
 | POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有索引时，批准 mutation 自动执行同 fingerprint 的 incremental。状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
 | POST /queries；DELETE /queries/{request_id} | question、conversation_id?、role_id?、purpose:current/history → SSE / 取消 |
-| GET /conversations；GET /conversations/{id}；DELETE /conversations/{id} | 本机历史；不进入工作库语料 |
+| GET /conversations?cursor&limit；GET /conversations/{id}；POST /conversations/{id}/reopen；DELETE /conversations/{id} | 按本地 profile 与当前 workspace 隔离的问答历史；列表默认 20、limit 1–100；历史只读重开可接续提问或删除；不进入工作库语料 |
 | GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机角色，不能修改批准 / 工具权限 |
 | GET /memory/candidates；POST /memory/candidates | 仅用户明确表达的 message_id / text → 本机待确认候选 |
 | POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑内容 → 活跃本机记忆 |
@@ -88,7 +88,7 @@
 
 ## 查询 SSE
 
-每事件 JSON 为 request_id、seq、type、data；seq 严格递增。type 为 status、citation、delta、completed、error。completed 携带完整 Answer，error 有统一错误结构；取消 / 断流不写一个“成功完整答案”。
+每事件 JSON 为 request_id、seq、type、data；seq 严格递增。type 为 status、citation、delta、completed、error。completed 携带完整 Answer，error 有统一错误结构；同 workspace/profile 内稳定 request_id 和相同输入只重放既有事件，不重复调用查询，改输入返回 409。取消与断流分别保留真实 partial 和准确状态；不可发送终态的断流不伪造 completed。每次查询事件、partial 和原引用快照保存在本地 profile SQLite，不进入工作库目录或正式知识语料。历史引用保留原 content hash / excerpt；读取时依据统一检索资格门返回 available / updated / unavailable，不能以当前页内容替换原回答引用。打开旧版本时仍传 expected_content_sha256；版本变化后 UI 明示差异并可查看当前页。
 
 在聚合上下文、邻页扩展和引用阶段读取 PageSnapshot，再用统一 gate 加缓存版本复验。索引未就绪或部分更新时返回 index_status，不能用旧片段补齐缺失证据。
 

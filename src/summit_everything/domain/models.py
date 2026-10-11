@@ -143,6 +143,7 @@ class Citation(BaseModel):
     heading: str
     excerpt: str
     validity: Literal["current", "superseded", "invalid"] = "current"
+    availability: Literal["available", "updated", "unavailable"] = "available"
 
 
 class Answer(BaseModel):

@@ -33,7 +33,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from summit_everything.api.routes.actions import register_actions
-from summit_everything.domain.content import RetrievalPurpose
+from summit_everything.domain.content import RetrievalPurpose, StorageArea, retrieval_eligibility
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
@@ -94,6 +94,15 @@ from summit_everything.integrations.settings import (
     UnavailableSecretBackend,
     embedding_fingerprint,
     provider_settings_payload,
+)
+from summit_everything.local.conversations import (
+    ACTIVE_QUERIES,
+    ConversationDetail,
+    ConversationNotFound,
+    ConversationPage,
+    ConversationStore,
+    QueryConflict,
+    QueryStart,
 )
 from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
 from summit_everything.retrieval.store import IndexStore
@@ -208,6 +217,7 @@ class QueryRequest(RequestModel):
     fingerprint: str = Field(min_length=1)
     purpose: Literal["current", "history"] = "current"
     request_id: UUID | None = None
+    conversation_id: UUID | None = None
 
 
 class JournalRequest(RequestModel):
@@ -305,7 +315,8 @@ def create_app(
     review = review_service or IntakeReviewService(FakeLLM())
     app.state.intake_service = intake_service
     app.state.review_service = review
-    cancellations: dict[str, Event] = {}
+    cancellations: dict[tuple[str, str, str], Event] = {}
+    cancellation_requests: set[tuple[str, str, str]] = set()
     config = feishu_config or FeishuConfig()
     feishu_services: dict[tuple[str, ...], FeishuService] = {}
     auth_coordinators: dict[tuple[str, str], FeishuAuthCoordinator] = {}
@@ -626,6 +637,35 @@ def create_app(
                 else None
             ),
         )
+
+    def conversations_for(workspace: WorkspaceContext) -> ConversationStore:
+        return ConversationStore(Path(workspace.local_profile_dir) / "conversations.sqlite3")
+
+    def query_cancellation_key(
+        workspace: WorkspaceContext, request_id: UUID
+    ) -> tuple[str, str, str]:
+        return (
+            str(Path(workspace.local_profile_dir).resolve()),
+            str(workspace.workspace_id),
+            str(request_id),
+        )
+
+    def current_citation_availability(
+        workspace: WorkspaceContext, citation: Any, purpose: str
+    ) -> str:
+        try:
+            page = read_page(Path(workspace.root), citation.page_id)
+        except WorkspaceError:
+            return "unavailable"
+        eligibility = retrieval_eligibility(
+            page.metadata,
+            page.body,
+            area=StorageArea(page.storage_area),
+            purpose=RetrievalPurpose(purpose),
+        )
+        if not eligibility.eligible:
+            return "unavailable"
+        return "available" if page.content_sha256 == citation.content_sha256 else "updated"
 
     @app.get("/api/v1/settings", dependencies=[Depends(authenticated)])
     def get_settings(
@@ -1324,6 +1364,80 @@ def create_app(
     ) -> dict[str, int | str | None]:
         return query_for(workspace).status(Path(workspace.root))
 
+    @app.get("/api/v1/conversations", dependencies=[Depends(authenticated)])
+    def conversation_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        cursor: str | None = None,
+        limit: int = Query(default=20, ge=1, le=100),
+    ) -> ConversationPage:
+        try:
+            return conversations_for(workspace).list(
+                workspace.workspace_id, cursor=cursor, limit=limit
+            )
+        except (ValueError, IndexError):
+            raise HTTPException(
+                status_code=422,
+                detail={"code": "invalid_cursor", "message": "历史分页位置无效。"},
+            ) from None
+
+    @app.get("/api/v1/conversations/{conversation_id}", dependencies=[Depends(authenticated)])
+    def conversation_get(
+        conversation_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> ConversationDetail:
+        store = conversations_for(workspace)
+        detail = store.get(workspace.workspace_id, conversation_id)
+        if detail is None:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这段问答历史。"}
+            )
+        messages = []
+        for message in detail.messages:
+            citations = [
+                citation.model_copy(
+                    update={
+                        "availability": current_citation_availability(
+                            workspace, citation, message.purpose
+                        )
+                    }
+                )
+                for citation in message.citations
+            ]
+            messages.append(message.model_copy(update={"citations": citations}))
+        return detail.model_copy(update={"messages": messages})
+
+    @app.post(
+        "/api/v1/conversations/{conversation_id}/reopen",
+        dependencies=[Depends(authenticated)],
+    )
+    def conversation_reopen(
+        conversation_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> ConversationDetail:
+        detail = conversation_get(conversation_id, workspace)
+        return detail
+
+    @app.delete(
+        "/api/v1/conversations/{conversation_id}",
+        status_code=204,
+        dependencies=[Depends(authenticated)],
+    )
+    def conversation_delete(
+        conversation_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        store = conversations_for(workspace)
+        running = store.running_requests(workspace.workspace_id, conversation_id)
+        for request_id in running:
+            cancellation = cancellations.get(query_cancellation_key(workspace, request_id))
+            if cancellation is not None:
+                cancellation.set()
+        if not store.delete(workspace.workspace_id, conversation_id):
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这段问答历史。"}
+            )
+        return Response(status_code=204)
+
     @app.post("/api/v1/queries", dependencies=[Depends(authenticated)])
     def query_stream(
         request: Request,
@@ -1332,13 +1446,58 @@ def create_app(
     ) -> StreamingResponse:
         ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
         request_id = str(payload.request_id or uuid4())
-        if request_id in cancellations:
+        stable_request_id = UUID(request_id)
+        store = conversations_for(workspace)
+        active_query_key = (
+            str(Path(workspace.local_profile_dir).resolve() / "conversations.sqlite3"),
+            str(workspace.workspace_id),
+            request_id,
+        )
+        registered_before_begin = active_query_key not in ACTIVE_QUERIES
+        if registered_before_begin:
+            # Close the small window between committing `running` and registering the
+            # in-process attempt, during which a concurrent history read could recover it.
+            ACTIVE_QUERIES.add(active_query_key)
+        try:
+            created, conversation_id = store.begin(
+                workspace.workspace_id,
+                QueryStart(
+                    request_id=stable_request_id,
+                    conversation_id=payload.conversation_id,
+                    question=payload.question,
+                    fingerprint=payload.fingerprint,
+                    purpose=payload.purpose,
+                ),
+            )
+        except QueryConflict as exc:
+            if registered_before_begin:
+                ACTIVE_QUERIES.discard(active_query_key)
+            raise HTTPException(
+                status_code=409, detail={"code": "intent_conflict", "message": str(exc)}
+            ) from exc
+        except ConversationNotFound as exc:
+            if registered_before_begin:
+                ACTIVE_QUERIES.discard(active_query_key)
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": str(exc)}
+            ) from exc
+        replay = store.replay(workspace.workspace_id, stable_request_id)
+        cancel_key = query_cancellation_key(workspace, stable_request_id)
+        if created and cancel_key in cancellations:
+            store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+            if registered_before_begin:
+                ACTIVE_QUERIES.discard(active_query_key)
             raise HTTPException(
                 status_code=409,
                 detail={"code": "intent_conflict", "message": "查询标识已在使用"},
             )
+        if created:
+            ACTIVE_QUERIES.add(active_query_key)
+        elif registered_before_begin:
+            ACTIVE_QUERIES.discard(active_query_key)
         cancelled = Event()
-        cancellations[request_id] = cancelled
+        if created:
+            cancellations[cancel_key] = cancelled
 
         def event(seq: int, event_type: str, data: Any) -> str:
             value = {
@@ -1350,11 +1509,27 @@ def create_app(
             return f"data: {json.dumps(value, ensure_ascii=False)}\n\n"
 
         async def generate() -> AsyncIterator[str]:
-            seq = 0
-            operation = query_for(workspace, remote=True) if query_service is None else None
+            operation = None
+            query_task: asyncio.Task[Any] | None = None
+            client_disconnected = False
             try:
-                seq += 1
-                yield event(seq, "status", {"state": "retrieving"})
+                if not created:
+                    if replay is not None:
+                        for saved_event in replay[1]:
+                            yield event(
+                                saved_event.seq,
+                                saved_event.type,
+                                saved_event.data,
+                            )
+                    return
+                operation = query_for(workspace, remote=True) if query_service is None else None
+                initial = store.append_event(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "status",
+                    {"state": "retrieving", "conversation_id": str(conversation_id)},
+                )
+                yield event(initial.seq, initial.type, initial.data)
                 if query_service is None and not fingerprint_is_current(
                     workspace, payload.fingerprint
                 ):
@@ -1371,59 +1546,157 @@ def create_app(
                 )
                 while not query_task.done():
                     if await request.is_disconnected():
+                        client_disconnected = True
                         cancelled.set()
                     await asyncio.sleep(0.05)
                 answer = await query_task
-                if await request.is_disconnected():
+                if client_disconnected or await request.is_disconnected():
                     cancelled.set()
+                    store.finish(workspace.workspace_id, stable_request_id, "interrupted")
                     return
                 if cancelled.is_set():
-                    seq += 1
-                    yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                    terminal = store.terminate(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "error",
+                        {"code": "cancelled", "message": "查询已取消"},
+                        "cancelled",
+                        error="查询已取消",
+                    )
+                    if terminal is not None:
+                        yield event(terminal.seq, terminal.type, terminal.data)
                     return
                 for citation in answer.citations:
-                    seq += 1
-                    yield event(seq, "citation", citation.model_dump(mode="json"))
+                    if await request.is_disconnected():
+                        store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                        return
+                    citation_event = store.append_event(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "citation",
+                        citation.model_dump(mode="json"),
+                    )
+                    yield event(citation_event.seq, citation_event.type, citation_event.data)
                 for offset in range(0, len(answer.text), 120):
                     if cancelled.is_set() or await request.is_disconnected():
                         cancelled.set()
                         if await request.is_disconnected():
+                            store.finish(workspace.workspace_id, stable_request_id, "interrupted")
                             return
-                        seq += 1
-                        yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                        terminal = store.terminate(
+                            workspace.workspace_id,
+                            stable_request_id,
+                            "error",
+                            {"code": "cancelled", "message": "查询已取消"},
+                            "cancelled",
+                            error="查询已取消",
+                        )
+                        if terminal is not None:
+                            yield event(terminal.seq, terminal.type, terminal.data)
                         return
-                    seq += 1
-                    yield event(seq, "delta", {"text": answer.text[offset : offset + 120]})
-                seq += 1
-                yield event(seq, "completed", answer.model_dump(mode="json"))
+                    delta = store.append_event(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "delta",
+                        {"text": answer.text[offset : offset + 120]},
+                    )
+                    yield event(delta.seq, delta.type, delta.data)
+                if cancelled.is_set() or await request.is_disconnected():
+                    if await request.is_disconnected():
+                        store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                        return
+                    terminal = store.terminate(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "error",
+                        {"code": "cancelled", "message": "查询已取消"},
+                        "cancelled",
+                        error="查询已取消",
+                    )
+                    if terminal is not None:
+                        yield event(terminal.seq, terminal.type, terminal.data)
+                    return
+                terminal = store.terminate(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "completed",
+                    answer.model_dump(mode="json"),
+                    "completed",
+                )
+                if terminal is not None:
+                    yield event(terminal.seq, terminal.type, terminal.data)
             except QueryCancelled:
-                seq += 1
-                yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                if client_disconnected:
+                    store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                    return
+                terminal = store.terminate(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "error",
+                    {"code": "cancelled", "message": "查询已取消"},
+                    "cancelled",
+                    error="查询已取消",
+                )
+                if terminal is not None:
+                    yield event(terminal.seq, terminal.type, terminal.data)
+            except asyncio.CancelledError:
+                cancelled.set()
+                if cancel_key in cancellation_requests:
+                    store.terminate(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "error",
+                        {"code": "cancelled", "message": "查询已取消"},
+                        "cancelled",
+                        error="查询已取消",
+                    )
+                else:
+                    store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                raise
             except Exception as exc:
-                seq += 1
-                yield event(seq, "error", {"code": "query_error", "message": str(exc)})
+                terminal = store.terminate(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "error",
+                    {"code": "query_error", "message": str(exc)},
+                    "error",
+                    error=str(exc),
+                )
+                if terminal is not None:
+                    yield event(terminal.seq, terminal.type, terminal.data)
             finally:
-                cancellations.pop(request_id, None)
+                cancellations.pop(cancel_key, None)
+                cancellation_requests.discard(cancel_key)
+                ACTIVE_QUERIES.discard(active_query_key)
                 if operation is not None:
-                    operation.close()
+                    if query_task is None or query_task.done():
+                        operation.close()
+                    else:
+                        query_task.add_done_callback(lambda _task: operation.close())
 
         return StreamingResponse(
             generate(),
             media_type="text/event-stream",
-            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+                "X-Conversation-ID": str(conversation_id),
+            },
         )
 
     @app.delete(
         "/api/v1/queries/{request_id}", status_code=202, dependencies=[Depends(authenticated)]
     )
     def query_cancel(request_id: UUID) -> dict[str, str]:
-        cancellation = cancellations.get(str(request_id))
+        workspace = active_workspace()
+        cancellation = cancellations.get(query_cancellation_key(workspace, request_id))
         if cancellation is None:
             raise HTTPException(
                 status_code=404,
                 detail={"code": "not_found", "message": "查询已结束或不存在"},
             )
         cancellation.set()
+        cancellation_requests.add(query_cancellation_key(workspace, request_id))
         return {
             "request_id": str(request_id),
             "state": "cancellation_requested",
