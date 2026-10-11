@@ -10,6 +10,10 @@
 
 精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
 
+### C03 非空删除提示本地化跟进（2026-10-11）
+
+针对历史 M1 C03 P2，将“非空主线有项目”“主线目录有内容”“非空项目”的 API 拒绝信息改为准确中文；不暗示归档项目可删除。拒绝状态仍为 409 / `workspace_error`，原 manifest、组织与内容写门保持。固定源码 SHA `9c953f095086a95e63edbce2169657dba9e71cd1`；DEV 定向 contract + workspace mutation + qualified retrieval 集合 37 passed，静态检查通过。详见 [DEV 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)。独立 QA pending；这不是完整 M1 重验，不改变已合并 Stage B 或真实 / 发布门状态。
+
 ## 历史更新记录（按各条当时的固定版本理解）
 
 - 2026-10-10：Stage B 候选开发进行中。设置/Keychain 与模型 adapter 的离线测试目前通过；Real/Fake 能力摘要保持 disabled，模型 adapter 未接入真实调用路径。Feishu 动态官方文档页未能读取正文，OAuth / scopes / 数据字段与时间映射仍待核验，因此没有启用真实 Feishu 请求。开发浏览器已用隔离合成 workspace 验证设置与合成 Keychain 保存/删除；浏览器 DevTools 专用 MCP 不可用，原生壳 UI 因 Mac 当前锁定未复演。候选 SHA、完整检查和独立 QA 尚待完成；详情见最新交接及本轮 DEV 报告。

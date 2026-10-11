@@ -1,5 +1,11 @@
 # 最新实现交接
 
+## 2026-10-11 C03 删除拒绝提示本地化跟进（DEV，QA 待验收）
+
+针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。固定源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`，分支 `codex/c03-delete-copy-pilot`。仅改三条拒绝消息和 API contract 回归；保留 409、`workspace_error`、错误 envelope、归档规则和文件写门。自动定向集合 37 passed；ruff、format、mypy、lock 检查通过。DEV 报告：[C03 删除文案 DEV](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)。
+
+此为开发自测，**独立 QA 尚待执行**；不改变已合并 Stage B / M1 历史状态，也不重开完整 M1 阶段。浏览器、真实服务与其他发布门未测。QA 应固定本交接文档提交，并核对其中产品源码树与上述源码 SHA 一致，按 DEV 报告复验 C03 行为。
+
 ## 2026-10-11 Stage B 离线源码已合并
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。

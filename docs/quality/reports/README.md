@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## C03 删除拒绝提示本地化跟进（2026-10-11，DEV；QA pending）
+
+[C03 删除文案 DEV](2026-10-11-C03-DELETE-COPY-DEV.md)：固定源码 `9c953f095086a95e63edbce2169657dba9e71cd1`。中文化三条非空主线 / 项目删除提示；API 保持 409 和 `workspace_error`。相关 contract、workspace mutation 与 qualified retrieval 回归 37 passed，离线静态检查通过。独立 QA 尚未执行；这不改变完整 M1、Stage B 或真实发布门状态。
+
 ## Stage B 离线收口（2026-10-11，当前）
 
 [PR #10合并后核验与最终收口](2026-10-11-STAGE-B-POSTMERGE.md)：main产品树与576895f一致，13项检查通过；原始QA manifest保留，4项运行时pyc条目未发布，两份补充publication manifest核验实际归档证据。
