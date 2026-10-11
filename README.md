@@ -12,6 +12,8 @@
 
 权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
+C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
+
 开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 提交固定 SHA，独立 QA Luna 验收，Sol 判定最终门。当前推荐下一任务为 M3.1 本地问答历史 / 流状态薄切片，详见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)；M3 尚未开始，Stage C 与发布 / 实际试用门仍独立未测。
 
 ## 先读哪些文件
@@ -24,6 +26,8 @@
 ## 当前可执行的命令
 
 在本仓库执行；只安装本项目的工具，不同步或改动 SWB / SK 的环境。
+
+Fresh checkout 运行全量 `pytest` 前，先按下方 WebUI 预览步骤安装前端依赖；dev runner 集成测试需要已安装的 Web 依赖。
 
 ~~~sh
 uv sync --locked --group dev

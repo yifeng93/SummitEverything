@@ -4,7 +4,7 @@
 
 ## 背景
 
-用户认可 C03 删除拒绝提示本地化试点，并正式确认长期多智能体协作方式。试点依据是源码 SHA `9c953f095086a95e63edbce2169657dba9e71cd1`、固定 QA 文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476` 与独立报告；QA 记录 37 项定向自动回归和本地 Fake WebUI 浏览器复演通过，Sol 判定首轮通过、修复轮数 0/2。候选仍待整合；该事实不表示本 ADR 的实现已在所有 runtime 配置下验证。
+用户认可 C03 删除拒绝提示本地化试点，并正式确认长期多智能体协作方式。试点依据是源码 SHA `9c953f095086a95e63edbce2169657dba9e71cd1`、固定 QA 文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476` 与独立报告；QA 记录 37 项定向自动回归和本地 Fake WebUI 浏览器复演通过，Sol 判定首轮通过、修复轮数 0/2。C03 与本协作规范已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；postmerge 独立核验见[报告](../quality/reports/2026-10-11-C03-POSTMERGE-2f08c76.md)。该事实不表示本 ADR 的实现已在所有 runtime 配置下验证。
 
 ## 决议
 
