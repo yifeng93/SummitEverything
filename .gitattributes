@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Preserve exact archived tool output and its historical SHA-256.
+docs/quality/reports/evidence/**/*.log whitespace=-blank-at-eol,-blank-at-eof

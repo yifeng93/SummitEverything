@@ -9,7 +9,7 @@
 - [x] B5.1 完整 DEV 检查：后端383/Web45及静态/类型/锁/构建。
 - [x] B5.2 浏览器/原生 DEV 证据；安装包及 OS Keychain 仍 NOT_RUN。
 - [x] B5.3 独立 DEV 代码复核并修复发现；不替代正式 QA。
-- [ ] B5.4 固定精确源码 SHA，干净候选。
+- [x] B5.4 固定精确源码 SHA `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`，干净候选。
 - [ ] B6.1 独立 checkout 固定 SHA 离线 QA。
 - [ ] B6.2 必要缺陷修复及新 SHA 复验。
 - [ ] B6.3 PR/main/合并后树与 manifest 核验、闲置工作区归档清理。

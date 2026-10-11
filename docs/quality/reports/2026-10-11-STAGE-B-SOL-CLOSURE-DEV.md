@@ -1,6 +1,6 @@
 # Stage B Sol 收口 DEV（2026-10-11）
 
-状态：DEV 修复与独立代码复核完成，准备固定候选；正式 QA pending，main 未合并。本报告不是 QA。
+状态：DEV 修复与独立代码复核完成，源码候选已固定 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`；正式 QA pending，main 未合并。本报告不是 QA。
 
 起点 `0a1db5d72e6ac11184d28e65dea3ba008762ba43`，源码前候选 `7dc7114595704f34ba386c96324dffa77d529ba4`，两者仅文档差异。采纳 DeepSeek R1–R4 的协议映射、统一 vault、身份隔离、OAuth 代次与刷新防重发、日历截断、任务写门、检索资格和业务服务门。历史报告和证据不改写。
 
@@ -28,3 +28,5 @@ DEV UI：API18893/Web15173，隔离 `.local/sol-closure/profile` 与合成 works
 真实 Feishu/模型调用仍全部0/1；未录入任何凭据，未访问用户身份、真实材料、日历/task或OS Keychain。真实写/业务模型/未授权读取保持服务端禁用。R03、OS、scope、user-info、DMG、M3–M5、五日/双机NOT_RUN。独立QA必须精确SHA、独立checkout并留自己的报告；PASS后才整合。
 
 证据纠正：初次 reviewer-boundaries 日志的 rerank 输入实际 wire 长度900114，未达到1MB，不能作为有效超限失败反例。保留该原始日志；改用350000组转义字符（wire1050114），从归档R4源码重放得到LLM/rerank两项FAIL，见 before/full-wire-r4-corrected-input.log。overlay仅加入新测试导入所需transport模块，受测旧model/boundary文件保持R4原件；当前两项PASS并断言HTTP调用0。
+
+归档格式说明：首次git staged diff --check观察到原始失败/lint日志中的尾随空白；未改写日志，避免破坏历史manifest。新增gitattributes仅豁免 evidence 下.log文件的行尾/文件尾空白；源码、测试、契约和常规文档仍执行原有空白检查。此前工作树diff check未覆盖未跟踪日志，不能据此声称该批原始日志无尾随空白。
