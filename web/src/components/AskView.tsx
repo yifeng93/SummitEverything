@@ -146,14 +146,14 @@ export function AskView({ onError, onOpenPage }: Props) {
     if (!question.trim() || streaming) return
     const controller = new AbortController()
     const queryId = crypto.randomUUID()
-    const targetConversation = conversationId || crypto.randomUUID()
+    let targetConversation = conversationId
     abortController.current = controller
     setStreaming(true)
     setQueryState('running')
     setAnswer('')
     setCitations([])
     setRequestId(queryId)
-    setConversationId(targetConversation)
+    if (targetConversation) setConversationId(targetConversation)
     setNotice('')
     onError('')
     try {
@@ -163,7 +163,7 @@ export function AskView({ onError, onOpenPage }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question,
-          conversation_id: targetConversation,
+          ...(targetConversation ? { conversation_id: targetConversation } : {}),
           fingerprint: settings.embedding_fingerprint,
           purpose: 'current',
           request_id: queryId,
@@ -171,6 +171,16 @@ export function AskView({ onError, onOpenPage }: Props) {
         signal: controller.signal,
       })
       if (!response.ok || !response.body) throw new Error('知识问答暂不可用。')
+      const responseConversation = response.headers.get('X-Conversation-ID')
+      if (responseConversation) {
+        if (targetConversation && responseConversation !== targetConversation) {
+          throw new Error('问答流返回了不匹配的会话；已保留本机历史。')
+        }
+        targetConversation = responseConversation
+        setConversationId(responseConversation)
+      } else if (!targetConversation) {
+        throw new Error('问答服务未返回会话编号；请从本机历史确认保存状态后再继续。')
+      }
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
@@ -216,7 +226,7 @@ export function AskView({ onError, onOpenPage }: Props) {
         setQueryState('interrupted')
         setNotice('连接已结束，回答未完整送达。已保留实际收到的部分；不会自动重新发送。可从历史继续提问。')
       }
-      setThread(await api.post<Conversation>(`/conversations/${targetConversation}/reopen`, {}))
+      if (targetConversation) setThread(await api.post<Conversation>(`/conversations/${targetConversation}/reopen`, {}))
       await refreshHistory()
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === 'AbortError') {
@@ -227,7 +237,9 @@ export function AskView({ onError, onOpenPage }: Props) {
         setNotice(cause instanceof Error ? cause.message : '知识问答连接中断')
       }
       await refreshHistory()
-      const existing = await api.post<Conversation>(`/conversations/${targetConversation}/reopen`, {}).catch(() => null)
+      const existing = targetConversation
+        ? await api.post<Conversation>(`/conversations/${targetConversation}/reopen`, {}).catch(() => null)
+        : null
       if (existing) setThread(existing)
     } finally {
       setStreaming(false)
@@ -246,8 +258,7 @@ export function AskView({ onError, onOpenPage }: Props) {
       return
     }
     if (citation.availability === 'updated') {
-      setNotice('引用保存的是回答当时的页面版本；页面后来已更新。现在打开的是当前页面，不能替代原回答依据。')
-      onOpenPage(citation.page_id, undefined)
+      onOpenPage(citation.page_id, citation.content_sha256)
       return
     }
     setNotice('')

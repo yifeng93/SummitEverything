@@ -38,7 +38,7 @@ def _events(response: object) -> list[dict[str, object]]:
     ]
 
 
-def test_history_persists_locally_reopens_and_stable_request_replays_without_query(
+def test_first_query_without_conversation_id_creates_and_reopens_server_conversation(
     tmp_path: Path,
 ) -> None:
     class CountingQuery(QueryService):
@@ -61,6 +61,7 @@ def test_history_persists_locally_reopens_and_stable_request_replays_without_que
         "fingerprint": "fake-conversation-v1",
         "purpose": "current",
     }
+    assert "conversation_id" not in payload
 
     first = api.post("/api/v1/queries", json=payload)
     first_events = _events(first)

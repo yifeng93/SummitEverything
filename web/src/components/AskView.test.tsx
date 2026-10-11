@@ -14,6 +14,66 @@ function event(requestId: string, seq: number, type: string, data: Record<string
   return `data: ${JSON.stringify({ request_id: requestId, seq, type, data })}\n\n`
 }
 
+it('creates a first conversation on the server, adopts its ID, then continues it', async () => {
+  vi.stubGlobal('crypto', { randomUUID: vi.fn()
+    .mockReturnValueOnce('first-request')
+    .mockReturnValueOnce('second-request') })
+  const bodies: Record<string, unknown>[] = []
+  const reopened: string[] = []
+  const serverConversation = 'server-created-conversation'
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
+    if (url === '/api/v1/queries') {
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>
+      bodies.push(body)
+      if (body.conversation_id !== undefined && body.conversation_id !== serverConversation) {
+        return Response.json({ error: { code: 'not_found', message: 'conversation not found' } }, { status: 404 })
+      }
+      const requestId = String(body.request_id)
+      const payload = [
+        event(requestId, 1, 'status', { state: 'retrieving', conversation_id: serverConversation }),
+        event(requestId, 2, 'delta', { text: `回答 ${bodies.length}` }),
+        event(requestId, 3, 'completed', { text: `回答 ${bodies.length}` }),
+      ].join('')
+      return new Response(payload, {
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream', 'X-Conversation-ID': serverConversation },
+      })
+    }
+    if (url.endsWith(`/conversations/${serverConversation}/reopen`)) {
+      reopened.push(url)
+      const questions = bodies.map((body) => String(body.question))
+      return Response.json({
+        conversation_id: serverConversation, title: questions[0], created_at: '2026-10-11T01:00:00Z',
+        updated_at: '2026-10-11T01:01:00Z', message_count: questions.length, state: 'completed',
+        messages: questions.map((question, index) => ({
+          request_id: String(bodies[index].request_id), question, answer: `回答 ${index + 1}`,
+          state: 'completed', purpose: 'current', citations: [], events: [], created_at: '2026-10-11T01:00:00Z',
+        })),
+      })
+    }
+    throw new Error(`Unexpected fetch ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+
+  fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '首次问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  expect(await screen.findByText('回答 1')).toBeTruthy()
+  await waitFor(() => expect(reopened).toHaveLength(1))
+  expect(bodies[0]).not.toHaveProperty('conversation_id')
+
+  fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '接着追问' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  expect(await screen.findByText('回答 2')).toBeTruthy()
+  await waitFor(() => expect(bodies).toHaveLength(2))
+  expect(bodies[1]).toMatchObject({ question: '接着追问', conversation_id: serverConversation })
+  expect(reopened).toHaveLength(2)
+})
+
 it('reopens local history, continues the same conversation, and labels an updated citation', async () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'next-request' })
   const original: Record<string, unknown> = {
@@ -69,7 +129,9 @@ it('does not retry a stream that ends without its single terminal event', async 
     if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
     if (url === '/api/v1/queries') {
       queryCalls += 1
-      return new Response(event('interrupted-request', 1, 'delta', { text: '部分' }), { status: 200 })
+      return new Response(event('interrupted-request', 1, 'delta', { text: '部分' }), {
+        status: 200, headers: { 'X-Conversation-ID': 'new-conversation' },
+      })
     }
     if (url.endsWith('/reopen')) return Response.json({ conversation_id: 'new-conversation', title: '问题', created_at: '', updated_at: '', message_count: 1, state: 'interrupted', messages: [] })
     throw new Error(`Unexpected fetch ${url}`)
