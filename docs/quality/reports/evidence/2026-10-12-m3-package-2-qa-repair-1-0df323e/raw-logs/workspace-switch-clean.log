@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/harness/workspace_switch.py", line 91, in <module>
+    profile_b_conversations = profile_b.get(PROFILE_B_API + "/conversations?limit=100").json()["items"]
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+KeyError: 'items'

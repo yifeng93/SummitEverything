@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## M3 功能包 2 repair 1 独立 QA（2026-10-12）
+
+[固定 SHA QA 报告](2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)：受测产品源码 `0df323efc26e388d62f234e0471f853b2b54be4d`，QA 固定 checkout `d38f546cac8fd923539bea6a8ef9db925e5d959c`。C13 UI current/history 选择、历史效力与引用可用性，C20 provenance/候选/预算，C21 workspace/profile 隔离及 C14 会话 replay/cancel/partial restart 恢复通过；README 全量检查 exit 0。真实浏览器 fresh-index 复验发现礼貌自然事实问句误判对象、连续短追问将另一主体作为事实支持两项缺陷，故本包 FAIL，等待 repair 2 与全新独立 QA。报告与脱敏 harness/raw logs/exit/hash manifest 见[证据目录](evidence/2026-10-12-m3-package-2-qa-repair-1-0df323e/)；DevTools console/Network、real/native/DMG/五日/双机为 NOT_RUN，runtime metadata UNVERIFIED。
+
 ## M3 功能包 2 repair 1：问答范围、追问召回与错误反馈（2026-10-11，Developer 完成，独立 QA pending）
 
 [repair 1 Developer 报告](2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md)：固定源码 SHA `0df323efc26e388d62f234e0471f853b2b54be4d`，修复首轮 QA 的四项缺陷：AskView 可选历史资料范围并同时显示引用可用性 / 效力；简短指代追问只把最近用户问题用作检索提示，每轮仍走当前资格复核；HTTP 422 输入/预算错误显示为回答失败而非断流；事实问答按用户明确对象限制候选，comparison / plan 保留跨材料路径。定向后端 14 passed、全量 guarded pytest 402 passed、Web 52 passed / 12 files；ruff、format、mypy、lock、uv build、OpenAPI 类型生成及 Web typecheck/lint/build 全部 exit 0。首轮 QA 原报告 [0827447](2026-10-11-M3-PACKAGE-2-QA-0827447.md) 保持 FAIL；新 SHA 等待独立 QA 与 Sol 判定，实际浏览器、真实模型 / 服务及发布门仍 NOT_RUN，runtime UNVERIFIED。

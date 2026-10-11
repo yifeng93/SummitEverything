@@ -1,0 +1,43 @@
+[
+  {
+    "case": "C20-current-question-not-silently-truncated",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "question_chars": 8000,
+      "captured_chars": 8000,
+      "question_sha256": "b9668cee05471b084f4580b61a7940f58ee4354b1dcd2bd026aab1277909ab9c",
+      "captured_sha256": "b9668cee05471b084f4580b61a7940f58ee4354b1dcd2bd026aab1277909ab9c",
+      "provider_calls_before": 41,
+      "provider_calls_after": 42
+    }
+  },
+  {
+    "case": "C20-active-memory-budget-explicit-rejection",
+    "status": "PASS",
+    "detail": {
+      "active_memory_bytes": 7024,
+      "http": 422,
+      "provider_calls_before": 42,
+      "provider_calls_after": 42,
+      "body": {
+        "error": {
+          "code": "context_budget_exceeded",
+          "message": "已确认记忆超过问答预算，请先编辑或删除部分记忆。",
+          "request_id": "098db8d78198d798"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-memory-budget-fixture-cleanup",
+    "status": "PASS",
+    "detail": {
+      "delete_http": [
+        204,
+        204
+      ],
+      "remaining": 0
+    }
+  }
+]

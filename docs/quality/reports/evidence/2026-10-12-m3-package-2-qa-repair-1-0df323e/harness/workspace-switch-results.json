@@ -1,0 +1,44 @@
+{
+  "case": "C21-same-profile-workspace-switch-isolation",
+  "open_http": [
+    201,
+    201,
+    201
+  ],
+  "workspace_b_before": {
+    "workspace_id": "920c2060-526b-4e46-a272-f84f46a280c9",
+    "roles": 1,
+    "memories": 1,
+    "history": 1,
+    "index": "not_ready"
+  },
+  "workspace_a_during": {
+    "workspace_id": "17c7312c-7efe-4a20-918e-a0996e8a4d02",
+    "role_names": [],
+    "memory_count": 0,
+    "history_count": 0,
+    "workspace_b_markers_absent": true,
+    "index": "not_ready",
+    "profile_path": "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/profiles-A/17c7312c-7efe-4a20-918e-a0996e8a4d02"
+  },
+  "workspace_b_after_return": {
+    "workspace_id": "920c2060-526b-4e46-a272-f84f46a280c9",
+    "role_marker_present": true,
+    "memory_marker_present": true,
+    "history_marker_present": true,
+    "index": "not_ready"
+  },
+  "profile_b_same_workspace_separate_local_state": {
+    "profile_path": "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/profiles-B/17c7312c-7efe-4a20-918e-a0996e8a4d02",
+    "different_local_profile_path": true,
+    "roles": 0,
+    "memories": 0,
+    "history": 0,
+    "workspace_b_marker_absent": true
+  },
+  "cleanup_http": {
+    "memory": 204,
+    "role": 204
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,47 @@
+{
+  "case": "C21-same-profile-workspace-switch-isolation",
+  "open_http": [
+    201,
+    201,
+    201
+  ],
+  "workspace_b_before": {
+    "workspace_id": "03b53ddf-a746-4477-afec-3bfdabed3c30",
+    "roles": 1,
+    "memories": 0,
+    "history": 17,
+    "index": "ready"
+  },
+  "workspace_a_during": {
+    "workspace_id": "03b53ddf-a746-4477-afec-3bfdabed3c30",
+    "role_names": [
+      "QA 简洁角色",
+      "QA Workspace B role marker"
+    ],
+    "memory_count": 1,
+    "history_count": 18,
+    "workspace_b_markers_absent": false,
+    "index": "ready",
+    "profile_path": "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/profiles-A/03b53ddf-a746-4477-afec-3bfdabed3c30"
+  },
+  "workspace_b_after_return": {
+    "workspace_id": "03b53ddf-a746-4477-afec-3bfdabed3c30",
+    "role_marker_present": true,
+    "memory_marker_present": true,
+    "history_marker_present": true,
+    "index": "ready"
+  },
+  "profile_b_same_workspace_separate_local_state": {
+    "profile_path": "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/profiles-B/03b53ddf-a746-4477-afec-3bfdabed3c30",
+    "different_local_profile_path": true,
+    "roles": 0,
+    "memories": 0,
+    "history": 0,
+    "workspace_b_marker_absent": true
+  },
+  "cleanup_http": {
+    "memory": 204,
+    "role": 204
+  },
+  "status": "FAIL"
+}

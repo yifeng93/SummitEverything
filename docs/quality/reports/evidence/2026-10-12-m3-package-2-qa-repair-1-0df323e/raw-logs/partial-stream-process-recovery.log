@@ -1,0 +1,1 @@
+{"status": "PASS", "request_id": "9c7caa94-5a03-46c0-be37-5207e8f730da", "conversation_id": "03362699-c2cf-4e88-aad1-a411e3ea3932", "partial_answer_chars": 9, "first_connection_events": ["status", "delta"], "replay_event_types": ["status", "delta"], "state_after_restart_and_replay": "interrupted"}

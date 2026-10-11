@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/harness/run_blackbox.py", line 38, in <module>
+    b_history = cb.get(B + "/conversations?limit=20").json()["items"]
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+KeyError: 'items'
