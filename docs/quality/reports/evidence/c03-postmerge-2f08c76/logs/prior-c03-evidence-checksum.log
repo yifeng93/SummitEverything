@@ -1,0 +1,18 @@
+./README.md: OK
+./browser-observations.md: OK
+./logs/active-project-after.txt: OK
+./logs/active-project-before.txt: OK
+./logs/archived-project-after.txt: OK
+./logs/archived-project-before.txt: OK
+./logs/dev-server.log: OK
+./logs/file-line-after.txt: OK
+./logs/file-line-before.txt: OK
+./logs/lock.log: OK
+./logs/mypy.log: OK
+./logs/npm-ci.log: OK
+./logs/ruff-check.log: OK
+./logs/ruff-format.log: OK
+./logs/targeted.log: OK
+./logs/uv-sync.log: OK
+COMMAND=(cd docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96 && shasum -a 256 -c SHA256SUMS)
+EXIT_CODE=0

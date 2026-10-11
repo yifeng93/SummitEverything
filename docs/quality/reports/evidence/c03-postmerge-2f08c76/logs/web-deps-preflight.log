@@ -1,0 +1,2 @@
+COMMAND=test -d web/node_modules
+EXIT_CODE=0

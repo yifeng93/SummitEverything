@@ -1,0 +1,6 @@
+TESTED_HEAD=2f08c764e740afa494a0445ec4d73382fdd55f3b
+STATUS=## HEAD (no branch)
+PORCELAIN=ancestor-141bd96d15039f1cd29461785fdd91e2ef297476-exit=0
+ancestor-75bfe2548e947432e72767b0b7822d34685a8b61-exit=0
+product-tree-equality-exit=0
+merge-diff-check-exit=0

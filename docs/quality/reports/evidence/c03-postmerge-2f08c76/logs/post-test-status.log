@@ -1,0 +1,27 @@
+HEAD=2f08c764e740afa494a0445ec4d73382fdd55f3b
+origin/main=2f08c764e740afa494a0445ec4d73382fdd55f3b
+STATUS=## HEAD (no branch)
+PORCELAIN=LOCKS=148ac7c5d1d795ec0ee17384bca7c2173dddb6ba8945b23445da71356c9bfbda  uv.lock
+d7b39319f006b0280857a02f3932f7e71e8d38cd0e63a0684f9b41f0d9c26ad3  web/package-lock.json
+
+WORKTREES:
+worktree /Users/yifengstudio/Documents/GitHub/SummitEverything
+HEAD 2f08c764e740afa494a0445ec4d73382fdd55f3b
+branch refs/heads/main
+
+worktree /Users/yifengstudio/.codex/worktrees/c03-delete-copy-pilot/SummitEverything
+HEAD 2ee04f83d2f4f57f28779c768f5ca7777f84fc91
+branch refs/heads/codex/c03-delete-copy-pilot
+
+worktree /Users/yifengstudio/.codex/worktrees/c03-delete-copy-qa/SummitEverything
+HEAD f381d28d077d3d668cc65ae5eb4fe13b4ad94761
+branch refs/heads/codex/c03-delete-copy-qa
+
+worktree /Users/yifengstudio/.codex/worktrees/c03-integration-qa/SummitEverything
+HEAD 2f08c764e740afa494a0445ec4d73382fdd55f3b
+detached
+
+
+C03 branch refs:
++ codex/c03-delete-copy-pilot
++ codex/c03-delete-copy-qa

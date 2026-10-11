@@ -1,12 +1,12 @@
 # 最新实现交接
 
-## 2026-10-11 C03 删除拒绝提示本地化跟进（QA 通过；分支候选，未合入 main）
+## 2026-10-11 C03 删除拒绝提示本地化（已合入 main；离线切片 PASS）
 
-针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 文档提交：`141bd96d15039f1cd29461785fdd91e2ef297476`；QA 原报告提交：`f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，已在本分支以 `ebb99811d289ea821d5a1bfee9fad6a2a1ba04db` 整合。QA 测试时 HEAD 固定在 `141bd96`；之后只有 QA 报告、交接文档和证据提交，产品源码树与 QA 目标一致。分支为 `codex/c03-delete-copy-pilot`，尚未合入 main。
+针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 提交 `141bd96d15039f1cd29461785fdd91e2ef297476` 独立验证了 37 项定向回归与本地 Fake WebUI 浏览器流程。规范和 C03 随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main，merge SHA：`2f08c764e740afa494a0445ec4d73382fdd55f3b`。完整文档候选 `75bfe2548e947432e72767b0b7822d34685a8b61` 保留 QA 证据和工作流决议；合并后独立报告确认两个源码树相同。
 
-Sol 根据独立 QA 判定本 C03 离线切片通过：首轮 PASS，repair 0/2；包括 37 项定向自动回归与本地 Fake WebUI 实际浏览器操作。源码树在 QA 前后无变化。DEV 报告：[C03 删除文案 DEV](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)；QA 原报告：[C03 独立 QA](../quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md)；日志和脱敏观察证据：[QA 证据目录](../quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。QA 使用 CUA 观察但没有导出截图；API envelope 由 contract tests 断言。该切片结果不重开完整 M1，也不改变已合并 Stage B 的历史范围。真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5 仍 NOT_RUN；main 尚未包含本候选。
+Sol 判定 C03 离线切片首轮 PASS、repair 0/2。报告链：[DEV 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)、[固定源码 QA](../quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md)、[文档整合 QA（受测 `75bfe254…`）](../quality/reports/2026-10-11-C03-INTEGRATION-QA-75bfe25.md)、[合并后 QA（受测 `2f08c764…`）](../quality/reports/2026-10-11-C03-POSTMERGE-2f08c76.md)。固定源码 QA 使用 CUA 观察但没有导出截图；API envelope 由 contract tests 断言。此次合并后全量 guarded pytest 为 389 passed，lock、祖先关系、产品树一致性和既有证据校验通过。合并后没有重跑 Web、浏览器或 native；本轮相关状态按报告为 NOT_RUN。此切片不重开完整 M1，也不改变 Stage B 既有范围。真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5 仍 NOT_RUN。
 
-用户已确认长期 Sol→Developer Luna→全新 QA Luna→Sol 流程，详见 [ADR 0008](../decisions/0008-sol-luna-development-workflow.md)。本轮文档候选仍待固定 SHA 的独立文档复核及 Sol 后续整合；不得把此状态写作已合入 main。历史安装版 overlay 原文仅保存在 [历史补丁](history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch) 供追溯。
+用户已确认的长期 Sol→Developer Luna→全新 QA Luna→Sol 流程及历史安装版 overlay 补丁均随 PR #11 进入 main，见 [ADR 0008](../decisions/0008-sol-luna-development-workflow.md) 与[历史补丁](history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)。原主 checkout 的额外 stash `02c4801bc623ac2304bee18cceee64f4795602d8` 仍保留，供需要时恢复 overlay；历史安装文字不能用来重启已完成的 Stage B。main 已 fast-forward 到本次记录的 merge SHA，且 clean。
 
 **推荐下一项（未实施）：** M3.1 问答本地状态薄切片。优先实现每 workspace + profile 隔离的 conversation store / API（列表、重开、删除），再接 UI；如实呈现 SSE 完成、取消和断流状态，旧内容版本引用提示已更新。此建议依据 API-v1 conversations 路由、产品规格的本地聊天历史 / 引用规则及 ACCEPTANCE C14、C21。它不是 M3 的完成声明或范围缩减；角色、记忆、三类问答及完整验收仍待完成。真实 C 门、DMG、五日与双机不因该建议而启动。
 

@@ -1,0 +1,17 @@
+logs/document-link-check.log: OK
+logs/lock-check.log: OK
+logs/mypy.log: OK
+logs/npm-build.log: OK
+logs/npm-ci.log: OK
+logs/npm-lint.log: OK
+logs/npm-test.log: OK
+logs/npm-typecheck.log: OK
+logs/pytest-after-npm-ci.log: OK
+logs/pytest.log: OK
+logs/ruff-check.log: OK
+logs/ruff-format.log: OK
+logs/scope-review.log: OK
+logs/uv-build.log: OK
+logs/uv-sync.log: OK
+COMMAND=(cd docs/quality/reports/evidence/c03-integration-75bfe25 && shasum -a 256 -c SHA256SUMS)
+EXIT_CODE=0

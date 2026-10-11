@@ -12,7 +12,7 @@
 
 **PASS — 提交范围与代码树。** `141bd96..6eb33d0` 的变更全部位于 `docs/`，包含 C03 开发 / 独立 QA 报告及 QA 日志、浏览器观察、快照归档；没有产品代码路径。`6eb33d0..75bfe25` 仅包含 `AGENTS.md`、`README.md` 和 `docs/`。直接比较 `src tests web native` 与 `141bd96` 无差异（exit 0），候选没有移动产品实现或前端树。
 
-**PASS — 先前 C03 证据可保留。** 先前报告覆盖 37 项定向回归和真实本地 Fake 浏览器步骤；归档 `SHA256SUMS` 中的 15 个条目全部校验通过。报告明确没有导出截图，也没有声明专用 DevTools 网络 / console 检查。先前浏览器范围可以按其原始报告保留；本轮没有重跑浏览器，故本轮浏览器状态为 **NOT_RUN**。
+**PASS — 先前 C03 证据可保留。** 先前报告覆盖 37 项定向回归和真实本地 Fake 浏览器步骤；归档 `SHA256SUMS` 共 16 个条目（15 项原始归档输入及 README），全部校验通过。报告明确没有导出截图，也没有声明专用 DevTools 网络 / console 检查。先前浏览器范围可以按其原始报告保留；本轮没有重跑浏览器，故本轮浏览器状态为 **NOT_RUN**。
 
 **PASS — 安装 overlay 来源。** `docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch` 与 `/tmp/summit-existing-agents-2026-10-11.patch` 逐字相同，双方 SHA-256 均为 `d9c3122955848afab852c81a2b24e8d9e62d9eb0eb59ace61d1b8cd21d111f32`。
 

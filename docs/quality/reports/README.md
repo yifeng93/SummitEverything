@@ -1,8 +1,13 @@
 # 开发与独立验收报告索引
 
-## C03 删除拒绝提示本地化跟进（2026-10-11，C03 离线切片 QA 通过；未合入 main）
+## C03 删除拒绝提示本地化跟进（2026-10-11，离线切片与合并后核验通过）
 
-[C03 删除文案 DEV](2026-10-11-C03-DELETE-COPY-DEV.md)：源码 `9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476`。Sol 根据[独立 QA 报告](2026-10-11-C03-DELETE-COPY-QA-141bd96.md)判定本切片通过：首轮 PASS、repair 0/2，37 项定向回归与实际 Fake WebUI 浏览器观察通过；测试后仅增加 QA 报告和文档/证据，源码树一致。QA 原报告提交 `f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，已整合到本分支。候选尚未合入 main，完整 M1、Stage B 和真实 / 发布门状态不变。已归档运行日志与观察记录见[证据目录](evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。
+[C03 删除文案 DEV](2026-10-11-C03-DELETE-COPY-DEV.md)：固定源码 `9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 提交 `141bd96d15039f1cd29461785fdd91e2ef297476`。Sol 根据[独立源码 QA](2026-10-11-C03-DELETE-COPY-QA-141bd96.md)判定本切片首轮 PASS、repair 0/2，37 项定向回归与实际 Fake WebUI 浏览器观察通过。文档整合 SHA `75bfe2548e947432e72767b0b7822d34685a8b61`；PR #11 merge SHA `2f08c764e740afa494a0445ec4d73382fdd55f3b`，C03 与规范已进入 main。固定 merge SHA 的 [postmerge QA](2026-10-11-C03-POSTMERGE-2f08c76.md) 记录 guarded pytest 389 passed，lock、祖先、源码树和证据校验通过。真实 / 发布门保持原状态。
+
+- [文档整合独立 QA（75bfe25）](2026-10-11-C03-INTEGRATION-QA-75bfe25.md)：37 项既有 C03 回归与 Fake 浏览器证据保持原结论；该轮全量 pytest 在 fresh checkout 安装 Web 依赖前失败，按 README 安装后同一 SHA 复验 389 passed，日志均保留。
+- [PR #11 合并后独立 QA（2f08c76）](2026-10-11-C03-POSTMERGE-2f08c76.md)：固定 merge SHA 的 guarded pytest 389 passed；本轮 Web、浏览器和 native 为 NOT_RUN。
+
+计数勘误：原始 C03 QA 的目标回归为 37 项；原始 C03 证据 manifest 实为 16 个条目（15 项原始输入及 README）。Postmerge 报告中的原始证据条目数已更正为 16，整合 QA 日志 manifest 为 15 项；更正只修正文档计数，不改变测试结果或 QA 范围。原始报告及 FAIL 记录不覆盖、不删除。完整 M1、Stage B 与真实 / 发布门状态不变；原始日志与观察记录见[证据目录](evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。
 
 ## Stage B 离线收口（2026-10-11，当前）
 
