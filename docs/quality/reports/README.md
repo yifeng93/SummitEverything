@@ -2,7 +2,7 @@
 
 ## M3 功能包 2：完整问答、角色与记忆（2026-10-11，Developer 完成，独立 QA pending）
 
-[包 2 Developer 报告](2026-10-11-M3-PACKAGE-2-DEV.md)：fact / comparison / plan、profile/workspace 角色与记忆、多轮 user-question context、provider payload、结构化历史和 WebUI 已实现；后端 399 passed、Web 50 passed / 12 files，lint/type/build/生成契约及其他 README 适用门均 exit 0。源码 SHA 在提交后补录。该报告只记 DEV 自测，QA 和 Sol 门判断尚未完成；实际浏览器、runtime 与真实服务/发布门保持 NOT_RUN / UNVERIFIED。
+[包 2 Developer 报告](2026-10-11-M3-PACKAGE-2-DEV.md)：源码 SHA `daef5250b355179de93cc3d622b93e9b28f17286`。fact / comparison / plan、profile/workspace 角色与记忆、多轮 user-question context、provider payload、结构化历史和 WebUI 已实现；后端 399 passed、Web 50 passed / 12 files，lint/type/build/生成契约及其他 README 适用门均 exit 0。该报告只记 DEV 自测，QA 和 Sol 门判断尚未完成；实际浏览器、runtime 与真实服务/发布门保持 NOT_RUN / UNVERIFIED。
 
 ## M3 功能包 1：会话与历史（2026-10-11，Sol 判离线集成 PASS）
 

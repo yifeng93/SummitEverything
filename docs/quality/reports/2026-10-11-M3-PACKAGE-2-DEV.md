@@ -3,7 +3,7 @@
 日期：2026-10-11  
 状态：Developer 实现与自动自测完成；等待 Sol 调度全新独立 QA。Developer 报告不构成包级验收或 PASS。  
 分支：`codex/m3-integrated-packages`  
-源码 SHA：待提交后填写
+源码 SHA：`daef5250b355179de93cc3d622b93e9b28f17286`
 
 ## 交付范围
 
