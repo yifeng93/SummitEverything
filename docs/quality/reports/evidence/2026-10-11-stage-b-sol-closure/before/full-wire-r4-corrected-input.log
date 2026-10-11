@@ -1,0 +1,64 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_full_json_wire_size_rejected_before_model_request[llm] __________
+
+kind = 'llm'
+
+    @pytest.mark.parametrize("kind", ["llm", "rerank"])
+    def test_full_json_wire_size_rejected_before_model_request(kind):
+        from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
+        from summit_everything.integrations.rerank import ModelStudioReranker
+    
+        calls = []
+    
+        def handler(request):
+            calls.append(len(request.content))
+            return httpx.Response(200, json={})
+    
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            with pytest.raises((ValueError, LLMProviderError)):
+                if kind == "llm":
+                    DeepSeekLLM("synthetic", client=client)._request_content("system", "\n" * 600_000)
+                else:
+                    ModelStudioReranker("synthetic", client=client).rank("query", ["x\n" * 350_000])
+>       assert calls == [], "oversized JSON must be rejected before HTTP"
+E       AssertionError: oversized JSON must be rejected before HTTP
+E       assert [1200179] == []
+E         
+E         Left contains one more item: 1200179
+E         Use -v to get more diff
+
+tests/integration/test_stage_b_sol_closure.py:339: AssertionError
+________ test_full_json_wire_size_rejected_before_model_request[rerank] ________
+
+kind = 'rerank'
+
+    @pytest.mark.parametrize("kind", ["llm", "rerank"])
+    def test_full_json_wire_size_rejected_before_model_request(kind):
+        from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
+        from summit_everything.integrations.rerank import ModelStudioReranker
+    
+        calls = []
+    
+        def handler(request):
+            calls.append(len(request.content))
+            return httpx.Response(200, json={})
+    
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            with pytest.raises((ValueError, LLMProviderError)):
+                if kind == "llm":
+                    DeepSeekLLM("synthetic", client=client)._request_content("system", "\n" * 600_000)
+                else:
+                    ModelStudioReranker("synthetic", client=client).rank("query", ["x\n" * 350_000])
+>       assert calls == [], "oversized JSON must be rejected before HTTP"
+E       AssertionError: oversized JSON must be rejected before HTTP
+E       assert [1050114] == []
+E         
+E         Left contains one more item: 1050114
+E         Use -v to get more diff
+
+tests/integration/test_stage_b_sol_closure.py:339: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_sol_closure.py::test_full_json_wire_size_rejected_before_model_request[llm]
+FAILED tests/integration/test_stage_b_sol_closure.py::test_full_json_wire_size_rejected_before_model_request[rerank]
+2 failed, 7 deselected in 0.12s

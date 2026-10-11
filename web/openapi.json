@@ -4099,6 +4099,11 @@
           "timezone": {
             "type": "string",
             "title": "Timezone"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
           }
         },
         "type": "object",
@@ -4440,6 +4445,35 @@
             "maxLength": 500,
             "title": "Redirect Uri",
             "default": ""
+          },
+          "identity": {
+            "type": "string",
+            "enum": [
+              "app",
+              "user"
+            ],
+            "title": "Identity",
+            "default": "app"
+          },
+          "calendar_id": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Calendar Id",
+            "default": ""
+          },
+          "material_content": {
+            "type": "string",
+            "enum": [
+              "transcript",
+              "artifacts"
+            ],
+            "title": "Material Content",
+            "default": "transcript"
+          },
+          "real_data_enabled": {
+            "type": "boolean",
+            "title": "Real Data Enabled",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -4471,6 +4505,59 @@
               }
             ],
             "title": "Redirect Uri"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "app",
+                  "user"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identity"
+          },
+          "calendar_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Id"
+          },
+          "material_content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "transcript",
+                  "artifacts"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material Content"
+          },
+          "real_data_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Real Data Enabled"
           }
         },
         "additionalProperties": false,
@@ -4488,6 +4575,16 @@
             "type": "boolean",
             "title": "Authorized"
           },
+          "app_configured": {
+            "type": "boolean",
+            "title": "App Configured",
+            "default": false
+          },
+          "identity": {
+            "type": "string",
+            "title": "Identity",
+            "default": "app"
+          },
           "token_type": {
             "type": "string",
             "title": "Token Type",
@@ -4499,6 +4596,22 @@
             },
             "type": "array",
             "title": "Scopes"
+          },
+          "user_identity_verified": {
+            "type": "boolean",
+            "title": "User Identity Verified",
+            "default": false
+          },
+          "credential_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Error"
           }
         },
         "type": "object",
@@ -4506,7 +4619,8 @@
           "authorized",
           "scopes"
         ],
-        "title": "FeishuStatus"
+        "title": "FeishuStatus",
+        "description": "Authorization status.\n\n``authorized`` means a usable *user* token exists. ``app_configured`` only\nsays an application secret is stored; it is never presented as user\nauthorization. ``user_identity_verified`` stays false because no real\nidentity lookup has been performed."
       },
       "FeishuTask": {
         "properties": {
@@ -5303,8 +5417,15 @@
             "title": "Visibility"
           },
           "updated_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Updated At"
           }
         },
@@ -5313,8 +5434,7 @@
         "required": [
           "material_id",
           "title",
-          "visibility",
-          "updated_at"
+          "visibility"
         ],
         "title": "Material"
       },

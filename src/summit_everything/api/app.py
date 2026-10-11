@@ -53,6 +53,7 @@ from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeConflict, IntakeService
 from summit_everything.integrations.embedding import ModelStudioEmbedding
 from summit_everything.integrations.feishu.fake import FakeFeishu
+from summit_everything.integrations.feishu.http import FeishuHttpProvider
 from summit_everything.integrations.feishu.provider import (
     CalendarPage,
     CredentialStore,
@@ -61,9 +62,11 @@ from summit_everything.integrations.feishu.provider import (
     FeishuProvider,
     MaterialPage,
     MemoryCredentialStore,
+    VaultCredentialStore,
 )
 from summit_everything.integrations.feishu.service import (
     AuthorizationStart,
+    FeishuAuthCoordinator,
     FeishuService,
     FeishuStatus,
     ImportRequest,
@@ -304,7 +307,8 @@ def create_app(
     app.state.review_service = review
     cancellations: dict[str, Event] = {}
     config = feishu_config or FeishuConfig()
-    feishu_services: dict[tuple[str, str, str], FeishuService] = {}
+    feishu_services: dict[tuple[str, ...], FeishuService] = {}
+    auth_coordinators: dict[tuple[str, str], FeishuAuthCoordinator] = {}
     action_services: dict[int, ActionService] = {}
     feishu_services_lock = Lock()
     feishu = FeishuService(
@@ -400,34 +404,122 @@ def create_app(
         redirect_uri = settings.feishu.redirect_uri or config.redirect_uri
         parts = urlsplit(redirect_uri)
         callback_origin = f"{parts.scheme}://{parts.netloc}"
+        real = settings.mode == "real" and bool(settings.feishu.app_id)
         workspace_config = FeishuConfig(
+            mode="real" if real else "fake",
             app_id=app_id,
             redirect_uri=redirect_uri,
             allowed_origins=tuple(dict.fromkeys((*config.allowed_origins, callback_origin))),
             state_ttl_seconds=config.state_ttl_seconds,
+            identity=settings.feishu.identity,
+            calendar_id=settings.feishu.calendar_id,
+            material_content=settings.feishu.material_content,
+            scope_materials=("minutes:minutes.search:read" if real else config.scope_materials),
+            scope_calendar=("calendar:calendar.event:read" if real else config.scope_calendar),
+            scope_material_body=(
+                "minutes:minutes.transcript:export" if real else config.scope_material_body
+            ),
+            scope_material_artifacts=(
+                "minutes:minutes.artifacts:read" if real else config.scope_material_artifacts
+            ),
         )
         profile = str(Path(workspace.local_profile_dir).resolve())
-        key = (profile, app_id, redirect_uri)
+        # Every execution-affecting field participates in the key, so a settings
+        # change never keeps serving the previous identity/calendar/body mode.
+        key = (
+            profile,
+            app_id,
+            redirect_uri,
+            workspace_config.mode,
+            workspace_config.identity,
+            workspace_config.calendar_id,
+            workspace_config.material_content,
+        )
         with feishu_services_lock:
             service = feishu_services.get(key)
             if service is None:
-                provider = feishu_provider or FakeFeishu(
-                    Path(tempfile.gettempdir())
-                    / "summit-simulated-feishu-remote"
-                    / hashlib.sha256(profile.encode()).hexdigest()
+                if feishu_provider is not None:
+                    provider: FeishuProvider = feishu_provider
+                elif real:
+                    # One credential slot system: the app secret is read from the
+                    # same vault slot the settings UI writes, and user tokens are
+                    # stored next to it under the same profile namespace.
+                    store = credential_store or VaultCredentialStore(
+                        credential_vault(workspace), app_id
+                    )
+                    provider = FeishuHttpProvider(workspace_config, store.get_app)
+                else:
+                    provider = FakeFeishu(
+                        Path(tempfile.gettempdir())
+                        / "summit-simulated-feishu-remote"
+                        / hashlib.sha256(profile.encode()).hexdigest()
+                    )
+                if credential_store is not None:
+                    store = credential_store
+                elif real:
+                    store = VaultCredentialStore(credential_vault(workspace), app_id)
+                else:
+                    store = MemoryCredentialStore()
+                # One authorization coordinator per credential identity, shared
+                # by every service instance so a configuration change cannot
+                # fork refresh single-flight or the authorization generation.
+                coordinator = auth_coordinators.setdefault(
+                    (profile, app_id), FeishuAuthCoordinator()
                 )
-                store = credential_store or MemoryCredentialStore()
-                service = FeishuService(provider, store, workspace_config, app.state.session_token)
+                service = FeishuService(
+                    provider,
+                    store,
+                    workspace_config,
+                    app.state.session_token,
+                    coordinator=coordinator,
+                )
                 feishu_services[key] = service
+                # Retire superseded services for the same profile/app so their
+                # HTTP clients are released once idle, while any operation still
+                # holding the old service keeps its configuration snapshot.
+                for stale_key, stale in list(feishu_services.items()):
+                    if stale_key == key or stale_key[:2] != key[:2]:
+                        continue
+                    del feishu_services[stale_key]
+                    action_services.pop(id(stale), None)
+                    retire = getattr(stale.provider, "retire", None)
+                    if callable(retire):
+                        retire()
         app.state.feishu_service = service
         return service
+
+    def require_feishu_data(workspace: WorkspaceContext) -> None:
+        """Stage B keeps real Feishu business reads server-disabled by default."""
+        settings = settings_store(workspace).read()
+        if settings.mode != "real":
+            return
+        if not settings.feishu.app_id:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "provider_not_configured",
+                    "message": "请先在本机设置中填写飞书 App ID 与密钥。",
+                },
+            )
+        if not settings.feishu.real_data_enabled:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "stage_c_authorization_required",
+                    "message": "真实飞书数据读取需要逐项授权后才会启用。",
+                },
+            )
 
     def actions_for(workspace: WorkspaceContext) -> ActionService:
         service = feishu_for(workspace)
         with feishu_services_lock:
             actions = action_services.get(id(service))
             if actions is None:
-                actions = ActionService(FeishuTasks(service), app.state.session_token)
+                actions = ActionService(
+                    FeishuTasks(service),
+                    app.state.session_token,
+                    write_gate=lambda _kind: service.require_task_write(),
+                )
                 action_services[id(service)] = actions
         app.state.action_service = actions
         return actions
@@ -446,13 +538,14 @@ def create_app(
         settings = settings_store(workspace).read()
         expected = {
             "feishu_app": settings.feishu.app_id or "default",
+            "feishu_user": settings.feishu.app_id or "default",
             "deepseek": settings.llm.account_id,
             "dashscope": settings.model_studio_account_id,
         }.get(provider)
         if expected is None or account_id != expected:
             raise SettingsError("validation_error")
 
-    register_actions(app, actions_for, authenticated, active_workspace)
+    register_actions(app, actions_for, authenticated, active_workspace, require_feishu_data)
 
     @app.exception_handler(SettingsError)
     async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
@@ -1218,7 +1311,12 @@ def create_app(
         ensure_remote_calls_allowed(workspace, ("embedding",))
         if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
             raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
-        return query_for(workspace, remote=True).execute_plan(Path(workspace.root), payload)
+        service = query_for(workspace, remote=True)
+        try:
+            return service.execute_plan(Path(workspace.root), payload)
+        finally:
+            if query_service is None:
+                service.close()
 
     @app.get("/api/v1/index/status", dependencies=[Depends(authenticated)])
     def index_status(
@@ -1253,6 +1351,7 @@ def create_app(
 
         async def generate() -> AsyncIterator[str]:
             seq = 0
+            operation = query_for(workspace, remote=True) if query_service is None else None
             try:
                 seq += 1
                 yield event(seq, "status", {"state": "retrieving"})
@@ -1262,7 +1361,7 @@ def create_app(
                     raise ValueError("provider settings changed; refresh the index settings")
                 query_task = asyncio.create_task(
                     asyncio.to_thread(
-                        query_for(workspace, remote=True).query,
+                        (operation or query_for(workspace)).query,
                         Path(workspace.root),
                         payload.question,
                         fingerprint=payload.fingerprint,
@@ -1305,6 +1404,8 @@ def create_app(
                 yield event(seq, "error", {"code": "query_error", "message": str(exc)})
             finally:
                 cancellations.pop(request_id, None)
+                if operation is not None:
+                    operation.close()
 
         return StreamingResponse(
             generate(),
@@ -1374,12 +1475,14 @@ def create_app(
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "材料筛选无效。"}
             )
+        require_feishu_data(workspace)
         return feishu_for(workspace).materials(query, visibility, cursor, limit)
 
     @app.post(prefix + "/imports", dependencies=[Depends(authenticated)])
     def feishu_imports(
         payload: ImportRequest, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> ImportResult:
+        require_feishu_data(workspace)
         try:
             return feishu_for(workspace).imports(Path(workspace.root), payload)
         except ValueError as exc:
@@ -1402,6 +1505,7 @@ def create_app(
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "日历分页无效。"}
             )
+        require_feishu_data(workspace)
         try:
             return feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
         except ValueError:

@@ -10,7 +10,8 @@ from uuid import UUID
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
-from summit_everything.integrations.http_boundary import bounded_json_post
+from summit_everything.integrations.http_boundary import bounded_json_post, reject_business_error
+from summit_everything.integrations.transport import create_http_client
 
 
 class ImportantConflict(BaseModel):
@@ -142,7 +143,7 @@ class DeepSeekLLM:
         self._api_key = api_key
         self.max_tokens = max_tokens
         self._owns_client = client is None
-        self._client = client or httpx.Client(timeout=30.0, follow_redirects=False)
+        self._client = client or create_http_client()
 
     def close(self) -> None:
         if self._owns_client:
@@ -220,7 +221,10 @@ class DeepSeekLLM:
                     "stream": False,
                 },
                 max_response_bytes=self.max_response_bytes,
+                max_request_bytes=self.max_request_bytes,
+                deadline_seconds=60.0,
             )
+            reject_business_error(wire)
             content = wire["choices"][0]["message"]["content"]
             finish_reason = wire["choices"][0].get("finish_reason")
             if finish_reason != "stop" or not isinstance(content, str) or not content.strip():

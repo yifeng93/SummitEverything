@@ -1,0 +1,53 @@
+# git status --short (trial tree, uncommitted)
+ M README.md
+ M docs/architecture/PROVIDER-PROTOCOL-MATRIX.md
+ M docs/contracts/API-v1.md
+ M docs/handoff/LATEST-IMPLEMENTATION.md
+ M docs/handoff/PROMPT-STAGE-B-C-LUNA.md
+ M docs/handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md
+ M docs/handoff/PROMPT-STAGE-B-SOL-REVIEW.md
+ M docs/implementation/PROGRESS.md
+ M docs/product/PRODUCT-SPEC.md
+ M docs/quality/ACCEPTANCE.md
+ M src/summit_everything/api/app.py
+ M src/summit_everything/api/routes/actions.py
+ M src/summit_everything/integrations/embedding.py
+ M src/summit_everything/integrations/feishu/provider.py
+ M src/summit_everything/integrations/feishu/service.py
+ M src/summit_everything/integrations/http_boundary.py
+ M src/summit_everything/integrations/llm.py
+ M src/summit_everything/integrations/rerank.py
+ M src/summit_everything/integrations/settings.py
+ M src/summit_everything/retrieval/query.py
+ M tasks/plan.md
+ M tasks/todo.md
+ M tests/integration/test_stage_b_regressions.py
+ M tests/unit/test_feishu_credentials.py
+ M web/openapi.json
+ M web/src/api/generated.ts
+?? docs/decisions/0006-feishu-identity-and-credential-slots.md
+?? docs/handoff/DEEPSEEK-STAGE-B.md
+?? docs/quality/reports/2026-10-11-DEEPSEEK-STAGE-B-DEV.md
+?? docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/
+?? src/summit_everything/integrations/feishu/http.py
+?? tests/integration/test_feishu_real_gate.py
+?? tests/unit/test_feishu_http.py
+?? tests/unit/test_http_boundary.py
+
+# branch / base
+codex/deepseek-stage-b-trial
+0a1db5d72e6ac11184d28e65dea3ba008762ba43
+
+# base vs last committed source candidate (should be docs only)
+ README.md                                          |  6 +-
+ docs/architecture/PROVIDER-PROTOCOL-MATRIX.md      | 16 +++--
+ docs/contracts/API-v1.md                           |  3 +-
+ docs/handoff/LATEST-IMPLEMENTATION.md              | 13 +++-
+ docs/implementation/PROGRESS.md                    | 17 ++---
+ docs/quality/ACCEPTANCE.md                         | 16 +++--
+ .../quality/reports/2026-10-10-STAGE-B-LUNA-DEV.md | 74 ++++++++++++++++++++++
+ .../reports/2026-10-10-STAGE-B-partial-DEV.md      |  4 ++
+ docs/quality/reports/README.md                     |  4 +-
+ tasks/plan.md                                      | 17 ++---
+ tasks/todo.md                                      | 22 +++----
+ 11 files changed, 147 insertions(+), 45 deletions(-)

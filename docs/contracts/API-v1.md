@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：v1 完整实施基准；M1 与 M2.1–M2.3 Fake 路由已实现。当前 Stage B 候选增加 profile 设置、Keychain 边界、stub-tested DeepSeek / Model Studio adapters 及 Fake-only Feishu 生命周期。真实业务模型调用在服务端保持 disabled；另有三个只接受固定合成输入、profile 级每 provider 限一次的模型 smoke 路由。Feishu 真实 OAuth / 数据 adapter 与实际 smoke 尚未实现。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 完整实施基准；M1 与 M2.1–M2.3 Fake 路由已实现。当前 Stage B 候选增加 profile 设置、Keychain 边界、stub-tested DeepSeek / Model Studio adapters、Fake-only Feishu 生命周期，以及**真实 Feishu HTTP adapter**（应用身份优先、按 endpoint 记录 scope，见[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)）。真实业务模型调用与真实飞书数据读取在服务端保持 disabled；另有三个只接受固定合成输入、profile 级每 provider 限一次的模型 smoke 路由。Feishu 真实 adapter 已实现但真实请求次数为 0。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -65,7 +65,7 @@
 | GET /integrations/feishu/status | 权限 / 登录状态，无 token 值 |
 | POST /integrations/feishu/authorizations | 创建 OAuth 登录意图，state 绑定当前本机会话 |
 | DELETE /integrations/feishu/authorizations | 登出并清除当前用户授权 |
-| GET /integrations/feishu/callback | 验证已发起 OAuth state / redirect；当前 Fake 存内存，B 的真实模式需持久化到钥匙串 |
+| GET /integrations/feishu/callback | 验证已发起 OAuth state / redirect；Fake 存进程内，Real 模式写入当前 profile 的统一 Keychain 凭据槽 |
 | GET /integrations/feishu/materials | 搜索 / 分页的可见材料 metadata；不调模型 |
 | POST /integrations/feishu/imports | 用户选择的材料 ID、operation_id → 来源与 item；不隐式整理 |
 | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
@@ -104,9 +104,26 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 
 ## M2.1 已实施的飞书 Fake 契约
 
-默认且唯一可配置模式为 `fake`；所有外部行为通过注入 FeishuProvider，默认实现没有网络代码。CredentialStore 分别隔离 AppCredentials（app_id / SecretStr app_secret）与 user access/refresh token；非秘密 FeishuConfig 保存 app_id 和精确 redirect_uri。本切片使用进程内 MemoryCredentialStore，仅注入合成秘密，未实施真实账户适配器、app-secret 设置 UI 或 OS Keychain 权限路径，不读取现有凭据。
+默认且唯一可配置模式为 `fake`；所有外部行为通过注入 FeishuProvider，默认实现没有网络代码。CredentialStore 分别隔离 AppCredentials（app_id / SecretStr app_secret）与 user access/refresh token；非秘密 FeishuConfig 保存 app_id 和精确 redirect_uri。Fake 切片使用进程内 MemoryCredentialStore。真实模式另有 `FeishuHttpProvider`（见下节），它只通过统一凭据槽读取 app secret 与 user token。
 
-- `GET /integrations/feishu/status` → `{mode, authorized, token_type: user, scopes}`，不返回 token。
+### 真实 Feishu HTTP adapter（2026-10-10，离线 stub 已覆盖）
+
+应用身份优先：日历日程、妙记逐字稿/产物、task 详情/创建/编辑都接受 `tenant_access_token`，因此优先用应用身份（`identity=app` 且已存 app secret 时**完全不读取用户凭据槽**，不刷新、不要求 user token；身份先按配置决定，再读对应凭据）。仅妙记搜索与任务列表按官方要求只接受 `user_access_token`，这两项需要一次性用户授权。缺 app 密钥 → `credential_missing`；无 user token → `not_authorized`；用户槽损坏/拒绝 → `credential_unreadable`（可读 401，不泄露内部异常）；scope 不足 → `missing_scope`；权限错误不得自动换身份扩大访问。官方来源与逐字段证据见[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)；本节只记契约。
+
+- `authorization_url` = `https://accounts.feishu.cn/open-apis/authen/v1/authorize?client_id&response_type=code&redirect_uri&scope&state`；`scope` 为空格分隔的用户权限，含 `offline_access` 才返回 refresh token。
+- `exchange` / `refresh` 使用官方 JSON OAuth 端点（v2 `https://open.feishu.cn/open-apis/authen/v2/oauth/token`；v3 迁移目标 `https://accounts.feishu.cn/oauth/v3/token`）。响应解析严格：`token_type` 必须为 `Bearer`、`expires_in` 必须为正有限整数、`scope` 必须存在且以本次响应为准；refresh 必须返回**新的** `refresh_token`（缺失或仍是已消费旧值即拒绝），损坏响应不写入凭据。refresh token 单次使用并轮换，已消费的 token 绝不重发。
+- 应用身份 token：`POST /open-apis/auth/v3/tenant_access_token/internal`，内部缓存到过期前 60 秒。
+- 妙记搜索：`POST /open-apis/minutes/v1/minutes/search`，`page_size` 上限 30，user token，scope `minutes:minutes.search:read`。该 endpoint **没有 visibility 过滤参数**；请求带 `visibility` 时返回 `unsupported_capability`，不静默返回全部。
+- 逐字稿：`GET /open-apis/minutes/v1/minutes/:token/transcript?file_format=txt` 返回二进制；scope `minutes:minutes.transcript:export`；`missing_scope` 时回退 `GET .../artifacts`（scope `minutes:minutes.artifacts:read`，正文在 `data.transcript`）。仅接受 UTF-8 TXT/Markdown，不声称 PDF/Word/OCR。
+- 日历：`GET /open-apis/calendar/v4/calendars/:calendar_id/events`，`start_time`/`end_time` 为 **Unix 秒字符串**且不能与 `page_token`/`sync_token`/`anchor_time` 同时使用；显式区间是单页、不自动扩大范围也不补发请求，携带 cursor 时返回 `invalid_cursor`。上游 `page_size = max(50, limit)`；响应先逐项验证，再最多返回调用方 `limit` 条；超过 limit、达到上游 page_size 或上游 `has_more` 时 `CalendarPage.truncated=true`，真实区间 `next_cursor=null`（不提供无法执行的下一页）。`start_time`/`end_time` 的 `timestamp`（秒）或全天 `date` 归一为 UTC aware datetime。主日历按官方 `data.calendars[].calendar.calendar_id` 解析；显式配置 `calendar_id` 时跳过查询；空 → `no_primary_calendar`、歧义 → `ambiguous_calendar`、损坏 → `malformed_response`。
+- 任务读：`GET /open-apis/task/v2/tasks`（user token，scope `task:task:read`/`task:task:write`）与 `GET /open-apis/task/v2/tasks/:task_guid`。`due.timestamp`（毫秒字符串）/`completed_at` 归一为 int。
+- 任务写：`POST /open-apis/task/v2/tasks` 与 `PATCH /open-apis/task/v2/tasks/:task_guid`（`update_fields` 必填；列字段不赋值表示清空；`completed_at="0"` 恢复未完成）。adapter 已实现，但**能力仍 disabled，且由独立服务端门强制**：`FeishuService.require_task_write()` 在 real 模式对 create/update/complete 一律返回 `409 result_proof_unavailable`，`ActionService` 在写入 running 回执前检查、`FeishuTasks.execute` 再检查一次；provider 写调用次数为 0。`real_data_enabled` 只控制读取，不解除写禁用；本地 `project_progress` 不受该读取门影响。没有官方 endpoint 能按 `client_token` 证明丢失回执后的写结果，`task_result()` 返回无证据，unknown 不重发、不按标题猜成功。
+- 生命周期与 deadline：一个完整业务操作（主日历→events、refresh→读取、正文回退、多项导入）持有**按调用线程归属**的租约；配置变更后新操作立即使用新配置，已开始的操作（含嵌套步骤与后续 HTTP）按旧配置快照完成，退役 provider 拒绝无关新操作与无租约的直接 adapter 调用，只在最后一个租约结束后关闭自有 client 一次。HTTP 边界使用可取消的整体 deadline：到期关闭底层传输连接并等待 worker 收敛后才返回，覆盖连接/响应头/正文/结束（响应头未完成时同样生效），注入 client 也不能绕过无重定向与大小上限。
+- 授权代次：同一 profile/app 共享授权代次；logout、重新授权与凭据替换都会使在途 refresh 结果作废，不清除随后建立的新授权。
+- 错误映射：按 HTTP 状态与官方业务码映射到 `token_expired` / `missing_scope` / `not_found` / `provider_timeout` / `provider_unavailable` / `malformed_response`；响应体、header、token、prompt 不出现在错误文本。
+- 真实数据读取门：`mode=real` 时 materials / imports / calendar / tasks / 任务执行默认返回 409 `stage_c_authorization_required`（未配置 App ID 时为 `provider_not_configured`）；只有显式设置 `feishu.real_data_enabled` 后才进入 adapter。Stage B 不执行任何真实请求。
+
+- `GET /integrations/feishu/status` → `{mode, authorized, app_configured, identity, token_type: user, scopes, user_identity_verified, credential_error}`，不返回 token。`credential_error=credential_unreadable` 表示本机用户凭据无法解析（此时 `authorized=false`）。`mode` 反映实际配置（real 不会返回 fake）；`authorized` 只表示存在可用 **user** token；`app_configured` 只表示已保存应用密钥，不伪装成用户已授权；`user_identity_verified` 在本轮保持 false（未执行真实 user-info）。
 - `POST /integrations/feishu/authorizations` → `{authorization_url, expires_in_seconds}`。Fake URL 使用精确配置的 callback 加 OAuth `code/state`；state 由本机会话创建、300 秒到期、一次性并受运行身份限制。
 - `DELETE /integrations/feishu/authorizations` → 204，删除当前进程中的 Fake 用户授权，不清除应用凭据。
 - `GET /integrations/feishu/callback?state&code`（或 `error`）→ 验证成功才返回 authorized。callback scheme / host / port / path 必须与 redirect_uri 一致；Origin 有值时须位于配置 allowlist。浏览器顶层回调可没有 Origin；无状态或非法 / 过期 / 重放 / 另一会话的状态都不能授权。除此以外飞书业务路由均要求 Bearer。
@@ -114,8 +131,8 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 - `POST /integrations/feishu/imports`：`{material_ids: 非空明确选择集合, operation_id}` → `{operation_id, state: succeeded/partial/failed, outcomes}`；每个 outcome 含 material_id、state、成功时 source_id/item_id、失败时 error_code/message。最多 30 个 ID，ID 与 operation_id 上限 200 字符。同 operation_id / 相同 ID 集合重放既有结果，变更集合返回 409。部分失败不是全成功；明确的新 ID 是新的导入意图。
 - 正文为 file bytes，接受 UTF-8 TXT/Markdown，20 MB 上限；接受 text/plain、text/markdown、application/octet-stream（charset 若给出须 UTF-8），拒绝 JSON、非法编码、空文件、NUL 与不安全路径。原字节和 SHA-256 原样保留；SourceRecord.external_identity 记录 provider、material_id、token_type 与 content_type。只生成 source / pending intake，不生成稿件、批准或正式知识。
 - `GET /integrations/feishu/calendar?start&end&timezone&cursor&limit` → `{items, next_cursor, timezone}`；必须显式传带时区时间和有效 IANA timezone，start < end，limit 1–30。空列表正常，读取无模型或任务写。
-- 安全错误代码：authorization_denied、not_authorized、token_expired、missing_scope、not_found、malformed_response、provider_timeout、provider_unavailable、invalid_state、invalid_redirect、invalid_cursor；内部异常文本不泄露到响应。
-- 用户资源访问前，如 access token 将于 60 秒内过期，服务先调用 provider 的 refresh 契约；仅验证新 user token 仍有效且保留所需 scope 后，才替换当前 credential。Fake 测试覆盖 refresh token 轮换和失效 refresh token；并发串行化、真实 provider 与持久化 Keychain 生命周期尚未实现。
+- 安全错误代码：authorization_denied、not_authorized、token_expired、missing_scope、not_found、malformed_response、provider_timeout、provider_unavailable、invalid_state、invalid_redirect、invalid_cursor、credential_missing、credential_unreadable、unsupported_capability、result_proof_unavailable、no_primary_calendar、ambiguous_calendar；内部异常文本不泄露到响应。
+- 用户资源访问前，如 access token 将于 60 秒内过期，服务先调用 provider 的 refresh 契约；仅验证新 user token 仍有效且保留所需 scope 后，才替换当前 credential。refresh 在 lifecycle 锁内串行执行并二次检查，因此同一 profile/account 的并发读者只消耗一次 refresh token 并保留最新 token（离线并发回归覆盖）；真实 Keychain 拒绝/锁定/重启生命周期仍未验收。
 
 已核对的真实协议约束仅作为适配边界：妙记搜索为 POST `/open-apis/minutes/v1/minutes/search`，分页为 page_size/page_token（最大 30），要求 user_access_token；不可把 tenant token 或其 scope 当 user scope。正文接口可返回文件，不能假设 JSON text。参见[官方妙记搜索](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/minutes-v1/minute/search)及 REUSE-MAP；本切片未发真实请求。
 
@@ -123,37 +140,37 @@ M2.1 审查补充：前端 callback 使用返回的绝对本机地址，限定 h
 
 ## Stage B 设置与凭据扩展（候选实现与剩余门）
 
-Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都不联系 provider。连接测试是另一条显式调用，不通过 `GET/PATCH /settings` 触发。当前分支已实现 GET/PATCH、Keychain PUT/DELETE 和 settings UI；真实 provider 连接与业务调用尚未启用，能力摘要保持 disabled。
+Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都不联系 provider。连接测试是另一条显式调用，不通过 `GET/PATCH /settings` 触发。当前分支已实现 GET/PATCH、Keychain PUT/DELETE 和 settings UI；真实 Feishu adapter 已实现但真实数据读取由服务端门控关闭，模型业务调用同样保持 disabled。
 
 ### `GET /settings`
 
 返回当前本机 profile 的非秘密配置摘要：
 
 - `mode`: `fake` 或 `real`，缺失配置时默认为 `fake`。
-- `feishu`: 当前只实现 `app_id` 与 loopback `redirect_uri`；授权状态、用户 scope、账号标签尚未实现。不返回 app secret 或 token。
-- `llm`, `embedding`, `rerank`: 当前只实现 provider、allowlisted model、能力开关和受限地区；LLM 有本机账户标识，Model Studio embedding / rerank 共用 `model_studio_account_id`，候选只允许中国大陆 endpoint。embedding 另返回 dimension 与 fingerprint。真实调用状态仍 disabled。
-- `capabilities`: 按能力列出 `available/configured/disabled_reason`。协议未证实的 Feishu task create/edit/complete 可单独 disabled，不能因为读取可用而标成可写。
+- `feishu`: `app_id`、loopback `redirect_uri`、`identity`（app/user，默认 app）、`calendar_id`、`material_content`（transcript/artifacts）与 `real_data_enabled`（默认 false）。不返回 app secret 或 token；授权状态由 `GET /integrations/feishu/status` 单独返回。
+- `llm`, `embedding`, `rerank`: 当前只实现 provider、allowlisted model、能力开关和受限地区；LLM 有本机账户标识，Model Studio embedding / rerank 共用 `model_studio_account_id`；Model Studio `base_url` 是**逐账户受限可配置**（allowlist：阿里云 HTTPS host + `/api/v1` 或 `/compatible-mode/v1` 路径），不再是完全固定派生。embedding 另返回 dimension 与 fingerprint。真实业务调用状态仍 disabled。
+- `capabilities`: 按能力列出 `available/configured/disabled_reason`。Feishu 能力在 real+已配置时为 `stage_c_authorization_required`，只有 `real_data_enabled` 打开才 available；task create/edit/complete 因缺少可核实结果证明单独保持 unavailable（`result_proof_unavailable`）。不能因为读取可用而标成可写。
 - `credential_status`: 各 provider 是否已设置、Keychain 是否可用。不得返回 Keychain item 名、secret 长度或 secret 值。
 
 ### `PATCH /settings`
 
-只接受非秘密字段的 typed partial update。未知字段拒绝，范围、地区和模型标识按 provider allowlist 校验，写入当前本地 profile 并原子替换。更改 provider/model/dimension 不调用 provider、不重建索引、不估计实际账单；返回新配置与提示用户显式查看/确认索引计划。endpoint 使用固定 provider mapping 派生，禁止任意 URL。当前未实现 workspace endpoint / 多地区选择。
+只接受非秘密字段的 typed partial update。未知字段拒绝，范围、地区和模型标识按 provider allowlist 校验，写入当前本地 profile 并原子替换。更改 provider/model/dimension 不调用 provider、不重建索引、不估计实际账单；返回新配置与提示用户显式查看/确认索引计划。Model Studio endpoint 允许逐账户受限 base URL：必须是阿里云 HTTPS host 且路径为 `/api/v1` 或 `/compatible-mode/v1`，其他任意 URL 一律拒绝（有离线反例覆盖）。当前未实现多地区选择。
 
 ### `PUT /credentials/{provider}` 与 `DELETE /credentials/{provider}`
 
-- `provider` 为 allowlist key，例如 `feishu_app`, `deepseek`, `dashscope`。
+- `provider` 为 allowlist key：`feishu_app`、`feishu_user`、`deepseek`、`dashscope`。`feishu_user` 由 OAuth 流程写入，设置 UI 只展示 `feishu_app`/`deepseek`/`dashscope` 的配置状态。
 - `PUT` 的 secret 只在 request body 内传输到 loopback FastAPI，再交给 Keychain；response 只含 `{provider, configured: true}`。错误不回显 body、值、长度或底层 Keychain 错误文本。设置变更不测试连接。
-- `PUT` / `DELETE` 的 JSON body 带非秘密 `account_id`。Keychain item 按 app/profile/provider/账户标识的摘要隔离；切换账户标识后只显示并操作当前账户项。Feishu 应用凭据使用当前 `app_id` 作为账户标识；真实 OAuth user token 持久化仍未实现。`DELETE` 只删除当前 provider/account key，不扫描或删除用户其他 Keychain 项。
+- `PUT` / `DELETE` 的 JSON body 带非秘密 `account_id`。Keychain item 按 app/profile/provider/账户标识的摘要隔离；切换账户标识后只显示并操作当前账户项。Feishu 应用凭据与 user token 使用**同一个 vault 命名空间**，账户标识均为当前 `app_id`：app secret 占 `feishu_app:<hash>`，user token 占 `feishu_user:<hash>`，因此设置 UI 写入的 app secret 就是 adapter 读取的槽，不存在两套互不通的 Keychain slot。`DELETE` 只删除当前 provider/account key，不扫描或删除用户其他 Keychain 项。
 - Keychain 拒绝、锁定、不可用或删除失败采用一致的 `credential_store_unavailable` / `credential_access_denied` 错误。真实模式始终 fail closed，不回退内存或文件。
 - 专用测试可传入合成 CredentialStore。合成 Keychain item 使用独立测试命名空间，测试结尾只清理本次创建的条目。
 
 ### 连接测试与 OAuth
 
-连接测试必须是单独的用户动作并返回明确将要联系的 provider；不属于设置保存、预览或状态刷新。真实连接测试进入 Stage C 授权表。OAuth state 一次性、限时并绑定当前本机会话；callback 使用原样注册 URI，避免日志记录 code/state/token，结果 `Cache-Control: no-store`。真实 refresh 必须串行化并以原子替换保留新 token；并发失败不能覆盖更新过的新 refresh token。登出删除当前 profile/account 的 user credential，不删除应用秘密或其他账号项。
+连接测试必须是单独的用户动作并返回明确将要联系的 provider；不属于设置保存、预览或状态刷新。真实连接测试进入 Stage C 授权表。OAuth state 一次性、限时并绑定当前本机会话**与发起时的授权代次**；callback 在可能阻塞的应用凭据读取之前与之后、token 请求前以及凭据回写前复核该代次，logout 或更新的授权会使旧 callback 失效并返回 `invalid_state`（不写凭据、不恢复 `authorized`、不覆盖新授权）；重复 callback 只 exchange 一次。callback 使用原样注册 URI，避免日志记录 code/state/token，结果 `Cache-Control: no-store`。真实 refresh 必须串行化并以原子替换保留新 token；并发失败不能覆盖更新过的新 refresh token。登出删除当前 profile/account 的 user credential，不删除应用秘密或其他账号项。
 
 ### 持久化与数据边界
 
-非秘密配置位于 local profile；workspace 只保留可迁移业务内容，不能保存 secrets、OAuth state、provider response、聊天历史或索引。Keychain 账户 key 使用 profile、provider 与账户标识摘要；当前 Feishu user-token refresh/logout 只在 Fake 进程内实现，真实 OAuth、持久化和请求仍未完成。连接和模型请求应仅由服务端发出，日志只记录安全错误码、request id 和必要计数。
+非秘密配置位于 local profile；workspace 只保留可迁移业务内容，不能保存 secrets、OAuth state、provider response、聊天历史或索引。Keychain 账户 key 使用 profile、provider 与账户标识摘要；真实模式使用同一个 vault 命名空间保存 app secret 与 user token，OS Keychain 拒绝/锁定/重启的实际生命周期仍未验收，真实 OAuth 与数据请求次数为 0。连接和模型请求应仅由服务端发出，日志只记录安全错误码、request id 和必要计数。
 
 
 ## M2.2 已实施的独立动作与任务 Fake 契约
@@ -168,6 +185,16 @@ Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都�
 - `GET /integrations/feishu/tasks?cursor&limit`（默认20、1–100）与 `/{task_guid}` 只读 provider；TaskPage items/next_cursor。API 的 FeishuTask 为只读投影，due.timestamp / completed_at 归一为 int。读取要求 user 的 task:task:read 或 task:task:write，写要求 task:task:write；复用 M2.1 session / CredentialStore。没有本地任务状态修改入口。
 - ProjectProgress `{project_id: UUID, expected_version: 非负严格int, progress}`：独立 action 写 project manifest 的 progress / progress_version / progress_confirmation_id；锁 + 预期版本 + 既有 write_intent 事务，知识批准不调用它。
 
-真实协议只核对公开文档 / 官方 SDK，不发真实请求。Task v2 REST GET/POST `/open-apis/task/v2/tasks`、GET/PATCH `/:task_guid`、PATCH task/update_fields；provider 分页 page_size/page_token 和 items/has_more/page_token。[官方 Task 概述](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/task-v2/overview)、[官方 Python 请求模型](https://github.com/larksuite/oapi-sdk-python/tree/v2_main/lark_oapi/api/task/v2/model)、[官方 Go SDK 注释](https://pkg.go.dev/github.com/larksuite/oapi-sdk-go/v3/service/task/v2)。client_token 从 workspace UUID + action UUID 派生稳定 UUID，仅创建传给 provider；官方成功幂等窗口5分钟，不能代替本地永久禁止未知重发。PATCH 的 token 参数仅供 Fake 留执行证据，不是额外 REST 字段。
+真实协议已从官方 `.md` 页面逐字段确证（2026-10-10）：Task v2 REST GET/POST `/open-apis/task/v2/tasks`、GET/PATCH `/:task_guid`、PATCH `task`+`update_fields`；列表 `page_size` 1–100 默认 50、`type=my_tasks`、仅接受 user token，`items/has_more/page_token`。[列取任务列表](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/task-v2/task/list)、[创建任务](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/task-v2/task/create)、[更新任务](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/task-v2/task/patch)。client_token 从 workspace UUID + action UUID 派生稳定 UUID，仅创建传给 provider；官方仅说明其触发后端幂等行为，不能代替本地永久禁止未知重发。PATCH 的 token 参数仅供 Fake 留执行证据，不是额外 REST 字段。真实请求仍未执行。
 
-**未验证的真实语义：**官方概述提示全天时间有特殊规则，可访问资料未确证其日期提取时区。当前全天午夜 timestamp 是明确的 Fake 约定，原始日期 + IANA 永久保留；真实 adapter 必须先核证并验收。Fake 精度 / 全天返回只是模拟，不代表真实 normalization。`task_result(token)` 仅为 Fake 合成证据查询；无已核实真实查询能力时必须返回无证据或安全错误并保留 unknown，不能按标题 / 列表猜成功。当前候选只实现 Fake provider，不把该证据契约描述成真实 Feishu 端点。
+**真实 task 协议现状（2026-10-10 起可从官方 `.md` 页面确证）：**官方 create/patch 文档明确 `due.timestamp` 与 `completed_at` 为距 1970-01-01 UTC 的**毫秒字符串**，`is_all_day=true` 时只解析并存储日期部分；PATCH 的 `update_fields` 必填，列字段不赋值表示清空，`completed_at="0"` 恢复未完成，已完成任务不能再次完成。真实 adapter 已按此映射实现。仍未确证的是账号侧实际 normalization、以及**丢失回执后按 `client_token` 独立证明写结果**的能力：没有任何官方 endpoint 提供该查询，因此 `task_result()` 返回无证据，任务写能力保持 disabled，unknown 不重发、不按标题或普通列表猜成功。全天午夜 conversion 不再只是 Fake 约定，但真实账号行为仍需 Stage C 复验。当前 Feishu adapter 已实现；真实请求次数为 0。
+
+## 2026-10-11 Stage B 离线收口补充
+
+Provider HTTP 使用请求独立传输（ADR 0007）；调用返回前解析/传输 worker 已结束，限额包括完整 JSON wire，identity 以外响应编码拒绝。应用身份操作不读取用户凭据槽；OAuth 结果须匹配发起代次，登出/新授权/配置切换后旧结果不得写回。租约准入与退役原子协调。
+
+今日任务区由 API 的 mode 区分 Fake/Real；模式尚未确定时远端写控件禁用。Real 创建/编辑/完成与旧 confirmed 的执行入口禁用，项目进度保持本地独立确认。服务端三层任务写门仍返回 409 `result_proof_unavailable`，不能仅凭 UI 禁用获得安全结论。
+
+浏览器/原生的合成凭据故障证据不等于 OS Keychain、真实身份或账户验收。阶段状态与源码/QA SHA 见最新交接。
+
+真实 OAuth UI 只展示已校验的官方 HTTPS 授权链接，由用户在独立浏览器完成后刷新本机 `/status`；不 fetch 外部authorize URL、不模拟 code、不自动轮询旧authorized值宣称本轮成功。原生target=_blank仅允许用户点击官方authorize链接交系统浏览器；Fake窄callback helper保持不变。实际外部打开、callback端口注册及真实身份验证仍为C证据门。应用身份日历不要求用户OAuth；mode/identity来自API。

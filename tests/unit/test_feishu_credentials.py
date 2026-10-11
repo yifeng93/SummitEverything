@@ -7,8 +7,9 @@ from summit_everything.integrations.feishu.provider import (
     AppCredentials,
     KeychainCredentialStore,
     UserCredentials,
+    VaultCredentialStore,
 )
-from summit_everything.integrations.settings import MemorySecretBackend
+from summit_everything.integrations.settings import CredentialVault, MemorySecretBackend
 
 
 def _credentials(refresh_token: str = "refresh-v1") -> UserCredentials:
@@ -72,3 +73,72 @@ def test_keychain_store_rejects_corrupt_persisted_token_without_leaking_secret()
         store.get()
 
     assert "secret" not in str(error.value)
+
+
+def _vault(
+    backend: MemorySecretBackend, namespace: str = "com.summiteverything.test"
+) -> CredentialVault:
+    return CredentialVault(namespace, backend)
+
+
+def test_vault_store_shares_the_settings_app_secret_slot():
+    backend = MemorySecretBackend()
+    vault = _vault(backend)
+    # The settings UI path writes feishu_app under the configured app id.
+    vault.put("feishu_app", "synthetic-app-secret", account_id="cli_app_a")
+    store = VaultCredentialStore(vault, "cli_app_a")
+
+    assert store.get_app() == AppCredentials(
+        app_id="cli_app_a", app_secret=SecretStr("synthetic-app-secret")
+    )
+    # Only one slot is used for the app secret; no second disconnected store.
+    assert list(backend._values) == [
+        ("com.summiteverything.test", CredentialVault._item_key("feishu_app", "cli_app_a"))
+    ]
+
+
+def test_vault_store_round_trips_user_tokens_next_to_the_app_secret():
+    backend = MemorySecretBackend()
+    vault = _vault(backend)
+    store = VaultCredentialStore(vault, "cli_app_a")
+    store.put_app(AppCredentials(app_id="cli_app_a", app_secret=SecretStr("synthetic-secret")))
+    store.put(_credentials())
+
+    assert store.get() == _credentials()
+    assert store.get_app() is not None
+    assert len(backend._values) == 2
+    store.delete()
+    assert store.get() is None
+    assert VaultCredentialStore(vault, "cli_app_b").get() is None
+
+
+def test_vault_store_is_isolated_per_profile_namespace():
+    backend = MemorySecretBackend()
+    VaultCredentialStore(_vault(backend, "namespace-a"), "cli_app_a").put(_credentials())
+
+    assert VaultCredentialStore(_vault(backend, "namespace-b"), "cli_app_a").get() is None
+
+
+def test_vault_store_rejects_corrupt_data_without_leaking_the_secret():
+    backend = MemorySecretBackend()
+    vault = _vault(backend)
+    store = VaultCredentialStore(vault, "cli_app_a")
+    vault.put(
+        "feishu_user", json.dumps({"access_token": "synthetic-secret"}), account_id="cli_app_a"
+    )
+
+    with pytest.raises(ValueError, match="stored Feishu credentials are invalid") as error:
+        store.get()
+
+    assert "synthetic-secret" not in str(error.value)
+
+
+def test_vault_store_uses_a_single_shared_namespace_for_both_items():
+    backend = MemorySecretBackend()
+    vault = _vault(backend)
+    store = VaultCredentialStore(vault, "cli_app_a")
+    store.put_app(AppCredentials(app_id="cli_app_a", app_secret=SecretStr("synthetic-secret")))
+    store.put(_credentials())
+
+    namespaces = {namespace for namespace, _key in backend._values}
+    assert namespaces == {"com.summiteverything.test"}

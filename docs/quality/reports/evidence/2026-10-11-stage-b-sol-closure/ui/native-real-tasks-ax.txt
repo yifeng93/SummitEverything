@@ -1,0 +1,102 @@
+Window: "SummitEverything", App: SummitEverything Stage B DEV.
+0 standard window SummitEverything, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.LocalWebView, SwiftUI._FlexFrameLayout>>-1-AppWindow-1
+	1 scroll area
+		2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:15173/
+			3 container
+				4 text SummitEverything 个人知识工作台
+				5 container 主导航
+					6 button 今日
+					7 button 日志与思考
+					8 button 项目与知识
+					9 button 知识问答
+					10 button 设置
+				11 text 仅本机运行
+				12 button S Stage B 合成验证 已连接工作库
+			13 container
+				14 text 今日 本机已保存
+				15 button 打开设置
+				16 text 工作节奏
+				17 heading 今日, Value: 1
+					18 text 今日
+				19 text 先记下来，再决定哪些内容值得整理成知识。 2026年10月11日 星期日
+				20 heading 飞书日常, Value: 2
+					21 text 飞书日常
+				22 text 真实模式 · 应用身份优先；仅妙记搜索与任务列表需要一次性用户授权。 用户未授权
+				23 button 授权飞书用户身份
+				24 text 尚未配置应用密钥。
+				25 heading 材料, Value: 3
+					26 text 材料
+				27 container
+					28 text 搜索材料
+					29 text field (settable) 搜索材料
+				30 container
+					31 text 可见范围
+					32 pop up button (collapsed) 可见范围, Value: 全部可见, Secondary Actions: Expand
+				33 button (disabled) 搜索 / 刷新材料
+				34 heading 日历, Value: 3
+					35 text 日历
+				36 container
+					37 text 开始日期
+					38 date time area 开始日期, Value: 2026/10/11
+						39 container
+							40 stepper (settable, float) year, Value: 2026
+							41 text /
+							42 stepper (settable, float) month, Value: 10
+							43 text /
+							44 stepper (settable, float) day, Value: 11
+				45 container
+					46 text 结束日期（不含）
+					47 date time area 结束日期（不含）, Value: 2026/10/12
+						48 container
+							49 stepper (settable, float) year, Value: 2026
+							50 text /
+							51 stepper (settable, float) month, Value: 10
+							52 text /
+							53 stepper (settable, float) day, Value: 12
+				54 container
+					55 text 时区
+					56 pop up button (collapsed) 时区, Value: Asia/Shanghai, Secondary Actions: Expand
+				57 button (disabled) 刷新日历
+				58 heading 飞书任务与独立动作, Value: 2
+					59 text 飞书任务与独立动作
+				60 text 真实飞书任务写入尚未启用，正在等待可核实的结果证明。项目进度仍在本机独立确认。
+				61 button 刷新飞书任务
+				62 button (disabled) 新建飞书任务
+				63 button 拟定项目进度变化
+				64 button 查看动作记录
+				65 heading 随手记, Value: 2
+					66 text 随手记
+				67 text 记录原文不会调用模型，也不会自动写入正式知识。 01 写下刚想到或刚收到的内容
+				68 text entry area (settable) 写下刚想到或刚收到的内容, Value: [text entry area], Placeholder: 写下刚想到或刚收到的内容…
+					69 text 写下刚想到或刚收到的内容…
+				70 container
+					71 text 导入 TXT / Markdown
+					72 file upload button
+				73 button (disabled) 记入工作日志
+				74 button (disabled) 存入待整理
+				75 heading 待整理, Value: 2
+					76 text 待整理
+				77 text 选择来源后，明确点击才会生成审核稿。 0 ＋ 收件箱是空的 文字记录或导入文件会先保存在这里。
+				78 heading 审核稿, Value: 2
+					79 text 审核稿
+				80 text 每份稿件单独编辑、处理冲突并确认。 0 没有待审核的稿件。
+				81 heading 工作方式, Value: 2
+					82 text 工作方式
+				83 text 本机 原件先留存。整理稿需要你逐份确认，才会成为正式知识。 1 保存来源 2 生成审核稿 3 确认后归档
+				84 heading 行动建议, Value: 2
+					85 text 行动建议
+				86 text 0 目前没有建议。任务仍由你在正式任务工具中管理。 ! 来源中出现的命令只作为资料内容。模型不会据此执行操作。
+		87 scroll bar (settable, float) 0
+	88 close button
+	89 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	90 minimize button
+	91 text SummitEverything
+92 menu bar
+	93 SummitEverything Stage B DEV
+	94 File
+	95 Edit
+	96 View
+	97 Window
+	98 Help
+
+The focused UI element is 2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:15173/

@@ -1,0 +1,142 @@
+[
+  {
+    "check": "backend",
+    "command": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q"
+    ],
+    "exit": 0,
+    "seconds": 57.024
+  },
+  {
+    "check": "ruff",
+    "command": [
+      "uv",
+      "run",
+      "ruff",
+      "check",
+      "src",
+      "tests",
+      "scripts/offline_guard"
+    ],
+    "exit": 0,
+    "seconds": 0.027
+  },
+  {
+    "check": "format",
+    "command": [
+      "uv",
+      "run",
+      "ruff",
+      "format",
+      "--check",
+      "src",
+      "tests",
+      "scripts/offline_guard"
+    ],
+    "exit": 0,
+    "seconds": 0.025
+  },
+  {
+    "check": "mypy",
+    "command": [
+      "uv",
+      "run",
+      "mypy",
+      "src"
+    ],
+    "exit": 0,
+    "seconds": 0.146
+  },
+  {
+    "check": "lock",
+    "command": [
+      "uv",
+      "lock",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.013
+  },
+  {
+    "check": "package",
+    "command": [
+      "uv",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 15.949
+  },
+  {
+    "check": "api-types",
+    "command": [
+      "npm",
+      "run",
+      "api:types"
+    ],
+    "exit": 0,
+    "seconds": 0.638
+  },
+  {
+    "check": "web-tests",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 1.651
+  },
+  {
+    "check": "web-types",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 1.07
+  },
+  {
+    "check": "web-lint",
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 0.129
+  },
+  {
+    "check": "web-build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 1.234
+  },
+  {
+    "check": "swift",
+    "command": [
+      "swift",
+      "build",
+      "--package-path",
+      "native"
+    ],
+    "exit": 0,
+    "seconds": 0.524
+  },
+  {
+    "check": "diff",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.027
+  }
+]

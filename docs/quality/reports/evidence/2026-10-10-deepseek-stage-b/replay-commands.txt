@@ -1,0 +1,23 @@
+# Commands actually executed for this evidence set (trial tree)
+# replay dir outside the repository: /tmp/summit-deepseek-stage-b-replay
+# guard: /tmp/summit-deepseek-stage-b-replay/guard/sitecustomize.py (blocks non-loopback sockets and macOS Keychain)
+
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_regressions.py -q -p no:cacheprovider
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_additional.py -q -p no:cacheprovider
+cp docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/SettingsView.review.test.tsx web/src/components/  # temporary, removed after run
+npm --prefix web test -- --run src/components/SettingsView.review.test.tsx
+
+# check battery (each captured in checks/NN-*.log with an EXIT= line)
+$ uv run pytest -q -p no:cacheprovider
+$ uv run ruff check src tests
+$ uv run ruff format --check src tests
+$ uv run mypy src
+$ uv lock --check
+$ git diff --check
+$ uv build
+$ npm --prefix web run api:types
+$ npm --prefix web test -- --run
+$ npm --prefix web run typecheck
+$ npm --prefix web run lint
+$ npm --prefix web run build
+$ swift build --package-path native

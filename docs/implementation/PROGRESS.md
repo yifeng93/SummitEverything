@@ -4,11 +4,11 @@
 
 ## 当前状态与下一步
 
-2026-10-10 Sol追加：原B实现已按用户授权保存为 `1fede419a49b76c2f82e392be2803597cedab1f2`，开发文档检查点 `4966a6824bcc98b065e754e2e7a27d3f94a1539c`。独立DEV评估发现P0=2/P1=10/P2=1；原后端190/前端36检查通过，独立反例10个后端和1个前端FAIL。正式固定SHA QA尚未开始；B不满足入口，源码未整合。下段及历史条目“没有固定SHA”是此次提交前记录。先按[新Luna提示词](../handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)修阻断、补实现和UI/原生证据，再固定新SHA正式QA；[报告及证据](../quality/reports/2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)保留FAIL与真实NOT_RUN。
+2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。当前准备固定源码并进入独立离线 QA，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
 
-阶段 A Fake-only 已收口。受测修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。隔离 worktree `codex/stage-b-real-providers` 中 Stage B 仍 DEV 进行中：已修 Sol 反例中的检索门禁、取消、配置绑定、登出竞态、workspace task/action 隔离和 callback 日志脱敏；新增限次合成模型 smoke 与 HTTP 响应体边界。有限真实 smoke 调用计数仍均为 0；凭据尚未由用户在安全本地入口提供。Feishu 真实 OAuth / material / calendar / task adapters、真实 user token Keychain 生命周期、原生候选证据、完整真实模型质量与独立 QA 未完成。用户确认 Feishu scope 可按需开通，当前阻塞是协议 / 映射证据而非授权意愿。Stage C 的真实业务读取和写入仍需逐项授权；M3–M5 未开始。候选固定 SHA 和最终自测见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
+已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
-授权更新（2026-10-10）：用户愿意通过本地安全入口提供 API keys，并已授权有限的 Feishu OAuth 接入与合成数据模型冒烟：最多一次 code exchange、必要时一次 refresh，DeepSeek chat / Model Studio embedding / rerank 各最多一次 synthetic request。执行前查官方现价并估算；提示词建议 CNY 5 为保守操作上限（不是用户指定预算，若无法界定在该额度内只询问更高上限）。这不授权读取真实材料、日历或 task，不授权将真实业务内容发送给模型，也不授权 task 写入。详细约束见[Sol 阶段 B 独立评估提示词](../handoff/PROMPT-STAGE-B-SOL-REVIEW.md)和[Luna 执行提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
+先固定新源码，再在源码库外精确 SHA checkout 做独立 QA；PASS 才能整合。历史报告不能代替本候选验收。
 
 ## 历史更新记录（按各条当时的固定版本理解）
 
@@ -28,7 +28,7 @@
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
-| B 真实适配 / 本地配置 | DEV 进行中（实现不完整） | NOT_RUN | 离线模型调用路径、单次合成 smoke 和安全响应边界部分完成；有限真实 smoke 仍0次。真实 Feishu OAuth / 读取 / 写入 adapter 与正式独立 QA 未完成 |
+| B 真实适配 / 本地配置 | DEV 完成待复核（实现已补齐，证据与真实门未完成） | NOT_RUN | 真实 Feishu HTTP adapter、统一 Keychain 槽、数据门、模型 deadline/业务错误与 client 释放已在试验工作区实现（后端 253 passed）；协议矩阵已从官方 `.md` 页面确证。真实 Feishu/模型请求次数仍 0；浏览器/原生/OS Keychain 故障与正式独立 QA 未完成 |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |

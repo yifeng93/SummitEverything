@@ -8,7 +8,13 @@
 
 阶段 A Fake-only 已收口，最终修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。第四轮截图的部分 UI 证明已撤回，不能只读旧 PASS 摘要；按[报告索引](reports/README.md)组合纠正、补验与修复复验结果。C18 的 409b FAIL 保留，在 309 修复行为上关闭。最新交接中的全量检查、前端补充检查和独立 UI 验证分别记录；未运行的检查保持 NOT_RUN。
 
-B/C 追加门见本文末尾；完整 C01–C31 和原 MUST 不变。B 是适配实现与离线验收，C 是用户授权下的真实 provider 场景，均不能替代 M3 完整业务、M4 安装包 / 五日或 M5 双机。
+B/C 追加门见本文末尾；完整 C01–C31 和原 MUST 不变。
+
+**2026-10-10 R4 补充：** Sol 对 R3 的最终只读复核实际复现 3 个问题（旧 callback 在 logout 后恢复授权、响应头未完成时整体 deadline 失效且返回后后台请求仍继续、退役 provider 借用其他租约接受无关新操作），R4 已全部整改并有 before/after 贯穿证据（对 R3 起点源码快照回放，逐文件 5/5 校验）。后端 374 passed（含 guard）、Web 42 tests。**改动未提交，无新固定源码 SHA；所有独立 QA 项仍为 NOT_RUN。** R03 标准未变。
+
+**2026-10-10 R3 补充：** R2 自测通过后经 Sol 复核发现 5 个 P1 反例，R3 已全部整改（授权代次/refresh 协调、严格 OAuth 响应、完整操作生命周期租约、应用身份与 user 槽隔离、可取消整体 deadline），每项有 before/after 贯穿集成证据，后端 351 passed（含 guard）、Web 42 tests。**改动未提交，无新固定源码 SHA；所有独立 QA 项仍为 NOT_RUN。** R03 标准未变。B 是适配实现与离线验收，C 是用户授权下的真实 provider 场景，均不能替代 M3 完整业务、M4 安装包 / 五日或 M5 双机。
+
+**2026-10-10 DeepSeek Stage B trial 补充：** 本轮在独立试验工作区（分支 `codex/deepseek-stage-b-trial`，起点固定文档提交 `0a1db5d72e6ac11184d28e65dea3ba008762ba43`）补齐真实 Feishu HTTP adapter、统一 Keychain 槽、服务端数据门以及模型 deadline / 业务错误 / client 释放；随后 R2 整改 Sol 复核发现的 5 个 P1 与 1 个 P2（真实任务写独立门、应用身份贯通服务层、官方主日历形状、设置变更到达执行路径、日历截断如实上报、整体 deadline 完整生命周期）并修正状态与来源归属。**改动未提交**，因此没有新的固定源码 SHA；B01–B05 的「本轮整改完成待 Sol 复核」只描述 DEV 状态，**所有独立 QA 项仍为 NOT_RUN**，不得据此宣告 B 通过。R03 的质量与独立 QA 标准保持原文不变。
 
 ## 验收准备
 
@@ -155,18 +161,18 @@ QA 提交链：409b 初验 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0` → 脱敏
 
 PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main。独立 checkout 对该 SHA 核验：修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199` 是祖先；`src/tests/web/native` 与修复源码树一致；初验和修复复验报告、测试 harness、screenshots 及 evidence manifest 均已进入 main，manifest 全条目重算匹配。此合并后核验未重跑整体自动矩阵；固定候选 UI 修复的组件测试、typecheck 和 Web build 在 PR 前均退出 0。
 
-## 阶段 B / C 追加门（尚未执行）
+## 阶段 B / C 追加门（离线收口候选）
 
-本节细化真实适配与受控真实验收，不替换 C01–C31、不降低原 MUST。DEV 代码修复、自测与独立 QA 状态分开记录；候选独立 QA 尚未开始，不能仅凭 DEV 检查把下表改成 PASS。完整步骤与依赖见 [B/C 提示词](../handoff/PROMPT-STAGE-B-C-LUNA.md)。
+本节细化真实适配与受控真实验收，不替换 C01–C31、不降低原 MUST。DEV 代码修复、自测与独立 QA 状态分开记录；当前独立 QA pending；不能凭 DEV 检查改成 PASS。精确 SHA、独立 checkout 与证据见最新交接。
 
 | ID | 阶段 / 当前结果 | 可观察、可复验的退出标准 |
 |---|---|---|
-| B01 | DEV 部分 / 独立 QA NOT_RUN | 已记录 DeepSeek / Model Studio 官方映射、用户提供的 Feishu tenant/user scopes 和管理员可授予权限。官方 LarkSuite SDK 源码确认 OAuth v2 token 路径与 JSON request/response 字段；Feishu token 官方页未返回可读正文，token 生命周期 / revoke、数据 endpoint scopes、材料 / 日历 / task 字段、时间语义及结果核实证据仍待核验。不能证实的能力必须明确阻断 |
-| B02 | DEV 部分 / 独立 QA NOT_RUN | profile 设置、原子更新、Keychain item 的 profile/provider/account 摘要隔离与 Web 设置 UI 有实现；新保存账户绑定有 API/UI 回归。`KeychainCredentialStore` 通过 5 项 MemorySecretBackend 测试，但仍未接入真实 Feishu 服务。此轮未录入用户密钥；原生候选/Keychain 拒绝、锁定、重启和多 profile OS 验收 NOT_RUN |
-| B03 | Feishu DEV 不完整 / 独立 QA NOT_RUN | Fake token lifecycle 有离线覆盖；真实 OAuth adapter、user identity/scope、持久 Keychain service wiring、material/calendar/task HTTP adapters 均未实现。callback query access-log 脱敏有单测；真实 callback/日志浏览器流程 NOT_RUN。未证实日期/清空/完成和结果核实时对应 task 能力继续 disabled |
-| B04 | DEV 部分 / 独立 QA NOT_RUN | stub-tested LLM / embedding / rerank adapters 和明确操作接线已存在；设置的真实业务模型调用现被服务端阻断。新增各一次固定合成 payload 的单独 smoke 路由、profile 级原子限次账本、有界 HTTP 和错误处理，真实调用计数为0。原子索引、资格/stale/取消回归仍有离线覆盖；真实维度、服务质量、账单和 R03 用户评定 NOT_RUN |
-| B05 | DEV 完成部分 / 独立 QA NOT_RUN | 修复候选源码 SHA `7dc7114595704f34ba386c96324dffa77d529ba4`。后端 213、Web 39 与完整静态/构建检查通过。隔离浏览器见过合成 workspace 的设置及禁用 smoke 控件，但截图/console/network manifest 未归档；原生窗口加载另一 QA worktree，不作为候选证据，native NOT_RUN。完整 DEV 细节见 [Luna Stage B DEV](reports/2026-10-10-STAGE-B-LUNA-DEV.md) |
-| B06 | QA / 整合 / NOT_RUN | 当前代码只有 DEV 修复和自测；没有独立代码审查/固定 SHA QA报告，也没有 PR / main 合并。只有满足剩余 B 实现与协议/证据门并通过独立 QA 后才整合 |
+| B01 | DEV 经复核 / 离线 QA pending | 官方飞书文档可以 `.md` 后缀读取原始 Markdown，authorize、OAuth v2/v3 token 与 refresh 轮换、tenant token、用户身份、妙记搜索/逐字稿/产物、日历日程、task 读/建/改的 endpoint、token 类型、scope、分页、时间与错误码已逐条写入[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)（核对日期 2026-10-10）。仍未知并明确阻断：账号侧 scope 可用性、逐字稿二进制 content-type、按 client_token 证明丢失写结果的 endpoint。DeepSeek / Model Studio 映射与价格同表记录 |
+| B02 | DEV 经复核 / 离线 QA pending | profile 设置、原子更新与 Web 设置 UI 有实现。Feishu app secret 与 user token 现在共用同一 vault 命名空间并以 app_id 为账户标识（`VaultCredentialStore`），设置 UI 写入的槽就是 adapter 读取的槽；离线测试覆盖轮换、登出、profile/app 隔离、损坏值与同命名空间。此轮未录入任何真实密钥；原生候选与 OS Keychain 拒绝/锁定/重启、多 profile 验收 NOT_RUN |
+| B03 | DEV 经复核 / 离线 QA pending；真实请求 0 | 真实 `FeishuHttpProvider` 已实现并接线：应用身份优先，仅妙记搜索与任务列表要求 user token；authorize/exchange/refresh、妙记 metadata 分页、选中逐字稿下载（artifacts 回退）、日历显式区间、task 读/建/改均有 `httpx.MockTransport` 反例。真实数据路由由 `feishu.real_data_enabled` 服务端门控（默认 409 `stage_c_authorization_required`）。task 写线映射已确证，但因无独立结果证明保持 disabled，unknown 不重发、不猜成功。真实 OAuth 与实际读取仍 NOT_RUN |
+| B04 | DEV 经复核 / 离线 QA pending | stub-tested LLM / embedding / rerank adapters 接入明确动作，真实业务调用仍服务端禁用；另有各一次固定合成 payload 的单独 smoke 路由与 profile 级原子限次账本，计数 0。新增整体 deadline、HTTP 200 业务错误拒绝与 `QueryService.close()` 操作级 client 释放。SB-01/02 外发资格与发布前复核、SB-03 取消、SB-04 有界候选、SB-10 状态一致、SB-11 有界读取均有产品回归。真实维度、服务质量、账单和 R03 用户评定 NOT_RUN |
+| B05 | DEV 部分 / 独立 QA NOT_RUN | 上一轮固定候选 `7dc7114` 后端 213 / Web 39 通过。试验树第一轮后端 253 / Web 39，R2 整改后后端 **305** / Web **42**；静态、打包、构建检查见 [R2 DEV 报告](reports/2026-10-10-DEEPSEEK-STAGE-B-DEV-R2.md)。**改动未提交**，无新固定源码 SHA；浏览器与原生本轮 NOT_RUN。证据在 `reports/evidence/2026-10-10-deepseek-stage-b/`（R1，22 项）与 `reports/evidence/2026-10-10-deepseek-stage-b-r2/`（R2，22 项） |
+| B06 | QA / 整合 / NOT_RUN | 本轮改动仍未提交；没有独立代码审查 / 固定 SHA QA 报告，也没有 PR / main 合并。R2 已整改 Sol 复核发现的全部 5 个 P1 与 1 个 P2 并留证；Sol 需先接受改动并固定新源码 SHA，再在源码库外独立 checkout 做离线正式 QA |
 | R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
 | R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
 | R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
@@ -176,3 +182,11 @@ PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main
 范围外的 DMG、五日、双机及 M3–M5 依原矩阵单独判断。资源已准备不是授权或 PASS；没有执行或未获授权的项保留 NOT_RUN / BLOCKED。P0/P1 与阻断 MUST 的缺陷不能带入下一阶段，P2 不得隐瞒或自行降级。
 
 R03 之外的有限合成连接 smoke 已由用户于 2026-10-10 另行授权：一次 Feishu OAuth code exchange、必要时一次 refresh，以及 DeepSeek chat / Model Studio embedding / rerank 各最多一次短合成请求。它只记录受限连接、协议、用量与实际费用，不能替代本行真实模型质量、预定样例、用户评定或独立 QA。执行前查当日官方价格；CNY 5 是提示词建议的保守操作上限，不是用户指定预算，超出可可靠界定范围时暂停付费调用并只询问额度。
+
+### 2026-10-11 收口范围说明
+
+本轮用户选择离线源码修复、固定 SHA 独立 QA 后整合；真实 provider、OS Keychain、DMG 和真实质量不进入本轮 PASS。B01–B04 按离线协议/实现验证，B05 包含实际浏览器/原生开发壳与合成 credential 故障，B06 为独立 checkout 对精确 SHA 的离线 QA 与整合。原 C01–C31、R03 真实模型质量及全 v1 MUST 均保持；本次不把这些 NOT_RUN 降为可省略。
+
+额外必验失败路径：DNS 暂停取消后不得继续发 HTTP；TLS 握手未完成也关闭 TCP；同 client 请求 A 超时不取消 B；退役准入原子；真实 pycares bytes 地址不重新进入系统 DNS；不安全 HTTPX mount 发出请求前拒绝；完整 JSON wire 计入上限；压缩响应在解压前拒绝；Real 任务写 UI 与后端拒绝一致。测试保留真实内部实现，外部边界只用 HTTP 合成远端和 MemorySecretBackend。原归档 harness 的构造死锁/原因字符串差异与历史 FAIL 保留，修正版不能覆盖原件。
+
+UI附加反例：Real app_configured/identity=app/authorized=false时日历可请求本机API（数据授权门由服务端继续把守），搜索仍要求user；真实authorize URL不得交Fake callback helper，必须显示官方安全链接和本机状态刷新，不能通过刷新旧authorized状态宣称本轮授权成功。原生开发壳编译/窗口与外部系统浏览器实际连接分开，后者NOT_RUN。

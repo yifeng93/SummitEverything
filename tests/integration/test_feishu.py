@@ -52,8 +52,12 @@ def test_fake_default_authorization_and_selected_only_import(tmp_path: Path) -> 
     assert response.json() == {
         "mode": "fake",
         "authorized": False,
+        "app_configured": False,
+        "identity": "app",
         "token_type": "user",
         "scopes": [],
+        "user_identity_verified": False,
+        "credential_error": None,
     }
     authorize(c)
     first = c.get(PREFIX + "/materials", params={"limit": 1}).json()

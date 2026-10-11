@@ -1,47 +1,18 @@
 # 最新实现交接
 
-## 2026-10-10 Luna Stage B follow-up（当前）
+## 2026-10-11 Stage B 离线收口候选
 
-- **固定源码候选：** `7dc7114595704f34ba386c96324dffa77d529ba4`，分支 `codex/stage-b-real-providers`，隔离 checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`。该 SHA 精确固定本轮产品源码和测试；交接 / 接受标准 / 执行账本的文档 checkpoint 是其后的独立文档提交。不要把 DEV 自测写成独立 QA。
-- **Git 发布 / 清理：** 本轮源码与文档提交已 fast-forward 推送到 `origin/codex/stage-b-real-providers`；没有 PR 或 main 合并。当前唯一活跃 feature branch 是这条 Stage B 分支。清除了已不存在的 `ssh` remote 所留下、且已包含于 main 的本地 `ssh/main` 跟踪引用；其他 detached worktree 均是历史 QA 快照，保留以维护证据链。
-- **本轮修复：** 修复 Sol SB-01/02 候选外发资格与发布前资格/版本复核；SB-03 阶段取消；SB-04 有界 rerank 候选；SB-05/06 按 workspace/profile/config 隔离 Feishu 生命周期并让 task/action 使用当前 workspace service；SB-07/08 logout、callback、refresh 并发防旧 token 写回；SB-09 保存并绑定 Model Studio account；SB-10 阻止真实业务模型请求而保留限额合成 smoke；SB-11 增加流式 body cap、超时、无重试/重定向、错误脱敏；SB-12 恢复原 R03 质量验收；SB-13 更新矩阵、账本与报告历史纠正。每项均为 DEV 自测，尚未独立复验。
-- **有限 smoke 实现状态：** DeepSeek chat、Model Studio embedding、rerank 有独立固定合成 payload endpoint 与 app-profile 原子次数账本（每类最多1次），业务路径服务端仍为 disabled。Feishu OAuth smoke endpoint 未实现。真实调用计数为0；用户未在此候选输入密钥；未发生本轮外部模型或 Feishu 请求。不得将预授权解释为已调用或 B/C PASS。
-- **自动检查：** `uv run pytest -q` 213 passed；`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv lock --check`、`git diff --check`、`uv build`、`npm --prefix web run api:types`、Web 39 tests / typecheck / lint / build、`swift build --package-path native` 均退出 0。保留 1 条 Starlette/httpx deprecation 与 3 条已有 React `set-state-in-effect` lint warnings。
-- **手工证据：** 开发浏览器使用隔离合成工作库，观察到设置页 smoke 计数为每项剩1且三按钮因 Fake / 未配置被禁用。截图、完整 DevTools console/network/HAR 和实际网络 manifest 没有归档；本轮浏览器只访问本机。原生 SwiftUI 窗口被发现实际加载另一个 QA worktree 的 `127.0.0.1:5173`，不是当前候选，故 native replay 明确 **NOT_RUN**；没有继续操作该窗口。原生编译成功只证明可构建。
-- **Stage B 结论：** 未完成 / 未通过。真实 Feishu OAuth、identity/scope、token Keychain service wiring、material/calendar/task HTTP adapters / 字段与结果核实仍缺协议证据和实现；B01–B04 不完整，B05 证据部分缺失。R03 真实模型质量仍 NOT_RUN。没有独立正式 B QA、PR、merge 或 main 树核验；保持 QA pending，待 B 实现和证据完整后由独立新上下文 checkout 精确源码 SHA 验收。继续保留原 C01–C31 与产品 MUST。
-- **报告与外门：** [Luna Stage B DEV 报告](../quality/reports/2026-10-10-STAGE-B-LUNA-DEV.md) 记录修复链、命令、证据边界和未完成项；[PROGRESS](../implementation/PROGRESS.md)、[ACCEPTANCE](../quality/ACCEPTANCE.md)、[任务计划](../../tasks/plan.md)、[TODO](../../tasks/todo.md)已同步。M3–M5、DMG、五日、双机均未开始。
+2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。当前准备固定源码并进入独立离线 QA，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
 
-## 2026-10-10 Sol 独立 DEV 评估追加（以本条解释后文旧候选状态）
+- 起点文档提交：`0a1db5d72e6ac11184d28e65dea3ba008762ba43`，上一源码 `7dc7114595704f34ba386c96324dffa77d529ba4`；两者产品源码无差异。
+- 当前修复工作区：`codex/deepseek-stage-b-trial`；新增源码 SHA 将在提交后记录。main 仍未改动。
+- [Sol DEV 收口报告](../quality/reports/2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md)、[ADR 0007](../decisions/0007-request-owned-provider-transport.md)、[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)。
+- 独立 QA 使用固定源码 SHA、独立环境、外网/DNS/Keychain guard；允许替代 SecretBackend 与外部 HTTP，保留 route/service/存储/协调器/租约/索引真实实现。
+- 需覆盖：资格/发布前复核、取消后不得开始后续调用、完整请求/响应限额、DNS/TCP/TLS/头/正文超时与无后台请求、并发不误伤、logout/callback/refresh/配置重建竞态、scope/格式/分页/截断、凭据拒绝/损坏/重启、真实写门、Fake 回归及实际浏览器/原生。
+- 默认 Fake；真实 Feishu 数据读取为显式 `real_data_enabled=false`，真实任务写恒禁用 `result_proof_unavailable`，真实模型业务由服务端拒绝。项目进度仍需本地独立确认。
+- user-info `user_identity_verified=false`；OS Keychain、真实 scope/数据/模型质量、DMG、M3–M5、五日和双机均 NOT_RUN。
 
-用户在评估中授权核验后提交、推送。原实现已原样固定为 `1fede419a49b76c2f82e392be2803597cedab1f2`，原开发文档为 `4966a6824bcc98b065e754e2e7a27d3f94a1539c`；后文“dirty / 没有候选提交”是当时记录，不能继续当当前 Git 状态。产品代码未由评定者改写；390 项快照指纹与提交后文件一致。
-
-本轮是**独立 DEV 候选评估 / 正式固定 SHA QA 尚未开始**。原矩阵后端190、前端36通过，但独立反例后端10/前端1失败；未关闭P0=2、P1=10、P2=1。真实Feishu未实现、OS Keychain/实际浏览器原生证据欠缺；不满足正式QA入口，不给B PASS，不创建PR或合并main。候选R03将质量门替换成有限smoke的改写被评定为P1，原质量标准仍须保留，不能据该改写缩减验收。
-
-完整[评估报告](../quality/reports/2026-10-10-STAGE-B-SOL-DEV-REVIEW.md)、[反例证据](../quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/README.md)和[下一位Luna完整执行提示词](PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md)。本轮真实服务/用户Keychain/真实材料操作均0；有限smoke授权未消耗。先修阻断和完成B，再固定新SHA并安排独立正式QA；本评估不能代替该QA。
-
-## 当前交接基线（2026-10-10，阶段 A 已收口）
-
-- **受测修复代码：** `30903c4cdf73855af71a201e3edea6c535ee8199`；原阶段 A 代码为 `32da67e9c0280e3dae18fd374e30c925565b0b82`。
-- **收口 main：** `117086eb2075726730cd7aa62ea0b61498e96f0c`，包含 PR #7 修复 / QA 整合 `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 和 PR #8 文档更新。后续本轮整理只修改文档和 Git 引用；实际接手时记录整理后的完整 main SHA，并确认产品代码树与 `30903c4` 一致。
-- **结论：** M1 与 M2.1–M2.3 阶段 A 在 Fake-only 范围完成独立验收。409b 的 C18 P2 保留为历史 FAIL；在 30903c4 上独立复验关闭。C16 崩溃 / 重启 / 并发、C18 丢回执恢复、C23 无成功证明保持 unknown 的必需 UI 证据已补齐。旧重复 / 错配截图与无法追溯脚本指纹不作为证明。
-- **独立证据：** [恢复路径初验](../quality/reports/2026-10-10-M2-stage-a-recovery-ui-supplement.md)、[C18 修复复验](../quality/reports/2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md)、[报告索引](../quality/reports/README.md)。初验 / 复验 manifest 分别 47 / 26 项匹配。
-- **检查范围：** 原受测代码已有后端 142 / 前端 32 项及完整检查记录；恢复 UI 独立 QA 的自动检查为 NOT_RUN。技术评定者在最终 main 的独立临时 checkout 复跑前端 33 项、typecheck、Web build，通过；没有把它写成整体后端重新验收。1 条历史后端弃用提示和 3 条历史 lint warning 仍保留。
-- **下一阶段：** [B/C 执行提示词](PROMPT-STAGE-B-C-LUNA.md)。B 是真实 adapter、配置 / Keychain 和离线独立 QA；C 必须先通过 B，再经逐项授权进行受控真实验收。B/C 尚未开始，M3–M5 尚未开始。
-- **当前缺失：** 真实 Feishu HTTP / OAuth / user scope、真实模型 / embedding / rerank 与生产凭据配置 / Keychain adapter。资源已准备不表示这些实现存在；真实协议、真实材料和模型质量、DMG、五日和双机门仍 NOT_RUN。
-- **权限：** 通用开发、自测、独立 QA 和源码整合可进行；真实登录 / 读取、材料发送、付费调用、真实 task 写入需列目的、数据、目标、范围、费用，并由用户执行前逐项确认。秘密只经安全本地入口 / Keychain 录入。
-- **工作环境：** 主 checkout 使用 main；旧分支归档引用、本地 Git bundle 和证据 worktree 处置见 [整理记录](../implementation/2026-10-10-STAGE-A-CLEANUP.md)。不要复用旧 QA profile、凭据或服务。
-
-## 阶段 B 早期实现记录（2026-10-10；由上方 Luna follow-up 更新）
-
-- **隔离位置：** `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`，分支 `codex/stage-b-real-providers`。该 checkout 以 `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d` 为 HEAD；本轮改动仍在工作树，尚无候选提交 SHA。共享 main checkout 未改。
-- **用户补充的 Feishu 配置事实：** 用户是自建应用管理员，可按需开放权限；已提供 tenant scopes（`calendar:*`、`minutes:*`、`docs:document.content:read`、`docx:document*`、`task:*` 读写等）和 user scopes（`calendar:calendar:readonly`、`minutes:minutes:readonly`、`task:task` 等）。因此 scope 开通能力不是阻塞。注册 callback `http://localhost:8765/callback` 已加入本地设置校验和 Fake 回调路由。App ID 和账户专属 URL 不写入源码；秘密均为遮蔽文本。本轮未访问账户。
-- **完成 / 部分实现：** 有本机 profile 非秘密设置、原子更新、Fake 默认、Keychain 专用 macOS backend / fail-closed 边界、profile/provider/account-label 摘要隔离、设置 WebUI、DeepSeek / Model Studio HTTP adapters 和 grounded-answer 注入接口。模型调用现接入明确的整理、索引及问答路径；Model Studio 使用受限的阿里云 HTTPS host/path 配置，embedding endpoint 纳入 fingerprint。浏览器复演用合成 Keychain 项并在结束时删除。
-- **未接通 / 阻断：** Feishu real OAuth/material/calendar/task adapters are not implemented. A standalone `KeychainCredentialStore` now saves user token pairs and app secret through the configured secure backend; five offline tests cover restart, token rotation, logout, profile/App ID isolation and corrupted-value handling. It is not service-wired, so Fake token refresh-before-expiry, rotation, failed refresh and logout remain the only exercised API lifecycle. Official LarkSuite SDK source now pins the v2 token route and JSON request/response fields, but endpoint scopes, authorize semantics, expiry and revoke behavior remain unresolved. The user is an app administrator and can grant scopes; permission availability is not a blocker. Selected-content retrieval, calendar mapping, task date semantics and lost-response reconciliation remain unavailable. Model adapters are wired to explicit operation paths, but real account use, cost behavior and failure lifecycle are not validated. Do not describe B as complete.
-- **Observed manual replay:** Isolated WebUI settings page saved and removed a synthetic `deepseek` credential through the app API and macOS Keychain; secret was not echoed in the page. A separate isolated Fake Feishu replay covered authorization, disconnect (DELETE 204), and remaining unauthorized after reload; steps and observed statuses are recorded in the [replay report](../quality/reports/evidence/2026-10-10-stage-b-browser/replay.md). No real provider request was made. The CUA screenshot was not archived and full DevTools console/HAR evidence is missing; native settings and Keychain failure paths remain untested.
-- **QA / integration:** Candidate is not fixed; independent code review, fixed-SHA QA, PR, and main integration have not started. B05/B06 remain NOT_RUN. The narrow OAuth / synthetic-model smoke is authorized but NOT_RUN; all broader C operations remain NOT_RUN and unauthorized.
-- **授权更新（2026-10-10）：** 用户明确愿意通过本地安全设置提供 API keys，并授权有限冒烟：Feishu OAuth code exchange 最多一次、必要时 refresh 一次；DeepSeek chat、Model Studio embedding、rerank 各最多一次合成输入请求。执行前核对官方当前报价；当前提示词建议 CNY 5 为保守操作上限（不是用户指定预算，若无法界定在上限内只询问更高额度）。此范围不含真实材料 / 日历 / task 读取、不向模型发送业务正文、也不含任何任务写入。正式独立 B QA 仍未开始；该有限冒烟可在实现具备后先行验证，但任何修复仍回归 B QA。
-- **Next:** wire the tested user-token store into a real Feishu OAuth lifecycle with fixed endpoint evidence, complete read endpoint mappings and remaining model failure/lifecycle coverage, collect native-shell/browser evidence, then obtain independent review and fixed-SHA QA only when the B candidate is implementation-complete. Atomic embedding generation switching is covered by offline tests. If official Feishu endpoint proof remains unavailable, keep that capability disabled and report B as incomplete.
-
+已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
 ## 历史交接：M2 阶段 A — 以下 SHA / 检查只对应当时版本
 

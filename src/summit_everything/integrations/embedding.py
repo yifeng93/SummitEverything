@@ -9,7 +9,8 @@ from collections.abc import Sequence
 
 import httpx
 
-from summit_everything.integrations.http_boundary import bounded_json_post
+from summit_everything.integrations.http_boundary import bounded_json_post, reject_business_error
+from summit_everything.integrations.transport import create_http_client
 
 
 def tokenize(text: str) -> list[str]:
@@ -67,7 +68,7 @@ class ModelStudioEmbedding:
         self._api_key = api_key
         self.endpoint = base_url.rstrip("/") + "/embeddings"
         self._owns_client = client is None
-        self._client = client or httpx.Client(timeout=30.0, follow_redirects=False)
+        self._client = client or create_http_client()
 
     def close(self) -> None:
         if self._owns_client:
@@ -98,7 +99,9 @@ class ModelStudioEmbedding:
                     "dimensions": self.dimensions,
                 },
                 max_response_bytes=8_000_000,
+                deadline_seconds=30.0,
             )
+            reject_business_error(wire)
             data = wire["data"]
             if wire.get("model") != self.model or not isinstance(data, list):
                 raise ValueError("provider returned an invalid response")

@@ -1,0 +1,106 @@
+# branch / HEAD / dirty state (no commit was made)
+codex/deepseek-stage-b-trial
+0a1db5d72e6ac11184d28e65dea3ba008762ba43
+changed paths: 49
+
+# git status --short
+ M README.md
+ M docs/README.md
+ M docs/architecture/PROVIDER-PROTOCOL-MATRIX.md
+ M docs/contracts/API-v1.md
+ M docs/handoff/LATEST-IMPLEMENTATION.md
+ M docs/handoff/PROMPT-STAGE-B-C-LUNA.md
+ M docs/handoff/PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md
+ M docs/handoff/PROMPT-STAGE-B-SOL-REVIEW.md
+ M docs/implementation/PROGRESS.md
+ M docs/product/PRODUCT-SPEC.md
+ M docs/quality/ACCEPTANCE.md
+ M docs/quality/reports/README.md
+ M src/summit_everything/api/app.py
+ M src/summit_everything/api/routes/actions.py
+ M src/summit_everything/intake/actions.py
+ M src/summit_everything/integrations/embedding.py
+ M src/summit_everything/integrations/feishu/fake.py
+ M src/summit_everything/integrations/feishu/provider.py
+ M src/summit_everything/integrations/feishu/service.py
+ M src/summit_everything/integrations/feishu/tasks.py
+ M src/summit_everything/integrations/http_boundary.py
+ M src/summit_everything/integrations/llm.py
+ M src/summit_everything/integrations/rerank.py
+ M src/summit_everything/integrations/settings.py
+ M src/summit_everything/retrieval/query.py
+ M tasks/plan.md
+ M tasks/todo.md
+ M tests/integration/test_feishu.py
+ M tests/integration/test_stage_b_regressions.py
+ M tests/unit/test_feishu_credentials.py
+ M web/openapi.json
+ M web/src/api/generated.ts
+ M web/src/components/FeishuPanel.test.tsx
+ M web/src/components/FeishuPanel.tsx
+?? docs/decisions/0006-feishu-identity-and-credential-slots.md
+?? docs/handoff/DEEPSEEK-STAGE-B.md
+?? docs/quality/reports/2026-10-10-DEEPSEEK-STAGE-B-DEV-R2.md
+?? docs/quality/reports/2026-10-10-DEEPSEEK-STAGE-B-DEV-R3.md
+?? docs/quality/reports/2026-10-11-DEEPSEEK-STAGE-B-DEV.md
+?? docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r2/
+?? docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r3/
+?? docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/
+?? src/summit_everything/integrations/feishu/http.py
+?? tests/integration/test_feishu_real_gate.py
+?? tests/integration/test_stage_b_r2_regressions.py
+?? tests/integration/test_stage_b_r3_loopback.py
+?? tests/integration/test_stage_b_r3_regressions.py
+?? tests/unit/test_feishu_http.py
+?? tests/unit/test_http_boundary.py
+
+# git diff --stat
+ README.md                                          |  14 +-
+ docs/README.md                                     |   5 +-
+ docs/architecture/PROVIDER-PROTOCOL-MATRIX.md      |  44 ++-
+ docs/contracts/API-v1.md                           |  49 ++-
+ docs/handoff/LATEST-IMPLEMENTATION.md              |  19 +-
+ docs/handoff/PROMPT-STAGE-B-C-LUNA.md              |   2 +
+ .../PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md        |   2 +
+ docs/handoff/PROMPT-STAGE-B-SOL-REVIEW.md          |   2 +
+ docs/implementation/PROGRESS.md                    |  10 +-
+ docs/product/PRODUCT-SPEC.md                       |   8 +
+ docs/quality/ACCEPTANCE.md                         |  18 +-
+ docs/quality/reports/README.md                     |  16 +-
+ src/summit_everything/api/app.py                   | 128 +++++++-
+ src/summit_everything/api/routes/actions.py        |   9 +
+ src/summit_everything/intake/actions.py            |  25 +-
+ src/summit_everything/integrations/embedding.py    |   4 +-
+ src/summit_everything/integrations/feishu/fake.py  |  14 +-
+ .../integrations/feishu/provider.py                | 155 +++++++---
+ .../integrations/feishu/service.py                 | 284 ++++++++++++++---
+ src/summit_everything/integrations/feishu/tasks.py |  46 ++-
+ .../integrations/http_boundary.py                  | 339 ++++++++++++++++++++-
+ src/summit_everything/integrations/llm.py          |   4 +-
+ src/summit_everything/integrations/rerank.py       |   4 +-
+ src/summit_everything/integrations/settings.py     |  54 +++-
+ src/summit_everything/retrieval/query.py           |  15 +
+ tasks/plan.md                                      | 100 ++++--
+ tasks/todo.md                                      |  70 ++++-
+ tests/integration/test_feishu.py                   |   4 +
+ tests/integration/test_stage_b_regressions.py      |  60 ++++
+ tests/unit/test_feishu_credentials.py              |  72 ++++-
+ web/openapi.json                                   | 130 +++++++-
+ web/src/api/generated.ts                           |  71 ++++-
+ web/src/components/FeishuPanel.test.tsx            |  85 +++++-
+ web/src/components/FeishuPanel.tsx                 |   7 +-
+ 34 files changed, 1633 insertions(+), 236 deletions(-)
+
+# base-vs-last-candidate diff must stay documentation only
+ README.md                                          |  6 +-
+ docs/architecture/PROVIDER-PROTOCOL-MATRIX.md      | 16 +++--
+ docs/contracts/API-v1.md                           |  3 +-
+ docs/handoff/LATEST-IMPLEMENTATION.md              | 13 +++-
+ docs/implementation/PROGRESS.md                    | 17 ++---
+ docs/quality/ACCEPTANCE.md                         | 16 +++--
+ .../quality/reports/2026-10-10-STAGE-B-LUNA-DEV.md | 74 ++++++++++++++++++++++
+ .../reports/2026-10-10-STAGE-B-partial-DEV.md      |  4 ++
+ docs/quality/reports/README.md                     |  4 +-
+ tasks/plan.md                                      | 17 ++---
+ tasks/todo.md                                      | 22 +++----
+ 11 files changed, 147 insertions(+), 45 deletions(-)

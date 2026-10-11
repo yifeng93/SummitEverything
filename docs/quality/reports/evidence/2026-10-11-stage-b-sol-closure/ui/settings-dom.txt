@@ -1,0 +1,105 @@
+- complementary:
+  - generic: S
+  - navigation "主导航":
+    - button "今日": 今日
+    - button "日志与思考": 日志与思考
+    - button "项目与知识": 项目与知识
+    - button "知识问答": 知识问答
+    - button "设置" [active]: 设置
+  - generic: 仅本机运行
+  - button "S":
+    - generic: S
+- main:
+  - generic: 设置
+  - generic: 本机已保存
+  - button "打开设置": 罗
+  - generic: 本机 profile
+  - heading "设置" [level=1]
+  - paragraph: Provider 设置与密钥按当前工作库保存在这台设备。读取、保存和刷新设置不会连接外部服务。
+  - heading "Provider 选择" [level=2]
+  - generic: 离线模式
+  - generic: 运行模式
+  - combobox "运行模式":
+    - option "Fake · 离线" [selected]
+    - option "Real · 显式启用"
+  - generic: 整理模型
+  - combobox "整理模型":
+    - option "Fake · 离线" [selected]
+    - option "DeepSeek · deepseek-flash"
+  - generic: DeepSeek 账户标识
+  - textbox "DeepSeek 账户标识": default
+  - generic: Embedding
+  - combobox "Embedding":
+    - option "Fake · 离线" [selected]
+    - option "阿里云 Model Studio · qwen3.7-text-embedding"
+  - generic: Embedding Base URL
+  - textbox "Embedding Base URL": https://dashscope.aliyuncs.com/compatible-mode/v1
+  - generic: Rerank
+  - combobox "Rerank":
+    - option "Fake · 离线" [selected]
+    - option "阿里云 Model Studio · qwen3.7-text-rerank"
+  - generic: Rerank API Base URL
+  - textbox "Rerank API Base URL": https://dashscope.aliyuncs.com/api/v1
+  - generic: Model Studio 账户标识
+  - textbox "Model Studio 账户标识": default
+  - generic: Model Studio 区域
+  - strong: 中国大陆（当前已核对 endpoint）
+  - generic: Feishu App ID
+  - textbox "Feishu App ID"
+  - generic: 注册 callback URI
+  - textbox "注册 callback URI":
+    - /placeholder: http://127.0.0.1:5173/api/v1/integrations/feishu/callback
+  - paragraph: 飞书 callback 必须与开发者后台完全一致且使用本机 loopback。Model Studio 只接受其 HTTPS 域名。请勿在聊天中发送密钥。Embedding 参数变化需要显式查看索引计划。
+  - button "保存 provider 设置"
+  - heading "本机密钥" [level=2]
+  - generic: 钥匙串不可用
+  - paragraph: 当前运行环境无法访问 macOS 钥匙串。真实模式保存会失败关闭，不会写入文件或内存。
+  - generic: Provider
+  - combobox "Provider":
+    - option "飞书应用密钥 · 未配置"
+    - option "DeepSeek API Key · 未配置" [selected]
+    - option "阿里云 Model Studio API Key · 未配置"
+  - generic: 当前账户标识
+  - strong: default
+  - generic: 密钥
+  - textbox "密钥"
+  - paragraph: 密钥只提交给本机 API 与系统钥匙串；不会进入工作库、配置文件或浏览器持久存储。
+  - button "保存到钥匙串" [disabled]
+  - button "删除本机密钥" [disabled]
+  - region "能力状态":
+    - heading "能力状态" [level=2]
+    - generic: 当前不可对外请求
+    - strong: 读取已选择的飞书材料
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+    - strong: 读取飞书日历
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+    - strong: 读取飞书任务
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+    - strong: 创建或更改飞书任务
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+    - strong: 整理与问答模型
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+    - strong: 知识索引向量化
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+    - strong: 检索结果排序
+    - generic: 未启用
+    - generic: 当前使用离线 Fake；此路径不会访问真实 provider。
+  - region "受限合成连接检查":
+    - heading "受限合成连接检查" [level=2]
+    - generic: 每项最多一次
+    - paragraph: 固定短合成 payload，仅检查接口连通与响应结构；失败、超时和未知结果也占用次数，不会自动重试。DeepSeek 最多输出 64 tokens；按当前官方高峰价估算，三项合计低于 ¥0.01（实际账单待服务方核对）。CNY 5 是提示词建议上限，不是用户设定预算。
+    - button "DeepSeek Chat（剩余 1）" [disabled]
+    - button "Embedding（剩余 1）" [disabled]
+    - button "Rerank（剩余 1）" [disabled]
+    - generic: 调用前先保存 Real/provider 设置并通过本机钥匙串录入密钥。检查不会发送工作库材料。
+  - generic: 当前工作库
+  - strong: Stage B 合成验证
+  - generic: 运行方式
+  - strong: 本机 API + WebUI
+  - button "切换工作库"

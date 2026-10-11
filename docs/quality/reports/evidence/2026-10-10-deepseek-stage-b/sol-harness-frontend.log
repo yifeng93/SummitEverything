@@ -1,0 +1,14 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.review.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/web
+
+ ✓ src/components/SettingsView.review.test.tsx (1 test) 83ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  23:10:26
+   Duration  429ms (environment 60%, tests 22%, import 10%, transform 7%)
+

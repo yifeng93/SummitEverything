@@ -7,7 +7,8 @@ import math
 import httpx
 
 from summit_everything.integrations.embedding import tokenize
-from summit_everything.integrations.http_boundary import bounded_json_post
+from summit_everything.integrations.http_boundary import bounded_json_post, reject_business_error
+from summit_everything.integrations.transport import create_http_client
 
 
 class FakeReranker:
@@ -40,7 +41,7 @@ class ModelStudioReranker:
         self._api_key = api_key
         self.endpoint = base_url.rstrip("/") + "/services/rerank/text-rerank/text-rerank"
         self._owns_client = client is None
-        self._client = client or httpx.Client(timeout=30.0, follow_redirects=False)
+        self._client = client or create_http_client()
 
     def close(self) -> None:
         if self._owns_client:
@@ -74,7 +75,10 @@ class ModelStudioReranker:
                     "parameters": {"return_documents": False},
                 },
                 max_response_bytes=8_000_000,
+                max_request_bytes=self.max_request_bytes,
+                deadline_seconds=30.0,
             )
+            reject_business_error(wire)
             results = wire["output"]["results"]
             if not isinstance(results, list) or len(results) != len(texts):
                 raise ValueError("provider returned incomplete rerank results")

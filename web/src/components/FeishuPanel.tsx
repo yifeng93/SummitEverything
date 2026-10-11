@@ -9,9 +9,10 @@ type Imports = components['schemas']['ImportResult']
 type Authorization = components['schemas']['AuthorizationStart']
 const prefix = '/integrations/feishu'
 
-export function FeishuPanel({ onImported }: { onImported: () => Promise<void> }) {
+export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<void>; onMode?: (mode: "fake" | "real" | null) => void }) {
   const [status, setStatus] = useState<Status | null>(null)
   const [error, setError] = useState('')
+  const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
   const [authProblem, setAuthProblem] = useState<'expired' | 'scope' | null>(null)
   const [busy, setBusy] = useState(false)
   const [query, setQuery] = useState('')
@@ -29,10 +30,10 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
 
   useEffect(() => {
     let alive = true
-    api.get<Status>(prefix + '/status').then((value) => { if (alive) setStatus(value) })
-      .catch((cause: unknown) => { if (alive) setError(cause instanceof Error ? cause.message : '无法读取授权状态') })
+    api.get<Status>(prefix + '/status').then((value) => { if (alive) { setStatus(value); onMode?.(value.mode === "fake" || value.mode === "real" ? value.mode : null) } })
+      .catch((cause: unknown) => { if (alive) { onMode?.(null); setError(cause instanceof Error ? cause.message : '无法读取授权状态') } })
     return () => { alive = false }
-  }, [])
+  }, [onMode])
 
   function recordAuthProblem(code?: string) {
     if (code === 'token_expired' || code === 'not_authorized') {
@@ -49,12 +50,33 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
   }
 
   async function authorize() {
-    setBusy(true); setError('')
+    setBusy(true); setError(''); setAuthorizationUrl(null)
     try {
       const result = await api.post<Authorization>(prefix + '/authorizations', {})
-      const value = await api.oauthCallback<Status>(result.authorization_url)
-      setStatus(value); setAuthProblem(null)
+      if (status?.mode === 'real') {
+        const url = new URL(result.authorization_url)
+        if (url.origin !== 'https://accounts.feishu.cn' || url.pathname !== '/open-apis/authen/v1/authorize'
+          || url.username || url.password || url.hash || !url.searchParams.get('state')) {
+          throw new Error('飞书授权入口无效，请检查本机配置。')
+        }
+        // No fetch to the external authorization endpoint and no automatic code
+        // exchange. The user opens the official page in a separate browser.
+        setAuthorizationUrl(result.authorization_url)
+      } else {
+        const value = await api.oauthCallback<Status>(result.authorization_url)
+        setStatus(value); setAuthProblem(null)
+      }
     } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '授权失败') }
+    finally { setBusy(false) }
+  }
+
+  async function refreshAuthorization() {
+    setBusy(true); setError('')
+    try {
+      const value = await api.get<Status>(prefix + '/status')
+      setStatus(value); onMode?.(value.mode === 'fake' || value.mode === 'real' ? value.mode : null)
+      if (value.authorized) { setAuthorizationUrl(null); setAuthProblem(null) }
+    } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '无法读取授权状态') }
     finally { setBusy(false) }
   }
 
@@ -63,7 +85,7 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
     try {
       await api.delete<void>(prefix + '/authorizations')
       setStatus((current) => current ? { ...current, authorized: false, scopes: [] } : current)
-      setAuthProblem(null); setMaterials(null); setCalendar(null); setSelected([])
+      setAuthorizationUrl(null); setAuthProblem(null); setMaterials(null); setCalendar(null); setSelected([])
     } catch (cause) { setError(cause instanceof Error ? cause.message : '断开飞书授权失败') }
     finally { setBusy(false) }
   }
@@ -104,9 +126,17 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
     finally { setBusy(false) }
   }
 
+  const calendarReady = status?.mode === 'fake' ? status.authorized : status?.mode === 'real'
+    ? status.identity === 'app' ? status.app_configured : status.authorized : false
+
   return <section className="panel feishu-panel">
-    <div className="panel-heading"><div><h2>飞书日常</h2><p>模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。</p></div><span className="status-label">{authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '已授权' : '未授权'}</span></div>
-    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>模拟授权飞书</button>{status?.authorized && <button className="button secondary" disabled={busy} onClick={logout}>断开飞书授权</button>}</div>
+    <div className="panel-heading"><div><h2>飞书日常</h2><p>{status?.mode === 'real' ? '真实模式 · 应用身份优先；仅妙记搜索与任务列表需要一次性用户授权。' : '模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。'}</p></div><span className="status-label">{authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '用户已授权' : '用户未授权'}</span></div>
+    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>{status?.mode === 'real' ? '授权飞书用户身份' : '模拟授权飞书'}</button>{status?.authorized && <button className="button secondary" disabled={busy} onClick={logout}>断开飞书授权</button>}</div>
+    {status?.mode === 'real' && <p className="quiet-empty" role="status">{status.app_configured ? '应用密钥已配置。' : '尚未配置应用密钥。'}{!status.user_identity_verified && ' 用户身份尚未验证。'}</p>}
+    {status?.mode === 'real' && <div className="button-row">
+      {authorizationUrl && <><a className="button secondary" href={authorizationUrl} target="_blank" rel="noopener noreferrer">打开飞书授权页面</a><span>在浏览器完成后刷新本机授权状态；入口有效期5分钟。注册callback的本机端口须正在运行。刷新只反映当前凭据，不代表用户身份已核验。</span></>}
+      <button className="button secondary" disabled={busy} onClick={refreshAuthorization}>刷新用户授权状态</button>
+    </div>}
     {error && <p role="alert" className="helper-line">{error}</p>}
     <h3>材料</h3>
     <form className="organize-row" onSubmit={(event) => { event.preventDefault(); setSelected([]); void loadMaterials() }}>
@@ -125,9 +155,9 @@ export function FeishuPanel({ onImported }: { onImported: () => Promise<void> })
       <label className="compact-field"><span>开始日期</span><input type="date" required value={start} onChange={(event) => setStart(event.target.value)} /></label>
       <label className="compact-field"><span>结束日期（不含）</span><input type="date" required value={end} onChange={(event) => setEnd(event.target.value)} /></label>
       <label className="compact-field"><span>时区</span><select value={timezone} onChange={(event) => setTimezone(event.target.value)}><option>Asia/Shanghai</option><option>UTC</option></select></label>
-      <button className="button secondary" disabled={!status?.authorized || busy}>刷新日历</button>
+      <button className="button secondary" disabled={!calendarReady || busy}>刷新日历</button>
     </form>
     {calendarError && <p role="alert">{calendarError}</p>}
-    {calendar && <>{calendar.items.length === 0 ? <p className="quiet-empty">所选时间内没有日程。</p> : <ul className="source-list">{calendar.items.map((row) => <li key={row.event_id}><div className="source-row"><span className="source-title"><strong>{row.title}</strong><small>{new Date(row.start).toLocaleString('zh-CN', { timeZone: timezone })} — {new Date(row.end).toLocaleString('zh-CN', { timeZone: timezone })}</small></span></div></li>)}</ul>}<button className="button secondary" disabled={busy || !calendar.next_cursor} onClick={() => void loadCalendar(undefined, calendar.next_cursor ?? undefined)}>下一页日程</button></>}
+    {calendar && <>{calendar.items.length === 0 ? <p className="quiet-empty">所选时间内没有日程。</p> : <ul className="source-list">{calendar.items.map((row) => <li key={row.event_id}><div className="source-row"><span className="source-title"><strong>{row.title}</strong><small>{new Date(row.start).toLocaleString('zh-CN', { timeZone: timezone })} — {new Date(row.end).toLocaleString('zh-CN', { timeZone: timezone })}</small></span></div></li>)}</ul>}{calendar.truncated && <p role="status">仅显示部分日程，请缩小时间范围。</p>}{!calendar.truncated && <button className="button secondary" disabled={busy || !calendar.next_cursor} onClick={() => void loadCalendar(undefined, calendar.next_cursor ?? undefined)}>下一页日程</button>}</>}
   </section>
 }

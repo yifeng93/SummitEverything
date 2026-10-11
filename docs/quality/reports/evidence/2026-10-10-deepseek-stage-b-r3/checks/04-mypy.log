@@ -1,0 +1,3 @@
+$ uv run mypy src
+Success: no issues found in 35 source files
+EXIT=0

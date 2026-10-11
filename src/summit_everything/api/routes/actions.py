@@ -25,7 +25,12 @@ def register_actions(
     actions_for: Callable[[WorkspaceContext], ActionService],
     authenticated: Callable[..., None],
     active_workspace: Callable[..., WorkspaceContext],
+    feishu_data_gate: Callable[[WorkspaceContext], None] | None = None,
 ) -> None:
+    def gate(workspace: WorkspaceContext) -> None:
+        if feishu_data_gate is not None:
+            feishu_data_gate(workspace)
+
     @app.post("/api/v1/actions", status_code=201, dependencies=[Depends(authenticated)])
     def propose(
         payload: ActionProposal, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
@@ -69,6 +74,8 @@ def register_actions(
         payload: ActionConfirmation,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Action:
+        # Task writes are gated by kind inside ActionService; a local
+        # project_progress action must not be blocked by the Feishu read gate.
         result = actions_for(workspace).execute(Path(workspace.root), action_id, payload)
         if result.state == "running":
             response.status_code = 202
@@ -95,10 +102,12 @@ def register_actions(
         cursor: str | None = None,
         limit: int = Query(default=20, ge=1, le=100),
     ) -> TaskPage:
+        gate(workspace)
         return actions_for(workspace).tasks.list(cursor, limit)
 
     @app.get("/api/v1/integrations/feishu/tasks/{task_guid}", dependencies=[Depends(authenticated)])
     def task_get(
         task_guid: str, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> FeishuTask:
+        gate(workspace)
         return actions_for(workspace).tasks.get(task_guid)

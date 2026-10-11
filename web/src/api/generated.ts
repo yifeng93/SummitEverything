@@ -1024,6 +1024,11 @@ export interface components {
             next_cursor?: string | null;
             /** Timezone */
             timezone: string;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
         };
         /** CapabilityState */
         CapabilityState: {
@@ -1171,6 +1176,28 @@ export interface components {
              * @default
              */
             redirect_uri: string;
+            /**
+             * Identity
+             * @default app
+             * @enum {string}
+             */
+            identity: "app" | "user";
+            /**
+             * Calendar Id
+             * @default
+             */
+            calendar_id: string;
+            /**
+             * Material Content
+             * @default transcript
+             * @enum {string}
+             */
+            material_content: "transcript" | "artifacts";
+            /**
+             * Real Data Enabled
+             * @default false
+             */
+            real_data_enabled: boolean;
         };
         /** FeishuSettingsPatch */
         FeishuSettingsPatch: {
@@ -1178,8 +1205,24 @@ export interface components {
             app_id?: string | null;
             /** Redirect Uri */
             redirect_uri?: string | null;
+            /** Identity */
+            identity?: ("app" | "user") | null;
+            /** Calendar Id */
+            calendar_id?: string | null;
+            /** Material Content */
+            material_content?: ("transcript" | "artifacts") | null;
+            /** Real Data Enabled */
+            real_data_enabled?: boolean | null;
         };
-        /** FeishuStatus */
+        /**
+         * FeishuStatus
+         * @description Authorization status.
+         *
+         *     ``authorized`` means a usable *user* token exists. ``app_configured`` only
+         *     says an application secret is stored; it is never presented as user
+         *     authorization. ``user_identity_verified`` stays false because no real
+         *     identity lookup has been performed.
+         */
         FeishuStatus: {
             /**
              * Mode
@@ -1189,12 +1232,29 @@ export interface components {
             /** Authorized */
             authorized: boolean;
             /**
+             * App Configured
+             * @default false
+             */
+            app_configured: boolean;
+            /**
+             * Identity
+             * @default app
+             */
+            identity: string;
+            /**
              * Token Type
              * @default user
              */
             token_type: string;
             /** Scopes */
             scopes: string[];
+            /**
+             * User Identity Verified
+             * @default false
+             */
+            user_identity_verified: boolean;
+            /** Credential Error */
+            credential_error?: string | null;
         };
         /** FeishuTask */
         FeishuTask: {
@@ -1512,11 +1572,8 @@ export interface components {
              * @enum {string}
              */
             visibility: "owner" | "shared";
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
+            /** Updated At */
+            updated_at?: string | null;
         };
         /** MaterialPage */
         MaterialPage: {

@@ -1,0 +1,27 @@
+# Commands executed for the R4 evidence set
+# guard: docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/sitecustomize.py
+#   sha256 1fc6c24298e07a6fbc36e882515b11926e899ddc27bff37fa3e5d77d0d76e504
+# before-replay overlay: current src with the 5 files restored from r3-start-snapshot
+#   verified equal to the archived snapshot (see OVERLAY-README.md); adds a documented
+#   live_transfer_workers() shim that returns 0 because R3 had no worker counter.
+
+uv run pytest -q -p no:cacheprovider
+.venv/bin/python -m pytest -q tests/integration/test_stage_b_r4_regressions.py -k r4_01 -p no:cacheprovider -o pythonpath=/tmp/r4-before-src
+.venv/bin/python -m pytest -q tests/integration/test_stage_b_r4_loopback.py -k r4_02 -p no:cacheprovider -o pythonpath=/tmp/r4-before-src
+.venv/bin/python -m pytest -q tests/integration/test_stage_b_r4_lifecycle.py -k r4_03 -p no:cacheprovider -o pythonpath=/tmp/r4-before-src
+.venv/bin/python -m pytest -q tests/integration/test_stage_b_r4_combinations.py -k r4_combo -p no:cacheprovider -o pythonpath=/tmp/r4-before-src
+
+$ uv run pytest -q -p no:cacheprovider
+$ uv run ruff check src tests
+$ uv run ruff format --check src tests
+$ uv run mypy src
+$ uv lock --check
+$ git diff --check
+$ uv build
+$ npm --prefix web run api:types
+$ npm --prefix web test -- --run
+$ npm --prefix web run typecheck
+$ npm --prefix web run lint
+$ npm --prefix web run build
+$ swift build --package-path native
+$ PYTHONPATH=/tmp/summit-deepseek-stage-b-replay/guard:/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src uv run pytest -q -p no:cacheprovider

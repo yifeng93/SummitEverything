@@ -1,0 +1,48 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_tls_handshake_timeout_closes_the_connection_before_return ________
+
+    def test_tls_handshake_timeout_closes_the_connection_before_return():
+        listener = socket.socket()
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        listener.settimeout(2)
+        closed = threading.Event()
+        errors = []
+    
+        def peer():
+            try:
+                connection, _ = listener.accept()
+                with connection:
+                    connection.settimeout(0.6)
+                    while connection.recv(8192):
+                        pass  # accept ClientHello, never complete the TLS handshake
+                    closed.set()
+            except BaseException as exc:
+                errors.append(exc)
+    
+        thread = threading.Thread(target=peer)
+        thread.start()
+        try:
+            with httpx.Client(transport=DeadlineTransport(), trust_env=False) as client:
+                started = time.monotonic()
+                with pytest.raises(TimeoutError):
+                    bounded_call(
+                        client,
+                        "GET",
+                        f"https://127.0.0.1:{listener.getsockname()[1]}/",
+                        headers={},
+                        deadline_seconds=0.15,
+                    )
+                assert time.monotonic() - started < 0.25
+                assert live_transfer_workers() == 0
+>               assert closed.wait(0.1), "TLS handshake left its TCP stream open"
+E               AssertionError: TLS handshake left its TCP stream open
+E               assert False
+E                +  where False = wait(0.1)
+E                +    where wait = <threading.Event at 0x10a5d58e0: unset>.wait
+
+tests/integration/test_stage_b_sol_closure.py:229: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_sol_closure.py::test_tls_handshake_timeout_closes_the_connection_before_return
+1 failed, 3 deselected in 0.68s

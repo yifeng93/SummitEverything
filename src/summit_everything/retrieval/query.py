@@ -56,6 +56,21 @@ class QueryService:
         self.embedding = embedding or FakeEmbedding()
         self.reranker = reranker or FakeReranker()
         self.answer_provider = answer_provider
+        self._closed = False
+
+    def close(self) -> None:
+        """Release operation-scoped provider clients exactly once.
+
+        Only providers that own their transport expose ``close``; injected test
+        doubles and shared fakes are ignored.
+        """
+        if self._closed:
+            return
+        self._closed = True
+        for provider in (self.embedding, self.reranker, self.answer_provider):
+            close = getattr(provider, "close", None)
+            if callable(close):
+                close()
 
     def status(self, root: Path) -> dict[str, int | str | None]:
         manifest = load_manifest(root)

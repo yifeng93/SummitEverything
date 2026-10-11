@@ -6,15 +6,15 @@
 
 ## 当前状态
 
-2026-10-10：M1 与 M2.1–M2.3 阶段 A 已在 Fake-only 范围完成独立验收并合入 main。最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。C18 恢复 UI 的旧 FAIL 和修复后 PASS 分别保留；截图撤回、故障恢复和并发证据见[报告索引](docs/quality/reports/README.md)。Stage B 当前源码候选为 `7dc7114595704f34ba386c96324dffa77d529ba4`，DEV 检查已完成，但真实 Feishu OAuth / material / calendar / task adapters、Keychain 服务生命周期及部分浏览器/原生证据仍缺；独立正式 QA 尚未开始，不能视为 B 通过。三种限额合成模型 smoke 路由已实现但调用次数均为 0；真实业务模型路径保持服务端禁用。详情见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)和[报告索引](docs/quality/reports/README.md)。
+2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。当前准备固定源码并进入独立离线 QA，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
 
-下一步补齐 Feishu 官方协议证据、真实 adapter 与 Keychain 生命周期，再补足候选浏览器 / 原生证据并由独立上下文进行固定 SHA QA；当前 B 尚不满足正式验收入口。B 通过后才安排逐项授权的 C 受控真实验收。B/C 与 M3–M5 尚未完成，DMG、五日和双机仍有独立门。[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)记录固定 SHA 和证据边界；[工作环境整理](docs/implementation/2026-10-10-STAGE-A-CLEANUP.md)记录历史 QA worktree / 证据归档。
+已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
-通用代码开发可以立即使用隔离模拟材料开始。「场地与酒店」真实样板尚未整组批准，后续在合适阶段专门 grillme 并初始化；它不是编码的前置阻塞。
+权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
 ## 先读哪些文件
 
-- 执行者：[AGENTS.md](AGENTS.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
+- 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 - 验收者：[AGENTS.md](AGENTS.md) → [独立验收手册](docs/handoff/TESTER.md) → [验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 全部资料：[文档索引](docs/README.md)；当前工作：[进展账本](docs/implementation/PROGRESS.md)。
 - 两个新聊天可直接使用：[执行提示词](docs/handoff/PROMPT-IMPLEMENTER.md)、[验收提示词](docs/handoff/PROMPT-TESTER.md)。
@@ -24,14 +24,16 @@
 在本仓库执行；只安装本项目的工具，不同步或改动 SWB / SK 的环境。
 
 ~~~sh
-uv sync --group dev
-uv run pytest -q
+uv sync --locked --group dev
+PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q
 uv run ruff check src tests
 uv run ruff format --check src tests
 uv run mypy src
 uv lock --check
 uv build
 ~~~
+
+guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
 这些是检查命令，不单独构成阶段通过。M1 / M2 阶段 A 的独立报告、原生开发壳 UI 和后续修复范围见报告索引；真实飞书、真实模型质量、Keychain、DMG、五日及双机仍未通过相应门。
 
@@ -53,7 +55,7 @@ cd native && swift run
 
 WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式模型整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；Fake 模式已有索引时，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新。真实 embedding 下审批只提示用户另行查看并确认索引计划。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
 
-开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。默认仍为 Fake/offline；设置读取和保存不会联网。当前 Stage B 候选即使启用 Real provider，普通整理、索引和问答的真实模型请求也会被服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter、真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
+开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。默认仍为 Fake/offline；设置读取和保存不会联网。当前 Stage B 候选即使启用 Real provider，普通整理、索引和问答的真实模型请求也会被服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter 已有离线实现；真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
 
 ## 与原项目的关系
 
@@ -76,9 +78,9 @@ uv run mypy src
 cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
 ~~~
 
-这些检查只覆盖合成材料、Fake Feishu 与内存凭据。真实 user access token 的 scope、真实材料读取与 OS 钥匙串配置入口尚未实现 / 验收；M2.2 正式任务写入不在本切片内。
+这些检查只覆盖合成材料、Fake Feishu 与内存凭据。真实 scope、材料和 OS 钥匙串验收仍 NOT_RUN；设置入口与 adapter 已实现，真实任务写入保持禁用。
 
-M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；仅测试合成秘密，不存在真实账号适配器、凭据设置 UI 或 OS Keychain 权限路径。
+M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；已有真实 adapter、凭据设置 UI 与 fail-closed Keychain 接口；此段 Fake 复演不能证明真实账户或 OS Keychain 通过。
 
 
 ### M2.2 任务与独立动作模拟复演
@@ -93,7 +95,7 @@ uv run pytest -q tests/integration/test_intake_review.py tests/integration/test_
 npm --prefix web test -- TasksPanel.test.tsx
 ~~~
 
-全天日期的真实 Task v2 timestamp 提取规则未从可访问的一手文档确证；当前午夜转换仅为 Fake 约定，不可直接用于真实 adapter。Fake `task_result` 是合成动作证据查询，未声称飞书存在按 client_token 查结果的真实端点。没有可验证查询证据时动作保持 unknown。真实任务、账号、凭据 / 钥匙串与协议验收未测。DEV 证据见 [M2.2 任务报告](.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。
+Task v2 的毫秒 timestamp 与全天日期含义见协议矩阵；账号侧规范化仍需真实证据，Fake 约定不能替代它。Fake `task_result` 是合成动作证据查询，未声称飞书存在按 client_token 查结果的真实端点。没有可验证查询证据时动作保持 unknown。真实任务、账号、凭据 / 钥匙串与协议验收未测。DEV 证据见 [M2.2 任务报告](.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。
 
 ### M2.3 日志、思考与项目概览
 

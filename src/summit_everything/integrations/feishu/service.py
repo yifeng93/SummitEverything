@@ -7,6 +7,7 @@ import hashlib
 import json
 import secrets
 from collections.abc import Callable
+from contextlib import nullcontext
 from datetime import datetime
 from functools import partial
 from pathlib import Path
@@ -21,6 +22,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from summit_everything.intake.sources import IntakeConflict, SourceStore, safe_source_filename
 from summit_everything.integrations.feishu.provider import (
+    AppCredentials,
     CalendarPage,
     CredentialStore,
     FeishuConfig,
@@ -35,10 +37,24 @@ from summit_everything.workspace.transactions import atomic_write
 
 
 class FeishuStatus(BaseModel):
+    """Authorization status.
+
+    ``authorized`` means a usable *user* token exists. ``app_configured`` only
+    says an application secret is stored; it is never presented as user
+    authorization. ``user_identity_verified`` stays false because no real
+    identity lookup has been performed.
+    """
+
     mode: str = "fake"
     authorized: bool
+    app_configured: bool = False
+    identity: str = "app"
     token_type: str = "user"
     scopes: list[str]
+    user_identity_verified: bool = False
+    # Readable state when the stored user credential cannot be parsed; the
+    # status endpoint must never leak the parser error or claim authorization.
+    credential_error: str | None = None
 
 
 class AuthorizationStart(BaseModel):
@@ -67,6 +83,52 @@ class ImportResult(BaseModel):
     outcomes: list[ImportOutcome]
 
 
+class FeishuAuthCoordinator:
+    """Shared authorization generation and single-flight refresh for one identity.
+
+    Keyed by credential identity (profile namespace plus app ID) so that every
+    service instance built for the same identity -- including instances created
+    after a configuration change -- shares one monotonically increasing
+    authorization version, one refresh lock and one record of consumed refresh
+    tokens. A single-use refresh token therefore cannot be spent twice, and a
+    refresh that returns late cannot overwrite a logout or a newer authorization.
+
+    Lock order is always ``refresh_lock`` -> ``write_lock`` -> ``state_lock``.
+    Nothing acquires ``refresh_lock`` while holding ``write_lock``, so a logout
+    never has to wait for an in-flight refresh to finish.
+    """
+
+    MAX_CONSUMED = 32
+
+    def __init__(self, refresh_lock: Lock | None = None) -> None:
+        self.refresh_lock = refresh_lock or Lock()
+        self.write_lock = Lock()
+        self._state_lock = Lock()
+        self._version = 0
+        self._consumed: list[str] = []
+
+    def version(self) -> int:
+        with self._state_lock:
+            return self._version
+
+    def invalidate(self) -> int:
+        """Establish a new authorization generation (logout or new login)."""
+        with self._state_lock:
+            self._version += 1
+            return self._version
+
+    def mark_refresh_consumed(self, refresh_token: str) -> None:
+        digest = hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
+        with self._state_lock:
+            self._consumed.append(digest)
+            del self._consumed[: max(0, len(self._consumed) - self.MAX_CONSUMED)]
+
+    def refresh_consumed(self, refresh_token: str) -> bool:
+        digest = hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
+        with self._state_lock:
+            return digest in self._consumed
+
+
 class FeishuService:
     def __init__(
         self,
@@ -75,33 +137,85 @@ class FeishuService:
         config: FeishuConfig,
         session_identity: str,
         clock: Callable[[], float] = time,
+        refresh_lock: Lock | None = None,
+        coordinator: FeishuAuthCoordinator | None = None,
     ) -> None:
         self.provider = provider
         self.credentials = credentials
         self.config = config
         self.session_identity = session_identity
         self.clock = clock
-        self._states: dict[str, tuple[str, float]] = {}
+        self._states: dict[str, tuple[str, float, int]] = {}
         self._state_lock = Lock()
         self._lifecycle_lock = Lock()
-        self._generation = 0
+        # Shared with every service instance bound to the same credential
+        # identity; a configuration change must not fork refresh coordination.
+        self.auth = coordinator or FeishuAuthCoordinator(refresh_lock=refresh_lock)
+        self._refresh_lock = self.auth.refresh_lock
+
+    def operation(self) -> Any:
+        """Hold a lifecycle lease for one complete provider operation.
+
+        The lease spans every internal step (primary calendar then events,
+        transcript then artifacts fallback, a multi-item import, refresh then
+        read) so a provider retired mid-operation still finishes its work.
+        """
+        lease = getattr(self.provider, "operation", None)
+        if callable(lease):
+            return lease()
+        return nullcontext()
+
+    def _safe_user(self) -> UserCredentials | None:
+        try:
+            return self.credentials.get()
+        except Exception:
+            return None
+
+    def _safe_app(self) -> AppCredentials | None:
+        try:
+            return self.credentials.get_app()
+        except Exception:
+            return None
 
     def status(self) -> FeishuStatus:
-        credentials = self.credentials.get()
-        authorized = credentials is not None and credentials.expires_at > self.clock()
+        credentials = self._safe_user()
+        app = self._safe_app()
+        authorized = (
+            credentials is not None
+            and credentials.token_type == "user"
+            and credentials.expires_at > self.clock()
+        )
+        app_configured = app is not None and app.app_id == self.config.app_id
+        credential_error = None
+        try:
+            self.credentials.get()
+        except Exception:
+            credential_error = "credential_unreadable"
         return FeishuStatus(
-            authorized=authorized, scopes=credentials.scopes if authorized and credentials else []
+            mode=self.config.mode,
+            authorized=authorized,
+            app_configured=app_configured,
+            identity=self.config.identity,
+            scopes=credentials.scopes if authorized and credentials else [],
+            credential_error=credential_error,
         )
 
     def logout(self) -> None:
-        with self._lifecycle_lock:
-            self._generation += 1
+        # Invalidate first so any refresh already in flight sees a new version,
+        # then delete under the shared write lock so a concurrent new
+        # authorization either lands before or after this logout, never mixed.
+        self.auth.invalidate()
+        with self.auth.write_lock:
             with self._state_lock:
                 self._states.clear()
             self.credentials.delete()
 
     def authorize(self) -> AuthorizationStart:
         state = secrets.token_urlsafe(32)
+        # Bind the pending state to the authorization generation that issued it.
+        # A logout or a later authorization increments this version, so a state
+        # created before that change can never be exchanged afterwards.
+        issued_version = self.auth.version()
         with self._state_lock:
             self._states = {
                 key: value for key, value in self._states.items() if value[1] > self.clock()
@@ -109,6 +223,7 @@ class FeishuService:
             self._states[state] = (
                 self.session_identity,
                 self.clock() + self.config.state_ttl_seconds,
+                issued_version,
             )
         return AuthorizationStart(
             authorization_url=self.provider.authorization_url(self.config.redirect_uri, state),
@@ -120,50 +235,155 @@ class FeishuService:
     ) -> FeishuStatus:
         if callback_uri != self.config.redirect_uri:
             raise FeishuError("invalid_redirect")
-        with self._lifecycle_lock:
-            with self._state_lock:
-                entry = self._states.pop(state, None)
-            generation = self._generation
-        if entry is None or entry[0] != self.session_identity or entry[1] <= self.clock():
+        with self._state_lock:
+            entry = self._states.pop(state, None)
+        # The state is one-use: it is consumed even when the exchange is rejected.
+        if (
+            entry is None
+            or entry[0] != self.session_identity
+            or entry[1] <= self.clock()
+            or len(entry) != 3
+        ):
             raise FeishuError("invalid_state")
+        issued_version = entry[2]
+        self._require_authorization_version(issued_version)
         if error is not None:
             raise FeishuError("authorization_denied")
         if not code:
             raise FeishuError("malformed_response")
-        app_credentials = self.credentials.get_app()
+        # The application credential read can block; the generation must be
+        # checked before it so a logout during the read is still observed, and
+        # again after it so a logout that lands mid-read is not ignored.
+        app_credentials = self._safe_app()
         if app_credentials is not None and app_credentials.app_id != self.config.app_id:
             raise FeishuError("malformed_response")
+        self._require_authorization_version(issued_version)
         credentials = self._call(
             lambda: self.provider.exchange(code, self.config.redirect_uri, app_credentials)
         )
         if not isinstance(credentials, UserCredentials) or credentials.expires_at <= self.clock():
             raise FeishuError("malformed_response")
-        with self._lifecycle_lock:
-            if generation != self._generation:
+        with self.auth.write_lock:
+            if self.auth.version() != issued_version:
+                # A logout or another authorization superseded this callback
+                # while the exchange was in flight; the result is discarded.
                 raise FeishuError("invalid_state")
             self.credentials.put(credentials)
+            # A new authorization is a new generation: any refresh or callback
+            # started before it must not write again.
+            self.auth.invalidate()
         return self.status()
 
+    def _require_authorization_version(self, issued_version: int) -> None:
+        if self.auth.version() != issued_version:
+            raise FeishuError("invalid_state")
+
+    def require_task_write(self) -> None:
+        """Independent write-capability gate.
+
+        Real task writes stay disabled because no documented endpoint can prove a
+        lost write by idempotency token. ``real_data_enabled`` controls reads only
+        and must never unlock this. Fake mode keeps its simulated write semantics.
+        """
+        if self.config.mode != "fake":
+            raise FeishuError("result_proof_unavailable")
+
     def _user(self, scope: str) -> UserCredentials:
+        return self._user_any((scope,))
+
+    def _valid_user(self, credentials: UserCredentials | None, scopes: tuple[str, ...]) -> None:
+        if credentials is None:
+            raise FeishuError("not_authorized")
+        if credentials.token_type != "user" or not any(
+            scope in credentials.scopes for scope in scopes
+        ):
+            raise FeishuError("missing_scope")
+
+    def _read_user(self) -> UserCredentials | None:
+        """Read the user slot without leaking a parser or keychain exception."""
+        try:
+            return self.credentials.get()
+        except FeishuError:
+            raise
+        except Exception:
+            raise FeishuError("credential_unreadable") from None
+
+    def _user_any(self, scopes: tuple[str, ...]) -> UserCredentials:
         with self._lifecycle_lock:
-            credentials = self.credentials.get()
-            if credentials is None:
-                raise FeishuError("not_authorized")
-            if credentials.token_type != "user" or scope not in credentials.scopes:
-                raise FeishuError("missing_scope")
-            if credentials.expires_at <= self.clock() + 60:
-                current = credentials
-                credentials = self._call(lambda: self.provider.refresh(current))
+            credentials = self._read_user()
+            self._valid_user(credentials, scopes)
+            assert credentials is not None
+            if credentials.expires_at > self.clock() + 60:
+                return credentials
+        # Near expiry: coordinate the single-use refresh across service instances.
+        with self.auth.refresh_lock:
+            with self.auth.write_lock:
+                latest = self._read_user()
+                self._valid_user(latest, scopes)
+                assert latest is not None
+                if latest.expires_at > self.clock() + 60:
+                    return latest
+                if self.auth.refresh_consumed(latest.refresh_token):
+                    # The single-use token was already spent by an attempt whose
+                    # result is unknown; never resend it.
+                    raise FeishuError("token_expired")
+                version_at_dispatch = self.auth.version()
+                self.auth.mark_refresh_consumed(latest.refresh_token)
+            refreshed = self._call(lambda: self.provider.refresh(latest))
+            with self.auth.write_lock:
+                if self.auth.version() != version_at_dispatch:
+                    # Logged out or re-authorized while the refresh was in
+                    # flight: discard the stale result and use current state.
+                    current = self._read_user()
+                    self._valid_user(current, scopes)
+                    assert current is not None
+                    return current
                 if (
-                    not isinstance(credentials, UserCredentials)
-                    or credentials.token_type != "user"
-                    or credentials.expires_at <= self.clock()
+                    not isinstance(refreshed, UserCredentials)
+                    or refreshed.token_type != "user"
+                    or refreshed.expires_at <= self.clock()
                 ):
                     raise FeishuError("token_expired")
-                if scope not in credentials.scopes:
+                if not any(scope in refreshed.scopes for scope in scopes):
                     raise FeishuError("missing_scope")
-                self.credentials.put(credentials)
-            return credentials
+                self.credentials.put(refreshed)
+                return refreshed
+
+    def identity_for(self, scope: str, *, app_capable: bool) -> UserCredentials | None:
+        """Choose the identity for one operation.
+
+        Application identity is used first for endpoints that document
+        ``tenant_access_token``; the user token is required only for endpoints
+        that document ``user_access_token`` (minutes search, task list). A missing
+        app secret is distinct from a missing user authorization. A permission
+        error never silently switches identity to widen access. When the
+        application identity applies, the user credential slot is never read.
+        """
+        return self.identity_for_any((scope,), app_capable=app_capable)
+
+    def body_identity(self) -> UserCredentials | None:
+        """Identity for a selected material body download.
+
+        The body endpoints accept application identity. When a user token is the
+        only option, its transcript *or* artifacts scope is required -- the
+        minutes-search scope is not accepted as a substitute.
+        """
+        return self.identity_for_any(
+            (self.config.scope_material_body, self.config.scope_material_artifacts),
+            app_capable=True,
+        )
+
+    def identity_for_any(
+        self, scopes: tuple[str, ...], *, app_capable: bool
+    ) -> UserCredentials | None:
+        if self.config.mode == "real" and self.config.identity == "app" and app_capable:
+            app = self._safe_app()
+            if app is not None and app.app_id == self.config.app_id:
+                # Application identity: the user credential slot is not read,
+                # refreshed or parsed for this operation.
+                return None
+            raise FeishuError("credential_missing")
+        return self._user_any(scopes)
 
     def _call[T](self, call: Callable[[], T]) -> T:
         try:
@@ -180,8 +400,11 @@ class FeishuService:
     def materials(
         self, query: str, visibility: str | None, cursor: str | None, limit: int
     ) -> MaterialPage:
-        user = self._user("minutes:read")
-        result = self._call(lambda: self.provider.materials(user, query, visibility, cursor, limit))
+        with self.operation():
+            user = self._user(self.config.scope_materials)
+            result = self._call(
+                lambda: self.provider.materials(user, query, visibility, cursor, limit)
+            )
         if not isinstance(result, MaterialPage) or len(result.items) > limit:
             raise FeishuError("malformed_response")
         return result
@@ -195,10 +418,11 @@ class FeishuService:
                 raise ValueError()
         except (ValueError, ZoneInfoNotFoundError):
             raise ValueError("请选择有效的起止时间和时区。") from None
-        user = self._user("calendar:read")
-        result = self._call(
-            lambda: self.provider.calendar(user, start, end, timezone, cursor, limit)
-        )
+        with self.operation():
+            identity = self.identity_for(self.config.scope_calendar, app_capable=True)
+            result = self._call(
+                lambda: self.provider.calendar(identity, start, end, timezone, cursor, limit)
+            )
         if not isinstance(result, CalendarPage) or len(result.items) > limit:
             raise FeishuError("malformed_response")
         return result
@@ -211,7 +435,10 @@ class FeishuService:
         key = hashlib.sha256(payload.operation_id.encode()).hexdigest()
         journal = root / ".summit-everything" / "transactions" / f"feishu-import-{key}.json"
         lock_path = root / ".summit-everything" / "feishu-import.lock"
-        with lock_path.open("a+b") as lock:
+        with (
+            self.operation(),
+            lock_path.open("a+b") as lock,
+        ):
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
             try:
                 intent: dict[str, Any] = (
@@ -223,7 +450,7 @@ class FeishuService:
                     raise IntakeConflict("导入操作已用于另一组材料，请重新选择。")
                 if intent["state"] == "completed":
                     return ImportResult.model_validate(intent["result"])
-                user = self._user("minutes:read")
+                identity = self.body_identity()
                 atomic_write(journal, json.dumps(intent).encode())
                 for material_id in ids:
                     if material_id in intent["outcomes"]:
@@ -243,7 +470,7 @@ class FeishuService:
                             None,
                         )
                         if item is None:
-                            body = self._call(partial(self.provider.body, user, material_id))
+                            body = self._call(partial(self.provider.body, identity, material_id))
                             self._validate_body(body)
                             item = store.capture(
                                 root,
@@ -251,9 +478,11 @@ class FeishuService:
                                 body.filename,
                                 source_operation,
                                 external_identity={
-                                    "provider": "feishu-fake",
+                                    "provider": "feishu-fake"
+                                    if self.config.mode == "fake"
+                                    else "feishu",
                                     "material_id": material_id,
-                                    "token_type": "user",
+                                    "token_type": "user" if identity is not None else "app",
                                     "content_type": body.content_type,
                                 },
                             )

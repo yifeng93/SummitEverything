@@ -1,0 +1,222 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+___ test_normal_hostname_uses_real_pycares_numeric_result_without_system_dns ___
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x109eb2ae0>
+remote = ('http://127.0.0.1:58285', <threading.Event at 0x109eb2d80: unset>, <threading.Event at 0x109eb2e70: unset>)
+
+    def test_normal_hostname_uses_real_pycares_numeric_result_without_system_dns(monkeypatch, remote):
+        base, _, received = remote
+        port = int(base.rsplit(":", 1)[1])
+        original = aiodns.DNSResolver.getaddrinfo
+        nodes = []
+    
+        async def synthetic_name(self, host, *args, **kwargs):
+            # Real pycares parser and result shape; numeric loopback needs no DNS packet.
+            result = await original(self, "127.0.0.1", *args, **kwargs)
+            nodes.extend(result.nodes)
+            return result
+    
+        def forbidden_system_dns(*args, **kwargs):
+            raise AssertionError("numeric DNS results must never re-enter system DNS")
+    
+        monkeypatch.setattr(aiodns.DNSResolver, "getaddrinfo", synthetic_name)
+        monkeypatch.setattr(socket, "getaddrinfo", forbidden_system_dns)
+        with httpx.Client(transport=DeadlineTransport(), trust_env=False) as client:
+>           assert bounded_call(
+                client, "GET", f"http://synthetic-sol.invalid:{port}/normal",
+                headers={}, deadline_seconds=1,
+            ) == (200, b"{}")
+
+tests/integration/test_stage_b_sol_closure.py:255: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/summit_everything/integrations/http_boundary.py:202: in bounded_call
+    return _read_bounded(
+src/summit_everything/integrations/http_boundary.py:105: in _read_bounded
+    return _read_once(
+src/summit_everything/integrations/http_boundary.py:67: in _read_once
+    with client.stream(method, url, **kwargs) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:868: in stream
+    response = self.send(
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/summit_everything/integrations/transport.py:193: in handle_request
+    raise error
+src/summit_everything/integrations/transport.py:175: in transfer
+    result["response"] = asyncio.run(read())
+                         ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/summit_everything/integrations/transport.py:140: in read
+    core_response = await pool.handle_async_request(core_request)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+.venv/lib/python3.12/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+.venv/lib/python3.12/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/summit_everything/integrations/transport.py:65: in connect_tcp
+    stream = await backend.connect_tcp(
+.venv/lib/python3.12/site-packages/httpcore/_backends/anyio.py:115: in connect_tcp
+    stream: anyio.abc.ByteStream = await anyio.connect_tcp(
+.venv/lib/python3.12/site-packages/anyio/_core/_sockets.py:232: in connect_tcp
+    gai_res = await getaddrinfo(
+.venv/lib/python3.12/site-packages/anyio/_core/_sockets.py:657: in getaddrinfo
+    gai_res = await get_async_backend().getaddrinfo(
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:2950: in getaddrinfo
+    return await get_running_loop().getaddrinfo(
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/base_events.py:905: in getaddrinfo
+    return await self.run_in_executor(
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (b"b'127.0.0.1'", 58285, <AddressFamily.AF_UNSPEC: 0>, <SocketKind.SOCK_STREAM: 1>, 0, 0)
+kwargs = {}
+
+    def forbidden_system_dns(*args, **kwargs):
+>       raise AssertionError("numeric DNS results must never re-enter system DNS")
+E       AssertionError: numeric DNS results must never re-enter system DNS
+
+tests/integration/test_stage_b_sol_closure.py:250: AssertionError
+______________ test_mounted_unsafe_transport_rejected_before_http ______________
+
+remote = ('http://127.0.0.1:58286', <threading.Event at 0x109ef7350: set>, <threading.Event at 0x109ef72c0: set>)
+
+    def test_mounted_unsafe_transport_rejected_before_http(remote):
+        base, _, received = remote
+        with httpx.Client(
+            transport=DeadlineTransport(),
+            mounts={base: httpx.HTTPTransport(retries=0)}, trust_env=False,
+        ) as client:
+>           with pytest.raises(ValueError, match="requires DeadlineTransport"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'requires DeadlineTransport'
+E             Actual message: 'provider transport failed'
+
+tests/integration/test_stage_b_sol_closure.py:270: AssertionError
+_____________ test_compressed_remote_body_rejected_before_decoding _____________
+
+    def test_compressed_remote_body_rejected_before_decoding():
+        import gzip
+        compressed = gzip.compress(b"x" * 16_000_000)
+        headers_seen = []
+    
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_GET(self):  # noqa: N802
+                headers_seen.append(self.headers.get("Accept-Encoding"))
+                self.send_response(200)
+                self.send_header("Content-Encoding", "gzip")
+                self.send_header("Content-Length", str(len(compressed)))
+                self.end_headers()
+                try:
+                    self.wfile.write(compressed)
+                except OSError:
+                    pass
+    
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever)
+        thread.start()
+        try:
+            with httpx.Client(transport=DeadlineTransport(), trust_env=False) as client:
+>               with pytest.raises(ValueError, match="content encoding"):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: Regex pattern did not match.
+E                 Expected regex: 'content encoding'
+E                 Actual message: 'provider response exceeded the size limit'
+
+tests/integration/test_stage_b_sol_closure.py:301: AssertionError
+_________ test_full_json_wire_size_rejected_before_model_request[llm] __________
+
+kind = 'llm'
+
+    @pytest.mark.parametrize("kind", ["llm", "rerank"])
+    def test_full_json_wire_size_rejected_before_model_request(kind):
+        from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
+        from summit_everything.integrations.rerank import ModelStudioReranker
+        calls = []
+    
+        def handler(request):
+            calls.append(len(request.content))
+            return httpx.Response(200, json={})
+    
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            with pytest.raises((ValueError, LLMProviderError)):
+                if kind == "llm":
+                    DeepSeekLLM("synthetic", client=client)._request_content("system", "\n" * 600_000)
+                else:
+                    ModelStudioReranker("synthetic", client=client).rank("query", ["x\n" * 300_000])
+>       assert calls == [], "oversized JSON must be rejected before HTTP"
+E       AssertionError: oversized JSON must be rejected before HTTP
+E       assert [1200179] == []
+E         
+E         Left contains one more item: 1200179
+E         Use -v to get more diff
+
+tests/integration/test_stage_b_sol_closure.py:328: AssertionError
+________ test_full_json_wire_size_rejected_before_model_request[rerank] ________
+
+kind = 'rerank'
+
+    @pytest.mark.parametrize("kind", ["llm", "rerank"])
+    def test_full_json_wire_size_rejected_before_model_request(kind):
+        from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
+        from summit_everything.integrations.rerank import ModelStudioReranker
+        calls = []
+    
+        def handler(request):
+            calls.append(len(request.content))
+            return httpx.Response(200, json={})
+    
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            with pytest.raises((ValueError, LLMProviderError)):
+                if kind == "llm":
+                    DeepSeekLLM("synthetic", client=client)._request_content("system", "\n" * 600_000)
+                else:
+                    ModelStudioReranker("synthetic", client=client).rank("query", ["x\n" * 300_000])
+>       assert calls == [], "oversized JSON must be rejected before HTTP"
+E       AssertionError: oversized JSON must be rejected before HTTP
+E       assert [900114] == []
+E         
+E         Left contains one more item: 900114
+E         Use -v to get more diff
+
+tests/integration/test_stage_b_sol_closure.py:328: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_sol_closure.py::test_normal_hostname_uses_real_pycares_numeric_result_without_system_dns
+FAILED tests/integration/test_stage_b_sol_closure.py::test_mounted_unsafe_transport_rejected_before_http
+FAILED tests/integration/test_stage_b_sol_closure.py::test_compressed_remote_body_rejected_before_decoding
+FAILED tests/integration/test_stage_b_sol_closure.py::test_full_json_wire_size_rejected_before_model_request[llm]
+FAILED tests/integration/test_stage_b_sol_closure.py::test_full_json_wire_size_rejected_before_model_request[rerank]
+5 failed, 4 deselected in 2.69s

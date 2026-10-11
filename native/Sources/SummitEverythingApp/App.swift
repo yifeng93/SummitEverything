@@ -78,6 +78,7 @@ struct LocalWebView: NSViewRepresentable {
         configuration.userContentController = controller
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.navigationDelegate = context.coordinator
+        view.uiDelegate = context.coordinator
         context.coordinator.webView = view
         context.coordinator.waitForReadiness()
         return view
@@ -85,7 +86,7 @@ struct LocalWebView: NSViewRepresentable {
 
     func updateNSView(_ view: WKWebView, context: Context) {}
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
         private let expectedRunID: String
         weak var webView: WKWebView?
         private var readinessTimer: Timer?
@@ -121,6 +122,20 @@ struct LocalWebView: NSViewRepresentable {
                     DispatchQueue.main.async { self.showReadinessError() }
                 }
             }
+        }
+
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                     for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            // Only the explicit official OAuth link leaves the local WebUI.
+            guard navigationAction.navigationType == .linkActivated,
+                  navigationAction.targetFrame == nil,
+                  let url = navigationAction.request.url,
+                  url.scheme == "https", url.host == "accounts.feishu.cn",
+                  url.port == nil || url.port == 443,
+                  url.user == nil, url.password == nil, url.fragment == nil,
+                  url.path == "/open-apis/authen/v1/authorize" else { return nil }
+            NSWorkspace.shared.open(url)
+            return nil
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

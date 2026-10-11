@@ -1,0 +1,279 @@
+F.....F..F                                                               [100%]
+=================================== FAILURES ===================================
+___________ test_r4_02_a_trickling_incomplete_headers_are_cancelled ____________
+
+loopback = <function loopback.<locals>.make at 0x109d38ae0>
+
+    def test_r4_02_a_trickling_incomplete_headers_are_cancelled(loopback):
+        client = _client()
+        try:
+>           elapsed = _deadline_case(loopback, client, 0.15, mode="incomplete_headers")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_stage_b_r4_loopback.py:241: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/integration/test_stage_b_r4_loopback.py:231: in _deadline_case
+    _assert_cancelled(server, client, expect_no_further_traffic=expect_no_further_traffic)
+tests/integration/test_stage_b_r4_loopback.py:203: in _assert_cancelled
+    _assert_peer_closed(server)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+server = <test_stage_b_r4_loopback.LoopbackServer object at 0x109cc2e40>
+
+    def _assert_peer_closed(server: LoopbackServer) -> None:
+        """The client side of the connection must terminate shortly after return.
+    
+        A FIN or reset can lag the product call by a few milliseconds, so the check
+        polls within a bounded window; it never treats "no data readable yet" as
+        terminated, and it fails if the connection is still open at the end.
+        """
+        wait_deadline = time.monotonic() + 1.0
+        while not server.cfg["sockets"] and time.monotonic() < wait_deadline:
+            time.sleep(0.01)
+        sockets = list(server.cfg["sockets"])
+        assert sockets, "the synthetic server never accepted a connection"
+        for sock in sockets:
+            sock.setblocking(False)
+            terminated = False
+            while time.monotonic() < wait_deadline:
+                try:
+                    data = sock.recv(1)
+                except (ConnectionResetError, BrokenPipeError):
+                    terminated = True
+                    break
+                except BlockingIOError:
+                    time.sleep(0.02)
+                    continue
+                except OSError:
+                    terminated = True
+                    break
+                if data == b"":
+                    terminated = True
+                    break
+                # Unexpected trailing bytes: keep draining within the window.
+                time.sleep(0.02)
+>           assert terminated, "the connection was still open when the call returned"
+E           AssertionError: the connection was still open when the call returned
+E           assert False
+
+tests/integration/test_stage_b_r4_loopback.py:195: AssertionError
+___ test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg0-True] ___
+
+loopback = <function loopback.<locals>.make at 0x10a25f7e0>, deadline = 0.15
+cfg = {'mode': 'incomplete_headers'}, expect_no_further_traffic = True
+
+    @pytest.mark.parametrize(
+        "deadline,cfg,expect_no_further_traffic",
+        [
+            (0.15, {"mode": "incomplete_headers"}, True),
+            (0.15, {"header_delay": 0.5, "body": b"{}"}, False),
+            (0.3, {"mode": "trickle_body", "declared_length": 100_000}, True),
+        ],
+    )
+    def test_r4_02_deadline_cases_hold_over_ten_consecutive_runs(
+        loopback, deadline, cfg, expect_no_further_traffic
+    ):
+        client = _client()
+        timings: list[float] = []
+        try:
+            for _ in range(10):
+                timings.append(
+>                   _deadline_case(
+                        loopback,
+                        client,
+                        deadline,
+                        expect_no_further_traffic=expect_no_further_traffic,
+                        **cfg,
+                    )
+                )
+
+tests/integration/test_stage_b_r4_loopback.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/integration/test_stage_b_r4_loopback.py:231: in _deadline_case
+    _assert_cancelled(server, client, expect_no_further_traffic=expect_no_further_traffic)
+tests/integration/test_stage_b_r4_loopback.py:203: in _assert_cancelled
+    _assert_peer_closed(server)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+server = <test_stage_b_r4_loopback.LoopbackServer object at 0x10a24d4f0>
+
+    def _assert_peer_closed(server: LoopbackServer) -> None:
+        """The client side of the connection must terminate shortly after return.
+    
+        A FIN or reset can lag the product call by a few milliseconds, so the check
+        polls within a bounded window; it never treats "no data readable yet" as
+        terminated, and it fails if the connection is still open at the end.
+        """
+        wait_deadline = time.monotonic() + 1.0
+        while not server.cfg["sockets"] and time.monotonic() < wait_deadline:
+            time.sleep(0.01)
+        sockets = list(server.cfg["sockets"])
+        assert sockets, "the synthetic server never accepted a connection"
+        for sock in sockets:
+            sock.setblocking(False)
+            terminated = False
+            while time.monotonic() < wait_deadline:
+                try:
+                    data = sock.recv(1)
+                except (ConnectionResetError, BrokenPipeError):
+                    terminated = True
+                    break
+                except BlockingIOError:
+                    time.sleep(0.02)
+                    continue
+                except OSError:
+                    terminated = True
+                    break
+                if data == b"":
+                    terminated = True
+                    break
+                # Unexpected trailing bytes: keep draining within the window.
+                time.sleep(0.02)
+>           assert terminated, "the connection was still open when the call returned"
+E           AssertionError: the connection was still open when the call returned
+E           assert False
+
+tests/integration/test_stage_b_r4_loopback.py:195: AssertionError
+_______ test_r4_02_adapter_deadline_cancels_a_trickling_header_response ________
+
+loopback = <function loopback.<locals>.make at 0x10a25fe20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10a2e7dd0>
+
+    def test_r4_02_adapter_deadline_cancels_a_trickling_header_response(loopback, monkeypatch):
+        """The real FeishuHttpProvider must also stop a trickling header wait."""
+        from pydantic import SecretStr
+    
+        import summit_everything.integrations.feishu.http as feishu_http
+        from summit_everything.integrations.feishu.provider import AppCredentials
+    
+        server = loopback(mode="incomplete_headers")
+        client = _client()
+        provider = FeishuHttpProvider(
+            FeishuConfig(mode="real", app_id="cli_synthetic_r4_app"),
+            lambda: AppCredentials(
+                app_id="cli_synthetic_r4_app", app_secret=SecretStr("synthetic-secret")
+            ),
+            client=client,
+            open_api_base=f"http://127.0.0.1:{server.port}",
+            max_response_bytes=100_000,
+        )
+        original = feishu_http.bounded_json_call
+    
+        def small_deadline(*args, **kwargs):  # type: ignore[no-untyped-def]
+            kwargs.setdefault("deadline_seconds", 0.15)
+            return original(*args, **kwargs)
+    
+        monkeypatch.setattr(feishu_http, "bounded_json_call", small_deadline)
+        started = time.monotonic()
+        with pytest.raises(FeishuError):
+>           provider._application_token()
+
+tests/integration/test_stage_b_r4_loopback.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/tmp/r4-before-src/summit_everything/integrations/feishu/http.py:204: in _application_token
+    status, payload = bounded_json_call(
+tests/integration/test_stage_b_r4_loopback.py:417: in small_deadline
+    return original(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r4-before-src/summit_everything/integrations/http_boundary.py:337: in bounded_json_call
+    status, body = bounded_call(
+/tmp/r4-before-src/summit_everything/integrations/http_boundary.py:298: in bounded_call
+    return _read_bounded(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <httpx.Client object at 0x10a2e5790>, method = 'POST'
+url = 'http://127.0.0.1:56132/open-apis/auth/v3/tenant_access_token/internal'
+headers = {'Content-Type': 'application/json; charset=utf-8'}, params = None
+json_body = {'app_id': 'cli_synthetic_r4_app', 'app_secret': 'synthetic-secret'}
+files = None, max_response_bytes = 100000, timeout = None
+deadline_seconds = 0.15, clock = <built-in function monotonic>
+
+    def _read_bounded(
+        client: httpx.Client,
+        method: str,
+        url: str,
+        *,
+        headers: dict[str, str],
+        params: dict[str, Any] | None,
+        json_body: Any | None,
+        files: Any | None,
+        max_response_bytes: int,
+        timeout: httpx.Timeout | None,
+        deadline_seconds: float | None,
+        clock: Callable[[], float] = monotonic,
+    ) -> tuple[int, bytes]:
+        """Read a bounded body under one overall deadline for the whole request.
+    
+        The deadline spans connecting, sending, waiting for response headers,
+        reading every body chunk (including an empty body) and finishing the read.
+        A synchronous httpx request cannot be given a single cancellable timeout,
+        because httpcore derives each socket read timeout from the request timeout
+        and therefore grants the body a fresh full budget after a slow header wait.
+        To make the deadline real, the transfer runs in a worker that the caller can
+        *cancel*: when the remaining budget reaches zero the response is closed
+        (which aborts the socket) and the worker is joined before the error is
+        raised, so no request continues in the background after this returns.
+        """
+        deadline_at = None if deadline_seconds is None else clock() + deadline_seconds
+        left = None if deadline_at is None else deadline_at - clock()
+        if left is not None and left <= 0:
+            raise TimeoutError("provider request exceeded the overall deadline")
+        effective = timeout or (DEFAULT_TIMEOUT if left is None else _bounded_timeout(left))
+        if deadline_at is None:
+            return _read_once(
+                client,
+                method,
+                url,
+                headers=headers,
+                params=params,
+                json_body=json_body,
+                files=files,
+                max_response_bytes=max_response_bytes,
+                timeout=effective,
+                deadline_at=None,
+                clock=clock,
+                response_box={},
+            )
+    
+        result: dict[str, Any] = {}
+        response_box: dict[str, httpx.Response] = {}
+        done = Event()
+    
+        def transfer() -> None:
+            try:
+                result["value"] = _read_once(
+                    client,
+                    method,
+                    url,
+                    headers=headers,
+                    params=params,
+                    json_body=json_body,
+                    files=files,
+                    max_response_bytes=max_response_bytes,
+                    timeout=effective,
+                    deadline_at=deadline_at,
+                    clock=clock,
+                    response_box=response_box,
+                )
+            except BaseException as exc:  # noqa: BLE001 - re-raised or discarded by the caller
+                result["error"] = exc
+            finally:
+                done.set()
+    
+        worker = Thread(target=transfer, daemon=True)
+        worker.start()
+        if not done.wait(max(0.0, deadline_at - clock())):
+            response = response_box.get("response")
+            if response is not None:
+                _abort(response)
+            worker.join(ABORT_GRACE_SECONDS)
+            if worker.is_alive():
+>               raise TimeoutError("provider request could not be cancelled in time")
+E               TimeoutError: provider request could not be cancelled in time
+
+/tmp/r4-before-src/summit_everything/integrations/http_boundary.py:208: TimeoutError
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_r4_loopback.py::test_r4_02_a_trickling_incomplete_headers_are_cancelled
+FAILED tests/integration/test_stage_b_r4_loopback.py::test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg0-True]
+FAILED tests/integration/test_stage_b_r4_loopback.py::test_r4_02_adapter_deadline_cancels_a_trickling_header_response
+3 failed, 7 passed in 39.56s

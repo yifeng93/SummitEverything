@@ -29,6 +29,14 @@ class _SettingsModel(BaseModel):
 class FeishuSettings(_SettingsModel):
     app_id: str = Field(default="", max_length=200)
     redirect_uri: str = Field(default="", max_length=500)
+    # Application identity is preferred; user identity is used only where the
+    # documented endpoint requires user_access_token.
+    identity: Literal["app", "user"] = "app"
+    calendar_id: str = Field(default="", max_length=200)
+    material_content: Literal["transcript", "artifacts"] = "transcript"
+    # Real business reads stay server-disabled until the user authorizes an
+    # itemized Stage C scope; the adapter itself is implemented and offline-tested.
+    real_data_enabled: bool = False
 
     @field_validator("redirect_uri")
     @classmethod
@@ -166,6 +174,10 @@ class SettingsSummary(_SettingsModel):
 class FeishuSettingsPatch(_SettingsModel):
     app_id: str | None = Field(default=None, max_length=200)
     redirect_uri: str | None = Field(default=None, max_length=500)
+    identity: Literal["app", "user"] | None = None
+    calendar_id: str | None = Field(default=None, max_length=200)
+    material_content: Literal["transcript", "artifacts"] | None = None
+    real_data_enabled: bool | None = None
 
 
 class LLMSettingsPatch(_SettingsModel):
@@ -328,7 +340,7 @@ _Result = TypeVar("_Result")
 
 
 class CredentialVault:
-    PROVIDERS = {"feishu_app", "deepseek", "dashscope"}
+    PROVIDERS = {"feishu_app", "feishu_user", "deepseek", "dashscope"}
 
     def __init__(self, namespace: str, backend: SecretBackend) -> None:
         self.namespace = namespace
@@ -377,18 +389,32 @@ def provider_settings_payload(
     """Build a safe, user-facing status summary without exposing secret metadata."""
     keychain_available = isinstance(vault.backend, (MemorySecretBackend, MacOSKeychainBackend))
     credential_status: dict[str, bool] = {}
+    # Only user-entered secrets are reported in the settings UI. The Feishu
+    # user token lives in the same vault but is created by the OAuth flow.
+    reported_providers = ("feishu_app", "deepseek", "dashscope")
     accounts = {
         "feishu_app": settings.feishu.app_id or "default",
         "deepseek": settings.llm.account_id,
         "dashscope": settings.model_studio_account_id,
     }
-    for provider in sorted(CredentialVault.PROVIDERS):
+    for provider in reported_providers:
         try:
             credential_status[provider] = vault.has(provider, account_id=accounts[provider])
         except SettingsError:
             keychain_available = False
             credential_status[provider] = False
     disabled = {"available": False, "configured": False}
+    feishu_app_configured = bool(settings.feishu.app_id) and credential_status.get(
+        "feishu_app", False
+    )
+    feishu_ready = settings.mode == "real" and feishu_app_configured
+    feishu_reason = (
+        "stage_c_authorization_required"
+        if feishu_ready
+        else "offline_default"
+        if settings.mode == "fake"
+        else "provider_not_configured"
+    )
     llm_configured = settings.llm.provider == "deepseek" and credential_status.get(
         "deepseek", False
     )
@@ -401,10 +427,10 @@ def provider_settings_payload(
     capabilities = {
         key: CapabilityState(**disabled, disabled_reason=reason)
         for key, reason in {
-            "feishu_material_read": "oauth_protocol_unverified",
-            "feishu_calendar_read": "protocol_unverified",
-            "feishu_task_read": "protocol_unverified",
-            "feishu_task_write": "date_and_result_proof_unverified",
+            "feishu_material_read": feishu_reason,
+            "feishu_calendar_read": feishu_reason,
+            "feishu_task_read": feishu_reason,
+            "feishu_task_write": feishu_reason,
             "llm": (
                 "limited_synthetic_smoke_only"
                 if llm_configured and settings.mode == "real"
@@ -442,6 +468,22 @@ def provider_settings_payload(
         available=False,
         configured=rerank_configured,
         disabled_reason=capabilities["rerank"].disabled_reason,
+    )
+    # Real Feishu data capabilities mirror the server-side execution gate: the
+    # adapter exists, but reads stay disabled until Stage C authorization.
+    feishu_executable = feishu_ready and settings.feishu.real_data_enabled
+    for name in ("feishu_material_read", "feishu_calendar_read", "feishu_task_read"):
+        capabilities[name] = CapabilityState(
+            available=feishu_executable,
+            configured=feishu_ready,
+            disabled_reason=None if feishu_executable else feishu_reason,
+        )
+    # Task writes additionally require an independently verifiable result, which
+    # no documented endpoint provides, so they stay unavailable.
+    capabilities["feishu_task_write"] = CapabilityState(
+        available=False,
+        configured=feishu_ready,
+        disabled_reason="result_proof_unavailable" if feishu_ready else feishu_reason,
     )
     return SettingsSummary(
         mode=settings.mode,

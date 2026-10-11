@@ -1,0 +1,5 @@
+......R4-02 timings deadline=0.15 cfg={'mode': 'incomplete_headers'} tolerance=0.1 worst=0.1554 values=[0.1549, 0.1553, 0.1554, 0.1534, 0.1553, 0.1525, 0.1554, 0.1553, 0.1539, 0.1531]
+.R4-02 timings deadline=0.15 cfg={'header_delay': 0.5, 'body': b'{}'} tolerance=0.1 worst=0.1532 values=[0.1521, 0.1522, 0.1532, 0.1523, 0.1523, 0.1526, 0.1526, 0.1524, 0.1526, 0.1523]
+.R4-02 timings deadline=0.3 cfg={'mode': 'trickle_body', 'declared_length': 100000} tolerance=0.1 worst=0.3056 values=[0.3056, 0.3049, 0.3056, 0.3029, 0.3054, 0.3054, 0.3054, 0.3054, 0.3054, 0.3053]
+..
+10 passed in 33.45s

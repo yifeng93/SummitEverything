@@ -17,7 +17,7 @@ it('shows Feishu authorization and never claims success after denied callback', 
   const button = await screen.findByRole('button', { name: '模拟授权飞书' })
   fireEvent.click(button)
   expect(await screen.findByText('授权已取消')).toBeTruthy()
-  expect(screen.queryByText('已授权')).toBeNull()
+  expect(screen.queryByText('用户已授权')).toBeNull()
 })
 
 it('clears the local authorization when the user disconnects Feishu', async () => {
@@ -33,11 +33,11 @@ it('clears the local authorization when the user disconnects Feishu', async () =
   })
   vi.stubGlobal('fetch', fetchMock)
   render(<TodayView onError={vi.fn()} />)
-  await screen.findByText('已授权')
+  await screen.findByText('用户已授权')
 
   fireEvent.click(screen.getByRole('button', { name: '断开飞书授权' }))
 
-  expect(await screen.findByText('未授权')).toBeTruthy()
+  expect(await screen.findByText('用户未授权')).toBeTruthy()
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/integrations/feishu/authorizations', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -107,6 +107,52 @@ it('cancels selection without importing and displays calendar empty and error st
   expect(screen.queryByText('所选时间内没有日程。')).toBeNull()
 })
 
+it('shows a truncation notice and offers no unusable next page for an explicit range', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    let data: unknown = []
+    if (path.endsWith('/status')) data = { mode: 'real', authorized: true, scopes: [], token_type: 'user' }
+    if (path.includes('/materials?')) data = { items: [], next_cursor: null }
+    if (path.includes('/calendar?')) {
+      data = {
+        items: [{ event_id: 'e1', title: '合成日程', start: '2026-10-09T01:00:00Z', end: '2026-10-09T02:00:00Z' }],
+        next_cursor: null,
+        timezone: 'Asia/Shanghai',
+        truncated: true,
+      }
+    }
+    return { ok: true, status: 200, json: async () => data }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
+  fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
+  expect(await screen.findByText('仅显示部分日程，请缩小时间范围。')).toBeTruthy()
+  expect(screen.queryByRole('button', { name: '下一页日程' })).toBeNull()
+})
+
+it('shows the next-page control only when the provider actually returned a cursor', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    let data: unknown = []
+    if (path.endsWith('/status')) data = { mode: 'fake', authorized: true, scopes: [], token_type: 'user' }
+    if (path.includes('/materials?')) data = { items: [], next_cursor: null }
+    if (path.includes('/calendar?')) {
+      data = {
+        items: [{ event_id: 'e1', title: '合成日程', start: '2026-10-09T01:00:00Z', end: '2026-10-09T02:00:00Z' }],
+        next_cursor: 'page-2',
+        timezone: 'Asia/Shanghai',
+        truncated: false,
+      }
+    }
+    return { ok: true, status: 200, json: async () => data }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
+  fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
+  expect(await screen.findByRole('button', { name: '下一页日程' })).toBeTruthy()
+  expect(screen.queryByText('仅显示部分日程，请缩小时间范围。')).toBeNull()
+})
+
 it('preserves configured callback destination when Web and API ports differ', async () => {
   const destination = 'http://127.0.0.1:8793/api/v1/integrations/feishu/callback?state=synthetic-state&code=fake-ok'
   const requests: { path: string; init?: RequestInit }[] = []
@@ -116,14 +162,14 @@ it('preserves configured callback destination when Web and API ports differ', as
   }))
   render(<TodayView onError={vi.fn()} />)
   fireEvent.click(await screen.findByRole('button', { name: '模拟授权飞书' }))
-  await screen.findByText('已授权')
+  await screen.findByText('用户已授权')
   expect(requests.some((request) => request.path === destination)).toBe(true)
   const callback = requests.find((request) => request.path === destination)
   expect(callback?.init?.credentials).toBe('omit')
   expect(callback?.init?.redirect).toBe('error')
 })
 
-for (const [code, expectedLabel, remainsAuthorized] of [['token_expired', '授权已过期', false], ['not_authorized', '未授权', false], ['missing_scope', '权限不足', true]] as const) {
+for (const [code, expectedLabel, remainsAuthorized] of [['token_expired', '授权已过期', false], ['not_authorized', '用户未授权', false], ['missing_scope', '权限不足', true]] as const) {
   it(`updates authorization state distinctly for ${code}`, async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       const path = String(input)
@@ -131,12 +177,12 @@ for (const [code, expectedLabel, remainsAuthorized] of [['token_expired', '授�
       return { ok: true, status: 200, json: async () => path.endsWith('/status') ? { mode: 'fake', authorized: true, scopes: [], token_type: 'user' } : [] }
     }))
     render(<TodayView onError={vi.fn()} />)
-    await screen.findByText('已授权')
+    await screen.findByText('用户已授权')
     fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
     await screen.findByText('模拟授权读取失败')
     expect(screen.getByText(expectedLabel)).toBeTruthy()
     expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(!remainsAuthorized)
-    expect(screen.queryByText('已授权')).toBeNull()
+    expect(screen.queryByText('用户已授权')).toBeNull()
   })
 }
 
@@ -166,4 +212,71 @@ it('allows the registered localhost slash-callback path', async () => {
   expect(fetchMock).toHaveBeenCalledWith(destination, {
     credentials: 'omit', redirect: 'error', cache: 'no-store',
   })
+})
+
+it('uses real-mode authorization copy and never calls real OAuth a simulation', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    let data: unknown = []
+    if (path.endsWith('/status')) {
+      data = {
+        mode: 'real',
+        authorized: false,
+        app_configured: true,
+        identity: 'app',
+        token_type: 'user',
+        scopes: [],
+        user_identity_verified: false,
+      }
+    }
+    if (path.includes('/materials?')) data = { items: [], next_cursor: null }
+    return { ok: true, status: 200, json: async () => data }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  expect(await screen.findByRole('button', { name: '授权飞书用户身份' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: '模拟授权飞书' })).toBeNull()
+  expect(await screen.findByText('用户未授权')).toBeTruthy()
+  expect(await screen.findByText(/应用密钥已配置。.*用户身份尚未验证。/)).toBeTruthy()
+})
+
+it('permits an app-identity calendar without user OAuth but not user-only search', async () => {
+  const calls: string[] = []
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input); calls.push(path)
+    const data = path.endsWith('/status')
+      ? { mode: 'real', authorized: false, app_configured: true, identity: 'app', scopes: [], token_type: 'tenant' }
+      : path.includes('/calendar?') ? { items: [], next_cursor: null, timezone: 'Asia/Shanghai' } : []
+    return { ok: true, status: 200, json: async () => data }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
+  expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
+  await screen.findByText('所选时间内没有日程。')
+  expect(calls.filter((path) => path.includes('/calendar?'))).toHaveLength(1)
+  expect(calls.filter((path) => path.endsWith('/authorizations'))).toHaveLength(0)
+})
+
+it('real OAuth presents an official browser link and refreshes only local status', async () => {
+  const calls: string[] = []
+  let authorized = false
+  const destination = 'https://accounts.feishu.cn/open-apis/authen/v1/authorize?client_id=cli_synthetic&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8765%2Fcallback&state=synthetic'
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input); calls.push(path)
+    const data = path.endsWith('/status') ? { mode: 'real', authorized, app_configured: true, identity: 'app', user_identity_verified: false, scopes: [] }
+      : path.endsWith('/authorizations') ? { authorization_url: destination, expires_in_seconds: 300 } : []
+    return { ok: true, status: 200, json: async () => data }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '授权飞书用户身份' }))
+  const link = await screen.findByRole('link', { name: '打开飞书授权页面' })
+  expect(link.getAttribute('href')).toBe(destination)
+  expect(link.getAttribute('rel')).toContain('noopener')
+  expect(calls.every((path) => path.startsWith('/api/v1/'))).toBe(true)
+  expect(screen.queryByText('用户已授权')).toBeNull()
+  authorized = true
+  fireEvent.click(screen.getByRole('button', { name: '刷新用户授权状态' }))
+  await screen.findByText('用户已授权')
+  expect(screen.getByText(/用户身份尚未验证/)).toBeTruthy()
+  expect(screen.queryByRole('link', { name: '打开飞书授权页面' })).toBeNull()
 })

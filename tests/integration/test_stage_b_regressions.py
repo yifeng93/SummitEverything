@@ -223,3 +223,63 @@ def test_cancel_during_answer_provider_discards_generated_answer(tmp_path):
         release.set()
         with pytest.raises(QueryCancelled):
             future.result(timeout=5)
+
+
+def test_concurrent_near_expiry_refresh_is_single_flight(tmp_path):
+    """SB-08: two near-expiry readers must not consume the refresh token twice."""
+    from threading import Lock
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import (
+        FeishuConfig,
+        MemoryCredentialStore,
+        UserCredentials,
+    )
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    entered, release = Event(), Event()
+    lock = Lock()
+
+    class RacingFake(FakeFeishu):
+        count = 0
+
+        def refresh(self, credentials):
+            with lock:
+                self.count += 1
+                number = self.count
+            if number == 1:
+                entered.set()
+                assert release.wait(10)
+            return UserCredentials(
+                access_token=f"synthetic-access-{number}",
+                refresh_token=f"synthetic-refresh-{number}",
+                expires_at=2_000,
+                scopes=credentials.scopes,
+            )
+
+    store = MemoryCredentialStore()
+    store.put(
+        UserCredentials(
+            access_token="synthetic-old",
+            refresh_token="synthetic-old-refresh",
+            expires_at=1_050,
+            scopes=["minutes:read"],
+        )
+    )
+    provider = RacingFake(tmp_path / "remote")
+    service = FeishuService(
+        provider, store, FeishuConfig(), "synthetic-session", clock=lambda: 1000
+    )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(service.materials, "", None, None, 10)
+        assert entered.wait(5)
+        second = pool.submit(service.materials, "", None, None, 10)
+        release.set()
+        first.result(timeout=10)
+        second.result(timeout=10)
+
+    # Exactly one refresh token was consumed and the newest token is retained.
+    assert provider.count == 1
+    assert store.get().refresh_token == "synthetic-refresh-1"
+    assert store.get().access_token == "synthetic-access-1"
