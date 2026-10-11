@@ -1,5 +1,15 @@
 # 最新实现交接
 
+## 2026-10-11 M3 包 1：会话与历史（DEV 完成，独立 QA 待启动）
+
+**当前工作状态：** 分支 `codex/m3-integrated-packages`，从 clean main `5fd91c78930c80b2365957197b8a605757694a91` 开发。M3 包 1 源码固定于 `faf1563d406cf0cf092550f9845626efb9b09c72`；实现与测试提交已完成。全量后端 / Web / 静态和生成检查的真实退出码见 [DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md)，可复演的原始本地日志位于该 worktree ignored `.local/dev/m3-package-1/logs/`。工作树当前仅余交接文档整合；最终 QA checkout 应固定在交接文档提交后的分支 HEAD，产品源码不变。此状态为 DEV 完成，Sol 尚未作 QA 判定。
+
+实现包含 profile 本机 SQLite + workspace_id 二次隔离的 conversation/query/event 持久化；会话分页、详情/重开、删除 API；稳定 request_id 幂等重放；WebUI 历史续问、部分回答和异常断流提示；取消、完成、错误和中断状态留存；原 citation hash / excerpt 不可变，并依据当前资格门显示 available / updated / unavailable。历史不会写进工作库知识语料。API 与工作库契约、OpenAPI JSON / Web 生成类型已同步。
+
+Developer 自测实际观察：README 后端 pytest **395 passed**、Web **47 passed / 11 files**；`uv sync --locked --group dev`、ruff check / format、mypy、lock check、uv build、API type generation、Web typecheck、lint 与 production build 全部 exit 0。后端保留 1 条既有 Starlette/httpx deprecation；Web lint 有 2 条既有 TodayView / ProjectsView effect warnings。实际浏览器 / 原生壳 / runtime 元数据本轮未运行（分别 NOT_RUN / NOT_RUN / UNVERIFIED）；真实 provider / 凭据 / 材料 / Keychain / DMG / 五日 / 双机也都 NOT_RUN。本轮没有调用真实外部服务或访问用户数据。
+
+**新鲜独立 QA 待办（Sol 调度）：** 固定本节最后文档提交 SHA，在独立 checkout 复验 C14、C21 历史存储部分、C13 历史引用部分及资格门回归。黑盒至少复演 history list / reopen / continue、profile 与 workspace 切换隔离、稳定 request 重放和 changed-input 冲突、取消 / 断流 / 重启 partial 准确性、删除 / pending / 更新版本引用状态与打开旧版本 UI。不得把 DEV 自测当整包通过；QA 完成前不进入 M3 正式验收/合并门。
+
 ## 2026-10-11 C03 删除拒绝提示本地化（已合入 main；离线切片 PASS）
 
 针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 提交 `141bd96d15039f1cd29461785fdd91e2ef297476` 独立验证了 37 项定向回归与本地 Fake WebUI 浏览器流程。规范和 C03 随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main，merge SHA：`2f08c764e740afa494a0445ec4d73382fdd55f3b`。完整文档候选 `75bfe2548e947432e72767b0b7822d34685a8b61` 保留 QA 证据和工作流决议；合并后独立报告确认两个源码树相同。
@@ -8,11 +18,11 @@ Sol 判定 C03 离线切片首轮 PASS、repair 0/2。报告链：[DEV 报告](.
 
 用户已确认的长期 Sol→Developer Luna→全新 QA Luna→Sol 流程及历史安装版 overlay 补丁均随 PR #11 进入 main，见 [ADR 0008](../decisions/0008-sol-luna-development-workflow.md) 与[历史补丁](history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)。原主 checkout 的额外 stash `02c4801bc623ac2304bee18cceee64f4795602d8` 仍保留，供需要时恢复 overlay；历史安装文字不能用来重启已完成的 Stage B。main 已 fast-forward 到本次记录的 merge SHA，且 clean。
 
-**推荐下一项（未实施）：** M3.1 问答本地状态薄切片。优先实现每 workspace + profile 隔离的 conversation store / API（列表、重开、删除），再接 UI；如实呈现 SSE 完成、取消和断流状态，旧内容版本引用提示已更新。此建议依据 API-v1 conversations 路由、产品规格的本地聊天历史 / 引用规则及 ACCEPTANCE C14、C21。它不是 M3 的完成声明或范围缩减；角色、记忆、三类问答及完整验收仍待完成。真实 C 门、DMG、五日与双机不因该建议而启动。
+上述 C03 记录发布时的“推荐下一项 M3.1”状态已由本节顶部 M3 包 1 交接取代。Stage B 离线源码结论仍仅覆盖当时离线源码和开发壳，不延伸为 M3 或完整 v1 验收。
 
 ## 2026-10-11 Stage B 离线源码已合并
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 - 起点文档提交：`0a1db5d72e6ac11184d28e65dea3ba008762ba43`，上一源码 `7dc7114595704f34ba386c96324dffa77d529ba4`；两者产品源码无差异。
 - 固定受测源码 SHA `576895f6983ca41cacbbad45a9075b97b9986189`；main已包含受测提交，试验/QA工作树归档后已清理。

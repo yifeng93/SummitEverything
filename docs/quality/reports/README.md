@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## M3 功能包 1：会话与历史（2026-10-11，DEV 完成 / QA pending）
+
+[Developer 报告](2026-10-11-M3-PACKAGE-1-DEV.md)：源码 SHA `faf1563d406cf0cf092550f9845626efb9b09c72`。profile+workspace 隔离历史、查询事件 / partial、API / WebUI、幂等重放与历史引用版本状态已实现；README 全后端 **395 passed**、Web **47 passed**，静态、类型、OpenAPI 生成、打包和 Web build 门禁退出码均为 0。实现者自测不是独立验收，QA 尚未启动；QA 目标和黑盒复演范围见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。实际浏览器 / 原生壳 / 运行时元数据分别 NOT_RUN / NOT_RUN / UNVERIFIED，真实 provider、资料、凭据和发布门未运行。
+
 ## C03 删除拒绝提示本地化跟进（2026-10-11，离线切片与合并后核验通过）
 
 [C03 删除文案 DEV](2026-10-11-C03-DELETE-COPY-DEV.md)：固定源码 `9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 提交 `141bd96d15039f1cd29461785fdd91e2ef297476`。Sol 根据[独立源码 QA](2026-10-11-C03-DELETE-COPY-QA-141bd96.md)判定本切片首轮 PASS、repair 0/2，37 项定向回归与实际 Fake WebUI 浏览器观察通过。文档整合 SHA `75bfe2548e947432e72767b0b7822d34685a8b61`；PR #11 merge SHA `2f08c764e740afa494a0445ec4d73382fdd55f3b`，C03 与规范已进入 main。固定 merge SHA 的 [postmerge QA](2026-10-11-C03-POSTMERGE-2f08c76.md) 记录 guarded pytest 389 passed，lock、祖先、源码树和证据校验通过。真实 / 发布门保持原状态。

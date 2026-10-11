@@ -4,13 +4,15 @@
 
 ## 当前状态与下一步
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+2026-10-11：M3 功能包 1“会话与历史”已由 Developer 实现并完成离线自测，固定源码 SHA 与 QA handoff 见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)和[M3 包 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md)。本地 profile SQLite 按 workspace_id 隔离会话、查询事件、partial 和原引用快照；API / WebUI 已接通历史列表、读取/重开、续问、删除、稳定请求重放与取消。断流/中断不伪装成功；历史引用依据统一资格门区分可用、已更新和不可用。README 门禁本轮为后端 395 passed、Web 47 passed，ruff、format、mypy、lock、uv build、OpenAPI 类型生成、Web typecheck/lint/build 均 exit 0；保留 1 条既有 Starlette/httpx 弃用警告和 2 条 React effect lint warnings。以上为 DEV 自测，不等于 QA 结论；固定源码的全新独立 QA 尚待 Sol 启动。M3 包 2 / 3 尚未开始，C19/C20/C22/C23 与 M3 正式验收均未通过声明。
+
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
 精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
 
-**路线图建议（尚未实施）：** 下一项推荐 M3.1 问答本地状态薄切片：先实现每 workspace + profile 隔离的 conversation store/API（列表、重开、删除），再接 UI；明确记录 SSE 正常完成、取消、断流后的真实状态，并在历史引用指向旧内容版本时提示已更新。依据 API-v1 已定义的 conversations 路由、PRODUCT-SPEC 本地历史与版本绑定要求，以及 ACCEPTANCE C14 / C21。此建议不是缩减 M3：三类问答、角色、记忆和完整 C14/C21 验收仍未完成；M3 目前未开始。
+**下一步：** 由全新 QA 在固定源码 SHA 的独立 checkout 验收 M3 包 1（C14、C21 历史部分、C13 历史引用部分及相关资格回归），并补足实际浏览器复演。QA 结论由 Sol 依据原始证据填写；重要里程碑合并仍需用户批准。QA 完成前不得把包 1 写为 PASS；包 2 / 3 在包级 QA 通过后再接续。
 
 ### C03 非空删除提示本地化跟进（2026-10-11；已合入 main）
 
@@ -38,6 +40,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
+| M3 包 1 会话与历史 | Developer 实现 / 自测完成 | 独立整包 QA 待开始 | 固定源码 SHA 及日志见 LATEST 与 DEV 报告；M3 包 2 / 3 未开始 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |

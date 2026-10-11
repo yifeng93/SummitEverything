@@ -6,15 +6,15 @@
 
 ## 当前状态
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
 权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
-C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
+C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 按三个集成开发包推进；包 1“会话与历史”已由 Developer 完成实现和离线自测，固定源码与独立 QA 状态见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。包 2（完整问答、角色与记忆）及包 3（连续工作与归档压缩）尚未开始。
 
-开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 提交固定 SHA，独立 QA Luna 验收，Sol 判定最终门。当前推荐下一任务为 M3.1 本地问答历史 / 流状态薄切片，详见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)；M3 尚未开始，Stage C 与发布 / 实际试用门仍独立未测。
+开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。M3 包 1 的独立 QA 正在交接；Stage C 与发布 / 实际试用门仍独立未测。
 
 ## 先读哪些文件
 
