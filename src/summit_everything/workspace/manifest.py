@@ -256,12 +256,12 @@ def delete_line(root: Path, line_id: UUID, operation_id: str) -> None:
     expected_hash = current_hash(_manifest_path(root))
     manifest = load_manifest(root)
     if any(project.line_id == line_id for project in manifest.projects):
-        raise WorkspaceError("A nonempty line must have its projects moved or archived first", 409)
+        raise WorkspaceError("这条主线下仍有项目，请先移动项目，再删除空主线。", 409)
     record = next((item for item in manifest.lines if item.id == line_id), None)
     if record is None:
         raise WorkspaceError("Line not found", 404)
     if any(_safe_directory(root, record.directory).iterdir()):
-        raise WorkspaceError("A line containing pages cannot be deleted", 409)
+        raise WorkspaceError("这条主线目录仍有内容，请先移动内容，再删除空主线。", 409)
     manifest.lines.remove(record)
     _write_manifest(root, operation_id, manifest, expected_hash)
     _safe_directory(root, record.directory).rmdir()
@@ -343,7 +343,7 @@ def delete_project(root: Path, project_id: UUID, operation_id: str) -> None:
         raise WorkspaceError("Project not found", 404)
     path = _safe_directory(root, record.directory)
     if any(path.iterdir()):
-        raise WorkspaceError("A nonempty project must be archived", 409)
+        raise WorkspaceError("这个项目仍有内容，无法删除；如需收起，请归档项目。", 409)
     manifest.projects.remove(record)
     _write_manifest(root, operation_id, manifest, expected_hash)
     path.rmdir()
