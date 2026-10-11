@@ -1,10 +1,12 @@
 # 开发与独立验收报告索引
 
-## M3 功能包 1：会话与历史（2026-10-11，repair 1 完成 / 新 QA pending）
+## M3 功能包 1：会话与历史（2026-10-11，repair 1 独立 QA 已记录）
 
 [首次 Developer 报告](2026-10-11-M3-PACKAGE-1-DEV.md)：源码 `faf1563d406cf0cf092550f9845626efb9b09c72`，后续 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 FAIL；原始 report/evidence 保留。QA 揭示新库首问 404 和 updated 引用提示随页面导航丢失。
 
 [Repair 1 Developer 报告](2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)：修复源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`。首问省略 conversation ID 并从响应头获取服务端会话 ID；updated 引用导航校验原 hash 并在目标页面保留版本提示。后端 **395 passed**、Web **49 passed / 12 files**，会话集成 **6 passed**，静态、类型、OpenAPI 生成、打包和 Web build 门禁 exit 0。当前独立 QA 尚待 Sol 调度；该 DEV 自测不等于 QA PASS。实际浏览器 / 原生壳 / runtime 元数据分别 NOT_RUN / NOT_RUN / UNVERIFIED，真实 provider、资料、凭据与发布门未运行。
+
+[Repair 1 独立 QA 报告](2026-10-11-M3-PACKAGE-1-QA-bc3deab.md)：固定源码 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4`；本轮 guarded pytest 395 passed、Web 49 passed / 12 files，README 适用自动门均 exit 0。真实 Fake 浏览器复验首问建会话、历史重开续问、updated 引用打开新正文并持续显示版本提示；真实 Uvicorn 复验幂等冲突、取消、非空 partial 中断重启与两 workspace/profile 隔离。逐项范围和未测门见[QA 报告](2026-10-11-M3-PACKAGE-1-QA-bc3deab.md)及[证据目录](evidence/2026-10-11-m3-package-1-qa-bc3deab/README.md)；Sol 保留最终门判断。
 
 ## C03 删除拒绝提示本地化跟进（2026-10-11，离线切片与合并后核验通过）
 
