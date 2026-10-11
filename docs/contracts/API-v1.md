@@ -200,3 +200,5 @@ Provider HTTP 使用请求独立传输（ADR 0007）；调用返回前解析/传
 真实 OAuth UI 只展示已校验的官方 HTTPS 授权链接，由用户在独立浏览器完成后刷新本机 `/status`；不 fetch 外部authorize URL、不模拟 code、不自动轮询旧authorized值宣称本轮成功。原生target=_blank仅允许用户点击官方authorize链接交系统浏览器；Fake窄callback helper保持不变。实际外部打开、callback端口注册及真实身份验证仍为C证据门。应用身份日历不要求用户OAuth；mode/identity来自API。
 
 2026-10-11刷新重启防重发：user凭据vault同槽新增本地refresh_consumed标记（旧凭据缺字段默认为false）。发送单次refresh之前必须成功保存true；超时、响应损坏或进程中断后重启仍拒绝旧token，重新授权恢复。合法轮换的新token保存false；失败保存不发送HTTP。此字段不是HTTP响应DTO或已验证身份，不泄露凭据。
+
+迁移边界：本轮真实 OAuth/token 调用始终为 0，真实 adapter 尚未发布，也未迁移 SWB/SK 或外部凭据。缺少 refresh_consumed 的兼容形状只经合成历史 fixture 验证；它不能证明旧 token 未被消费。未来若导入或恢复消费历史未知的旧真实凭据，必须先重新授权，不得据默认 false 宣称跨旧版本的 no-resend 保证。本轮保证从本实现成功保存消费预留后开始，既有单次调用账本不重置。

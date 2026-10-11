@@ -1,0 +1,8 @@
+CUA native app window: SummitLunaQA (bundle id local.summit.stageb.luna.final.ui.qa)
+Exact checkout binary: /Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything/native/.build/debug/SummitEverything
+Observed alert: 本地服务未就绪；请确认已安装 uv、Node.js，并在仓库中执行过 cd web && npm ci。
+API: http://127.0.0.1:18901/api/v1/health -> 200 ready, run_id C73B316A-CFDF-4123-8A52-B0489FC22845
+Selected native child SUMMIT_RUN_ID: C73B316A-CFDF-4123-8A52-B0489FC22845 (matches API)
+Web: http://127.0.0.1:15181/ -> HTTP 200
+Independent Swift URLSession probe configured URL: http://127.0.0.1:15181; response.url: http://127.0.0.1:15181/; URL equality: false; status: 200.
+CUA rendered the alert over the native app window after readiness timeout; CUA also displayed the blank WebView before the alert. Screenshot was observed in the CUA transcript but the current adapter did not expose a file-export method; therefore no image file is claimed here.

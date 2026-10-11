@@ -1,0 +1,1 @@
+First-pass audit enumerated only files-envelope manifests and therefore omitted the two flat UI SHA maps (42 and 29 files). The fixed audit recognizes both formats and recalculates each entry; the corrected identity-audit.json is authoritative.

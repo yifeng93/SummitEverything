@@ -1,0 +1,14 @@
+{
+  "source_sha": "fd2042385c4916598337239f5259b3ef1889372a",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything",
+  "bundle_id": "local.summit.stageb.luna.final.ui.qa",
+  "binary": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything/native/.build/debug/SummitEverything",
+  "api_port": 18901,
+  "web_port": 15181,
+  "health_run_id": "C73B316A-CFDF-4123-8A52-B0489FC22845",
+  "selected_native_child_SUMMIT_RUN_ID": "C73B316A-CFDF-4123-8A52-B0489FC22845",
+  "run_id_match": true,
+  "health": "ready / HTTP 200",
+  "web": "HTTP 200",
+  "window_result": "blank WKWebView then readiness error alert"
+}

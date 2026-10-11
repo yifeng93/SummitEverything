@@ -1,0 +1,165 @@
+{
+  "exact_sha": "fd2042385c4916598337239f5259b3ef1889372a",
+  "branch": "HEAD",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything",
+  "python": "3.12.13 (main, Aug  7 2026, 02:15:23) [Clang 22.1.3 ]",
+  "executable": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/.venv/bin/python3",
+  "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/src",
+  "guard_active": "1",
+  "uv": "uv 0.12.3 (507230998 2026-08-07 aarch64-apple-darwin)",
+  "node": "v24.15.0",
+  "npm": "11.12.1",
+  "venv": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/.venv",
+  "node_modules": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/web/node_modules",
+  "protected_diff": "",
+  "protected_tree_ids": {
+    "src": "3791005efa2d288a32e44032b8a2ff7f542d73e3",
+    "tests": "1e606252d66eb6164062689f720716732dcbbaed",
+    "web": "0234ef89d57553672e9ca78ebaad1ac2aaa8c33d",
+    "native": "6c080676be02e30e4ef071e76f4ab4b7337a4a47",
+    "scripts": "01977033a6bc21ac916a1556f9dffd372a12f659",
+    "pyproject.toml": "dbafb679a516a317c584fbd8a5f2cd6510390cb4",
+    "uv.lock": "fef23de1d156922a77f3166248687337ad1eb4f6"
+  },
+  "lock_sha256": {
+    "uv.lock": "148ac7c5d1d795ec0ee17384bca7c2173dddb6ba8945b23445da71356c9bfbda",
+    "web/package-lock.json": "d7b39319f006b0280857a02f3932f7e71e8d38cd0e63a0684f9b41f0d9c26ad3"
+  },
+  "api_idempotent_sha256": {
+    "web/openapi.json": "794e5089c799bf8ab7c319ae3385fca31aeecf2d9860386605cc98c32d011a5d",
+    "web/src/api/generated.ts": "1e5aac8161f7f77d17b8edea70acf4775b25648de105c33a38c06a604ca52055"
+  },
+  "historical_manifests": [
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/manifest.json",
+      "manifest_sha256": "e27a0c98abf701771dc292ec6d1cafa3b27925387fa170947ad0dc398c0479ce",
+      "file_count": 22,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r2/manifest.json",
+      "manifest_sha256": "1ed3e718e2597b312f9b4f07b6f09f79fbe20a0aa6ba58d49f40c77787e3ca45",
+      "file_count": 22,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r3/manifest.json",
+      "manifest_sha256": "c4e53557e483dcadacd04e545c901e1a652d4bf55559b91fd0623038db389740",
+      "file_count": 38,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r4/manifest.json",
+      "manifest_sha256": "90c8ecc3c004cb08e8528743285f23aecac9bf57ec0f5a0fc0e167cfe5c93250",
+      "file_count": 34,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/manifest.json",
+      "manifest_sha256": "c5d718a0546f5fdc8138aee51b9f717448f913f8a86594264dd66e0ad4eedcdb",
+      "file_count": 10,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-qa/manifest.json",
+      "manifest_sha256": "0a0987bde2c05d4bc33314b12aa22c34f244cf87c1b4c8ffd13ebc73f40b502e",
+      "file_count": 27,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-retest/manifest.json",
+      "manifest_sha256": "b07d7ed94fc69effc570001ccfff065203dd53f740d9ac27f8587d043c2b935f",
+      "file_count": 26,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-ui-qa/manifest.json",
+      "manifest_sha256": "908b1b4cf24fb2b5cb1b51d92c78c58a28635dd01a471fda241e398327c0d938",
+      "file_count": 0,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-native-readiness-dev/manifest.json",
+      "manifest_sha256": "f0447b03aa195d645357dc0a2e84ac60efb1e41a9db4889bdbb52f4ceebedba9",
+      "file_count": 16,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-refresh-restart-dev/manifest.json",
+      "manifest_sha256": "a81f17350b7356305d6a1b33c6ec4eed2ad115995fd56e915d107ae98e2502d1",
+      "file_count": 20,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-sol-closure/manifest.json",
+      "manifest_sha256": "7563dace7ed6cc939cef93c08ea537fca305dd314079ea8a0e232b892f5ddb95",
+      "file_count": 32,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-strict-marker-dev/manifest.json",
+      "manifest_sha256": "51152516cf51c91c7eca2a5062a4ba40accdd94039629e68ff8d1834abb6a5be",
+      "file_count": 18,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-ui-retest/manifest.json",
+      "manifest_sha256": "4812e13ab0031df50165b2c468c65f9f9f160c493fd9cbe4074f43be4ea74d98",
+      "file_count": 0,
+      "file_mismatches": [],
+      "report_mismatch": null
+    }
+  ],
+  "fixed_candidate_source_manifests": {
+    "2026-10-11-stage-b-native-readiness-dev": {
+      "file_count": 101,
+      "mismatches": [],
+      "manifest_sha256": "86961d3d08f65e2f003eeb223c8550b32bc8622d81e40e994f918c63b8bfde5b"
+    },
+    "2026-10-11-stage-b-strict-marker-dev": {
+      "file_count": 101,
+      "mismatches": [
+        "native/Sources/SummitEverythingApp/App.swift"
+      ],
+      "manifest_sha256": "023d7f996fb7552c507da2cc5c246b12bbf5679f52ef388978a85afe04ac46e6"
+    }
+  },
+  "guard_negative_controls": {
+    "non_loopback_socket": {
+      "result": "blocked",
+      "exception": "RuntimeError",
+      "message": "review blocks non-loopback sockets"
+    },
+    "external_dns": {
+      "result": "blocked",
+      "exception": "AssertionError",
+      "message": "offline guard: system DNS resolution forbidden"
+    },
+    "OS_Keychain_constructor": {
+      "result": "blocked",
+      "exception": "SettingsError",
+      "message": "credential_store_unavailable"
+    }
+  },
+  "live_transfer_workers": 0,
+  "real_calls": {
+    "feishu_exchange": "0/1",
+    "feishu_refresh": "0/1",
+    "deepseek_chat": "0/1",
+    "model_studio_embedding": "0/1",
+    "model_studio_rerank": "0/1",
+    "real_remote_writes": 0
+  }
+}

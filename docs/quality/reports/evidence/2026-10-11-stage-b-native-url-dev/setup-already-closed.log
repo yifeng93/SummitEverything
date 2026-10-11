@@ -1,0 +1,5 @@
+configured=http://127.0.0.1:15181
+response=nil
+equal=false
+status=0
+error=Could not connect to the server.

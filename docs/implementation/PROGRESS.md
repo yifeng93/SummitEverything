@@ -4,7 +4,7 @@
 
 ## 当前状态与下一步
 
-2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。已固定源码 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`；旧候选独立QA发现 QA-B-01/P1（未知刷新重启重发），FAIL已保留。8b复验又发现消费标记严格解析P2及原生启动竞态P1，旧FAIL保留。最终修复源码 `fd2042385c4916598337239f5259b3ef1889372a`，DEV后端388/Web45通过；Luna High新独立checkout复验中，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
+2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。已固定源码 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`；旧候选独立QA发现 QA-B-01/P1（未知刷新重启重发），FAIL已保留。8b复验又发现消费标记严格解析P2及原生启动竞态P1，旧FAIL保留。fd204238 后端独立388+25通过，但实际原生冷启动发现URL结尾斜杠比较P1，FAIL保留。已修复并固定新源码 `576895f6983ca41cacbbad45a9075b97b9986189`；Luna High新独立checkout复验中，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
@@ -34,7 +34,7 @@
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 
-### Stage B current worktree (2026-10-10，Luna 修复候选)
+### 历史 Stage B worktree（2026-10-10，Luna 修复候选；当前状态见顶部）
 
 - Branch: `codex/stage-b-real-providers`; isolated checkout `/Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything`; base `ba0d330820d5d98b7e17e86cad5007b5a3a16c1d`. Current candidate SHA is recorded in the latest handoff after final checks.
 - Fixed Sol findings SB-01/02 and added candidate cap/re-read checks; query cancellation stops later provider stages. Settings credentials bind to the saved account. Feishu logout and refresh/callback generation checks prevent stale authorization writes. Callback access logs redact query fields; actions and task reads resolve against the active workspace service.

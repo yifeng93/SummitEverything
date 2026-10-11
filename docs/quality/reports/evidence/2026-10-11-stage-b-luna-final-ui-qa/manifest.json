@@ -1,0 +1,18 @@
+{
+  "source_sha": "fd2042385c4916598337239f5259b3ef1889372a",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything",
+  "files": {
+    "approved-synthetic-page.md": "38cde6094045f1171888323a85ccd0e5a423747068a95795b944f299eab3b41a",
+    "browser-api-access.log": "4bca084390e84f2861a414fb2f70fa6584771ca0e517544b088b2f7a55db9472",
+    "browser-ui-observations.md": "38951effcb5cf03f539b7acccda73f70249b7246282f98a7b61e6d3e218e6e71",
+    "cleanup.json": "d67e79af1f42195b67d6a22d39ce9d872eeb48d369501c731c2e7a60c3bdb1b3",
+    "native-cold-start-alert.txt": "b996db0179309d7fee22ea4201343ff96fc3ba87942c1035f2ea79879e408b67",
+    "native-run-identity.json": "f56c15e760a87f93829b357c6c4239d52de83f349c0bd732ae584707520dac6a",
+    "npm-ci.log": "431ef6d628d655e8e8e7ba87c0c6389375e17d00253982d4d461221604c06989",
+    "provider-settings.json": "e90cef1311ba69237a5e973019b53810f7334582bde572c85013a34cf50b0dd6",
+    "swift-build.log": "0a171e4463250b52c76d552288cd597e785a638024758884c03794041541e2d5",
+    "uv-sync.log": "db7e585b1312c11c9aab4582b7a2447630283dbe89b52cb24e0a6e315f20ab87",
+    "web-url-probe.log": "ea7d8990cf841a484ffbbf9a6ae6f737eae6c81b202f0ff729dd0d0da6d0a4d3",
+    "workspace-manifest.json": "71ca2b409ffaca06910bb7f6a4fe50d38a99594ba8b9bf9ec0459e9b85af809d"
+  }
+}

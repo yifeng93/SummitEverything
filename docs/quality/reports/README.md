@@ -70,3 +70,6 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 
 - [8b后端复验与严格字段P2](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md)、[8b原生启动竞态P1](2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md)均按旧SHA保留。
 - [严格标记DEV](2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生readiness DEV](2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)：最终源码fd204238，388/Web45；新固定SHA独立复验pending。
+
+- [fd后端独立QA](2026-10-11-STAGE-B-LUNA-FINAL-OFFLINE-QA.md)：388+25、Web45与构建通过，整体候选因原生冷启动P1仍未通过。
+- [根URL修复DEV](2026-10-11-STAGE-B-NATIVE-URL-DEV.md)：新源码576895f，实际loopback URL before失败→after通过；独立新SHA复验pending。

@@ -1,0 +1,12 @@
+{
+  "algorithm": "sha256",
+  "file_count": 6,
+  "files": {
+    "after.log": "d01bb525656741abc9d653aff55c4ae51da322d91648316eb493fd827fccf5a7",
+    "before.log": "482329e7566bfa00a5f482d7a10790b2c8897d83361c751200f51db9552aa228",
+    "probe.py": "ea3fa9cb917a41729dca81dbf6319cea72be13656ea673a43a120677d1e6876e",
+    "setup-already-closed.log": "8a9e29bc4501baabe00c39accd76062ab46fae845be3461b70b781a87292f7f7",
+    "swift.log": "6d148e42d827514a82024cfbfdc79a08949caa02864e61cbbccb34db1cf5a3d5",
+    "url-probe.swift": "8560c67c618d041256046f2f3c3a2da7f40a16f373bcdb684d8e400490208e8b"
+  }
+}
