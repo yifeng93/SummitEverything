@@ -11,7 +11,7 @@
 - Job：job_id、kind、state（queued / running / succeeded / failed / unknown / cancelled）、progress、result、error。进度不虚构百分比，取消不保证远端未计费。
 - IntakeItem：item_id、source_id、title、filename、original_relative_path、state（pending / processing / reviewing / completed / failed / cancelled）、latest_job_id。状态反映最新整理作业与其稿件，不由前端猜测。
 - Citation：page_id、content_sha256、chunk_id、heading、excerpt、validity；客户端用稳定页面路由打开，不信任任意文件 URL。
-- Answer：answer_id、question、text、citations、inferences、missing_information、purpose、index_status。infer / advice 不伪装来源事实。
+- Answer：answer_id、question、text、citations、answer_mode、source_statements、inferences、advice、missing_information、purpose、index_status。来源陈述、推断、建议和缺失资料分别展示，不能互相伪装。
 
 服务 context 决定活动工作库和本地 profile。除工作库打开外，请求不接受任意 root / 绝对路径。业务 API 使用启动器传递的 Bearer token；allowlist origin，拒绝非本机绑定和无 token 的状态修改。浏览器 OAuth 回调无法携带此 Bearer，是唯一认证例外：必须验证本机先前发起、绑定会话、限时且一次性的 state，再处理授权结果；回调不能访问其他业务功能。
 
@@ -71,12 +71,12 @@
 | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
 | POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
 | POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有索引时，批准 mutation 自动执行同 fingerprint 的 incremental。状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
-| POST /queries；DELETE /queries/{request_id} | question、conversation_id?、role_id?、purpose:current/history → SSE / 取消 |
+| POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
 | GET /conversations?cursor&limit；GET /conversations/{id}；POST /conversations/{id}/reopen；DELETE /conversations/{id} | 按本地 profile 与当前 workspace 隔离的问答历史；列表默认 20、limit 1–100；历史只读重开可接续提问或删除；不进入工作库语料 |
-| GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机角色，不能修改批准 / 工具权限 |
-| GET /memory/candidates；POST /memory/candidates | 仅用户明确表达的 message_id / text → 本机待确认候选 |
-| POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑内容 → 活跃本机记忆 |
-| GET /memory；PATCH /memory/{id}；DELETE /memory/{id} | 管理活跃本机记忆 |
+| GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机 profile+workspace 角色 CRUD；instructions 最多 4000 字符，角色上下文预算 0–6000 字节且每次查询会校验实际长度。角色只影响表达，不修改批准 / 工具权限 |
+| GET /memory/candidates；POST /memory/candidates | 用户必须明确勾选 `user_expression=true`，`message_id` 必须是当前 profile/workspace 历史中的真实用户问题，`text` 必须与问题原文相符且表达本人偏好 / 习惯 / 事实；引用、来源、转述、粘贴及来源 canary 文本拒绝；服务端核验消息来源，不信任 UI 标签；响应是本机 pending 候选，不能直接进入上下文 |
+| POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑后的正文 → 活跃本机记忆；保留来源 message_id 与确认意图，重放同意图幂等，改内容冲突 |
+| GET /memory；PATCH /memory/{id}；DELETE /memory/{id} | 查看、编辑、删除活跃本机记忆；按 profile 与 workspace 隔离，不写工作库 |
 | GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置；Stage B 候选已实现原子本地保存；设置读取 / 保存不联网 |
 | PUT /credentials/{provider}；DELETE /credentials/{provider} | Stage B 候选已实现显式 macOS Keychain 和测试注入边界；响应只返回 configured 状态 |
 | POST /settings/connections/{provider} | 计划路由；尚未实现。连接检查进入 Stage C 授权门，不能由刷新设置触发 |

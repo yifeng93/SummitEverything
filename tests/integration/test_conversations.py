@@ -88,6 +88,9 @@ def test_first_query_without_conversation_id_creates_and_reopens_server_conversa
         "/api/v1/queries", json={**payload, "question": "改了内容但重复 ID"}
     )
     assert conflicting_retry.status_code == 409
+    changed_mode_retry = api.post("/api/v1/queries", json={**payload, "answer_mode": "comparison"})
+    assert changed_mode_retry.status_code == 409
+    assert service.calls == 1
 
     second_profile = tmp_path / "second-profile"
     second_api = TestClient(
@@ -172,8 +175,10 @@ def test_cancel_from_other_workspace_does_not_touch_active_query(tmp_path: Path)
             purpose=RetrievalPurpose.CURRENT,
             limit=5,
             cancelled=None,
+            answer_mode="fact",
+            context=None,
         ):
-            del root, fingerprint, limit
+            del root, fingerprint, limit, answer_mode, context
             started.set()
             assert release.wait(3)
             if cancelled is not None and cancelled.is_set():

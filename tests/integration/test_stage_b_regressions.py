@@ -69,7 +69,7 @@ def test_citations_must_be_rechecked_after_answer_provider_returns(tmp_path):
     root, path = _workspace(tmp_path)
 
     class EditingAnswerer:
-        def answer(self, question, passages):
+        def answer(self, question, passages, context=None):
             path.write_text(path.read_text().replace("北馆", "西馆"))
             return GroundedAnswer(text="北馆。")
 
@@ -127,7 +127,7 @@ def test_cancel_after_embedding_suppresses_later_provider_calls(tmp_path):
             return [(i, 1.0) for i in range(len(texts))]
 
     class SpyAnswer:
-        def answer(self, question, passages):
+        def answer(self, question, passages, context=None):
             calls.append("answer")
             return GroundedAnswer(text="合成回答")
 
@@ -172,7 +172,7 @@ def test_cancel_during_rerank_suppresses_answer_provider(tmp_path):
             return [(i, 1.0) for i in range(len(texts))]
 
     class SpyAnswer:
-        def answer(self, question, passages):
+        def answer(self, question, passages, context=None):
             calls.append("answer")
             return GroundedAnswer(text="合成回答")
 
@@ -201,7 +201,7 @@ def test_cancel_during_answer_provider_discards_generated_answer(tmp_path):
     entered, release = Event(), Event()
 
     class BlockingAnswerer:
-        def answer(self, question, passages):
+        def answer(self, question, passages, context=None):
             entered.set()
             assert release.wait(5)
             return GroundedAnswer(text="合成回答")

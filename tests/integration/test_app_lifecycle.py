@@ -217,8 +217,10 @@ def test_query_cancel_emits_terminal_error_without_completed_answer(tmp_path: Pa
             purpose=RetrievalPurpose.CURRENT,
             limit=5,
             cancelled=None,
+            answer_mode="fact",
+            context=None,
         ):
-            del cancelled
+            del cancelled, answer_mode, context
             started.set()
             assert release.wait(3)
             return Answer(

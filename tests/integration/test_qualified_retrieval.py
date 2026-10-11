@@ -106,11 +106,14 @@ def test_source_and_draft_material_never_enter_qualified_index(tmp_path: Path) -
 
 def test_grounded_answer_receives_only_server_qualified_citations(tmp_path: Path) -> None:
     root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
-    approve_page(root, line_id, project_id, body="正式确认的地点是北馆。")
+    relevant_id, _ = approve_page(root, line_id, project_id, body="正式确认的地点是北馆。")
     captured: list[dict[str, str]] = []
 
     class Answerer:
-        def answer(self, question: str, passages: list[dict[str, str]]) -> GroundedAnswer:
+        def answer(
+            self, question: str, passages: list[dict[str, str]], context=None
+        ) -> GroundedAnswer:
+            del context
             captured.extend(passages)
             return GroundedAnswer(
                 text="北馆。", inferences=["来自正式资料"], missing_information=[]
@@ -128,7 +131,9 @@ def test_grounded_answer_receives_only_server_qualified_citations(tmp_path: Path
     assert answer.text == "北馆。"
     assert answer.citations
     assert answer.inferences == ["来自正式资料"]
-    assert captured == [{"heading": "页面内容", "excerpt": "正式确认的地点是北馆。"}]
+    assert captured == [
+        {"source_id": str(relevant_id), "heading": "页面内容", "excerpt": "正式确认的地点是北馆。"}
+    ]
 
 
 def test_external_edit_and_reapproval_reject_old_cached_chunk(tmp_path: Path) -> None:

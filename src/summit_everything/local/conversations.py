@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import json
 import os
 import sqlite3
@@ -34,6 +35,12 @@ class ConversationMessage(BaseModel):
     answer: str
     state: QueryState
     purpose: Literal["current", "history"]
+    answer_mode: Literal["fact", "comparison", "plan"] = "fact"
+    role_id: UUID | None = None
+    source_statements: list[str] = Field(default_factory=list)
+    inferences: list[str] = Field(default_factory=list)
+    advice: list[str] = Field(default_factory=list)
+    missing_information: list[str] = Field(default_factory=list)
     citations: list[Citation] = Field(default_factory=list)
     events: list[QueryEvent] = Field(default_factory=list)
     error: str | None = None
@@ -64,9 +71,12 @@ class QueryStart(BaseModel):
 
     request_id: UUID
     conversation_id: UUID | None = None
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=8000)
     fingerprint: str = Field(min_length=1)
     purpose: Literal["current", "history"] = "current"
+    answer_mode: Literal["fact", "comparison", "plan"] = "fact"
+    role_id: UUID | None = None
+    context_version: str = "answer-context-v1"
 
 
 class QueryConflict(ValueError):
@@ -138,6 +148,16 @@ class ConversationStore:
                 );
                 """
             )
+            columns = {str(row[1]) for row in connection.execute("PRAGMA table_info(queries)")}
+            for name, declaration in (
+                ("answer_mode", "TEXT NOT NULL DEFAULT 'fact'"),
+                ("role_id", "TEXT"),
+                ("context_version", "TEXT NOT NULL DEFAULT 'answer-context-v1'"),
+                ("answer_json", "TEXT"),
+                ("intent_hash", "TEXT"),
+            ):
+                if name not in columns:
+                    connection.execute(f"ALTER TABLE queries ADD COLUMN {name} {declaration}")
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
@@ -181,24 +201,39 @@ class ConversationStore:
                     continue
 
     def begin(self, workspace_id: UUID, payload: QueryStart) -> tuple[bool, UUID]:
-        request_hash = _json(
-            {
-                "question": payload.question,
-                "fingerprint": payload.fingerprint,
-                "purpose": payload.purpose,
-                "conversation_id": str(payload.conversation_id)
-                if payload.conversation_id
-                else None,
-            }
-        )
+        intent = {
+            "question": payload.question,
+            "fingerprint": payload.fingerprint,
+            "purpose": payload.purpose,
+            "answer_mode": payload.answer_mode,
+            "role_id": str(payload.role_id) if payload.role_id else None,
+            "conversation_id": str(payload.conversation_id) if payload.conversation_id else None,
+        }
+        intent_hash = _json(intent)
+        request_hash = _json({**intent, "context_version": payload.context_version})
         with self._connect() as connection, connection:
             existing = connection.execute(
-                "SELECT request_hash, conversation_id, state FROM queries "
+                "SELECT request_hash, intent_hash, conversation_id, state, question, fingerprint, "
+                "purpose, answer_mode, role_id FROM queries "
                 "WHERE workspace_id=? AND request_id=?",
                 (str(workspace_id), str(payload.request_id)),
             ).fetchone()
             if existing is not None:
-                if str(existing["request_hash"]) != request_hash:
+                if existing["intent_hash"] is not None:
+                    same_intent = str(existing["intent_hash"]) == intent_hash
+                else:
+                    legacy_hash = _json(
+                        {
+                            "question": str(existing["question"]),
+                            "fingerprint": str(existing["fingerprint"]),
+                            "purpose": str(existing["purpose"]),
+                            "conversation_id": str(existing["conversation_id"])
+                            if payload.conversation_id is not None
+                            else None,
+                        }
+                    )
+                    same_intent = str(existing["request_hash"]) == legacy_hash
+                if not same_intent:
                     raise QueryConflict("查询标识已用于其他问题，不能重复发送")
                 if str(existing["state"]) == "running":
                     raise QueryConflict("该问题仍在处理中；请从历史查看状态，不会自动重发")
@@ -222,8 +257,10 @@ class ConversationStore:
             )
             connection.execute(
                 "INSERT INTO queries(workspace_id, request_id, conversation_id, request_hash, "
-                "question, fingerprint, purpose, state, created_at, owner_pid) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 'running', ?, ?)",
+                "question, fingerprint, purpose, answer_mode, role_id, context_version, "
+                "intent_hash, "
+                "state, created_at, owner_pid) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?)",
                 (
                     str(workspace_id),
                     str(payload.request_id),
@@ -232,6 +269,10 @@ class ConversationStore:
                     payload.question,
                     payload.fingerprint,
                     payload.purpose,
+                    payload.answer_mode,
+                    str(payload.role_id) if payload.role_id else None,
+                    payload.context_version,
+                    intent_hash,
                     now,
                     os.getpid(),
                 ),
@@ -342,10 +383,12 @@ class ConversationStore:
                 "VALUES (?, ?, ?, ?, ?)",
                 (str(workspace_id), str(request_id), sequence, event_type, _json(data)),
             )
+            answer_json = _json(data) if event_type == "completed" else None
             connection.execute(
-                "UPDATE queries SET state=?, error=?, completed_at=? "
+                "UPDATE queries SET state=?, error=?, completed_at=?, "
+                "answer_json=COALESCE(?, answer_json) "
                 "WHERE workspace_id=? AND request_id=? AND state='running'",
-                (state, error, _now(), str(workspace_id), str(request_id)),
+                (state, error, _now(), answer_json, str(workspace_id), str(request_id)),
             )
             connection.execute(
                 "UPDATE conversations SET updated_at=? WHERE workspace_id=? AND conversation_id=?",
@@ -430,7 +473,8 @@ class ConversationStore:
             if conversation is None:
                 return None
             queries = connection.execute(
-                "SELECT request_id, question, answer, purpose, state, citations_json, error, "
+                "SELECT request_id, question, answer, purpose, answer_mode, role_id, answer_json, "
+                "state, citations_json, error, "
                 "created_at, completed_at "
                 "FROM queries WHERE workspace_id=? AND conversation_id=? "
                 "ORDER BY created_at, request_id",
@@ -450,6 +494,18 @@ class ConversationStore:
                         answer=str(query["answer"]),
                         state=query["state"],
                         purpose=query["purpose"],
+                        answer_mode=query["answer_mode"]
+                        if query["answer_mode"] in {"fact", "comparison", "plan"}
+                        else "fact",
+                        role_id=UUID(query["role_id"]) if query["role_id"] else None,
+                        source_statements=json.loads(query["answer_json"] or "{}").get(
+                            "source_statements", []
+                        ),
+                        inferences=json.loads(query["answer_json"] or "{}").get("inferences", []),
+                        advice=json.loads(query["answer_json"] or "{}").get("advice", []),
+                        missing_information=json.loads(query["answer_json"] or "{}").get(
+                            "missing_information", []
+                        ),
                         citations=[
                             Citation.model_validate(item)
                             for item in json.loads(query["citations_json"])
@@ -491,3 +547,32 @@ class ConversationStore:
                 (str(workspace_id), str(conversation_id)),
             ).fetchall()
         return tuple(UUID(str(row["request_id"])) for row in rows)
+
+    def previous_user_questions(
+        self, workspace_id: UUID, conversation_id: UUID | None, *, excluding: UUID
+    ) -> builtins.list[str]:
+        if conversation_id is None:
+            return []
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT question FROM queries WHERE workspace_id=? AND conversation_id=? "
+                "AND request_id<>? ORDER BY created_at DESC, request_id DESC LIMIT 8",
+                (str(workspace_id), str(conversation_id), str(excluding)),
+            ).fetchall()
+        return [str(row["question"]) for row in reversed(rows)]
+
+    def user_message(self, workspace_id: UUID, request_id: UUID) -> str | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT question FROM queries WHERE workspace_id=? AND request_id=?",
+                (str(workspace_id), str(request_id)),
+            ).fetchone()
+        return str(row["question"]) if row else None
+
+    def has_request(self, workspace_id: UUID, request_id: UUID) -> bool:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT 1 FROM queries WHERE workspace_id=? AND request_id=?",
+                (str(workspace_id), str(request_id)),
+            ).fetchone()
+        return row is not None

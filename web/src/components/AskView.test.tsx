@@ -51,7 +51,7 @@ it('creates a first conversation on the server, adopts its ID, then continues it
         updated_at: '2026-10-11T01:01:00Z', message_count: questions.length, state: 'completed',
         messages: questions.map((question, index) => ({
           request_id: String(bodies[index].request_id), question, answer: `回答 ${index + 1}`,
-          state: 'completed', purpose: 'current', citations: [], events: [], created_at: '2026-10-11T01:00:00Z',
+          state: 'completed', purpose: 'current', answer_mode: 'fact', citations: [], events: [], created_at: '2026-10-11T01:00:00Z',
         })),
       })
     }
@@ -79,7 +79,7 @@ it('reopens local history, continues the same conversation, and labels an update
   const original: Record<string, unknown> = {
     conversation_id: 'conversation-1', title: '旧问题', created_at: '2026-10-11T01:00:00Z',
     updated_at: '2026-10-11T01:00:00Z', message_count: 1, state: 'completed',
-    messages: [{ request_id: 'old-request', question: '原问题', answer: '原回答', state: 'completed', purpose: 'current', citations: [citation], events: [], created_at: '2026-10-11T01:00:00Z' }],
+    messages: [{ request_id: 'old-request', question: '原问题', answer: '原回答', state: 'completed', purpose: 'current', answer_mode: 'fact', citations: [citation], events: [], created_at: '2026-10-11T01:00:00Z' }],
   }
   const requestBodies: Record<string, unknown>[] = []
   const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -116,7 +116,7 @@ it('reopens local history, continues the same conversation, and labels an update
     fingerprint: 'fake-fingerprint', purpose: 'current',
   })
   expect(await screen.findByText('后续回答')).toBeTruthy()
-  expect(await screen.findByText('回答 · 已完成')).toBeTruthy()
+  expect(await screen.findByText(/回答 · 事实问答 · 已完成/)).toBeTruthy()
 })
 
 it('does not retry a stream that ends without its single terminal event', async () => {
@@ -144,4 +144,67 @@ it('does not retry a stream that ends without its single terminal event', async 
   expect(await screen.findByText(/连接已结束，回答未完整送达/)).toBeTruthy()
   expect(screen.getByText('部分')).toBeTruthy()
   expect(queryCalls).toBe(1)
+})
+
+it('sends the selected answer mode and role, and confirms a server-verified memory candidate', async () => {
+  vi.stubGlobal('crypto', { randomUUID: vi.fn().mockReturnValueOnce('request-1').mockReturnValueOnce('confirmation-1') })
+  const role = { role_id: 'role-1', name: '简明', instructions: '先列依据', context_budget: 2000, created_at: '', updated_at: '' }
+  const candidate = { candidate_id: 'candidate-1', message_id: 'request-1', text: '我偏好简短回答。', state: 'pending', created_at: '' }
+  let roles: typeof role[] = []
+  let candidates: typeof candidate[] = []
+  const queryBodies: Record<string, unknown>[] = []
+  let confirmation: Record<string, unknown> | null = null
+  const conversation = {
+    conversation_id: 'conversation-1', title: '工作问题', created_at: '', updated_at: '', message_count: 1, state: 'completed',
+    messages: [{ request_id: 'request-1', question: '我偏好简短回答。', answer: '已确认资料回答。', state: 'completed', purpose: 'current', answer_mode: 'plan', source_statements: ['预算已确认。'], inferences: [], advice: ['补齐负责人。'], missing_information: ['未提供负责人。'], citations: [], events: [], created_at: '' }],
+  }
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/roles') {
+      if (init?.method === 'POST') { roles = [role]; return Response.json(role, { status: 201 }) }
+      return Response.json(roles)
+    }
+    if (url === '/api/v1/memory') return Response.json([])
+    if (url === '/api/v1/memory/candidates') {
+      if (init?.method === 'POST') { candidates = [candidate]; return Response.json(candidate, { status: 201 }) }
+      return Response.json(candidates)
+    }
+    if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
+    if (url === '/api/v1/queries') {
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>
+      queryBodies.push(body)
+      return new Response([
+        event('request-1', 1, 'status', { state: 'retrieving', conversation_id: 'conversation-1' }),
+        event('request-1', 2, 'completed', { text: '已确认资料回答。', source_statements: ['预算已确认。'], advice: ['补齐负责人。'], missing_information: ['未提供负责人。'] }),
+      ].join(''), { status: 200, headers: { 'X-Conversation-ID': 'conversation-1' } })
+    }
+    if (url.endsWith('/conversations/conversation-1/reopen')) return Response.json(conversation)
+    if (url.endsWith('/memory/candidates/candidate-1/confirmations')) {
+      confirmation = JSON.parse(String(init?.body)) as Record<string, unknown>
+      candidates = []
+      return Response.json({ memory_id: 'memory-1', source_message_id: 'request-1', text: confirmation.text, created_at: '', updated_at: '' })
+    }
+    throw new Error(`Unexpected fetch ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+
+  fireEvent.change(await screen.findByLabelText('角色名称'), { target: { value: '简明' } })
+  fireEvent.change(screen.getByLabelText('表达偏好'), { target: { value: '先列依据' } })
+  fireEvent.click(screen.getByRole('button', { name: '保存角色' }))
+  expect(await screen.findAllByRole('option', { name: '简明' })).toHaveLength(2)
+  fireEvent.change(screen.getByLabelText('回答方式'), { target: { value: 'plan' } })
+  fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '这项计划下一步呢' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  expect(await screen.findByText('补齐负责人。')).toBeTruthy()
+  expect(await screen.findByText(/回答 · 工作方案 · 已完成/)).toBeTruthy()
+  await waitFor(() => expect(queryBodies).toHaveLength(1))
+  expect(queryBodies[0]).toMatchObject({ answer_mode: 'plan', role_id: 'role-1', question: '这项计划下一步呢' })
+
+  fireEvent.click(await screen.findByLabelText('这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用'))
+  fireEvent.click(await screen.findByRole('button', { name: '创建待确认记忆候选' }))
+  fireEvent.click(await screen.findByRole('button', { name: '确认并保存' }))
+  await waitFor(() => expect(confirmation).toMatchObject({ confirmation_id: 'confirmation-1', text: '我偏好简短回答。' }))
 })

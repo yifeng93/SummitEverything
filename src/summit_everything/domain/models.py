@@ -151,7 +151,10 @@ class Answer(BaseModel):
     question: str
     text: str
     citations: list[Citation] = Field(default_factory=list)
+    answer_mode: Literal["fact", "comparison", "plan"] = "fact"
+    source_statements: list[str] = Field(default_factory=list)
     inferences: list[str] = Field(default_factory=list)
+    advice: list[str] = Field(default_factory=list)
     missing_information: list[str] = Field(default_factory=list)
     purpose: Literal["current", "history"] = "current"
     index_status: Literal["ready", "empty", "not_ready"]

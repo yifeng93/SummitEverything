@@ -397,7 +397,7 @@ def test_limited_deepseek_smoke_is_synthetic_and_one_shot(tmp_path, monkeypatch)
 
     sent = []
 
-    def synthetic_answer(self, question, passages):
+    def synthetic_answer(self, question, passages, context=None):
         sent.append((question, passages))
         return GroundedAnswer(text="连接正常", inferences=[], missing_information=[])
 

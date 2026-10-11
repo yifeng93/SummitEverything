@@ -95,6 +95,15 @@ from summit_everything.integrations.settings import (
     embedding_fingerprint,
     provider_settings_payload,
 )
+from summit_everything.local.answer_context import (
+    AnswerContext,
+    AnswerContextStore,
+    AnswerRole,
+    ContextConflict,
+    MemoryCandidate,
+    RoleInput,
+    UserMemory,
+)
 from summit_everything.local.conversations import (
     ACTIVE_QUERIES,
     ConversationDetail,
@@ -213,11 +222,28 @@ class IndexPlanRequest(RequestModel):
 
 
 class QueryRequest(RequestModel):
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=8000)
     fingerprint: str = Field(min_length=1)
     purpose: Literal["current", "history"] = "current"
+    answer_mode: Literal["fact", "comparison", "plan"] = "fact"
+    role_id: UUID | None = None
     request_id: UUID | None = None
     conversation_id: UUID | None = None
+
+
+class MemoryCandidateRequest(RequestModel):
+    message_id: UUID
+    text: str = Field(min_length=1, max_length=4000)
+    user_expression: Literal[True]
+
+
+class MemoryConfirmationRequest(RequestModel):
+    confirmation_id: str = Field(min_length=1, max_length=200)
+    text: str = Field(min_length=1, max_length=4000)
+
+
+class MemoryPatchRequest(RequestModel):
+    text: str = Field(min_length=1, max_length=4000)
 
 
 class JournalRequest(RequestModel):
@@ -629,17 +655,14 @@ def create_app(
             IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"),
             embedding=providers.embedding() if providers else None,
             reranker=providers.reranker() if providers else None,
-            answer_provider=(
-                cast(AnswerProvider, providers.llm())
-                if providers
-                and settings_store(workspace).read().mode == "real"
-                and settings_store(workspace).read().llm.provider != "fake"
-                else None
-            ),
+            answer_provider=(cast(AnswerProvider, providers.llm()) if providers else None),
         )
 
     def conversations_for(workspace: WorkspaceContext) -> ConversationStore:
         return ConversationStore(Path(workspace.local_profile_dir) / "conversations.sqlite3")
+
+    def answer_context_for(workspace: WorkspaceContext) -> AnswerContextStore:
+        return AnswerContextStore(Path(workspace.local_profile_dir) / "answer_context.sqlite3")
 
     def query_cancellation_key(
         workspace: WorkspaceContext, request_id: UUID
@@ -1438,6 +1461,200 @@ def create_app(
             )
         return Response(status_code=204)
 
+    @app.get("/api/v1/roles", dependencies=[Depends(authenticated)])
+    def roles_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[AnswerRole]:
+        return answer_context_for(workspace).list_roles(workspace.workspace_id)
+
+    @app.post("/api/v1/roles", status_code=201, dependencies=[Depends(authenticated)])
+    def roles_create(
+        payload: RoleInput,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> AnswerRole:
+        return answer_context_for(workspace).save_role(workspace.workspace_id, payload)
+
+    @app.patch("/api/v1/roles/{role_id}", dependencies=[Depends(authenticated)])
+    def roles_update(
+        role_id: UUID,
+        payload: RoleInput,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> AnswerRole:
+        store = answer_context_for(workspace)
+        if store.role(workspace.workspace_id, role_id) is None:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这个问答角色。"}
+            )
+        return store.save_role(workspace.workspace_id, payload, role_id)
+
+    @app.delete("/api/v1/roles/{role_id}", status_code=204, dependencies=[Depends(authenticated)])
+    def roles_delete(
+        role_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        if not answer_context_for(workspace).delete_role(workspace.workspace_id, role_id):
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这个问答角色。"}
+            )
+        return Response(status_code=204)
+
+    @app.get("/api/v1/memory/candidates", dependencies=[Depends(authenticated)])
+    def memory_candidates(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[MemoryCandidate]:
+        return answer_context_for(workspace).candidates(workspace.workspace_id)
+
+    @app.post("/api/v1/memory/candidates", status_code=201, dependencies=[Depends(authenticated)])
+    def memory_candidate_create(
+        payload: MemoryCandidateRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MemoryCandidate:
+        source = conversations_for(workspace).user_message(
+            workspace.workspace_id, payload.message_id
+        )
+        text = payload.text.strip()
+        if source is None or text not in source:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": "只能从本人历史问题中的原文提取记忆。",
+                },
+            )
+        provenance_markers = (
+            "原文",
+            "原件",
+            "来源",
+            "材料",
+            "资料",
+            "引用",
+            "转述",
+            "摘录",
+            "粘贴",
+            "转发",
+            "以下内容",
+            "这段内容",
+            "文档写",
+            "页面写",
+            "邮件写",
+            "记录写",
+            "according to",
+            "source says",
+            "quoted",
+            "excerpt",
+            "forwarded",
+            "paste",
+            "“",
+            "”",
+            '"',
+            "‘",
+            "’",
+            "'",
+            "「",
+            "」",
+            "『",
+            "』",
+            ">",
+        )
+        if any(marker.casefold() in text.casefold() for marker in provenance_markers):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+                },
+            )
+        explicit_expression = any(
+            marker in text
+            for marker in (
+                "我希望",
+                "我偏好",
+                "我喜欢",
+                "我不喜欢",
+                "我需要",
+                "我负责",
+                "我通常",
+                "我习惯",
+                "我的工作",
+                "我的目标",
+                "我的偏好",
+                "我是",
+                "我计划",
+            )
+        )
+        if not explicit_expression:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": (
+                        "请只选择你本人明确表达的偏好、习惯或事实；引用和粘贴材料不能作为记忆。"
+                    ),
+                },
+            )
+        return answer_context_for(workspace).create_candidate(
+            workspace.workspace_id, payload.message_id, text
+        )
+
+    @app.post(
+        "/api/v1/memory/candidates/{candidate_id}/confirmations",
+        dependencies=[Depends(authenticated)],
+    )
+    def memory_candidate_confirm(
+        candidate_id: UUID,
+        payload: MemoryConfirmationRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> UserMemory:
+        try:
+            return answer_context_for(workspace).confirm_candidate(
+                workspace.workspace_id,
+                candidate_id,
+                confirmation_id=payload.confirmation_id,
+                text=payload.text.strip(),
+            )
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": str(exc)}
+            ) from exc
+        except ContextConflict as exc:
+            raise HTTPException(
+                status_code=409, detail={"code": "intent_conflict", "message": str(exc)}
+            ) from exc
+
+    @app.get("/api/v1/memory", dependencies=[Depends(authenticated)])
+    def memory_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[UserMemory]:
+        return answer_context_for(workspace).memories(workspace.workspace_id)
+
+    @app.patch("/api/v1/memory/{memory_id}", dependencies=[Depends(authenticated)])
+    def memory_update(
+        memory_id: UUID,
+        payload: MemoryPatchRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> UserMemory:
+        updated = answer_context_for(workspace).update_memory(
+            workspace.workspace_id, memory_id, payload.text.strip()
+        )
+        if updated is None:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这条已确认记忆。"}
+            )
+        return updated
+
+    @app.delete(
+        "/api/v1/memory/{memory_id}", status_code=204, dependencies=[Depends(authenticated)]
+    )
+    def memory_delete(
+        memory_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        if not answer_context_for(workspace).delete_memory(workspace.workspace_id, memory_id):
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这条已确认记忆。"}
+            )
+        return Response(status_code=204)
+
     @app.post("/api/v1/queries", dependencies=[Depends(authenticated)])
     def query_stream(
         request: Request,
@@ -1448,6 +1665,48 @@ def create_app(
         request_id = str(payload.request_id or uuid4())
         stable_request_id = UUID(request_id)
         store = conversations_for(workspace)
+        answer_store = answer_context_for(workspace)
+        replay_existing = store.has_request(workspace.workspace_id, stable_request_id)
+        context = AnswerContext(answer_mode=payload.answer_mode)
+        context_version = "replay-existing-request"
+        if not replay_existing:
+            selected_role = None
+            if payload.role_id is not None:
+                selected_role = answer_store.role(workspace.workspace_id, payload.role_id)
+                if selected_role is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail={"code": "not_found", "message": "找不到这个问答角色。"},
+                    )
+                if len(selected_role.instructions.encode("utf-8")) > selected_role.context_budget:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={
+                            "code": "context_budget_exceeded",
+                            "message": "角色说明超过设定预算；请编辑角色内容后重试。",
+                        },
+                    )
+            try:
+                memories = answer_store.active_memory_text(workspace.workspace_id)
+            except ContextConflict as exc:
+                raise HTTPException(
+                    status_code=422, detail={"code": "context_budget_exceeded", "message": str(exc)}
+                ) from exc
+            previous_questions = store.previous_user_questions(
+                workspace.workspace_id, payload.conversation_id, excluding=stable_request_id
+            )
+            context = AnswerContext(
+                answer_mode=payload.answer_mode,
+                role_name=selected_role.name if selected_role else "",
+                role_instructions=selected_role.instructions if selected_role else "",
+                user_memories=memories,
+                previous_user_questions=previous_questions,
+            )
+            context_version = hashlib.sha256(
+                json.dumps(
+                    context.model_dump(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+                ).encode("utf-8")
+            ).hexdigest()
         active_query_key = (
             str(Path(workspace.local_profile_dir).resolve() / "conversations.sqlite3"),
             str(workspace.workspace_id),
@@ -1467,6 +1726,9 @@ def create_app(
                     question=payload.question,
                     fingerprint=payload.fingerprint,
                     purpose=payload.purpose,
+                    answer_mode=payload.answer_mode,
+                    role_id=payload.role_id,
+                    context_version=context_version,
                 ),
             )
         except QueryConflict as exc:
@@ -1541,6 +1803,8 @@ def create_app(
                         payload.question,
                         fingerprint=payload.fingerprint,
                         purpose=RetrievalPurpose(payload.purpose),
+                        answer_mode=payload.answer_mode,
+                        context=context,
                         cancelled=cancelled,
                     )
                 )

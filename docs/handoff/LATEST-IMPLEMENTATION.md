@@ -1,14 +1,17 @@
 # 最新实现交接
 
-## 2026-10-11 M3 包 1：会话与历史（首轮 QA FAIL，repair 1 完成，待全新 QA）
+## 2026-10-11 M3 包 2：完整问答、角色与记忆（Developer 完成，QA pending）
 
-**当前工作状态：** 分支 `codex/m3-integrated-packages`，从 clean main `5fd91c78930c80b2365957197b8a605757694a91` 开发。首轮独立 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 **FAIL**：新工作库首问携带未创建的客户端会话 ID 而 404；打开 updated 引用后版本提示随 AskView 卸载而消失。原报告及证据保留：[QA 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md)。repair 1/2 已修复，源码 commit `a9078bd327f73f2cde3bab14a8665885d0f57c1c`；本交接文档整合后的分支 HEAD 是下一轮 QA 固定目标，源码树对应上述源码 SHA。完整命令真实日志 / 退出码位于 ignored `.local/dev/m3-package-1-repair-1/logs/`，详见[repair 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)。Sol 应派发全新 QA Luna 在独立 checkout 复验两个修复及整个包 1；不能把 DEV 自测当阶段通过。
+**当前工作状态：** 分支 `codex/m3-integrated-packages`，包 1 已由 Sol 判定离线集成 PASS，repair 1/2。首次失败固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 的 P1/P2 报告及证据未改写；修复源码 `a9078bd327f73f2cde3bab14a8665885d0f57c1c`，独立 QA 集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4`。[QA-bc3deab 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-QA-bc3deab.md)及 evidence 目录保留；Sol 已核真实日志退出码、53 项 manifest 零 mismatch、固定源码产品树一致。QA 限制：真实浏览器 request body/response header 未直接捕获，console NOT_RUN，runtime UNVERIFIED；真实/发布门均未测。
 
-修复后首问省略 `conversation_id`，采用 SSE 响应 `X-Conversation-ID` 返回的真实会话 ID 供重开和续问；已存在但不存在 / 跨 profile 的显式 ID 仍由后端 404 拒绝。updated 引用打开时携带原 content hash，由页面读取冲突处理展示稳定应用级版本提示。profile 本机 SQLite + workspace_id 二次隔离的历史、稳定 request_id、SSE 状态、原引用快照及其余功能维持原实现；历史不会进入知识语料。
+包 2 源码与交接 SHA：待下方提交后填写。Developer 实现范围：fact / comparison / plan 三路径及 structured answer history；profile+workspace 角色/记忆 CRUD、角色及记忆预算、明确用户声明和服务端历史 user message 来源核验、候选编辑确认和 provenance；最多 8 条先前 user question 仅用于指代，不带 assistant answers；每个新问题仍用当前资格门重新检索，稳定 ID 重放保存事件且不二次调用；WebUI 支持三模式、角色/记忆和结构化历史。API / OpenAPI 与 TS 类型已经同步。
+DEV 全量检查：后端 `399 passed`，Feishu 专项 `35 passed`；Web `50 passed / 12 files`，ruff、format、mypy（39 source files）、lock、uv build、OpenAPI generation、Web typecheck/lint/build 均 exit 0。lint 两条既有 React effect warnings 与 Starlette/httpx deprecation 保留。原始 stdout 与退出码见 `.local/dev/m3-package-2/`，细节见[包 2 Developer 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-DEV.md)。这些属于 DEV 自测，**包 2 QA 与 Sol 阶段判定仍 pending**。
 
-Developer repair 1 自测实际观察：后端 pytest **395 passed**，Web **49 passed / 12 files**；会话集成测试 6 passed；README 静态、lock、uv build、OpenAPI type generation、Web typecheck/lint/build 均 exit 0。后端有 1 条既有 Starlette/httpx deprecation；Web lint 有 2 条既有 TodayView / ProjectsView effect warnings。实际浏览器 / 原生壳 / runtime 元数据未运行（NOT_RUN / NOT_RUN / UNVERIFIED）；真实 provider / 凭据 / 材料 / Keychain / DMG / 五日 / 双机均 NOT_RUN。没有调用真实外部服务或访问用户数据。逐命令证据见 repair 1 DEV 报告。
+QA 复演优先覆盖 C19/C20/C21 与 C13/C14 回归：三类答案和合成跨材料问题、来源/推断/建议/缺失分离、role/memory 实际 provider payload、越界预算、真实用户问题 ID + 明确 user_expression 声明、quoted/source-canary 与 assistant/伪造 ID 拒绝、memory pending/confirm/edit/delete/profile 隔离、历史结构化字段、删除 role 后重开、后续用户消息上下文、同 ID 在 context 改变后的回放无重复 provider。DeepSeek 仅 stub-tested；真实模型、真实资料、Keychain、浏览器、runtime 和发布门仍 NOT_RUN / UNVERIFIED。包 3 尚未开始，M3 正式验收未完成。
 
-**新鲜独立 QA 待办（Sol 调度）：** 对本交接文档提交后的分支 HEAD 在独立 checkout 重新验收完整包 1，包含原报告要求的 C14、C21 历史部分、C13 历史引用及资格回归、实际浏览器列表/重开/续问/取消/更新引用/库切换，以及首问/服务端 ID/跨 profile 404。QA 未完成前包 1 仍未通过，包 2 / 3 不在本轮 repair 范围。
+包 1 QA 覆盖包括真实浏览器新库首问/历史重开续问、SSE complete/cancel/non-empty partial restart、updated/unavailable/superseded 部分引用资格，以及 profile/workspace 隔离。包 2 需额外验证多轮上下文实际 provider payload 和 request hash、新旧会话 schema 兼容、角色/记忆上下文预算、确认来源与跨 profile 隔离。
+
+**M3 包 1 历史报告链：** [初次 DEV](../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md) → [首轮 QA FAIL](../quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md) → [repair 1 DEV](../quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md) → [repair 1 QA](../quality/reports/2026-10-11-M3-PACKAGE-1-QA-bc3deab.md)。包 2 完成前不启动下一轮独立 QA；包 3 和 M3 正式验收未完成。
 
 ## 2026-10-11 C03 删除拒绝提示本地化（已合入 main；离线切片 PASS）
 

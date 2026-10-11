@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from threading import Event
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 from uuid import UUID, uuid4
 
 from summit_everything.domain.content import (
@@ -16,6 +17,7 @@ from summit_everything.domain.models import Answer, Citation, IndexPlan, IndexRe
 from summit_everything.integrations.embedding import FakeEmbedding, cosine_similarity
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import FakeReranker
+from summit_everything.local.answer_context import AnswerContext
 from summit_everything.retrieval.chunking import TextChunk, chunk_markdown
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
@@ -41,7 +43,9 @@ class RerankerProvider(Protocol):
 
 
 class AnswerProvider(Protocol):
-    def answer(self, question: str, passages: list[dict[str, str]]) -> GroundedAnswer: ...
+    def answer(
+        self, question: str, passages: list[dict[str, str]], context: AnswerContext
+    ) -> GroundedAnswer: ...
 
 
 class QueryService:
@@ -196,7 +200,10 @@ class QueryService:
         purpose: RetrievalPurpose = RetrievalPurpose.CURRENT,
         limit: int = 5,
         cancelled: Event | None = None,
+        answer_mode: Literal["fact", "comparison", "plan"] = "fact",
+        context: AnswerContext | None = None,
     ) -> Answer:
+        context = context or AnswerContext(answer_mode=answer_mode)
         self._check_cancelled(cancelled)
         root = root.resolve()
         manifest = load_manifest(root)
@@ -206,6 +213,7 @@ class QueryService:
                 question=question,
                 text="本地索引尚未就绪。",
                 purpose=purpose.value,
+                answer_mode=answer_mode,
                 index_status="not_ready",
                 missing_information=["请先完成当前模型版本的索引。"],
             )
@@ -216,6 +224,7 @@ class QueryService:
                 question=question,
                 text="没有找到经确认且仍为当前版本的相关资料。",
                 purpose=purpose.value,
+                answer_mode=answer_mode,
                 index_status="empty",
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
@@ -229,7 +238,12 @@ class QueryService:
         qualified = self._qualified_chunks(root, dense, purpose=purpose)
         candidates = qualified[:20]
         if not candidates:
-            return self._empty_answer(question, purpose, "没有找到经确认且仍为当前版本的相关资料。")
+            return self._empty_answer(
+                question,
+                purpose,
+                "没有找到经确认且仍为当前版本的相关资料。",
+                answer_mode=answer_mode,
+            )
         self._check_cancelled(cancelled)
         reranked = self.reranker.rank(question, [str(item["text"]) for item in candidates])
         self._check_cancelled(cancelled)
@@ -298,27 +312,63 @@ class QueryService:
                 )
             )
         if not citations:
+            missing_by_mode = {
+                "fact": "没有找到经确认且仍为当前版本的相关资料。",
+                "comparison": "没有足够的独立有效材料进行跨材料比较。",
+                "plan": "缺少可用的已确认依据，暂不能提出有事实支撑的工作方案。",
+            }
             return Answer(
                 answer_id=uuid4(),
                 question=question,
-                text="没有找到经确认且仍为当前版本的相关资料。",
+                text=missing_by_mode[answer_mode],
                 purpose=purpose.value,
+                answer_mode=answer_mode,
                 index_status="ready",
                 missing_information=["已缓存的资料版本与当前工作库不一致，或当前资格检查未通过。"],
             )
         passages = [
-            {"heading": citation.heading or "页面内容", "excerpt": citation.excerpt}
-            for citation in citations
+            {
+                "source_id": str(citation.page_id),
+                "heading": citation.heading or "页面内容",
+                "excerpt": citation.excerpt,
+            }
+            for citation in self._one_passage_per_page(citations)
         ]
+        context_bytes = len(
+            json.dumps(
+                {"question": question, "passages": passages, "context": context.model_dump()},
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
+        if context_bytes > 90_000:
+            raise ValueError("问答上下文超过本机 90 KB 预算；请缩短问题或编辑角色、记忆后重试。")
         self._check_cancelled(cancelled)
-        answer = self.answer_provider.answer(question, passages) if self.answer_provider else None
+        answer = (
+            self.answer_provider.answer(question, passages, context)
+            if self.answer_provider
+            else None
+        )
         self._check_cancelled(cancelled)
         if not self._citations_are_current(root, citations, purpose=purpose):
             return self._empty_answer(
                 question,
                 purpose,
                 "资料在生成期间发生变化；旧答案已失效，请重新索引后查询。",
+                answer_mode=answer_mode,
             )
+        source_statements = [f"{passage['heading']}：{passage['excerpt']}" for passage in passages]
+        source_count = len({passage["source_id"] for passage in passages})
+        comparison_missing = (
+            ["可用材料不足两组，无法进行跨材料比较。"]
+            if answer_mode == "comparison" and source_count < 2
+            else []
+        )
+        comparison_inference = (
+            ["这里仅比较当前列出的已确认材料，不推断未提供的维度。"]
+            if answer_mode == "comparison" and source_count >= 2
+            else []
+        )
         return Answer(
             answer_id=uuid4(),
             question=question,
@@ -331,8 +381,17 @@ class QueryService:
                 )
             ),
             citations=citations,
-            inferences=answer.inferences if answer is not None else [],
-            missing_information=answer.missing_information if answer is not None else [],
+            answer_mode=answer_mode,
+            source_statements=source_statements,
+            inferences=answer.inferences if answer is not None else comparison_inference,
+            advice=answer.advice
+            if answer is not None
+            else (
+                ["先核对以上依据，再补齐缺失条件后决定下一步。"] if answer_mode == "plan" else []
+            ),
+            missing_information=(
+                answer.missing_information if answer is not None else comparison_missing
+            ),
             purpose=purpose.value,
             index_status="ready",
         )
@@ -355,6 +414,16 @@ class QueryService:
             if eligibility.eligible:
                 qualified.append(page)
         return qualified
+
+    @staticmethod
+    def _one_passage_per_page(citations: list[Citation]) -> list[Citation]:
+        seen: set[UUID] = set()
+        unique: list[Citation] = []
+        for citation in citations:
+            if citation.page_id not in seen:
+                seen.add(citation.page_id)
+                unique.append(citation)
+        return unique
 
     def _qualified_chunks(
         self,
@@ -429,12 +498,19 @@ class QueryService:
             raise QueryCancelled()
 
     @staticmethod
-    def _empty_answer(question: str, purpose: RetrievalPurpose, message: str) -> Answer:
+    def _empty_answer(
+        question: str,
+        purpose: RetrievalPurpose,
+        message: str,
+        *,
+        answer_mode: Literal["fact", "comparison", "plan"] = "fact",
+    ) -> Answer:
         return Answer(
             answer_id=uuid4(),
             question=question,
             text=message,
             purpose=purpose.value,
+            answer_mode=answer_mode,
             index_status="ready",
             missing_information=[message],
         )

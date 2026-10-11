@@ -3254,6 +3254,556 @@
         }
       }
     },
+    "/api/v1/roles": {
+      "get": {
+        "summary": "Roles List",
+        "operationId": "roles_list_api_v1_roles_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnswerRole"
+                  },
+                  "title": "Response Roles List Api V1 Roles Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Roles Create",
+        "operationId": "roles_create_api_v1_roles_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerRole"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles/{role_id}": {
+      "patch": {
+        "summary": "Roles Update",
+        "operationId": "roles_update_api_v1_roles__role_id__patch",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Role Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerRole"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Roles Delete",
+        "operationId": "roles_delete_api_v1_roles__role_id__delete",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Role Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/memory/candidates": {
+      "get": {
+        "summary": "Memory Candidates",
+        "operationId": "memory_candidates_api_v1_memory_candidates_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemoryCandidate"
+                  },
+                  "title": "Response Memory Candidates Api V1 Memory Candidates Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Memory Candidate Create",
+        "operationId": "memory_candidate_create_api_v1_memory_candidates_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryCandidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryCandidate"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/memory/candidates/{candidate_id}/confirmations": {
+      "post": {
+        "summary": "Memory Candidate Confirm",
+        "operationId": "memory_candidate_confirm_api_v1_memory_candidates__candidate_id__confirmations_post",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryConfirmationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMemory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/memory": {
+      "get": {
+        "summary": "Memory List",
+        "operationId": "memory_list_api_v1_memory_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserMemory"
+                  },
+                  "title": "Response Memory List Api V1 Memory Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/memory/{memory_id}": {
+      "patch": {
+        "summary": "Memory Update",
+        "operationId": "memory_update_api_v1_memory__memory_id__patch",
+        "parameters": [
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Memory Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryPatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMemory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Memory Delete",
+        "operationId": "memory_delete_api_v1_memory__memory_id__delete",
+        "parameters": [
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Memory Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/queries": {
       "post": {
         "summary": "Query Stream",
@@ -4241,6 +4791,53 @@
         ],
         "title": "ActionProposal"
       },
+      "AnswerRole": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Instructions",
+            "default": ""
+          },
+          "context_budget": {
+            "type": "integer",
+            "maximum": 6000.0,
+            "minimum": 0.0,
+            "title": "Context Budget",
+            "default": 2000
+          },
+          "role_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Role Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "role_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AnswerRole"
+      },
       "AuthorizationStart": {
         "properties": {
           "authorization_url": {
@@ -4520,6 +5117,56 @@
               "history"
             ],
             "title": "Purpose"
+          },
+          "answer_mode": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "comparison",
+              "plan"
+            ],
+            "title": "Answer Mode",
+            "default": "fact"
+          },
+          "role_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Id"
+          },
+          "source_statements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Statements"
+          },
+          "inferences": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Inferences"
+          },
+          "advice": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Advice"
+          },
+          "missing_information": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Information"
           },
           "citations": {
             "items": {
@@ -5971,6 +6618,109 @@
         ],
         "title": "MaterialPage"
       },
+      "MemoryCandidate": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Candidate Id"
+          },
+          "message_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Message Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "message_id",
+          "text",
+          "state",
+          "created_at"
+        ],
+        "title": "MemoryCandidate"
+      },
+      "MemoryCandidateRequest": {
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Message Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "user_expression": {
+            "type": "boolean",
+            "const": true,
+            "title": "User Expression"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message_id",
+          "text",
+          "user_expression"
+        ],
+        "title": "MemoryCandidateRequest"
+      },
+      "MemoryConfirmationRequest": {
+        "properties": {
+          "confirmation_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Confirmation Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmation_id",
+          "text"
+        ],
+        "title": "MemoryConfirmationRequest"
+      },
+      "MemoryPatchRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "MemoryPatchRequest"
+      },
       "ModelStudioSettingsPatch": {
         "properties": {
           "provider": {
@@ -6586,6 +7336,7 @@
         "properties": {
           "question": {
             "type": "string",
+            "maxLength": 8000,
             "minLength": 1,
             "title": "Question"
           },
@@ -6602,6 +7353,28 @@
             ],
             "title": "Purpose",
             "default": "current"
+          },
+          "answer_mode": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "comparison",
+              "plan"
+            ],
+            "title": "Answer Mode",
+            "default": "fact"
+          },
+          "role_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Id"
           },
           "request_id": {
             "anyOf": [
@@ -6686,6 +7459,35 @@
         "additionalProperties": false,
         "type": "object",
         "title": "RerankSettings"
+      },
+      "RoleInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Instructions",
+            "default": ""
+          },
+          "context_budget": {
+            "type": "integer",
+            "maximum": 6000.0,
+            "minimum": 0.0,
+            "title": "Context Budget",
+            "default": 2000
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "RoleInput"
       },
       "SettingsSummary": {
         "properties": {
@@ -6852,6 +7654,43 @@
           "items"
         ],
         "title": "TaskPage"
+      },
+      "UserMemory": {
+        "properties": {
+          "memory_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Memory Id"
+          },
+          "source_message_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Message Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "memory_id",
+          "source_message_id",
+          "text",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "UserMemory"
       },
       "UserOutcome": {
         "properties": {
@@ -7024,11 +7863,35 @@
             "title": "Citations",
             "type": "array"
           },
+          "answer_mode": {
+            "default": "fact",
+            "enum": [
+              "fact",
+              "comparison",
+              "plan"
+            ],
+            "title": "Answer Mode",
+            "type": "string"
+          },
+          "source_statements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Statements",
+            "type": "array"
+          },
           "inferences": {
             "items": {
               "type": "string"
             },
             "title": "Inferences",
+            "type": "array"
+          },
+          "advice": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Advice",
             "type": "array"
           },
           "missing_information": {

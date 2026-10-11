@@ -4,15 +4,17 @@
 
 ## 当前状态与下一步
 
-2026-10-11：M3 包 1 首轮独立 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 **FAIL**（P1 新库首问 404；P2 updated 引用提示在页面导航后消失），完整原报告及 evidence 保留。Developer repair 1/2 已提交源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`：首问省略会话 ID 并使用服务端 `X-Conversation-ID` 续问/重开；updated 引用传原 hash 并在目标页面稳定呈现版本冲突提示。后端 395 passed、Web 49 passed / 12 files、定向会话集成 6 passed；README 静态、lock、打包、OpenAPI 类型生成、Web 类型/ lint / 构建均 exit 0。保留 1 条既有 Starlette/httpx deprecation 与 2 条 React effect lint warnings。完整日志及退出码见[repair 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)。当前状态为 repair 1 自测完成、**等待全新固定 SHA QA**，不是 PASS；包 2 / 3 尚未开始。首次 C13 历史引用 QA 未构造 superseded / archived 引用，完整 M3 后续 QA 仍需覆盖；真实 provider / 凭据 / 资料 / Keychain / DMG / 五日 / 双机均 NOT_RUN。
+2026-10-11：M3 包 1“会话与历史”首轮独立 QA 在固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 发现 P1/P2，原报告保留；repair 1/2 后源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c` 由全新 QA 在集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4` 通过，Sol 最终判定包 1 离线集成 PASS。53 项证据 manifest 无 mismatch、产品树与源码 SHA 一致。QA 实际浏览器/Uvicorn 通过首问、历史续问、旧引用提示、取消、非空 partial 重启、profile/workspace 隔离；README 自动门 guarded pytest 395、Web 49/12 及静态/生成/构建均 PASS。限制：浏览器 request body/response header 未直接捕获，console NOT_RUN、runtime UNVERIFIED、多轮模型上下文属于包 2 尚未测，真实/发布门 NOT_RUN。完整报告链见[报告索引](../quality/reports/README.md)。
+
+同日：包 2 完整问答、角色与记忆由 Developer 完成实现和自动自测：fact/comparison/plan、结构化来源/推断/建议/缺失信息、本机角色及预算、带服务端来源核验和用户明确声明的记忆候选/确认/管理、最多 8 条先前 user question 的多轮参考上下文、历史持久化和 AskView 管理。当前资格门用于每次新检索；历史 assistant 不作为 passage；稳定 request ID 在角色/记忆/对话变化后重放已保存事件且不再次调用 provider。全量后端 399 passed，README 专项 Feishu 35 passed；Web 50 passed / 12 files；ruff、format、mypy、lock、uv build、OpenAPI 类型生成、Web typecheck/lint/build 均 exit 0。lint 保留两条 TodayView / ProjectsView effect warnings 和一条既有 Starlette/httpx deprecation。实际日志/退出码位于 `.local/dev/m3-package-2/`，报告见[包 2 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-DEV.md)。当前固定 SHA 的全新独立 QA pending，Sol 尚未判包级状态；真实服务、浏览器、runtime 和发布门仍 NOT_RUN / UNVERIFIED。**下一步：由 Sol 调度整包 QA**；包 3 和 M3 正式验收尚未完成。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
-精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
+精确源码的独立离线 QA 已通过的范围仅包括 M1、Stage B 离线范围及 M3 包 1；后续真实门与 M3–M5 继续按全 v1 计划，原授权次数不重置。历史报告只对应各自 SHA。
 
-**下一步：** 由全新 QA 在 repair 1 文档整合后的固定分支 HEAD 独立验收完整 M3 包 1，覆盖首问 ID 契约、历史/续问、引用更新提示、C14、C21 历史部分、C13 历史引用资格及实际浏览器复演。首轮 QA FAIL 原报告保持不变；QA 对新 SHA 的结论由 Sol 根据原始证据记录。QA 完成前不得将包 1写为 PASS，也不进入包 2/3；重要里程碑合并仍需用户批准。
+**下一步：** 对包 2 固定源码 SHA 由全新 QA 在独立 checkout 完整验收；QA findings 仍按最多两轮修复流程处理。首轮 QA FAIL 原报告保持历史结论，修复目标另由新 SHA 通过。QA 未通过前不能将包 2 写为 PASS；包 3、M3 正式验收与重要里程碑合并尚待后续阶段。
 
 ### C03 非空删除提示本地化跟进（2026-10-11；已合入 main）
 
