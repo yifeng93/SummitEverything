@@ -2,10 +2,11 @@
 
 ## 2026-10-11 Stage B 离线收口候选
 
-2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。已固定源码 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`；旧候选独立QA发现 QA-B-01/P1（未知刷新重启重发），FAIL已保留。8b复验又发现消费标记严格解析P2及原生启动竞态P1，旧FAIL保留。fd204238 后端独立388+25通过，但实际原生冷启动发现URL结尾斜杠比较P1，FAIL保留。已修复并固定新源码 `576895f6983ca41cacbbad45a9075b97b9986189`；Luna High新独立checkout复验中，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。独立离线QA已通过，PR/main整合待完成。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
 
 - 起点文档提交：`0a1db5d72e6ac11184d28e65dea3ba008762ba43`，上一源码 `7dc7114595704f34ba386c96324dffa77d529ba4`；两者产品源码无差异。
-- 当前修复工作区：`codex/deepseek-stage-b-trial`；当前固定源码 SHA `576895f6983ca41cacbbad45a9075b97b9986189`；上一候选7f3119a/8b6259a独立QA发现的FAIL保留。main 仍未改动。
+- 固定受测源码 SHA `576895f6983ca41cacbbad45a9075b97b9986189`；分支codex/deepseek-stage-b-trial，main整合待完成。
+- [最终后端复验](../quality/reports/2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md)、[最终实际UI复验](../quality/reports/2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md)、[根URL修复DEV](../quality/reports/2026-10-11-STAGE-B-NATIVE-URL-DEV.md)。
 - [严格标记DEV](../quality/reports/2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生双服务readiness DEV](../quality/reports/2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)、[8b后端复验](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md)、[8b原生FAIL](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md)。
 - [刷新重启修复DEV](../quality/reports/2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md)、[首次独立QA FAIL](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md)。
 - [Sol DEV 收口报告](../quality/reports/2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md)、[ADR 0007](../decisions/0007-request-owned-provider-transport.md)、[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)。

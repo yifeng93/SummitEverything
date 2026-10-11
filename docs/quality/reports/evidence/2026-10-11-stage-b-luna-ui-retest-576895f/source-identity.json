@@ -1,0 +1,9 @@
+{
+  "source_sha": "576895f6983ca41cacbbad45a9075b97b9986189",
+  "checkout": "detached",
+  "source_diff": "",
+  "git_status": [
+    "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md",
+    "?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-ui-retest-576895f/"
+  ]
+}

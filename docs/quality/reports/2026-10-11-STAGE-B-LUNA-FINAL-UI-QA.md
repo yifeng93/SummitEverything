@@ -1,7 +1,7 @@
 # Stage B independent offline UI/native QA — fd2042385 (FAIL)
 
-**Fixed source:** `fd2042385c4916598337239f5259b3ef1889372a`  
-**Checkout:** `/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything` (detached, outside the implementation checkout)  
+**Fixed source:** `fd2042385c4916598337239f5259b3ef1889372a`
+**Checkout:** `/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything` (detached, outside the implementation checkout)
 **Conclusion:** Browser Fake-only flow and Real task write gate passed in the exercised UI. Native startup failed with a P1 readiness defect. Stage B UI/native QA is **FAIL**; do not merge this SHA.
 
 ## Identity and boundary

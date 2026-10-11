@@ -1,0 +1,3 @@
+Exact SHA; backend/web/script/lock trees equal fd204; only native webURL slash changed
+Verified 13 historical manifests and fd204 final evidence (30 files), all zero mismatches
+Guard blocks non-loopback, real DNS and OS Keychain; live transfer workers=0

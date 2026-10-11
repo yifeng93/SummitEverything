@@ -2,7 +2,7 @@
 
 ## Stage B 离线收口（2026-10-11，当前）
 
-[Sol DEV 修复与证据](2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md)：采纳经复核的 DeepSeek 实现，补请求独立取消、资源所有权、边界与 Real 任务 UI 回归。独立精确 SHA QA pending；受测 SHA、QA / main 关系只以 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md) 为准。
+[Sol DEV 修复与证据](2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md)：采纳经复核的 DeepSeek 实现，补请求独立取消、资源所有权、边界与 Real 任务 UI 回归。固定576895f独立离线QA PASS；受测 SHA、QA / main 关系只以 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md) 为准。
 
 以下 R1–R4 的“未提交”“无新 SHA”和计数是历史当时状态；其 DEV 结论保留，不是当前 QA 结论。
 
@@ -60,16 +60,18 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 
 新增报告必须记录代码 SHA、文档 checkpoint、QA 提交、PR / main 关系；分别记录 DEV、自测、独立审查、独立 QA、WebUI、原生开发壳、真实协议与质量。按 [REPORT-TEMPLATE](../REPORT-TEMPLATE.md)填写，维护本索引。保留历史 FAIL；追加整改 / 复验，不把旧文件重写成成功。证据只提交脱敏副本，harness 指纹必须是实际执行字节，manifest 必须与当前归档字节匹配。
 
-## 2026-10-11 固定候选首次独立QA与修复
+## 2026-10-11 收口过程的历史检查点（结论仅对当时SHA）
 
 - [首次独立离线QA：7f3119a FAIL / QA-B-01 P1](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md)。
-- [刷新重启防重发DEV修复](2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md)：新源码8b6259a，后端386/Web45；正式复验pending。
+- [刷新重启防重发DEV修复](2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md)：新源码8b6259a，后端386/Web45；当时正式复验pending，后续见8b复验。
 - [闲置工作树可恢复清理](2026-10-11-STAGE-B-CLEANUP.md)。
 
 - [首次固定7f UI/native独立证据](2026-10-11-STAGE-B-INDEPENDENT-UI-QA.md)：指定本机场景通过，整体候选因QA-B-01仍FAIL。
 
 - [8b后端复验与严格字段P2](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md)、[8b原生启动竞态P1](2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md)均按旧SHA保留。
-- [严格标记DEV](2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生readiness DEV](2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)：最终源码fd204238，388/Web45；新固定SHA独立复验pending。
+- [严格标记DEV](2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生readiness DEV](2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)：当时源码fd204238，388/Web45；后续独立原生QA发现根URL比较P1。
 
 - [fd后端独立QA](2026-10-11-STAGE-B-LUNA-FINAL-OFFLINE-QA.md)：388+25、Web45与构建通过，整体候选因原生冷启动P1仍未通过。
-- [根URL修复DEV](2026-10-11-STAGE-B-NATIVE-URL-DEV.md)：新源码576895f，实际loopback URL before失败→after通过；独立新SHA复验pending。
+- [根URL修复DEV](2026-10-11-STAGE-B-NATIVE-URL-DEV.md)：新源码576895f，实际loopback URL before失败→after通过；后续独立复验见最终报告。
+
+- [最终后端复验](2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md)、[最终实际UI复验](2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md)：受测源码576895f；离线PASS，真实/OS/DMG等门NOT_RUN。

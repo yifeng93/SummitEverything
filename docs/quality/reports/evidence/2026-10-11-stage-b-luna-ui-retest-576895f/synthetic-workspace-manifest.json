@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "workspace_id": "0ccd17bf-afd4-4275-bd0a-619d3d2c7c89",
+  "name": "QA合成工作库-576895f",
+  "created_at": "2026-10-11T05:48:02.212823Z",
+  "lines": [
+    {
+      "id": "8ab7d523-9c8b-5b86-81cd-1c7fb9452735",
+      "name": "合成项目线",
+      "directory": "合成项目线"
+    }
+  ],
+  "projects": [
+    {
+      "id": "fb96b7f2-4a02-5450-b655-80e5d46d2078",
+      "line_id": "8ab7d523-9c8b-5b86-81cd-1c7fb9452735",
+      "name": "离线 UI 验收",
+      "directory": "合成项目线/离线-UI-验收",
+      "overview_id": "a5ab65f0-2e4c-5e9f-ba6c-715ea0481319",
+      "archived": false,
+      "progress": "576895f 的合成离线验收：本机进度动作单独确认。",
+      "progress_version": 1,
+      "progress_confirmation_id": "9af9a205-61c6-4e3b-b6c3-4f2553001900"
+    }
+  ]
+}
