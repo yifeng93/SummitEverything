@@ -27,7 +27,7 @@
 
 QA 分支可提交验收报告、脱敏证据及隔离 harness；不得修改 src / web / native 实现或 tracked tests，不得降低期望或改变 scope 来让结果通过。产品缺陷交执行者修复。固定 SHA 验收结束后，QA 的报告 / 证据文档提交可以成为独立交接材料；必须标明受测 SHA，不能将证据提交误作产品源码变更。
 
-同一缺陷实现者给新 SHA 后重新验收；保留旧报告。若需要交回报告，在自己的 checkout 提交、给用户提交 SHA / 路径，由执行者按 SHA 读取或 cherry-pick 测试与报告，不覆盖共享工作目录。
+同一缺陷由 Developer 修复并给出新 SHA 后重新验收；保留旧报告。QA 完成后将固定受测 SHA 及证据提交 SHA / 路径交给 Sol，由 Sol 协调读取或 cherry-pick 报告与许可的隔离 harness，不覆盖共享工作目录。产品实现和 tracked tests 的修复交 Developer。
 
 ## 结论限度
 
