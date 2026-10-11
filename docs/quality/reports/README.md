@@ -67,3 +67,6 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 - [闲置工作树可恢复清理](2026-10-11-STAGE-B-CLEANUP.md)。
 
 - [首次固定7f UI/native独立证据](2026-10-11-STAGE-B-INDEPENDENT-UI-QA.md)：指定本机场景通过，整体候选因QA-B-01仍FAIL。
+
+- [8b后端复验与严格字段P2](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md)、[8b原生启动竞态P1](2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md)均按旧SHA保留。
+- [严格标记DEV](2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生readiness DEV](2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)：最终源码fd204238，388/Web45；新固定SHA独立复验pending。
