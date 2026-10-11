@@ -12,6 +12,8 @@
 
 权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
+开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 提交固定 SHA，独立 QA Luna 验收，Sol 判定最终门。当前推荐下一任务为 M3.1 本地问答历史 / 流状态薄切片，详见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)；M3 尚未开始，Stage C 与发布 / 实际试用门仍独立未测。
+
 ## 先读哪些文件
 
 - 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。

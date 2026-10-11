@@ -10,9 +10,13 @@
 
 精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
 
+**路线图建议（尚未实施）：** 下一项推荐 M3.1 问答本地状态薄切片：先实现每 workspace + profile 隔离的 conversation store/API（列表、重开、删除），再接 UI；明确记录 SSE 正常完成、取消、断流后的真实状态，并在历史引用指向旧内容版本时提示已更新。依据 API-v1 已定义的 conversations 路由、PRODUCT-SPEC 本地历史与版本绑定要求，以及 ACCEPTANCE C14 / C21。此建议不是缩减 M3：三类问答、角色、记忆和完整 C14/C21 验收仍未完成；M3 目前未开始。
+
 ### C03 非空删除提示本地化跟进（2026-10-11；QA 通过，未合入 main）
 
 针对历史 M1 C03 P2，将“非空主线有项目”“主线目录有内容”“非空项目”的 API 拒绝信息改为准确中文；不暗示归档项目可删除。拒绝状态仍为 409 / `workspace_error`，原 manifest、组织与内容写门保持。源码 SHA `9c953f095086a95e63edbce2169657dba9e71cd1`，QA 固定文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476`，QA 原报告提交 `f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，本分支整合提交 `ebb99811d289ea821d5a1bfee9fad6a2a1ba04db`。Sol 根据独立 QA 判定本 C03 离线切片通过：首轮 PASS、repair 0/2；定向自动集合 37 passed，并完成实际本地 Fake WebUI 浏览器复演。固定测试提交与后续产品源码树一致。详见 [DEV 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)、[独立 QA 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md)和[归档证据](../quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。此结论只覆盖当前分支候选，尚未合入 main；不代表完整 M1 或 Stage B 重验。真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5 等门保持原状态。
+
+协作工作流已由用户确认并写入 [ADR 0008](../decisions/0008-sol-luna-development-workflow.md)。当前分支正在整合长期文档；该文档候选尚未合入 main。历史安装 overlay 原文保存于 `docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch`，不再作为执行入口。
 
 ## 历史更新记录（按各条当时的固定版本理解）
 

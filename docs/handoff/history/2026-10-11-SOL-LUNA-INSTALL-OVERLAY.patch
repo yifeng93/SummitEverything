@@ -1,0 +1,52 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 503a437..4b9e1ff 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -54,3 +54,47 @@
+ - 当前可用检查只见 README.md；新增真实运行命令后同步 README 和验收手册。
+ - 提交可复验状态，禁止秘密、真实业务原件、.venv、node_modules、构建产物进入 Git。
+ - 发版时强制重建前端，包内记录源码提交、dirty 标志、前端指纹和构建号；源码测试不能替代安装包验收。
++
++## SummitEverything: Sol + Luna workflow overlay (append only; do not replace existing rules)
++
++The existing project AGENTS.md, IMPLEMENTER.md, TESTER.md, acceptance matrix and milestone gates remain authoritative. When there is a conflict, follow the stricter existing project requirement; notify the human rather than weakening a gate.
++
++At the start of a new coding run, inspect the real repository state and read:
++- README.md
++- AGENTS.md
++- docs/handoff/IMPLEMENTER.md
++- docs/handoff/TESTER.md
++- docs/handoff/PROMPT-STAGE-B-C-LUNA.md
++- docs/handoff/LATEST-IMPLEMENTATION.md
++- docs/implementation/PROGRESS.md
++- docs/quality/ACCEPTANCE.md
++- docs/quality/reports/README.md
++- docs/superpowers/plans/2026-10-09-summit-everything-v1.md
++
++The README dated 2026-10-10 describes Stage A as Fake-only accepted, and identifies main at 117086eb2075726730cd7aa62ea0b61498e96f0c at that time. Confirm current HEAD, working-tree status and current documentation before relying on this historical baseline. Do not reset or overwrite changes based only on the README.
++
++For the first rollout, implement a narrowly bounded Stage B offline task, with fake/isolated materials and independent QA. Stage C real-account verification is a SEPARATE opt-in gate and must not be started implicitly.
++
++Forbidden without the human's explicit, specific authorization: authentic Feishu/OAuth connections and writes; real model/provider traffic or quality claims; fetching, storing or exposing real work material; OS Keychain operations on real credentials; irreversible operations; changing or running against SWB, SK or the real _vault. Also keep DMG, five-day continuous run and two-machine acceptance as separate unverified gates until truly tested.
++
++Run only tests that fit the slice, following the implementation and tester manuals. The README includes these baseline commands:
++- uv run pytest -q
++- uv run ruff check src tests
++- uv run ruff format --check src tests
++- uv run mypy src
++- uv lock --check
++- uv build
++- npm --prefix web test
++- npm --prefix web run typecheck
++- npm --prefix web run lint
++- npm --prefix web run build
++
++For relevant browser/UI verification, consider the isolated local dev workflow described in the README (`uv run python scripts/run_dev.py`, local WebUI at http://127.0.0.1:5173), and report whether a browser-based check was actually performed. Do not assert native DMG or real-service acceptance from local WebUI tests.
++
++Source code and tracked tests must not be edited by the QA agent. QA evidence may only be written where TESTER.md/repository policy allows. Sol checks tested commit SHA, unexpected git status changes, and the tester's evidence before deciding merge eligibility.
++
++Before important milestone merges to main, ask the human for approval; Stage B closure is such a milestone. Respect existing project Git/handoff conventions, and do not invent a parallel governance system.
++
++### 安装时的历史说明（2026-10-11）
++
++套件中的 Stage B 首次试点描述属于历史建议；当前离线收口状态以仓库最新 README.md、docs/implementation/PROGRESS.md 和交接文档为准，不因此重做已完成阶段或启动真实验收。
