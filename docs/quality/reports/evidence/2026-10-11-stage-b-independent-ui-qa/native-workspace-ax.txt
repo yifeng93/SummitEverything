@@ -1,0 +1,2 @@
+There has been no change in the accessibility tree for Window: "SummitEverything".
+The focused UI element is 38 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:15175/

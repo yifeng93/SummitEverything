@@ -1,0 +1,10 @@
+Building for debugging...
+[0/6] Write sources
+[1/6] Write SummitEverything-entitlement.plist
+[2/6] Write swift-version-3CD7052B146186F2.txt
+[4/8] Emitting module SummitEverythingApp
+[5/8] Compiling SummitEverythingApp App.swift
+[5/8] Write Objects.LinkFileList
+[6/8] Linking SummitEverything
+[7/8] Applying SummitEverything
+Build complete! (5.52s)

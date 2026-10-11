@@ -1,0 +1,75 @@
+{
+  "workspace_id": "00ba1d02-af66-4c6f-825d-977bccd216c0",
+  "formal_file": "合成-QA-主线/合成-QA-项目/合成会议室说明.md",
+  "eligibility": {
+    "eligible": true,
+    "reason": "approved",
+    "content_sha256": "035396294f6b0ee30c2c6ce87b74f7d04d56fa79100511c14050d15a01a11770"
+  },
+  "source_count": 1,
+  "draft_count": 1,
+  "action_count": 3,
+  "index_counts": {
+    "active_generations": 1,
+    "chunks": 1
+  },
+  "before_progress": {
+    "id": "44c4fd8b-fb99-5534-80a4-37ac40aa1928",
+    "line_id": "eeab9ceb-5072-5bbf-9885-9366fbbe067c",
+    "name": "合成 QA 项目",
+    "directory": "合成-QA-主线/合成-QA-项目",
+    "overview_id": "541e7453-6237-5b9f-baea-ff8d50ac0ea4",
+    "archived": false,
+    "progress": "",
+    "progress_version": 0,
+    "progress_confirmation_id": null
+  },
+  "after_progress": {
+    "id": "44c4fd8b-fb99-5534-80a4-37ac40aa1928",
+    "line_id": "eeab9ceb-5072-5bbf-9885-9366fbbe067c",
+    "name": "合成 QA 项目",
+    "directory": "合成-QA-主线/合成-QA-项目",
+    "overview_id": "541e7453-6237-5b9f-baea-ff8d50ac0ea4",
+    "archived": false,
+    "progress": "已完成合成 QA 资料审核",
+    "progress_version": 1,
+    "progress_confirmation_id": "f45a2d2c-10b2-46ef-beb1-bb136041db71"
+  },
+  "real_settings": {
+    "mode": "real",
+    "model_studio_account_id": "default",
+    "feishu": {
+      "app_id": "cli_synthetic_independent_ui",
+      "redirect_uri": "",
+      "identity": "app",
+      "calendar_id": "",
+      "material_content": "transcript",
+      "real_data_enabled": false
+    },
+    "llm": {
+      "provider": "fake",
+      "model": null,
+      "account_id": "default",
+      "enabled": false
+    },
+    "embedding": {
+      "provider": "fake",
+      "model": null,
+      "region": "cn",
+      "dimensions": 1024,
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "enabled": false
+    },
+    "rerank": {
+      "provider": "fake",
+      "model": null,
+      "region": "cn",
+      "dimensions": 1024,
+      "base_url": "https://dashscope.aliyuncs.com/api/v1",
+      "enabled": false
+    }
+  },
+  "api_request_count": 132,
+  "smoke_post_count": 0,
+  "assertions_pass": true
+}

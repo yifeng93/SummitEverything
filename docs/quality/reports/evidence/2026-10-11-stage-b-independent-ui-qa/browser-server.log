@@ -1,0 +1,151 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+INFO:     Started server process [3650]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18895 (Press CTRL+C to quit)
+
+  VITE v8.3.4  ready in 455 ms
+
+  ➜  Local:   http://127.0.0.1:15175/
+INFO:     127.0.0.1:61221 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:18895/api/v1/health
+WebUI: http://127.0.0.1:15175/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:61281 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:61283 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:61323 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61328 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61333 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61332 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61335 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61331 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61334 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61342 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61344 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61340 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61345 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61347 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61338 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61349 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61351 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61380 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61381 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61382 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61385 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61387 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61388 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61426 - "POST /api/v1/lines HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61431 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61430 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61432 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61478 - "POST /api/v1/projects HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61484 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61483 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61485 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61504 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61502 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61498 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61500 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61506 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61505 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61511 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61512 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61515 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61516 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61518 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61509 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61520 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61522 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61527 - "POST /api/v1/intake/items HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61536 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61535 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61538 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61533 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61537 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61539 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61592 - "POST /api/v1/intake/jobs HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61601 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61600 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61602 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61603 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61599 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61604 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61658 - "PATCH /api/v1/drafts/e6bf69d4-1515-5a9a-a15c-b05d8376ea98 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61666 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61669 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61668 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61665 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61670 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61690 - "POST /api/v1/drafts/e6bf69d4-1515-5a9a-a15c-b05d8376ea98/confirmations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61699 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61698 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61700 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61701 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61696 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61702 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61727 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61729 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61740 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61742 - "POST /api/v1/index/plans HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61755 - "POST /api/v1/index/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61757 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61764 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61766 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61790 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61791 - "GET /api/v1/provider-smoke HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61794 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61795 - "GET /api/v1/provider-smoke HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61828 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61823 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61827 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61830 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61829 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61826 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61834 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61836 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61838 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61840 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61842 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61833 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61844 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61846 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61853 - "POST /api/v1/integrations/feishu/authorizations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61855 - "GET /api/v1/integrations/feishu/callback?[redacted] HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61911 - "POST /api/v1/actions HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61931 - "POST /api/v1/actions/4ecf4eac-2cb6-4602-bed2-d2b233618189/confirmations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61949 - "POST /api/v1/actions/4ecf4eac-2cb6-4602-bed2-d2b233618189/executions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61954 - "GET /api/v1/integrations/feishu/tasks?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61964 - "POST /api/v1/actions HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61979 - "POST /api/v1/actions/805da74d-323a-4100-bb91-d94117622b7d/confirmations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61998 - "POST /api/v1/actions/805da74d-323a-4100-bb91-d94117622b7d/executions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62003 - "GET /api/v1/integrations/feishu/tasks?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62010 - "GET /api/v1/provider-smoke HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62009 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62013 - "GET /api/v1/provider-smoke HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62014 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62032 - "PATCH /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62064 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62061 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62063 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62065 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62066 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62062 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62071 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62072 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62074 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62069 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62076 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62078 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62080 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62082 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62117 - "POST /api/v1/actions HTTP/1.1" 201 Created
+INFO:     127.0.0.1:62155 - "POST /api/v1/actions/e2068afc-95a5-479f-ba5c-ee51e94d2eae/confirmations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62187 - "POST /api/v1/actions/e2068afc-95a5-479f-ba5c-ee51e94d2eae/executions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3650]

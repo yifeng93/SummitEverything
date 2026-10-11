@@ -65,3 +65,5 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 - [首次独立离线QA：7f3119a FAIL / QA-B-01 P1](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md)。
 - [刷新重启防重发DEV修复](2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md)：新源码8b6259a，后端386/Web45；正式复验pending。
 - [闲置工作树可恢复清理](2026-10-11-STAGE-B-CLEANUP.md)。
+
+- [首次固定7f UI/native独立证据](2026-10-11-STAGE-B-INDEPENDENT-UI-QA.md)：指定本机场景通过，整体候选因QA-B-01仍FAIL。
