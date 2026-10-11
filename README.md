@@ -12,9 +12,9 @@
 
 权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
-C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 按三个集成开发包推进；包 1“会话与历史”已由 Developer 完成实现和离线自测，固定源码与独立 QA 状态见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。包 2（完整问答、角色与记忆）及包 3（连续工作与归档压缩）尚未开始。
+C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 按三个集成开发包推进；包 1 首轮独立 QA 对固定 SHA `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 FAIL，首问会话 ID 与 updated 引用提示缺陷已由 Developer repair 1 修复（源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`），当前待全新 QA，未判 PASS。详情见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[repair 1 DEV 报告](docs/quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)。包 2（完整问答、角色与记忆）及包 3（连续工作与归档压缩）尚未开始。
 
-开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。M3 包 1 的独立 QA 正在交接；Stage C 与发布 / 实际试用门仍独立未测。
+开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。M3 包 1 repair 1 完成，等待全新独立 QA；Stage C 与发布 / 实际试用门仍独立未测。
 
 ## 先读哪些文件
 

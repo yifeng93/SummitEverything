@@ -1,8 +1,10 @@
 # 开发与独立验收报告索引
 
-## M3 功能包 1：会话与历史（2026-10-11，DEV 完成 / QA pending）
+## M3 功能包 1：会话与历史（2026-10-11，repair 1 完成 / 新 QA pending）
 
-[Developer 报告](2026-10-11-M3-PACKAGE-1-DEV.md)：源码 SHA `faf1563d406cf0cf092550f9845626efb9b09c72`。profile+workspace 隔离历史、查询事件 / partial、API / WebUI、幂等重放与历史引用版本状态已实现；README 全后端 **395 passed**、Web **47 passed**，静态、类型、OpenAPI 生成、打包和 Web build 门禁退出码均为 0。实现者自测不是独立验收，QA 尚未启动；QA 目标和黑盒复演范围见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。实际浏览器 / 原生壳 / 运行时元数据分别 NOT_RUN / NOT_RUN / UNVERIFIED，真实 provider、资料、凭据和发布门未运行。
+[首次 Developer 报告](2026-10-11-M3-PACKAGE-1-DEV.md)：源码 `faf1563d406cf0cf092550f9845626efb9b09c72`，后续 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 FAIL；原始 report/evidence 保留。QA 揭示新库首问 404 和 updated 引用提示随页面导航丢失。
+
+[Repair 1 Developer 报告](2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)：修复源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`。首问省略 conversation ID 并从响应头获取服务端会话 ID；updated 引用导航校验原 hash 并在目标页面保留版本提示。后端 **395 passed**、Web **49 passed / 12 files**，会话集成 **6 passed**，静态、类型、OpenAPI 生成、打包和 Web build 门禁 exit 0。当前独立 QA 尚待 Sol 调度；该 DEV 自测不等于 QA PASS。实际浏览器 / 原生壳 / runtime 元数据分别 NOT_RUN / NOT_RUN / UNVERIFIED，真实 provider、资料、凭据与发布门未运行。
 
 ## C03 删除拒绝提示本地化跟进（2026-10-11，离线切片与合并后核验通过）
 

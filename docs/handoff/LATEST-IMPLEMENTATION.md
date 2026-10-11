@@ -1,14 +1,14 @@
 # 最新实现交接
 
-## 2026-10-11 M3 包 1：会话与历史（DEV 完成，独立 QA 待启动）
+## 2026-10-11 M3 包 1：会话与历史（首轮 QA FAIL，repair 1 完成，待全新 QA）
 
-**当前工作状态：** 分支 `codex/m3-integrated-packages`，从 clean main `5fd91c78930c80b2365957197b8a605757694a91` 开发。M3 包 1 源码固定于 `faf1563d406cf0cf092550f9845626efb9b09c72`；实现与测试提交已完成。全量后端 / Web / 静态和生成检查的真实退出码见 [DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md)，可复演的原始本地日志位于该 worktree ignored `.local/dev/m3-package-1/logs/`。工作树当前仅余交接文档整合；最终 QA checkout 应固定在交接文档提交后的分支 HEAD，产品源码不变。此状态为 DEV 完成，Sol 尚未作 QA 判定。
+**当前工作状态：** 分支 `codex/m3-integrated-packages`，从 clean main `5fd91c78930c80b2365957197b8a605757694a91` 开发。首轮独立 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 **FAIL**：新工作库首问携带未创建的客户端会话 ID 而 404；打开 updated 引用后版本提示随 AskView 卸载而消失。原报告及证据保留：[QA 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md)。repair 1/2 已修复，源码 commit `a9078bd327f73f2cde3bab14a8665885d0f57c1c`；本交接文档整合后的分支 HEAD 是下一轮 QA 固定目标，源码树对应上述源码 SHA。完整命令真实日志 / 退出码位于 ignored `.local/dev/m3-package-1-repair-1/logs/`，详见[repair 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)。Sol 应派发全新 QA Luna 在独立 checkout 复验两个修复及整个包 1；不能把 DEV 自测当阶段通过。
 
-实现包含 profile 本机 SQLite + workspace_id 二次隔离的 conversation/query/event 持久化；会话分页、详情/重开、删除 API；稳定 request_id 幂等重放；WebUI 历史续问、部分回答和异常断流提示；取消、完成、错误和中断状态留存；原 citation hash / excerpt 不可变，并依据当前资格门显示 available / updated / unavailable。历史不会写进工作库知识语料。API 与工作库契约、OpenAPI JSON / Web 生成类型已同步。
+修复后首问省略 `conversation_id`，采用 SSE 响应 `X-Conversation-ID` 返回的真实会话 ID 供重开和续问；已存在但不存在 / 跨 profile 的显式 ID 仍由后端 404 拒绝。updated 引用打开时携带原 content hash，由页面读取冲突处理展示稳定应用级版本提示。profile 本机 SQLite + workspace_id 二次隔离的历史、稳定 request_id、SSE 状态、原引用快照及其余功能维持原实现；历史不会进入知识语料。
 
-Developer 自测实际观察：README 后端 pytest **395 passed**、Web **47 passed / 11 files**；`uv sync --locked --group dev`、ruff check / format、mypy、lock check、uv build、API type generation、Web typecheck、lint 与 production build 全部 exit 0。后端保留 1 条既有 Starlette/httpx deprecation；Web lint 有 2 条既有 TodayView / ProjectsView effect warnings。实际浏览器 / 原生壳 / runtime 元数据本轮未运行（分别 NOT_RUN / NOT_RUN / UNVERIFIED）；真实 provider / 凭据 / 材料 / Keychain / DMG / 五日 / 双机也都 NOT_RUN。本轮没有调用真实外部服务或访问用户数据。
+Developer repair 1 自测实际观察：后端 pytest **395 passed**，Web **49 passed / 12 files**；会话集成测试 6 passed；README 静态、lock、uv build、OpenAPI type generation、Web typecheck/lint/build 均 exit 0。后端有 1 条既有 Starlette/httpx deprecation；Web lint 有 2 条既有 TodayView / ProjectsView effect warnings。实际浏览器 / 原生壳 / runtime 元数据未运行（NOT_RUN / NOT_RUN / UNVERIFIED）；真实 provider / 凭据 / 材料 / Keychain / DMG / 五日 / 双机均 NOT_RUN。没有调用真实外部服务或访问用户数据。逐命令证据见 repair 1 DEV 报告。
 
-**新鲜独立 QA 待办（Sol 调度）：** 固定本节最后文档提交 SHA，在独立 checkout 复验 C14、C21 历史存储部分、C13 历史引用部分及资格门回归。黑盒至少复演 history list / reopen / continue、profile 与 workspace 切换隔离、稳定 request 重放和 changed-input 冲突、取消 / 断流 / 重启 partial 准确性、删除 / pending / 更新版本引用状态与打开旧版本 UI。不得把 DEV 自测当整包通过；QA 完成前不进入 M3 正式验收/合并门。
+**新鲜独立 QA 待办（Sol 调度）：** 对本交接文档提交后的分支 HEAD 在独立 checkout 重新验收完整包 1，包含原报告要求的 C14、C21 历史部分、C13 历史引用及资格回归、实际浏览器列表/重开/续问/取消/更新引用/库切换，以及首问/服务端 ID/跨 profile 404。QA 未完成前包 1 仍未通过，包 2 / 3 不在本轮 repair 范围。
 
 ## 2026-10-11 C03 删除拒绝提示本地化（已合入 main；离线切片 PASS）
 

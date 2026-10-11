@@ -21,9 +21,9 @@
 - [x] SSE 严格有序、唯一终态；完成、错误、取消、断流和进程重启有准确历史状态，不保存假完整答案；未知请求不自动重发（Developer 实现；QA pending）。
 - [x] 引用保留原 content hash / excerpt / validity；历史显示更新/不可用，打开稳定页并提示版本变化，不悄悄替换原依据（Developer 实现；QA pending）。
 - [x] Developer 定向单元/契约/集成/UI 检查及 README 后端 / Web 门禁已记录真实退出码（DEV 自测不代表阶段通过）。
-- [ ] 固定 SHA 的整包独立 QA：C14、C21 历史部分、C13 历史引用部分及相关资格回归；实际浏览器列表/重开/取消/版本更新/库切换复演。
+- [ ] 固定 SHA 的整包独立 QA：首次固定 SHA `c90fe6e2` QA 判 FAIL（报告保留）；repair 1/2 已完成，等待全新 QA 复验 C14、C21 历史部分、C13 历史引用及资格回归和实际浏览器列表/重开/续问/取消/版本更新/库切换。
 
-DEV 固定源码 SHA、完整命令结果和待 QA 黑盒复演路径见 [M3 包 1 DEV 报告](../../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md) 与 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。checkbox 标注实现/自测完成，不能视为 Sol 的验收判定。
+初始 DEV 与 repair 1 源码 SHA、真实命令结果和待 QA 黑盒复演路径见 [M3 包 1 DEV 报告](../../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md)、[repair 1 DEV 报告](../../quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md) 与 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。checkbox 标注实现/自测完成，不能视为 Sol 的验收判定。
 
 ## 包 2：完整问答能力、角色与记忆
 

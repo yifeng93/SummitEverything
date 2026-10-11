@@ -2,6 +2,8 @@
 
 ## 身份与范围
 
+> 本报告记录首轮源码交付 `faf1563d406cf0cf092550f9845626efb9b09c72`，不覆盖其后的修复。独立 QA 对后续固定提交 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 FAIL；原报告保留，repair 1/2 的缺陷整改和新自测见[追加报告](2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)。
+
 - 执行角色：Developer Luna；本报告是实现者自测，不是独立 QA 结论。
 - 基线：clean main `5fd91c78930c80b2365957197b8a605757694a91`。
 - 分支：`codex/m3-integrated-packages`。

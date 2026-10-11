@@ -4,7 +4,7 @@
 
 ## 当前状态与下一步
 
-2026-10-11：M3 功能包 1“会话与历史”已由 Developer 实现并完成离线自测，固定源码 SHA 与 QA handoff 见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)和[M3 包 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-DEV.md)。本地 profile SQLite 按 workspace_id 隔离会话、查询事件、partial 和原引用快照；API / WebUI 已接通历史列表、读取/重开、续问、删除、稳定请求重放与取消。断流/中断不伪装成功；历史引用依据统一资格门区分可用、已更新和不可用。README 门禁本轮为后端 395 passed、Web 47 passed，ruff、format、mypy、lock、uv build、OpenAPI 类型生成、Web typecheck/lint/build 均 exit 0；保留 1 条既有 Starlette/httpx 弃用警告和 2 条 React effect lint warnings。以上为 DEV 自测，不等于 QA 结论；固定源码的全新独立 QA 尚待 Sol 启动。M3 包 2 / 3 尚未开始，C19/C20/C22/C23 与 M3 正式验收均未通过声明。
+2026-10-11：M3 包 1 首轮独立 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 **FAIL**（P1 新库首问 404；P2 updated 引用提示在页面导航后消失），完整原报告及 evidence 保留。Developer repair 1/2 已提交源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`：首问省略会话 ID 并使用服务端 `X-Conversation-ID` 续问/重开；updated 引用传原 hash 并在目标页面稳定呈现版本冲突提示。后端 395 passed、Web 49 passed / 12 files、定向会话集成 6 passed；README 静态、lock、打包、OpenAPI 类型生成、Web 类型/ lint / 构建均 exit 0。保留 1 条既有 Starlette/httpx deprecation 与 2 条 React effect lint warnings。完整日志及退出码见[repair 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)。当前状态为 repair 1 自测完成、**等待全新固定 SHA QA**，不是 PASS；包 2 / 3 尚未开始。首次 C13 历史引用 QA 未构造 superseded / archived 引用，完整 M3 后续 QA 仍需覆盖；真实 provider / 凭据 / 资料 / Keychain / DMG / 五日 / 双机均 NOT_RUN。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
@@ -12,7 +12,7 @@
 
 精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
 
-**下一步：** 由全新 QA 在固定源码 SHA 的独立 checkout 验收 M3 包 1（C14、C21 历史部分、C13 历史引用部分及相关资格回归），并补足实际浏览器复演。QA 结论由 Sol 依据原始证据填写；重要里程碑合并仍需用户批准。QA 完成前不得把包 1 写为 PASS；包 2 / 3 在包级 QA 通过后再接续。
+**下一步：** 由全新 QA 在 repair 1 文档整合后的固定分支 HEAD 独立验收完整 M3 包 1，覆盖首问 ID 契约、历史/续问、引用更新提示、C14、C21 历史部分、C13 历史引用资格及实际浏览器复演。首轮 QA FAIL 原报告保持不变；QA 对新 SHA 的结论由 Sol 根据原始证据记录。QA 完成前不得将包 1写为 PASS，也不进入包 2/3；重要里程碑合并仍需用户批准。
 
 ### C03 非空删除提示本地化跟进（2026-10-11；已合入 main）
 
