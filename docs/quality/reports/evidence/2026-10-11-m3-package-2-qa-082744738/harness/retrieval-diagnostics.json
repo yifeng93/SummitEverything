@@ -1,0 +1,94 @@
+{
+  "case": "C19-current-fact-retrieval-relevance",
+  "question": "青岚计划的预算上限是多少？",
+  "query_tokens": [
+    "青岚",
+    "岚计",
+    "计划",
+    "划的",
+    "的预",
+    "预算",
+    "算上",
+    "上限",
+    "限是",
+    "是多",
+    "多少"
+  ],
+  "index_fingerprint": "summit-fake-embedding-v1",
+  "dense_and_rerank": [
+    {
+      "page_id": "00000000-0000-0000-0000-0000000003eb",
+      "excerpt": "青岚计划旧版预算上限为 20 万元。",
+      "validity": "superseded",
+      "page_content_sha256": "cb3d49efca92d3e62880cb68082a47796fde183f32aa3af5f7c4fb759f1b720c",
+      "indexed_content_sha256": "cb3d49efca92d3e62880cb68082a47796fde183f32aa3af5f7c4fb759f1b720c",
+      "qualified_for_current": false,
+      "cosine_similarity": 0.5345224838248488,
+      "rerank_score": null,
+      "vector_sha256": "16e5591c96f509e16069be673d51548f7c3e09b9765fd386b656aea6182dc8ca"
+    },
+    {
+      "page_id": "00000000-0000-0000-0000-0000000003e9",
+      "excerpt": "青岚计划的设备采购预算上限为 19 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+      "validity": "current",
+      "page_content_sha256": "555d63c48cb3218d7d58802c03e5b9acba1014dafb3dc981a82522412dba8ee1",
+      "indexed_content_sha256": "555d63c48cb3218d7d58802c03e5b9acba1014dafb3dc981a82522412dba8ee1",
+      "qualified_for_current": true,
+      "cosine_similarity": 0.3592106040535498,
+      "rerank_score": 0.6363636363636364,
+      "vector_sha256": "b95d48bb13a220589d32f7c30ea5a9daa83d1bf28a617b931b1a24dffae5f82a"
+    },
+    {
+      "page_id": "00000000-0000-0000-0000-0000000003ea",
+      "excerpt": "朱雀项目的设备采购预算上限为 12 万元，负责人已确认。排期为 12 月启动；运维费用未提供。",
+      "validity": "current",
+      "page_content_sha256": "dbaafc53531de1467c1de2f3ba0d777b57e2ed2780adbaae5e90180af473e671",
+      "indexed_content_sha256": "dbaafc53531de1467c1de2f3ba0d777b57e2ed2780adbaae5e90180af473e671",
+      "qualified_for_current": true,
+      "cosine_similarity": 0.11973686801784994,
+      "rerank_score": 0.2727272727272727,
+      "vector_sha256": "91f8e67c36505e8236f581fa2788cfad54b6013059678dd573d67fe781b1f2b5"
+    }
+  ],
+  "reranker_input_order": [
+    "青岚计划的设备采购预算上限为 19 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+    "朱雀项目的设备采购预算上限为 12 万元，负责人已确认。排期为 12 月启动；运维费用未提供。"
+  ],
+  "reranker_raw_index_score": [
+    [
+      0,
+      0.6363636363636364
+    ],
+    [
+      1,
+      0.2727272727272727
+    ]
+  ],
+  "http": 200,
+  "answer_index_status": "ready",
+  "final_citations": [
+    {
+      "page_id": "00000000-0000-0000-0000-0000000003e9",
+      "content_sha256": "555d63c48cb3218d7d58802c03e5b9acba1014dafb3dc981a82522412dba8ee1",
+      "chunk_id": "6a4d6161741ab2f15fe2260ccb8f92059b396b7c901c612bc742aaad8304e577",
+      "heading": "",
+      "excerpt": "青岚计划的设备采购预算上限为 19 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+      "validity": "current",
+      "availability": "available"
+    },
+    {
+      "page_id": "00000000-0000-0000-0000-0000000003ea",
+      "content_sha256": "dbaafc53531de1467c1de2f3ba0d777b57e2ed2780adbaae5e90180af473e671",
+      "chunk_id": "3c064e18cc2c40170d7818a08157a248e076594014a299d6c6138c7acd6e2ad7",
+      "heading": "",
+      "excerpt": "朱雀项目的设备采购预算上限为 12 万元，负责人已确认。排期为 12 月启动；运维费用未提供。",
+      "validity": "current",
+      "availability": "available"
+    }
+  ],
+  "provider_source_statements": [
+    "页面内容：青岚计划的设备采购预算上限为 19 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+    "页面内容：朱雀项目的设备采购预算上限为 12 万元，负责人已确认。排期为 12 月启动；运维费用未提供。"
+  ],
+  "missing_information": []
+}

@@ -1,0 +1,12 @@
+{
+  "workspace_id": "4ab085bd-2b03-4d56-b856-c3b3748cc7d2",
+  "line_id": "a00a1192-49dc-5238-a04b-9ab7513f2a91",
+  "project_id": "06f566fd-ad90-5c15-bba2-c05aa055d6c2",
+  "page_ids": [
+    "00000000-0000-0000-0000-0000000003e9",
+    "00000000-0000-0000-0000-0000000003ea",
+    "00000000-0000-0000-0000-0000000003eb"
+  ],
+  "fingerprint": "m3-package2-synthetic-fake-v1",
+  "token": "[synthetic-test-token-redacted]"
+}

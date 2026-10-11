@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<QA_ROOT>/.local/qa/m3-package-2-qa/harness/run_blackbox.py", line 87, in <module>
+    replay_payload = {"request_id": msg["request_id"], "conversation_id": msg["conversation_id"], "question": msg["question"], "fingerprint": msg["fingerprint"], "answer_mode": msg["answer_mode"], "purpose": msg["purpose"]}
+                                                                          ~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'conversation_id'

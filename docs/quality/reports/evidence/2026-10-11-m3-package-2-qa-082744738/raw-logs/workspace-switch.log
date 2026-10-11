@@ -1,0 +1,46 @@
+{
+  "case": "C21-same-profile-workspace-switch-isolation",
+  "open_http": [
+    201,
+    201,
+    201
+  ],
+  "workspace_b_before": {
+    "workspace_id": "4ab085bd-2b03-4d56-b856-c3b3748cc7d2",
+    "roles": 0,
+    "memories": 0,
+    "history": 30,
+    "index": "ready"
+  },
+  "workspace_a_during": {
+    "workspace_id": "d12853f5-075e-49de-9883-812be3720365",
+    "role_names": [
+      "节制分析角色"
+    ],
+    "memory_count": 0,
+    "history_count": 2,
+    "workspace_b_markers_absent": true,
+    "index": "ready",
+    "profile_path": "<QA_ROOT>/.local/qa/m3-package-2-qa/profiles-A/d12853f5-075e-49de-9883-812be3720365"
+  },
+  "workspace_b_after_return": {
+    "workspace_id": "4ab085bd-2b03-4d56-b856-c3b3748cc7d2",
+    "role_marker_present": true,
+    "memory_marker_present": true,
+    "history_marker_present": true,
+    "index": "ready"
+  },
+  "profile_b_same_workspace_separate_local_state": {
+    "profile_path": "<QA_ROOT>/.local/qa/m3-package-2-qa/profiles-B/4ab085bd-2b03-4d56-b856-c3b3748cc7d2",
+    "different_local_profile_path": true,
+    "roles": 0,
+    "memories": 0,
+    "history": 1,
+    "workspace_b_marker_absent": true
+  },
+  "cleanup_http": {
+    "memory": 204,
+    "role": 204
+  },
+  "status": "PASS"
+}
