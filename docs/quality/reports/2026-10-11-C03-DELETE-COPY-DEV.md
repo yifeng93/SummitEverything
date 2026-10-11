@@ -34,7 +34,7 @@
 | `uv run --offline ruff format --check src tests` | PASS，67 files already formatted，exit 0 | `ruff-format.log` |
 | `uv run --offline mypy src` | PASS，36 source files，无问题，exit 0 | `mypy.log` |
 | `uv lock --offline --check` | PASS，41 packages resolved，exit 0 | `uv-lock-check.log` |
-| 首次红测：`PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --offline --locked pytest -q tests/contract/test_workspace_api.py -k 'nonempty_line_and_project_deletion_is_rejected or line_with_files_and_empty_organizations_can_be_deleted'` | 预期 FAIL：两项均在英文拒绝消息处失败，exit 1 | 首轮终端输出未另存；本报告记录实际结果 |
+| 首次红测：`PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --offline --locked pytest -q tests/contract/test_workspace_api.py -k 'nonempty_line_and_project_deletion_is_rejected or line_with_files_and_empty_organizations_can_be_deleted'` | 预期 FAIL：两项均在英文拒绝消息处失败，exit 1 | ignored `.local/c03-delete-copy-pilot/evidence/red-tests.log`（实际终端失败摘要） |
 
 没有运行全量 backend、前端、浏览器、DMG 或外部服务验收；这些超出此窄范围或由 QA 后续处理。
 
