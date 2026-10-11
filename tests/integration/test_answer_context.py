@@ -389,6 +389,84 @@ def test_fake_modes_separate_facts_comparison_and_advice_without_inventing_value
     assert not insufficient.text.endswith("0")
 
 
+def test_api_short_referential_followup_retrieves_using_latest_user_question(
+    tmp_path: Path,
+) -> None:
+    profile = tmp_path / "profile"
+    root = tmp_path / "workspace"
+    service = _ready_workspace(root, profile)
+    line = create_line(root, "专属主线", "line-follow-up")
+    project = create_project(root, line.id, "青岚计划", "project-follow-up")
+    target_id = uuid4()
+    PageWriter().confirm(
+        root,
+        metadata={
+            "id": str(target_id),
+            "title": "青岚预算",
+            "role": "knowledge",
+            "kind": "topic",
+            "line_id": str(line.id),
+            "project_id": str(project.id),
+        },
+        body="青岚计划的设备采购预算上限为 19 万元。",
+        confirmation_id="confirm-qinglan-budget",
+        operation_id="write-qinglan-budget",
+    )
+    service.rebuild(root, fingerprint="answer-context-test")
+    indexed_queries: list[str] = []
+    provider_calls: list[tuple[str, list[str]]] = []
+
+    class RecordingEmbedding(FakeEmbedding):
+        def embed(self, text: str, *, fingerprint: str) -> list[float]:
+            indexed_queries.append(text)
+            return super().embed(text, fingerprint=fingerprint)
+
+    class CapturingLLM(FakeLLM):
+        def answer(self, question, passages, context=None):
+            provider_calls.append((question, context.previous_user_questions))
+            return GroundedAnswer(
+                text="按当前资料回答。",
+                source_statements=[passage["excerpt"] for passage in passages],
+            )
+
+    service.embedding = RecordingEmbedding()
+    service.answer_provider = CapturingLLM()
+    client = TestClient(
+        create_app(session_token=TOKEN, profile_root=profile, query_service=service)
+    )
+    client.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    _open(client, root)
+
+    first_question = "青岚计划的预算上限是多少？"
+    first = client.post(
+        "/api/v1/queries",
+        json={
+            "request_id": str(uuid4()),
+            "question": first_question,
+            "fingerprint": "answer-context-test",
+        },
+    )
+    assert first.status_code == 200, first.text
+    conversation_id = first.headers["X-Conversation-ID"]
+    second_question = "它呢？"
+    second = client.post(
+        "/api/v1/queries",
+        json={
+            "request_id": str(uuid4()),
+            "question": second_question,
+            "fingerprint": "answer-context-test",
+            "conversation_id": conversation_id,
+        },
+    )
+
+    assert second.status_code == 200, second.text
+    citations = [event["data"] for event in _events(second) if event["type"] == "citation"]
+    assert any(citation["page_id"] == str(target_id) for citation in citations)
+    assert first_question in indexed_queries[-1] and second_question in indexed_queries[-1]
+    assert provider_calls[-1] == (second_question, [first_question])
+    client.close()
+
+
 def test_role_budget_and_intent_hash_reject_context_changes(tmp_path: Path) -> None:
     profile = tmp_path / "profile"
     root = tmp_path / "workspace"
@@ -419,4 +497,5 @@ def test_role_budget_and_intent_hash_reject_context_changes(tmp_path: Path) -> N
     rejected = client.post("/api/v1/queries", json=payload)
     assert rejected.status_code == 422
     assert rejected.json()["error"]["code"] == "context_budget_exceeded"
+    assert client.get("/api/v1/conversations").json()["items"] == []
     client.close()

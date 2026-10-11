@@ -15,6 +15,7 @@ type Conversation = components['schemas']['ConversationDetail']
 type Summary = Omit<Conversation, 'messages'>
 type QueryState = 'idle' | 'running' | 'completed' | 'error' | 'cancelled' | 'interrupted'
 type AnswerMode = 'fact' | 'comparison' | 'plan'
+type RetrievalPurpose = 'current' | 'history'
 type AnswerRole = components['schemas']['AnswerRole']
 type UserMemory = components['schemas']['UserMemory']
 type MemoryCandidate = components['schemas']['MemoryCandidate']
@@ -47,6 +48,7 @@ export function AskView({ onError, onOpenPage }: Props) {
   const [queryState, setQueryState] = useState<QueryState>('idle')
   const [notice, setNotice] = useState('')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('fact')
+  const [retrievalPurpose, setRetrievalPurpose] = useState<RetrievalPurpose>('current')
   const [roles, setRoles] = useState<AnswerRole[]>([])
   const [selectedRoleId, setSelectedRoleId] = useState('')
   const [roleName, setRoleName] = useState('')
@@ -149,6 +151,7 @@ export function AskView({ onError, onOpenPage }: Props) {
         missing_information: latest.missing_information ?? [],
       } : null)
       if (latest?.answer_mode) setAnswerMode(latest.answer_mode)
+      setRetrievalPurpose(latest?.purpose === 'history' ? 'history' : 'current')
       setNotice(latest?.state === 'interrupted'
         ? '上次连接中断；已保存实际收到的部分内容。不会自动重新发送，请自行决定是否继续提问。'
         : '')
@@ -169,6 +172,7 @@ export function AskView({ onError, onOpenPage }: Props) {
     setCitations([])
     setAnswerDetails(null)
     setQueryState('idle')
+    setRetrievalPurpose('current')
     setNotice('')
     setAnswerDetails(null)
   }
@@ -273,7 +277,7 @@ export function AskView({ onError, onOpenPage }: Props) {
           question,
           ...(targetConversation ? { conversation_id: targetConversation } : {}),
           fingerprint: settings.embedding_fingerprint,
-          purpose: 'current',
+          purpose: retrievalPurpose,
           answer_mode: answerMode,
           ...(selectedRoleId ? { role_id: selectedRoleId } : {}),
           request_id: queryId,
@@ -282,7 +286,9 @@ export function AskView({ onError, onOpenPage }: Props) {
       })
       if (!response.ok) {
         const failure = await response.json().catch(() => null) as { error?: { message?: string } } | null
-        throw new Error(failure?.error?.message ?? '知识问答暂不可用。')
+        setQueryState('error')
+        setNotice(failure?.error?.message ?? '问题未被接受；请检查输入后重试。')
+        return
       }
       if (!response.body) throw new Error('问答服务没有返回内容；请从本机历史确认保存状态后再继续。')
       const responseConversation = response.headers.get('X-Conversation-ID')
@@ -457,6 +463,11 @@ export function AskView({ onError, onOpenPage }: Props) {
       </section>}
 
       <form className="query-form" onSubmit={ask}>
+        <label htmlFor="retrieval-purpose">资料范围</label>
+        <select id="retrieval-purpose" value={retrievalPurpose} onChange={(event) => setRetrievalPurpose(event.target.value as RetrievalPurpose)}>
+          <option value="current">当前有效资料</option><option value="history">包含历史版本</option>
+        </select>
+        {retrievalPurpose === 'history' && <p role="note" className="stale-citation-note">历史资料范围会包含已被替代或失效的版本，只供历史参考，不能代表当前规则。</p>}
         <label htmlFor="answer-mode">回答方式</label>
         <select id="answer-mode" value={answerMode} onChange={(event) => setAnswerMode(event.target.value as AnswerMode)}>
           <option value="fact">查找事实</option><option value="comparison">跨材料比较</option><option value="plan">提出工作方案</option>
@@ -499,8 +510,22 @@ function CitationList({ citations, onOpen }: { citations: Citation[]; onOpen: (c
     <h3>引用依据</h3>
     {citations.map((citation, index) => <button key={`${citation.page_id}:${citation.content_sha256}:${index}`} className="citation-card" onClick={() => onOpen(citation)}>
       <span className="citation-number">{index + 1}</span>
-      <span><strong>{citation.heading || '页面内容'}</strong><small>{citation.excerpt}</small><small>{citation.availability === 'updated' ? '原引用版本已更新' : citation.availability === 'unavailable' ? '原引用已不可用' : citation.validity === 'superseded' ? '历史版本，仅限历史参考' : '引用版本仍可用'}</small></span>
+      <span><strong>{citation.heading || '页面内容'}</strong><small>{citation.excerpt}</small><small>{citationStatus(citation)}</small></span>
       <span aria-hidden="true">↗</span>
     </button>)}
   </div>
+}
+
+function citationStatus(citation: Citation): string {
+  const availability = citation.availability === 'updated'
+    ? '原引用版本已更新'
+    : citation.availability === 'unavailable'
+      ? '原引用已不可用'
+      : ''
+  const validity = citation.validity === 'superseded'
+    ? '已被替代的历史版本，仅限历史参考'
+    : citation.validity === 'invalid'
+      ? '已失效版本，仅限历史参考'
+      : '引用版本仍可用'
+  return [availability, validity].filter(Boolean).join(' · ')
 }

@@ -106,7 +106,7 @@ it('reopens local history, continues the same conversation, and labels an update
   const openButton = (await screen.findAllByRole('button', { name: /旧问题/ }))[0]
   fireEvent.click(openButton)
   expect((await screen.findAllByText('原回答')).length).toBeGreaterThan(0)
-  expect(screen.getByText('原引用版本已更新')).toBeTruthy()
+  expect(screen.getByText(/原引用版本已更新 · 引用版本仍可用/)).toBeTruthy()
   fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '继续追问' } })
   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
 
@@ -117,6 +117,63 @@ it('reopens local history, continues the same conversation, and labels an update
   })
   expect(await screen.findByText('后续回答')).toBeTruthy()
   expect(await screen.findByText(/回答 · 事实问答 · 已完成/)).toBeTruthy()
+})
+
+it('lets the user opt into historical sources and labels their limited effect', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'history-request' })
+  let submitted: Record<string, unknown> | null = null
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: 'fake-fingerprint', pages: 1, chunks: 1, state: 'ready', current_pages: 1, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
+    if (url === '/api/v1/queries') {
+      submitted = JSON.parse(String(init?.body)) as Record<string, unknown>
+      return new Response([
+        event('history-request', 1, 'status', { state: 'retrieving', conversation_id: 'history-conversation' }),
+        event('history-request', 2, 'citation', { ...citation, validity: 'superseded', availability: 'available' }),
+        event('history-request', 3, 'citation', { ...citation, page_id: 'invalid-history-page', validity: 'invalid', availability: 'updated' }),
+        event('history-request', 4, 'completed', { text: '历史版本所载地点为北馆。' }),
+      ].join(''), { status: 200, headers: { 'X-Conversation-ID': 'history-conversation' } })
+    }
+    if (url.endsWith('/conversations/history-conversation/reopen')) return Response.json({ conversation_id: 'history-conversation', title: '历史问题', created_at: '', updated_at: '', message_count: 1, state: 'completed', messages: [] })
+    throw new Error(`Unexpected fetch ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+
+  fireEvent.change(await screen.findByLabelText('资料范围'), { target: { value: 'history' } })
+  expect(screen.getByText(/会包含已被替代或失效的版本/)).toBeTruthy()
+  fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '旧版本地点是什么？' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+
+  await waitFor(() => expect(submitted).toMatchObject({ purpose: 'history' }))
+  expect(await screen.findByText('已被替代的历史版本，仅限历史参考')).toBeTruthy()
+  expect(screen.getByText(/原引用版本已更新 · 已失效版本，仅限历史参考/)).toBeTruthy()
+})
+
+it('shows an explicit server input error without marking the query interrupted or saving history', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'budget-request' })
+  let conversationReads = 0
+  const onError = vi.fn()
+  const rawFetch = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: 'fake-fingerprint', pages: 1, chunks: 1, state: 'ready', current_pages: 1, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) { conversationReads += 1; return Response.json({ items: [], next_cursor: null }) }
+    if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
+    if (url === '/api/v1/queries') return Response.json({ error: { code: 'context_budget_exceeded', message: '角色说明超过设定预算；请编辑角色内容后重试。' } }, { status: 422 })
+    throw new Error(`Unexpected fetch ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={onError} onOpenPage={vi.fn()} />)
+
+  fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '请回答问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+
+  expect(await screen.findByText(/本次回答 · 回答失败/)).toBeTruthy()
+  expect(screen.getByText('角色说明超过设定预算；请编辑角色内容后重试。')).toBeTruthy()
+  expect(screen.queryByText(/连接中断/)).toBeNull()
+  expect(conversationReads).toBe(1)
 })
 
 it('does not retry a stream that ends without its single terminal event', async () => {

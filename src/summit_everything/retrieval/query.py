@@ -19,6 +19,7 @@ from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import FakeReranker
 from summit_everything.local.answer_context import AnswerContext
 from summit_everything.retrieval.chunking import TextChunk, chunk_markdown
+from summit_everything.retrieval.planner import matches_explicit_subject, plan_retrieval
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.reader import list_pages, read_page
@@ -228,7 +229,8 @@ class QueryService:
                 index_status="empty",
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
-        query_vector = self.embedding.embed(question, fingerprint=fingerprint)
+        retrieval_plan = plan_retrieval(question, context.previous_user_questions)
+        query_vector = self.embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
         self._check_cancelled(cancelled)
         dense = sorted(
             chunks,
@@ -236,6 +238,21 @@ class QueryService:
             reverse=True,
         )
         qualified = self._qualified_chunks(root, dense, purpose=purpose)
+        if answer_mode == "fact" and retrieval_plan.explicit_subjects:
+            qualified = [
+                item
+                for item in qualified
+                if matches_explicit_subject(
+                    f"{item['heading']} {item['text']}", retrieval_plan.explicit_subjects
+                )
+            ]
+            if not qualified:
+                return self._empty_answer(
+                    question,
+                    purpose,
+                    "没有找到能确认该对象的已确认资料。",
+                    answer_mode=answer_mode,
+                )
         candidates = qualified[:20]
         if not candidates:
             return self._empty_answer(
@@ -245,7 +262,9 @@ class QueryService:
                 answer_mode=answer_mode,
             )
         self._check_cancelled(cancelled)
-        reranked = self.reranker.rank(question, [str(item["text"]) for item in candidates])
+        reranked = self.reranker.rank(
+            retrieval_plan.search_question, [str(item["text"]) for item in candidates]
+        )
         self._check_cancelled(cancelled)
         if len(reranked) != len(candidates):
             raise ValueError("Reranker returned an incomplete ranking")

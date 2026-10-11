@@ -7,6 +7,7 @@ from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
+from summit_everything.local.answer_context import AnswerContext
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -263,6 +264,120 @@ def test_current_and_history_queries_label_superseded_knowledge(tmp_path: Path) 
     assert superseded_id not in {citation.page_id for citation in current.citations}
     old_citation = next(c for c in history.citations if c.page_id == superseded_id)
     assert old_citation.validity == "superseded"
+
+
+def test_explicit_fact_subject_excludes_a_different_project_but_comparison_keeps_both(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    qinglan_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青岚预算",
+        body="青岚计划的设备采购预算上限为 19 万元，负责人已确认。",
+    )
+    zhuque_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="朱雀预算",
+        body="朱雀项目的设备采购预算上限为 12 万元，负责人已确认。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    fact = retrieval.query(root, "青岚计划的预算上限是多少？", fingerprint="fake-v1")
+    missing_subject = retrieval.query(root, "紫藤计划的预算上限是多少？", fingerprint="fake-v1")
+    comparison = retrieval.query(
+        root,
+        "青岚计划和朱雀项目的预算上限分别是多少？",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+
+    assert qinglan_id in {citation.page_id for citation in fact.citations}
+    assert zhuque_id not in {citation.page_id for citation in fact.citations}
+    assert missing_subject.citations == []
+    assert "没有找到能确认该对象" in missing_subject.text
+    assert {qinglan_id, zhuque_id} <= {citation.page_id for citation in comparison.citations}
+
+
+def test_referential_followup_uses_only_latest_user_question_as_retrieval_hint(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青岚预算",
+        body="青岚计划的预算上限是 19 万元。",
+    )
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="银杏负责人",
+        body="银杏项目的负责人是李明。",
+    )
+    embedded: list[str] = []
+    reranked: list[str] = []
+    answered: list[tuple[str, list[str]]] = []
+
+    class RecordingEmbedding(FakeEmbedding):
+        def embed(self, text: str, *, fingerprint: str) -> list[float]:
+            embedded.append(text)
+            return super().embed(text, fingerprint=fingerprint)
+
+    class RecordingReranker:
+        def rank(self, query: str, texts: list[str]) -> list[tuple[int, float]]:
+            reranked.append(query)
+            return [(index, 1.0) for index in range(len(texts))]
+
+    class RecordingAnswerer:
+        def answer(self, question, passages, context):
+            answered.append((question, context.previous_user_questions))
+            return GroundedAnswer(
+                text="按当前资料回答。", source_statements=[p["excerpt"] for p in passages]
+            )
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        RecordingEmbedding(),
+        RecordingReranker(),
+        RecordingAnswerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+    previous = "青岚计划的预算上限是多少？"
+    old_unrelated = "朱雀项目的负责人是谁？"
+
+    answer = retrieval.query(
+        root,
+        "它呢？",
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[old_unrelated, previous], answer_mode="fact"
+        ),
+    )
+
+    assert answer.citations
+    assert previous in embedded[-1] and "它呢" in embedded[-1]
+    assert old_unrelated not in embedded[-1]
+    assert previous in reranked[-1] and "它呢" in reranked[-1]
+    assert answered[-1] == ("它呢？", [old_unrelated, previous])
+
+    switched_topic = "银杏项目的负责人是谁？"
+    retrieval.query(
+        root,
+        switched_topic,
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[old_unrelated, previous], answer_mode="fact"
+        ),
+    )
+    assert embedded[-1] == switched_topic
+    assert reranked[-1] == switched_topic
 
 
 def test_neighbor_pages_are_rechecked_before_they_become_citations(tmp_path: Path) -> None:
