@@ -170,6 +170,7 @@ def test_nonempty_line_and_project_deletion_is_rejected(tmp_path: Path) -> None:
     line_delete = api.delete(f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"})
     assert line_delete.status_code == 409
     assert line_delete.json()["error"]["code"] == "workspace_error"
+    assert isinstance(line_delete.json()["error"]["request_id"], str)
     assert "仍有项目" in line_delete.json()["error"]["message"]
     assert "归档" not in line_delete.json()["error"]["message"]
     assert manifest_path.read_bytes() == original_manifest
@@ -180,6 +181,7 @@ def test_nonempty_line_and_project_deletion_is_rejected(tmp_path: Path) -> None:
     )
     assert project_delete.status_code == 409
     assert project_delete.json()["error"]["code"] == "workspace_error"
+    assert isinstance(project_delete.json()["error"]["request_id"], str)
     assert "仍有内容" in project_delete.json()["error"]["message"]
     assert "归档项目" in project_delete.json()["error"]["message"]
     assert manifest_path.read_bytes() == original_manifest
@@ -198,6 +200,8 @@ def test_line_with_files_and_empty_organizations_can_be_deleted(tmp_path: Path) 
 
     line_delete = api.delete(f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"})
     assert line_delete.status_code == 409
+    assert line_delete.json()["error"]["code"] == "workspace_error"
+    assert isinstance(line_delete.json()["error"]["request_id"], str)
     assert "目录仍有内容" in line_delete.json()["error"]["message"]
     assert manifest_path.read_bytes() == original_manifest
     assert api.get("/api/v1/lines").json()[0]["id"] == line["id"]
