@@ -36,6 +36,8 @@
 - [x] Developer 持续定向检查，收口全量后端/Web/静态/类型/构建与生成契约检查（自动门结果见包 2 DEV 报告；Sol 尚未判门）。
 - [ ] 固定 SHA 的整包独立 QA：C19、C20、C21，C13/C14 回归及实际浏览器三类问答、角色、记忆确认与删除。
 
+包 2 首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，四项缺陷和原始证据保留在[首轮报告](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)。Repair 1/2 已由 Developer 在源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 修复并完成全量检查；新的整包独立 QA 尚待 Sol 调度。不得将 DEV 检查记为 QA PASS。
+
 ## 包 3：连续工作与归档压缩
 
 依赖：现有 source/intake/review、writer journals、action receipts；复用已有月汇总，补全未完成部分。主要模块 workspace state/archives、local logging 和对应 API/UI。

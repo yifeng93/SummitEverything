@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## M3 功能包 2 repair 1：问答范围、追问召回与错误反馈（2026-10-11，Developer 完成，独立 QA pending）
+
+[repair 1 Developer 报告](2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md)：固定源码 SHA `0df323efc26e388d62f234e0471f853b2b54be4d`，修复首轮 QA 的四项缺陷：AskView 可选历史资料范围并同时显示引用可用性 / 效力；简短指代追问只把最近用户问题用作检索提示，每轮仍走当前资格复核；HTTP 422 输入/预算错误显示为回答失败而非断流；事实问答按用户明确对象限制候选，comparison / plan 保留跨材料路径。定向后端 14 passed、全量 guarded pytest 402 passed、Web 52 passed / 12 files；ruff、format、mypy、lock、uv build、OpenAPI 类型生成及 Web typecheck/lint/build 全部 exit 0。首轮 QA 原报告 [0827447](2026-10-11-M3-PACKAGE-2-QA-0827447.md) 保持 FAIL；新 SHA 等待独立 QA 与 Sol 判定，实际浏览器、真实模型 / 服务及发布门仍 NOT_RUN，runtime UNVERIFIED。
+
 ## M3 功能包 2：完整问答、角色与记忆（2026-10-11，Developer 完成，独立 QA pending）
 
 [包 2 Developer 报告](2026-10-11-M3-PACKAGE-2-DEV.md)：源码 SHA `daef5250b355179de93cc3d622b93e9b28f17286`。fact / comparison / plan、profile/workspace 角色与记忆、多轮 user-question context、provider payload、结构化历史和 WebUI 已实现；后端 399 passed、Web 50 passed / 12 files，lint/type/build/生成契约及其他 README 适用门均 exit 0。该报告只记 DEV 自测，QA 和 Sol 门判断尚未完成；实际浏览器、runtime 与真实服务/发布门保持 NOT_RUN / UNVERIFIED。
