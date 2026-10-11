@@ -1,0 +1,4 @@
+a4368a694e148d762974aa053fa547596df1977cc1623377fd460c0c4b9b839b  .local/qa/c03-delete-copy-qa-141bd96/workspace/.summit-everything/manifest.json
+c06d0d28bf739fac6c91ca4c50516640b278a40de36654a8a6ed70517d2df5c5  .local/qa/c03-delete-copy-qa-141bd96/workspace/仅文件主线/retained.txt
+.local/qa/c03-delete-copy-qa-141bd96/workspace/仅文件主线
+.local/qa/c03-delete-copy-qa-141bd96/workspace/仅文件主线/retained.txt

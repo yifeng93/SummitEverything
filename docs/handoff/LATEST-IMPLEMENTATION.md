@@ -1,5 +1,15 @@
 # 最新实现交接
 
+## 2026-10-11 C03 删除拒绝提示本地化跟进（QA 通过；分支候选，未合入 main）
+
+针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 文档提交：`141bd96d15039f1cd29461785fdd91e2ef297476`；QA 原报告提交：`f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，已在本分支以 `ebb99811d289ea821d5a1bfee9fad6a2a1ba04db` 整合。QA 测试时 HEAD 固定在 `141bd96`；之后只有 QA 报告、交接文档和证据提交，产品源码树与 QA 目标一致。分支为 `codex/c03-delete-copy-pilot`，尚未合入 main。
+
+Sol 根据独立 QA 判定本 C03 离线切片通过：首轮 PASS，repair 0/2；包括 37 项定向自动回归与本地 Fake WebUI 实际浏览器操作。源码树在 QA 前后无变化。DEV 报告：[C03 删除文案 DEV](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)；QA 原报告：[C03 独立 QA](../quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md)；日志和脱敏观察证据：[QA 证据目录](../quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。QA 使用 CUA 观察但没有导出截图；API envelope 由 contract tests 断言。该切片结果不重开完整 M1，也不改变已合并 Stage B 的历史范围。真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5 仍 NOT_RUN；main 尚未包含本候选。
+
+用户已确认长期 Sol→Developer Luna→全新 QA Luna→Sol 流程，详见 [ADR 0008](../decisions/0008-sol-luna-development-workflow.md)。本轮文档候选仍待固定 SHA 的独立文档复核及 Sol 后续整合；不得把此状态写作已合入 main。历史安装版 overlay 原文仅保存在 [历史补丁](history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch) 供追溯。
+
+**推荐下一项（未实施）：** M3.1 问答本地状态薄切片。优先实现每 workspace + profile 隔离的 conversation store / API（列表、重开、删除），再接 UI；如实呈现 SSE 完成、取消和断流状态，旧内容版本引用提示已更新。此建议依据 API-v1 conversations 路由、产品规格的本地聊天历史 / 引用规则及 ACCEPTANCE C14、C21。它不是 M3 的完成声明或范围缩减；角色、记忆、三类问答及完整验收仍待完成。真实 C 门、DMG、五日与双机不因该建议而启动。
+
 ## 2026-10-11 Stage B 离线源码已合并
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。

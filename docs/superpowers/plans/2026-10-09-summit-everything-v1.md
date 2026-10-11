@@ -10,13 +10,15 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
-## 当前阶段记录（2026-10-10）
+## 当前阶段记录（更新于 2026-10-11；历史任务清单保留）
 
-M1 与 M2 阶段 A 在 Fake-only 范围已收口，最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。原阶段 A 代码 `32da67e` 及各轮记录仅证明其对应范围；撤回截图、恢复补验与 C18 修复报告见[报告索引](../../quality/reports/README.md)。本轮维护后从最新 main 记录完整 SHA，再按[B/C 提示词](../../handoff/PROMPT-STAGE-B-C-LUNA.md)执行。
+M1 与 M2 阶段 A 在 Fake-only 范围已收口，最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。Stage B 离线源码 / 开发壳受测代码为 `576895f6983ca41cacbbad45a9075b97b9986189`，已独立 QA 并合入 main；完整范围与真实未测门见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。Stage C 与 M3–M5 未开始；不重复执行历史 Stage B 提示词。下一项推荐为下方记录的 M3.1 本地问答状态薄切片。
 
 ## 全局执行规则与验收门
 
-B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。B 尚未开始：配置 / 凭据 / Keychain → Feishu 真实适配与模型适配 → 独立离线 QA。C 尚未开始：B 通过后逐项批准真实操作，验证具体协议与模型质量。C 仅前置验证 M4 的部分外部门，不能提前标记 M3、DMG、真实样板初始化、五日或双机完成。
+B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B 离线源码候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已独立 QA 并合入 main，范围仅为离线源码和开发壳；真实账户 / 协议、OS Keychain 与 R03 质量仍未完成。Stage C 尚未开始，必须在 B 后逐项取得真实操作授权并验证具体协议与模型质量。C 仅前置验证 M4 的部分外部门，不能提前标记 M3、DMG、真实样板初始化、五日或双机完成。当前 main 之后的推荐路线图任务为 M3.1 本地问答状态薄切片：conversation store / API、列表 / 重开 / 删除、SSE 完成 / 取消 / 断流状态及旧版本引用标记；先做 store/API，再接 UI。M3.1 与整个 M3 均未开始，完整范围见下方任务清单与 C14 / C21。
+
+当前 Sol / Luna 开发与验收分工见 [ADR 0008](../../decisions/0008-sol-luna-development-workflow.md)；这里不重复工作流全文。
 
 每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为由独立 QA 用真实浏览器检查。
 

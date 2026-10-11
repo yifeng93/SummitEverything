@@ -1,0 +1,16 @@
+22d1f451ee506d0fe67e12080e276da18cea9dd5926c9c750789f1ded2a0ffe1  ./README.md
+aba4e4cac5de76d3d53487692c79978e0ec93b9abd421d37380a9b42fd3f6d68  ./browser-observations.md
+1cc3610b1a72e76918247a61386fa37fedf46b6aadd28fa2f34aeb405668f2c1  ./logs/active-project-after.txt
+1cc3610b1a72e76918247a61386fa37fedf46b6aadd28fa2f34aeb405668f2c1  ./logs/active-project-before.txt
+fa1d8ebf5ae4b04dfdf110a7323821eb1df036a8fb943f854b25f2d10c6d147a  ./logs/archived-project-after.txt
+fa1d8ebf5ae4b04dfdf110a7323821eb1df036a8fb943f854b25f2d10c6d147a  ./logs/archived-project-before.txt
+b6dd57cac489444623d644cacde76a194af0ef4d41421c32e1f519d4e947925b  ./logs/dev-server.log
+003ad3eb77675576c2ddd171f6360dbbf2a789e62cf884b8411270a7005b3c37  ./logs/file-line-after.txt
+003ad3eb77675576c2ddd171f6360dbbf2a789e62cf884b8411270a7005b3c37  ./logs/file-line-before.txt
+98cc839ef00d5acf63684f2fbed32d34bdf0fed2e980b1753bffb8bd3675450e  ./logs/lock.log
+60f28b94716a9681d0ca533e2fe42680ae0961635c17d3110675fc53df4ea115  ./logs/mypy.log
+e331f0731e3eb8954b92af473f37d8fad3030275b4783dbeea1ace90a83e5e13  ./logs/npm-ci.log
+82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18  ./logs/ruff-check.log
+b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e  ./logs/ruff-format.log
+dbaebfe9a14e1e42848040f08c7bbeb84a06e579cfd424fe4943e6f46fdf54c7  ./logs/targeted.log
+9ff2b0871a84710bc9cb1040a7ca05a8283b30eec8585728338190a559bde8e0  ./logs/uv-sync.log

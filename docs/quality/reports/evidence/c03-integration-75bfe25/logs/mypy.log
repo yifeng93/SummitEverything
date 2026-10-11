@@ -1,0 +1,4 @@
+COMMAND=uv run --offline --locked mypy src 
+Success: no issues found in 36 source files
+
+EXIT_CODE=0

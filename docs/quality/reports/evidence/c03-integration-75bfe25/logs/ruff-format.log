@@ -1,0 +1,4 @@
+COMMAND=uv run --offline --locked ruff format --check src tests 
+67 files already formatted
+
+EXIT_CODE=0

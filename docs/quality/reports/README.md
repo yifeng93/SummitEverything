@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## C03 删除拒绝提示本地化跟进（2026-10-11，C03 离线切片 QA 通过；未合入 main）
+
+[C03 删除文案 DEV](2026-10-11-C03-DELETE-COPY-DEV.md)：源码 `9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476`。Sol 根据[独立 QA 报告](2026-10-11-C03-DELETE-COPY-QA-141bd96.md)判定本切片通过：首轮 PASS、repair 0/2，37 项定向回归与实际 Fake WebUI 浏览器观察通过；测试后仅增加 QA 报告和文档/证据，源码树一致。QA 原报告提交 `f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，已整合到本分支。候选尚未合入 main，完整 M1、Stage B 和真实 / 发布门状态不变。已归档运行日志与观察记录见[证据目录](evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。
+
 ## Stage B 离线收口（2026-10-11，当前）
 
 [PR #10合并后核验与最终收口](2026-10-11-STAGE-B-POSTMERGE.md)：main产品树与576895f一致，13项检查通过；原始QA manifest保留，4项运行时pyc条目未发布，两份补充publication manifest核验实际归档证据。

@@ -1,0 +1,48 @@
+HEAD=75bfe2548e947432e72767b0b7822d34685a8b61
+STATUS=## HEAD (no branch)
+
+DIFF 141bd96..6eb33d0 name-status:
+M	docs/handoff/LATEST-IMPLEMENTATION.md
+M	docs/implementation/PROGRESS.md
+M	docs/quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md
+A	docs/quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md
+M	docs/quality/reports/README.md
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/SHA256SUMS
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/browser-observations.md
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/active-project-after.txt
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/active-project-before.txt
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/archived-project-after.txt
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/archived-project-before.txt
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/dev-server.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/file-line-after.txt
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/file-line-before.txt
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/lock.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/mypy.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/npm-ci.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/ruff-check.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/ruff-format.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/targeted.log
+A	docs/quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/logs/uv-sync.log
+
+DIFF 6eb33d0..75bfe25 name-status:
+M	AGENTS.md
+M	README.md
+M	docs/README.md
+A	docs/decisions/0008-sol-luna-development-workflow.md
+M	docs/handoff/IMPLEMENTER.md
+M	docs/handoff/LATEST-IMPLEMENTATION.md
+M	docs/handoff/TESTER.md
+A	docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch
+M	docs/implementation/PROGRESS.md
+M	docs/superpowers/plans/2026-10-09-summit-everything-v1.md
+source-tree-equality-exit=0
+
+Patch identity:
+d9c3122955848afab852c81a2b24e8d9e62d9eb0eb59ace61d1b8cd21d111f32  docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch
+d9c3122955848afab852c81a2b24e8d9e62d9eb0eb59ace61d1b8cd21d111f32  /tmp/summit-existing-agents-2026-10-11.patch
+patch-cmp-exit=0
+
+Lock hashes after checks:
+148ac7c5d1d795ec0ee17384bca7c2173dddb6ba8945b23445da71356c9bfbda  uv.lock
+d7b39319f006b0280857a02f3932f7e71e8d38cd0e63a0684f9b41f0d9c26ad3  web/package-lock.json

@@ -1,0 +1,10 @@
+COMMAND=npm --prefix web ci --offline 
+
+added 126 packages, and audited 127 packages in 787ms
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+EXIT_CODE=0

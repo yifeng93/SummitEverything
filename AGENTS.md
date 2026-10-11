@@ -54,3 +54,13 @@
 - 当前可用检查只见 README.md；新增真实运行命令后同步 README 和验收手册。
 - 提交可复验状态，禁止秘密、真实业务原件、.venv、node_modules、构建产物进入 Git。
 - 发版时强制重建前端，包内记录源码提交、dirty 标志、前端指纹和构建号；源码测试不能替代安装包验收。
+
+## Sol / Luna 协作流程（2026-10-11 用户确认）
+
+- 默认由 Sol 负责需求澄清、架构与切片规划、调度、审查和最终门判断；custom Developer GPT-6 Luna（High）负责实现、基础自测、固定源码 SHA 与交接；全新 custom QA GPT-6 Luna（High）在独立 checkout 对固定 SHA 验收并留证。Sol 自动完成 agent 间交接与往返，用户不需要手工复制提示。
+- 串行修改：Developer 完成并固定提交后 QA 才开始；QA 不改产品源码或已有 tracked tests，只可在隔离 checkout 的 `.local/qa` 或项目许可的 evidence 位置建立黑盒 harness / 验收记录。QA 固定 SHA 的工作期间不移动被测目标。
+- 首次 QA 失败后，最多自动修复两轮；每轮 Developer 修复并提交新 SHA，再由全新 QA 对该 SHA 验收。两轮后仍失败则停止并请用户决定；不得删测试或降低验收门。
+- Sol 检查真实退出码、日志、SHA、diff 与 QA 证据，逐项判定 PASS / FAIL / BLOCKED / NOT_RUN。配置元数据未实际暴露时 runtime 记 UNVERIFIED，不能从 TOML 配置推断；用户曾观察 Luna High 的 smoke 只作为历史用户观察，不能冒充本轮运行证据。
+- 低风险且可复验的任务可在仓库政策、保护规则、实际测试和所需审批均满足时自动提交及合并。重要里程碑合并、真实服务 / 资料 / 凭据操作、不可逆操作和验收门例外先取得用户明确批准。不得未经授权删除 branch 或 worktree。
+- Stage C 真实连接仍是单独 opt-in；真实凭据、材料、Keychain、DMG、五日和双机继续作为独立未测门。有限 smoke 额度按最新交接记录累计，不因 profile、聊天或轮次重置。
+- 当前权威状态读 README、PROGRESS 与 LATEST-IMPLEMENTATION 的真实 HEAD；Stage B 历史提示只用于追溯，不重启旧阶段。旧安装 overlay 原文归档于 [2026-10-11 历史安装补丁](docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)，仅保留来历，不能作为启动旧 Stage B 的指令。

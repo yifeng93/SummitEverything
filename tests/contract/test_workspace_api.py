@@ -157,19 +157,75 @@ def test_nonempty_line_and_project_deletion_is_rejected(tmp_path: Path) -> None:
     ).json()
     project_dir = tmp_path / "new" / project["directory"]
     (project_dir / "page.md").write_text("retained content", encoding="utf-8")
+    original_page = (project_dir / "page.md").read_bytes()
 
-    assert (
-        api.delete(
-            f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"}
-        ).status_code
-        == 409
+    archived = api.patch(
+        f"/api/v1/projects/{project['id']}",
+        json={"archived": True, "operation_id": "project-archive"},
     )
-    assert (
-        api.delete(
-            f"/api/v1/projects/{project['id']}", params={"operation_id": "project-delete"}
-        ).status_code
-        == 409
+    assert archived.status_code == 200, archived.text
+    manifest_path = tmp_path / "new" / ".summit-everything" / "manifest.json"
+    original_manifest = manifest_path.read_bytes()
+
+    line_delete = api.delete(f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"})
+    assert line_delete.status_code == 409
+    assert line_delete.json()["error"]["code"] == "workspace_error"
+    assert isinstance(line_delete.json()["error"]["request_id"], str)
+    assert "仍有项目" in line_delete.json()["error"]["message"]
+    assert "归档" not in line_delete.json()["error"]["message"]
+    assert manifest_path.read_bytes() == original_manifest
+    assert (project_dir / "page.md").read_bytes() == original_page
+
+    project_delete = api.delete(
+        f"/api/v1/projects/{project['id']}", params={"operation_id": "project-delete"}
     )
+    assert project_delete.status_code == 409
+    assert project_delete.json()["error"]["code"] == "workspace_error"
+    assert isinstance(project_delete.json()["error"]["request_id"], str)
+    assert "仍有内容" in project_delete.json()["error"]["message"]
+    assert "归档项目" in project_delete.json()["error"]["message"]
+    assert manifest_path.read_bytes() == original_manifest
+    assert (project_dir / "page.md").read_bytes() == original_page
+
+
+def test_line_with_files_and_empty_organizations_can_be_deleted(tmp_path: Path) -> None:
+    api = client()
+    api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    open_new_workspace(api, tmp_path / "new")
+    line = api.post("/api/v1/lines", json={"name": "线甲", "operation_id": "line-create"}).json()
+    line_dir = tmp_path / "new" / line["directory"]
+    (line_dir / "retained.txt").write_text("retained line content", encoding="utf-8")
+    manifest_path = tmp_path / "new" / ".summit-everything" / "manifest.json"
+    original_manifest = manifest_path.read_bytes()
+
+    line_delete = api.delete(f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"})
+    assert line_delete.status_code == 409
+    assert line_delete.json()["error"]["code"] == "workspace_error"
+    assert isinstance(line_delete.json()["error"]["request_id"], str)
+    assert "目录仍有内容" in line_delete.json()["error"]["message"]
+    assert manifest_path.read_bytes() == original_manifest
+    assert api.get("/api/v1/lines").json()[0]["id"] == line["id"]
+    assert (line_dir / "retained.txt").read_text(encoding="utf-8") == "retained line content"
+
+    (line_dir / "retained.txt").unlink()
+    empty_project = api.post(
+        "/api/v1/projects",
+        json={"line_id": line["id"], "name": "空项目", "operation_id": "project-create"},
+    ).json()
+    project_dir = tmp_path / "new" / empty_project["directory"]
+    removed_project = api.delete(
+        f"/api/v1/projects/{empty_project['id']}", params={"operation_id": "project-empty-delete"}
+    )
+    assert removed_project.status_code == 204
+    assert not project_dir.exists()
+    assert api.get("/api/v1/projects").json() == []
+
+    removed_line = api.delete(
+        f"/api/v1/lines/{line['id']}", params={"operation_id": "line-empty-delete"}
+    )
+    assert removed_line.status_code == 204
+    assert not line_dir.exists()
+    assert api.get("/api/v1/lines").json() == []
 
 
 def test_page_reader_returns_only_validated_knowledge_pages(tmp_path: Path) -> None:
