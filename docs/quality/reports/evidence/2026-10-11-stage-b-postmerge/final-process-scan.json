@@ -1,0 +1,30 @@
+{
+  "ports": {
+    "8793": "",
+    "5173": "",
+    "15173": "",
+    "15185": "",
+    "52936": "",
+    "52937": ""
+  },
+  "owned_app_service_processes": [],
+  "preserved_tool_runtimes": [
+    {
+      "pid": 14194,
+      "classification": "Codex CUA automation runtime; preserved, not a SummitEverything app/service"
+    },
+    {
+      "pid": 14195,
+      "classification": "Codex CUA automation runtime; preserved, not a SummitEverything app/service"
+    },
+    {
+      "pid": 16612,
+      "classification": "Codex CUA automation runtime; preserved, not a SummitEverything app/service"
+    },
+    {
+      "pid": 16613,
+      "classification": "Codex CUA automation runtime; preserved, not a SummitEverything app/service"
+    }
+  ],
+  "method": "Known-port LISTEN scan and process command inventory; Codex CUA runtimes classified separately and left untouched."
+}

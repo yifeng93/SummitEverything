@@ -1,0 +1,7 @@
+Command: ['npm', 'run', 'typecheck']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything/web
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+
+> web@0.0.0 typecheck
+> tsc -b --pretty
+

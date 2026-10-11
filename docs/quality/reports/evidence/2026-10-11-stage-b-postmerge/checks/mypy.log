@@ -1,0 +1,4 @@
+Command: ['uv', 'run', '--locked', '--no-sync', 'mypy', 'src']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+Success: no issues found in 36 source files

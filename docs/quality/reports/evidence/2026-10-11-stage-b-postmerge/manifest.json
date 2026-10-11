@@ -1,0 +1,41 @@
+{
+  "algorithm": "sha256",
+  "tested_source_sha": "576895f6983ca41cacbbad45a9075b97b9986189",
+  "merge_sha": "41207e5bfb81b535c0254fd4ac242df11da40d67",
+  "file_count": 29,
+  "files": {
+    "checks/api-types.log": "ccdcf5de350f28ae4a2a70ea15c833dae66294b88cee0e44b91cb992faf3dcdb",
+    "checks/backend-first-failure.log": "4152f9aedd14ad83f7f07d063e65edcad9fc34f383f1feea26f37ef7aff77da4",
+    "checks/backend.log": "f16eab718f97df5640889a6f14d5b56fff68c64916ede12da675ec0505eb090f",
+    "checks/build-tool-install.log": "e46ce240460168b75bf8ca0ea902e66fa41f27bda098386283d79fd6a67641d8",
+    "checks/deadline-focused-retest.log": "fef3c9f8981206bc9bf240656c14fdf2c62477dfa66e9700ef273793b82d1160",
+    "checks/diff.log": "1c108d239935130e687d946229eb9c687e4febc7300eda45955a3f67dcac7034",
+    "checks/format.log": "e8d247871f1117d85c31fff5ecb05f8597cdf87a479057a7288c7480bcf41d39",
+    "checks/lock.log": "9cc2fdd89e529ba15005e4bd36533fc3d406df5d007bb75c93b367eb519c82d5",
+    "checks/mypy.log": "5f944efba64f018bb5572eae32909b7749c86512e75b91b9c6da069125285826",
+    "checks/npm-ci.log": "4adca468454c9756d4350eb1d257b311dbed9bc146b6ecdc7ab9fabe02cc7235",
+    "checks/orphan-service-cleanup.json": "cabfef34e5f5f278800cde3a15cf0da317d29179c42ded25b967d75f10080b2d",
+    "checks/package.log": "2dc295aee684383f4821bd06292fe3fa87c3ec4371c190c9fcf62a708cb8ff7e",
+    "checks/replay.py": "b95eec74c53ae2ca55080e1774ee9a0bf8c30517ab7af55953869080d6a159fd",
+    "checks/results-first-failure.json": "bbb03bc13276a00505cf4bedd56cd690b20ab606976491fa1aa20bbdf30825a2",
+    "checks/results.json": "1ea37a9ed6853af82ec2e1167d7b340c92a075870df4ad2ecac8e83f61320f57",
+    "checks/ruff.log": "567fa07b7ed3ef80d39fb6eb5a267276a49fd5b3f3a3d360b08f96a1cda028ff",
+    "checks/swift.log": "09f2d801dcb89d5b25c9deef7a8f7b51c46fd84d9ea00e25256b6de2f93aedc8",
+    "checks/uv-sync.log": "48f2e070b358bf03926b6450fe6615c99f371e94833fb58f8c65b85dd78562fb",
+    "checks/web-build.log": "235c5430a0361b18eae0f8639a80f3dec3950bca3eae02593a27440cca2eb974",
+    "checks/web-lint.log": "d71420d8e6692f02375c28c15f65d76573b80a43fc19fcf0861179569666647b",
+    "checks/web-tests.log": "c51212c89139ce78493008401edc4e24822983b530c8e5fe32521bbe890ad3f7",
+    "checks/web-types.log": "d343a9bbec40a95345945dead660f11ab08337958b9d7cc845575fccb26f2ae9",
+    "final-archive-verification.log": "4cdfe7b8977c1ed5caa8ccca246f563f17d8953dc42337bc9688a1d7b2a385dc",
+    "final-process-scan.json": "4e91c908935db623a3ef8017788a268f3254ae584fc0592d07660284857acf94",
+    "final-worktrees-before-cleanup.json": "2038b22d215eda28ea48b5205831c16bf873337f2aa8ddc72f6010a8e7b64a4f",
+    "final-worktrees-cleaned.json": "a0ffa424cc0ff995a5775dd9fc11862301063f83e71525e0d506dd41116c8e56",
+    "merge-source-identity.json": "a4eeac4097a9f034d164eba17d73c2f39296007e0f5785df7b84c0243065e64e",
+    "publication-audit.json": "83a05f6898175d5878ce4239abdc8042760746f3f634b49b572e508641f843ce",
+    "stage-b-final-history.bundle.sha256": "ef020b13220aa0a96bfab3d11d4a4a90f60887581a1e916ff87e4cc058e5d63d"
+  },
+  "report": {
+    "relative_to_repo": "docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md",
+    "sha256": "6b0e88ffa019b54ee82dd0f768cd99781c4515af33f816b6bf98e368a26f6d03"
+  }
+}

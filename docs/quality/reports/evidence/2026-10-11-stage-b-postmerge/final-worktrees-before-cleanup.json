@@ -1,0 +1,173 @@
+[
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-backend-576895f/SummitEverything",
+    "head": "576895f6983ca41cacbbad45a9075b97b9986189",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-offline-retest-576895f/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-backend-576895f-recoverable.tar.gz",
+    "sha256": "1dc2dc6c51142c64710151947d2e608580a7f6bbe7079b5f8d96f997a34884c8",
+    "verified_entries": 894,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything",
+    "head": "fd2042385c4916598337239f5259b3ef1889372a",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-FINAL-OFFLINE-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-offline-qa/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-final-backend-recoverable.tar.gz",
+    "sha256": "536a2151d05eadda492ca1451cdcea01502f945b942f4444380ebad185876af3",
+    "verified_entries": 904,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything",
+    "head": "fd2042385c4916598337239f5259b3ef1889372a",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-FINAL-UI-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-ui-qa/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-final-ui-recoverable.tar.gz",
+    "sha256": "2764be49f93993671ecbbe1869811f8233983eb2f072ed13ea426775404eef57",
+    "verified_entries": 945,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-ui-retest-576895f/SummitEverything",
+    "head": "576895f6983ca41cacbbad45a9075b97b9986189",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-ui-retest-576895f/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-ui-retest-576895f-recoverable.tar.gz",
+    "sha256": "057ac20d79c5d48eb70ad550bafab111778135d9433b16132260de1d6199d437",
+    "verified_entries": 954,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything",
+    "head": "8b6259a9aa6ff2e52b700134abadff24de46dc08",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-retest/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-refresh-final-recoverable.tar.gz",
+    "sha256": "aecd88e6dfd35dbcbc558473fc400b64f0f6ba2e33d9e4dad265b0f6bb48735a",
+    "verified_entries": 753,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-backend/SummitEverything",
+    "head": "7f3119a511fda6f3d2771af4cf09fd9a9026edb7",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-qa/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-sol-backend-recoverable.tar.gz",
+    "sha256": "76396a908dbc3f93a7bd441b04fa0b58a54faf7d1e339afc4b882a3ba04f8b5c",
+    "verified_entries": 701,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything",
+    "head": "7f3119a511fda6f3d2771af4cf09fd9a9026edb7",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-independent-ui-qa/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-sol-ui-recoverable.tar.gz",
+    "sha256": "d343ef5f1b43398eb8040ea96bcd72b086204db2f5a61475607c9fbc1a36e425",
+    "verified_entries": 770,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-ui-retest/SummitEverything",
+    "head": "8b6259a9aa6ff2e52b700134abadff24de46dc08",
+    "status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-ui-retest/\n",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-ui-retest-recoverable.tar.gz",
+    "sha256": "255df7744f1bdd0d987f9fd6597979fdf728fed70295feae9d218a60711cd6c6",
+    "verified_entries": 790,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  },
+  {
+    "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial",
+    "head": "5196c8f1c1b9da54aea5bbcb2149297594f60268",
+    "status": "",
+    "archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-SummitEverything-deepseek-stage-b-trial-recoverable.tar.gz",
+    "sha256": "c666cf909b8a89bf9acc23bb84798bc93b8840879440a7f000578ed73c6515b7",
+    "verified_entries": 1034,
+    "excluded_rebuildable": [
+      ".build",
+      ".git",
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      "__pycache__",
+      "dist",
+      "node_modules"
+    ]
+  }
+]

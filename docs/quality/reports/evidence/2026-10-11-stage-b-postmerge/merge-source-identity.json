@@ -1,0 +1,17 @@
+{
+  "tested_source_sha": "576895f6983ca41cacbbad45a9075b97b9986189",
+  "merge_sha": "41207e5bfb81b535c0254fd4ac242df11da40d67",
+  "source_is_ancestor": true,
+  "product_paths": [
+    "src",
+    "tests",
+    "web",
+    "native",
+    "scripts",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "product_diff": "",
+  "worktrees": "/Users/yifengstudio/Documents/GitHub/SummitEverything 41207e5 [main]",
+  "branches": "* main\n  remotes/origin/HEAD -> origin/main\n  remotes/origin/main"
+}

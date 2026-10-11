@@ -1,11 +1,11 @@
 # 最新实现交接
 
-## 2026-10-11 Stage B 离线收口候选
+## 2026-10-11 Stage B 离线源码已合并
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。独立离线QA已通过，PR/main整合待完成。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
 
 - 起点文档提交：`0a1db5d72e6ac11184d28e65dea3ba008762ba43`，上一源码 `7dc7114595704f34ba386c96324dffa77d529ba4`；两者产品源码无差异。
-- 固定受测源码 SHA `576895f6983ca41cacbbad45a9075b97b9986189`；分支codex/deepseek-stage-b-trial，main整合待完成。
+- 固定受测源码 SHA `576895f6983ca41cacbbad45a9075b97b9986189`；main已包含受测提交，试验/QA工作树归档后已清理。
 - [最终后端复验](../quality/reports/2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md)、[最终实际UI复验](../quality/reports/2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md)、[根URL修复DEV](../quality/reports/2026-10-11-STAGE-B-NATIVE-URL-DEV.md)。
 - [严格标记DEV](../quality/reports/2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生双服务readiness DEV](../quality/reports/2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)、[8b后端复验](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md)、[8b原生FAIL](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md)。
 - [刷新重启修复DEV](../quality/reports/2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md)、[首次独立QA FAIL](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md)。

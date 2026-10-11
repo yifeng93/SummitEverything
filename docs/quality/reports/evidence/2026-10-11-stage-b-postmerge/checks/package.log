@@ -1,0 +1,7 @@
+Command: ['uv', 'build', '--no-build-isolation']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/summit_everything-0.1.0.tar.gz
+Successfully built dist/summit_everything-0.1.0-py3-none-any.whl

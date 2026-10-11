@@ -1,0 +1,149 @@
+[
+  {
+    "check": "backend",
+    "command": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q"
+    ],
+    "exit": 0,
+    "seconds": 57.305
+  },
+  {
+    "check": "ruff",
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "ruff",
+      "check",
+      "src",
+      "tests",
+      "scripts/offline_guard"
+    ],
+    "exit": 0,
+    "seconds": 0.069
+  },
+  {
+    "check": "format",
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "ruff",
+      "format",
+      "--check",
+      "src",
+      "tests",
+      "scripts/offline_guard"
+    ],
+    "exit": 0,
+    "seconds": 0.024
+  },
+  {
+    "check": "mypy",
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "mypy",
+      "src"
+    ],
+    "exit": 0,
+    "seconds": 0.861
+  },
+  {
+    "check": "lock",
+    "command": [
+      "uv",
+      "lock",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.014
+  },
+  {
+    "check": "package",
+    "command": [
+      "uv",
+      "build",
+      "--no-build-isolation"
+    ],
+    "exit": 0,
+    "seconds": 15.143
+  },
+  {
+    "check": "api-types",
+    "command": [
+      "npm",
+      "run",
+      "api:types"
+    ],
+    "exit": 0,
+    "seconds": 0.841
+  },
+  {
+    "check": "web-tests",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 1.7
+  },
+  {
+    "check": "web-types",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 1.132
+  },
+  {
+    "check": "web-lint",
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 0.376
+  },
+  {
+    "check": "web-build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 1.388
+  },
+  {
+    "check": "swift",
+    "command": [
+      "swift",
+      "build",
+      "--package-path",
+      "native"
+    ],
+    "exit": 0,
+    "seconds": 8.387
+  },
+  {
+    "check": "diff",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.012
+  }
+]

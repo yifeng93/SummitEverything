@@ -1,0 +1,41 @@
+{
+  "algorithm": "sha256",
+  "original_runtime_manifest_sha256": "4cf324d435cef2e7708f2b05833b65edc41a3ac6d8675c704f5ed17c2fefd321",
+  "file_count": 18,
+  "files": {
+    "check-results-before-npm-ci.json": "86949fc331bb54d3c40d9c3188241b9bc058d9c5a21c4be2b9046d95cbe44d6d",
+    "check-results.json": "842a753a2c8351d3c22d15f4c4c4b73a5f71bc0f6614fcd6bd893180a921d1df",
+    "harness/audit_identity.py": "400b28f027d4ac19d450dd2d3b45e94a64f5b76de413fbd35b92f2488c94f795",
+    "harness/finalize_evidence.py": "c00d46fc8aa460da7093c3e203649b6f589f4b994eee6524d5250e8025f1b039",
+    "harness/run_checks.py": "f9d6d497afc1cd40edf220d20075cbe5d8a413d9cbad1fd4e41c4526ae32f4ae",
+    "harness/test_independent_boundaries.py": "b0bbba90974e9a4a5976ba7e609a84bd1a2787300ce8669dc1945506712d6392",
+    "harness/test_independent_refresh_faults.py": "676987474374aa155a7e20f1aa552765b21e90ef99f0d2dbc821f76a0605110d",
+    "identity-audit-correction.log": "315b96dd29899a3faaeb1f5ce98952ec0651d1f4a12a489f2cd48f41604e8ff4",
+    "identity-audit-fd-local-path-failure.log": "a5546f271272b959c259fbf947c10a9af601df8501e819ec854ab8b38184948a",
+    "identity-audit.json": "0812b9d30a93a67f9979fd7ac64fa3b01f4a4859943ed07837b4a93bec23c4bb",
+    "identity-audit.log": "b6d6c2f9a1215ff8aff4a98e0a90c04d8116f46bfcd914ea0fe2c2914b463a87",
+    "independent-boundaries.log": "5a364c1c39a550c33e6c5603b281be2527351a5d3e9e1ce6a9cb578b9801798b",
+    "npm-ci.log": "4d90ecad4f560e0d9b2d294a470eaabfec72769b2e5a628eaa705eadf4e00a29",
+    "pytest-full-before-npm-ci.log": "fa6fce5279ad15242626a194e5496d1e55693403140c7f97d748a3525b6078b8",
+    "pytest-full.log": "2c74aa44772a1f4b4a5b6cab7ee6af6beb4907c3b3b89632d2c5bd6c10e0b2a7",
+    "setup-failure.log": "7a3e47bd7dad5fcd1e2f31975018718c59de0baa89924b769ede7c91f2d28df8",
+    "swift-build.log": "c7cf0b5c096a7e9dd201a1cc881fa12c57bc974b5e0503eb0f41c5c1d70cf13d",
+    "uv-sync.log": "db7e585b1312c11c9aab4582b7a2447630283dbe89b52cb24e0a6e315f20ab87"
+  },
+  "omitted_runtime_files": [
+    {
+      "path": "harness/__pycache__/test_independent_boundaries.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "d964b7f52e4b453d2e919264fa21c83ee32c733e5260a733dc816d15a9727251",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    },
+    {
+      "path": "harness/__pycache__/test_independent_refresh_faults.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "3a87fcb8e2e687d57800e800e13edd431d6d28d98bcb37481118d847f6cded88",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    }
+  ],
+  "report": {
+    "relative_to_repo": "docs/quality/reports/2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md",
+    "sha256": "60fbe40b569c781858818ab91cc70fdf95810ff5baea2568f25c58570188cbe0"
+  }
+}

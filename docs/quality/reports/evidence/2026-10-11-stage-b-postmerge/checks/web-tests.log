@@ -1,0 +1,16 @@
+Command: ['npm', 'test']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything/web
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/Documents/GitHub/SummitEverything/web
+
+
+ Test Files  10 passed (10)
+      Tests  45 passed (45)
+   Start at  14:11:21
+   Duration  1.42s (environment 48%, tests 32%, import 10%, transform 9%)
+

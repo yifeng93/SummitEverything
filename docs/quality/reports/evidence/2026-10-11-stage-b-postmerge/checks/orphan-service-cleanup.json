@@ -1,0 +1,11 @@
+{
+  "before": "  PID  PPID  PGID COMMAND\n14593     1 14593 /Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/.venv/bin/python -m uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 52936\n14594     1 14594 npm run dev   \n14608 14594 14594 node /Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/web/node_modules/.bin/vite --host 127.0.0.1\n",
+  "verified_cwd": "COMMAND     PID         USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME\npython3.1 14593 yifengstudio  cwd    DIR   1,17      672 37586278 /Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything\nnode      14594 yifengstudio  cwd    DIR   1,17      512 37587117 /Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/web\nnode      14608 yifengstudio  cwd    DIR   1,17      512 37587117 /Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/web\n",
+  "action": "SIGTERM only owned process groups 14593/14594",
+  "after_listeners": "COMMAND     PID         USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 14593 yifengstudio    6u  IPv4 0x1fbc908fb34bfabb      0t0  TCP 127.0.0.1:52936 (LISTEN)\n",
+  "ports": [
+    52936,
+    52937
+  ],
+  "closed": true
+}

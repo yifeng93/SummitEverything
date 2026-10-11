@@ -1,0 +1,194 @@
+{
+  "audits": [
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/manifest.json",
+      "sha256": "e27a0c98abf701771dc292ec6d1cafa3b27925387fa170947ad0dc398c0479ce",
+      "listed_runtime_files": 22,
+      "published_files_verified": 22,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r2/manifest.json",
+      "sha256": "1ed3e718e2597b312f9b4f07b6f09f79fbe20a0aa6ba58d49f40c77787e3ca45",
+      "listed_runtime_files": 22,
+      "published_files_verified": 22,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r3/manifest.json",
+      "sha256": "c4e53557e483dcadacd04e545c901e1a652d4bf55559b91fd0623038db389740",
+      "listed_runtime_files": 38,
+      "published_files_verified": 38,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r4/manifest.json",
+      "sha256": "90c8ecc3c004cb08e8528743285f23aecac9bf57ec0f5a0fc0e167cfe5c93250",
+      "listed_runtime_files": 34,
+      "published_files_verified": 34,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/manifest.json",
+      "sha256": "c5d718a0546f5fdc8138aee51b9f717448f913f8a86594264dd66e0ad4eedcdb",
+      "listed_runtime_files": 10,
+      "published_files_verified": 10,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-qa/manifest.json",
+      "sha256": "0a0987bde2c05d4bc33314b12aa22c34f244cf87c1b4c8ffd13ebc73f40b502e",
+      "listed_runtime_files": 27,
+      "published_files_verified": 27,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": true,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-retest/manifest.json",
+      "sha256": "b07d7ed94fc69effc570001ccfff065203dd53f740d9ac27f8587d043c2b935f",
+      "listed_runtime_files": 26,
+      "published_files_verified": 26,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": true,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-ui-qa/manifest.json",
+      "sha256": "908b1b4cf24fb2b5cb1b51d92c78c58a28635dd01a471fda241e398327c0d938",
+      "listed_runtime_files": 42,
+      "published_files_verified": 42,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-offline-qa/manifest.json",
+      "sha256": "ea7907e03344d9b8e6aa6aa84025adca248a1263d21475686b74a263609ea551",
+      "listed_runtime_files": 30,
+      "published_files_verified": 28,
+      "omitted_runtime_cache_files": 2,
+      "report_hash_verified": true,
+      "status": "published evidence hashes verified; runtime cache exclusions explicit"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-ui-qa/manifest.json",
+      "sha256": "e8b80cffe44ce6854ca21b58a0a82786ccf2e8109c6858c5fc1e59fc63a8e433",
+      "listed_runtime_files": 12,
+      "published_files_verified": 12,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-offline-retest-576895f/manifest.json",
+      "sha256": "4cf324d435cef2e7708f2b05833b65edc41a3ac6d8675c704f5ed17c2fefd321",
+      "listed_runtime_files": 20,
+      "published_files_verified": 18,
+      "omitted_runtime_cache_files": 2,
+      "report_hash_verified": true,
+      "status": "published evidence hashes verified; runtime cache exclusions explicit"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-ui-retest-576895f/manifest.json",
+      "sha256": "8c424c1b7e57ad04994524e0b139c33f68616f9d356b7d89333e93a7508b0364",
+      "listed_runtime_files": 15,
+      "published_files_verified": 15,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-native-readiness-dev/manifest.json",
+      "sha256": "f0447b03aa195d645357dc0a2e84ac60efb1e41a9db4889bdbb52f4ceebedba9",
+      "listed_runtime_files": 16,
+      "published_files_verified": 16,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-native-url-dev/manifest.json",
+      "sha256": "efffc8449fdf284f7246129632c208a76a1c18b4029bb408964bd97ffb853446",
+      "listed_runtime_files": 6,
+      "published_files_verified": 6,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-refresh-restart-dev/manifest.json",
+      "sha256": "a81f17350b7356305d6a1b33c6ec4eed2ad115995fd56e915d107ae98e2502d1",
+      "listed_runtime_files": 20,
+      "published_files_verified": 20,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-sol-closure/manifest.json",
+      "sha256": "7563dace7ed6cc939cef93c08ea537fca305dd314079ea8a0e232b892f5ddb95",
+      "listed_runtime_files": 32,
+      "published_files_verified": 32,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-strict-marker-dev/manifest.json",
+      "sha256": "51152516cf51c91c7eca2a5062a4ba40accdd94039629e68ff8d1834abb6a5be",
+      "listed_runtime_files": 18,
+      "published_files_verified": 18,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-ui-retest/manifest.json",
+      "sha256": "4812e13ab0031df50165b2c468c65f9f9f160c493fd9cbe4074f43be4ea74d98",
+      "listed_runtime_files": 29,
+      "published_files_verified": 29,
+      "omitted_runtime_cache_files": 0,
+      "report_hash_verified": false,
+      "status": "all entries verified"
+    }
+  ],
+  "runtime_cache_omissions": [
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-offline-qa/manifest.json",
+      "path": "harness/__pycache__/test_independent_boundaries.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "fa22f81b49761ce9628dbf542beb726c16bd1dd07e725239171ee3d6e0b1854c",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-offline-qa/manifest.json",
+      "path": "harness/__pycache__/test_independent_refresh_faults.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "d267562b606967b2f1b87c370175f2eeb1f6dd1d4b7f7f0736d980867cad89d8",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-offline-retest-576895f/manifest.json",
+      "path": "harness/__pycache__/test_independent_boundaries.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "d964b7f52e4b453d2e919264fa21c83ee32c733e5260a733dc816d15a9727251",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    },
+    {
+      "manifest": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-offline-retest-576895f/manifest.json",
+      "path": "harness/__pycache__/test_independent_refresh_faults.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "3a87fcb8e2e687d57800e800e13edd431d6d28d98bcb37481118d847f6cded88",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    }
+  ],
+  "verified_published_files": 415,
+  "original_runtime_manifests_unchanged": true
+}

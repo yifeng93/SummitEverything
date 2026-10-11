@@ -2,6 +2,8 @@
 
 ## Stage B 离线收口（2026-10-11，当前）
 
+[PR #10合并后核验与最终收口](2026-10-11-STAGE-B-POSTMERGE.md)：main产品树与576895f一致，13项检查通过；原始QA manifest保留，4项运行时pyc条目未发布，两份补充publication manifest核验实际归档证据。
+
 [Sol DEV 修复与证据](2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md)：采纳经复核的 DeepSeek 实现，补请求独立取消、资源所有权、边界与 Real 任务 UI 回归。固定576895f独立离线QA PASS；受测 SHA、QA / main 关系只以 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md) 为准。
 
 以下 R1–R4 的“未提交”“无新 SHA”和计数是历史当时状态；其 DEV 结论保留，不是当前 QA 结论。
@@ -73,5 +75,6 @@ Stage A 当前结论为 **PASS（Fake-only）**，最终受测修复代码 `3090
 
 - [fd后端独立QA](2026-10-11-STAGE-B-LUNA-FINAL-OFFLINE-QA.md)：388+25、Web45与构建通过，整体候选因原生冷启动P1仍未通过。
 - [根URL修复DEV](2026-10-11-STAGE-B-NATIVE-URL-DEV.md)：新源码576895f，实际loopback URL before失败→after通过；后续独立复验见最终报告。
+
 
 - [最终后端复验](2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md)、[最终实际UI复验](2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md)：受测源码576895f；离线PASS，真实/OS/DMG等门NOT_RUN。

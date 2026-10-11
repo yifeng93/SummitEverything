@@ -1,0 +1,54 @@
+[
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-backend-576895f/SummitEverything",
+    "method": "Codex managed archive_worktree",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-backend-576895f-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything",
+    "method": "Codex managed archive_worktree",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-final-backend-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-ui/SummitEverything",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-FINAL-UI-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-ui-qa/\n",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-final-ui-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-ui-retest-576895f/SummitEverything",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "?? docs/quality/reports/2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-luna-ui-retest-576895f/\n",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-luna-ui-retest-576895f-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-retest/\n",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-refresh-final-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-backend/SummitEverything",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-qa/\n",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-sol-backend-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-QA.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-independent-ui-qa/\n",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-sol-ui-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-ui-retest/SummitEverything",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "?? docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md\n?? docs/quality/reports/evidence/2026-10-11-stage-b-ui-retest/\n",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-qa-stage-b-ui-retest-recoverable.tar.gz"
+  },
+  {
+    "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial",
+    "method": "git worktree remove after verified recoverable archive",
+    "original_status": "",
+    "recoverable_archive": "/Users/yifengstudio/.codex/archives/summit-stage-b-20261011/final-SummitEverything-deepseek-stage-b-trial-recoverable.tar.gz"
+  }
+]

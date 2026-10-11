@@ -4,7 +4,7 @@
 
 ## 当前状态与下一步
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。独立离线QA已通过，PR/main整合待完成。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
@@ -28,7 +28,7 @@
 | Foundation | 完成本阶段本地闭环基础能力 | QA通过（模拟范围） | 完整 M1 范围、P0/P1=0；DMG 与真实外部门未测 |
 | M1 本地闭环 | 已合入 main | QA通过（模拟范围） | 受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874`；PR #1 merge commit `4ca3fffb696bbe57622dda8c82eb9ed6b6e3d6aa`；详见独立报告和合并后检查记录 |
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
-| B 真实适配 / 本地配置 | 离线源码收口待整合 | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
+| B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |

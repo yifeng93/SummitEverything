@@ -1,0 +1,4 @@
+Command: ['uv', 'lock', '--check']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+Resolved 41 packages in 3ms

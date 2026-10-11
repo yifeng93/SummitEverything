@@ -1,0 +1,51 @@
+{
+  "algorithm": "sha256",
+  "original_runtime_manifest_sha256": "ea7907e03344d9b8e6aa6aa84025adca248a1263d21475686b74a263609ea551",
+  "file_count": 28,
+  "files": {
+    "api-types-1.log": "b0053e60094d274b11097b7d1f6ffe08c236ef68b9399183dfb86569e72442e7",
+    "api-types-2.log": "aba544ef60813adea67112c21d0800e106d799d40ca8864342f876a71e983b9a",
+    "audit-correction.log": "5be0ce18db9b0a5cef4dc23d42047262d41d33d995ba519667390467d318f230",
+    "build-tool-install.log": "e46ce240460168b75bf8ca0ea902e66fa41f27bda098386283d79fd6a67641d8",
+    "check-results.json": "30631dc65f0a39bd4502b78ed943f70680c3a745ed5a46ad389d46c5e53ed2db",
+    "diff-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "harness/audit_identity.py": "776a84f0c1e8ae58cb5646c4247101df1511531c2abce7f6f3f4e3e2b85e8ae9",
+    "harness/finalize_evidence.py": "06737f4ec68781efe1cab5b14ef45b7c69d13e6872cfb0198414f233d2446c49",
+    "harness/run_checks.py": "30cd8661c0de39ef3385e4d239b20801179175f671d6249807b10fee12f13c75",
+    "harness/test_independent_boundaries.py": "b0bbba90974e9a4a5976ba7e609a84bd1a2787300ce8669dc1945506712d6392",
+    "harness/test_independent_refresh_faults.py": "676987474374aa155a7e20f1aa552765b21e90ef99f0d2dbc821f76a0605110d",
+    "identity-audit-first-pass.json": "bfeef703a89272731ec5c08daa22304dbbe54b7a2bf84bee1cf0495edeff25af",
+    "identity-audit.json": "dbfa575f450bed867dd3ade9967252b9e9e1d0a43669c5c95e58158609a07256",
+    "identity-audit.log": "2b1fd5f3ff1bfb4af2d67bf05cf1e4279c3e29bc49c155232a97a599697ed85a",
+    "independent-boundaries.log": "64d171167e05c8af59bb901047954e663cc9f27942dacf485a51b09fe70e071c",
+    "lock-check.log": "98cc839ef00d5acf63684f2fbed32d34bdf0fed2e980b1753bffb8bd3675450e",
+    "mypy.log": "60f28b94716a9681d0ca533e2fe42680ae0961635c17d3110675fc53df4ea115",
+    "npm-ci.log": "727df4cee7d349fee588304b21d0d9cd876dea2515b2ab595062cf25096d9866",
+    "package-build-guarded.log": "015278adf4f74a0b8713e1ff810bd2c449f01dc39aca280478cca4d6f8c139b7",
+    "pytest-full.log": "adf2f01a8ba0f42db86738021c5ba92c8ca3d8d79204f331c9a3fdd359577ff3",
+    "ruff-check.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "ruff-format.log": "b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e",
+    "swift-build.log": "2edc3f48b4049351e17e9f0795b3a78819293fe1ec345402b9832dda3e7ca141",
+    "uv-sync.log": "83b8d80ae032c52480c36668a5ea07d5bfd559e22313b1b2bdd964034816d14b",
+    "web-build.log": "c93340edd67320f92999af470cfed5f2409ac036334b65a609660773fc32dc39",
+    "web-lint.log": "577da7ae2b575b046fe5ab70fe660d04a3c3d2a6bae36f914aa44140709951e5",
+    "web-test.log": "31a5976e21aa2081c2672808b14683d97c62484e794ccc39536d92374c99257b",
+    "web-typecheck.log": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+  },
+  "omitted_runtime_files": [
+    {
+      "path": "harness/__pycache__/test_independent_boundaries.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "fa22f81b49761ce9628dbf542beb726c16bd1dd07e725239171ee3d6e0b1854c",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    },
+    {
+      "path": "harness/__pycache__/test_independent_refresh_faults.cpython-312-pytest-9.1.1.pyc",
+      "runtime_sha256": "d267562b606967b2f1b87c370175f2eeb1f6dd1d4b7f7f0736d980867cad89d8",
+      "reason": "Rebuildable runtime bytecode excluded by source/archive policy; original bytes are not published or recoverable from the tar archive."
+    }
+  ],
+  "report": {
+    "relative_to_repo": "docs/quality/reports/2026-10-11-STAGE-B-LUNA-FINAL-OFFLINE-QA.md",
+    "sha256": "fec67ecf0efef95884ed8fa507cbf7b263a0c3ca0f05f8caf856c37f31019cf6"
+  }
+}
