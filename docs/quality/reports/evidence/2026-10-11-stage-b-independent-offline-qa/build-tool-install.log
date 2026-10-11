@@ -1,0 +1,5 @@
+Resolved 6 packages in 2ms
+Installed 3 packages in 3ms
+ + hatchling==1.32.4
+ + tomlkit==0.15.1
+ + trove-classifiers==2026.9.21.13

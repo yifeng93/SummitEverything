@@ -58,3 +58,5 @@ Model payloads are bounded: DeepSeek sends a fixed synthetic grounded-answer pro
 所有生产 adapter 使用 ADR 0007 的请求独立 DeadlineTransport。整体 deadline 包含 DNS/TCP/TLS/头/正文和关闭；返回前 runner 已结束，超时不误伤同 client 的其他请求。JSON wire 上限包含所有字段与转义；仅接受 identity 响应，其他编码在读正文前拒绝。不跟随重定向、不自动 HTTP 重试、不使用环境代理。注入 client 的实际 URL transport 同样须满足取消契约，MockTransport 仅为合成外部边界。
 
 这些是离线实现证据，不证明账号权限、二进制 transcript content-type、全天日期服务器规范化或丢失写结果查询。真实任务写继续 disabled；已有有限 smoke 每项计数仍 0/1。
+
+刷新单次消费必须跨进程重启：网络前在用户凭据原vault槽持久化本地refresh_consumed=true（不另存token摘要明文）；响应未知后不重发，合法轮换新token为false。官方refresh单次使用规则不允许因重启重置消费状态。

@@ -6,7 +6,7 @@
 
 ## 当前结论与范围（2026-10-11）
 
-源码候选已固定 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`，独立后端/UI checkout正在离线QA，QA pending；main尚未整合。DEV后端383/Web45不是QA结果。真实接入、OS Keychain与安装包门仍NOT_RUN。
+源码候选已固定 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`，独立QA新增QA-B-01/P1复现重启重发，候选FAIL；修复DEV后端386/Web45不替代新SHA独立QA，main尚未整合。真实接入、OS Keychain与安装包门仍NOT_RUN。
 
 ### 阶段 A 历史结论
 

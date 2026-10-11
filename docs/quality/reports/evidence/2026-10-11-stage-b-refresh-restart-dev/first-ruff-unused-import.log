@@ -1,0 +1,22 @@
+Command: ['uv', 'run', 'ruff', 'check', 'src', 'tests', 'scripts/offline_guard']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+F401 [*] `uuid.uuid4` imported but unused
+ --> tests/integration/test_stage_b_refresh_restart.py:5:18
+  |
+3 | import json
+4 | from urllib.parse import parse_qs, urlsplit
+5 | from uuid import uuid4
+  |                  ^^^^^
+6 |
+7 | import httpx
+  |
+help: Remove unused import: `uuid.uuid4`
+  |
+4 | from urllib.parse import parse_qs, urlsplit
+  - from uuid import uuid4
+5 |
+  |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

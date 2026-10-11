@@ -4,7 +4,7 @@
 
 ## 当前状态与下一步
 
-2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。已固定源码 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`；独立 checkout 正在执行离线 QA，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
+2026-10-11：已采纳 DeepSeek R1–R4 中经复核的实现，并由 Sol 修复额外发现的 DNS 取消、同 client 并发误伤、租约登记竞态、DNS 字节地址解析、HTTPX mount 绕过、完整 JSON 请求上限、压缩响应内存边界及 Real 任务 UI 误导。DEV 完整检查：后端 383、Web 45；保留既有 1 条 Starlette 弃用与 3 条 React lint warning。候选浏览器与原生开发壳已用合成工作库复演；OS Keychain 没有访问。已固定源码 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`；该候选独立QA发现 QA-B-01/P1（未知刷新重启重发），结果FAIL已保留；修复DEV后端386/Web45通过，等待新SHA独立复验，**QA pending，尚未合并**。这只收口 Stage B 离线源码范围；真实账户/协议运行、模型质量与安装交付门仍 NOT_RUN。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 

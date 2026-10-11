@@ -145,6 +145,8 @@ class UserCredentials(BaseModel):
     token_type: Literal["user"] = "user"
     access_token: str = Field(repr=False, min_length=1)
     refresh_token: str = Field(repr=False, min_length=1)
+    # Local vault state: reserve single-use refresh before dispatch, surviving restart.
+    refresh_consumed: bool = False
     expires_at: float
     scopes: list[str]
 

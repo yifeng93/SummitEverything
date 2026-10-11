@@ -323,11 +323,15 @@ class FeishuService:
                 assert latest is not None
                 if latest.expires_at > self.clock() + 60:
                     return latest
-                if self.auth.refresh_consumed(latest.refresh_token):
+                if latest.refresh_consumed or self.auth.refresh_consumed(latest.refresh_token):
                     # The single-use token was already spent by an attempt whose
                     # result is unknown; never resend it.
                     raise FeishuError("token_expired")
                 version_at_dispatch = self.auth.version()
+                # Write-ahead reservation in the same secret slot: a crash or
+                # unknown response must not make this token reusable on restart.
+                # A failed write aborts before any token endpoint request.
+                self.credentials.put(latest.model_copy(update={"refresh_consumed": True}))
                 self.auth.mark_refresh_consumed(latest.refresh_token)
             refreshed = self._call(lambda: self.provider.refresh(latest))
             with self.auth.write_lock:
