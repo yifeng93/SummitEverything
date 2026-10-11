@@ -6,7 +6,7 @@
 
 ## 当前结论与范围（2026-10-11）
 
-源码候选已固定 `7f3119a511fda6f3d2771af4cf09fd9a9026edb7`，独立QA新增QA-B-01/P1复现重启重发，候选FAIL；修复DEV后端386/Web45不替代新SHA独立QA，main尚未整合。真实接入、OS Keychain与安装包门仍NOT_RUN。
+旧7f3119a独立QA新增QA-B-01/P1复现重启重发，FAIL保留；修复源码 `8b6259a9aa6ff2e52b700134abadff24de46dc08` 新独立checkout复验中。DEV后端386/Web45不替代独立QA，main尚未整合。真实接入、OS Keychain与安装包门仍NOT_RUN。
 
 ### 阶段 A 历史结论
 
@@ -177,8 +177,8 @@ PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main
 | B02 | DEV 经复核 / 离线 QA pending | profile 设置、原子更新与 Web 设置 UI 有实现。Feishu app secret 与 user token 现在共用同一 vault 命名空间并以 app_id 为账户标识（`VaultCredentialStore`），设置 UI 写入的槽就是 adapter 读取的槽；离线测试覆盖轮换、登出、profile/app 隔离、损坏值与同命名空间。此轮未录入任何真实密钥；原生候选与 OS Keychain 拒绝/锁定/重启、多 profile 验收 NOT_RUN |
 | B03 | DEV 经复核 / 离线 QA pending；真实请求 0 | 真实 `FeishuHttpProvider` 已实现并接线：应用身份优先，仅妙记搜索与任务列表要求 user token；authorize/exchange/refresh、妙记 metadata 分页、选中逐字稿下载（artifacts 回退）、日历显式区间、task 读/建/改均有 `httpx.MockTransport` 反例。真实数据路由由 `feishu.real_data_enabled` 服务端门控（默认 409 `stage_c_authorization_required`）。task 写线映射已确证，但因无独立结果证明保持 disabled，unknown 不重发、不猜成功。真实 OAuth 与实际读取仍 NOT_RUN |
 | B04 | DEV 经复核 / 离线 QA pending | stub-tested LLM / embedding / rerank adapters 接入明确动作，真实业务调用仍服务端禁用；另有各一次固定合成 payload 的单独 smoke 路由与 profile 级原子限次账本，计数 0。新增整体 deadline、HTTP 200 业务错误拒绝与 `QueryService.close()` 操作级 client 释放。SB-01/02 外发资格与发布前复核、SB-03 取消、SB-04 有界候选、SB-10 状态一致、SB-11 有界读取均有产品回归。真实维度、服务质量、账单和 R03 用户评定 NOT_RUN |
-| B05 | DEV 完成 / 独立离线 QA pending | Sol收口DEV后端383/Web45；固定源码7f3119a，实际合成浏览器/原生开发壳证据见Sol DEV报告。历史R1–R4证据原样保留；OS Keychain和DMG未运行 |
-| B06 | 固定 SHA QA 执行中 / 整合 pending | 独立checkout固定7f3119a；与执行者环境分离，离线完整检查、新增失败路径和实际UI复验。只有受测SHA通过后才PR/main合并并核验源码树；真实门仍NOT_RUN |
+| B05 | DEV 完成 / 独立离线 QA pending | Sol收口DEV后端383/Web45；修复源码8b6259a，实际合成浏览器/原生开发壳证据见Sol DEV报告。历史R1–R4证据原样保留；OS Keychain和DMG未运行 |
+| B06 | 固定 SHA QA 执行中 / 整合 pending | 新独立checkout固定8b6259a；与执行者环境分离，离线完整检查、新增失败路径和实际UI复验。只有受测SHA通过后才PR/main合并并核验源码树；真实门仍NOT_RUN |
 | R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
 | R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
 | R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
