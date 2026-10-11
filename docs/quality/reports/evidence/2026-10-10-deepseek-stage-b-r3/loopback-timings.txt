@@ -1,0 +1,3 @@
+slow-headers: header_delay=0.5 body_delay=0.0 deadline=0.2 -> TimeoutError elapsed=0.203s
+late-headers+body-wait: header_delay=0.22 body_delay=0.25 deadline=0.3 -> TimeoutError elapsed=0.305s
+normal: header_delay=0.05 body_delay=0.02 deadline=0.3 -> RETURNED elapsed=0.092s

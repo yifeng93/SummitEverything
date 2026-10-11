@@ -1,0 +1,166 @@
+[
+  {
+    "name": "pytest-full",
+    "argv": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 58.948,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "ruff-check",
+    "argv": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "ruff",
+      "check",
+      "src",
+      "tests"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.417,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "ruff-format",
+    "argv": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "ruff",
+      "format",
+      "--check",
+      "src",
+      "tests"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.027,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "mypy",
+    "argv": [
+      "uv",
+      "run",
+      "--locked",
+      "--no-sync",
+      "mypy",
+      "src"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 2.908,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "lock-check",
+    "argv": [
+      "uv",
+      "lock",
+      "--check"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.014,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "package-build-guarded",
+    "argv": [
+      "uv",
+      "build",
+      "--no-build-isolation"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 1.67,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "api-types-1",
+    "argv": [
+      "npm",
+      "--prefix",
+      "web",
+      "run",
+      "api:types"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.749,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "api-types-2",
+    "argv": [
+      "npm",
+      "--prefix",
+      "web",
+      "run",
+      "api:types"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.651,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "web-test",
+    "argv": [
+      "npm",
+      "--prefix",
+      "web",
+      "test",
+      "--",
+      "--run"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 1.701,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "web-typecheck",
+    "argv": [
+      "npm",
+      "--prefix",
+      "web",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 1.212,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "web-lint",
+    "argv": [
+      "npm",
+      "--prefix",
+      "web",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.462,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  },
+  {
+    "name": "web-build",
+    "argv": [
+      "npm",
+      "--prefix",
+      "web",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 1.492,
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src"
+  }
+]

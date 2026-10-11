@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/web
+
+
+ Test Files  10 passed (10)
+      Tests  45 passed (45)
+   Start at  10:02:55
+   Duration  1.40s (environment 47%, tests 34%, import 9%, transform 9%)
+

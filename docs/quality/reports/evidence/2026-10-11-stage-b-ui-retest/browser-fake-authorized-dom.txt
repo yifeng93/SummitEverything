@@ -1,0 +1,89 @@
+- complementary:
+  - generic: S
+  - strong: SummitEverything
+  - generic: 个人知识工作台
+  - navigation "主导航":
+    - button "今日": 今日
+    - button "日志与思考": 日志与思考
+    - button "项目与知识": 项目与知识
+    - button "知识问答": 知识问答
+    - button "设置": 设置
+  - generic: 仅本机运行
+  - button "8 8b 新 SHA 合成 QA 已连接工作库":
+    - generic: "8"
+    - strong: 8b 新 SHA 合成 QA
+    - generic: 已连接工作库
+    - generic: ⌄
+- main:
+  - generic: 今日
+  - generic: 本机已保存
+  - button "打开设置": 罗
+  - generic: 工作节奏
+  - heading "今日" [level=1]
+  - paragraph: 先记下来，再决定哪些内容值得整理成知识。
+  - generic: 2026年10月11日星期日
+  - heading "飞书日常" [level=2]
+  - paragraph: 模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。
+  - generic: 用户已授权
+  - button "模拟授权飞书"
+  - button "断开飞书授权"
+  - heading "材料" [level=3]
+  - generic: 搜索材料
+  - textbox "搜索材料"
+  - generic: 可见范围
+  - combobox "可见范围":
+    - option "全部可见" [selected]
+    - option "我拥有的"
+    - option "共享给我的"
+  - button "搜索 / 刷新材料"
+  - heading "日历" [level=3]
+  - generic: 开始日期
+  - textbox "开始日期": 2026-10-11
+  - generic: 结束日期（不含）
+  - textbox "结束日期（不含）": 2026-10-12
+  - generic: 时区
+  - combobox "时区":
+    - option "Asia/Shanghai" [selected]
+    - option "UTC"
+  - button "刷新日历"
+  - heading "飞书任务与独立动作" [level=2]
+  - paragraph: Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。
+  - button "刷新飞书任务"
+  - button "新建飞书任务"
+  - button "拟定项目进度变化"
+  - button "查看动作记录"
+  - heading "随手记" [level=2]
+  - paragraph: 记录原文不会调用模型，也不会自动写入正式知识。
+  - generic: "01"
+  - generic: 写下刚想到或刚收到的内容
+  - textbox "写下刚想到或刚收到的内容":
+    - /placeholder: 写下刚想到或刚收到的内容…
+  - text: 导入 TXT / Markdown
+  - button "导入 TXT / Markdown"
+  - button "记入工作日志" [disabled]
+  - button "存入待整理" [disabled]
+  - heading "待整理" [level=2]
+  - paragraph: 选择来源后，明确点击才会生成审核稿。
+  - generic: "0"
+  - generic: ＋
+  - strong: 收件箱是空的
+  - generic: 文字记录或导入文件会先保存在这里。
+  - heading "审核稿" [level=2]
+  - paragraph: 每份稿件单独编辑、处理冲突并确认。
+  - generic: "0"
+  - generic: 没有待审核的稿件。
+  - complementary:
+    - heading "工作方式" [level=2]
+    - generic: 本机
+    - paragraph: 原件先留存。整理稿需要你逐份确认，才会成为正式知识。
+    - generic: "1"
+    - generic: 保存来源
+    - generic: "2"
+    - generic: 生成审核稿
+    - generic: "3"
+    - generic: 确认后归档
+    - heading "行动建议" [level=2]
+    - generic: "0"
+    - paragraph: 目前没有建议。任务仍由你在正式任务工具中管理。
+    - generic: "!"
+    - paragraph: 来源中出现的命令只作为资料内容。模型不会据此执行操作。

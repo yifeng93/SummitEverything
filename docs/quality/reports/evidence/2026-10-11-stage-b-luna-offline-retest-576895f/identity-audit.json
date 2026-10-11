@@ -1,0 +1,193 @@
+{
+  "exact_sha": "576895f6983ca41cacbbad45a9075b97b9986189",
+  "parent": "3c3a7435f089d6641402c0027098644077762042",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-backend-576895f/SummitEverything",
+  "branch": "HEAD",
+  "python": "3.12.13 (main, Aug  7 2026, 02:15:23) [Clang 22.1.3 ]",
+  "executable": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-backend-576895f/SummitEverything/.venv/bin/python3",
+  "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-backend-576895f/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-backend-576895f/SummitEverything/src",
+  "guard_active": "1",
+  "uv": "uv 0.12.3 (507230998 2026-08-07 aarch64-apple-darwin)",
+  "node": "v24.15.0",
+  "npm": "11.12.1",
+  "tree_ids_fd_vs_576895f": {
+    "src": {
+      "fd204": "3791005efa2d288a32e44032b8a2ff7f542d73e3",
+      "576895f": "3791005efa2d288a32e44032b8a2ff7f542d73e3"
+    },
+    "tests": {
+      "fd204": "1e606252d66eb6164062689f720716732dcbbaed",
+      "576895f": "1e606252d66eb6164062689f720716732dcbbaed"
+    },
+    "web": {
+      "fd204": "0234ef89d57553672e9ca78ebaad1ac2aaa8c33d",
+      "576895f": "0234ef89d57553672e9ca78ebaad1ac2aaa8c33d"
+    },
+    "scripts": {
+      "fd204": "01977033a6bc21ac916a1556f9dffd372a12f659",
+      "576895f": "01977033a6bc21ac916a1556f9dffd372a12f659"
+    },
+    "pyproject.toml": {
+      "fd204": "dbafb679a516a317c584fbd8a5f2cd6510390cb4",
+      "576895f": "dbafb679a516a317c584fbd8a5f2cd6510390cb4"
+    },
+    "uv.lock": {
+      "fd204": "fef23de1d156922a77f3166248687337ad1eb4f6",
+      "576895f": "fef23de1d156922a77f3166248687337ad1eb4f6"
+    },
+    "web/package-lock.json": {
+      "fd204": "c0fa9e447e8df9767627222178162cf2ad498335",
+      "576895f": "c0fa9e447e8df9767627222178162cf2ad498335"
+    }
+  },
+  "source_diff_names": [
+    "M\tnative/Sources/SummitEverythingApp/App.swift"
+  ],
+  "native_app_diff": "diff --git a/native/Sources/SummitEverythingApp/App.swift b/native/Sources/SummitEverythingApp/App.swift\nindex 3c7775d..e847293 100644\n--- a/native/Sources/SummitEverythingApp/App.swift\n+++ b/native/Sources/SummitEverythingApp/App.swift\n@@ -5,5 +5,5 @@ import WebKit\n private let apiPort = ProcessInfo.processInfo.environment[\"SUMMIT_API_PORT\"] ?? \"8793\"\n private let webPort = ProcessInfo.processInfo.environment[\"SUMMIT_WEB_PORT\"] ?? \"5173\"\n-private let webURL = URL(string: \"http://127.0.0.1:\\(webPort)\")!\n+private let webURL = URL(string: \"http://127.0.0.1:\\(webPort)/\")!\n private let healthURL = URL(string: \"http://127.0.0.1:\\(apiPort)/api/v1/health\")!",
+  "lock_sha256": {
+    "uv.lock": "148ac7c5d1d795ec0ee17384bca7c2173dddb6ba8945b23445da71356c9bfbda",
+    "web/package-lock.json": "d7b39319f006b0280857a02f3932f7e71e8d38cd0e63a0684f9b41f0d9c26ad3"
+  },
+  "api_sha256": {
+    "web/openapi.json": "794e5089c799bf8ab7c319ae3385fca31aeecf2d9860386605cc98c32d011a5d",
+    "web/src/api/generated.ts": "1e5aac8161f7f77d17b8edea70acf4775b25648de105c33a38c06a604ca52055"
+  },
+  "historical_manifests": [
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/manifest.json",
+      "manifest_sha256": "e27a0c98abf701771dc292ec6d1cafa3b27925387fa170947ad0dc398c0479ce",
+      "schema": "files-envelope",
+      "file_count": 22,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r2/manifest.json",
+      "manifest_sha256": "1ed3e718e2597b312f9b4f07b6f09f79fbe20a0aa6ba58d49f40c77787e3ca45",
+      "schema": "files-envelope",
+      "file_count": 22,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r3/manifest.json",
+      "manifest_sha256": "c4e53557e483dcadacd04e545c901e1a652d4bf55559b91fd0623038db389740",
+      "schema": "files-envelope",
+      "file_count": 38,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r4/manifest.json",
+      "manifest_sha256": "90c8ecc3c004cb08e8528743285f23aecac9bf57ec0f5a0fc0e167cfe5c93250",
+      "schema": "files-envelope",
+      "file_count": 34,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/manifest.json",
+      "manifest_sha256": "c5d718a0546f5fdc8138aee51b9f717448f913f8a86594264dd66e0ad4eedcdb",
+      "schema": "files-envelope",
+      "file_count": 10,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-qa/manifest.json",
+      "manifest_sha256": "0a0987bde2c05d4bc33314b12aa22c34f244cf87c1b4c8ffd13ebc73f40b502e",
+      "schema": "files-envelope",
+      "file_count": 27,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-retest/manifest.json",
+      "manifest_sha256": "b07d7ed94fc69effc570001ccfff065203dd53f740d9ac27f8587d043c2b935f",
+      "schema": "files-envelope",
+      "file_count": 26,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-ui-qa/manifest.json",
+      "manifest_sha256": "908b1b4cf24fb2b5cb1b51d92c78c58a28635dd01a471fda241e398327c0d938",
+      "schema": "flat-sha256-map",
+      "file_count": 42,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-native-readiness-dev/manifest.json",
+      "manifest_sha256": "f0447b03aa195d645357dc0a2e84ac60efb1e41a9db4889bdbb52f4ceebedba9",
+      "schema": "files-envelope",
+      "file_count": 16,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-refresh-restart-dev/manifest.json",
+      "manifest_sha256": "a81f17350b7356305d6a1b33c6ec4eed2ad115995fd56e915d107ae98e2502d1",
+      "schema": "files-envelope",
+      "file_count": 20,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-sol-closure/manifest.json",
+      "manifest_sha256": "7563dace7ed6cc939cef93c08ea537fca305dd314079ea8a0e232b892f5ddb95",
+      "schema": "files-envelope",
+      "file_count": 32,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-strict-marker-dev/manifest.json",
+      "manifest_sha256": "51152516cf51c91c7eca2a5062a4ba40accdd94039629e68ff8d1834abb6a5be",
+      "schema": "files-envelope",
+      "file_count": 18,
+      "file_mismatches": [],
+      "report_mismatch": null
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-ui-retest/manifest.json",
+      "manifest_sha256": "4812e13ab0031df50165b2c468c65f9f9f160c493fd9cbe4074f43be4ea74d98",
+      "schema": "flat-sha256-map",
+      "file_count": 29,
+      "file_mismatches": [],
+      "report_mismatch": null
+    }
+  ],
+  "fd204_final_evidence": {
+    "path": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-luna-final-backend/SummitEverything/docs/quality/reports/evidence/2026-10-11-stage-b-luna-final-offline-qa/manifest.json",
+    "file_count": 30,
+    "file_mismatches": [],
+    "report_mismatch": false
+  },
+  "guard_negative_controls": {
+    "non_loopback_socket": {
+      "result": "blocked",
+      "exception": "RuntimeError",
+      "message": "review blocks non-loopback sockets"
+    },
+    "external_dns": {
+      "result": "blocked",
+      "exception": "AssertionError",
+      "message": "offline guard: system DNS resolution forbidden"
+    },
+    "OS_Keychain_constructor": {
+      "result": "blocked",
+      "exception": "SettingsError",
+      "message": "credential_store_unavailable"
+    }
+  },
+  "live_transfer_workers": 0,
+  "real_calls": {
+    "feishu_exchange": "0/1",
+    "feishu_refresh": "0/1",
+    "deepseek_chat": "0/1",
+    "model_studio_embedding": "0/1",
+    "model_studio_rerank": "0/1",
+    "real_remote_writes": 0
+  }
+}

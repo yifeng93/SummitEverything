@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "workspace_id": "eaf04b87-309b-4b51-b4ad-116aa103ec5d",
+  "name": "QA合成工作库",
+  "created_at": "2026-10-11T05:38:21.834032Z",
+  "lines": [
+    {
+      "id": "3cbe6134-9033-5db6-a65e-2ad59e907551",
+      "name": "合成项目线",
+      "directory": "合成项目线"
+    }
+  ],
+  "projects": [
+    {
+      "id": "48804f39-1147-542c-a6f2-a837910df9a2",
+      "line_id": "3cbe6134-9033-5db6-a65e-2ad59e907551",
+      "name": "离线 UI 验收",
+      "directory": "合成项目线/离线-UI-验收",
+      "overview_id": "dc5b5edd-959f-56a2-8655-55cdbe99e40c",
+      "archived": false,
+      "progress": "独立 UI 验收中的合成进度：本机流程可单独确认并执行。",
+      "progress_version": 1,
+      "progress_confirmation_id": "6678b9c1-5b55-4161-a509-a1238a849005"
+    }
+  ]
+}

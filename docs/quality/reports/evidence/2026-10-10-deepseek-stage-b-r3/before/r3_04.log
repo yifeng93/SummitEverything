@@ -1,0 +1,2120 @@
+FFFFFF.                                                                  [100%]
+=================================== FAILURES ===================================
+___ test_r3_04_application_identity_never_reads_a_broken_user_slot[missing] ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-409/test_r3_04_application_identit0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c8e2210>
+user_state = 'missing'
+
+    @pytest.mark.parametrize("user_state", ["missing", "corrupt", "denied"])
+    def test_r3_04_application_identity_never_reads_a_broken_user_slot(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=None if user_state == "missing" else _user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                        "identity": "app",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+    
+        calendar = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+        assert calendar.status_code == 200, (user_state, calendar.text)
+    
+        imported = client.post(
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": ["obc" + "0" * 21], "operation_id": f"imp-{user_state}"},
+        )
+        assert imported.status_code == 200, (user_state, imported.text)
+        assert imported.json()["state"] == "succeeded", (user_state, imported.text)
+    
+        detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+        assert detail.status_code == 200, (user_state, detail.text)
+        assert detail.json()["guid"] == "task-1"
+    
+        # The user credential slot was never read for these application operations.
+>       assert store.user_reads == 0, (user_state, store.user_reads)
+E       AssertionError: ('missing', 1)
+E       assert 1 == 0
+E        +  where 1 = <test_stage_b_r3_regressions.InstrumentedStore object at 0x10c872db0>.user_reads
+
+tests/integration/test_stage_b_r3_regressions.py:1177: AssertionError
+___ test_r3_04_application_identity_never_reads_a_broken_user_slot[corrupt] ____
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 107, in create_collapsing_task_group
+  |     async with anyio.create_task_group() as tg:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 361, in from_call
+    |     result: TResult | None = func()
+    |                              ^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 250, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/logging.py", line 865, in pytest_runtest_call
+    |     yield
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/skipping.py", line 268, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 184, in pytest_runtest_call
+    |     item.runtest()
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 1707, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 167, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1172, in test_r3_04_application_identity_never_reads_a_broken_user_slot
+    |     detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    |     return self.request(
+    |            ^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    |     return super().request(
+    |            ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    |     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    |     response = self._send_handling_auth(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    |     response = transport.handle_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    |     return self.__get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    |     raise self._exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    |     retval = await retval_or_awaitable
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    |     await super().handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    |     return await run_in_threadpool(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    |     return await future
+    |            ^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    |     result = context.run(func, *args)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    |     return function(**arguments)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/routes/actions.py", line 113, in task_get
+    |     return actions_for(workspace).tasks.get(task_guid)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 164, in get
+    |     identity = self._detail_identity()
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 146, in _detail_identity
+    |     credentials = self.session.credentials.get()
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 67, in get
+    |     raise ValueError("stored Feishu credentials are invalid")
+    | ValueError: stored Feishu credentials are invalid
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1172, in test_r3_04_application_identity_never_reads_a_broken_user_slot
+    detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    await route.handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    await super().handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/routes/actions.py", line 113, in task_get
+    return actions_for(workspace).tasks.get(task_guid)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 164, in get
+    identity = self._detail_identity()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 146, in _detail_identity
+    credentials = self.session.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 67, in get
+    raise ValueError("stored Feishu credentials are invalid")
+ValueError: stored Feishu credentials are invalid
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-409/test_r3_04_application_identit1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ca2c7d0>
+user_state = 'corrupt'
+
+    @pytest.mark.parametrize("user_state", ["missing", "corrupt", "denied"])
+    def test_r3_04_application_identity_never_reads_a_broken_user_slot(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=None if user_state == "missing" else _user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                        "identity": "app",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+    
+        calendar = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+        assert calendar.status_code == 200, (user_state, calendar.text)
+    
+        imported = client.post(
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": ["obc" + "0" * 21], "operation_id": f"imp-{user_state}"},
+        )
+        assert imported.status_code == 200, (user_state, imported.text)
+        assert imported.json()["state"] == "succeeded", (user_state, imported.text)
+    
+>       detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_stage_b_r3_regressions.py:1172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:463: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:360: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:357: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:340: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:265: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1216: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:347: in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:257: in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:676: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:2786: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:1310: in handle
+    await super().handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:282: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:165: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:151: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:727: in app
+    raw_response = await run_endpoint_function(
+.venv/lib/python3.12/site-packages/fastapi/routing.py:362: in run_endpoint_function
+    return await run_in_threadpool(
+.venv/lib/python3.12/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:2706: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:1100: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py:244: in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/routes/actions.py:113: in task_get
+    return actions_for(workspace).tasks.get(task_guid)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py:164: in get
+    identity = self._detail_identity()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py:146: in _detail_identity
+    credentials = self.session.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_stage_b_r3_regressions.InstrumentedStore object at 0x10ca2ecc0>
+
+    def get(self) -> UserCredentials | None:
+        self.user_reads += 1
+        if self.deny_user_read:
+            raise PermissionError("synthetic keychain denial")
+        if self.corrupt_user:
+>           raise ValueError("stored Feishu credentials are invalid")
+E           ValueError: stored Feishu credentials are invalid
+
+tests/integration/test_stage_b_r3_regressions.py:67: ValueError
+____ test_r3_04_application_identity_never_reads_a_broken_user_slot[denied] ____
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 107, in create_collapsing_task_group
+  |     async with anyio.create_task_group() as tg:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 361, in from_call
+    |     result: TResult | None = func()
+    |                              ^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 250, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/logging.py", line 865, in pytest_runtest_call
+    |     yield
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/skipping.py", line 268, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 184, in pytest_runtest_call
+    |     item.runtest()
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 1707, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 167, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1172, in test_r3_04_application_identity_never_reads_a_broken_user_slot
+    |     detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    |     return self.request(
+    |            ^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    |     return super().request(
+    |            ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    |     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    |     response = self._send_handling_auth(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    |     response = transport.handle_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    |     return self.__get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    |     raise self._exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    |     retval = await retval_or_awaitable
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    |     await super().handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    |     return await run_in_threadpool(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    |     return await future
+    |            ^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    |     result = context.run(func, *args)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    |     return function(**arguments)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/routes/actions.py", line 113, in task_get
+    |     return actions_for(workspace).tasks.get(task_guid)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 164, in get
+    |     identity = self._detail_identity()
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 146, in _detail_identity
+    |     credentials = self.session.credentials.get()
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 65, in get
+    |     raise PermissionError("synthetic keychain denial")
+    | PermissionError: synthetic keychain denial
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1172, in test_r3_04_application_identity_never_reads_a_broken_user_slot
+    detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    await route.handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    await super().handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/routes/actions.py", line 113, in task_get
+    return actions_for(workspace).tasks.get(task_guid)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 164, in get
+    identity = self._detail_identity()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py", line 146, in _detail_identity
+    credentials = self.session.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 65, in get
+    raise PermissionError("synthetic keychain denial")
+PermissionError: synthetic keychain denial
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-409/test_r3_04_application_identit2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cc64440>
+user_state = 'denied'
+
+    @pytest.mark.parametrize("user_state", ["missing", "corrupt", "denied"])
+    def test_r3_04_application_identity_never_reads_a_broken_user_slot(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=None if user_state == "missing" else _user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                        "identity": "app",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+    
+        calendar = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+        assert calendar.status_code == 200, (user_state, calendar.text)
+    
+        imported = client.post(
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": ["obc" + "0" * 21], "operation_id": f"imp-{user_state}"},
+        )
+        assert imported.status_code == 200, (user_state, imported.text)
+        assert imported.json()["state"] == "succeeded", (user_state, imported.text)
+    
+>       detail = client.get("/api/v1/integrations/feishu/tasks/task-1", headers=HEADERS)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_stage_b_r3_regressions.py:1172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:463: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:360: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:357: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:340: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:265: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1216: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:347: in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:257: in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:676: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:2786: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:1310: in handle
+    await super().handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:282: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:165: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:151: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:727: in app
+    raw_response = await run_endpoint_function(
+.venv/lib/python3.12/site-packages/fastapi/routing.py:362: in run_endpoint_function
+    return await run_in_threadpool(
+.venv/lib/python3.12/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:2706: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:1100: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py:244: in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/routes/actions.py:113: in task_get
+    return actions_for(workspace).tasks.get(task_guid)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py:164: in get
+    identity = self._detail_identity()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/tasks.py:146: in _detail_identity
+    credentials = self.session.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_stage_b_r3_regressions.InstrumentedStore object at 0x10cc659d0>
+
+    def get(self) -> UserCredentials | None:
+        self.user_reads += 1
+        if self.deny_user_read:
+>           raise PermissionError("synthetic keychain denial")
+E           PermissionError: synthetic keychain denial
+
+tests/integration/test_stage_b_r3_regressions.py:65: PermissionError
+___ test_r3_04_missing_app_secret_is_reported_without_reading_the_user_slot ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-409/test_r3_04_missing_app_secret_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e5c7c20>
+
+    def test_r3_04_missing_app_secret_is_reported_without_reading_the_user_slot(
+        tmp_path, monkeypatch
+    ):
+        store = InstrumentedStore(app=None, user=_user_token(), corrupt_user=True)
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert response.status_code == 503, response.text
+E       AssertionError: {"error":{"code":"validation_error","message":"请选择有效的起止时间和时区。","request_id":"ebed19b04fa52abe"}}
+E       assert 422 == 503
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1211: AssertionError
+_ test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[corrupt] _
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 107, in create_collapsing_task_group
+  |     async with anyio.create_task_group() as tg:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 361, in from_call
+    |     result: TResult | None = func()
+    |                              ^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 250, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/logging.py", line 865, in pytest_runtest_call
+    |     yield
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/skipping.py", line 268, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 184, in pytest_runtest_call
+    |     item.runtest()
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 1707, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 167, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1244, in test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken
+    |     response = client.get(path, headers=HEADERS)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    |     return self.request(
+    |            ^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    |     return super().request(
+    |            ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    |     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    |     response = self._send_handling_auth(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    |     response = transport.handle_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    |     return self.__get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    |     raise self._exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    |     retval = await retval_or_awaitable
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    |     await super().handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    |     return await run_in_threadpool(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    |     return await future
+    |            ^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    |     result = context.run(func, *args)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    |     return function(**arguments)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 1478, in feishu_materials
+    |     return feishu_for(workspace).materials(query, visibility, cursor, limit)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 371, in materials
+    |     user = self._user(self.config.scope_materials)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 269, in _user
+    |     return self._user_any((scope,))
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 281, in _user_any
+    |     credentials = self.credentials.get()
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 67, in get
+    |     raise ValueError("stored Feishu credentials are invalid")
+    | ValueError: stored Feishu credentials are invalid
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1244, in test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken
+    response = client.get(path, headers=HEADERS)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    await route.handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    await super().handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 1478, in feishu_materials
+    return feishu_for(workspace).materials(query, visibility, cursor, limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 371, in materials
+    user = self._user(self.config.scope_materials)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 269, in _user
+    return self._user_any((scope,))
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 281, in _user_any
+    credentials = self.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 67, in get
+    raise ValueError("stored Feishu credentials are invalid")
+ValueError: stored Feishu credentials are invalid
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-409/test_r3_04_user_only_endpoints0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d956690>
+user_state = 'corrupt'
+
+    @pytest.mark.parametrize("user_state", ["corrupt", "denied"])
+    def test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=_user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        for path in ("/api/v1/integrations/feishu/materials", "/api/v1/integrations/feishu/tasks"):
+>           response = client.get(path, headers=HEADERS)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_stage_b_r3_regressions.py:1244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:463: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:360: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:357: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:340: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:265: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1216: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:347: in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:257: in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:676: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:2786: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:1310: in handle
+    await super().handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:282: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:165: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:151: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:727: in app
+    raw_response = await run_endpoint_function(
+.venv/lib/python3.12/site-packages/fastapi/routing.py:362: in run_endpoint_function
+    return await run_in_threadpool(
+.venv/lib/python3.12/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:2706: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:1100: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py:244: in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:1478: in feishu_materials
+    return feishu_for(workspace).materials(query, visibility, cursor, limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/service.py:371: in materials
+    user = self._user(self.config.scope_materials)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/service.py:269: in _user
+    return self._user_any((scope,))
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/service.py:281: in _user_any
+    credentials = self.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_stage_b_r3_regressions.InstrumentedStore object at 0x10e5c42f0>
+
+    def get(self) -> UserCredentials | None:
+        self.user_reads += 1
+        if self.deny_user_read:
+            raise PermissionError("synthetic keychain denial")
+        if self.corrupt_user:
+>           raise ValueError("stored Feishu credentials are invalid")
+E           ValueError: stored Feishu credentials are invalid
+
+tests/integration/test_stage_b_r3_regressions.py:67: ValueError
+_ test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[denied] _
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 107, in create_collapsing_task_group
+  |     async with anyio.create_task_group() as tg:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 361, in from_call
+    |     result: TResult | None = func()
+    |                              ^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 250, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/logging.py", line 865, in pytest_runtest_call
+    |     yield
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/skipping.py", line 268, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/runner.py", line 184, in pytest_runtest_call
+    |     item.runtest()
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 1707, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/_pytest/python.py", line 167, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1244, in test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken
+    |     response = client.get(path, headers=HEADERS)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    |     return self.request(
+    |            ^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    |     return super().request(
+    |            ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    |     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    |     response = self._send_handling_auth(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    |     response = transport.handle_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    |     return self.__get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    |     raise self._exception
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    |     retval = await retval_or_awaitable
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    |     await super().handle(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    |     return await run_in_threadpool(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    |     return await future
+    |            ^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    |     result = context.run(func, *args)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    |     return function(**arguments)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/api/app.py", line 1478, in feishu_materials
+    |     return feishu_for(workspace).materials(query, visibility, cursor, limit)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 371, in materials
+    |     user = self._user(self.config.scope_materials)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 269, in _user
+    |     return self._user_any((scope,))
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 281, in _user_any
+    |     credentials = self.credentials.get()
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 65, in get
+    |     raise PermissionError("synthetic keychain denial")
+    | PermissionError: synthetic keychain denial
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 1244, in test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken
+    response = client.get(path, headers=HEADERS)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 463, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 360, in handle_request
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/testclient.py", line 357, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 340, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/from_thread.py", line 265, in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1216, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 347, in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 197, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 257, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 173, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    await route.handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1310, in handle
+    await super().handle(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/routing.py", line 282, in handle
+    await self.app(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 362, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/api/app.py", line 1478, in feishu_materials
+    return feishu_for(workspace).materials(query, visibility, cursor, limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 371, in materials
+    user = self._user(self.config.scope_materials)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 269, in _user
+    return self._user_any((scope,))
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/r3-before-src/summit_everything/integrations/feishu/service.py", line 281, in _user_any
+    credentials = self.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/tests/integration/test_stage_b_r3_regressions.py", line 65, in get
+    raise PermissionError("synthetic keychain denial")
+PermissionError: synthetic keychain denial
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-409/test_r3_04_user_only_endpoints1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d1cbad0>
+user_state = 'denied'
+
+    @pytest.mark.parametrize("user_state", ["corrupt", "denied"])
+    def test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=_user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        for path in ("/api/v1/integrations/feishu/materials", "/api/v1/integrations/feishu/tasks"):
+>           response = client.get(path, headers=HEADERS)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_stage_b_r3_regressions.py:1244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:463: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:360: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:357: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:340: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:265: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1216: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:347: in origin_guard
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:197: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:257: in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:173: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv/lib/python3.12/site-packages/starlette/middleware/base.py:149: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:676: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:2786: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:1310: in handle
+    await super().handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:282: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:165: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:151: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:727: in app
+    raw_response = await run_endpoint_function(
+.venv/lib/python3.12/site-packages/fastapi/routing.py:362: in run_endpoint_function
+    return await run_in_threadpool(
+.venv/lib/python3.12/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:2706: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py:1100: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py:244: in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/api/app.py:1478: in feishu_materials
+    return feishu_for(workspace).materials(query, visibility, cursor, limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/service.py:371: in materials
+    user = self._user(self.config.scope_materials)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/service.py:269: in _user
+    return self._user_any((scope,))
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/r3-before-src/summit_everything/integrations/feishu/service.py:281: in _user_any
+    credentials = self.credentials.get()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_stage_b_r3_regressions.InstrumentedStore object at 0x10d1c9610>
+
+    def get(self) -> UserCredentials | None:
+        self.user_reads += 1
+        if self.deny_user_read:
+>           raise PermissionError("synthetic keychain denial")
+E           PermissionError: synthetic keychain denial
+
+tests/integration/test_stage_b_r3_regressions.py:65: PermissionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_application_identity_never_reads_a_broken_user_slot[missing]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_application_identity_never_reads_a_broken_user_slot[corrupt]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_application_identity_never_reads_a_broken_user_slot[denied]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_missing_app_secret_is_reported_without_reading_the_user_slot
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[corrupt]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[denied]
+6 failed, 1 passed, 37 deselected, 1 warning in 1.20s

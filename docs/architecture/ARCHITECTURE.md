@@ -95,3 +95,7 @@ M2.1 审查修正：应用秘密与 user token 分开储存在 CredentialStore �
 ## M2.3 日志、思考与项目概览
 
 日志 / 思考通过同一 PageWriter 保存，页面 ID 由 workspace identity 与 operation ID 稳定派生，writer journal 负责相同意图重放和 payload 冲突保护。AI 辅助只在用户显式点击后调用 FakeLLM，建议留在独立编辑状态；保存仍须显式确认。项目概览沿用项目创建时预分配的 overview_id，仅确认后写入；更新需匹配当前 content hash。目录读取、概览批准和日志保存均不触发项目进度 action。
+
+## Stage B 请求边界（2026-10-11）
+
+外部 HTTP 默认通过请求独立 DeadlineTransport：异步可取消 DNS、连接池和 TCP/TLS stream 每次请求独立持有，同步 facade 返回前等待 runner 结束。provider 业务操作租约防止配置重建关闭在途多请求操作；准入/退役同锁。JSON wire 与 identity 响应有界，非 identity 编码拒绝。设计取舍与依赖见 ADR 0007；真实业务能力仍由服务端门禁控制。

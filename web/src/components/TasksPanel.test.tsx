@@ -4,7 +4,7 @@ import { TodayView } from './TodayView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
-function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgress = false) {
+function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgress = false, mode = 'fake') {
   let action: Record<string, unknown> | null = null
   const requests: { path: string; method: string; body: Record<string, unknown> }[] = []
   let next = 0
@@ -13,7 +13,7 @@ function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgre
     const path = String(input), method = init?.method || 'GET', body = init?.body ? JSON.parse(String(init.body)) : {}
     requests.push({ path, method, body })
     let data: unknown = []
-    if (path.endsWith('/status')) data = { mode: 'fake', authorized: true, scopes: [], token_type: 'user' }
+    if (path.endsWith('/status')) data = { mode, authorized: true, scopes: [], token_type: 'user' }
     if (path.includes('/action-intents?')) data = { items: action ? [action] : [], next_cursor: null }
     if (path.includes('/tasks?')) data = { items: [{ guid: 'remote-task', summary: '远端任务', description: '保留描述', due: null, completed_at: 0 }], next_cursor: null }
     if (path.endsWith('/projects')) data = [{ id: 'project', name: '模拟项目', progress: '准备中', progress_version: 2 }, { id: 'other-project', name: '另一个模拟项目', progress: '', progress_version: 7 }]
@@ -213,4 +213,19 @@ it('changing the progress target reviews the selected project version', async ()
   fireEvent.click(screen.getByRole('button', { name: '保存修改并重新审阅' }))
   await screen.findByRole('button', { name: '独立确认此动作' })
   expect(requests.find((item) => item.method === 'PATCH')?.body).toMatchObject({ payload: { project_id: 'other-project', expected_version: 7 } })
+})
+
+
+it('real mode labels task facts correctly and disables remote writes while keeping local progress', async () => {
+  const requests = boundary('succeeded', false, false, 'real')
+  render(<TodayView onError={vi.fn()} />)
+  await screen.findByText(/真实飞书任务写入尚未启用/)
+  expect(screen.getByRole('button', { name: '新建飞书任务' }).hasAttribute('disabled')).toBe(true)
+  expect(screen.getByRole('button', { name: '拟定项目进度变化' }).hasAttribute('disabled')).toBe(false)
+  expect(screen.queryByText(/Fake 模拟远端/)).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '刷新飞书任务' }))
+  await screen.findByText('远端任务')
+  expect(screen.getByRole('button', { name: '编辑远端任务' }).hasAttribute('disabled')).toBe(true)
+  expect(screen.getByRole('button', { name: '完成远端任务' }).hasAttribute('disabled')).toBe(true)
+  expect(requests.filter((item) => item.path.endsWith('/executions'))).toHaveLength(0)
 })

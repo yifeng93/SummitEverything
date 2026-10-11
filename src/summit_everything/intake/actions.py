@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -125,9 +126,28 @@ def validate_payload(kind: str, payload: dict[str, Any]) -> None:
 
 
 class ActionService:
-    def __init__(self, tasks: FeishuTasks, session: str) -> None:
+    def __init__(
+        self,
+        tasks: FeishuTasks,
+        session: str,
+        write_gate: Callable[[str], None] | None = None,
+    ) -> None:
         self.tasks = tasks
         self.session = session
+        self.write_gate = write_gate
+
+    def _require_write(self, kind: str) -> None:
+        """Refuse a provider write before any durable running receipt is claimed.
+
+        Local actions such as ``project_progress`` never touch Feishu and are not
+        gated. The execution layer repeats the check so no other caller bypasses it.
+        """
+        if kind == "project_progress":
+            return
+        if self.write_gate is not None:
+            self.write_gate(kind)
+        self.tasks.session.require_task_write()
+        self.tasks.session._user("task:task:write")
 
     def now(self) -> datetime:
         return datetime.fromtimestamp(self.tasks.session.clock(), UTC)
@@ -267,8 +287,7 @@ class ActionService:
                 raise WorkspaceWriteConflict("请先独立确认最终动作内容。")
             if item.state != "confirmed":
                 return item
-            if item.kind != "project_progress":
-                self.tasks.session._user("task:task:write")
+            self._require_write(item.kind)
             item.state = "running"
             item.attempt_session = self.session
             item.started_at = self.now()

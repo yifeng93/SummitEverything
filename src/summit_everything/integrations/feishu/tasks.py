@@ -127,8 +127,9 @@ class FeishuTasks:
     def __init__(self, session: FeishuService) -> None:
         self.session = session
 
-    def _reader(self) -> UserCredentials:
-        credentials = self.session.credentials.get()
+    def _list_reader(self) -> UserCredentials:
+        """Task list documents user_access_token only."""
+        credentials = self.session._read_user()
         scope = (
             "task:task:write"
             if credentials and "task:task:write" in credentials.scopes
@@ -136,18 +137,30 @@ class FeishuTasks:
         )
         return self.session._user(scope)
 
+    def _detail_identity(self) -> UserCredentials | None:
+        """Task detail accepts application identity.
+
+        The identity is decided from configuration first; the user credential
+        slot is only read when a user identity is actually required.
+        """
+        # Either documented task scope permits a detail read.
+        return self.session.identity_for_any(
+            (self.session.config.scope_tasks, "task:task:write"), app_capable=True
+        )
+
     def list(self, cursor: str | None, limit: int) -> TaskPage:
-        user = self._reader()
-        result = self.session._call(lambda: self.session.provider.tasks(user, cursor, limit))
+        with self.session.operation():
+            user = self._list_reader()
+            result = self.session._call(lambda: self.session.provider.tasks(user, cursor, limit))
         if not isinstance(result, TaskPage) or len(result.items) > limit:
             raise FeishuError("malformed_response")
         return result
 
     def get(self, guid: str) -> FeishuTask:
-        user = self._reader()
-        return self._task(
-            self.session._call(lambda: self.session.provider.task_get(user, guid)), guid
-        )
+        with self.session.operation():
+            identity = self._detail_identity()
+            result = self.session._call(lambda: self.session.provider.task_get(identity, guid))
+        return self._task(result, guid)
 
     def _task(self, result: FeishuTask, expected_guid: str | None = None) -> FeishuTask:
         if not isinstance(result, FeishuTask) or (
@@ -196,7 +209,17 @@ class FeishuTasks:
         return result
 
     def execute(self, kind: str, payload: dict[str, Any], token: str) -> FeishuTask:
-        user = self.session._user("task:task:write")
+        # Execution-layer capability gate: any caller path is refused before the
+        # provider is contacted when task writes are not proven enabled.
+        self.session.require_task_write()
+        return self._execute_confirmed(kind, payload, token)
+
+    def _execute_confirmed(self, kind: str, payload: dict[str, Any], token: str) -> FeishuTask:
+        with self.session.operation():
+            return self._execute_inner(kind, payload, token)
+
+    def _execute_inner(self, kind: str, payload: dict[str, Any], token: str) -> FeishuTask:
+        user = self.session.identity_for("task:task:write", app_capable=True)
         if kind == "feishu_task_create":
             data = TaskCreate.model_validate(payload)
             body = data.model_dump(exclude={"due"})
@@ -230,8 +253,9 @@ class FeishuTasks:
         return self._validate_result(kind, payload, result)
 
     def lookup(self, token: str) -> TaskExecutionEvidence | None:
-        user = self._reader()
-        value = self.session._call(lambda: self.session.provider.task_result(user, token))
+        with self.session.operation():
+            user = self._list_reader()
+            value = self.session._call(lambda: self.session.provider.task_result(user, token))
         if value is None:
             return None
         try:

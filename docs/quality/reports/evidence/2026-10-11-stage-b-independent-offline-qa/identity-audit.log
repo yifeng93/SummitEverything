@@ -1,0 +1,2 @@
+Exact SHA/protected source/locks/API unchanged; source hashes and five manifests match
+Guard rejects non-loopback sockets, real DNS and OS Keychain; live transfer workers=0

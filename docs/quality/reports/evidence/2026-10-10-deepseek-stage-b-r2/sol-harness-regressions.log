@@ -1,0 +1,75 @@
+.......F                                                                 [100%]
+=================================== FAILURES ===================================
+_______ test_concurrent_refresh_must_not_overwrite_newest_refresh_token ________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-358/test_concurrent_refresh_must_n0')
+
+    def test_concurrent_refresh_must_not_overwrite_newest_refresh_token(tmp_path):
+        entered, release = Event(), Event()
+        class RacingFake(FakeFeishu):
+            count = 0
+            def refresh(self, credentials):
+                self.count += 1
+                number = self.count
+                if number == 1:
+                    entered.set()
+                    assert release.wait(5)
+                return UserCredentials(access_token=f'synthetic-access-{number}', refresh_token=f'synthetic-refresh-{number}', expires_at=2000, scopes=credentials.scopes)
+        store = MemoryCredentialStore()
+        store.put(UserCredentials(access_token='synthetic-old', refresh_token='synthetic-old', expires_at=1050, scopes=['minutes:read']))
+        provider = RacingFake(tmp_path/'remote')
+        service = FeishuService(provider, store, FeishuConfig(), 'synthetic-session', clock=lambda: 1000)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            first = pool.submit(service.materials, '', None, None, 10)
+            assert entered.wait(5)
+            service.materials('', None, None, 10)
+            release.set()
+>           first.result(timeout=5)
+
+test_review_regressions.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:449: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src/summit_everything/integrations/feishu/service.py:274: in materials
+    user = self._user(self.config.scope_materials)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src/summit_everything/integrations/feishu/service.py:184: in _user
+    return self._user_any((scope,))
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src/summit_everything/integrations/feishu/service.py:209: in _user_any
+    refreshed = self._call(lambda: self.provider.refresh(latest))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <summit_everything.integrations.feishu.service.FeishuService object at 0x1089bf920>
+call = <function FeishuService._user_any.<locals>.<lambda> at 0x1089cda80>
+
+    def _call[T](self, call: Callable[[], T]) -> T:
+        try:
+            return call()
+        except FeishuError:
+            raise
+        except TimeoutError:
+            raise FeishuError("provider_timeout") from None
+        except (ValueError, ValidationError, TypeError):
+            raise FeishuError("malformed_response") from None
+        except Exception:
+>           raise FeishuError("provider_unavailable") from None
+E           summit_everything.integrations.feishu.provider.FeishuError: 飞书暂不可用，请稍后重试。
+
+/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src/summit_everything/integrations/feishu/service.py:269: FeishuError
+=============================== warnings summary ===============================
+../../../Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test_review_regressions.py::test_concurrent_refresh_must_not_overwrite_newest_refresh_token
+1 failed, 7 passed, 1 warning in 5.47s

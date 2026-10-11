@@ -1,0 +1,32 @@
+# Commands actually executed for the R3 evidence set (uncommitted tree)
+# guard (verbatim Sol archive): docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/sitecustomize.py
+#   sha256 1fc6c24298e07a6fbc36e882515b11926e899ddc27bff37fa3e5d77d0d76e504
+#   blocks non-loopback sockets and macOS Keychain; R3 loopback tests bind 127.0.0.1 only
+
+# targeted R3 regressions (after)
+uv run pytest -q tests/integration/test_stage_b_r3_regressions.py -p no:cacheprovider
+uv run pytest -q tests/integration/test_stage_b_r3_loopback.py -p no:cacheprovider
+
+# before replay against the R2-equivalent copy (see before/OVERLAY-README.md)
+.venv/bin/python -m pytest -q tests/integration/test_stage_b_r3_regressions.py tests/integration/test_stage_b_r3_loopback.py -k r3_0N -p no:cacheprovider -o pythonpath=/tmp/r3-before-src
+
+# archived Sol harness (unchanged originals)
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_regressions.py -q -p no:cacheprovider
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_additional.py -q -p no:cacheprovider
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_regressions_corrected.py -q -p no:cacheprovider
+
+# check battery (each captured in checks/NN-*.log with an EXIT= line)
+$ uv run pytest -q -p no:cacheprovider
+$ uv run ruff check src tests
+$ uv run ruff format --check src tests
+$ uv run mypy src
+$ uv lock --check
+$ git diff --check
+$ uv build
+$ npm --prefix web run api:types
+$ npm --prefix web test -- --run
+$ npm --prefix web run typecheck
+$ npm --prefix web run lint
+$ npm --prefix web run build
+$ swift build --package-path native
+$ PYTHONPATH=/tmp/summit-deepseek-stage-b-replay/guard:/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src uv run pytest -q -p no:cacheprovider  (archived guard; loopback tests use 127.0.0.1 only)

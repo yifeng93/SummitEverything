@@ -1,0 +1,27 @@
+{
+  "algorithm": "sha256",
+  "root": ".",
+  "file_count": 20,
+  "files": {
+    "after-targets.log": "2818fff144aafbcd2f771342c6c9310626accf21fe720ec12becb00ae9575cbf",
+    "before.log": "eb422694231f0927783bd6a4ab476e27d59ba4eb4279202f10834c9ccdc10bdf",
+    "checks/api-types.log": "843c93cf3b330677d428ee69fad35a4a0976cf8e164686d758fd2d3967cdd016",
+    "checks/backend.log": "ac2b984a8f2758f5e38c835ef79bbf6c04a5a0420952750e0011a859ae18b405",
+    "checks/diff.log": "b3662d91f14cb0d52ae929d5f773344319e553ae46fe5553d00456897090d608",
+    "checks/format.log": "8f24ffc93ba0e8e964fdc513ada3ca1b060aa483e8fb306a838dd51d46b9bff9",
+    "checks/lock.log": "29f42ebca411cc8885215d12602f14eda4a9aa02cb50600a8f8d0e43c71ce58f",
+    "checks/mypy.log": "e71bacf7441a08a31021291bd8f45c866794e42cb2e4dadaba39b569adc4ecc4",
+    "checks/package-guarded-no-isolation.log": "015278adf4f74a0b8713e1ff810bd2c449f01dc39aca280478cca4d6f8c139b7",
+    "checks/package.log": "45d85e0a13d553459e0dc66d86cc1f5ee1b72ee1da29d7b8638896a9a4299409",
+    "checks/replay.py": "2316c6777cb57e3fb18a8784f5c57b5e872b0e84d891d9a55f84e86242538699",
+    "checks/results.json": "ba3e8b0f317886fa202d24be0c9b73ccad905430245fdd103cd935774b1c400b",
+    "checks/ruff.log": "d8b8dea4efb103da05c5a8461ebbd519c8c806475cc0bbe7cfcb9f8e923b4d85",
+    "checks/swift.log": "616b54884b23701b27d224801612b8afcc304221a49dfcd6e863da8f461f9fe3",
+    "checks/web-build.log": "a9053d323ebf759deecbb386fd0297a011e712a01fa6858909722c1b5fb9707d",
+    "checks/web-lint.log": "5637f50cc5e90efbee5b953024b8568a85648ab0cc674fc26aebaafdc461ecd7",
+    "checks/web-tests.log": "9101b51bdeee458e4a1622c2c8b46cf536a8849c9577a7940f9f82817fcddb2a",
+    "checks/web-types.log": "a3568234cc450c0ae770ae79c58b860cd88b57aae057086ac52c68fb6ba7953d",
+    "first-ruff-unused-import.log": "5b06d6ade5cdb5734e4050d962929b99893da52f0e5b26162bd89e263af0132e",
+    "source-hashes.json": "c3303113981a9c8703c3a2d0059415df9da18ae1b952344f2fe9ef8b0922d848"
+  }
+}

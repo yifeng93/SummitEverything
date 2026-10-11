@@ -1,0 +1,34 @@
+{
+  "mode": "real",
+  "model_studio_account_id": "default",
+  "feishu": {
+    "app_id": "cli_synthetic_8b_retest",
+    "redirect_uri": "",
+    "identity": "app",
+    "calendar_id": "",
+    "material_content": "transcript",
+    "real_data_enabled": false
+  },
+  "llm": {
+    "provider": "fake",
+    "model": null,
+    "account_id": "default",
+    "enabled": false
+  },
+  "embedding": {
+    "provider": "fake",
+    "model": null,
+    "region": "cn",
+    "dimensions": 1024,
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "enabled": false
+  },
+  "rerank": {
+    "provider": "fake",
+    "model": null,
+    "region": "cn",
+    "dimensions": 1024,
+    "base_url": "https://dashscope.aliyuncs.com/api/v1",
+    "enabled": false
+  }
+}

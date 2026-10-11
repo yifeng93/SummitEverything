@@ -1,0 +1,9 @@
+configured=http://127.0.0.1:54406
+response=http://127.0.0.1:54406/
+equal=false
+status=200
+error=none
+Traceback (most recent call last):
+  File "/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/docs/quality/reports/evidence/2026-10-11-stage-b-native-url-dev/probe.py", line 16, in <module>
+    assert run.returncode==0 and 'status=200' in run.stdout and 'equal=true' in run.stdout, 'production URL must match actual URLSession response'
+AssertionError: production URL must match actual URLSession response

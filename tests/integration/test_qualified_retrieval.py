@@ -6,6 +6,7 @@ from uuid import UUID
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.embedding import FakeEmbedding
+from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -101,6 +102,33 @@ def test_source_and_draft_material_never_enter_qualified_index(tmp_path: Path) -
     no_match = retrieval.query(root, "完全不相关的查询", fingerprint="fake-v1")
     assert no_match.citations == []
     assert "没有找到" in no_match.text
+
+
+def test_grounded_answer_receives_only_server_qualified_citations(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    approve_page(root, line_id, project_id, body="正式确认的地点是北馆。")
+    captured: list[dict[str, str]] = []
+
+    class Answerer:
+        def answer(self, question: str, passages: list[dict[str, str]]) -> GroundedAnswer:
+            captured.extend(passages)
+            return GroundedAnswer(
+                text="北馆。", inferences=["来自正式资料"], missing_information=[]
+            )
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(root, "地点在哪里？", fingerprint="fake-v1")
+
+    assert answer.text == "北馆。"
+    assert answer.citations
+    assert answer.inferences == ["来自正式资料"]
+    assert captured == [{"heading": "页面内容", "excerpt": "正式确认的地点是北馆。"}]
 
 
 def test_external_edit_and_reapproval_reject_old_cached_chunk(tmp_path: Path) -> None:

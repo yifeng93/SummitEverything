@@ -1,0 +1,6 @@
+$ npm --prefix web run typecheck
+
+> web@0.0.0 typecheck
+> tsc -b --pretty
+
+EXIT=0

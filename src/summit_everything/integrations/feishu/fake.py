@@ -72,13 +72,13 @@ class FakeFeishu:
             next_cursor=f"fake-page-{offset + limit}" if offset + limit < len(rows) else None,
         )
 
-    def task_get(self, credentials: UserCredentials, guid: str) -> FeishuTask:
+    def task_get(self, credentials: UserCredentials | None, guid: str) -> FeishuTask:
         with self._remote() as data:
             if guid not in data["tasks"]:
                 raise FeishuError("not_found")
             return FeishuTask.model_validate(data["tasks"][guid])
 
-    def task_create(self, credentials: UserCredentials, body: dict[str, Any]) -> FeishuTask:
+    def task_create(self, credentials: UserCredentials | None, body: dict[str, Any]) -> FeishuTask:
         with self._remote() as data:
             token = body["client_token"]
             if token in data["results"]:
@@ -99,7 +99,7 @@ class FakeFeishu:
             return task
 
     def task_patch(
-        self, credentials: UserCredentials, guid: str, body: dict[str, Any], token: str
+        self, credentials: UserCredentials | None, guid: str, body: dict[str, Any], token: str
     ) -> FeishuTask:
         with self._remote() as data:
             if guid not in data["tasks"]:
@@ -142,6 +142,16 @@ class FakeFeishu:
             scopes=["minutes:read", "calendar:read", "task:task:read", "task:task:write"],
         )
 
+    def refresh(self, credentials: UserCredentials) -> UserCredentials:
+        if not credentials.refresh_token.startswith("synthetic-refresh-token"):
+            raise FeishuError("token_expired")
+        return UserCredentials(
+            access_token="synthetic-user-token-refreshed",
+            refresh_token="synthetic-refresh-token-refreshed",
+            expires_at=time() + 3600,
+            scopes=credentials.scopes,
+        )
+
     def materials(
         self,
         credentials: UserCredentials,
@@ -173,7 +183,7 @@ class FakeFeishu:
         next_cursor = f"fake-page-{offset + limit}" if offset + limit < len(selected) else None
         return MaterialPage(items=selected[offset : offset + limit], next_cursor=next_cursor)
 
-    def body(self, credentials: UserCredentials, material_id: str) -> MaterialBody:
+    def body(self, credentials: UserCredentials | None, material_id: str) -> MaterialBody:
         errors = {
             "missing": "not_found",
             "scope": "missing_scope",
@@ -202,7 +212,7 @@ class FakeFeishu:
 
     def calendar(
         self,
-        credentials: UserCredentials,
+        credentials: UserCredentials | None,
         start: datetime,
         end: datetime,
         timezone: str,
@@ -220,8 +230,10 @@ class FakeFeishu:
         ]
         selected = [row for row in rows if row.start < end and row.end > start]
         offset = _offset(cursor)
+        page = selected[offset : offset + limit]
         return CalendarPage(
-            items=selected[offset : offset + limit],
+            items=page,
             timezone=timezone,
             next_cursor=f"fake-page-{offset + limit}" if offset + limit < len(selected) else None,
+            truncated=offset + limit < len(selected),
         )

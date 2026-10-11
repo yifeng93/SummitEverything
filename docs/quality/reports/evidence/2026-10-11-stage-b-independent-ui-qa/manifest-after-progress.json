@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "workspace_id": "00ba1d02-af66-4c6f-825d-977bccd216c0",
+  "name": "Stage B 独立合成 QA",
+  "created_at": "2026-10-11T01:52:03.259137Z",
+  "lines": [
+    {
+      "id": "eeab9ceb-5072-5bbf-9885-9366fbbe067c",
+      "name": "合成 QA 主线",
+      "directory": "合成-QA-主线"
+    }
+  ],
+  "projects": [
+    {
+      "id": "44c4fd8b-fb99-5534-80a4-37ac40aa1928",
+      "line_id": "eeab9ceb-5072-5bbf-9885-9366fbbe067c",
+      "name": "合成 QA 项目",
+      "directory": "合成-QA-主线/合成-QA-项目",
+      "overview_id": "541e7453-6237-5b9f-baea-ff8d50ac0ea4",
+      "archived": false,
+      "progress": "已完成合成 QA 资料审核",
+      "progress_version": 1,
+      "progress_confirmation_id": "f45a2d2c-10b2-46ef-beb1-bb136041db71"
+    }
+  ]
+}

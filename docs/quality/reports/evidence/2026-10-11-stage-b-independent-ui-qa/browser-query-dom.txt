@@ -1,0 +1,43 @@
+- complementary:
+  - generic: S
+  - strong: SummitEverything
+  - generic: 个人知识工作台
+  - navigation "主导航":
+    - button "今日": 今日
+    - button "日志与思考": 日志与思考
+    - button "项目与知识": 项目与知识
+    - button "知识问答": 知识问答
+    - button "设置": 设置
+  - generic: 仅本机运行
+  - button "S Stage B 独立合成 QA 已连接工作库":
+    - generic: S
+    - strong: Stage B 独立合成 QA
+    - generic: 已连接工作库
+    - generic: ⌄
+- main:
+  - generic: 知识问答
+  - generic: 本机已保存
+  - button "打开设置": 罗
+  - generic: 仅使用已确认知识
+  - heading "知识问答" [level=1]
+  - paragraph: 每条依据都会回到当前页面版本复核。没有资料时会明确说明。
+  - text: 本机索引已就绪
+  - paragraph: 1 个页面 · 1 个分块 · summit-fake-embedding-v1
+  - button "准备索引计划"
+  - status: 已保存到本机：1 页，1 个新分块，复用 0 个。
+  - generic: 你的问题
+  - textbox "你的问题":
+    - /placeholder: 例如：这个项目已经确认的地点和联系人有哪些？
+    - text: 合成会议室可容纳多少人？
+  - button "开始检索" [active]
+  - generic: 真实模式下，开始检索会将问题发送到当前配置的模型服务。
+  - generic: 答
+  - heading "检索结果" [level=2]
+  - generic: 根据已确认资料
+  - generic: 根据以下已确认资料： 【来源摘要】 合成资料：会议室可容纳 24 人，预约时段为周五下午。仅用于离线 QA。
+  - heading "引用依据" [level=3]
+  - button "1 来源摘要 合成资料：会议室可容纳 24 人，预约时段为周五下午。仅用于离线 QA。":
+    - generic: "1"
+    - strong: 来源摘要
+    - generic: 合成资料：会议室可容纳 24 人，预约时段为周五下午。仅用于离线 QA。
+    - generic: ↗

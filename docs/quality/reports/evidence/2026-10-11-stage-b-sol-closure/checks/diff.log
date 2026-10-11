@@ -1,0 +1,3 @@
+Command: ['git', 'diff', '--check']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)

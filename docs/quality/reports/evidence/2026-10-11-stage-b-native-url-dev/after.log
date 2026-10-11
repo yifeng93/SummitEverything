@@ -1,0 +1,5 @@
+configured=http://127.0.0.1:54419/
+response=http://127.0.0.1:54419/
+equal=true
+status=200
+error=none

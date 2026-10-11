@@ -4,7 +4,7 @@ import WebKit
 
 private let apiPort = ProcessInfo.processInfo.environment["SUMMIT_API_PORT"] ?? "8793"
 private let webPort = ProcessInfo.processInfo.environment["SUMMIT_WEB_PORT"] ?? "5173"
-private let webURL = URL(string: "http://127.0.0.1:\(webPort)")!
+private let webURL = URL(string: "http://127.0.0.1:\(webPort)/")!
 private let healthURL = URL(string: "http://127.0.0.1:\(apiPort)/api/v1/health")!
 
 @main
@@ -78,6 +78,7 @@ struct LocalWebView: NSViewRepresentable {
         configuration.userContentController = controller
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.navigationDelegate = context.coordinator
+        view.uiDelegate = context.coordinator
         context.coordinator.webView = view
         context.coordinator.waitForReadiness()
         return view
@@ -85,11 +86,12 @@ struct LocalWebView: NSViewRepresentable {
 
     func updateNSView(_ view: WKWebView, context: Context) {}
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
         private let expectedRunID: String
         weak var webView: WKWebView?
         private var readinessTimer: Timer?
         private var attempts = 0
+        private var checkingReadiness = false
 
         init(expectedRunID: String) {
             self.expectedRunID = expectedRunID
@@ -99,6 +101,16 @@ struct LocalWebView: NSViewRepresentable {
             readinessTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
                 guard let self else { timer.invalidate(); return }
                 self.attempts += 1
+                if self.attempts >= 60 {
+                    timer.invalidate()
+                    self.readinessTimer = nil
+                    self.showReadinessError()
+                    return
+                }
+                // API can start before Vite. Keep polling until both services
+                // are ready, rather than leaving a failed first navigation blank.
+                guard !self.checkingReadiness else { return }
+                self.checkingReadiness = true
                 var request = URLRequest(url: healthURL, timeoutInterval: 1)
                 request.httpMethod = "GET"
                 URLSession.shared.dataTask(with: request) { [weak self] data, response, _ in
@@ -109,18 +121,40 @@ struct LocalWebView: NSViewRepresentable {
                         let health = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                         health["service"] as? String == "ready",
                         health["run_id"] as? String == self.expectedRunID
-                    else { return }
-                    DispatchQueue.main.async {
-                        timer.invalidate()
-                        self.readinessTimer = nil
-                        self.webView?.load(URLRequest(url: webURL))
+                    else {
+                        DispatchQueue.main.async { self?.checkingReadiness = false }
+                        return
                     }
+                    let webRequest = URLRequest(url: webURL, cachePolicy: .reloadIgnoringLocalCacheData,
+                                                timeoutInterval: 1)
+                    URLSession.shared.dataTask(with: webRequest) { [weak self] _, webResponse, _ in
+                        DispatchQueue.main.async {
+                            guard let self else { return }
+                            self.checkingReadiness = false
+                            guard timer.isValid,
+                                  (webResponse as? HTTPURLResponse)?.statusCode == 200,
+                                  webResponse?.url == webURL else { return }
+                            timer.invalidate()
+                            self.readinessTimer = nil
+                            self.webView?.load(URLRequest(url: webURL))
+                        }
+                    }.resume()
                 }.resume()
-                if self.attempts >= 60 {
-                    timer.invalidate()
-                    DispatchQueue.main.async { self.showReadinessError() }
-                }
             }
+        }
+
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                     for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            // Only the explicit official OAuth link leaves the local WebUI.
+            guard navigationAction.navigationType == .linkActivated,
+                  navigationAction.targetFrame == nil,
+                  let url = navigationAction.request.url,
+                  url.scheme == "https", url.host == "accounts.feishu.cn",
+                  url.port == nil || url.port == 443,
+                  url.user == nil, url.password == nil, url.fragment == nil,
+                  url.path == "/open-apis/authen/v1/authorize" else { return nil }
+            NSWorkspace.shared.open(url)
+            return nil
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

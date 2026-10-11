@@ -52,8 +52,12 @@ def test_fake_default_authorization_and_selected_only_import(tmp_path: Path) -> 
     assert response.json() == {
         "mode": "fake",
         "authorized": False,
+        "app_configured": False,
+        "identity": "app",
         "token_type": "user",
         "scopes": [],
+        "user_identity_verified": False,
+        "credential_error": None,
     }
     authorize(c)
     first = c.get(PREFIX + "/materials", params={"limit": 1}).json()
@@ -112,6 +116,7 @@ def test_oauth_invalid_replay_origin_and_cross_run(tmp_path: Path) -> None:
     for method, route, data in [
         ("GET", "/status", None),
         ("POST", "/authorizations", {}),
+        ("DELETE", "/authorizations", None),
         ("GET", "/materials", None),
         ("POST", "/imports", {}),
         ("GET", "/calendar", None),
@@ -128,6 +133,59 @@ def test_denied_authorization_never_reports_success(tmp_path: Path) -> None:
     state = parse_qs(url.query)["state"][0]
     denied = c.get(PREFIX + "/callback", params={"state": state, "error": "access_denied"})
     assert denied.status_code == 403 and denied.json()["error"]["code"] == "authorization_denied"
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
+    assert c.get(PREFIX + "/materials").status_code == 401
+
+
+def test_user_api_refreshes_near_expiry_and_persists_rotated_refresh_token(tmp_path: Path) -> None:
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import (
+        FeishuConfig,
+        MemoryCredentialStore,
+        UserCredentials,
+    )
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    class RotatingFake(FakeFeishu):
+        refresh_input: UserCredentials | None = None
+
+        def refresh(self, credentials: UserCredentials) -> UserCredentials:
+            self.refresh_input = credentials
+            return UserCredentials(
+                access_token="synthetic-access-2",
+                refresh_token="synthetic-refresh-2",
+                expires_at=2000,
+                scopes=credentials.scopes,
+            )
+
+    store = MemoryCredentialStore()
+    store.put(
+        UserCredentials(
+            access_token="synthetic-access-1",
+            refresh_token="synthetic-refresh-1",
+            expires_at=1050,
+            scopes=["minutes:read"],
+        )
+    )
+    provider = RotatingFake(tmp_path / "remote")
+    service = FeishuService(provider, store, FeishuConfig(), "session", clock=lambda: 1000)
+
+    service.materials("", None, None, 10)
+
+    assert provider.refresh_input is not None
+    assert provider.refresh_input.refresh_token == "synthetic-refresh-1"
+    assert store.get() is not None
+    assert store.get().access_token == "synthetic-access-2"
+    assert store.get().refresh_token == "synthetic-refresh-2"
+
+
+def test_logout_clears_user_authorization(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    authorize(c)
+
+    response = c.delete(PREFIX + "/authorizations")
+
+    assert response.status_code == 204
     assert c.get(PREFIX + "/status").json()["authorized"] is False
     assert c.get(PREFIX + "/materials").status_code == 401
 
@@ -193,7 +251,9 @@ def test_expiry_missing_scope_and_safe_provider_errors(tmp_path: Path) -> None:
     authorize(c)
     service = c.app.state.feishu_service
     credentials = service.credentials.get()
-    service.credentials.put(credentials.model_copy(update={"expires_at": 0}))
+    service.credentials.put(
+        credentials.model_copy(update={"expires_at": 0, "refresh_token": "expired"})
+    )
     assert c.get(PREFIX + "/materials").json()["error"]["code"] == "token_expired"
     assert c.get(PREFIX + "/status").json()["authorized"] is False
     authorize(c)
@@ -394,6 +454,18 @@ def test_configured_callback_other_port_and_cors_is_preserved(tmp_path: Path) ->
         base_url="http://127.0.0.1:5173",
         headers={"Authorization": "Bearer local"},
     )
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace"),
+                "name": "模拟",
+                "mode": "create",
+                "operation_id": "open",
+            },
+        ).status_code
+        == 201
+    )
     url = c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"]
     assert url.startswith(config.redirect_uri + "?")
     response = c.get(url, headers={"Authorization": "", "Origin": "http://127.0.0.1:5173"})
@@ -419,6 +491,18 @@ def test_app_secret_boundary_isolated_from_user_tokens_and_responses(tmp_path: P
         base_url="http://127.0.0.1:5173",
         headers={"Authorization": "Bearer local"},
     )
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace"),
+                "name": "模拟",
+                "mode": "create",
+                "operation_id": "open",
+            },
+        ).status_code
+        == 201
+    )
     authorize(c)
     for response in [
         c.get(PREFIX + "/status"),
@@ -427,6 +511,52 @@ def test_app_secret_boundary_isolated_from_user_tokens_and_responses(tmp_path: P
     ]:
         assert "synthetic-app-secret" not in response.text
     assert store.get_app() == credentials and store.get().token_type == "user"
+
+
+def test_workspace_and_app_identity_scope_feishu_state(tmp_path: Path) -> None:
+    c = client(tmp_path)
+    first_service = c.app.state.feishu_service
+    authorize(c)
+    assert c.get(PREFIX + "/status").json()["authorized"] is True
+    assert c.get(PREFIX + "/tasks").status_code == 200
+
+    assert (
+        c.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(tmp_path / "workspace-2"),
+                "name": "另一个模拟库",
+                "mode": "create",
+                "operation_id": "open-2",
+            },
+        ).status_code
+        == 201
+    )
+    assert c.app.state.feishu_service is not first_service
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
+    assert c.get(PREFIX + "/tasks").status_code == 401
+
+    c.post(
+        "/api/v1/workspaces",
+        json={"root": str(tmp_path / "workspace"), "mode": "open", "operation_id": "reopen-1"},
+    )
+    assert c.get(PREFIX + "/status").json()["authorized"] is True
+    assert c.get(PREFIX + "/tasks").status_code == 200
+
+    start = c.post(PREFIX + "/authorizations", json={}).json()
+    old_url = urlsplit(start["authorization_url"])
+    old_state = parse_qs(old_url.query)["state"][0]
+    changed = c.patch(
+        "/api/v1/settings",
+        json={"feishu": {"app_id": "synthetic-different-app"}},
+    )
+    assert changed.status_code == 200
+    rejected = c.get(
+        PREFIX + "/callback",
+        params={"state": old_state, "code": "fake-ok"},
+    )
+    assert rejected.status_code == 400
+    assert c.get(PREFIX + "/status").json()["authorized"] is False
 
 
 def test_capture_validation_failure_continues_batch(
@@ -453,3 +583,72 @@ def test_capture_validation_failure_continues_batch(
     assert result.json()["outcomes"][0]["error_code"] == "malformed_response"
     assert result.json()["outcomes"][1]["state"] == "succeeded"
     assert "synthetic-rejected-source" not in result.text
+
+
+def test_logout_invalidates_pending_authorization_state(tmp_path: Path) -> None:
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import FeishuConfig, MemoryCredentialStore
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    service = FeishuService(
+        FakeFeishu(tmp_path / "remote"), MemoryCredentialStore(), FeishuConfig(), "session"
+    )
+    start = service.authorize()
+    state = parse_qs(urlsplit(start.authorization_url).query)["state"][0]
+
+    service.logout()
+
+    from summit_everything.integrations.feishu.provider import FeishuError
+
+    with pytest.raises(FeishuError) as exc_info:
+        service.callback(state, "fake-ok", None, service.config.redirect_uri)
+    assert exc_info.value.code == "invalid_state"
+
+
+def test_logout_during_code_exchange_cannot_restore_old_token(tmp_path: Path) -> None:
+    from threading import Event, Thread
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.integrations.feishu.provider import (
+        FeishuConfig,
+        FeishuError,
+        MemoryCredentialStore,
+        UserCredentials,
+    )
+    from summit_everything.integrations.feishu.service import FeishuService
+
+    entered = Event()
+    release = Event()
+
+    class DelayedExchange(FakeFeishu):
+        def exchange(self, code: str, redirect_uri: str, app_credentials=None):
+            entered.set()
+            assert release.wait(2)
+            return UserCredentials(
+                access_token="synthetic-old-access",
+                refresh_token="synthetic-old-refresh",
+                expires_at=4_000_000_000,
+                scopes=["minutes:read"],
+            )
+
+    store = MemoryCredentialStore()
+    service = FeishuService(DelayedExchange(tmp_path / "remote"), store, FeishuConfig(), "session")
+    state = parse_qs(urlsplit(service.authorize().authorization_url).query)["state"][0]
+    errors: list[str] = []
+
+    def callback() -> None:
+        try:
+            service.callback(state, "fake-ok", None, service.config.redirect_uri)
+        except FeishuError as exc:
+            errors.append(exc.code)
+
+    thread = Thread(target=callback)
+    thread.start()
+    assert entered.wait(2)
+    service.logout()
+    release.set()
+    thread.join(2)
+
+    assert not thread.is_alive()
+    assert errors == ["invalid_state"]
+    assert store.get() is None

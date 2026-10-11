@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from threading import Event
+from typing import Any, Protocol
 from uuid import UUID, uuid4
 
 from summit_everything.domain.content import (
@@ -12,6 +14,7 @@ from summit_everything.domain.content import (
 )
 from summit_everything.domain.models import Answer, Citation, IndexPlan, IndexResult, PageSnapshot
 from summit_everything.integrations.embedding import FakeEmbedding, cosine_similarity
+from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import FakeReranker
 from summit_everything.retrieval.chunking import TextChunk, chunk_markdown
 from summit_everything.retrieval.store import IndexStore
@@ -23,16 +26,51 @@ class IndexPlanStale(ValueError):
     """Workspace content changed after the user reviewed an index plan."""
 
 
+class QueryCancelled(Exception):
+    """The client cancelled a query before its next provider operation."""
+
+
+class EmbeddingProvider(Protocol):
+    def embed(self, text: str, *, fingerprint: str) -> list[float]: ...
+
+    def embed_many(self, texts: list[str], *, fingerprint: str) -> list[list[float]]: ...
+
+
+class RerankerProvider(Protocol):
+    def rank(self, query: str, texts: list[str]) -> list[tuple[int, float]]: ...
+
+
+class AnswerProvider(Protocol):
+    def answer(self, question: str, passages: list[dict[str, str]]) -> GroundedAnswer: ...
+
+
 class QueryService:
     def __init__(
         self,
         store: IndexStore,
-        embedding: FakeEmbedding | None = None,
-        reranker: FakeReranker | None = None,
+        embedding: EmbeddingProvider | None = None,
+        reranker: RerankerProvider | None = None,
+        answer_provider: AnswerProvider | None = None,
     ) -> None:
         self.store = store
         self.embedding = embedding or FakeEmbedding()
         self.reranker = reranker or FakeReranker()
+        self.answer_provider = answer_provider
+        self._closed = False
+
+    def close(self) -> None:
+        """Release operation-scoped provider clients exactly once.
+
+        Only providers that own their transport expose ``close``; injected test
+        doubles and shared fakes are ignored.
+        """
+        if self._closed:
+            return
+        self._closed = True
+        for provider in (self.embedding, self.reranker, self.answer_provider):
+            close = getattr(provider, "close", None)
+            if callable(close):
+                close()
 
     def status(self, root: Path) -> dict[str, int | str | None]:
         manifest = load_manifest(root)
@@ -81,7 +119,7 @@ class QueryService:
             page_ids=[page.page_id for page in eligible],
             page_versions={str(page.page_id): page.content_sha256 for page in eligible},
             estimated_tokens=sum(max(1, len(page.body) // 4) for page in eligible),
-            estimated_cost=0,
+            estimated_cost=0 if fingerprint == "summit-fake-embedding-v1" else None,
         )
 
     def execute_plan(self, root: Path, plan: IndexPlan) -> IndexResult:
@@ -112,15 +150,28 @@ class QueryService:
         ) or set(current_pages) != set(plan.page_ids):
             raise IndexPlanStale("Workspace pages changed after the index plan was reviewed")
         existing = self.store.existing_chunks(manifest.workspace_id, plan.fingerprint)
-        embedded: list[tuple[TextChunk, list[float]]] = []
-        embedded_count = 0
+        prepared: list[tuple[TextChunk, list[float] | None]] = []
         for page in current_pages.values():
             for chunk in chunk_markdown(page.page_id, page.content_sha256, page.body):
-                vector = existing.get(chunk.chunk_id)
-                if vector is None:
-                    vector = self.embedding.embed(chunk.text, fingerprint=plan.fingerprint)
-                    embedded_count += 1
-                embedded.append((chunk, vector))
+                prepared.append((chunk, existing.get(chunk.chunk_id)))
+        missing = [chunk for chunk, vector in prepared if vector is None]
+        newly_embedded: list[list[float]] = []
+        batch_size = getattr(self.embedding, "max_batch_size", 20)
+        for offset in range(0, len(missing), batch_size):
+            batch = missing[offset : offset + batch_size]
+            newly_embedded.extend(
+                self.embedding.embed_many(
+                    [chunk.text for chunk in batch], fingerprint=plan.fingerprint
+                )
+            )
+        if len(newly_embedded) != len(missing):
+            raise ValueError("Embedding provider returned an incomplete batch")
+        missing_vectors = iter(newly_embedded)
+        embedded = [
+            (chunk, vector if vector is not None else next(missing_vectors))
+            for chunk, vector in prepared
+        ]
+        embedded_count = len(missing)
         self.store.replace_generation(manifest.workspace_id, plan.fingerprint, embedded)
         return IndexResult(
             indexed_pages=len(current_pages),
@@ -144,7 +195,9 @@ class QueryService:
         fingerprint: str,
         purpose: RetrievalPurpose = RetrievalPurpose.CURRENT,
         limit: int = 5,
+        cancelled: Event | None = None,
     ) -> Answer:
+        self._check_cancelled(cancelled)
         root = root.resolve()
         manifest = load_manifest(root)
         if self.store.active_fingerprint(manifest.workspace_id) != fingerprint:
@@ -167,30 +220,47 @@ class QueryService:
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
         query_vector = self.embedding.embed(question, fingerprint=fingerprint)
+        self._check_cancelled(cancelled)
         dense = sorted(
             chunks,
             key=lambda item: cosine_similarity(query_vector, item["vector"]),
             reverse=True,
         )
-        lexical = sorted(
-            chunks,
-            key=lambda item: self.reranker.score(question, item["text"]),
-            reverse=True,
-        )
+        qualified = self._qualified_chunks(root, dense, purpose=purpose)
+        candidates = qualified[:20]
+        if not candidates:
+            return self._empty_answer(question, purpose, "没有找到经确认且仍为当前版本的相关资料。")
+        self._check_cancelled(cancelled)
+        reranked = self.reranker.rank(question, [str(item["text"]) for item in candidates])
+        self._check_cancelled(cancelled)
+        if len(reranked) != len(candidates):
+            raise ValueError("Reranker returned an incomplete ranking")
+        lexical_scores: dict[str, float] = {}
+        lexical = []
+        for index, score in reranked:
+            if (
+                index < 0
+                or index >= len(candidates)
+                or candidates[index]["chunk_id"] in lexical_scores
+            ):
+                raise ValueError("Reranker returned an invalid candidate index")
+            item = candidates[index]
+            lexical.append(item)
+            lexical_scores[str(item["chunk_id"])] = score
         ranks: dict[str, float] = {}
         for rank, item in enumerate(dense, start=1):
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
         for rank, item in enumerate(lexical, start=1):
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
-        ranked = sorted(chunks, key=lambda item: ranks[item["chunk_id"]], reverse=True)
-        relevant = [item for item in ranked if self.reranker.score(question, item["text"]) > 0]
+        ranked = sorted(candidates, key=lambda item: ranks[item["chunk_id"]], reverse=True)
+        relevant = [item for item in ranked if lexical_scores.get(str(item["chunk_id"]), 0) > 0]
         related_ids = self._related_page_ids(root, relevant[: min(limit, 3)])
         ranked = relevant
         if related_ids:
             seen = {item["chunk_id"] for item in ranked}
             ranked.extend(
                 item
-                for item in chunks
+                for item in qualified
                 if item["page_id"] in related_ids and item["chunk_id"] not in seen
             )
         citations: list[Citation] = []
@@ -236,14 +306,33 @@ class QueryService:
                 index_status="ready",
                 missing_information=["已缓存的资料版本与当前工作库不一致，或当前资格检查未通过。"],
             )
-        passages = []
-        for citation in citations:
-            passages.append(f"【{citation.heading or '页面内容'}】\n{citation.excerpt}")
+        passages = [
+            {"heading": citation.heading or "页面内容", "excerpt": citation.excerpt}
+            for citation in citations
+        ]
+        self._check_cancelled(cancelled)
+        answer = self.answer_provider.answer(question, passages) if self.answer_provider else None
+        self._check_cancelled(cancelled)
+        if not self._citations_are_current(root, citations, purpose=purpose):
+            return self._empty_answer(
+                question,
+                purpose,
+                "资料在生成期间发生变化；旧答案已失效，请重新索引后查询。",
+            )
         return Answer(
             answer_id=uuid4(),
             question=question,
-            text="根据以下已确认资料：\n\n" + "\n\n".join(passages),
+            text=(
+                answer.text
+                if answer is not None
+                else "根据以下已确认资料：\n\n"
+                + "\n\n".join(
+                    f"【{passage['heading']}】\n{passage['excerpt']}" for passage in passages
+                )
+            ),
             citations=citations,
+            inferences=answer.inferences if answer is not None else [],
+            missing_information=answer.missing_information if answer is not None else [],
             purpose=purpose.value,
             index_status="ready",
         )
@@ -266,6 +355,89 @@ class QueryService:
             if eligibility.eligible:
                 qualified.append(page)
         return qualified
+
+    def _qualified_chunks(
+        self,
+        root: Path,
+        chunks: list[dict[str, Any]],
+        *,
+        purpose: RetrievalPurpose,
+    ) -> list[dict[str, Any]]:
+        page_eligibility: dict[UUID, bool] = {}
+        qualified: list[dict[str, Any]] = []
+        for chunk in chunks:
+            page_id = chunk["page_id"]
+            if not isinstance(page_id, UUID):
+                continue
+            if page_id not in page_eligibility:
+                page_eligibility[page_id] = (
+                    self._read_qualified_page(
+                        root,
+                        page_id,
+                        purpose=purpose,
+                        expected_content_sha256=str(chunk["content_sha256"]),
+                    )
+                    is not None
+                )
+            if page_eligibility[page_id]:
+                qualified.append(chunk)
+        return qualified
+
+    @staticmethod
+    def _read_qualified_page(
+        root: Path,
+        page_id: UUID,
+        *,
+        purpose: RetrievalPurpose,
+        expected_content_sha256: str | None = None,
+    ) -> PageSnapshot | None:
+        try:
+            page = read_page(root, page_id)
+            area = StorageArea(page.storage_area)
+        except (WorkspaceError, OSError, ValueError):
+            return None
+        eligibility = retrieval_eligibility(
+            page.metadata,
+            page.body,
+            area=area,
+            purpose=purpose,
+            expected_content_sha256=expected_content_sha256,
+        )
+        return page if eligibility.eligible else None
+
+    def _citations_are_current(
+        self,
+        root: Path,
+        citations: list[Citation],
+        *,
+        purpose: RetrievalPurpose,
+    ) -> bool:
+        return all(
+            self._read_qualified_page(
+                root,
+                citation.page_id,
+                purpose=purpose,
+                expected_content_sha256=citation.content_sha256,
+            )
+            is not None
+            for citation in citations
+        )
+
+    @staticmethod
+    def _check_cancelled(cancelled: Event | None) -> None:
+        if cancelled is not None and cancelled.is_set():
+            raise QueryCancelled()
+
+    @staticmethod
+    def _empty_answer(question: str, purpose: RetrievalPurpose, message: str) -> Answer:
+        return Answer(
+            answer_id=uuid4(),
+            question=question,
+            text=message,
+            purpose=purpose.value,
+            index_status="ready",
+            missing_information=[message],
+        )
 
     def _related_page_ids(self, root: Path, chunks: list[dict[str, object]]) -> set[UUID]:
         related: set[UUID] = set()

@@ -1,0 +1,25 @@
+$ npm --prefix web test -- --run
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/web
+
+ ✓ src/components/PageReader.test.tsx (2 tests) 91ms
+ ✓ src/components/WorkspaceGate.test.tsx (2 tests) 92ms
+ ✓ src/components/SettingsView.test.tsx (1 test) 98ms
+ ✓ src/components/DraftReview.test.tsx (2 tests) 95ms
+ ✓ src/components/JournalView.test.tsx (3 tests) 114ms
+ ✓ src/components/SettingsView.regressions.test.tsx (3 tests) 143ms
+ ✓ src/components/TodayView.test.tsx (1 test) 168ms
+ ✓ src/components/ProjectsView.test.tsx (4 tests) 254ms
+ ✓ src/components/FeishuPanel.test.tsx (13 tests) 461ms
+ ✓ src/components/TasksPanel.test.tsx (11 tests) 800ms
+
+ Test Files  10 passed (10)
+      Tests  42 passed (42)
+   Start at  08:55:58
+   Duration  1.67s (environment 58%, tests 23%, import 11%, transform 7%)
+
+EXIT=0

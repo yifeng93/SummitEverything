@@ -1,0 +1,19 @@
+{
+  "health": {
+    "service": "ready",
+    "workspace_open": false,
+    "version": "1.0.0",
+    "run_id": "B3001382-059E-4B01-ABB2-A132728C4CEB"
+  },
+  "selected_child_environment": {
+    "SUMMIT_RUN_ID": "B3001382-059E-4B01-ABB2-A132728C4CEB",
+    "SUMMIT_PROFILE_ROOT": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything/.local/qa-ui/profile",
+    "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything/src",
+    "SUMMIT_OFFLINE_GUARD_ACTIVE": "1"
+  },
+  "processes": [
+    " 4113     1 /Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything/native/.build/debug/SummitEverything",
+    " 4121  4120 /Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything/.venv/bin/python3 -m uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 18895"
+  ],
+  "identity_match": true
+}

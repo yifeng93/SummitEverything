@@ -1,17 +1,22 @@
 # 最新实现交接
 
-## 当前交接基线（2026-10-10，阶段 A 已收口）
+## 2026-10-11 Stage B 离线收口候选
 
-- **受测修复代码：** `30903c4cdf73855af71a201e3edea6c535ee8199`；原阶段 A 代码为 `32da67e9c0280e3dae18fd374e30c925565b0b82`。
-- **收口 main：** `117086eb2075726730cd7aa62ea0b61498e96f0c`，包含 PR #7 修复 / QA 整合 `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 和 PR #8 文档更新。后续本轮整理只修改文档和 Git 引用；实际接手时记录整理后的完整 main SHA，并确认产品代码树与 `30903c4` 一致。
-- **结论：** M1 与 M2.1–M2.3 阶段 A 在 Fake-only 范围完成独立验收。409b 的 C18 P2 保留为历史 FAIL；在 30903c4 上独立复验关闭。C16 崩溃 / 重启 / 并发、C18 丢回执恢复、C23 无成功证明保持 unknown 的必需 UI 证据已补齐。旧重复 / 错配截图与无法追溯脚本指纹不作为证明。
-- **独立证据：** [恢复路径初验](../quality/reports/2026-10-10-M2-stage-a-recovery-ui-supplement.md)、[C18 修复复验](../quality/reports/2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md)、[报告索引](../quality/reports/README.md)。初验 / 复验 manifest 分别 47 / 26 项匹配。
-- **检查范围：** 原受测代码已有后端 142 / 前端 32 项及完整检查记录；恢复 UI 独立 QA 的自动检查为 NOT_RUN。技术评定者在最终 main 的独立临时 checkout 复跑前端 33 项、typecheck、Web build，通过；没有把它写成整体后端重新验收。1 条历史后端弃用提示和 3 条历史 lint warning 仍保留。
-- **下一阶段：** [B/C 执行提示词](PROMPT-STAGE-B-C-LUNA.md)。B 是真实 adapter、配置 / Keychain 和离线独立 QA；C 必须先通过 B，再经逐项授权进行受控真实验收。B/C 尚未开始，M3–M5 尚未开始。
-- **当前缺失：** 真实 Feishu HTTP / OAuth / user scope、真实模型 / embedding / rerank 与生产凭据配置 / Keychain adapter。资源已准备不表示这些实现存在；真实协议、真实材料和模型质量、DMG、五日和双机门仍 NOT_RUN。
-- **权限：** 通用开发、自测、独立 QA 和源码整合可进行；真实登录 / 读取、材料发送、付费调用、真实 task 写入需列目的、数据、目标、范围、费用，并由用户执行前逐项确认。秘密只经安全本地入口 / Keychain 录入。
-- **工作环境：** 主 checkout 使用 main；旧分支归档引用、本地 Git bundle 和证据 worktree 处置见 [整理记录](../implementation/2026-10-10-STAGE-A-CLEANUP.md)。不要复用旧 QA profile、凭据或服务。
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。独立离线QA已通过，PR/main整合待完成。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
 
+- 起点文档提交：`0a1db5d72e6ac11184d28e65dea3ba008762ba43`，上一源码 `7dc7114595704f34ba386c96324dffa77d529ba4`；两者产品源码无差异。
+- 固定受测源码 SHA `576895f6983ca41cacbbad45a9075b97b9986189`；分支codex/deepseek-stage-b-trial，main整合待完成。
+- [最终后端复验](../quality/reports/2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md)、[最终实际UI复验](../quality/reports/2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md)、[根URL修复DEV](../quality/reports/2026-10-11-STAGE-B-NATIVE-URL-DEV.md)。
+- [严格标记DEV](../quality/reports/2026-10-11-STAGE-B-STRICT-MARKER-DEV.md)、[原生双服务readiness DEV](../quality/reports/2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md)、[8b后端复验](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md)、[8b原生FAIL](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md)。
+- [刷新重启修复DEV](../quality/reports/2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md)、[首次独立QA FAIL](../quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md)。
+- [Sol DEV 收口报告](../quality/reports/2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md)、[ADR 0007](../decisions/0007-request-owned-provider-transport.md)、[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)。
+- 独立 QA 使用固定源码 SHA、独立环境、外网/DNS/Keychain guard；允许替代 SecretBackend 与外部 HTTP，保留 route/service/存储/协调器/租约/索引真实实现。
+- 需覆盖：资格/发布前复核、取消后不得开始后续调用、完整请求/响应限额、DNS/TCP/TLS/头/正文超时与无后台请求、并发不误伤、logout/callback/refresh/配置重建竞态、scope/格式/分页/截断、凭据拒绝/损坏/重启、真实写门、Fake 回归及实际浏览器/原生。
+- 默认 Fake；真实 Feishu 数据读取为显式 `real_data_enabled=false`，真实任务写恒禁用 `result_proof_unavailable`，真实模型业务由服务端拒绝。项目进度仍需本地独立确认。
+- 旧真实凭据迁移不在本轮范围：无真实调用/凭据迁入；缺消费标记的旧形状无法追溯历史，未来导入/恢复未知消费历史需先重新授权，不能当作安全未消费。
+- user-info `user_identity_verified=false`；OS Keychain、真实 scope/数据/模型质量、DMG、M3–M5、五日和双机均 NOT_RUN。
+
+已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
 ## 历史交接：M2 阶段 A — 以下 SHA / 检查只对应当时版本
 

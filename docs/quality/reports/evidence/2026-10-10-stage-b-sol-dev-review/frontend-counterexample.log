@@ -1,0 +1,36 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.review.test.tsx
+
+
+ RUN  v5.0.3 /private<REVIEW_ROOT>/candidate/web
+
+ ❯ src/components/SettingsView.review.test.tsx (1 test | 1 failed) 80ms
+   × persists a changed Model Studio account id through the settings form 79ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.review.test.tsx > persists a changed Model Studio account id through the settings form
+AssertionError: expected { mode: 'fake', …(4) } to have property "model_studio_account_id" with value 'new-account'
+
+- Expected:
+"new-account"
+
++ Received:
+undefined
+
+ ❯ src/components/SettingsView.review.test.tsx:28:17
+     26|   fireEvent.click(screen.getByRole('button', { name: '保存 provider 设置' …
+     27|   await waitFor(() => expect(patch).not.toBeNull())
+     28|   expect(patch).toHaveProperty('model_studio_account_id', 'new-account…
+       |                 ^
+     29| })
+     30|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:26:56
+   Duration  419ms (environment 61%, tests 22%, import 11%, transform 6%)

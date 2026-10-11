@@ -1,0 +1,13 @@
+{
+  "health": {
+    "service": "ready",
+    "workspace_open": true,
+    "version": "1.0.0",
+    "run_id": "63D64E26-0ADB-4E35-BA2A-62F534EDE4FC"
+  },
+  "run_id_match": true,
+  "processes": [
+    " 5499     1 /Users/yifengstudio/.codex/worktrees/qa-stage-b-ui-retest/SummitEverything/native/.build/debug/SummitEverything",
+    " 5503  5502 /Users/yifengstudio/.codex/worktrees/qa-stage-b-ui-retest/SummitEverything/.venv/bin/python3 -m uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 18895"
+  ]
+}

@@ -1,0 +1,38 @@
+# git diff --stat (working tree vs base 0a1db5d)
+ README.md                                          |  10 +-
+ docs/architecture/PROVIDER-PROTOCOL-MATRIX.md      |  42 +++--
+ docs/contracts/API-v1.md                           |  43 +++--
+ docs/handoff/LATEST-IMPLEMENTATION.md              |  11 +-
+ docs/handoff/PROMPT-STAGE-B-C-LUNA.md              |   2 +
+ .../PROMPT-STAGE-B-LUNA-AFTER-SOL-REVIEW.md        |   2 +
+ docs/handoff/PROMPT-STAGE-B-SOL-REVIEW.md          |   2 +
+ docs/implementation/PROGRESS.md                    |   6 +-
+ docs/product/PRODUCT-SPEC.md                       |   8 +
+ docs/quality/ACCEPTANCE.md                         |  14 +-
+ src/summit_everything/api/app.py                   |  81 ++++++++--
+ src/summit_everything/api/routes/actions.py        |   8 +
+ src/summit_everything/integrations/embedding.py    |   4 +-
+ .../integrations/feishu/provider.py                | 119 ++++++++++----
+ .../integrations/feishu/service.py                 |   6 +-
+ .../integrations/http_boundary.py                  | 174 +++++++++++++++++++--
+ src/summit_everything/integrations/llm.py          |   4 +-
+ src/summit_everything/integrations/rerank.py       |   4 +-
+ src/summit_everything/integrations/settings.py     |  54 ++++++-
+ src/summit_everything/retrieval/query.py           |  15 ++
+ tasks/plan.md                                      |  75 ++++++---
+ tasks/todo.md                                      |  51 ++++--
+ tests/integration/test_stage_b_regressions.py      |  60 +++++++
+ tests/unit/test_feishu_credentials.py              |  72 ++++++++-
+ web/openapi.json                                   |  96 +++++++++++-
+ web/src/api/generated.ts                           |  37 ++++-
+ 26 files changed, 844 insertions(+), 156 deletions(-)
+
+# untracked files
+?? docs/decisions/0006-feishu-identity-and-credential-slots.md
+?? docs/handoff/DEEPSEEK-STAGE-B.md
+?? docs/quality/reports/2026-10-11-DEEPSEEK-STAGE-B-DEV.md
+?? docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/
+?? src/summit_everything/integrations/feishu/http.py
+?? tests/integration/test_feishu_real_gate.py
+?? tests/unit/test_feishu_http.py
+?? tests/unit/test_http_boundary.py

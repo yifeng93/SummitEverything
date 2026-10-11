@@ -1,0 +1,37 @@
+{
+  "algorithm": "sha256",
+  "file_count": 26,
+  "exact_sha": "8b6259a9aa6ff2e52b700134abadff24de46dc08",
+  "files": {
+    "api-types-1.log": "38031e3192b43623e15cf14957af8dab1557beff768b41b00ad5fca3ec5408cb",
+    "api-types-2.log": "87d1db3e908fbab18e4900be69770143978a3985ecf999e093cfdd490906b41e",
+    "build-tool-install.log": "e46ce240460168b75bf8ca0ea902e66fa41f27bda098386283d79fd6a67641d8",
+    "check-results.json": "931edf81b385838d3e78e45457398c2f9bb0ffc2024a7459bdce4c6a4db35c09",
+    "code-docs-whitespace.log": "dc9021618218c93c73268e465ee9790f3d65d6055ae1df7d7cb4b1f37d91b4da",
+    "harness/audit_identity.py": "4f14a5eee33aa596c46e3639238d37c1cd0245be19e9456230b6aa3f96b93b30",
+    "harness/finalize_evidence.py": "ed57d748f318c13d346652c8b3cc75d4606a37c3552059ea198d0cdcdb6f919a",
+    "harness/run_checks.py": "63d4192b155b1a1d6117d53c8fed9eb8a5e60fe3a0eb21c7ddda4d8048d050bf",
+    "harness/test_independent_boundaries.py": "b0bbba90974e9a4a5976ba7e609a84bd1a2787300ce8669dc1945506712d6392",
+    "harness/test_independent_refresh_faults.py": "e7190952227be74fc725a0327944ea8fec45c38ef50053d70d91e6804c5ee7d9",
+    "identity-audit.json": "7e82445384b7ef893d225fb74ae76a785e67e190c422b18e9ea0891b3b84fa7a",
+    "identity-audit.log": "5bce4cb2299d862608c57d03511837a5c3391470d3b9f3f2308af514891bdb4b",
+    "independent-retest.log": "cadb8eb46b90312b3522ee1838393b1bfe409dfc41835a742381324637edf371",
+    "lock-check.log": "98cc839ef00d5acf63684f2fbed32d34bdf0fed2e980b1753bffb8bd3675450e",
+    "mypy.log": "60f28b94716a9681d0ca533e2fe42680ae0961635c17d3110675fc53df4ea115",
+    "npm-ci.log": "727df4cee7d349fee588304b21d0d9cd876dea2515b2ab595062cf25096d9866",
+    "package-build-guarded.log": "015278adf4f74a0b8713e1ff810bd2c449f01dc39aca280478cca4d6f8c139b7",
+    "pytest-full.log": "29b20859f40b8ed95d3c2071c2ac288c63e7ed86fe5cf890cba1f77999a7aa7e",
+    "ruff-check.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "ruff-format.log": "b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e",
+    "strict-marker-counterexample.log": "63e2ce7284cc9ecee538e5968f848fcc18a2e451271526bc516c7b0f9cb0bd44",
+    "uv-sync.log": "df0c7897e2bdfc43d17e0ecc80420df547c054e1a616792a7efa5198bb7fc3e2",
+    "web-build.log": "813472031cba80d097a027b7ceacdc82447964bc8c0639b61e8d215ddfa2c23c",
+    "web-lint.log": "577da7ae2b575b046fe5ab70fe660d04a3c3d2a6bae36f914aa44140709951e5",
+    "web-test.log": "2ff08ebef231c6715597c6f1f771df251bfba494892d5cf3f1aaab315cf178d6",
+    "web-typecheck.log": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+  },
+  "report": {
+    "relative_to_repo": "docs/quality/reports/2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md",
+    "sha256": "7d1aa7a415291f643a307f3d849700db961ceb78e475604a4e2437c0bf0974cf"
+  }
+}

@@ -9,6 +9,10 @@
 - [可信资产 ADR](decisions/0002-trust-and-portability.md)：为何采用版本批准、普通目录和本地 / 可迁移分界。
 - [运行时与复用 ADR](decisions/0003-runtime-and-reuse.md)：技术栈、旧代码复用方式。
 - [开发与验收顺序 ADR](decisions/0004-development-and-acceptance-sequence.md)：模拟开发先行，真实样板后续确认，两个 Luna 分工。
+- [本地 provider 配置 ADR](decisions/0005-local-provider-configuration.md)、[飞书身份与凭据槽 ADR](decisions/0006-feishu-identity-and-credential-slots.md)：应用身份优先、单一 Keychain 槽、能力按证据单独禁用。
+- [Provider 协议矩阵](architecture/PROVIDER-PROTOCOL-MATRIX.md)：已从官方可读 `.md` 页面逐条确证的 endpoint / token / scope / 时间 / 错误。
+
+- [请求独立传输 ADR](decisions/0007-request-owned-provider-transport.md)：DNS/TLS/并发取消与资源所有权。
 
 ## 工程
 
@@ -21,15 +25,15 @@
 ## 当前交接与证据
 
 - [最新交接](handoff/LATEST-IMPLEMENTATION.md)：最终受测代码、收口 main、范围及下一步。
-- [B/C 完整可执行提示词](handoff/PROMPT-STAGE-B-C-LUNA.md)：真实适配、离线 QA、逐项授权真实验收与整合。
+- [Stage B 历史试验入口](handoff/DEEPSEEK-STAGE-B.md)：仅用于追溯 DeepSeek R1–R4。
 - [报告索引](quality/reports/README.md)：阶段 A 历史 FAIL、截图纠正及修复复验的组合方式。
 - [环境整理记录](implementation/2026-10-10-STAGE-A-CLEANUP.md)：分支、worktree、归档和恢复方法。
 
-## 两个 Luna 的操作入口
+## 实现与验收入口
 
 - [实现者手册](handoff/IMPLEMENTER.md)、[可复制执行提示词](handoff/PROMPT-IMPLEMENTER.md)。
 - [独立验收手册](handoff/TESTER.md)、[可复制验收提示词](handoff/PROMPT-TESTER.md)。
-- [Sol 6.1 进度综合评估提示词](handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)：历史 M2 固定候选评估入口；当前下一步使用 B/C 提示词。
+- [Sol 6.1 进度综合评估提示词](handoff/PROMPT-M2-ASSESSMENT-SOL-6.1.md)：历史 M2 固定候选评估入口；当前下一步使用最新交接。
 - [验收矩阵](quality/ACCEPTANCE.md)、[报告模板](quality/REPORT-TEMPLATE.md)。
 - [进展账本](implementation/PROGRESS.md)：执行者更新；不把开发自测写成独立验收通过。
 - [本次框架核验](quality/FOUNDATION-VERIFICATION.md)：仅说明历史基础代码与文档检查。

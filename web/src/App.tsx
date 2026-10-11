@@ -6,6 +6,7 @@ import { PageReader } from './components/PageReader'
 import { TodayView } from './components/TodayView'
 import { JournalView } from './components/JournalView'
 import { WorkspaceGate } from './components/WorkspaceGate'
+import { SettingsView } from './components/SettingsView'
 import './App.css'
 
 type Section = 'today' | 'journal' | 'projects' | 'ask' | 'settings'
@@ -96,20 +97,7 @@ export default function App() {
           <JournalView onError={setError} onOpenPage={openPage} />
         ) : section === 'ask' ? (
           <AskView onError={setError} onOpenPage={openPage} />
-        ) : (
-          <section className="content-wrap settings-view">
-            <div className="eyebrow">工作库偏好</div>
-            <h1>设置</h1>
-            <p className="lede">当前会话与索引保存在本机。首版使用模拟整理与检索服务。</p>
-            <div className="settings-list">
-              <div><span>工作库</span><strong>{workspace.name}</strong></div>
-              <div><span>运行方式</span><strong>本机 API + WebUI</strong></div>
-              <div><span>整理模型</span><strong>FakeLLM · 不会调用外部模型</strong></div>
-              <div><span>飞书连接</span><strong>尚未配置</strong></div>
-            </div>
-            <button className="button secondary" onClick={() => setWorkspace(null)}>切换工作库</button>
-          </section>
-        )}
+        ) : <SettingsView workspaceName={workspace.name} onSwitchWorkspace={() => setWorkspace(null)} />}
       </main>
     </div>
   )

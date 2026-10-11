@@ -1,0 +1,16 @@
+Command: ['npm', 'test']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/web
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/web
+
+
+ Test Files  10 passed (10)
+      Tests  45 passed (45)
+   Start at  13:35:48
+   Duration  1.75s (environment 58%, tests 23%, import 12%, transform 7%)
+

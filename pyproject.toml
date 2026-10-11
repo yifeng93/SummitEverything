@@ -8,7 +8,11 @@ version = "0.1.0"
 description = "Personal work knowledge application — contract foundation"
 requires-python = ">=3.12"
 dependencies = [
+    "aiodns>=4,<5",
     "fastapi>=0.115,<1",
+    "httpcore>=1,<2",
+    "httpx>=0.27,<1",
+    "keyring>=25,<26; sys_platform == 'darwin'",
     "pydantic>=2.9,<3",
     "python-multipart>=0.0.32",
     "pyyaml>=6,<7",
@@ -20,7 +24,6 @@ dev = [
     "pytest>=8,<10",
     "ruff>=0.9,<1",
     "mypy>=1.10,<2",
-    "httpx>=0.27,<1",
     "types-pyyaml>=6,<7",
 ]
 

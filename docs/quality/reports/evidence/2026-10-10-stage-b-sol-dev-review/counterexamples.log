@@ -1,0 +1,225 @@
+FFFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+________________ test_stale_cached_text_must_not_reach_reranker ________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_stale_cached_text_must_no0')
+
+    def test_stale_cached_text_must_not_reach_reranker(tmp_path):
+        root, path = _workspace(tmp_path)
+        captured = []
+        class Spy:
+            def rank(self, question, texts):
+                captured.extend(texts)
+                return [(i, 1.0) for i in range(len(texts))]
+        query = QueryService(IndexStore(tmp_path / 'index.sqlite3'), reranker=Spy())
+        query.rebuild(root, fingerprint=FP)
+        path.write_text(path.read_text().replace('北馆', '西馆'))
+        answer = query.query(root, '合成地点', fingerprint=FP)
+        assert answer.citations == []  # Existing final gate works.
+>       assert not any('SYNTHETIC_STALE_CANARY' in t for t in captured), captured
+E       AssertionError: ['SYNTHETIC_STALE_CANARY 合成地点北馆。']
+E       assert not True
+E        +  where True = any(<generator object test_stale_cached_text_must_not_reach_reranker.<locals>.<genexpr> at 0x109f9fd30>)
+
+<REVIEW_ROOT>/test_review_regressions.py:56: AssertionError
+________ test_citations_must_be_rechecked_after_answer_provider_returns ________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_citations_must_be_recheck0')
+
+    def test_citations_must_be_rechecked_after_answer_provider_returns(tmp_path):
+        root, path = _workspace(tmp_path)
+        class EditingAnswerer:
+            def answer(self, question, passages):
+                path.write_text(path.read_text().replace('北馆', '西馆'))
+                return GroundedAnswer(text='北馆。')
+        query = QueryService(IndexStore(tmp_path / 'index.sqlite3'), answer_provider=EditingAnswerer())
+        query.rebuild(root, fingerprint=FP)
+        answer = query.query(root, '合成地点', fingerprint=FP)
+>       assert not answer.citations, answer.model_dump()
+E       AssertionError: {'answer_id': UUID('1583ba6c-3eaf-48d5-9550-708e443cdbc9'), 'question': '合成地点', 'text': '北馆。', 'citations': [{'page_id...604ff12956', 'chunk_id': '6f92f24e9d71fbff65d7c12f257ef4ce8e7d6f6afa4b46a036c2cdfb25d23990', 'heading': '', ...}], ...}
+E       assert not [Citation(page_id=UUID('b15e3b47-2097-4bb0-ac8f-bb9cdb86ad2b'), content_sha256='2b77f9ae6e7c1477d83d39989baf83fa33b386...2f257ef4ce8e7d6f6afa4b46a036c2cdfb25d23990', heading='', excerpt='SYNTHETIC_STALE_CANARY 合成地点北馆。', validity='current')]
+E        +  where [Citation(page_id=UUID('b15e3b47-2097-4bb0-ac8f-bb9cdb86ad2b'), content_sha256='2b77f9ae6e7c1477d83d39989baf83fa33b386...2f257ef4ce8e7d6f6afa4b46a036c2cdfb25d23990', heading='', excerpt='SYNTHETIC_STALE_CANARY 合成地点北馆。', validity='current')] = Answer(answer_id=UUID('1583ba6c-3eaf-48d5-9550-708e443cdbc9'), question='合成地点', text='北馆。', citations=[Citation(page_i..._CANARY 合成地点北馆。', validity='current')], inferences=[], missing_information=[], purpose='current', index_status='ready').citations
+
+<REVIEW_ROOT>/test_review_regressions.py:67: AssertionError
+_______ test_cancel_during_embedding_must_suppress_later_provider_calls ________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_cancel_during_embedding_m0')
+
+    def test_cancel_during_embedding_must_suppress_later_provider_calls(tmp_path):
+        root, _ = _workspace(tmp_path)
+        entered, release = Event(), Event()
+        calls = []
+        class BlockingEmbedding(FakeEmbedding):
+            def embed(self, text, *, fingerprint):
+                entered.set()
+                assert release.wait(5)
+                return super().embed(text, fingerprint=fingerprint)
+        class SpyRerank:
+            def rank(self, question, texts):
+                calls.append('rerank')
+                return [(i, 1.0) for i in range(len(texts))]
+        class SpyAnswer:
+            def answer(self, question, passages):
+                calls.append('answer')
+                return GroundedAnswer(text='合成回答')
+        store = IndexStore(tmp_path / 'index.sqlite3')
+        QueryService(store).rebuild(root, fingerprint=FP)
+        service = QueryService(store, embedding=BlockingEmbedding(), reranker=SpyRerank(), answer_provider=SpyAnswer())
+        c = _client(tmp_path, service=service)
+        assert _open(c, root, 'open').status_code == 201
+        query_id = str(uuid4())
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(c.post, '/api/v1/queries', headers=HEADERS, json={'question': '合成地点', 'fingerprint': FP, 'request_id': query_id})
+            assert entered.wait(5)
+            cancellation = c.delete('/api/v1/queries/' + query_id, headers=HEADERS)
+            assert cancellation.status_code == 202
+            release.set()
+            response = future.result(timeout=5)
+        assert 'cancelled' in response.text and 'completed' not in response.text
+>       assert calls == [], calls
+E       AssertionError: ['rerank', 'answer']
+E       assert ['rerank', 'answer'] == []
+E
+E         Left contains 2 more items, first extra item: 'rerank'
+E         Use -v to get more diff
+
+<REVIEW_ROOT>/test_review_regressions.py:100: AssertionError
+____________ test_query_with_101_chunks_must_use_bounded_candidates ____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_query_with_101_chunks_mus0')
+
+    def test_query_with_101_chunks_must_use_bounded_candidates(tmp_path):
+        root, _ = _workspace(tmp_path, body='\n\n'.join(f'## Section {i}\n合成地点 {i}。' for i in range(101)))
+        query = QueryService(IndexStore(tmp_path / 'index.sqlite3'))
+        result = query.rebuild(root, fingerprint=FP)
+        assert result.indexed_chunks == 101
+        seen = []
+        def handler(request):
+            seen.append(request)
+            count = len(json.loads(request.content)['input']['documents'])
+            return httpx.Response(200, json={'output': {'results': [{'index': i, 'relevance_score': 1.0} for i in range(count)]}})
+        query.reranker = ModelStudioReranker('synthetic-key', client=httpx.Client(transport=httpx.MockTransport(handler)))
+>       answer = query.query(root, '合成地点', fingerprint=FP)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+<REVIEW_ROOT>/test_review_regressions.py:113:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<REVIEW_ROOT>/candidate/src/summit_everything/retrieval/query.py:206: in query
+    reranked = self.reranker.rank(question, [str(item["text"]) for item in chunks])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <summit_everything.integrations.rerank.ModelStudioReranker object at 0x10a0f3140>
+query = '合成地点'
+texts = ['合成地点 0。', '合成地点 1。', '合成地点 2。', '合成地点 3。', '合成地点 4。', '合成地点 5。', ...]
+
+    def rank(self, query: str, texts: list[str]) -> list[tuple[int, float]]:
+        if not texts or len(texts) > self.max_documents:
+>           raise ValueError("rerank candidate count is outside the supported range")
+E           ValueError: rerank candidate count is outside the supported range
+
+<REVIEW_ROOT>/candidate/src/summit_everything/integrations/rerank.py:49: ValueError
+_____________ test_persisted_callback_must_be_restored_on_restart ______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_persisted_callback_must_b0')
+
+    def test_persisted_callback_must_be_restored_on_restart(tmp_path):
+        c = _client(tmp_path)
+        assert _open(c, tmp_path/'workspace').status_code == 201
+        callback = 'http://localhost:8765/callback'
+        assert c.patch('/api/v1/settings', headers=HEADERS, json={'feishu': {'app_id': 'synthetic-a', 'redirect_uri': callback}}).status_code == 200
+        restarted = _client(tmp_path)
+        assert _open(restarted, tmp_path/'workspace', 'open').status_code == 201
+        assert restarted.get('/api/v1/settings', headers=HEADERS).json()['feishu']['redirect_uri'] == callback
+        issued = restarted.post('/api/v1/integrations/feishu/authorizations', headers=HEADERS).json()['authorization_url']
+        parsed = urlsplit(issued)
+>       assert parsed.scheme+'://'+parsed.netloc+parsed.path == callback, issued
+E       AssertionError: http://127.0.0.1:5173/api/v1/integrations/feishu/callback?code=fake-ok&state=[REDACTED_SYNTHETIC_STATE]
+E       assert 'http://127.0...ishu/callback' == 'http://local...8765/callback'
+E
+E         - http://localhost:8765/callback
+E         + http://127.0.0.1:5173/api/v1/integrations/feishu/callback
+
+<REVIEW_ROOT>/test_review_regressions.py:126: AssertionError
+____ test_workspace_switch_must_not_reuse_feishu_settings_or_authorization _____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_workspace_switch_must_not0')
+
+    def test_workspace_switch_must_not_reuse_feishu_settings_or_authorization(tmp_path):
+        c = _client(tmp_path)
+        assert _open(c, tmp_path/'workspace-a').status_code == 201
+        c.patch('/api/v1/settings', headers=HEADERS, json={'feishu': {'app_id': 'synthetic-a', 'redirect_uri': 'http://localhost:8765/callback'}})
+        issued = c.post('/api/v1/integrations/feishu/authorizations', headers=HEADERS).json()['authorization_url']
+        parsed = urlsplit(issued)
+        state = parse_qs(parsed.query)['state'][0]
+        c.get('http://localhost:8765/callback', params={'state': state, 'code': 'fake-ok'})
+        assert c.get('/api/v1/integrations/feishu/status', headers=HEADERS).json()['authorized']
+        assert _open(c, tmp_path/'workspace-b').status_code == 201
+        assert c.get('/api/v1/settings', headers=HEADERS).json()['feishu']['app_id'] == ''
+>       assert not c.get('/api/v1/integrations/feishu/status', headers=HEADERS).json()['authorized']
+E       assert not True
+
+<REVIEW_ROOT>/test_review_regressions.py:139: AssertionError
+_______________ test_logout_must_invalidate_pending_oauth_state ________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_logout_must_invalidate_pe0')
+
+    def test_logout_must_invalidate_pending_oauth_state(tmp_path):
+        c = _client(tmp_path)
+        assert _open(c, tmp_path/'workspace').status_code == 201
+        issued = c.post('/api/v1/integrations/feishu/authorizations', headers=HEADERS).json()['authorization_url']
+        state = parse_qs(urlsplit(issued).query)['state'][0]
+        assert c.delete('/api/v1/integrations/feishu/authorizations', headers=HEADERS).status_code == 204
+        response = c.get(issued)
+>       assert response.status_code == 400 and response.json()['error']['code'] == 'invalid_state'
+E       assert (200 == 400)
+E        +  where 200 = <Response [200 OK]>.status_code
+
+<REVIEW_ROOT>/test_review_regressions.py:148: AssertionError
+_______ test_concurrent_refresh_must_not_overwrite_newest_refresh_token ________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-252/test_concurrent_refresh_must_n0')
+
+    def test_concurrent_refresh_must_not_overwrite_newest_refresh_token(tmp_path):
+        entered, release = Event(), Event()
+        class RacingFake(FakeFeishu):
+            count = 0
+            def refresh(self, credentials):
+                self.count += 1
+                number = self.count
+                if number == 1:
+                    entered.set()
+                    assert release.wait(5)
+                return UserCredentials(access_token=f'synthetic-access-{number}', refresh_token=f'synthetic-refresh-{number}', expires_at=2000, scopes=credentials.scopes)
+        store = MemoryCredentialStore()
+        store.put(UserCredentials(access_token='synthetic-old', refresh_token='synthetic-old', expires_at=1050, scopes=['minutes:read']))
+        provider = RacingFake(tmp_path/'remote')
+        service = FeishuService(provider, store, FeishuConfig(), 'synthetic-session', clock=lambda: 1000)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            first = pool.submit(service.materials, '', None, None, 10)
+            assert entered.wait(5)
+            service.materials('', None, None, 10)
+            release.set()
+            first.result(timeout=5)
+>       assert provider.count == 1, (provider.count, store.get().refresh_token)
+E       AssertionError: (2, 'synthetic-refresh-1')
+E       assert 2 == 1
+E        +  where 2 = <test_review_regressions.test_concurrent_refresh_must_not_overwrite_newest_refresh_token.<locals>.RacingFake object at 0x10a511370>.count
+
+<REVIEW_ROOT>/test_review_regressions.py:171: AssertionError
+=============================== warnings summary ===============================
+../../../../../../../../Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/.codex/worktrees/stage-b-real-providers/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_stale_cached_text_must_not_reach_reranker
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_citations_must_be_rechecked_after_answer_provider_returns
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_cancel_during_embedding_must_suppress_later_provider_calls
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_query_with_101_chunks_must_use_bounded_candidates
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_persisted_callback_must_be_restored_on_restart
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_workspace_switch_must_not_reuse_feishu_settings_or_authorization
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_logout_must_invalidate_pending_oauth_state
+FAILED ../../../../../../../..<REVIEW_ROOT>/test_review_regressions.py::test_concurrent_refresh_must_not_overwrite_newest_refresh_token
+8 failed, 1 warning in 0.50s

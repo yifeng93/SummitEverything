@@ -20,7 +20,8 @@ function evidenceSummary(item: Record<string, unknown>) {
   return '动作审计证据已记录。'
 }
 
-export function TasksPanel({ projects, candidates }: { projects: Project[]; candidates: ActionCandidate[] }) {
+export function TasksPanel({ projects, candidates, mode }: { projects: Project[]; candidates: ActionCandidate[]; mode: "fake" | "real" | null }) {
+  const remoteWritesEnabled = mode === "fake"
   const [tasks, setTasks] = useState<Tasks | null>(null)
   const [records, setRecords] = useState<ActionPage | null>(null)
   const [action, setAction] = useState<Action | null>(null)
@@ -161,16 +162,16 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
   const recoveredLocalProgress = action?.kind === 'project_progress' && action.state === 'succeeded' && action.evidence?.some((item) => item.kind === 'local_writer_receipt')
 
   return <section className="panel tasks-panel" aria-busy={busy}>
-    <div className="panel-heading"><div><h2>飞书任务与独立动作</h2><p>Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。</p></div></div>
+    <div className="panel-heading"><div><h2>飞书任务与独立动作</h2><p>{mode === "fake" ? "Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。" : mode === "real" ? "真实飞书任务写入尚未启用，正在等待可核实的结果证明。项目进度仍在本机独立确认。" : "正在核对飞书模式；任务写入暂不可用。"}</p></div></div>
     <div className="button-row">
       <button className="button secondary" disabled={busy} onClick={() => void loadTasks()}>刷新飞书任务</button>
-      <button className="button secondary" disabled={busy} onClick={() => open('feishu_task_create')}>新建飞书任务</button>
+      <button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => open('feishu_task_create')}>新建飞书任务</button>
       <button className="button secondary" disabled={busy} onClick={() => open('project_progress')}>拟定项目进度变化</button>
       <button className="button secondary" disabled={busy} onClick={() => void loadRecords()}>查看动作记录</button>
     </div>
     {error && <p role="alert" className="error-banner">{error}</p>}
-    {tasks && <><ul className="source-list">{tasks.items.map((task) => <li className="task-row" key={task.guid}><div><strong>{task.summary}</strong><small>{task.completed_at ? '飞书已完成' : '飞书未完成'}{task.due ? ' · 截止 ' + new Date(task.due.timestamp).toLocaleString('zh-CN') + (task.due.is_all_day ? '（全天）' : '') : ' · 不设截止日期'}</small></div><div className="button-row"><button className="button secondary" disabled={busy} onClick={() => open('feishu_task_update', task)}>编辑{task.summary}</button><button className="button secondary" disabled={busy} onClick={() => void prepareCompletion(task)}>完成{task.summary}</button></div></li>)}</ul>{tasks.items.length === 0 && <p className="muted">飞书暂无任务。</p>}{tasks.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadTasks(tasks.next_cursor!)}>下一页任务</button>}</>}
-    {candidates.length > 0 && <div className="action-candidates"><h3>审阅行动建议</h3>{candidates.map((suggestion) => <div key={suggestion.action_id}><p>{suggestion.description}</p><button className="button secondary" disabled={busy} onClick={() => open(suggestion.kind === 'todo' ? 'feishu_task_create' : 'project_progress', undefined, suggestion)}>将建议填写为待确认动作</button></div>)}</div>}
+    {tasks && <><ul className="source-list">{tasks.items.map((task) => <li className="task-row" key={task.guid}><div><strong>{task.summary}</strong><small>{task.completed_at ? '飞书已完成' : '飞书未完成'}{task.due ? ' · 截止 ' + new Date(task.due.timestamp).toLocaleString('zh-CN') + (task.due.is_all_day ? '（全天）' : '') : ' · 不设截止日期'}</small></div><div className="button-row"><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => open('feishu_task_update', task)}>编辑{task.summary}</button><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => void prepareCompletion(task)}>完成{task.summary}</button></div></li>)}</ul>{tasks.items.length === 0 && <p className="muted">飞书暂无任务。</p>}{tasks.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadTasks(tasks.next_cursor!)}>下一页任务</button>}</>}
+    {candidates.length > 0 && <div className="action-candidates"><h3>审阅行动建议</h3>{candidates.map((suggestion) => <div key={suggestion.action_id}><p>{suggestion.description}</p><button className="button secondary" disabled={busy || suggestion.kind === 'todo' && !remoteWritesEnabled} onClick={() => open(suggestion.kind === 'todo' ? 'feishu_task_create' : 'project_progress', undefined, suggestion)}>将建议填写为待确认动作</button></div>)}</div>}
     {records && <div><h3>动作记录</h3><ul className="candidate-list">{records.items.map((item) => <li key={item.action_id}><button className="button secondary" disabled={busy} onClick={() => { setAction(item); setForm(null); intentId.current = item.action_id }}>{labels[item.kind]} · {states[item.state]}</button></li>)}</ul>{records.items.length === 0 && <p>没有已保存的动作。</p>}{records.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadRecords(records.next_cursor!)}>下一页动作</button>}</div>}
     {form && <form className="action-form" onSubmit={(event) => void submit(event)}>
       <h3>{labels[form]}</h3>
@@ -193,7 +194,7 @@ export function TasksPanel({ projects, candidates }: { projects: Project[]; cand
     </dl>{action.kind === 'project_progress' && <p>{selectedProject?.progress || '尚未记录'} → {String(action.payload.progress)}</p>}
     <p role="status">{states[action.state]}</p><div className="button-row">
       {action.state === 'proposed' && <button className="button primary" disabled={busy} onClick={() => void confirm()}>独立确认此动作</button>}
-      {action.state === 'confirmed' && <button className="button primary" disabled={busy} onClick={() => void execute()}>执行已确认动作</button>}
+      {action.state === 'confirmed' && <button className="button primary" disabled={busy || action.kind !== 'project_progress' && !remoteWritesEnabled} onClick={() => void execute()}>执行已确认动作</button>}
       {['proposed', 'confirmed'].includes(action.state) && <button className="button secondary" disabled={busy} onClick={edit}>修改动作内容</button>}
       {['running', 'unknown'].includes(action.state) && <button className="button secondary" disabled={busy} onClick={() => void run(async () => setAction(await api.get<Action>('/actions/' + action.action_id)))}>刷新动作结果</button>}
       {action.state === 'unknown' && <button className="button secondary" disabled={busy} onClick={() => void run(async () => setAction(await api.post<Action>('/actions/' + action.action_id + '/reconciliations', {})))}>只读核实远端结果</button>}

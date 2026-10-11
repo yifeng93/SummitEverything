@@ -1,0 +1,82 @@
+{
+  "source_sha": "576895f6983ca41cacbbad45a9075b97b9986189",
+  "evidence_directory": "docs/quality/reports/evidence/2026-10-11-stage-b-luna-ui-retest-576895f",
+  "file_count": 15,
+  "files": [
+    {
+      "path": "browser-api-access-log.txt",
+      "sha256": "ed5bf1cd605b2198f62f6e45fd13669fbcc35a534ab4c26edfb842a8707dd596",
+      "bytes": 9341
+    },
+    {
+      "path": "browser-console.json",
+      "sha256": "4f5582b4b15ffd256e2315cd296b09af1bd224be7e1f420abd76cfe0b024d6a0",
+      "bytes": 171
+    },
+    {
+      "path": "browser-dom-snapshot.txt",
+      "sha256": "204cbbd23ee870e0581b68a5be5ad5bb75dc5fa6254a90046527855a53a2a010",
+      "bytes": 4479
+    },
+    {
+      "path": "browser-provider-settings.json",
+      "sha256": "8e92abb1f92eeb2c8920b6da875acf0c71640190d599bdae4395c0c9646a5cea",
+      "bytes": 813
+    },
+    {
+      "path": "native-npm-delay.log",
+      "sha256": "ffef29d5703225dea7e9758001c0dcd94eebd6a3cc554881719195947402a1cf",
+      "bytes": 97
+    },
+    {
+      "path": "native-provider-settings.json",
+      "sha256": "3e169e5d423795715fec1c6b7682e49c054780cf297c67734c89891d96687c5b",
+      "bytes": 820
+    },
+    {
+      "path": "native-readiness-timeline.log",
+      "sha256": "e22c8c7c881df119879054d0fe05515d2b487782016145982636763dda30f613",
+      "bytes": 27200
+    },
+    {
+      "path": "native-ui-observations.txt",
+      "sha256": "e3a3c6c7304c327c7dcb5d629b894bcece7174591e386e236880441618402210",
+      "bytes": 2848
+    },
+    {
+      "path": "npm-ci.log",
+      "sha256": "7452ec12bc3e3482edc027b380f39876516370e0c0145f0997acbd812f222d34",
+      "bytes": 143
+    },
+    {
+      "path": "probe-delay.py",
+      "sha256": "0667835334ac380abdacaa45aed693085c2ddeaa5956066d04f38e19c0f35b39",
+      "bytes": 637
+    },
+    {
+      "path": "source-identity.json",
+      "sha256": "205d2d381e855cd79a735fad14f23fcc8e050acdcfbad4c36832d863c86d103a",
+      "bytes": 291
+    },
+    {
+      "path": "swift-build.log",
+      "sha256": "7b0b6d6f303b10b02e3a3d877f6f123d705721a70eef43479a1c7d1e3796a718",
+      "bytes": 430
+    },
+    {
+      "path": "synthetic-workspace-manifest.json",
+      "sha256": "a78cdf69ee0f9f967d966c6f9c1b760f0696925827d04a955a9aae8502bfd405",
+      "bytes": 821
+    },
+    {
+      "path": "uv-sync.log",
+      "sha256": "ea125b6d7c7c4cdf15203bfb44bbcb8aded7e209204f7ed093570fd05a131f5d",
+      "bytes": 1348
+    },
+    {
+      "path": "../../2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md",
+      "sha256": "7f34996cdbfb9776c0da951b2fdfc04656d3e194d00edea6a3277729525f1340",
+      "bytes": 6359
+    }
+  ]
+}

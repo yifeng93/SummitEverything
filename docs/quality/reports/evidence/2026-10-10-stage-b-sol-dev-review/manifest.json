@@ -1,0 +1,15 @@
+{
+  "files": {
+    "README.md": "65c4964d2ae9e1d601ace9451d909365608b18c104e0b7af0af3e3eeda7e6a4f",
+    "SettingsView.review.test.tsx": "c636623349427f72c8f4d3bfe7791f33b23b68b557010f1bbe7f7a88632d786f",
+    "additional.log": "fae80b51d828f67d33a2ae8182343b9cabb6adadb736c4b3d63a56f332cec439",
+    "counterexamples.log": "9559d831ffd8eacfe9ecab687fdc8e64408de4137703027a41ef6c5e75920404",
+    "frontend-counterexample.log": "e06da3945627453c7d465ee2b66e090dddb7c847c4680ae889a0b66d5a9c1137",
+    "observations.json": "b8f407f2fc0c67b7ec0239e1af6691940bcdf3bf26e9f97b261905bcde872d43",
+    "sitecustomize.py": "1fc6c24298e07a6fbc36e882515b11926e899ddc27bff37fa3e5d77d0d76e504",
+    "source-snapshot-manifest.json": "c96cb4946fa5e54320870c0b2c651698f4ee453ef6ca828e435def7331a78617",
+    "test_review_additional.py": "3e2ddd85e2c30b1cd1b06b54a1afc1ef24b94348bcd9ea728bbc6bb2826808dd",
+    "test_review_regressions.py": "33168e808503500d65bad150cba4e468b93eb39a80e20525b0052cacfe89af87"
+  },
+  "schema": "summit-review-evidence-v1"
+}

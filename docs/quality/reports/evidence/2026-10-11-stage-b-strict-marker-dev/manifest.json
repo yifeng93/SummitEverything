@@ -1,0 +1,25 @@
+{
+  "algorithm": "sha256",
+  "root": ".",
+  "file_count": 18,
+  "files": {
+    "after.log": "d97ab2079baf4cb38e33be8a325cb29b8197ed5a6dff21b7dea64e1aff2af8c6",
+    "before.log": "859845d4d6df96fc368044e77187736f05e92726bac89538de7a27f847f5e79d",
+    "checks/api-types.log": "b8dca6e6460648831e3374fb6fe8d24a64b8e6c4ce6337bef7ed9fa54b723335",
+    "checks/backend.log": "9e975af6ed883ba21dd214112615e0bd94aa53ed2eef2b3fa4df811162773bc2",
+    "checks/diff.log": "b3662d91f14cb0d52ae929d5f773344319e553ae46fe5553d00456897090d608",
+    "checks/format.log": "8f24ffc93ba0e8e964fdc513ada3ca1b060aa483e8fb306a838dd51d46b9bff9",
+    "checks/lock.log": "29f42ebca411cc8885215d12602f14eda4a9aa02cb50600a8f8d0e43c71ce58f",
+    "checks/mypy.log": "e71bacf7441a08a31021291bd8f45c866794e42cb2e4dadaba39b569adc4ecc4",
+    "checks/package.log": "18be4811e668ad4b0297e3bc76bd90d38809d38644a1c6bdecb8dc962b134106",
+    "checks/replay.py": "e74c11fcd79bdfe3f6a8c0361ae04cdfdf2e7fd333b0015b5f60537c6437ad69",
+    "checks/results.json": "2bc668866158ba2eb0fe679d7fdbdc0922ca850d62a9b6959c1efcddfeed5929",
+    "checks/ruff.log": "d8b8dea4efb103da05c5a8461ebbd519c8c806475cc0bbe7cfcb9f8e923b4d85",
+    "checks/swift.log": "9b36578f12a0991745ac91c262a7d6e5416cfbc5877bfe72be54bc65b8a6215e",
+    "checks/web-build.log": "9c2640e2222cad7a09faa4e951937d057fdd7944368858f62bff1337bd21fa82",
+    "checks/web-lint.log": "5637f50cc5e90efbee5b953024b8568a85648ab0cc674fc26aebaafdc461ecd7",
+    "checks/web-tests.log": "2dc7be056798487a493676c29b503c1640713c303c9124bfa33ab101876106fe",
+    "checks/web-types.log": "a3568234cc450c0ae770ae79c58b860cd88b57aae057086ac52c68fb6ba7953d",
+    "source-hashes.json": "023d7f996fb7552c507da2cc5c246b12bbf5679f52ef388978a85afe04ac46e6"
+  }
+}

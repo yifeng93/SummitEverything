@@ -1,0 +1,1 @@
+失败日志保留原始观测。full-wire-r4-corrected-input.log 修正了初次rerank输入不足1MB的问题。重放从外部 deepseek-r4-dirty-source.tar.gz 提取src到忽略的.local/sol-closure/r4-overlay，再添加当前transport.py以加载新测试；原LLM/rerank/http_boundary没有修改。PYTHONPATH=overlay/src:scripts/offline_guard .venv/bin/python -m pytest tests/integration/test_stage_b_sol_closure.py -k full_json -q。该测试只用MockTransport，不发真实请求。

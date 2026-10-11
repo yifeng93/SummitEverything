@@ -1,0 +1,17 @@
+Command: ['npm', 'run', 'build']
+Working directory: /Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/web
+Guard: scripts/offline_guard (DNS/non-loopback/Keychain blocked)
+
+> web@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 28 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.62 kB │ gzip:  0.39 kB
+dist/assets/index-DtL45Ckg.css   26.67 kB │ gzip:  5.91 kB
+dist/assets/index-xtJB-keO.js   305.56 kB │ gzip: 90.84 kB
+
+✓ built in 67ms

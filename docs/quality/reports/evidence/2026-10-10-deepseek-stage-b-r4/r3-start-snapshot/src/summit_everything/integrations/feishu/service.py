@@ -1,0 +1,533 @@
+"""One-use local OAuth states and recoverable selected-material imports."""
+
+from __future__ import annotations
+
+import fcntl
+import hashlib
+import json
+import secrets
+from collections.abc import Callable
+from contextlib import nullcontext
+from datetime import datetime
+from functools import partial
+from pathlib import Path
+from threading import Lock
+from time import time
+from typing import Any
+from urllib.parse import urlsplit
+from uuid import UUID, uuid5
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+from pydantic import BaseModel, Field, ValidationError
+
+from summit_everything.intake.sources import IntakeConflict, SourceStore, safe_source_filename
+from summit_everything.integrations.feishu.provider import (
+    AppCredentials,
+    CalendarPage,
+    CredentialStore,
+    FeishuConfig,
+    FeishuError,
+    FeishuProvider,
+    MaterialBody,
+    MaterialPage,
+    UserCredentials,
+)
+from summit_everything.workspace.manifest import WorkspaceError, load_manifest
+from summit_everything.workspace.transactions import atomic_write
+
+
+class FeishuStatus(BaseModel):
+    """Authorization status.
+
+    ``authorized`` means a usable *user* token exists. ``app_configured`` only
+    says an application secret is stored; it is never presented as user
+    authorization. ``user_identity_verified`` stays false because no real
+    identity lookup has been performed.
+    """
+
+    mode: str = "fake"
+    authorized: bool
+    app_configured: bool = False
+    identity: str = "app"
+    token_type: str = "user"
+    scopes: list[str]
+    user_identity_verified: bool = False
+    # Readable state when the stored user credential cannot be parsed; the
+    # status endpoint must never leak the parser error or claim authorization.
+    credential_error: str | None = None
+
+
+class AuthorizationStart(BaseModel):
+    authorization_url: str
+    expires_in_seconds: int
+
+
+class ImportRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    material_ids: list[str] = Field(min_length=1, max_length=30)
+    operation_id: str = Field(min_length=1, max_length=200)
+
+
+class ImportOutcome(BaseModel):
+    material_id: str
+    state: str
+    item_id: UUID | None = None
+    source_id: UUID | None = None
+    error_code: str | None = None
+    message: str | None = None
+
+
+class ImportResult(BaseModel):
+    operation_id: str
+    state: str
+    outcomes: list[ImportOutcome]
+
+
+class FeishuAuthCoordinator:
+    """Shared authorization generation and single-flight refresh for one identity.
+
+    Keyed by credential identity (profile namespace plus app ID) so that every
+    service instance built for the same identity -- including instances created
+    after a configuration change -- shares one monotonically increasing
+    authorization version, one refresh lock and one record of consumed refresh
+    tokens. A single-use refresh token therefore cannot be spent twice, and a
+    refresh that returns late cannot overwrite a logout or a newer authorization.
+
+    Lock order is always ``refresh_lock`` -> ``write_lock`` -> ``state_lock``.
+    Nothing acquires ``refresh_lock`` while holding ``write_lock``, so a logout
+    never has to wait for an in-flight refresh to finish.
+    """
+
+    MAX_CONSUMED = 32
+
+    def __init__(self, refresh_lock: Lock | None = None) -> None:
+        self.refresh_lock = refresh_lock or Lock()
+        self.write_lock = Lock()
+        self._state_lock = Lock()
+        self._version = 0
+        self._consumed: list[str] = []
+
+    def version(self) -> int:
+        with self._state_lock:
+            return self._version
+
+    def invalidate(self) -> int:
+        """Establish a new authorization generation (logout or new login)."""
+        with self._state_lock:
+            self._version += 1
+            return self._version
+
+    def mark_refresh_consumed(self, refresh_token: str) -> None:
+        digest = hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
+        with self._state_lock:
+            self._consumed.append(digest)
+            del self._consumed[: max(0, len(self._consumed) - self.MAX_CONSUMED)]
+
+    def refresh_consumed(self, refresh_token: str) -> bool:
+        digest = hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
+        with self._state_lock:
+            return digest in self._consumed
+
+
+class FeishuService:
+    def __init__(
+        self,
+        provider: FeishuProvider,
+        credentials: CredentialStore,
+        config: FeishuConfig,
+        session_identity: str,
+        clock: Callable[[], float] = time,
+        refresh_lock: Lock | None = None,
+        coordinator: FeishuAuthCoordinator | None = None,
+    ) -> None:
+        self.provider = provider
+        self.credentials = credentials
+        self.config = config
+        self.session_identity = session_identity
+        self.clock = clock
+        self._states: dict[str, tuple[str, float]] = {}
+        self._state_lock = Lock()
+        self._lifecycle_lock = Lock()
+        # Shared with every service instance bound to the same credential
+        # identity; a configuration change must not fork refresh coordination.
+        self.auth = coordinator or FeishuAuthCoordinator(refresh_lock=refresh_lock)
+        self._refresh_lock = self.auth.refresh_lock
+
+    def operation(self) -> Any:
+        """Hold a lifecycle lease for one complete provider operation.
+
+        The lease spans every internal step (primary calendar then events,
+        transcript then artifacts fallback, a multi-item import, refresh then
+        read) so a provider retired mid-operation still finishes its work.
+        """
+        lease = getattr(self.provider, "operation", None)
+        if callable(lease):
+            return lease()
+        return nullcontext()
+
+    def _safe_user(self) -> UserCredentials | None:
+        try:
+            return self.credentials.get()
+        except Exception:
+            return None
+
+    def _safe_app(self) -> AppCredentials | None:
+        try:
+            return self.credentials.get_app()
+        except Exception:
+            return None
+
+    def status(self) -> FeishuStatus:
+        credentials = self._safe_user()
+        app = self._safe_app()
+        authorized = (
+            credentials is not None
+            and credentials.token_type == "user"
+            and credentials.expires_at > self.clock()
+        )
+        app_configured = app is not None and app.app_id == self.config.app_id
+        credential_error = None
+        try:
+            self.credentials.get()
+        except Exception:
+            credential_error = "credential_unreadable"
+        return FeishuStatus(
+            mode=self.config.mode,
+            authorized=authorized,
+            app_configured=app_configured,
+            identity=self.config.identity,
+            scopes=credentials.scopes if authorized and credentials else [],
+            credential_error=credential_error,
+        )
+
+    def logout(self) -> None:
+        # Invalidate first so any refresh already in flight sees a new version,
+        # then delete under the shared write lock so a concurrent new
+        # authorization either lands before or after this logout, never mixed.
+        self.auth.invalidate()
+        with self.auth.write_lock:
+            with self._state_lock:
+                self._states.clear()
+            self.credentials.delete()
+
+    def authorize(self) -> AuthorizationStart:
+        state = secrets.token_urlsafe(32)
+        with self._state_lock:
+            self._states = {
+                key: value for key, value in self._states.items() if value[1] > self.clock()
+            }
+            self._states[state] = (
+                self.session_identity,
+                self.clock() + self.config.state_ttl_seconds,
+            )
+        return AuthorizationStart(
+            authorization_url=self.provider.authorization_url(self.config.redirect_uri, state),
+            expires_in_seconds=self.config.state_ttl_seconds,
+        )
+
+    def callback(
+        self, state: str, code: str | None, error: str | None, callback_uri: str
+    ) -> FeishuStatus:
+        if callback_uri != self.config.redirect_uri:
+            raise FeishuError("invalid_redirect")
+        with self._state_lock:
+            entry = self._states.pop(state, None)
+        if entry is None or entry[0] != self.session_identity or entry[1] <= self.clock():
+            raise FeishuError("invalid_state")
+        if error is not None:
+            raise FeishuError("authorization_denied")
+        if not code:
+            raise FeishuError("malformed_response")
+        app_credentials = self._safe_app()
+        if app_credentials is not None and app_credentials.app_id != self.config.app_id:
+            raise FeishuError("malformed_response")
+        version = self.auth.version()
+        credentials = self._call(
+            lambda: self.provider.exchange(code, self.config.redirect_uri, app_credentials)
+        )
+        if not isinstance(credentials, UserCredentials) or credentials.expires_at <= self.clock():
+            raise FeishuError("malformed_response")
+        with self.auth.write_lock:
+            if self.auth.version() != version:
+                # A logout or another authorization superseded this callback.
+                raise FeishuError("invalid_state")
+            self.credentials.put(credentials)
+            # A new authorization is a new generation: any refresh started
+            # before it must not write again.
+            self.auth.invalidate()
+        return self.status()
+
+    def require_task_write(self) -> None:
+        """Independent write-capability gate.
+
+        Real task writes stay disabled because no documented endpoint can prove a
+        lost write by idempotency token. ``real_data_enabled`` controls reads only
+        and must never unlock this. Fake mode keeps its simulated write semantics.
+        """
+        if self.config.mode != "fake":
+            raise FeishuError("result_proof_unavailable")
+
+    def _user(self, scope: str) -> UserCredentials:
+        return self._user_any((scope,))
+
+    def _valid_user(self, credentials: UserCredentials | None, scopes: tuple[str, ...]) -> None:
+        if credentials is None:
+            raise FeishuError("not_authorized")
+        if credentials.token_type != "user" or not any(
+            scope in credentials.scopes for scope in scopes
+        ):
+            raise FeishuError("missing_scope")
+
+    def _read_user(self) -> UserCredentials | None:
+        """Read the user slot without leaking a parser or keychain exception."""
+        try:
+            return self.credentials.get()
+        except FeishuError:
+            raise
+        except Exception:
+            raise FeishuError("credential_unreadable") from None
+
+    def _user_any(self, scopes: tuple[str, ...]) -> UserCredentials:
+        with self._lifecycle_lock:
+            credentials = self._read_user()
+            self._valid_user(credentials, scopes)
+            assert credentials is not None
+            if credentials.expires_at > self.clock() + 60:
+                return credentials
+        # Near expiry: coordinate the single-use refresh across service instances.
+        with self.auth.refresh_lock:
+            with self.auth.write_lock:
+                latest = self._read_user()
+                self._valid_user(latest, scopes)
+                assert latest is not None
+                if latest.expires_at > self.clock() + 60:
+                    return latest
+                if self.auth.refresh_consumed(latest.refresh_token):
+                    # The single-use token was already spent by an attempt whose
+                    # result is unknown; never resend it.
+                    raise FeishuError("token_expired")
+                version_at_dispatch = self.auth.version()
+                self.auth.mark_refresh_consumed(latest.refresh_token)
+            refreshed = self._call(lambda: self.provider.refresh(latest))
+            with self.auth.write_lock:
+                if self.auth.version() != version_at_dispatch:
+                    # Logged out or re-authorized while the refresh was in
+                    # flight: discard the stale result and use current state.
+                    current = self._read_user()
+                    self._valid_user(current, scopes)
+                    assert current is not None
+                    return current
+                if (
+                    not isinstance(refreshed, UserCredentials)
+                    or refreshed.token_type != "user"
+                    or refreshed.expires_at <= self.clock()
+                ):
+                    raise FeishuError("token_expired")
+                if not any(scope in refreshed.scopes for scope in scopes):
+                    raise FeishuError("missing_scope")
+                self.credentials.put(refreshed)
+                return refreshed
+
+    def identity_for(self, scope: str, *, app_capable: bool) -> UserCredentials | None:
+        """Choose the identity for one operation.
+
+        Application identity is used first for endpoints that document
+        ``tenant_access_token``; the user token is required only for endpoints
+        that document ``user_access_token`` (minutes search, task list). A missing
+        app secret is distinct from a missing user authorization. A permission
+        error never silently switches identity to widen access. When the
+        application identity applies, the user credential slot is never read.
+        """
+        return self.identity_for_any((scope,), app_capable=app_capable)
+
+    def body_identity(self) -> UserCredentials | None:
+        """Identity for a selected material body download.
+
+        The body endpoints accept application identity. When a user token is the
+        only option, its transcript *or* artifacts scope is required -- the
+        minutes-search scope is not accepted as a substitute.
+        """
+        return self.identity_for_any(
+            (self.config.scope_material_body, self.config.scope_material_artifacts),
+            app_capable=True,
+        )
+
+    def identity_for_any(
+        self, scopes: tuple[str, ...], *, app_capable: bool
+    ) -> UserCredentials | None:
+        if self.config.mode == "real" and self.config.identity == "app" and app_capable:
+            app = self._safe_app()
+            if app is not None and app.app_id == self.config.app_id:
+                # Application identity: the user credential slot is not read,
+                # refreshed or parsed for this operation.
+                return None
+            raise FeishuError("credential_missing")
+        return self._user_any(scopes)
+
+    def _call[T](self, call: Callable[[], T]) -> T:
+        try:
+            return call()
+        except FeishuError:
+            raise
+        except TimeoutError:
+            raise FeishuError("provider_timeout") from None
+        except (ValueError, ValidationError, TypeError):
+            raise FeishuError("malformed_response") from None
+        except Exception:
+            raise FeishuError("provider_unavailable") from None
+
+    def materials(
+        self, query: str, visibility: str | None, cursor: str | None, limit: int
+    ) -> MaterialPage:
+        with self.operation():
+            user = self._user(self.config.scope_materials)
+            result = self._call(
+                lambda: self.provider.materials(user, query, visibility, cursor, limit)
+            )
+        if not isinstance(result, MaterialPage) or len(result.items) > limit:
+            raise FeishuError("malformed_response")
+        return result
+
+    def calendar(
+        self, start: datetime, end: datetime, timezone: str, cursor: str | None, limit: int
+    ) -> CalendarPage:
+        try:
+            ZoneInfo(timezone)
+            if start.tzinfo is None or end.tzinfo is None or start >= end:
+                raise ValueError()
+        except (ValueError, ZoneInfoNotFoundError):
+            raise ValueError("请选择有效的起止时间和时区。") from None
+        with self.operation():
+            identity = self.identity_for(self.config.scope_calendar, app_capable=True)
+            result = self._call(
+                lambda: self.provider.calendar(identity, start, end, timezone, cursor, limit)
+            )
+        if not isinstance(result, CalendarPage) or len(result.items) > limit:
+            raise FeishuError("malformed_response")
+        return result
+
+    def imports(self, root: Path, payload: ImportRequest) -> ImportResult:
+        ids = sorted(set(payload.material_ids))
+        if any(not value.strip() or len(value) > 200 for value in ids):
+            raise ValueError("请选择有效的飞书材料。")
+        request_hash = hashlib.sha256(json.dumps(ids, ensure_ascii=False).encode()).hexdigest()
+        key = hashlib.sha256(payload.operation_id.encode()).hexdigest()
+        journal = root / ".summit-everything" / "transactions" / f"feishu-import-{key}.json"
+        lock_path = root / ".summit-everything" / "feishu-import.lock"
+        with (
+            self.operation(),
+            lock_path.open("a+b") as lock,
+        ):
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                intent: dict[str, Any] = (
+                    json.loads(journal.read_bytes())
+                    if journal.exists()
+                    else {"request_hash": request_hash, "outcomes": {}, "state": "running"}
+                )
+                if intent["request_hash"] != request_hash:
+                    raise IntakeConflict("导入操作已用于另一组材料，请重新选择。")
+                if intent["state"] == "completed":
+                    return ImportResult.model_validate(intent["result"])
+                identity = self.body_identity()
+                atomic_write(journal, json.dumps(intent).encode())
+                for material_id in ids:
+                    if material_id in intent["outcomes"]:
+                        continue
+                    try:
+                        source_operation = f"feishu:{key}:{material_id}"
+                        expected_item = uuid5(
+                            load_manifest(root).workspace_id, f"intake:{source_operation}"
+                        )
+                        store = SourceStore()
+                        item = next(
+                            (
+                                item
+                                for item in store.list_items(root)
+                                if item.item_id == expected_item
+                            ),
+                            None,
+                        )
+                        if item is None:
+                            body = self._call(partial(self.provider.body, identity, material_id))
+                            self._validate_body(body)
+                            item = store.capture(
+                                root,
+                                body.raw,
+                                body.filename,
+                                source_operation,
+                                external_identity={
+                                    "provider": "feishu-fake"
+                                    if self.config.mode == "fake"
+                                    else "feishu",
+                                    "material_id": material_id,
+                                    "token_type": "user" if identity is not None else "app",
+                                    "content_type": body.content_type,
+                                },
+                            )
+                        outcome = ImportOutcome(
+                            material_id=material_id,
+                            state="succeeded",
+                            item_id=item.item_id,
+                            source_id=item.source_id,
+                        )
+                    except (FeishuError, WorkspaceError) as exc:
+                        error = (
+                            exc
+                            if isinstance(exc, FeishuError)
+                            else FeishuError("malformed_response")
+                        )
+                        outcome = ImportOutcome(
+                            material_id=material_id,
+                            state="failed",
+                            error_code=error.code,
+                            message=error.message,
+                        )
+                    intent["outcomes"][material_id] = outcome.model_dump(mode="json")
+                    atomic_write(journal, json.dumps(intent).encode())
+                outcomes = [ImportOutcome.model_validate(intent["outcomes"][i]) for i in ids]
+                successes = sum(row.state == "succeeded" for row in outcomes)
+                result = ImportResult(
+                    operation_id=payload.operation_id,
+                    outcomes=outcomes,
+                    state="succeeded"
+                    if successes == len(ids)
+                    else "partial"
+                    if successes
+                    else "failed",
+                )
+                intent.update(state="completed", result=result.model_dump(mode="json"))
+                atomic_write(journal, json.dumps(intent).encode())
+                return result
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+    def _validate_body(self, body: MaterialBody) -> None:
+        if not isinstance(body, MaterialBody):
+            raise FeishuError("malformed_response")
+        content_type = body.content_type.lower().replace(" ", "")
+        media, _, params = content_type.partition(";")
+        if (
+            media not in {"text/plain", "text/markdown", "application/octet-stream"}
+            or (params and params != "charset=utf-8")
+            or not body.raw
+            or len(body.raw) > 20 * 1024 * 1024
+            or "/" in body.filename
+            or "\\" in body.filename
+            or Path(body.filename).suffix.lower() not in {".txt", ".md"}
+            or body.filename in {".", ".."}
+            or len(body.filename) > 150
+        ):
+            raise FeishuError("malformed_response")
+        try:
+            safe_source_filename(body.filename)
+            text = body.raw.decode("utf-8")
+            if "\x00" in text:
+                raise ValueError()
+        except (UnicodeDecodeError, ValueError, WorkspaceError):
+            raise FeishuError("malformed_response") from None
+
+
+def callback_boundary(uri: str) -> str:
+    parts = urlsplit(uri)
+    return f"{parts.scheme}://{parts.netloc}{parts.path}"

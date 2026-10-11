@@ -1,0 +1,10 @@
+{
+  "source_sha": "fd2042385c4916598337239f5259b3ef1889372a",
+  "api_port": 18901,
+  "web_port": 15181,
+  "app_quit_after_alert_acknowledgement": true,
+  "api_listener_absent": true,
+  "web_listener_absent": true,
+  "checkout_native_process_absent": true,
+  "owned_runner_processes_absent": true
+}

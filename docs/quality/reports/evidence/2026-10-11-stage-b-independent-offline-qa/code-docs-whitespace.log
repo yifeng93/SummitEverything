@@ -1,0 +1,4 @@
+tracked git diff --check exit=0
+untracked code/docs exact-byte scan:
+PASS
+Only original raw .log bytes excluded; no log rewriting

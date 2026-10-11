@@ -1,0 +1,29 @@
+# Commands actually executed for the R2 evidence set (trial tree, uncommitted)
+# replay dir outside the repository: /tmp/summit-deepseek-stage-b-replay
+# guard (verbatim Sol archive): docs/quality/reports/evidence/2026-10-10-stage-b-sol-dev-review/sitecustomize.py
+#   blocks non-loopback sockets and macOS Keychain backend
+
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_regressions.py -q -p no:cacheprovider
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_additional.py -q -p no:cacheprovider
+PYTHONPATH=<replay>/guard:<trial>/src .venv/bin/python -m pytest <replay>/test_review_regressions_corrected.py -q -p no:cacheprovider
+
+# targeted R2 regressions
+uv run pytest -q tests/integration/test_stage_b_r2_regressions.py -p no:cacheprovider
+uv run pytest -q tests/unit/test_http_boundary.py -p no:cacheprovider
+npm --prefix web test -- --run src/components/FeishuPanel.test.tsx
+
+# check battery (each captured in checks/NN-*.log with an EXIT= line)
+$ uv run pytest -q -p no:cacheprovider
+$ uv run ruff check src tests
+$ uv run ruff format --check src tests
+$ uv run mypy src
+$ uv lock --check
+$ git diff --check
+$ uv build
+$ npm --prefix web run api:types
+$ npm --prefix web test -- --run
+$ npm --prefix web run typecheck
+$ npm --prefix web run lint
+$ npm --prefix web run build
+$ swift build --package-path native
+$ PYTHONPATH=/tmp/summit-deepseek-stage-b-replay/guard:/Users/yifengstudio/Documents/GitHub/SummitEverything-deepseek-stage-b-trial/src uv run pytest -q -p no:cacheprovider  (archived guard: blocks non-loopback sockets and macOS Keychain)

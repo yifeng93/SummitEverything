@@ -1,0 +1,47 @@
+Using CPython 3.12.13
+Creating virtual environment at: .venv
+Resolved 41 packages in 4ms
+   Building summit-everything @ file:///Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything
+      Built summit-everything @ file:///Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything
+Prepared 1 package in 164ms
+Installed 40 packages in 68ms
+ + aiodns==4.0.4
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + certifi==2026.7.22
+ + cffi==2.1.1
+ + click==8.5.0
+ + fastapi==0.143.0
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.20
+ + iniconfig==2.3.1
+ + jaraco-classes==3.4.0
+ + jaraco-context==6.1.2
+ + jaraco-functools==4.6.0
+ + keyring==25.7.0
+ + librt==0.16.0
+ + more-itertools==11.1.0
+ + mypy==1.20.2
+ + mypy-extensions==1.1.0
+ + opentelemetry-api==1.45.1
+ + packaging==26.3
+ + pathspec==1.1.1
+ + pluggy==1.6.0
+ + pycares==5.1.0
+ + pycparser==3.11
+ + pydantic==2.14.0
+ + pydantic-core==2.50.0
+ + pygments==2.21.0
+ + pytest==9.1.1
+ + python-multipart==0.0.32
+ + pyyaml==6.0.3
+ + ruff==0.16.10
+ + starlette==1.7.0
+ + summit-everything==0.1.0 (from file:///Users/yifengstudio/.codex/worktrees/qa-stage-b-sol-ui/SummitEverything)
+ + types-pyyaml==6.0.12.20260906
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + uvicorn==0.54.0

@@ -1,0 +1,29 @@
+{
+  "algorithm": "sha256",
+  "root": ".",
+  "file_count": 22,
+  "files": {
+    "README.md": "7dcee7f11d1f6af23db649b36f06b0d46cec199c41c5eb2a1c424cc209823190",
+    "checks/01-pytest.log": "21d5e0dbfe513ebe8bd4536402e5b19103f15ee5ba8a428b0a61c811092bca9b",
+    "checks/02-ruff-check.log": "23779627971ac90c7564222ddca17cc076bc0d95c8c1e21a7c3e51f0fce63d7d",
+    "checks/03-ruff-format.log": "5ed981c7e71ca52349b2a5c7fba23cb264144cc203e9fd17d99068bd8a8fd44f",
+    "checks/04-mypy.log": "bb7f61e7b8b6508153e61a6bc225b08c911395a762a35daa687f25481af9ce9c",
+    "checks/05-lock-check.log": "661199f7b1c01fc3f78e1e7aae03eab22ca3e92c35a87826453a78ba71bd6bff",
+    "checks/06-git-diff-check.log": "535a50a09d6ec56a7048d780081a31dc5da71bebc676ce4c6aae538d1f034f1e",
+    "checks/07-uv-build.log": "885fddae523642405116a99064fd829e77f8e663dcc9057af402da09a775dfee",
+    "checks/08-api-types.log": "36afa1188f8d1e010a775f781965862bdb292549cf55d9e76b4a43e64be545a9",
+    "checks/09-web-test.log": "444221136564d71641e186d19bea6a966da29c0195f3deef1e2f48245e0215c5",
+    "checks/10-web-typecheck.log": "b9c3c283726ae761e3767d20c8a602b8654442511227b5609fb83ade378d3274",
+    "checks/11-web-lint.log": "4e410b70266fa3161d795bcd55ec3ee8c337cffdcc8e1121e2aa8d55e9e7677f",
+    "checks/12-web-build.log": "a855fb2089466f80ffb0575f9b97e0a2f4e496c3bea10d4c9255315c3de7686e",
+    "checks/13-swift-build.log": "4b31f126f6b0b37836b2395e42b1cf6c2d079ba589e7c0298b78609e9aee9689",
+    "checks/14-pytest-guarded.log": "50ffa3944673981db42dc4b8a721aaebaf81ffcb7ed58fdb6e648f3c7e2e7b2f",
+    "diff-stat.txt": "1cdcaad9b196b2b9be09169d317e24ab800add776ac885be470f27c57370626a",
+    "git-status.txt": "a91ffe727d79f312f41cca32dc6cd16af4e854758c7fff7951fb3e436c1a3755",
+    "product-source-hashes.txt": "e363021e1b8564cbf9b3fe5bd56cd4652652ec5a2bd6f80874e77f5a640f25ab",
+    "replay-commands.txt": "d4278da12a8c054d4883f8700358dcf90d9f3f3a1460a6b482cc9a76e2ee6faf",
+    "sol-harness-additional.log": "2d7ebde690d5fe62531634225905f84385146e768518d95bd455730d12703669",
+    "sol-harness-frontend.log": "9cb4c08c56e142e924a6f59b2a50841ddca7e2374c86b43313f66942feadc502",
+    "sol-harness-regressions.log": "bf2273ce144b045c4f7304eb52a237206dc9968e922f12c6175eddd700f70a1c"
+  }
+}

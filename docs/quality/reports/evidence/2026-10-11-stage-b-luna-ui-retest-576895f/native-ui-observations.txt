@@ -1,0 +1,25 @@
+Native CUA observations for exact source SHA 576895f6983ca41cacbbad45a9075b97b9986189. Each was returned by `cua.getApp(...).getAXStateAndScreenshot()` (or getApp initial AX state); screenshots were displayed inline in the CUA transcript, not saved as evidence files.
+
+Ordinary cold run
+Bundle ID: local.summit.stageb.luna.final.ui.retest.cold
+API port 18904: HTTP 200, {"service":"ready","workspace_open":false,"version":"1.0.0","run_id":"782254AC-2F3B-45B2-BFC5-5C0F54AE53E2"}
+Web port 15184: HTTP 200, response_url=http://127.0.0.1:15184/
+Observed AX: Window "SummitEverything", App "cold"; WKWebView URL 127.0.0.1:15184/; text "SummitEverything 本地知识工作台 先连接一个工作库"; radio buttons 新建/打开已有; fields 工作库名称/文件夹路径; button 选择文件夹… and button 创建本地工作库. No blank view or readiness alert.
+
+Ordinary hot restart (after closing the first native window)
+Bundle ID: local.summit.stageb.luna.final.ui.retest.cold
+API port 18904: HTTP 200, {"service":"ready","workspace_open":false,"version":"1.0.0","run_id":"9015EB8F-5ADE-4553-9142-94417DF3F230"}
+Web port 15184: HTTP 200, response_url=http://127.0.0.1:15184/
+Observed AX: Window "SummitEverything", App "cold"; WKWebView loaded the same workspace chooser at 127.0.0.1:15184/. The prior workspace was not auto-reopened after app restart; chooser was shown. No blank view or alert.
+
+Five-second delayed npm run
+Bundle ID: local.summit.stageb.luna.final.ui.retest.delay
+API port 18905: HTTP 200, run_id=C81110EC-B6CC-49AC-A327-7EC3EC5A4CDC; process environment `SUMMIT_RUN_ID` checked equal to that value.
+Web port 15185: HTTP 200, response_url=http://127.0.0.1:15185/
+Observed AX after the app/window binding was resolved: Window "SummitEverything", App "delay"; WKWebView loaded the same workspace chooser at 127.0.0.1:15185/. No blank view or readiness alert. `native-npm-delay.log` records shim invocation at 2026-10-11T05:55:47Z and completion at 05:55:52Z. The probe timeline records API/Web availability.
+CUA limitation: the first getApp attempts timed out while a separate cold-bundle app remained running; inventory then showed the delay bundle as running. After quitting the previous cold app and confirming its ports/process closed, getApp bound the exact delay bundle and returned the visible window. These timeouts are retained here; they were not treated as a product failure.
+
+Missing-uv startup fault
+Bundle ID: local.summit.stageb.luna.final.ui.retest.fail
+PATH intentionally excluded uv and Node.js; API/Web ports 18906/15186 remained unavailable.
+Observed AX: Window "", App "fail", dialog Description: alert; text `本地服务未就绪 请确认已安装 uv、Node.js，并在仓库中执行过 cd web && npm ci。`; button OK. Dismissing the alert exited the app. Neither port had a listener afterwards.

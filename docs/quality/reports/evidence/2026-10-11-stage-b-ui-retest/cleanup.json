@@ -1,0 +1,1 @@
+{"ports_exit": 1, "cleanup_pass": true, "check_note": "first immediate assert happened before termination completed; later independent check confirms absent"}
