@@ -4,7 +4,7 @@ import WebKit
 
 private let apiPort = ProcessInfo.processInfo.environment["SUMMIT_API_PORT"] ?? "8793"
 private let webPort = ProcessInfo.processInfo.environment["SUMMIT_WEB_PORT"] ?? "5173"
-private let webURL = URL(string: "http://127.0.0.1:\(webPort)")!
+private let webURL = URL(string: "http://127.0.0.1:\(webPort)/")!
 private let healthURL = URL(string: "http://127.0.0.1:\(apiPort)/api/v1/health")!
 
 @main
