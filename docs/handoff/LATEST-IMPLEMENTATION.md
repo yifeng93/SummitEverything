@@ -1,10 +1,10 @@
 # 最新实现交接
 
-## 2026-10-11 C03 删除拒绝提示本地化跟进（DEV，QA 待验收）
+## 2026-10-11 C03 删除拒绝提示本地化跟进（QA 通过；分支候选，未合入 main）
 
-针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。固定源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`，分支 `codex/c03-delete-copy-pilot`。仅改三条拒绝消息和 API contract 回归；保留 409、`workspace_error`、错误 envelope、归档规则和文件写门。自动定向集合 37 passed；ruff、format、mypy、lock 检查通过。DEV 报告：[C03 删除文案 DEV](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)。
+针对历史 M1 C03 P2，非空主线（有项目 / 目录有内容）及非空项目的删除拒绝提示已中文化。源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；固定 QA 文档提交：`141bd96d15039f1cd29461785fdd91e2ef297476`；QA 原报告提交：`f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，已在本分支以 `ebb99811d289ea821d5a1bfee9fad6a2a1ba04db` 整合。QA 测试时 HEAD 固定在 `141bd96`；之后只有 QA 报告、交接文档和证据提交，产品源码树与 QA 目标一致。分支为 `codex/c03-delete-copy-pilot`，尚未合入 main。
 
-此为开发自测，**独立 QA 尚待执行**；不改变已合并 Stage B / M1 历史状态，也不重开完整 M1 阶段。浏览器、真实服务与其他发布门未测。QA 应固定本交接文档提交，并核对其中产品源码树与上述源码 SHA 一致，按 DEV 报告复验 C03 行为。
+Sol 根据独立 QA 判定本 C03 离线切片通过：首轮 PASS，repair 0/2；包括 37 项定向自动回归与本地 Fake WebUI 实际浏览器操作。源码树在 QA 前后无变化。DEV 报告：[C03 删除文案 DEV](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)；QA 原报告：[C03 独立 QA](../quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md)；日志和脱敏观察证据：[QA 证据目录](../quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。QA 使用 CUA 观察但没有导出截图；API envelope 由 contract tests 断言。该切片结果不重开完整 M1，也不改变已合并 Stage B 的历史范围。真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5 仍 NOT_RUN；main 尚未包含本候选。
 
 ## 2026-10-11 Stage B 离线源码已合并
 

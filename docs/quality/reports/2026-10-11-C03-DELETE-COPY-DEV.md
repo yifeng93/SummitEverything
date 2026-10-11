@@ -3,7 +3,7 @@
 ## 身份与范围
 
 - 报告人 / 角色：Developer pilot，DEV 自测；运行时模型信息：UNVERIFIED。
-- 起点提交：`b5aeb91f2e1cf6e07a92fad0392c25aab491f4a0`；固定源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；文档 checkpoint 在交接提交后补充。
+- 起点提交：`b5aeb91f2e1cf6e07a92fad0392c25aab491f4a0`；固定源码 SHA：`9c953f095086a95e63edbce2169657dba9e71cd1`；测试执行时固定文档 checkpoint：`141bd96d15039f1cd29461785fdd91e2ef297476`。
 - 分支：`codex/c03-delete-copy-pilot`；checkout：`/Users/yifengstudio/.codex/worktrees/c03-delete-copy-pilot/SummitEverything`。
 - 范围：C03 P2 非空主线 / 项目删除的英文拒绝提示；Fake-only API 和隔离临时工作库。没有 UI、provider、真实业务材料、凭据或外部任务动作。
 - 变更只将三个拒绝提示改为中文，并补 API 回归。409、`workspace_error`、标准错误 envelope、归档和删除逻辑不变。
@@ -41,9 +41,11 @@
 ## 门结论
 
 - DEV C03 P2 文案修复：已实现并完成上述自动回归；不代表 M1 阶段重新验收。
-- 独立模拟 QA：PENDING，须在固定源码树上独立复验；Sol 决定门状态。
+- 独立模拟 QA：由 Sol 根据独立报告判定 C03 离线切片 PASS（首轮 PASS，repair 0/2）；详见 [独立 QA 报告](2026-10-11-C03-DELETE-COPY-QA-141bd96.md)。DEV 自测结论仍仅为 DEV；归档观察与运行日志见 [QA 证据目录](evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。
 - 真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5：本切片均 NOT_RUN，原状态不变。
 
 ## 给 QA 的交接
 
 固定源码 `9c953f095086a95e63edbce2169657dba9e71cd1`。复核 C03 的三类拒绝文案、409 / `workspace_error` / envelope 保持、归档项目仍阻止主线删除、拒绝时 manifest / ID / 文件 / 目录不变，以及空项目和主线的 204 删除。建议复跑本报告的 pytest 命令及 ACCEPTANCE.md C03 对应行为。开发者没有在本文宣告 QA 通过。
+
+后续交接说明：QA 测试执行时完整 HEAD 固定为文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476`；QA 原报告以 `f381d28d077d3d668cc65ae5eb4fe13b4ad94761` 提交，并整合为本分支提交 `ebb99811d289ea821d5a1bfee9fad6a2a1ba04db`。QA 测试结束后的产品源码树与 `9c953f095086a95e63edbce2169657dba9e71cd1` 一致；后续仅提交文档和证据。Sol 依据独立 QA 结果判定本 C03 切片通过，分支候选仍未合并 main。

@@ -10,9 +10,9 @@
 
 精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
 
-### C03 非空删除提示本地化跟进（2026-10-11）
+### C03 非空删除提示本地化跟进（2026-10-11；QA 通过，未合入 main）
 
-针对历史 M1 C03 P2，将“非空主线有项目”“主线目录有内容”“非空项目”的 API 拒绝信息改为准确中文；不暗示归档项目可删除。拒绝状态仍为 409 / `workspace_error`，原 manifest、组织与内容写门保持。固定源码 SHA `9c953f095086a95e63edbce2169657dba9e71cd1`；DEV 定向 contract + workspace mutation + qualified retrieval 集合 37 passed，静态检查通过。详见 [DEV 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)。独立 QA pending；这不是完整 M1 重验，不改变已合并 Stage B 或真实 / 发布门状态。
+针对历史 M1 C03 P2，将“非空主线有项目”“主线目录有内容”“非空项目”的 API 拒绝信息改为准确中文；不暗示归档项目可删除。拒绝状态仍为 409 / `workspace_error`，原 manifest、组织与内容写门保持。源码 SHA `9c953f095086a95e63edbce2169657dba9e71cd1`，QA 固定文档提交 `141bd96d15039f1cd29461785fdd91e2ef297476`，QA 原报告提交 `f381d28d077d3d668cc65ae5eb4fe13b4ad94761`，本分支整合提交 `ebb99811d289ea821d5a1bfee9fad6a2a1ba04db`。Sol 根据独立 QA 判定本 C03 离线切片通过：首轮 PASS、repair 0/2；定向自动集合 37 passed，并完成实际本地 Fake WebUI 浏览器复演。固定测试提交与后续产品源码树一致。详见 [DEV 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-DEV.md)、[独立 QA 报告](../quality/reports/2026-10-11-C03-DELETE-COPY-QA-141bd96.md)和[归档证据](../quality/reports/evidence/2026-10-11-c03-delete-copy-qa-141bd96/README.md)。此结论只覆盖当前分支候选，尚未合入 main；不代表完整 M1 或 Stage B 重验。真实 provider、真实材料、OS Keychain、DMG、五日、双机及 M3–M5 等门保持原状态。
 
 ## 历史更新记录（按各条当时的固定版本理解）
 

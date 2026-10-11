@@ -1,0 +1,92 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+INFO:     Started server process [24842]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18813 (Press CTRL+C to quit)
+INFO:     127.0.0.1:63388 - "GET /api/v1/health HTTP/1.1" 200 OK
+
+  VITE v8.3.4  ready in 477 ms
+
+  ➜  Local:   http://127.0.0.1:15813/
+INFO:     127.0.0.1:63392 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:18813/api/v1/health
+WebUI: http://127.0.0.1:15813/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:63417 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63485 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:63487 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:63569 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63585 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63586 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63580 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63587 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63588 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63584 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63593 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63594 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63600 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63599 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63597 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63592 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63602 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63604 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63660 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63658 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63661 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63664 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63666 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63667 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63756 - "POST /api/v1/lines HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63761 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63762 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63763 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63785 - "POST /api/v1/projects HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63790 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63791 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63792 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63821 - "POST /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8/overview/confirmations HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63826 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63827 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63828 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63916 - "DELETE /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8?operation_id=700318d7-dcd6-46c1-accc-e2734adec0af HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:63944 - "PATCH /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63950 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63951 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63952 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63984 - "DELETE /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8?operation_id=ad957c96-5a55-4af2-81d3-7a145a563fa9 HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:63997 - "DELETE /api/v1/lines/0ac94961-616c-5b7c-a08f-b2d142f09a92?operation_id=56ae9c84-dab7-485b-9a49-a823de7b4e8a HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64024 - "POST /api/v1/lines HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64030 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64029 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64031 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64058 - "DELETE /api/v1/lines/c9c106e0-cf40-5eca-a6b1-765ee461e9c7?operation_id=b86a71c7-410e-476a-bb29-93a6390ac460 HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64086 - "POST /api/v1/projects HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64092 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64091 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64093 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64101 - "DELETE /api/v1/projects/98f05e9b-8981-5477-aad0-32dde7a1f076?operation_id=a9888521-bd86-4bfd-810e-ff0202ac6e99 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:64106 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64105 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64108 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64126 - "POST /api/v1/lines HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64131 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64132 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64133 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64146 - "DELETE /api/v1/lines/d0c9c9ef-bddc-5750-98f0-e30dfcbc8c34?operation_id=16fb00d8-6193-406a-a454-106944c45f02 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:64151 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64153 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64213 - "DELETE /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8?operation_id=45e40c90-b70e-4250-846a-5ac4c6ad9c19 HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64259 - "DELETE /api/v1/lines/c9c106e0-cf40-5eca-a6b1-765ee461e9c7?operation_id=c41237d7-2af5-41b7-9a4d-51343955cb1a HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64301 - "PATCH /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64307 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64306 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64308 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64320 - "DELETE /api/v1/projects/af5bfbbb-a503-5920-8188-7b9216c79ac8?operation_id=0c471ed5-d3ab-4c6b-b327-aaf57c5e8697 HTTP/1.1" 409 Conflict
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [24842]
