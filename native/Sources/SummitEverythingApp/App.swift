@@ -91,6 +91,7 @@ struct LocalWebView: NSViewRepresentable {
         weak var webView: WKWebView?
         private var readinessTimer: Timer?
         private var attempts = 0
+        private var checkingReadiness = false
 
         init(expectedRunID: String) {
             self.expectedRunID = expectedRunID
@@ -100,6 +101,16 @@ struct LocalWebView: NSViewRepresentable {
             readinessTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
                 guard let self else { timer.invalidate(); return }
                 self.attempts += 1
+                if self.attempts >= 60 {
+                    timer.invalidate()
+                    self.readinessTimer = nil
+                    self.showReadinessError()
+                    return
+                }
+                // API can start before Vite. Keep polling until both services
+                // are ready, rather than leaving a failed first navigation blank.
+                guard !self.checkingReadiness else { return }
+                self.checkingReadiness = true
                 var request = URLRequest(url: healthURL, timeoutInterval: 1)
                 request.httpMethod = "GET"
                 URLSession.shared.dataTask(with: request) { [weak self] data, response, _ in
@@ -110,17 +121,25 @@ struct LocalWebView: NSViewRepresentable {
                         let health = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                         health["service"] as? String == "ready",
                         health["run_id"] as? String == self.expectedRunID
-                    else { return }
-                    DispatchQueue.main.async {
-                        timer.invalidate()
-                        self.readinessTimer = nil
-                        self.webView?.load(URLRequest(url: webURL))
+                    else {
+                        DispatchQueue.main.async { self?.checkingReadiness = false }
+                        return
                     }
+                    let webRequest = URLRequest(url: webURL, cachePolicy: .reloadIgnoringLocalCacheData,
+                                                timeoutInterval: 1)
+                    URLSession.shared.dataTask(with: webRequest) { [weak self] _, webResponse, _ in
+                        DispatchQueue.main.async {
+                            guard let self else { return }
+                            self.checkingReadiness = false
+                            guard timer.isValid,
+                                  (webResponse as? HTTPURLResponse)?.statusCode == 200,
+                                  webResponse?.url == webURL else { return }
+                            timer.invalidate()
+                            self.readinessTimer = nil
+                            self.webView?.load(URLRequest(url: webURL))
+                        }
+                    }.resume()
                 }.resume()
-                if self.attempts >= 60 {
-                    timer.invalidate()
-                    DispatchQueue.main.async { self.showReadinessError() }
-                }
             }
         }
 

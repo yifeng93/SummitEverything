@@ -1,0 +1,7 @@
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [60.1ms]

@@ -146,7 +146,7 @@ class UserCredentials(BaseModel):
     access_token: str = Field(repr=False, min_length=1)
     refresh_token: str = Field(repr=False, min_length=1)
     # Local vault state: reserve single-use refresh before dispatch, surviving restart.
-    refresh_consumed: bool = False
+    refresh_consumed: bool = Field(default=False, strict=True)
     expires_at: float
     scopes: list[str]
 

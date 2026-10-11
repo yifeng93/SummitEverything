@@ -1,0 +1,11 @@
+COMMAND     PID         USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+python3.1  5503 yifengstudio    6u  IPv4 0xf087e18ae5c653bb      0t0  TCP 127.0.0.1:18895 (LISTEN)
+node       5519 yifengstudio   13u  IPv4 0xd278c7723488fe7d      0t0  TCP 127.0.0.1:15175 (LISTEN)
+node       5519 yifengstudio   33u  IPv4 0x3e72e48a76dee130      0t0  TCP 127.0.0.1:15175->127.0.0.1:64172 (ESTABLISHED)
+node       5519 yifengstudio   38u  IPv4 0x44b86039f2c261eb      0t0  TCP 127.0.0.1:15175->127.0.0.1:64182 (ESTABLISHED)
+com.apple  5528 yifengstudio   16u  IPv4 0xc4ca9385b893e448      0t0  TCP 127.0.0.1:64172->127.0.0.1:15175 (ESTABLISHED)
+Codex\x20 35192 yifengstudio   32u  IPv4 0x5cf2a2b51a7f1ca1      0t0  TCP 127.0.0.1:64174->127.0.0.1:15175 (CLOSE_WAIT)
+Codex\x20 35192 yifengstudio   35u  IPv4 0xbca923a728bd1821      0t0  TCP 127.0.0.1:64182->127.0.0.1:15175 (ESTABLISHED)
+Codex\x20 35192 yifengstudio   37u  IPv4 0x64bc7bec91047c6f      0t0  TCP 127.0.0.1:64177->127.0.0.1:15175 (CLOSE_WAIT)
+Codex\x20 35192 yifengstudio   47u  IPv4 0xc3c77a2cfa89c19c      0t0  TCP 127.0.0.1:64179->127.0.0.1:15175 (CLOSE_WAIT)
+Codex\x20 35192 yifengstudio   55u  IPv4 0xca5b4f2e77512311      0t0  TCP 127.0.0.1:64180->127.0.0.1:15175 (CLOSE_WAIT)

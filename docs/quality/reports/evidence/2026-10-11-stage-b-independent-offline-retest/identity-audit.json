@@ -1,0 +1,101 @@
+{
+  "exact_sha": "8b6259a9aa6ff2e52b700134abadff24de46dc08",
+  "branch": "HEAD",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything",
+  "python": "3.12.13 (main, Aug  7 2026, 02:15:23) [Clang 22.1.3 ]",
+  "executable": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/.venv/bin/python3",
+  "PYTHONPATH": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/src",
+  "guard_active": "1",
+  "uv": "uv 0.12.3 (507230998 2026-08-07 aarch64-apple-darwin)",
+  "node": "v24.15.0",
+  "npm": "11.12.1",
+  "venv": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/.venv",
+  "node_modules": "/Users/yifengstudio/.codex/worktrees/qa-stage-b-refresh-final/SummitEverything/web/node_modules",
+  "protected_diff": "",
+  "protected_tree_ids": {
+    "src": "602d38e84897bc89b21626b097e9f90d41f8b188",
+    "web": "0234ef89d57553672e9ca78ebaad1ac2aaa8c33d",
+    "native": "c62cb57e3ed89850ba2c51c474551aa1e57b823c",
+    "scripts": "01977033a6bc21ac916a1556f9dffd372a12f659",
+    "pyproject.toml": "dbafb679a516a317c584fbd8a5f2cd6510390cb4",
+    "uv.lock": "fef23de1d156922a77f3166248687337ad1eb4f6"
+  },
+  "lock_sha256": {
+    "uv.lock": "148ac7c5d1d795ec0ee17384bca7c2173dddb6ba8945b23445da71356c9bfbda",
+    "web/package-lock.json": "d7b39319f006b0280857a02f3932f7e71e8d38cd0e63a0684f9b41f0d9c26ad3"
+  },
+  "api_idempotent_sha256": {
+    "web/openapi.json": "794e5089c799bf8ab7c319ae3385fca31aeecf2d9860386605cc98c32d011a5d",
+    "web/src/api/generated.ts": "1e5aac8161f7f77d17b8edea70acf4775b25648de105c33a38c06a604ca52055"
+  },
+  "historical_manifests": [
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b/manifest.json",
+      "sha256": "e27a0c98abf701771dc292ec6d1cafa3b27925387fa170947ad0dc398c0479ce",
+      "count": 22,
+      "mismatches": []
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r2/manifest.json",
+      "sha256": "1ed3e718e2597b312f9b4f07b6f09f79fbe20a0aa6ba58d49f40c77787e3ca45",
+      "count": 22,
+      "mismatches": []
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r3/manifest.json",
+      "sha256": "c4e53557e483dcadacd04e545c901e1a652d4bf55559b91fd0623038db389740",
+      "count": 38,
+      "mismatches": []
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-10-deepseek-stage-b-r4/manifest.json",
+      "sha256": "90c8ecc3c004cb08e8528743285f23aecac9bf57ec0f5a0fc0e167cfe5c93250",
+      "count": 34,
+      "mismatches": []
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-sol-closure/manifest.json",
+      "sha256": "7563dace7ed6cc939cef93c08ea537fca305dd314079ea8a0e232b892f5ddb95",
+      "count": 32,
+      "mismatches": []
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-refresh-restart-dev/manifest.json",
+      "sha256": "a81f17350b7356305d6a1b33c6ec4eed2ad115995fd56e915d107ae98e2502d1",
+      "count": 20,
+      "mismatches": []
+    },
+    {
+      "path": "docs/quality/reports/evidence/2026-10-11-stage-b-independent-offline-qa/manifest.json",
+      "sha256": "0a0987bde2c05d4bc33314b12aa22c34f244cf87c1b4c8ffd13ebc73f40b502e",
+      "count": 27,
+      "mismatches": []
+    }
+  ],
+  "current_sol_source_manifest_count": 101,
+  "current_sol_source_manifest_sha256": "c3303113981a9c8703c3a2d0059415df9da18ae1b952344f2fe9ef8b0922d848",
+  "current_sol_source_mismatches": [],
+  "guard_negative_controls": {
+    "non_loopback_socket": {
+      "exception": "RuntimeError",
+      "message": "review blocks non-loopback sockets"
+    },
+    "system_external_dns": {
+      "exception": "AssertionError",
+      "message": "offline guard: system DNS resolution forbidden"
+    },
+    "OS_Keychain_constructor": {
+      "exception": "SettingsError",
+      "message": "credential_store_unavailable"
+    }
+  },
+  "live_transfer_workers": 0,
+  "real_calls": {
+    "feishu_exchange": "0/1",
+    "feishu_refresh": "0/1",
+    "deepseek_chat": "0/1",
+    "model_studio_embedding": "0/1",
+    "model_studio_rerank": "0/1",
+    "real_remote_writes": 0
+  }
+}

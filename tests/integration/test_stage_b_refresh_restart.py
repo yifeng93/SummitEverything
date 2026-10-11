@@ -4,6 +4,7 @@ import json
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
+import pytest
 from fastapi.testclient import TestClient
 
 import summit_everything.api.app as app_module
@@ -205,3 +206,23 @@ def test_successful_rotation_remains_refreshable_after_restart(tmp_path, monkeyp
         response = restarted.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
         assert response.status_code == 200, response.text
         assert remote.spent == ["synthetic-single-use-refresh", "synthetic-refresh-1"]
+
+
+@pytest.mark.parametrize("bad_marker", ["false", 0])
+def test_malformed_refresh_marker_fails_closed(tmp_path, monkeypatch, bad_marker):
+    remote, backend = Remote(), Backend()
+    with api(tmp_path, monkeypatch, backend, remote) as client:
+        login(client)
+        for (namespace, key), value in list(backend._values.items()):
+            if key.startswith("feishu_user:"):
+                payload = json.loads(value)
+                payload["refresh_consumed"] = bad_marker
+                backend.set(namespace, key, json.dumps(payload))
+        status = client.get("/api/v1/integrations/feishu/status", headers=HEADERS)
+        assert status.json()["authorized"] is False
+        assert status.json()["credential_error"] == "credential_unreadable"
+        calls = list(remote.calls)
+        result = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+        assert result.status_code == 401
+        assert result.json()["error"]["code"] == "credential_unreadable"
+        assert remote.calls == calls
