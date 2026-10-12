@@ -1,6 +1,6 @@
 # C19 DSH 交接：Sol 审查与独立门
 
-2026-10-13。**独立 QA 进行中，C19 新候选尚未通过门。** DSH 自测和三轮子代理预验仅为开发证据，不替代此次全新 QA。原 f79 / 262 的 P1 FAIL 保留。
+2026-10-13。**DSH 候选独立 QA / Sol FAIL：主题剥词 P1、上限原因 P2。** 原设备用例已关闭，但复合主题中的“信息”仍被全局删除；本轮新的默认上限对照也失败。DSH 自测和三轮子代理预验不替代此次全新 QA。原 f79 / 262 的 P1 FAIL 保留。进入本次固定候选初验后的自动统一返工 1/2，不重置或改写旧周期历史。
 
 ## 固定版本及 Sol 已核对事项
 
@@ -24,8 +24,31 @@ DSH 关于既有“青榆”测试的论据须更正：`tests/integration/test_q
 
 Sol 已将以下有界对照交全新 QA，并等待黑盒证据，不把静态怀疑冒充已验 FAIL：A 有多段相关正文触发 limit，B 所问范围完全无正文；A/B 本来完备但只实际传一部分；高limit无截断；资格失效的尾候选；dense前20丢覆盖。逐项核对真实来源 / actual provider passages与missing原因；provider empty missing 不可抹掉真实缺失。
 
-## 待独立 QA 后更新
+## 固定候选实际门判断
 
-原34项、tracked19项、新结构 holdout、完整 guarded / Web / 静态 / 构建与隔离 OpenAPI、实际 API/SSE / UI / history及信任变化，均由新 QA 在 be 固定目标复验。结束后 Sol读取原始退出码 / SHA / diff / manifest / 服务状态，逐项作 PASS / FAIL / BLOCKED / NOT_RUN判断；非回归只能说明没有新引入，不能自动豁免C19原要求。
+Sol 已读取 [独立 QA 报告](2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)、原始 commands / exit / failure日志和 final-state，并核对 [71项manifest](evidence/2026-10-13-m3-package-2-c19-dsh-qa-be4e72f/SHA256SUMS)全数匹配：清单 SHA-256 `930fcecee7e4a003d272965eeab1ac7f6a62f26bc997a568864a411889d52607`。QA-only初始提交 `4c3464b834c53c0982a75348469d7a8680c18716`，原作者报告措辞更正提交 `b365e79cde324332d87f1997be6169934d261574`；未改产品或evidence，测试期间源be不变，产品diff0、checkout clean、端口18873 / 15179无监听。
+
+| 门 | Sol 判断 |
+|---|---|
+| C19 主题范围 | FAIL P1：白萤会展“年度访客信息登记”完整正文三模式均漏引用；缺“信息”的近似正文在事实/比较被误引。6项5 FAIL / 1 PASS，不能逐词追加例外 |
+| 引用上限与资料存在性 | FAIL P2：默认limit5，云岬6份预算 / 汀屿无排期，三模式把真缺失替换成cap；limit20对照正确 |
+| D1 元数据 / 明确正文边界 | 本次有限对照PASS，未证实需改变契约；青榆论据按上文更正，不修改旧测试 |
+| 历史与tracked回归 | PASS，53不同用例；实际执行75含22重复，未双计 |
+| 完整检查 | PASS，guarded469 / Web56及静态、类型、lock、build；隔离OpenAPI生成与tracked无diff。首次api:types同字节写回方式已在QA报告如实说明，不将它冒充隔离验证 |
+| 实际合成UI / history / restart / stale引用 | PASS，仅报告实际观察流程 |
+| 专门HTTP/API/UI complete / partial / zero组合及两项新缺陷端到端 | NOT_RUN，本轮新反例为服务harness；新候选复验必须补齐 |
+| C19 / 包2及正式M3 | 未通过，无合并或发布 |
+
+非回归只能说明没有新引入，不能自动豁免C19原要求。真实门和工具未测项仍按下文保留。
+
+## 统一返工 1/2 的具体实现契约
+
+Developer Luna 在 `codex/c19-dsh-sol-gate` 连续负责 planner.py / query.py、相关新回归及DEV交接。QA已停止，不同时运行实现修改和新QA。main、M3冻结标签/目录、DSH交接目录不写；不改旧QA报告、evidence、资格基准或规格。
+
+1. 先复制本轮两份failed harness到自己的 `.local/dev` 复跑RED，保留实际退出码；把行为正反控提升为tracked回归，不删或弱化现有19 / 34项。
+2. 根因是全局删除集合仍作用于主体候选、family qualifier、topic phrase及alias tail。审计全部5处 `_TOPIC_FILLER` 调用和全局“的”替换，统一改成位置明确的请求外壳剥离；主题内部的“信息 / 资料 / 工作”等内容词以及对象名不得因命中常用词就消失。不得以删“信息”一个备选项收口。计划句末的“工作方案”必须在明确计划外壳位置处理，而内部“访客工作证”保持；同一主题在fact / comparison / plan正反控一致。保持陌生主题、registered/unregistered名字、礼貌 / 泛化方案、局部pairs与共享维度原正控。
+3. 对未覆盖pairs区分：当前资格与范围内确无支持、已有支持被dense候选预算截断、已有支持被引用limit截断。覆盖来自真实支持正文及统一资格检查，不靠页面数量 / 分数 / 单一break标志。真缺资料独立列明，截断只解释被实际排除的支持范围；混合原因可并列，纯截断不得称已知材料缺失。保持资格 / hash复核及provider实收范围，不新增排序系统、不暗增公共limit或90KB预算。
+4. 对信息 / 资料词的完整与近似正文、计划请求尾壳、相似名字正反控，对limit1 / 默认5 / 高limit、同时真缺失、纯截断、candidate前20造成不足做有限结构矩阵。不要无限扩展语言词汇；所有原有数据/权限及M3包1/3边界保持。
+5. 在自己工作树安装依赖并跑适用完整guarded / Web / 静态 / lock / build和生成稳定性，实际API/SSE完整 / partial / zero / 混合原因及history流程，写DEV报告与raw exit/hash。固定新源码SHA后停止写入，交全新QA集中复验；Sol判门，最多两轮自动返工。此次为1/2；若失败按新发现统一修复2/2而非逐小提交QA。
 
 此文尚不签发 C19 / 包2 / M3 PASS。正式 M3验收与合并仍需用户批准；真实 provider / 飞书 / 凭据 / Keychain / 材料、native / DMG、五日 / 双机 / 发布均 NOT_RUN，runtime UNVERIFIED、smoke未消费。产品修复只在 QA结束固定提交后串行交 Developer，最多两轮自动返工并各由全新 QA 复验；旧报告与被测源码不移动、不改写。
