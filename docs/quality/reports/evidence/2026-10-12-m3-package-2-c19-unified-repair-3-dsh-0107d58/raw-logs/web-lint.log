@@ -28,4 +28,4 @@
   note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
 
 Found 2 warnings and 0 errors.
-Finished in 28ms on 27 files with 116 rules using 28 threads.
+Finished in 31ms on 27 files with 116 rules using 28 threads.

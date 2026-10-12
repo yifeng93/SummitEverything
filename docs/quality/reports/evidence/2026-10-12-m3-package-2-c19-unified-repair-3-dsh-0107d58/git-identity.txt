@@ -4,5 +4,6 @@ main repo: /Users/yifengstudio/Documents/GitHub/SummitEverything
 baseline tag: handoff/c19-dsh-2026-10-12
 start commit: b3d0dff587c94ee295dfe5379bd67916c98184ec
 start product source: f79f613a902758da3173a5b27219fa568a912f5e
-fix commit: 18fe80a36d5ac0d592a7fbcf7404a7324d639c15
-tested source SHA: 6da7c3a8303ec310d6e87f0981f1abf3b9204f7d
+commit chain: 18fe80a (fix) -> 6da7c3a (tests) -> 80cabed (docs) -> 0107d58 (follow-up fix + tests)
+tested source SHA: 0107d581487345c85a4406cf4b17f772fa795a28
+subagent pre-verification worktree: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA (detached, kept)

@@ -69,7 +69,7 @@ CASES = [
     ("ws-full", "device-full-forward-plan", "比较枫湾活动预算与玄石展览的访客设备领用办法", "plan", {"excerpts": [BUDGET, DEVICE], "scope_missing": []}),
     ("ws-full", "device-single-fact", "玄石展览的访客设备领用办法是什么？", "fact", {"excerpts": [DEVICE], "scope_missing": []}),
     ("ws-full", "device-zero-swapped-topics", "比较枫湾活动访客设备领用办法与玄石展览预算", "comparison", {"excerpts": [], "scope_missing_any": ["枫湾活动", "玄石展览"]}),
-    ("ws-partial", "device-partial-b-topic-absent", "比较枫湾活动预算与玄石展览的访客设备领用办法", "comparison", {"excerpts": [BUDGET], "scope_missing": ["玄石展览：缺少term:访客设备领用依据。"]}),
+    ("ws-partial", "device-partial-b-topic-absent", "比较枫湾活动预算与玄石展览的访客设备领用办法", "comparison", {"excerpts": [BUDGET], "scope_missing": ["玄石展览：缺少访客设备领用依据。"]}),
     ("ws-qualifier", "year-qualifier-target-present", "玄石展览的年度访客登记办法是什么", "fact", {"excerpts": [YEAR], "scope_missing": []}),
     ("ws-qualifier", "year-qualifier-mismatch-zero", "玄石展览的季度访客登记办法是什么", "fact", {"excerpts": [], "scope_missing_any": ["玄石展览"]}),
     ("ws-qualifier", "special-qualifier-target-present", "玄石展览的专项证章领取办法是什么", "fact", {"excerpts": [SPECIAL], "scope_missing": []}),

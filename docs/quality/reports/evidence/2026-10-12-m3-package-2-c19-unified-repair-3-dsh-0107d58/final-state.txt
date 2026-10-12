@@ -1,25 +1,26 @@
 # C19 repair 3 DSH final state
-generated_at: 2026-10-12T14:04:56Z
+generated_at: 2026-10-12T14:19:28Z
 
 ## git
-HEAD_before_docs_commit: 6da7c3a8303ec310d6e87f0981f1abf3b9204f7d
+HEAD_before_docs_commit: 0107d581487345c85a4406cf4b17f772fa795a28
 branch: codex/dsh-c19-20261012
 worktree: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012
 product_source_tree_clean: yes
-uncommitted_at_generation: evidence + DEV report docs only (committed in the follow-up docs commit)
 
 ## product tree diff vs baseline product source f79f613 (src web native tests scripts pyproject.toml uv.lock)
- src/summit_everything/retrieval/planner.py         |  61 ++++-
- .../test_c19_topic_scope_normalization.py          | 257 +++++++++++++++++++++
- 2 files changed, 314 insertions(+), 4 deletions(-)
+ src/summit_everything/retrieval/planner.py         |  77 ++++-
+ src/summit_everything/retrieval/query.py           |  14 +-
+ .../test_c19_topic_scope_normalization.py          | 311 +++++++++++++++++++++
+ 3 files changed, 391 insertions(+), 11 deletions(-)
 
 ## baseline identity check
 b3d0dff product source == f79f613: yes
 
 ## listeners after replay/stop
-uvicorn replay port: 59186
-lsof -nP -iTCP:59186 -sTCP:LISTEN => 0 line(s); 0 means no listener
+uvicorn replay port: 60564
+lsof -nP -iTCP:60564 -sTCP:LISTEN => 0 line(s); 0 means no listener
 in-script epilogue connect_ex listening=false: see raw-logs/fix-api-replay.log listener-after-stop record
+main repo / tag / m3 baseline worktree / pre-verification worktree: not created or modified by this round except the two new worktrees listed in git worktree list
 
 ## external boundaries not exercised
 real provider/feishu/credentials/keychain/real materials: NOT_RUN
@@ -27,4 +28,4 @@ native shell, DMG, five-day, two-machine, release: NOT_RUN
 limited smoke: 0/1 consumed (unchanged)
 browser Chrome DevTools console/network/PNG: NOT_RUN (no tool interface this round)
 runtime metadata exposure: UNVERIFIED
-independent QA: NOT_RUN (to be scheduled by Sol on the fixed SHA)
+independent QA: NOT_RUN (DSH subagent pre-verification only)

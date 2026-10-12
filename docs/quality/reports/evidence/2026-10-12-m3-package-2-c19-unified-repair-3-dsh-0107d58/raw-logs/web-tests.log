@@ -1,0 +1,25 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012/web
+
+ ✓ src/components/SettingsView.test.tsx (1 test) 101ms
+ ✓ src/components/WorkspaceGate.test.tsx (2 tests) 103ms
+ ✓ src/components/DraftReview.test.tsx (2 tests) 114ms
+ ✓ src/components/PageReader.test.tsx (5 tests) 121ms
+ ✓ src/components/JournalView.test.tsx (3 tests) 141ms
+ ✓ src/components/SettingsView.regressions.test.tsx (3 tests) 161ms
+ ✓ src/App.test.tsx (1 test) 192ms
+ ✓ src/components/TodayView.test.tsx (2 tests) 227ms
+ ✓ src/components/ProjectsView.test.tsx (4 tests) 273ms
+ ✓ src/components/AskView.test.tsx (6 tests) 311ms
+ ✓ src/components/FeishuPanel.test.tsx (15 tests) 588ms
+ ✓ src/components/TasksPanel.test.tsx (12 tests) 939ms
+
+ Test Files  12 passed (12)
+      Tests  56 passed (56)
+   Start at  22:16:21
+   Duration  1.66s (environment 51%, tests 30%, import 10%, transform 9%)
+

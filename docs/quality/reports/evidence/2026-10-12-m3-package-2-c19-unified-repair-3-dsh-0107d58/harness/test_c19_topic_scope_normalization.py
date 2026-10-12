@@ -255,3 +255,57 @@ def test_unmatched_name_with_trailing_topic_keeps_the_object_span(tmp_path: Path
         "枫湾活动": "budget",
         "玄石展览": "term:访客设备领用",
     }
+
+
+def test_polite_lookup_verbs_are_request_shell_not_objects(tmp_path: Path) -> None:
+    root, service, _answerer = build_query(
+        tmp_path, [("枫湾活动", "经费", "枫湾活动预算上限为七万二千元。")]
+    )
+    for question in (
+        "麻烦帮我看看枫湾活动的经费上限是多少？",
+        "帮我查一下枫湾活动的预算上限。",
+        "看看枫湾活动的预算",
+    ):
+        planned = scope(service, root, question)
+        assert dict(planned.required_pairs) == {"枫湾活动": "budget"}, question
+        answer = ask(service, root, question, "fact")
+        assert "预算上限为七万二千元" in excerpts(answer), question
+        assert answer.missing_information == [], (question, answer.missing_information)
+
+
+def test_missing_wording_is_business_language_without_internal_markers(tmp_path: Path) -> None:
+    root, service, _answerer = build_query(tmp_path, [DEVICE_PAGES[0]])
+    answer = ask(service, root, "比较枫湾活动预算与玄石展览的访客设备领用办法", "fact")
+    assert answer.missing_information
+    joined = " ".join(answer.missing_information)
+    assert "term:" not in joined, joined
+    assert "玄石展览" in joined and "访客设备领用" in joined
+    assert "预算上限为七万二千元" in excerpts(answer)
+
+
+def test_limit_truncation_is_reported_as_truncation_not_absent_evidence(tmp_path: Path) -> None:
+    pages = [
+        ("枫湾活动", "枫湾预算", "枫湾活动预算上限为七万二千元。"),
+        ("枫湾活动", "枫湾排期", "枫湾活动启动时间为十月。"),
+        ("玄石展览", "玄石预算", "玄石展览预算上限为三万元。"),
+        ("玄石展览", "玄石排期", "玄石展览启动时间为十一月。"),
+        ("云岬营地", "云岬预算", "云岬营地预算上限为八万元。"),
+        ("云岬营地", "云岬排期", "云岬营地启动时间为十二月。"),
+    ]
+    root, service, _answerer = build_query(tmp_path, pages)
+    question = "比较枫湾活动、玄石展览和云岬营地的预算和排期。"
+
+    truncated = service.query(
+        root, question, fingerprint=FINGERPRINT, answer_mode="comparison", limit=5
+    )
+    assert len(truncated.citations) == 5
+    assert any("条数已达上限" in item for item in truncated.missing_information), (
+        truncated.missing_information
+    )
+
+    # Without truncation the answer keeps only real scope gaps.
+    complete = service.query(
+        root, question, fingerprint=FINGERPRINT, answer_mode="comparison", limit=12
+    )
+    assert not any("条数已达上限" in item for item in complete.missing_information)
+    assert len({citation.page_id for citation in complete.citations}) == 6
