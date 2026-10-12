@@ -9,6 +9,7 @@ from typing import Any, Literal, Protocol
 from uuid import UUID, uuid4
 
 from summit_everything.domain.content import (
+    Eligibility,
     RetrievalPurpose,
     StorageArea,
     retrieval_eligibility,
@@ -259,19 +260,22 @@ class QueryService:
             key=lambda item: cosine_similarity(query_vector, item["vector"]),
             reverse=True,
         )
-        qualified = self._qualified_chunks(root, dense, purpose=purpose)
+        qualified, qualification_rejections = self._qualified_chunks(root, dense, purpose=purpose)
         if answer_mode == "fact" and retrieval_plan.explicit_subjects:
             subject_pages: dict[UUID, PageSnapshot | None] = {}
             filtered: list[dict[str, Any]] = []
             for item in qualified:
                 page_id = item["page_id"]
                 if page_id not in subject_pages:
-                    subject_pages[page_id] = self._read_qualified_page(
+                    page, eligibility = self._read_page_eligibility(
                         root,
                         page_id,
                         purpose=purpose,
                         expected_content_sha256=str(item["content_sha256"]),
                     )
+                    subject_pages[page_id] = page
+                    if page is None:
+                        qualification_rejections[page_id] = eligibility.reason
                 page = subject_pages[page_id]
                 if page is None:
                     continue
@@ -283,10 +287,18 @@ class QueryService:
                     filtered.append(item)
             qualified = filtered
             if not qualified:
+                matching_rejections = self._subject_rejection_reasons(
+                    root, manifest, qualification_rejections, retrieval_plan.explicit_subjects
+                )
+                message = (
+                    self._no_evidence_message(matching_rejections, purpose, answer_mode=answer_mode)
+                    if matching_rejections
+                    else "没有找到能确认该对象的已确认资料。"
+                )
                 return self._empty_answer(
                     question,
                     purpose,
-                    "没有找到能确认该对象的已确认资料。",
+                    message,
                     answer_mode=answer_mode,
                 )
         candidates = qualified[:20]
@@ -294,7 +306,9 @@ class QueryService:
             return self._empty_answer(
                 question,
                 purpose,
-                "没有找到经确认且仍为当前版本的相关资料。",
+                self._no_evidence_message(
+                    qualification_rejections, purpose, answer_mode=answer_mode
+                ),
                 answer_mode=answer_mode,
             )
         self._check_cancelled(cancelled)
@@ -333,25 +347,18 @@ class QueryService:
                 if item["page_id"] in related_ids and item["chunk_id"] not in seen
             )
         citations: list[Citation] = []
+        citation_rejections: dict[UUID, str] = {}
         for item in ranked:
             if len(citations) >= limit:
                 break
-            try:
-                page = read_page(root, item["page_id"])
-            except (WorkspaceError, OSError):
-                continue
-            try:
-                area = StorageArea(page.storage_area)
-            except ValueError:
-                continue
-            eligibility = retrieval_eligibility(
-                page.metadata,
-                page.body,
-                area=area,
+            page, eligibility = self._read_page_eligibility(
+                root,
+                item["page_id"],
                 purpose=purpose,
-                expected_content_sha256=item["content_sha256"],
+                expected_content_sha256=str(item["content_sha256"]),
             )
-            if not eligibility.eligible:
+            if page is None:
+                citation_rejections[item["page_id"]] = eligibility.reason
                 continue
             validity = page.metadata.get("validity", "current")
             if validity not in {"current", "superseded", "invalid"}:
@@ -367,19 +374,19 @@ class QueryService:
                 )
             )
         if not citations:
-            missing_by_mode = {
-                "fact": "没有找到经确认且仍为当前版本的相关资料。",
-                "comparison": "没有足够的独立有效材料进行跨材料比较。",
-                "plan": "缺少可用的已确认依据，暂不能提出有事实支撑的工作方案。",
-            }
+            # A zero lexical score means no relevant passage was found. Only
+            # describe a cache/qualification problem when the selected passages
+            # actually failed the corresponding version or trust gate.
+            rejected = citation_rejections if ranked else {}
+            message = self._no_evidence_message(rejected, purpose, answer_mode=answer_mode)
             return Answer(
                 answer_id=uuid4(),
                 question=question,
-                text=missing_by_mode[answer_mode],
+                text=message,
                 purpose=purpose.value,
                 answer_mode=answer_mode,
                 index_status="ready",
-                missing_information=["已缓存的资料版本与当前工作库不一致，或当前资格检查未通过。"],
+                missing_information=[message],
             )
         passages = [
             {
@@ -405,11 +412,27 @@ class QueryService:
             else None
         )
         self._check_cancelled(cancelled)
-        if not self._citations_are_current(root, citations, purpose=purpose):
+        changed = self._citation_change_reason(root, citations, purpose=purpose)
+        if changed is not None:
+            message = {
+                "stale_snapshot": (
+                    "生成期间引用资料版本发生变化，回答已作废；请更新索引或确认当前版本后重新查询。"
+                ),
+                "approval_mismatch": (
+                    "生成期间引用资料的确认状态发生变化，回答已作废；请核验并重新查询。"
+                ),
+                "historical_only": (
+                    "生成期间引用资料已不属于当前查询范围，回答已作废；请重新查询当前可用资料。"
+                ),
+                "unavailable": "生成期间引用资料已不可用，回答已作废；请重新查询。",
+            }.get(
+                changed,
+                "生成期间引用资料不再符合本次查询资格，回答已作废；请重新查询当前可用资料。",
+            )
             return self._empty_answer(
                 question,
                 purpose,
-                "资料在生成期间发生变化；旧答案已失效，请重新索引后查询。",
+                message,
                 answer_mode=answer_mode,
             )
         source_statements = [f"{passage['heading']}：{passage['excerpt']}" for passage in passages]
@@ -530,40 +553,84 @@ class QueryService:
         chunks: list[dict[str, Any]],
         *,
         purpose: RetrievalPurpose,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], dict[UUID, str]]:
         page_eligibility: dict[UUID, bool] = {}
+        rejections: dict[UUID, str] = {}
         qualified: list[dict[str, Any]] = []
         for chunk in chunks:
             page_id = chunk["page_id"]
             if not isinstance(page_id, UUID):
                 continue
             if page_id not in page_eligibility:
-                page_eligibility[page_id] = (
-                    self._read_qualified_page(
-                        root,
-                        page_id,
-                        purpose=purpose,
-                        expected_content_sha256=str(chunk["content_sha256"]),
-                    )
-                    is not None
+                page, eligibility = self._read_page_eligibility(
+                    root,
+                    page_id,
+                    purpose=purpose,
+                    expected_content_sha256=str(chunk["content_sha256"]),
                 )
+                page_eligibility[page_id] = page is not None
+                if page is None:
+                    rejections[page_id] = eligibility.reason
             if page_eligibility[page_id]:
                 qualified.append(chunk)
-        return qualified
+        return qualified, rejections
+
+    def _subject_rejection_reasons(
+        self,
+        root: Path,
+        manifest: WorkspaceManifest,
+        rejections: dict[UUID, str],
+        subjects: tuple[str, ...],
+    ) -> dict[UUID, str]:
+        """Associate failed gates with explicit topics for diagnostics only."""
+        matching: dict[UUID, str] = {}
+        for page_id, reason in rejections.items():
+            try:
+                page = read_page(root, page_id)
+            except (WorkspaceError, OSError):
+                continue
+            names = self._page_subject_names(page, manifest)
+            if matches_explicit_subject(f"{names} {page.body}", subjects):
+                matching[page_id] = reason
+        return matching
 
     @staticmethod
-    def _read_qualified_page(
+    def _no_evidence_message(
+        rejections: dict[UUID, str],
+        purpose: RetrievalPurpose,
+        *,
+        answer_mode: Literal["fact", "comparison", "plan"],
+    ) -> str:
+        reasons = set(rejections.values())
+        if "stale_snapshot" in reasons:
+            return "索引中的页面版本与当前已确认内容不一致；请更新索引后重新查询。"
+        if "approval_mismatch" in reasons:
+            return "页面正文与确认记录不一致，未作为依据；请核验并确认正式内容后查询。"
+        if "unavailable" in reasons:
+            return "部分检索页面当前无法读取，未作为依据；请检查页面后重新查询。"
+        if reasons and reasons <= {"historical_only"} and purpose == RetrievalPurpose.CURRENT:
+            return "当前范围没有可引用的已确认资料；历史版本仅在历史范围中可查。"
+        if rejections:
+            return "索引中的材料未通过本次查询的批准或资格核验，未作为依据。"
+        return {
+            "fact": "当前已确认资料中没有找到与问题相关的依据。",
+            "comparison": "当前已确认资料中没有找到足以进行比较的相关材料。",
+            "plan": "当前已确认资料中没有找到可支撑方案的相关依据。",
+        }[answer_mode]
+
+    @staticmethod
+    def _read_page_eligibility(
         root: Path,
         page_id: UUID,
         *,
         purpose: RetrievalPurpose,
         expected_content_sha256: str | None = None,
-    ) -> PageSnapshot | None:
+    ) -> tuple[PageSnapshot | None, Eligibility]:
         try:
             page = read_page(root, page_id)
             area = StorageArea(page.storage_area)
         except (WorkspaceError, OSError, ValueError):
-            return None
+            return None, Eligibility(False, "unavailable")
         eligibility = retrieval_eligibility(
             page.metadata,
             page.body,
@@ -571,25 +638,32 @@ class QueryService:
             purpose=purpose,
             expected_content_sha256=expected_content_sha256,
         )
-        return page if eligibility.eligible else None
+        return (page if eligibility.eligible else None), eligibility
 
-    def _citations_are_current(
+    def _citation_change_reason(
         self,
         root: Path,
         citations: list[Citation],
         *,
         purpose: RetrievalPurpose,
-    ) -> bool:
-        return all(
-            self._read_qualified_page(
+    ) -> str | None:
+        for citation in citations:
+            page, eligibility = self._read_page_eligibility(
                 root,
                 citation.page_id,
                 purpose=purpose,
                 expected_content_sha256=citation.content_sha256,
             )
-            is not None
-            for citation in citations
-        )
+            if page is not None:
+                continue
+            if eligibility.reason == "unavailable":
+                return "unavailable"
+            if eligibility.content_sha256 != citation.content_sha256:
+                return "stale_snapshot"
+            if eligibility.reason == "approval_mismatch":
+                return eligibility.reason
+            return eligibility.reason
+        return None
 
     @staticmethod
     def _check_cancelled(cancelled: Event | None) -> None:

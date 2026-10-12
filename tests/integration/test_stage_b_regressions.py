@@ -65,19 +65,48 @@ def test_stale_cached_text_must_not_reach_reranker(tmp_path):
     assert not any("SYNTHETIC_STALE_CANARY" in t for t in captured), captured
 
 
-def test_citations_must_be_rechecked_after_answer_provider_returns(tmp_path):
+@pytest.mark.parametrize("answer_mode", ["fact", "comparison", "plan"])
+def test_citations_must_be_rechecked_after_answer_provider_returns(tmp_path, answer_mode):
     root, path = _workspace(tmp_path)
+    calls: list[str] = []
 
     class EditingAnswerer:
         def answer(self, question, passages, context=None):
+            calls.append(question)
             path.write_text(path.read_text().replace("北馆", "西馆"))
             return GroundedAnswer(text="北馆。")
 
     query = QueryService(IndexStore(tmp_path / "index.sqlite3"), answer_provider=EditingAnswerer())
     query.rebuild(root, fingerprint=FP)
-    answer = query.query(root, "合成地点", fingerprint=FP)
+    answer = query.query(root, "合成地点", fingerprint=FP, answer_mode=answer_mode)
     assert not answer.citations, answer.model_dump()
     assert "北馆" not in answer.text
+    assert answer.missing_information == [
+        "生成期间引用资料版本发生变化，回答已作废；请更新索引或确认当前版本后重新查询。"
+    ]
+    assert calls == ["合成地点"]
+
+
+@pytest.mark.parametrize("answer_mode", ["fact", "comparison", "plan"])
+def test_unavailable_citation_after_provider_is_not_mislabeled_as_stale(tmp_path, answer_mode):
+    root, path = _workspace(tmp_path)
+    calls: list[str] = []
+
+    class RemovingAnswerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            path.unlink()
+            return GroundedAnswer(text="不应保留失效引用的回答。")
+
+    query = QueryService(IndexStore(tmp_path / "index.sqlite3"), answer_provider=RemovingAnswerer())
+    query.rebuild(root, fingerprint=FP)
+    answer = query.query(root, "合成地点", fingerprint=FP, answer_mode=answer_mode)
+
+    assert not answer.citations
+    assert answer.text == "生成期间引用资料已不可用，回答已作废；请重新查询。"
+    assert answer.missing_information == [answer.text]
+    assert "索引" not in answer.text
+    assert calls == ["合成地点"]
 
 
 def test_query_with_101_chunks_uses_bounded_candidates(tmp_path):

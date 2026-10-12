@@ -108,6 +108,214 @@ def test_source_and_draft_material_never_enter_qualified_index(tmp_path: Path) -
     assert "没有找到" in no_match.text
 
 
+def test_unrelated_query_reports_missing_relevance_without_claiming_index_failure(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    approve_page(root, line_id, project_id, body="预算上限已确认是十二万元。", title="预算")
+    approve_page(root, line_id, project_id, body="启动时间已确认在十一月。", title="排期")
+    calls: list[str] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="不应由无关材料生成回答。")
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    for mode in ("fact", "comparison", "plan"):
+        answer = retrieval.query(
+            root,
+            "为彩色牙刷储存规则提出建议并列出缺失信息。",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+
+        assert answer.index_status == "ready"
+        assert answer.citations == []
+        expected = {
+            "fact": "当前已确认资料中没有找到与问题相关的依据。",
+            "comparison": "当前已确认资料中没有找到足以进行比较的相关材料。",
+            "plan": "当前已确认资料中没有找到可支撑方案的相关依据。",
+        }[mode]
+        assert answer.missing_information == [expected]
+        assert answer.text == expected
+        assert "缓存" not in answer.missing_information[0]
+        assert "资格检查未通过" not in answer.missing_information[0]
+    assert calls == []
+
+
+def test_current_scope_explains_historical_qualification_without_cache_warning(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    page_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="云杉工程的档案规则已确认。",
+        title="档案规则",
+    )
+    invalid_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="白桦工程的保管规则已确认。",
+        title="保管规则",
+    )
+    pages = {page.page_id: page for page in list_pages(root)}
+    for target_id, validity in ((page_id, "superseded"), (invalid_id, "invalid")):
+        page = pages[target_id]
+        PageWriter().confirm(
+            root,
+            metadata={**page.metadata, "validity": validity},
+            body=page.body,
+            confirmation_id=f"confirm-{validity}-diagnostic",
+            operation_id=f"write-{validity}-diagnostic",
+            expected_base_sha256=page.content_sha256,
+        )
+    calls: list[str] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="历史范围中的受限回答。")
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    current_answers = [
+        retrieval.query(
+            root,
+            "云杉工程的档案规则是什么？",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        for mode in ("fact", "comparison", "plan")
+    ]
+    invalid_answers = [
+        retrieval.query(
+            root,
+            "白桦工程的保管规则是什么？",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        for mode in ("fact", "comparison", "plan")
+    ]
+    assert calls == []
+    history = retrieval.query(
+        root,
+        "云杉工程的档案规则是什么？",
+        fingerprint="fake-v1",
+        purpose=RetrievalPurpose.HISTORY,
+    )
+    history_invalid = retrieval.query(
+        root,
+        "白桦工程的保管规则是什么？",
+        fingerprint="fake-v1",
+        purpose=RetrievalPurpose.HISTORY,
+    )
+
+    for answer in (*current_answers, *invalid_answers):
+        assert answer.citations == []
+        assert answer.missing_information == [
+            "当前范围没有可引用的已确认资料；历史版本仅在历史范围中可查。"
+        ]
+        assert "缓存" not in answer.missing_information[0]
+    assert history.citations and history.citations[0].page_id == page_id
+    assert history_invalid.citations and history_invalid.citations[0].page_id == invalid_id
+    assert calls == ["云杉工程的档案规则是什么？", "白桦工程的保管规则是什么？"]
+
+
+def test_rejected_stale_hash_is_reported_as_version_change(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    page_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="白桦工程的备份规则已确认。",
+        title="备份规则",
+    )
+    calls: list[str] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="不应使用旧索引回答。")
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+    page = next(page for page in list_pages(root) if page.page_id == page_id)
+    PageWriter().confirm(
+        root,
+        metadata={key: value for key, value in page.metadata.items() if key != "approval"},
+        body="白桦工程的备份规则已更新。",
+        confirmation_id="confirm-updated-backup-rule",
+        operation_id="write-updated-backup-rule",
+        expected_base_sha256=page.content_sha256,
+    )
+
+    answers = [
+        retrieval.query(
+            root,
+            "白桦工程的备份规则是什么？",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        for mode in ("fact", "comparison", "plan")
+    ]
+
+    for answer in answers:
+        assert answer.citations == []
+        assert answer.missing_information == [
+            "索引中的页面版本与当前已确认内容不一致；请更新索引后重新查询。"
+        ]
+        assert answer.text == answer.missing_information[0]
+        assert "资格检查未通过" not in answer.missing_information[0]
+    assert retrieval.status(root)["state"] == "stale"
+    assert calls == []
+
+
+def test_not_ready_and_empty_index_are_distinct_and_never_call_answer_provider(
+    tmp_path: Path,
+) -> None:
+    root, _line_id, _project_id = create_test_workspace(tmp_path / "workspace")
+    calls: list[str] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="无可引用内容时不应调用回答模型。")
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    not_ready = retrieval.query(root, "需要确认的规则是什么？", fingerprint="fake-v1")
+    retrieval.rebuild(root, fingerprint="fake-v1")
+    empty = retrieval.query(root, "需要确认的规则是什么？", fingerprint="fake-v1")
+
+    assert not_ready.index_status == "not_ready"
+    assert not_ready.missing_information == ["请先完成当前模型版本的索引。"]
+    assert empty.index_status == "empty"
+    assert empty.missing_information == ["当前索引中没有可引用的知识页。"]
+    assert calls == []
+
+
 def test_grounded_answer_receives_only_server_qualified_citations(tmp_path: Path) -> None:
     root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
     relevant_id, _ = approve_page(root, line_id, project_id, body="正式确认的地点是北馆。")

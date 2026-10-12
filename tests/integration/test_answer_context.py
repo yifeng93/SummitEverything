@@ -356,6 +356,52 @@ def test_role_memory_and_followup_context_are_verified_and_profile_local(tmp_pat
     client.close()
 
 
+def test_api_no_evidence_plan_diagnostic_is_ready_and_never_calls_provider(
+    tmp_path: Path,
+) -> None:
+    profile = tmp_path / "profile"
+    root = tmp_path / "workspace"
+    query = _ready_workspace(root, profile)
+    calls: list[str] = []
+
+    class CountingAnswerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="无相关资料时不应调用回答模型。")
+
+    query.answer_provider = CountingAnswerer()
+    client = TestClient(create_app(session_token=TOKEN, profile_root=profile, query_service=query))
+    client.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    _open(client, root)
+
+    index_status = client.get("/api/v1/index/status")
+    assert index_status.status_code == 200, index_status.text
+    assert index_status.json()["state"] == "ready"
+    assert index_status.json()["stale_pages"] == 0
+
+    response = client.post(
+        "/api/v1/queries",
+        json={
+            "request_id": str(uuid4()),
+            "question": "为风铃工程的彩色牙刷储存规则提出方案，并列出缺失信息。",
+            "fingerprint": "answer-context-test",
+            "answer_mode": "plan",
+            "purpose": "current",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    events = _events(response)
+    assert [event["type"] for event in events][-1] == "completed"
+    completed = events[-1]["data"]
+    assert completed["index_status"] == "ready"
+    assert completed["citations"] == []
+    assert completed["missing_information"] == ["当前已确认资料中没有找到可支撑方案的相关依据。"]
+    assert completed["text"] == completed["missing_information"][0]
+    assert "缓存" not in completed["missing_information"][0]
+    assert calls == []
+
+
 def test_fake_modes_separate_facts_comparison_and_advice_without_inventing_values(
     tmp_path: Path,
 ) -> None:
