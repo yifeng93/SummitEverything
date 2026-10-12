@@ -2,7 +2,17 @@
 
 ## 当前状态（2026-10-12）
 
-2026-10-12 最新门判断：包 1 离线集成 PASS；包 2 repair 2/2 独立 QA 仍 FAIL（已批准历史页误标待确认、明确本人偏好误拒）。固定产品源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，QA 固定 `94854bafc0f6aec4d79e55c851be2640ef436739`。两轮自动返工额度用尽，停止产品修改，等待用户决定是否授权额外一轮；包 3 仅完成只读准备，尚未实现，M3 正式验收和合并未执行。 证据与接续边界见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)。以下 DEV 交接中的待 QA 状态仅记录当时历史，由本条取代。
+2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 repair 2/2 曾由独立 QA 判 FAIL，Sol 时点结论见[门判断报告](../quality/reports/2026-10-12-M3-SOL-GATE.md)；用户之后明确批准仅一轮额外修复。extra 1 Developer 源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，等待全新独立 QA 和 Sol 判门，Developer 自测不是 QA PASS。若 extra 1 仍 FAIL，停止自动修复并交用户决定。首轮、repair 1/2 与 repair 2/2 QA 原报告及证据均保留。包 3 只读准备完成、实现未开始；M3 正式验收和合并未执行。以下 repair 2 等旧交接作为历史记录保留。
+
+### 包 2 extra 1 Developer 交接（待全新独立 QA）
+
+extra 1 起点 `36a0cc32757f761bd1c31abcddde07f1a2a426c6`，源码提交 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，分支 `codex/m3-integrated-packages`。文档-only 交接提交会另行固定；Developer 工作区收口后 clean。额外轮由用户明确批准，仅此一轮，历史 repair 1/2、repair 2/2 计数不重置。实现和自测说明见[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)，日志与真实 `.exit` 位于开发 checkout 的 `.local/dev/m3-package-2-extra-1/raw-logs/`（本地忽略目录，不提交）。
+
+本轮分离页面“内容批准 hash 有效”与 `current / superseded / invalid` 知识效力：阅读端用统一 `retrieval_eligibility(..., HISTORY)` 检查批准证明/当前正文 hash，页面 validity 独立显示；PageWriter 允许确认 invalid 但仍保持其 invalid 效力。外部编辑产生的真实 hash mismatch 仍显示待确认并保留版本警告；current/history 查询资格门没有放宽。记忆候选仅在真实 user 历史、精确原文跨度及明确 user-expression 声明基础上创建；API 再检查候选跨度附近的 source attribution / quote framing，不因“资料 / 引用 / 来源”一般词汇拒绝自然第一人称偏好，也不会接受从“材料原文：‘我偏好…’”截取出来的本人式片段。候选仍为 pending，必须另行确认才进入 active。
+
+Developer 自测：guarded pytest 407 passed，Web 55 passed / 12 files；Ruff check/format、mypy 40 files、uv lock/build、OpenAPI type generation、Web typecheck/lint/build 全部 exit 0；安装 `npm --prefix web ci` 126 packages / 0 vulnerabilities，`uv sync --locked --group dev` exit 0。保留 1 条既有 Starlette/httpx deprecation 与 2 条既有 React lint warnings。新增 C13/C20 单元/API/组件回归见 DEV 报告；这些是自测，不代表 QA 或包级通过。
+
+全新 QA 请固定产品源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，独立 checkout 后按此前 repair 2 QA/evidence 的完整 C13/C14/C19/C20/C21 与 README/browser 复演范围进行整包验收。重点实测已批准 superseded 和 invalid 页打开状态、hash 相同与真实外部编辑 mismatch / 再确认、CURRENT 不引历史页与 HISTORY 效力标记；通过真实 user message 创建自然偏好（至少包含“资料”“引用来源”）候选，并验证其只进入 pending、显式确认后才 active；材料 attribution quote 内的“我偏好…”截取、转述/粘贴、assistant source、fake message ID 仍拒。回归早期礼貌事实主体、多轮指代、资格复核、comparison / plan 多资料、角色/记忆预算和 replay。保留所有历史 FAIL，不修改旧 QA 报告、不降低验收门。若本次 QA 仍 FAIL，用户额外额度已耗尽，停下交 Sol/用户决定。真实模型/服务、材料、凭据/Keychain、native/DMG、五日/双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
 ### repair 2 Developer 历史交接（本轮 QA 结束前）
 

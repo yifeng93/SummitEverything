@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 计划起点为 clean main `5fd91c78930c80b2365957197b8a605757694a91`（历史）；当前分支已完成包 1，包 2 repair 2 Developer 自测固定于 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，待全新独立 QA。M3 完整验收仍未完成。
+- 计划起点为 clean main `5fd91c78930c80b2365957197b8a605757694a91`（历史）；当前包 1 离线集成 PASS，包 2 repair 2/2 QA 曾 FAIL。用户随后明确批准仅一轮额外修复；extra 1 Developer 自测固定于 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，现待全新独立 QA。M3 完整验收仍未完成。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -27,18 +27,18 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 最新门判断：包 1 离线集成 PASS；包 2 repair 2/2 独立 QA 仍 FAIL（已批准历史页误标待确认、明确本人偏好误拒）。固定产品源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，QA 固定 `94854bafc0f6aec4d79e55c851be2640ef436739`。两轮自动返工额度用尽，停止产品修改，等待用户决定是否授权额外一轮；包 3 仅完成只读准备，尚未实现，M3 正式验收和合并未执行。 详见[Sol 门判断](../../quality/reports/2026-10-12-M3-SOL-GATE.md)。当前状态取代下方 DEV 收口时的 QA pending；未通过条目不能记为验收完成。
+2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS；包 2 repair 2/2 QA 曾判 FAIL（QA 固定 `94854bafc0f6aec4d79e55c851be2640ef436739`，产品源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`），当时 Sol 门见[报告](../../quality/reports/2026-10-12-M3-SOL-GATE.md)。用户随后明确批准仅一轮额外修复，Developer extra 1 源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，等待全新独立 QA；自测不能替代 QA 或 Sol 判门。若 extra 1 仍 FAIL，自动修复停止并交用户决定。包 3 只读准备完成、实现未开始；M3 正式验收和合并未执行。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
-- [x] 事实、跨材料比较、工作方案三类明确路径和独立合成问题；来源陈述、推断/建议、缺失资料分开；引用及效力清晰，无资料不补造业务数字（Developer 完成；QA pending）。
+- [x] 事实、跨材料比较、工作方案三类明确路径和独立合成问题；来源陈述、推断/建议、缺失资料分开；引用及效力清晰，无资料不补造业务数字（Developer extra 1 自测完成；新 QA pending，不能视为包级通过）。
 - [x] 本地每库角色 CRUD、预算与实际问答上下文；不能解除证据/批准/工具权限，不改变整理忠实性（Developer 完成；QA pending）。
-- [x] 仅可从可核验的明确用户表达生成记忆候选；来源/assistant 不能自成用户事实，接受/编辑后才活跃；活跃记忆管理和预算（Developer 完成；QA pending）。
+- [x] 仅可从可核验的明确用户表达生成记忆候选；来源/assistant 不能自成用户事实，接受/编辑后才活跃；活跃记忆管理和预算（Developer extra 1 保持历史 user message、原文跨度、本人表达声明和单独确认门；新 QA pending）。
 - [x] 两 profile 同库各自历史/角色/记忆/索引独立；答案不自动写知识；当前/历史依据始终复验统一资格门（Developer 完成；QA pending）。
-- [x] Developer 持续定向检查，收口全量后端/Web/静态/类型/构建与生成契约检查（自动门结果见包 2 DEV 报告；Sol 尚未判门）。
-- [ ] 固定 SHA `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的整包独立 QA：C19、C20、C21，C13/C14 回归及实际浏览器三类问答、角色、记忆确认与删除；另覆盖礼貌问句主体识别、有界连续用户指代/主题边界、当前资格复核、比较/plan 多资料负控。QA 尚待 Sol 调度。
+- [x] Developer extra 1 定向检查及 README 全量后端/Web/静态/类型/构建与生成契约检查；guarded pytest 407 passed、Web 55 tests / 12 files，所有自动门 exit 0，lint 保留两条已有 warning（自测结果见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)；不等于 QA）。
+- [ ] 固定 SHA `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 的整包独立 QA：重跑历史 QA 的 C13/C14/C19/C20/C21 与浏览器问答/角色/记忆场景；重点核验批准 hash 与 superseded/invalid 效力分离、真实 hash mismatch 仍待确认、本人自然偏好提及资料/引用/来源可形成 pending、从真实 user message 引文截取的本人式子串仍拒绝，并保持 CURRENT/HISTORY 资格、comparison/plan 多材料与 earlier repairs。QA 尚待 Sol 调度；若 FAIL，停止自动修复并交用户决定。
 
-包 2 首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，四项缺陷和原始证据保留在[首轮报告](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)。Repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 的[独立 QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)判 FAIL，原报告与证据不改写。最后自动修复轮 repair 2/2 已在源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 完成，行为及全量 Developer 检查见[repair 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)。此轮 QA pending；Developer 检查不构成 QA PASS，如再失败须用户决定后续。
+包 2 原首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，[报告与证据](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)保留；repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 也均判 FAIL，原报告不改写。extra 1 是用户明确批准的单轮额外修复，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，行为、自测、限制和全新 QA 复演范围见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。本轮 QA pending；若 QA 仍 FAIL，不能自行启动下一轮。
 
 ## 包 3：连续工作与归档压缩
 

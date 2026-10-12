@@ -1,8 +1,12 @@
 # 开发与独立验收报告索引
 
-## 当前 M3 门判断（2026-10-12）
+## 当前 M3 门状态（2026-10-12）
 
-[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)：包 1 PASS；包 2 最后自动修复轮次的[独立 QA](2026-10-12-M3-PACKAGE-2-REPAIR-2-QA-94854ba.md)仍 FAIL，源码 `b7cfd32` / 固定 QA `94854ba`。此前自然问句和连续指代已通过；已批准历史页误标待确认、本人偏好误拒阻断 C13/C20。405 后端、52 Web 及全矩阵 exit 0；84 项证据 manifest 无 mismatch。停止自动返工，待用户是否授权额外一轮。包 3 只读准备完成、实现 NOT_RUN；正式/真实/发布门未通过。以下报告中的 pending 仅是各报告发布时历史。
+[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)保留 repair 2/2 当时 FAIL 的核证与证据；其“等待用户是否授权额外一轮”仅为该报告发布时的状态。用户之后明确批准**仅一轮额外修复**。extra 1 Developer 已固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并完成自测，[DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)及日志已留存；现在等待全新独立 QA 与 Sol 判门，不能视为 PASS。若该轮 QA FAIL，额外自动修复额度耗尽，必须停下交用户决定。包 1 离线集成 PASS；包 3 只读准备完成、实现 NOT_RUN；M3 正式验收和真实/发布门未通过。以下报告中的 pending 仅是各报告发布时历史。
+
+## M3 功能包 2 extra 1 Developer（2026-10-12，待独立 QA）
+
+[extra 1 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)：用户在 repair 2/2 QA FAIL 后明确授权的唯一额外修复轮，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`。区分历史页面批准 hash 与 current/superseded/invalid 效力；仅对真实 user 历史中的候选原文跨度核验归属语境，使自然偏好提及资料、引用、来源可建 pending 候选，同时拒绝材料 attribution、裸引号和 Markdown 引文中的第一人称片段。guarded pytest 407 passed、Web 55 tests / 12 files；README 全量检查及生成契约各命令的实际 `.exit` 均为 0，日志在 `.local/dev/m3-package-2-extra-1/raw-logs/`。这是 Developer 自测，非 QA；新 SHA 等待 Sol 调度的全新独立 QA。若 FAIL 不自动继续。真实服务/资料/凭据、native/DMG、五日/双机及发布门 NOT_RUN；runtime UNVERIFIED。
 
 ## M3 功能包 2 repair 2 Developer（2026-10-12，待独立 QA）
 
