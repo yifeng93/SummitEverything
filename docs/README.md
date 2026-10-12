@@ -25,6 +25,9 @@
 
 ## 当前交接与证据
 
+- [C19 DSH 独立试修提示词](handoff/DSH-C19.md)：冻结基线、既有尝试、复现与验收标准。
+- [M3 收尾与环境清理记录](handoff/2026-10-12-M3-CLEANUP.md)：归档、恢复入口及其他聊天的保留环境。
+
 - [最新交接](handoff/LATEST-IMPLEMENTATION.md)：最终受测代码、收口 main、范围及下一步。
 - [历史 Sol / Luna 安装补丁](handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)：留存历史安装版原文，仅作来源记录。
 - [Stage B 历史试验入口](handoff/DEEPSEEK-STAGE-B.md)：仅用于追溯 DeepSeek R1–R4。

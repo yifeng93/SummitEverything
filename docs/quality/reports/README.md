@@ -1,10 +1,14 @@
 # 开发与独立验收报告索引
 
-2026-10-12 用户已答复“暂不继续”：C19追加修复未获授权，停止源码修改。保留产品源码 `f79f613a902758da3173a5b27219fa568a912f5e`、最终QA FAIL和全部证据；包1/包3既有离线PASS保持，M3正式门未通过、main未合并。只有用户明确恢复后才继续。
+2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
 
-2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
+2026-10-12 最近受测结果（收尾前）：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、原周期已停止；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
-## 当前 C19 周期：最终 repair 2/2 FAIL，待用户决定
+## 收尾清理证据（不改变产品门）
+
+[清理记录](../../handoff/2026-10-12-M3-CLEANUP.md)、[DSH 专项提示词](../../handoff/DSH-C19.md) 和 [14项收尾核证](evidence/2026-10-12-m3-cleanup/verification.json)。只整理文档与本地环境，产品源码和旧证据不变，没有新产品 QA。
+
+## 最近 C19 周期：最终 repair 2/2 FAIL，原周期停止
 
 [Sol最终门](2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)核证[最终独立QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)：固定源码 `f79f613a902758da3173a5b27219fa568a912f5e`，QA `262f4eaa418d70f983f3b0b260d3635cd2e28c92`，57项manifest匹配；原12+纠正9项通过，新结构矩阵15 PASS/7 FAIL同归一化P1。450后端/Web56/静态/构建与隔离OpenAPI生成PASS；浏览器真实复现并history reopen保留。两轮自动返工均已结束，停止源码修改，未批准第三轮或M3正式合并。
 
