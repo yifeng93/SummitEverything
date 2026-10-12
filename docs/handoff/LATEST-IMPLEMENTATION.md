@@ -1,8 +1,14 @@
 # 最新实现交接
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 见[Sol 门判断](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[新 SHA 独立复验](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
+2026-10-12 当前总状态见下方各包交接：包 1、包 3离线集成 PASS；包 2 C19 DEV 候选待 fresh QA；M3 正式验收和合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
 ## 当前状态（2026-10-12）
+
+### 包 2 C19 统一修复候选（DEV 完成；fresh QA 待开始）
+
+用户在 extra 2 QA FAIL 后明确重新授权统一修复。固定产品源码 `247f6708c68812e8b217b1079a2fe953ebb06960`（`fix(retrieval): enforce shared evidence scope`）。三模式共享对象×维度范围；未识别并列对象保留为 missing，候选/重排/邻页/最终 provider passage 与 citation 重用范围门，按对象和维度核实覆盖，provider `missing_information=[]` 不能抹除产品已知缺口。未指定对象的广义多资料路径和有依据的跨材料方案保留；CURRENT/HISTORY、批准/hash 与生成后版本复核未放宽。API/OpenAPI/TS 无契约变化。
+
+Developer 检查：guarded pytest 446 passed；Web 56 tests / 12 files；Ruff check/format、mypy（43 source files）、lock check、uv build、OpenAPI types、Web typecheck/lint/build 的结果见 DEV 报告。guarded pytest 和 Web 全量日志在开发 checkout `.local/dev/c19-unified/`。保留 1 条既有 Starlette/httpx deprecation 和 2 条既有 React effect lint warnings。fresh QA 尚未运行；旧 extra 2 C19 P1 FAIL 仍是当前 Sol 门，不能据自测宣称包 2或 M3通过。支持语言边界与 S01–S14 观察见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)。真实模型/服务/材料/凭据、Keychain、native/DMG、五日/双机和发布仍 NOT_RUN，runtime UNVERIFIED。
 
 ### M3 包 3：独立离线集成 PASS
 
@@ -10,7 +16,7 @@
 
 初验 FAIL 仅在 repair 1/2 的新 SHA 上关闭：Action 首次 running receipt 保存失败、整理 job 目录创建失败都立即清理 lease，异常 traceback 存活时仍无锁/无 provider 调用；同意图重试仅一次副作用。新 QA 独立后端 440、核心 99、资格/变更 37、Web 56 及静态/类型/lock/build/OpenAPI 检查通过；120 流程跨四月归档和 provider 重放计数通过。两 profile 实际浏览器查看共享待审稿、unknown及显式重处理提示通过。53 项证据哈希全部经 Sol 匹配；产品 diff 0、QA clean、服务停止。首次 fresh checkout 缺 Web 依赖的 runner 失败日志保留，npm ci 后全套通过。
 
-本机 lease 不保证跨机同步锁；工作库轮流写入的产品边界不变。legacy undated记录不伪造完成日期，unknown不自动重发；原件和完整稿保留，恢复不自动批准知识。DevTools console/network/PNG、真实服务/材料/Keychain/native/DMG/五日/双机/发布 NOT_RUN，runtime UNVERIFIED，有限 smoke 各项保持 0/1。包 2 C19 P1仍阻塞整体 M3；未获得恢复其追加修复或重要里程碑合并的批准，不启动旧 Stage B、Stage C 或 M4/M5。
+本机 lease 不保证跨机同步锁；工作库轮流写入的产品边界不变。legacy undated记录不伪造完成日期，unknown不自动重发；原件和完整稿保留，恢复不自动批准知识。DevTools console/network/PNG、真实服务/材料/Keychain/native/DMG/五日/双机/发布 NOT_RUN，runtime UNVERIFIED，有限 smoke 各项保持 0/1。包 2 C19 P1仍阻塞整体 M3；用户已重新授权当前统一修复，仍未授权重要里程碑合并。旧 Stage B、Stage C 或 M4/M5不在此交接范围。
 
 历史交接（extra 1）：当时记录包 2 repair 2/2 QA FAIL 后用户批准一轮额外修复，源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并等待独立 QA。该状态已由本文当前状态与 extra 2 交接取代；Sol 后续门与 QA 结果见 extra 1 历史报告。
 

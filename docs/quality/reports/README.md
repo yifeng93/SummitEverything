@@ -1,10 +1,14 @@
 # 开发与独立验收报告索引
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 P1 曾由 extra 2 QA 判 FAIL；用户随后明确重新授权统一修复。Developer 候选源码 `247f6708c68812e8b217b1079a2fe953ebb06960` 已完成自测，等待全新独立 QA，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
-## 当前 M3 门状态（2026-10-12）
+## 当前包 2 C19 候选（2026-10-12，DEV 完成，fresh QA 待开始）
 
-[包 3 Sol 门判断](2026-10-12-M3-PACKAGE-3-SOL-GATE.md)：产品源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 的 repair 1/2 已由全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 复验，Sol核验53项manifest、真实退出码及源码diff0后判包3离线集成 PASS。[独立复验报告](2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)、[初验 FAIL](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)与所有原始证据保留。包2的追加修复已暂停，其[最新C19P1 FAIL门](2026-10-12-M3-SOL-EXTRA-2-GATE.md)继续有效；M3正式验收和合并未通过。旧报告中的待QA/待授权仅是其发布时间的历史状态。
+[C19 统一修复 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)：用户在 extra 2 FAIL 后明确重新授权；固定源码 `247f6708c68812e8b217b1079a2fe953ebb06960`。Developer 自测 guarded pytest 446 passed、Web 56 tests / 12 files，相关 static/types/build/generation checks exit 0；日志在 `.local/dev/c19-unified/`。这不是 QA 结论。extra 2 固定 SHA 的 P1 FAIL 与原报告/证据保留，fresh QA 对本候选为 NOT_RUN，M3 未正式通过。
+
+## M3 已判门与历史失败（2026-10-12）
+
+[包 3 Sol 门判断](2026-10-12-M3-PACKAGE-3-SOL-GATE.md)：产品源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 的 repair 1/2 已由全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 复验，Sol核验53项manifest、真实退出码及源码diff0后判包3离线集成 PASS。[独立复验报告](2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)、[初验 FAIL](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)与所有原始证据保留。包2 extra 2 的[最新 C19 P1 FAIL 门](2026-10-12-M3-SOL-EXTRA-2-GATE.md)继续作为历史 QA 结论；当前重新授权的候选状态见上方 DEV 报告。M3正式验收和合并未通过。
 
 ## M3 功能包 3 repair 1 Developer（2026-10-12，历史 DEV；后续独立 QA PASS）
 

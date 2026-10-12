@@ -6,7 +6,9 @@
 
 ## 当前状态
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 证据见[包 3 Sol 门判断](docs/quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立复验](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
+2026-10-12 C19 统一证据范围修复已由 Developer 固定源码 `247f6708c68812e8b217b1079a2fe953ebb06960` 并完成自测，正在等待全新独立 QA；extra 2 的 C19 P1 FAIL 历史保留，当前候选不代表 QA 或 M3 PASS。实现矩阵、边界和自测记录见[DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)。
+
+M3 包 1、包 3离线集成由 Sol 判 PASS；包 3源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`。包 2 C19 现有 DEV 候选与旧 FAIL 状态见上方；M3 正式验收及合并未通过。包 3证据见[Sol 门判断](docs/quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立复验](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
 
 包 3交付跨 profile 待审流程接续、中断后的未知状态及 checkpoint 本地恢复、完成回执月归档与稳定重放、仅本机 profile 的轮转诊断日志。原件、完整稿和确认记录保留；未知调用不会自动重发。120 条合成流程跨四个业务月，完成流程 active item/job、checkpoint、lease 均为 0，unknown 和 legacy undated 例外保留。
 

@@ -4,7 +4,11 @@
 
 ## 当前状态与下一步
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 依据见[包 3 Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)、[独立复验](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)及[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
+### C19 统一证据范围候选（2026-10-12，DEV 完成，fresh QA 待开始）
+
+用户在 extra 2 QA FAIL 后明确重新授权统一修复。产品源码固定 `247f6708c68812e8b217b1079a2fe953ebb06960`；范围约束统一覆盖 fact / comparison / plan 的对象×维度证据、邻页、最终 passage/citation 与产品层 missing，维持批准/hash gate。实现与 S01–S14 对照见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)，Sol 研究契约见[执行计划](../superpowers/plans/2026-10-12-c19-unified-evidence-scope.md)。源码自测 guarded pytest 446 passed，Web 56 passed / 12 files，Ruff/format/mypy/lock/build、OpenAPI 生成及 Web typecheck/lint/build 有记录的检查均 exit 0；详细实际结果和警告见 DEV 报告与 `.local/dev/c19-unified/`。这些是 Developer 自测，不是独立 QA；fresh QA NOT_RUN。extra 2 的 C19 P1 FAIL 与旧 QA 证据保持不变，M3 整体门未通过。
+
+M3 包 1、包 3离线集成由 Sol 判 PASS；包 3复验报告见[Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立 QA](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。包 2 C19 当前候选、QA 状态和未测边界见上方与[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
 包 3实现包括跨 profile intake 状态读取、同机 advisory attempt lease、dead-owner unknown/no-resend、provider checkpoint 仅恢复本地稿件的 CAS 流程；完成 intake items/jobs、capture、mutation、SHA write-intent、Feishu import receipts 的 active+monthly summary 回放；profile-only 轮转诊断日志。原件、完整稿件和确认记录保留，未知/未终态不归档。120 条合成流程样本跨 2026-06 至 09：120 item + 120 job + 366 transaction receipt 进入各自月汇总；另有一个 unknown 新流程和一个无日期 legacy item 保持 active。setup 在 2026-10 的两条 SHA receipt 单独报告；4 个合成 Feishu receipt 仅测文件归档路径，Fake provider 导入/回放由独立集成测试覆盖。详见 DEV 报告与 `.local/dev/m3-package-3/` 原始日志。
 
@@ -49,7 +53,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
-| M3 包 2 完整问答、角色与记忆 | extra 2 固定 QA SHA `d2236c2` | Sol 判 FAIL / C19 P1 | 无资料比较仍误引其他预算；当前未修，用户调整顺序先做包 3 |
+| M3 包 2 完整问答、角色与记忆 | DEV 源码 `247f6708`；fresh QA 待开始 | extra 2 QA 曾 FAIL / C19 P1；当前 DEV 候选未判 | 统一对象×维度范围候选待独立复验；M3 总门仍未通过 |
 | M3 包 3 连续状态与归档压缩 | repair 1/2 源码 `ea11fc5`；QA 固定 `7fd8a53` | Sol 判离线集成 PASS | C22 lease 异常已独立复验关闭；C22/C23/C21相关离线范围通过；包 2 C19 P1 保留，M3 正式门未通过 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |

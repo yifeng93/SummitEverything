@@ -4,11 +4,15 @@
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 C22/C23/C21为已测离线包级范围，C19不豁免。固定版本和证据见[Sol 门](reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[QA 复验](reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)；下方产品验收要求不变。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 P1 曾由 extra 2 QA 判 FAIL；用户随后明确重新授权统一修复。Developer 候选源码 `247f6708c68812e8b217b1079a2fe953ebb06960` 已完成自测，等待全新独立 QA，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 C22/C23/C21为已测离线包级范围，C19不豁免。固定版本和证据见[Sol 门](reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[QA 复验](reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)；下方产品验收要求不变。
 
 ## 当前结论与范围（2026-10-11）
 
 固定源码 `576895f6983ca41cacbbad45a9075b97b9986189` 的独立离线QA已通过，并以PR #10 / merge `41207e5bfb81b535c0254fd4ac242df11da40d67` 合入main。后端388项、25项独立失败路径与实际合成浏览器/原生开发壳复验通过；合并后13项检查通过（Web45）。历史7f/8b/fd FAIL保留，缺陷只在新SHA复验后关闭。真实接入、OS Keychain、模型R03质量与安装包等门仍NOT_RUN；完整Stage B/v1未验收。证据发布范围与合并后初次瞬时失败见[收口记录](reports/2026-10-11-STAGE-B-POSTMERGE.md)。
+
+### C19 统一候选状态（2026-10-12）
+
+包 2 C19 P1 的 extra 2 QA FAIL 保持历史结论。用户随后重新授权统一证据范围修复；Developer 固定源码 `247f6708c68812e8b217b1079a2fe953ebb06960`，DEV 自测完成，fresh 独立 QA 为 NOT_RUN。该候选没有改变 C19 验收标准，也不能据自测覆盖旧 FAIL。S01–S14 开发观察与语言限制见[DEV 报告](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)；独立门待 Sol 对固定 SHA 复验。
 
 ### 阶段 A 历史结论
 

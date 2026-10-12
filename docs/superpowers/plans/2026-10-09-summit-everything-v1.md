@@ -1,6 +1,6 @@
 # SummitEverything v1 Implementation Plan
 
-2026-10-12 当前：M3 包 1和包 3离线集成由 Sol 判 PASS；包 3 repair 1/2 受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已经全新独立 QA 复验及 Sol 核证。初验 C22 FAIL 和原证据保留；包 2 C19 P1 仍 FAIL、追加修复已暂停，M3 正式验收与合并尚未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED。 证据见[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)；历史条目保持各自版本归属。
+2026-10-12 当前：M3 包 1和包 3离线集成由 Sol 判 PASS；包 3 repair 1/2 受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已经全新独立 QA 复验及 Sol 核证。包 2 extra 2 QA 的 C19 P1 FAIL 保持历史结论；用户随后重新授权统一证据范围修复，当前 Developer 源码候选 `247f6708c68812e8b217b1079a2fe953ebb06960` 已自测并等待全新 QA，未获 Sol 评定。M3 正式验收与合并尚未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED。 证据见[当前 C19 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)、[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)；历史条目保持各自版本归属。
 
 > 给 agent：按 executing-plans 的逐任务方式执行。阶段验收须由独立执行环境完成；M1 已由独立 QA 在固定 checkout 验收。后续阶段继续使用隔离模拟材料，不能假设真实外部门已获授权。
 
@@ -14,7 +14,7 @@
 
 ## 当前阶段记录（更新于 2026-10-12；下方历史任务清单保留）
 
-M1 与 M2 阶段 A 在 Fake-only 范围已收口，Stage B 离线源码 / 开发壳已独立 QA 并合入 main；细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。M3 包 1和包 3离线集成 PASS，包 2 C19 P1 FAIL仍阻塞 M3 正式门。Stage C、M3 正式验收及 M4–M5 仍未通过；不重复执行历史 Stage B 提示词。
+M1 与 M2 阶段 A 在 Fake-only 范围已收口，Stage B 离线源码 / 开发壳已独立 QA 并合入 main；细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。M3 包 1和包 3离线集成 PASS；包 2 extra 2 的 C19 P1 FAIL 保留，用户重授权后的统一修复候选 `247f6708c68812e8b217b1079a2fe953ebb06960` 等待独立 QA，故仍阻塞 M3 正式门。Stage C、M3 正式验收及 M4–M5 仍未通过；不重复执行历史 Stage B 提示词。
 
 ## 全局执行规则与验收门
 
