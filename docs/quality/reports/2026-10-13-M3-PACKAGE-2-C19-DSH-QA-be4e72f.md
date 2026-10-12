@@ -4,7 +4,7 @@
 
 ## 结论与缺陷
 
-**C19 主题词保留：FAIL，P1。** 独立新增“信息”结构对照复现了同类全局删词根因，故旧设备修复仍未达到 C19 的主题/证据边界要求。测试材料均为已确认的合成页面，矩阵通过后端查询服务执行，不调用 provider，期望观察引用与缺失边界：
+**C19 主题词保留：FAIL，P1。** 独立新增“信息”结构对照复现了同类全局删词根因，故旧设备修复仍未达到 C19 的主题/证据边界要求。测试材料均为已确认的合成页面；信息词与 D3 矩阵通过后端服务 harness 执行，使用记录型 Fake answerer 观察 provider 调用次数及传入 passages，不调用真实外部 provider，期望观察引用与缺失边界：
 
 | 模式 | 问题 | 正控材料 / 期望 | 实际结果 |
 |---|---|---|---|
@@ -28,7 +28,7 @@
 - Python 静态检查：**PASS**，ruff check、ruff format（79 files）、mypy（43 files）、lock check、`uv build` 全部退出 0。
 - Web：**PASS**，56 tests / 12 files；typecheck、lint、build 均退出 0。Lint 有 2 条既有 warning。
 - API 类型：**PASS**。项目 `api:types` 退出 0，执行后 tracked 生成文件字节无变化。另将 OpenAPI 与生成类型隔离输出到 `.local` 并比较，退出 0、无 diff。
-- 本地 API/UI 合成流程：**PASS（仅实际观察到的流程）**。使用 Fake provider 在真实本地进程中操作隔离工作库，完成导入、确认、索引、设备事实查询、双对象比较、历史打开、引用重开；修改合成正文后旧历史保留快照并显示旧引用失效状态；服务重启后重开工作库与历史，篡改后的正文被确认记录校验拒绝。完整观察见 evidence `ui-observations.md` 与本地服务日志。信息限定词矩阵和 D3 holdout 是后端服务 harness，不是浏览器端到端复验。
+- 本地 API/UI 合成流程：**PASS（仅实际观察到的流程）**。使用 Fake provider 在真实本地进程中操作隔离工作库，完成导入、确认、索引、设备事实查询、双对象比较、历史打开、引用重开；修改合成正文后旧历史保留快照并显示旧引用失效状态；服务重启后重开工作库与历史，篡改后的正文被确认记录校验拒绝。完整观察见 evidence `ui-observations.md` 与本地服务日志。信息限定词矩阵和 D3 holdout 是后端服务 harness，不是浏览器端到端复验；完整 / partial / zero 范围的专门 HTTP API/UI 验收本轮未执行（NOT_RUN），不据此记 PASS。
 - 浏览器 DevTools console/network/PNG：**NOT_RUN**，当前环境没有可用采集接口；不以 HTTP 200 代替 UI 观察。
 - 真实 provider、飞书、凭据、Keychain、真实业务材料、DMG、五日、双机及发布：**NOT_RUN**；runtime **UNVERIFIED**；有限 smoke **0/1 未消费**。
 
