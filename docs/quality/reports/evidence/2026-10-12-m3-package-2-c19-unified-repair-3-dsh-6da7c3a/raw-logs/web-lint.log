@@ -1,0 +1,31 @@
+
+> web@0.0.0 lint
+> oxlint
+
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/TodayView.tsx:70:26]
+ 69 | 
+ 70 |   useEffect(() => { void refresh() }, [refresh])
+    :   ^^^^|^^^^              ^^^|^^^
+    :       |                     `-- Avoid calling setState() directly within an effect
+    :       `-- This is the containing effect
+ 71 | 
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/ProjectsView.tsx:40:26]
+ 39 | 
+ 40 |   useEffect(() => { void refresh() }, [refresh])
+    :   ^^^^|^^^^              ^^^|^^^
+    :       |                     `-- Avoid calling setState() directly within an effect
+    :       `-- This is the containing effect
+ 41 | 
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+Found 2 warnings and 0 errors.
+Finished in 28ms on 27 files with 116 rules using 28 threads.

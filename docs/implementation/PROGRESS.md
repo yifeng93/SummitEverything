@@ -1,5 +1,7 @@
 # 实施进展账本
 
+2026-10-12 DSH C19 repair 3（用户指定的 DSH 独立试修，**仅 DEV PASS；独立 QA NOT_RUN**）：分支 `codex/dsh-c19-20261012`、工作树 `/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012`，起点 `b3d0dff587c94ee295dfe5379bd67916c98184ec`（产品源码仍等同 `f79f613a902758da3173a5b27219fa568a912f5e`）。根因是 `retrieval/planner.py` 把 `设备/年度/专项/工作` 等信息性限定词与请求外壳放进同一个全局删除集合 `_TOPIC_FILLER`，并用 `专项` 充当对象名后缀。修复只在共享归一化边界：限定词不再全局删除、只有纯计划用词才不成主题、`专项` 不再作为对象名后缀、单字虚词或含「的」词干不得成为伪对象、以已识别对象开头的片段不再产生第二对象、结尾主题词可与未匹配对象名分离。RED 为 12+22 矩阵 **7 failed / 27 passed**，GREEN 为 **34 passed**；新增 tracked 回归 15 项，全量后端 450 → **465 passed**，Web 56/12，ruff/format/mypy/lock/uv build/api:types/typecheck/lint/build 全部 exit 0，`git diff --check` exit 0；实际 loopback API/SSE 复演 13/13 观测 PASS 且 history reopen 保留两条引用。证据见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-3-DEV.md)与 [evidence](../quality/reports/evidence/2026-10-12-m3-package-2-c19-unified-repair-3-dsh-6da7c3a/README.md)。受测固定源码 `6da7c3a8303ec310d6e87f0981f1abf3b9204f7d`；本轮不宣告 C19/M3 通过，不合并 main；真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke 未消费。C19 仍需由 Sol 调度的全新独立 QA 在另一 checkout 复验。
+
 2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
 
 初始记录：2026-10-09。实现者维护，验收者另写报告；状态不从测试数量推断。
