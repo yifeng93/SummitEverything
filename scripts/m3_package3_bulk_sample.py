@@ -208,6 +208,15 @@ def main() -> None:
             sha_records = [
                 name for name in archived_tx if len(name) == 69 and name.endswith(".json")
             ]
+            active_transactions = {
+                "capture_intake": len(list(tx_root.glob("intake-*.json"))),
+                "mutation": len(list(tx_root.glob("mutation-*.json"))),
+                "write_intent_sha": sum(
+                    len(list(tx_root.glob(f"{sha}.json")))
+                    for sha in {name[:-5] for name in sha_records}
+                ),
+                "feishu_import": len(list(tx_root.glob("feishu-import-*.json"))),
+            }
             summary = {
                 "flows_completed": FLOW_COUNT,
                 "months": [f"{year:04d}-{month:02d}" for year, month in MONTHS],
@@ -244,6 +253,7 @@ def main() -> None:
                 "item_month_records": len(archived_items),
                 "job_month_records": len(archived_jobs),
                 "transaction_month_records": len(archived_tx),
+                "active_transaction_files_by_family": active_transactions,
                 "transaction_family_records": {
                     "capture_intake": sum(name.startswith("intake-") for name in archived_tx),
                     "mutation": sum(name.startswith("mutation-") for name in archived_tx),
