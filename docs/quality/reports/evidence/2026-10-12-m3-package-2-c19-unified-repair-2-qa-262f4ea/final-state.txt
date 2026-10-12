@@ -1,0 +1,10 @@
+Tested fixed HEAD: 262f4eaa418d70f983f3b0b260d3635cd2e28c92
+Product source: f79f613a902758da3173a5b27219fa568a912f5e
+Initial git status: clean (recorded before QA harness/evidence creation)
+Final HEAD before QA-only report commit: 262f4eaa418d70f983f3b0b260d3635cd2e28c92
+Product-tree diff against source: src/web/native/tests/config/dependencies/lockfiles unchanged (git diff exit 0)
+API listener on 127.0.0.1:18872 after stop: none (lsof exit 1)
+Web listener on 127.0.0.1:15172 after stop: none (lsof exit 1)
+Runtime exposure: UNVERIFIED
+Real provider / Feishu / real materials / credentials / Keychain / native / DMG / five-day / two-machine / release: NOT_RUN
+Smoke calls used: 0

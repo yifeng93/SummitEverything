@@ -1,0 +1,23 @@
+case	command	exit	result
+install-web	npm --prefix web ci	0	PASS
+install-python	uv sync --locked --group dev	0	PASS
+previous-holdout	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q -s .local/qa/c19-r2/harness/test_c19_previous_holdout.py	0	PASS 12/12
+corrected-holdout	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q -s .local/qa/c19-r2/harness/test_c19_fresh_holdout.py	0	PASS 9/9 (initial corrected repair-1 holdout)
+expanded-matrix	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q -s .local/qa/c19-r2/harness/test_c19_fresh_holdout.py	1	FAIL 7/22, same P1 normalization root; exact complete positive lost due `设备` stripping
+full-backend	env PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	0	PASS 450 passed
+ruff-check	uv run ruff check src tests	0	PASS
+ruff-format	uv run ruff format --check src tests	0	PASS
+mypy	uv run mypy src	0	PASS
+lock-check	uv lock --check	0	PASS
+python-build	uv build	0	PASS
+web-tests	npm --prefix web test -- --run	0	PASS 56 tests / 12 files
+web-typecheck	npm --prefix web run typecheck	0	PASS
+web-lint	npm --prefix web run lint	0	PASS
+web-build	npm --prefix web run build	0	PASS
+openapi-export-isolated	PYTHONPATH="$PWD/src" uv run python .local/qa/c19-r2/export_openapi_local.py	0	PASS; wrote only .local/qa
+openapi-types-isolated	web/node_modules/.bin/openapi-typescript .local/qa/c19-r2/openapi.json -o .local/qa/c19-r2/generated.ts	0	PASS
+openapi-types-diff	diff -u web/src/api/generated.ts .local/qa/c19-r2/generated.ts	0	PASS no diff
+mixed-reproduction	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:.local/qa/c19-r2/harness" uv run python .local/qa/c19-r2/harness/reproduce_device_topic.py	0	FAIL product behavior captured (four cases)
+api-listener-check	lsof -nP -iTCP:18872 -sTCP:LISTEN	1	PASS no listener
+web-listener-check	lsof -nP -iTCP:15172 -sTCP:LISTEN	1	PASS no listener
+product-tree-check	git diff --quiet f79f613a902758da3173a5b27219fa568a912f5e HEAD -- src web native tests pyproject.toml uv.lock package.json	0	PASS no product changes
