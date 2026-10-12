@@ -495,8 +495,10 @@ class QueryService:
             )
         citations: list[Citation] = []
         citation_rejections: dict[UUID, str] = {}
+        truncated_by_limit = False
         for item in ranked:
             if len(citations) >= limit:
+                truncated_by_limit = True
                 break
             page, eligibility = self._read_page_eligibility(
                 root,
@@ -592,6 +594,13 @@ class QueryService:
         }
         missing_pairs = required_pairs - covered_pairs
         scope_missing = self._scope_missing_pairs(missing_pairs)
+        if truncated_by_limit and scope_missing:
+            # The citation cap, not absent evidence, may be why a pair is uncovered;
+            # say so instead of presenting a truncation shortfall as missing knowledge.
+            scope_missing = [
+                *scope_missing,
+                "本次引用条数已达上限，上述缺口可能由截断造成；可缩小问题范围或减少所问对象/主题后重试。",
+            ]
         comparison_missing = (
             ["可用材料不足两组，无法进行跨材料比较。"]
             if answer_mode == "comparison"
@@ -901,7 +910,10 @@ class QueryService:
 
         def readable_dimension(dimension: str, subject: str) -> str:
             base, *qualifiers = dimension.split("&")
-            base_label = "、".join(labels.get(item, item) for item in base.split("+"))
+            # A bare exact topic carries no family label; show its business text
+            # instead of leaking the internal term: marker into the answer.
+            base_parts = [item.removeprefix("term:") for item in base.split("+")]
+            base_label = "、".join(labels.get(part, part) for part in base_parts)
             qualifier_labels = [
                 item.removeprefix("term:")
                 for item in qualifiers
