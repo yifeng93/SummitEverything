@@ -1,5 +1,7 @@
 # SummitEverything
 
+2026-10-12 用户已答复“暂不继续”：C19追加修复未获授权，停止源码修改。保留产品源码 `f79f613a902758da3173a5b27219fa568a912f5e`、最终QA FAIL和全部证据；包1/包3既有离线PASS保持，M3正式门未通过、main未合并。只有用户明确恢复后才继续。
+
 个人工作知识应用：把工作材料整理成经本人确认、可复用、可迁移的 Markdown 资产，并在同一应用中完成检索问答与日常工作。
 
 首版交付 macOS DMG，内部使用 WebUI；每台电脑独立运行，本地目录或 OneDrive 保存工作库。核心栈为 Python / FastAPI、React / TypeScript、SQLite 和薄 macOS 壳。
