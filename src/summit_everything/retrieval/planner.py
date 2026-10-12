@@ -19,16 +19,25 @@ _REQUEST_CLAUSE = re.compile(
     r"(?:我.*(?:想知道|希望|想问|想了解)|(?:你|您).*(?:能|可以|可否|能否|告诉|说明|帮)|"
     r"^(?:请|麻烦)(?:帮我)?|^(?:能否|可否))"
 )
-# Request shell at the start of a span: politeness, question framing and the
-# imperative lookup verbs people actually use. Longer alternatives come first so
-# “查一下” is consumed before “查”. These carry no evidence of their own; leaving
-# them in place turns them into pseudo objects with a false missing entry.
-_REQUEST_SHELL = (
+# Request shell at the start of a span. Politeness is safe to drop anywhere; the
+# lookup and plan vocabulary is only safe where the text cannot itself be a corpus
+# name — a real object may legitimately be called “总结报告” or “梳理细则”, so those
+# words are stripped from a leftover after a recognized object and from a topic
+# span, but never from a standalone object candidate. Longer alternatives come
+# first so “查一下” is consumed before “查”.
+_POLITE_SHELL = (
     r"麻烦(?:帮我)?|请问|请|我希望|我想(?:知道|问|了解)?|你能告诉我|您能告诉我|帮我|"
-    r"先核对|核对|确认|查询|了解|能否|可否|告诉我|说明一下|"
-    r"看看|看一下|看下|瞧瞧|瞅瞅|查一查|查一下|查看|梳理|总结"
+    r"先核对|核对|确认|查询|了解|能否|可否"
 )
-_SUBJECT_REQUEST_PREFIX = re.compile(rf"^(?:(?:{_REQUEST_SHELL}))+")
+_LOOKUP_VERBS = r"看看|看一下|看下|瞧瞧|瞅瞅|查一查|查一下|查看"
+_TOPIC_SHELL_ONLY = (
+    r"告诉我|说明一下|梳理|总结|比较|对比|对照|分析一下|为|给|针对|关于|制定|提出|汇总|查|并"
+)
+
+_SUBJECT_REQUEST_PREFIX = re.compile(rf"^(?:(?:{_POLITE_SHELL}))+")
+_LEFTOVER_REQUEST_PREFIX = re.compile(
+    rf"^(?:(?:{_POLITE_SHELL}|{_LOOKUP_VERBS}|告诉我|说明一下|梳理|总结))+"
+)
 _GENERIC_SUBJECTS = {
     "项目",
     "计划",
@@ -83,9 +92,7 @@ _TOPIC_FILLER = re.compile(
 # become an exact scope such as term:工作.
 _PLAN_SHELL = re.compile(r"^(?:(?:下一步|后续|往后|接下来|工作|计划|安排|方案|任务|要点|总结))+$")
 _TOPIC_REQUEST_SUFFIX = re.compile(r"(?:提出|制定|给出|说明|告诉|并列出|列出|再给|请|帮我).*")
-_TOPIC_PREFIX = re.compile(
-    rf"^(?:(?:{_REQUEST_SHELL}|比较|对比|对照|分析一下|为|给|针对|关于|制定|提出|汇总|查|并)+)+"
-)
+_TOPIC_PREFIX = re.compile(rf"^(?:(?:{_POLITE_SHELL}|{_LOOKUP_VERBS}|{_TOPIC_SHELL_ONLY})+)+")
 _TOPIC_SUFFIX = re.compile(
     r"(?:(?:分别|是什么|是谁|有什么|怎么(?:安排|处理|办|做)?|如何|安排|办理|办法|方式|流程|手续|"
     r"规则|情况|信息|资料|内容|建议|方案|上限|多少|哪些|哪一个|哪项|吗|呢|吧|啊|一下|"
@@ -267,11 +274,20 @@ def _extract_explicit_subjects(
                 for alias in matched
                 if _normalize(alias)
             )
+            contains_known_object = any(
+                _normalize(alias) in normalized_candidate for alias in matched if _normalize(alias)
+            )
             for alias in matched:
                 normalized_candidate = normalized_candidate.replace(_normalize(alias), "")
             if known_object_prefix:
                 continue
-            candidate = _SUBJECT_REQUEST_PREFIX.sub("", normalized_candidate).strip()
+            # Only a leftover that actually followed a recognized object may drop the
+            # lookup vocabulary; a standalone candidate can itself be a name such as
+            # “总结报告”, so it is cleaned with politeness words alone.
+            request_prefix = (
+                _LEFTOVER_REQUEST_PREFIX if contains_known_object else _SUBJECT_REQUEST_PREFIX
+            )
+            candidate = request_prefix.sub("", normalized_candidate).strip()
             candidate = _trim_topic_after_entity_suffix(candidate)
             candidate = _TOPIC_FILLER.sub("", candidate).strip()
             if _REQUEST_CLAUSE.search(candidate):

@@ -593,14 +593,12 @@ class QueryService:
             for pair in scope_pairs_by_chunk.get(citation.chunk_id, set())
         }
         missing_pairs = required_pairs - covered_pairs
-        scope_missing = self._scope_missing_pairs(missing_pairs)
-        if truncated_by_limit and scope_missing:
-            # The citation cap, not absent evidence, may be why a pair is uncovered;
-            # say so instead of presenting a truncation shortfall as missing knowledge.
-            scope_missing = [
-                *scope_missing,
-                "本次引用条数已达上限，上述缺口可能由截断造成；可缩小问题范围或减少所问对象/主题后重试。",
-            ]
+        if truncated_by_limit and missing_pairs:
+            # The citation cap, not absent knowledge, is why these pairs are
+            # uncovered: say so and never present the shortfall as missing evidence.
+            scope_missing = [self._truncated_scope_notice(missing_pairs)]
+        else:
+            scope_missing = self._scope_missing_pairs(missing_pairs)
         comparison_missing = (
             ["可用材料不足两组，无法进行跨材料比较。"]
             if answer_mode == "comparison"
@@ -900,34 +898,43 @@ class QueryService:
         )
 
     @staticmethod
-    def _scope_missing_pairs(pairs: set[tuple[str, str]]) -> list[str]:
+    def _readable_dimension(dimension: str, subject: str) -> str:
         labels = {
             "budget": "预算",
             "schedule": "排期或启动时间",
             "storage": "存储或保管规则",
             "owner": "负责人信息",
         }
+        base, *qualifiers = dimension.split("&")
+        # A bare exact topic carries no family label; show its business text
+        # instead of leaking the internal term: marker into the answer.
+        base_parts = [item.removeprefix("term:") for item in base.split("+")]
+        base_label = "、".join(labels.get(part, part) for part in base_parts)
+        qualifier_labels = [
+            item.removeprefix("term:")
+            for item in qualifiers
+            if item.startswith("term:") and item.removeprefix("term:") != subject
+        ]
+        return f"{base_label}（{'、'.join(qualifier_labels)}）" if qualifier_labels else base_label
 
-        def readable_dimension(dimension: str, subject: str) -> str:
-            base, *qualifiers = dimension.split("&")
-            # A bare exact topic carries no family label; show its business text
-            # instead of leaking the internal term: marker into the answer.
-            base_parts = [item.removeprefix("term:") for item in base.split("+")]
-            base_label = "、".join(labels.get(part, part) for part in base_parts)
-            qualifier_labels = [
-                item.removeprefix("term:")
-                for item in qualifiers
-                if item.startswith("term:") and item.removeprefix("term:") != subject
-            ]
-            return (
-                f"{base_label}（{'、'.join(qualifier_labels)}）" if qualifier_labels else base_label
-            )
-
+    def _scope_missing_pairs(self, pairs: set[tuple[str, str]]) -> list[str]:
         return [
             f"{subject or '未限定对象'}：缺少"
-            f"{readable_dimension(dimension, subject) or '可引用的主题资料'}依据。"
+            f"{self._readable_dimension(dimension, subject) or '可引用的主题资料'}依据。"
             for subject, dimension in sorted(pairs)
         ]
+
+    def _truncated_scope_notice(self, pairs: set[tuple[str, str]]) -> str:
+        labels = [
+            f"{subject or '未限定对象'}："
+            f"{self._readable_dimension(dimension, subject) or '所问主题'}"
+            for subject, dimension in sorted(pairs)
+        ]
+        return (
+            "本次引用条数已达上限，以下所问范围尚未覆盖："
+            + "；".join(labels)
+            + "。可缩小问题范围或减少所问对象/主题后重试。"
+        )
 
     def _related_page_ids(self, root: Path, chunks: list[dict[str, object]]) -> set[UUID]:
         related: set[UUID] = set()
