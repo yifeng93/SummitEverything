@@ -1,8 +1,12 @@
 # 开发与独立验收报告索引
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2 和统一候选初验的 P1 FAIL 均保留；repair 1/2 产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已由全新独立 QA 固定 checkout `04a0239012068598123966ab31340127a6f8ff76` 复验，发现混合对象/主题范围 P1 FAIL；详细结果见本轮 QA 报告。此前两份 FAIL 均不被覆盖；repair 2/2 尚待 Sol 协调。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2、统一候选初验和 repair 1/2 的 P1 FAIL 均保留；最后自动 repair 2/2 产品源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已完成 DEV 自测，fresh QA NOT_RUN。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
-## 当前包 2 C19 统一修复 repair 1/2（2026-10-12，DEV 与独立 QA 完成；P1 FAIL）
+## 当前包 2 C19 统一范围 repair 2/2（DEV 完成，fresh QA 待运行）
+
+[C19 repair 2 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)：固定源码 `f79f613a902758da3173a5b27219fa568a912f5e`。对象及局部主题 pairs 成为范围、引用 passage 和 missing 的真源；覆盖混合 family+exact、exact+exact、主题顺序、共享后缀、同对象/无对象多主题、partial 与无依据零 provider。最终矩阵 guarded pytest 450 passed、Web 56/12 files，其余适用检查 exit 0；旧 QA holdout 本地副本12/12、修正后的新 holdout副本9/9、qualified retrieval28/28。Developer 自测不关闭 repair 1/2 P1 FAIL；fresh QA 待运行。日志与退出码在 `.local/dev/c19-unified/r2-final/run2/`。
+
+## 包 2 C19 统一修复 repair 1/2（2026-10-12，历史 DEV 与独立 QA 完成；P1 FAIL）
 
 [C19 repair 1 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)：固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`。unknown information topics 按 exact scope 处理；礼貌请求、对象名内含维度词、无“的”并列、主题有资料/缺资料、开放属性问题和泛化方案均有回归。Developer 自测 qualified retrieval 27 passed、QA holdout 12 passed、guarded pytest 449 passed、Web 56 tests / 12 files。全新 QA 固定该产品源码复跑全矩阵，发现 `(白鹭工程,预算)` 与 `(赤陶项目,活动证章领取)` 被折成同一缺失范围，三种回答模式均漏掉两份已有依据，判 P1 FAIL；旧 QA 12 项与本轮共享维度正控通过。见[C19 repair 1/2 QA 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-QA-04a0239.md)及 evidence。统一候选初验和先前 extra 2 P1 FAIL 与原报告/证据保留；Sol 可协调 repair 2/2；M3 未正式通过。
 

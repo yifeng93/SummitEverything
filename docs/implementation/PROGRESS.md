@@ -4,9 +4,11 @@
 
 ## 当前状态与下一步
 
-### C19 统一证据范围 repair 1/2（2026-10-12，DEV 完成，fresh QA 待开始）
+### C19 统一证据范围 repair 2/2（2026-10-12，DEV 完成，fresh QA 待运行）
 
-用户在 extra 2 QA FAIL 后明确重新授权统一修复；本轮初验 QA `d2236c2` 也判 C19 P1 FAIL，原报告与证据保留。当前产品源码固定 `df1aac288a002e86a24132a9954fbe0b18d41d1f`。共享范围仍覆盖 fact / comparison / plan 的对象×维度证据、邻页、最终 passage/citation 与产品层 missing，批准/hash gate 不变；新增明确 exact topic 分类，避免未知主题退化为广域检索，同时保留泛化方案和开放属性查询。S01–S14 实际覆盖、语言边界和失败/通过日志见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)，Sol 原始研究契约见[执行计划](../superpowers/plans/2026-10-12-c19-unified-evidence-scope.md)。Developer 自测：定向 qualified retrieval 27 passed、QA holdout 12 passed、guarded pytest 449 passed、Web 56 passed / 12 files，README 所有适用检查 exit 0。fresh QA NOT_RUN；M3 整体门未通过。
+最后自动返工候选固定产品源码 `f79f613a902758da3173a5b27219fa568a912f5e`。按局部对象跨度先得到所问对象×主题 pairs，再从 pairs 汇总维度；对象主题顺序、无对象的并列主题、共享预算/排期后缀、exact+exact 和同对象多主题均有回归。对象、句段、citation/passages 与 missing 继续使用同一 pairs；current/hash 资格门不变，零支持时零 provider 调用。旧 QA 12 项 holdout 副本 12 passed；repair 1 新增 holdout 的本地副本经 Sol 核定纠正一条与已存在赤陶正文冲突的 missing 断言后 9 passed，并新增 partial 对照。版本控制中的旧 QA harness 与证据均未修改。完整覆盖、断言纠正理由、边界和独立 QA 指南见[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)与[统一范围计划](../superpowers/plans/2026-10-12-c19-unified-evidence-scope.md)。
+
+README 适用全矩阵最终执行：guarded pytest 450 passed；Web 56 tests / 12 files；Ruff check/format、mypy 43 源文件、lock、uv build、OpenAPI types 生成、Web typecheck/lint/build 均 exit 0。原始日志与实际退出码在开发 checkout `.local/dev/c19-unified/r2-final/run2/`；第一次 format check 的布局失败也保留于 `run1/`，修正后最终全矩阵通过。仅有 1 条既有 Starlette/httpx deprecation 和既有 React effect lint warnings。当前 fresh QA 为 NOT_RUN；repair 1/2 C19 P1 FAIL仍是有效历史，DEV 自测不代表包 2或 M3 PASS。
 
 M3 包 1、包 3离线集成由 Sol 判 PASS；包 3复验报告见[Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立 QA](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。包 2 C19 当前候选、QA 状态和未测边界见上方与[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 

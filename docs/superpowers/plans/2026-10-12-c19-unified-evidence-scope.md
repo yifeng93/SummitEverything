@@ -91,3 +91,11 @@ repair 1 固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`、QA HEAD `04a0
 5. `RetrievalPlan.required_pairs`由局部/共享解析直接得到，`dimensions`是这些pair的稳定去重并集。后续candidate/neighbor/引用passage/覆盖missing继续消费同一pairs，不重新把全局维度做笛卡尔积。泛方案、裸陌生主题、短alias、主题title、生成后的资格复核等上一轮通过能力不退化。
 
 最小回归先在旧SHA RED后GREEN：family+exact、exact+exact、同对象两独立主题；对象/主题换序及带/不带“的”；完整资料正常引用、只有一方时partial准确、双方无资料时三mode零provider；同页不同句段不cross-pair；共享A/B预算排期四pair及原牙刷修饰主题负控。复跑原12+repair1新增8个独立harness副本，再全相关/README矩阵。Sol审查解析顺序和pair真源，不重复常规测试；固定新SHA后全新QA完成有限完整验收。若最后QA仍有必须解决的缺陷，按协议停止自动返工并交用户决定，不默默开始第三轮。
+
+## Repair 2/2 Developer 固定候选（2026-10-12）
+
+产品源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已固定；局部pair→dimensions实现、支持/缺失观察、自测和语言边界见[repair 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)。对象跨度后逐个解析本地主题；仅在前面对象跨度都只有连接符、最后一个对象存在主题时共享后缀。无对象的明确并列主题同样拆成局部pairs；独立QA应覆盖非QA名称与题目变体。最终矩阵所有适用命令exit 0，guarded pytest 450 passed、Web56/12 files；旧12项本地QA副本12/12、新holdout副本9/9、qualified retrieval28/28。第一次格式检查的纯布局错误保留在 `.local/dev/c19-unified/r2-final/run1/`；修正后完整重跑日志在 `run2/`。
+
+旧QA的 `test_fresh_same_page_multiple_objects_do_not_cross_pair_dimensions` 断言要求已有赤陶证章正文仍报告赤陶 missing，与“完整对象×主题 pair”验收含义矛盾。未改动旧 QA 报告、harness 或证据；仅在 Developer 本地副本纠正该项完整预期并增加 citation/provider passage 命中断言，再补缺少赤陶证章正文的partial反例，见repair2报告。fresh QA 应重新证明这两种情况，不继承本地副本的自测结论。
+
+候选尚未经过 fresh QA。repair 1/2 C19 P1 FAIL仍有效；包 2及整体 M3未通过正式验收或合并。真实 provider/服务/材料/凭据、Keychain、native/DMG、五日/双机/发布仍NOT_RUN，runtime UNVERIFIED。

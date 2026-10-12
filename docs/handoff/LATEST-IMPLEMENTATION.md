@@ -1,16 +1,16 @@
 # 最新实现交接
 
-2026-10-12 当前总状态见下方各包交接：包 1、包 3离线集成 PASS；包 2 C19 DEV 候选待 fresh QA；M3 正式验收和合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前总状态见下方各包交接：包 1、包 3离线集成 PASS；包 2 C19 repair 2/2 Developer 候选源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已完成自测，等待全新独立 QA。C19 repair 1/2 QA P1 FAIL 与更早 FAIL 历史仍有效；包 2和 M3 正式验收、合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
 ## 当前状态（2026-10-12）
 
-### 包 2 C19 统一修复 repair 1/2（DEV 完成；fresh QA 待开始）
+### 包 2 C19 统一修复 repair 2/2（DEV 完成；fresh QA 待运行）
 
-用户在 extra 2 QA FAIL 后重新授权统一修复；本次初验 QA 又判 C19 P1 FAIL，原始报告和证据保留。repair 1/2 固定产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`（`fix(retrieval): classify exact unknown topics`）。planner 现在区分 explicit topic、generic plan、open question 与 unresolved scope；已知对象名从 topic 解析前剥离，陌生的具体主题保留 exact term，不再因为未命中有限 family labels 而退化为广域搜索。明确对象×维度范围、邻页和最终 passage/citation 共享约束；无依据时缺资料、零引用、零 provider 调用。礼貌外壳、嵌入维度词的项目名、无“的”并列问题、精确标题“排期”、短 metadata alias 均有回归；开放属性查询和泛化下一步方案仍走原路径。API/OpenAPI/TS 无契约变化。
+用户已授权的最后自动修复轮完成，产品源码固定 `f79f613a902758da3173a5b27219fa568a912f5e`。局部请求解析先确定原文对象跨度及其主题 pair，然后再汇总 dimensions；不再从合并后的全局维度反推 pair。明确并列的对象/主题、同一对象的多主题、共享预算/排期后缀和无显式对象的并列 exact/family 主题均直接过 pair 真源。彩色牙刷储存等复合描述不拆成宽泛存储 scope。scope gate、句段关联、citation passage 和 missing 使用 required_pairs；预算/hash资格门未变，partial 和无依据保持精确 missing，零证据时不调用 provider。
 
-Developer 检查：源码提交后 qualified retrieval 27 passed、QA holdout 12 passed；README 全量 guarded pytest 449 passed，Web 56 tests / 12 files。Ruff/format、mypy（43 source files）、lock、uv build、OpenAPI types、Web typecheck/lint/build 均 exit 0。原始日志在开发 checkout `.local/dev/c19-unified/`；保留 1 条既有 Starlette/httpx deprecation 和 2 条既有 React effect lint warnings。fresh QA 尚未运行；extra 2 与统一候选初验的 C19 P1 FAIL 均是历史 Sol 门，不据自测宣称包 2或 M3通过。S01–S14 映射和解析语言边界见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)。真实模型/服务/材料/凭据、Keychain、native/DMG、五日/双机和发布仍 NOT_RUN，runtime UNVERIFIED。
+最终 README 矩阵全部 exit 0：guarded pytest 450 passed；12 项旧 QA holdout 副本 12 passed、repair 1 新增 QA holdout 本地副本 9 passed、qualified retrieval 28 passed；Web 56 tests / 12 files；Ruff、mypy 43 个源文件、lock/build/OpenAPI types/Web typecheck/lint/build 均通过。原始日志与退出码在 Developer worktree `.local/dev/c19-unified/r2-final/run2/`；首轮纯格式检查失败留在 `run1/`，格式修正后最终重跑全矩阵通过。对新的9项本地副本中一条赤陶 missing 错误断言的纠正和 partial 对照说明见[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)。版本控制中的旧 QA harness、报告和证据未改。
 
-本轮复核了 planner 的三种可能回退路径：已知 topic family 用归一化维度；未识别但信息明确的 topic 生成 exact term；没有明确 topic 的已知开放属性或无对象泛化方案才维持 open/generic。request-prefix 清理后若仍有具体信息主题，不会通过空 dimensions 回退到广域检索；无法解析的对象/约束仍标 unresolved。QA holdout 12/12 已在固定源码上通过。请独立 QA 变化对象名、主题和完整问法结构，并检验该区分不把开放问句或通用方案误收窄。
+repair 1/2 独立 QA 对混合对象/主题仍判 P1 FAIL；该报告、此前 extra/初验 FAIL与 M3 正式未通过状态均保留。当前 fresh QA NOT_RUN；请按本报告固定 SHA 独立验收并变化实体、主题、顺序、并列标点和“的”表达，覆盖完整、partial、双方无依据、三种回答模式、现有7项正控、12项旧 holdout，以及本轮9项 fresh 复演。无对象多主题与共享后缀需单独核 citation/passages，不能因为缺少显式对象而跨主题取材。真实模型/服务/材料/凭据、Keychain、native/DMG、五日/双机和发布仍 NOT_RUN，runtime UNVERIFIED。包 2与 M3未通过正式验收或合并。
 
 ### M3 包 3：独立离线集成 PASS
 

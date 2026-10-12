@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-2026-10-12 C19 统一修复 repair 1/2 已固定产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`；Developer 定向 holdout 12/12、qualified retrieval 27/27、README 全矩阵均 exit 0，正在等待全新独立 QA。extra 2 与本轮候选初验的 C19 P1 FAIL 历史均保留，当前候选不代表 QA 或 M3 PASS。主题解析边界、S01–S14 对照和完整自测记录见[repair 1 DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)。
+2026-10-12 当前 C19 统一修复 repair 2/2 Developer 候选源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已固定，README 适用矩阵全部 exit 0（guarded pytest 450、Web 56）。fresh 独立 QA 尚未运行；repair 1/2 QA 的 C19 P1 FAIL及更早 extra/候选初验 FAIL 历史均保留，不因 DEV 自测改判。pair 解析规则、旧 holdout 断言纠正说明、完整自测与新 QA 交接见[repair 2 DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)。M3 正式验收与合并未通过。
 
 M3 包 1、包 3离线集成由 Sol 判 PASS；包 3源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`。包 2 C19 现有 DEV 候选与旧 FAIL 状态见上方；M3 正式验收及合并未通过。包 3证据见[Sol 门判断](docs/quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立复验](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
 
