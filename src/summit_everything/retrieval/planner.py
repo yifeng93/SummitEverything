@@ -64,9 +64,18 @@ _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
     "storage": ("存储", "储存", "保管", "存放", "备份", "归档"),
     "owner": ("负责人", "联系人", "所有者", "责任人"),
 }
+# Request-shell words: question form, politeness and generic plan vocabulary that
+# carries no local evidence of its own. Information-bearing qualifiers such as
+# 设备 / 年度 / 专项 / 工作 are deliberately absent here: they narrow an unfamiliar
+# topic and must survive normalization, otherwise a body can neither match the
+# asked phrase nor be reported as missing. The plan shell that does need removing
+# (“下一步工作方案”) is matched by _PLAN_SHELL instead of a global deletion.
 _TOPIC_FILLER = re.compile(
-    r"(?:分别|分别是多少|是什么|是谁|有什么|如何|怎么|多少|哪些|哪一个|哪项|规则|情况|信息|资料|内容|上限|是多少|是|设备|年度|专项|工作|列出|缺失|吗|呢|知道|先|核对|确认|希望|比较|对比|汇总|现有|目前|当前|现行|最新|和|与|及|并|制定|提出|给出|下一步|需要补什么|补什么|需要补充|还缺什么|方案|建议|？|\?|。|！|!)"
+    r"(?:分别|分别是多少|是什么|是谁|有什么|如何|怎么|多少|哪些|哪一个|哪项|规则|情况|信息|资料|内容|上限|是多少|是|列出|缺失|吗|呢|知道|先|核对|确认|希望|比较|对比|汇总|现有|目前|当前|现行|最新|和|与|及|并|制定|提出|给出|下一步|需要补什么|补什么|需要补充|还缺什么|方案|建议|？|\?|。|！|!)"
 )
+# A span made only of plan vocabulary states no topic of its own, so it must not
+# become an exact scope such as term:工作.
+_PLAN_SHELL = re.compile(r"^(?:(?:下一步|后续|往后|接下来|工作|计划|安排|方案|任务|要点|总结))+$")
 _TOPIC_REQUEST_SUFFIX = re.compile(r"(?:提出|制定|给出|说明|告诉|并列出|列出|再给|请|帮我).*")
 _TOPIC_PREFIX = re.compile(
     r"^(?:(?:麻烦(?:帮我)?|请问|请|我希望|我想(?:知道|问|了解)?|你能告诉我|您能告诉我|"
@@ -78,7 +87,11 @@ _TOPIC_SUFFIX = re.compile(
     r"规则|情况|信息|资料|内容|建议|方案|上限|多少|哪些|哪一个|哪项|吗|呢|吧|啊|一下|"
     r"再给简短结论|并汇总现有资料|并汇总|现有资料|简短结论|。|！|!|？|\?)+)$"
 )
-_ENTITY_SUFFIXES = ("项目", "计划", "工程", "专项", "工作坊", "课题", "产品")
+# Object nouns that can close a corpus name. 专项 is deliberately excluded: it is
+# also an ordinary topic modifier (专项预算 / 专项证章), so treating it as a name
+# suffix turns a topic into a pseudo object (“的专项”). A real object named
+# “……专项” still resolves through its project/alias/line name.
+_ENTITY_SUFFIXES = ("项目", "计划", "工程", "工作坊", "课题", "产品")
 _EXPLICIT_TOPIC_FORM = re.compile(r"(?:规则|办法|流程|手续|安排|方案|程序|制度|规范|要求|指南)")
 _OPEN_FACT_QUESTION = re.compile(r"(?:哪里|哪儿|在哪|多少|什么时候|何时|几号|几点)")
 _DATE_VALUE = re.compile(
@@ -241,8 +254,19 @@ def _extract_explicit_subjects(
             if not candidate or _is_generic_subject(candidate):
                 continue
             normalized_candidate = _normalize(candidate)
+            # One connector-separated fragment names at most one object. When the
+            # fragment opens with an already recognized object, the remainder is
+            # that object's local topic (“玄石展览访客设备领用办法”), not a second
+            # object, so it must not steal the topic span or add a false subject.
+            known_object_prefix = any(
+                normalized_candidate.startswith(_normalize(alias))
+                for alias in matched
+                if _normalize(alias)
+            )
             for alias in matched:
                 normalized_candidate = normalized_candidate.replace(_normalize(alias), "")
+            if known_object_prefix:
+                continue
             candidate = _SUBJECT_REQUEST_PREFIX.sub("", normalized_candidate).strip()
             candidate = _trim_topic_after_entity_suffix(candidate)
             candidate = _TOPIC_FILLER.sub("", candidate).strip()
@@ -402,6 +426,8 @@ def _topic_phrase(question: str, subjects: tuple[str, ...]) -> str:
         previous = topic
         topic = _TOPIC_SUFFIX.sub("", topic.strip())
         topic = _TOPIC_FILLER.sub("", topic)
+    if _PLAN_SHELL.match(topic.strip()):
+        return ""
     return topic
 
 
@@ -432,7 +458,7 @@ def _alias_has_entity_role(alias: str) -> bool:
 
 def _entity_mentions(question: str, known_subjects: tuple[str, ...]) -> tuple[str, ...]:
     """Find source-local names ending in a known entity noun, independent of order."""
-    pattern = re.compile(r"[\u3400-\u9fffA-Za-z0-9]{1,16}?(?:项目|计划|工程|专项|工作坊|课题|产品)")
+    pattern = re.compile(r"([\u3400-\u9fffA-Za-z0-9]{1,16}?)(?:项目|计划|工程|工作坊|课题|产品)")
     stripped = _TOPIC_PREFIX.sub("", question.strip())
     for subject in sorted(known_subjects, key=len, reverse=True):
         stripped = stripped.replace(subject, " " * len(subject))
@@ -441,13 +467,33 @@ def _entity_mentions(question: str, known_subjects: tuple[str, ...]) -> tuple[st
         region = _COMPARISON_PREFIX.sub("", region).strip()
         for match in pattern.finditer(region):
             candidate = match.group().strip()
+            if not _is_name_stem(match.group(1)):
+                continue
             if candidate and not _is_generic_subject(candidate):
                 values.append(candidate)
     return tuple(values)
 
 
+def _is_name_stem(stem: str) -> bool:
+    """Reject function characters that only look like the head of a name.
+
+    “玄石展览的专项证章领取” must not yield the pseudo object “的专项”: a single
+    particle is not a name, and a possessive 的 already separates an object from
+    its local topic rather than belonging to either.
+    """
+    normalized = _normalize(stem)
+    return len(normalized) >= 2 and "的" not in stem
+
+
 def _trim_topic_after_entity_suffix(candidate: str) -> str:
-    """Separate a recognized topic only when an entity suffix closes the name."""
+    """Split an object span from the local topic that follows it.
+
+    Two shapes are separable. A name that already ends in an entity noun closes
+    the object even when the topic carries further qualifiers
+    (“白鹭工程预算上限” → “白鹭工程”). Without that noun only a topic word ending
+    the whole span is separable (“枫湾活动预算” → “枫湾活动”); a topic word in the
+    middle stays part of the name (“预算时间创作坊”).
+    """
     for terms in _TOPIC_CLASSES.values():
         for term in sorted(terms, key=len, reverse=True):
             position = candidate.find(term)
@@ -455,6 +501,13 @@ def _trim_topic_after_entity_suffix(candidate: str) -> str:
                 continue
             prefix = candidate[:position]
             if any(prefix.endswith(suffix) for suffix in _ENTITY_SUFFIXES):
+                return prefix
+    for terms in _TOPIC_CLASSES.values():
+        for term in sorted(terms, key=len, reverse=True):
+            if not candidate.endswith(term):
+                continue
+            prefix = candidate[: -len(term)]
+            if len(_normalize(prefix)) >= 2 and not _is_generic_subject(prefix):
                 return prefix
     return candidate
 
