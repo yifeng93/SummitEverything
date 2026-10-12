@@ -74,11 +74,13 @@ def plan_retrieval(
     # Skip intervening pronoun-only questions, but never cross a complete question.
     for prior_question in reversed(previous_user_questions):
         prior = prior_question.strip()
-        if not prior or _is_follow_up(prior):
+        if not prior:
             continue
-        prior_subjects, _ = _extract_explicit_subjects(prior, aliases)
+        prior_subjects, prior_unresolved = _extract_explicit_subjects(prior, aliases)
         if prior_subjects:
             return RetrievalPlan(f"{prior}\n追问：{normalized}", prior_subjects, True)
+        if _is_follow_up(prior) and not prior_unresolved:
+            continue
         # An unresolved or subjectless complete question still starts a new topic.
         return RetrievalPlan(normalized, (), False, unresolved_topic=True)
 

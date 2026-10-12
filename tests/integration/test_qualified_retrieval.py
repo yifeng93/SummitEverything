@@ -374,6 +374,50 @@ def test_fact_subject_is_found_inside_a_polite_request_without_filtering_the_pre
     assert unknown.citations == []
 
 
+def test_fact_subject_matching_uses_qualified_page_and_workspace_names(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    title_only_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青岚计划预算",
+        body="预算上限为 19 万元。",
+    )
+    alias_only_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="独立预算记录",
+        body="预算上限为 12 万元。",
+        metadata_extra={"aliases": ["朱雀项目"]},
+    )
+    project_only = create_project(Path(root), UUID(line_id), "松石项目", "project-only")
+    project_only_id, _ = approve_page(
+        root,
+        line_id,
+        str(project_only.id),
+        title="独立项目预算记录",
+        body="预算上限为 16 万元。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answers = [
+        retrieval.query(root, "青岚计划预算上限是多少？", fingerprint="fake-v1"),
+        retrieval.query(root, "朱雀项目预算上限是多少？", fingerprint="fake-v1"),
+        retrieval.query(root, "松石项目预算上限是多少？", fingerprint="fake-v1"),
+    ]
+
+    expected_ids = [title_only_id, alias_only_id, project_only_id]
+    for answer, expected_id in zip(answers, expected_ids, strict=True):
+        assert {citation.page_id for citation in answer.citations} == {expected_id}
+        assert all(
+            subject not in citation.excerpt
+            for citation in answer.citations
+            for subject in ("青岚计划", "朱雀项目", "松石项目")
+        )
+
+
 def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
     tmp_path: Path,
 ) -> None:
@@ -419,6 +463,18 @@ def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
     )
     assert {citation.page_id for citation in switched_to_known_topic.citations} == {zhuque_id}
 
+    switched_to_known_topic_with_followup_marker = retrieval.query(
+        root,
+        "它什么时候启动？",
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[first, "那朱雀项目的预算呢？"], answer_mode="fact"
+        ),
+    )
+    assert {
+        citation.page_id for citation in switched_to_known_topic_with_followup_marker.citations
+    } == {zhuque_id}
+
     switched = retrieval.query(
         root,
         "它什么时候启动？",
@@ -430,6 +486,17 @@ def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
     )
     assert switched.citations == []
     assert "没有找到能确认该对象" in switched.text
+
+    switched_to_unknown_topic_with_followup_marker = retrieval.query(
+        root,
+        "它什么时候启动？",
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[first, "那未知项目的预算呢？"], answer_mode="fact"
+        ),
+    )
+    assert switched_to_unknown_topic_with_followup_marker.citations == []
+    assert "没有找到能确认该对象" in switched_to_unknown_topic_with_followup_marker.text
 
     topicless_boundary = plan_retrieval(
         "它什么时候启动？",

@@ -261,13 +261,27 @@ class QueryService:
         )
         qualified = self._qualified_chunks(root, dense, purpose=purpose)
         if answer_mode == "fact" and retrieval_plan.explicit_subjects:
-            qualified = [
-                item
-                for item in qualified
+            subject_pages: dict[UUID, PageSnapshot | None] = {}
+            filtered: list[dict[str, Any]] = []
+            for item in qualified:
+                page_id = item["page_id"]
+                if page_id not in subject_pages:
+                    subject_pages[page_id] = self._read_qualified_page(
+                        root,
+                        page_id,
+                        purpose=purpose,
+                        expected_content_sha256=str(item["content_sha256"]),
+                    )
+                page = subject_pages[page_id]
+                if page is None:
+                    continue
+                subject_names = self._page_subject_names(page, manifest)
                 if matches_explicit_subject(
-                    f"{item['heading']} {item['text']}", retrieval_plan.explicit_subjects
-                )
-            ]
+                    f"{subject_names} {item['heading']} {item['text']}",
+                    retrieval_plan.explicit_subjects,
+                ):
+                    filtered.append(item)
+            qualified = filtered
             if not qualified:
                 return self._empty_answer(
                     question,
@@ -474,6 +488,31 @@ class QueryService:
                 aliases.extend(value for value in page_aliases if isinstance(value, str))
             aliases.extend(aliases_from_subject_text(page.body))
         return tuple(aliases)
+
+    @staticmethod
+    def _page_subject_names(page: PageSnapshot, manifest: WorkspaceManifest) -> str:
+        """Return current page and manifest names used only for candidate matching."""
+        names: list[str] = []
+        title = page.metadata.get("title")
+        if isinstance(title, str):
+            names.append(title)
+        aliases = page.metadata.get("aliases", [])
+        if isinstance(aliases, str):
+            names.append(aliases)
+        elif isinstance(aliases, list):
+            names.extend(value for value in aliases if isinstance(value, str))
+
+        line_id = page.metadata.get("line_id")
+        project_id = page.metadata.get("project_id")
+        project = next(
+            (item for item in manifest.projects if str(item.id) == str(project_id)), None
+        )
+        line = next((item for item in manifest.lines if str(item.id) == str(line_id)), None)
+        if project is not None:
+            names.append(project.name)
+        if line is not None:
+            names.append(line.name)
+        return " ".join(names)
 
     @staticmethod
     def _one_passage_per_page(citations: list[Citation]) -> list[Citation]:
