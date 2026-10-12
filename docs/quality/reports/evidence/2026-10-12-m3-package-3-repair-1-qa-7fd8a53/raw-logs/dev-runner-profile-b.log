@@ -1,0 +1,37 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.4  ready in 74 ms
+
+  ➜  Local:   http://127.0.0.1:16174/
+INFO:     Started server process [21208]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:17994 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53480 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:17994/api/v1/health
+WebUI: http://127.0.0.1:16174/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:53563 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:53565 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:53590 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53598 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53601 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53603 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53602 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53607 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53609 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53606 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53613 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53615 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53617 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53599 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53619 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [21208]

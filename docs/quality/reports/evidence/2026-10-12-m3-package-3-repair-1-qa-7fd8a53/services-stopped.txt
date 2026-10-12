@@ -1,0 +1,3 @@
+两个 scripts/run_dev.py 服务均在验收结束后发送 Ctrl-C 停止。
+停止后检查命令：for p in 16173 16174 17993 17994; do lsof -nP -iTCP:$p -sTCP:LISTEN || true; done
+结果：无 LISTEN 输出（四端口均无监听）。
