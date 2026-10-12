@@ -1,0 +1,143 @@
+[
+  {
+    "case": "D1-title-only-anonymous",
+    "question": "枫湾活动的预算上限是多少？",
+    "citations": [
+      {
+        "heading": "",
+        "excerpt": "预算上限为九万元。"
+      }
+    ],
+    "missing": [],
+    "text": "依据所给材料。",
+    "source_statements": [
+      "页面内容：预算上限为九万元。"
+    ],
+    "provider_calls": 1,
+    "provider_passages": [
+      "预算上限为九万元。"
+    ]
+  },
+  {
+    "case": "D1-alias-only-anonymous",
+    "question": "枫湾活动的预算上限是多少？",
+    "citations": [
+      {
+        "heading": "",
+        "excerpt": "预算上限为九万元。"
+      }
+    ],
+    "missing": [],
+    "text": "依据所给材料。",
+    "source_statements": [
+      "页面内容：预算上限为九万元。"
+    ],
+    "provider_calls": 1,
+    "provider_passages": [
+      "预算上限为九万元。"
+    ]
+  },
+  {
+    "case": "D1-title-but-explicit-opposite-body",
+    "question": "玄石展览的预算上限是多少？",
+    "citations": [],
+    "missing": [
+      "玄石展览：缺少预算依据。"
+    ],
+    "text": "没有找到能确认该对象和主题的已确认资料；玄石展览：缺少预算依据。",
+    "source_statements": [],
+    "provider_calls": 0,
+    "provider_passages": []
+  },
+  {
+    "case": "D1-title-and-same-name-real-project",
+    "question": "枫湾活动的预算上限是多少？",
+    "citations": [
+      {
+        "heading": "",
+        "excerpt": "预算上限为三万元。"
+      },
+      {
+        "heading": "",
+        "excerpt": "预算上限为九万元。"
+      }
+    ],
+    "missing": [],
+    "text": "依据所给材料。",
+    "source_statements": [
+      "页面内容：预算上限为三万元。",
+      "页面内容：预算上限为九万元。"
+    ],
+    "provider_calls": 1,
+    "provider_passages": [
+      "预算上限为三万元。",
+      "预算上限为九万元。"
+    ]
+  },
+  {
+    "case": "D3-limit-plus-real-absence-fact",
+    "question": "比较云岬营地预算与汀屿计划的排期",
+    "citations": [
+      {
+        "heading": "",
+        "excerpt": "云岬营地预算额度为八万六千元。"
+      }
+    ],
+    "missing": [
+      "本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。"
+    ],
+    "text": "当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度为八万六千元。\n\n仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。",
+    "source_statements": [
+      "页面内容：云岬营地预算额度为八万六千元。"
+    ],
+    "provider_calls": 1,
+    "provider_passages": [
+      "云岬营地预算额度为八万六千元。"
+    ]
+  },
+  {
+    "case": "D3-limit-plus-real-absence-comparison",
+    "question": "比较云岬营地预算与汀屿计划的排期",
+    "citations": [
+      {
+        "heading": "",
+        "excerpt": "云岬营地预算额度为八万六千元。"
+      }
+    ],
+    "missing": [
+      "本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。"
+    ],
+    "text": "当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度为八万六千元。\n\n仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。",
+    "source_statements": [
+      "页面内容：云岬营地预算额度为八万六千元。"
+    ],
+    "provider_calls": 2,
+    "provider_passages": [
+      "云岬营地预算额度为八万六千元。",
+      "云岬营地预算额度为八万六千元。"
+    ]
+  },
+  {
+    "case": "D3-limit-plus-real-absence-plan",
+    "question": "比较云岬营地预算与汀屿计划的排期",
+    "citations": [
+      {
+        "heading": "",
+        "excerpt": "云岬营地预算额度为八万六千元。"
+      }
+    ],
+    "missing": [
+      "本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。"
+    ],
+    "text": "当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度为八万六千元。\n\n仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。",
+    "source_statements": [
+      "页面内容：云岬营地预算额度为八万六千元。"
+    ],
+    "provider_calls": 3,
+    "provider_passages": [
+      "云岬营地预算额度为八万六千元。",
+      "云岬营地预算额度为八万六千元。",
+      "云岬营地预算额度为八万六千元。"
+    ]
+  }
+]

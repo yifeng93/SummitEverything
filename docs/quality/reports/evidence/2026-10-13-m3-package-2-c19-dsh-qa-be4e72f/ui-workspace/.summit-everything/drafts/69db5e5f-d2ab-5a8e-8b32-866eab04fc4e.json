@@ -1,0 +1,27 @@
+{
+  "draft_id": "69db5e5f-d2ab-5a8e-8b32-866eab04fc4e",
+  "job_id": "e5454845-8122-5d36-b876-3f1e93110631",
+  "input_ids": [
+    "216b4a17-d1d2-55a3-98db-99233a57889c"
+  ],
+  "target_page_id": null,
+  "metadata": {
+    "id": "69db5e5f-d2ab-5a8e-8b32-866eab04fc4e",
+    "title": "枫湾活动预算",
+    "role": "knowledge",
+    "kind": "topic",
+    "line_id": "2d7dd6d0-0f0e-50a5-83e1-6fdd339dfd70",
+    "project_id": "3cebd862-2b4e-5692-b7b1-eba36b60bac2"
+  },
+  "body": "## 来源摘要\n\n枫湾活动预算\n枫湾活动预算上限为七万二千元。\n",
+  "expected_base_sha256": null,
+  "important_conflicts": [],
+  "action_suggestions": [],
+  "conflict_resolutions": {},
+  "source_ids": [
+    "5bc203b8-8bd8-5b2f-a7c2-0a0931e0db1d"
+  ],
+  "state": "confirmed",
+  "created_at": "2026-10-12T23:41:18.509938Z",
+  "version": 2
+}

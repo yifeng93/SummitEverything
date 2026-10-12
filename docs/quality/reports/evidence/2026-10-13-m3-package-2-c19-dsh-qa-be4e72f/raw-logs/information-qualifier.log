@@ -1,0 +1,115 @@
+{'citations': '', 'missing': ['白萤会展：缺少年度访客登记依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记依据。'}
+F{'citations': '', 'missing': ['白萤会展：缺少年度访客登记依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记依据。'}
+F{'citations': '', 'missing': ['白萤会展：缺少年度访客登记工作依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记工作依据。'}
+F{'citations': '白萤会展年度访客登记须核验身份。', 'missing': [], 'provider_calls': 1, 'text': '依据所给材料。'}
+F{'citations': '白萤会展年度访客登记须核验身份。', 'missing': [], 'provider_calls': 1, 'text': '依据所给材料。'}
+F{'citations': '', 'missing': ['白萤会展：缺少年度访客登记工作依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记工作依据。'}
+.
+=================================== FAILURES ===================================
+_ test_complete_information_qualifier_is_positive_evidence[fact-\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-848/test_complete_information_qual0')
+mode = 'fact', question = '白萤会展的年度访客信息登记办法是什么？'
+
+    @pytest.mark.parametrize(("mode", "question"), QUESTIONS)
+    def test_complete_information_qualifier_is_positive_evidence(tmp_path: Path, mode: str, question: str) -> None:
+        root, service, answerer = make_query(tmp_path, [
+            ("白萤会展", "年度访客信息登记", "白萤会展年度访客信息登记须核验身份。", None),
+        ])
+        answer = ask(service, root, question, mode)
+        observed = {"citations": excerpts(answer), "missing": answer.missing_information,
+                    "provider_calls": len(answerer.calls), "text": answer.text}
+        print(observed)
+>       assert answer.citations and "核验身份" in excerpts(answer), observed
+E       AssertionError: {'citations': '', 'missing': ['白萤会展：缺少年度访客登记依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记依据。'}
+E       assert ([])
+E        +  where [] = Answer(answer_id=UUID('56cc9d64-6c34-47b5-a81d-2733ac6ca5fe'), question='白萤会展的年度访客信息登记办法是什么？', text='没有找到能确认该对象和主题的已确认...ements=[], inferences=[], advice=[], missing_information=['白萤会展：缺少年度访客登记依据。'], purpose='current', index_status='ready').citations
+
+.local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py:25: AssertionError
+_ test_complete_information_qualifier_is_positive_evidence[comparison-\u6bd4\u8f83\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-848/test_complete_information_qual1')
+mode = 'comparison', question = '比较白萤会展的年度访客信息登记办法'
+
+    @pytest.mark.parametrize(("mode", "question"), QUESTIONS)
+    def test_complete_information_qualifier_is_positive_evidence(tmp_path: Path, mode: str, question: str) -> None:
+        root, service, answerer = make_query(tmp_path, [
+            ("白萤会展", "年度访客信息登记", "白萤会展年度访客信息登记须核验身份。", None),
+        ])
+        answer = ask(service, root, question, mode)
+        observed = {"citations": excerpts(answer), "missing": answer.missing_information,
+                    "provider_calls": len(answerer.calls), "text": answer.text}
+        print(observed)
+>       assert answer.citations and "核验身份" in excerpts(answer), observed
+E       AssertionError: {'citations': '', 'missing': ['白萤会展：缺少年度访客登记依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记依据。'}
+E       assert ([])
+E        +  where [] = Answer(answer_id=UUID('f00aa3e2-87ea-4c52-9a1f-d84d5352f022'), question='比较白萤会展的年度访客信息登记办法', text='没有找到能确认该对象和主题的已确认资料...ements=[], inferences=[], advice=[], missing_information=['白萤会展：缺少年度访客登记依据。'], purpose='current', index_status='ready').citations
+
+.local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py:25: AssertionError
+_ test_complete_information_qualifier_is_positive_evidence[plan-\u4e3a\u767d\u8424\u4f1a\u5c55\u5236\u5b9a\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u5de5\u4f5c\u65b9\u6848] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-848/test_complete_information_qual2')
+mode = 'plan', question = '为白萤会展制定年度访客信息登记工作方案'
+
+    @pytest.mark.parametrize(("mode", "question"), QUESTIONS)
+    def test_complete_information_qualifier_is_positive_evidence(tmp_path: Path, mode: str, question: str) -> None:
+        root, service, answerer = make_query(tmp_path, [
+            ("白萤会展", "年度访客信息登记", "白萤会展年度访客信息登记须核验身份。", None),
+        ])
+        answer = ask(service, root, question, mode)
+        observed = {"citations": excerpts(answer), "missing": answer.missing_information,
+                    "provider_calls": len(answerer.calls), "text": answer.text}
+        print(observed)
+>       assert answer.citations and "核验身份" in excerpts(answer), observed
+E       AssertionError: {'citations': '', 'missing': ['白萤会展：缺少年度访客登记工作依据。'], 'provider_calls': 0, 'text': '没有找到能确认该对象和主题的已确认资料；白萤会展：缺少年度访客登记工作依据。'}
+E       assert ([])
+E        +  where [] = Answer(answer_id=UUID('04137e30-eaa3-4f71-870d-5ba21380ece6'), question='为白萤会展制定年度访客信息登记工作方案', text='没有找到能确认该对象和主题的已确认...ents=[], inferences=[], advice=[], missing_information=['白萤会展：缺少年度访客登记工作依据。'], purpose='current', index_status='ready').citations
+
+.local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py:25: AssertionError
+_ test_missing_information_qualifier_cannot_be_backfilled[fact-\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-848/test_missing_information_quali0')
+mode = 'fact', question = '白萤会展的年度访客信息登记办法是什么？'
+
+    @pytest.mark.parametrize(("mode", "question"), QUESTIONS)
+    def test_missing_information_qualifier_cannot_be_backfilled(tmp_path: Path, mode: str, question: str) -> None:
+        root, service, answerer = make_query(tmp_path, [
+            ("白萤会展", "年度访客登记", "白萤会展年度访客登记须核验身份。", None),
+        ])
+        answer = ask(service, root, question, mode)
+        observed = {"citations": excerpts(answer), "missing": answer.missing_information,
+                    "provider_calls": len(answerer.calls), "text": answer.text}
+        print(observed)
+>       assert not answer.citations, observed
+E       AssertionError: {'citations': '白萤会展年度访客登记须核验身份。', 'missing': [], 'provider_calls': 1, 'text': '依据所给材料。'}
+E       assert not [Citation(page_id=UUID('4c33a2d5-6b2b-44bf-b42e-f757ef1aa73f'), content_sha256='eb79e4996eef88ea42ef108137f6a65b496413...9b47b6f0fba9a8878b687ede9291a7', heading='', excerpt='白萤会展年度访客登记须核验身份。', validity='current', availability='available')]
+E        +  where [Citation(page_id=UUID('4c33a2d5-6b2b-44bf-b42e-f757ef1aa73f'), content_sha256='eb79e4996eef88ea42ef108137f6a65b496413...9b47b6f0fba9a8878b687ede9291a7', heading='', excerpt='白萤会展年度访客登记须核验身份。', validity='current', availability='available')] = Answer(answer_id=UUID('b8825125-5792-4f4e-a996-6cf3c358c3eb'), question='白萤会展的年度访客信息登记办法是什么？', text='依据所给材料。', citatio...：白萤会展年度访客登记须核验身份。'], inferences=['推断'], advice=['建议'], missing_information=[], purpose='current', index_status='ready').citations
+
+.local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py:39: AssertionError
+_ test_missing_information_qualifier_cannot_be_backfilled[comparison-\u6bd4\u8f83\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-848/test_missing_information_quali1')
+mode = 'comparison', question = '比较白萤会展的年度访客信息登记办法'
+
+    @pytest.mark.parametrize(("mode", "question"), QUESTIONS)
+    def test_missing_information_qualifier_cannot_be_backfilled(tmp_path: Path, mode: str, question: str) -> None:
+        root, service, answerer = make_query(tmp_path, [
+            ("白萤会展", "年度访客登记", "白萤会展年度访客登记须核验身份。", None),
+        ])
+        answer = ask(service, root, question, mode)
+        observed = {"citations": excerpts(answer), "missing": answer.missing_information,
+                    "provider_calls": len(answerer.calls), "text": answer.text}
+        print(observed)
+>       assert not answer.citations, observed
+E       AssertionError: {'citations': '白萤会展年度访客登记须核验身份。', 'missing': [], 'provider_calls': 1, 'text': '依据所给材料。'}
+E       assert not [Citation(page_id=UUID('63124632-5dc2-4809-9562-7b8cc307487f'), content_sha256='531790e728bb85cb2a3c16e7de4e7306c68240...decd29bd844b328ccf9151c6c7c44f', heading='', excerpt='白萤会展年度访客登记须核验身份。', validity='current', availability='available')]
+E        +  where [Citation(page_id=UUID('63124632-5dc2-4809-9562-7b8cc307487f'), content_sha256='531790e728bb85cb2a3c16e7de4e7306c68240...decd29bd844b328ccf9151c6c7c44f', heading='', excerpt='白萤会展年度访客登记须核验身份。', validity='current', availability='available')] = Answer(answer_id=UUID('4d912f5f-2b6d-4df7-80a2-3a0951672366'), question='比较白萤会展的年度访客信息登记办法', text='依据所给材料。', citations...：白萤会展年度访客登记须核验身份。'], inferences=['推断'], advice=['建议'], missing_information=[], purpose='current', index_status='ready').citations
+
+.local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py:39: AssertionError
+=========================== short test summary info ============================
+FAILED .local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py::test_complete_information_qualifier_is_positive_evidence[fact-\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+FAILED .local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py::test_complete_information_qualifier_is_positive_evidence[comparison-\u6bd4\u8f83\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5]
+FAILED .local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py::test_complete_information_qualifier_is_positive_evidence[plan-\u4e3a\u767d\u8424\u4f1a\u5c55\u5236\u5b9a\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u5de5\u4f5c\u65b9\u6848]
+FAILED .local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py::test_missing_information_qualifier_cannot_be_backfilled[fact-\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+FAILED .local/qa/c19-dsh-be4e72f/harness/test_c19_information_qualifier.py::test_missing_information_qualifier_cannot_be_backfilled[comparison-\u6bd4\u8f83\u767d\u8424\u4f1a\u5c55\u7684\u5e74\u5ea6\u8bbf\u5ba2\u4fe1\u606f\u767b\u8bb0\u529e\u6cd5]
+5 failed, 1 passed in 0.34s
