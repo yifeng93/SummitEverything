@@ -6,9 +6,9 @@
 
 2026-10-11：M3 包 1“会话与历史”首轮独立 QA 在固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 发现 P1/P2，原报告保留；repair 1/2 后源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c` 由全新 QA 在集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4` 通过，Sol 最终判定包 1 离线集成 PASS。53 项证据 manifest 无 mismatch、产品树与源码 SHA 一致。QA 实际浏览器/Uvicorn 通过首问、历史续问、旧引用提示、取消、非空 partial 重启、profile/workspace 隔离；README 自动门 guarded pytest 395、Web 49/12 及静态/生成/构建均 PASS。限制：浏览器 request body/response header 未直接捕获，console NOT_RUN、runtime UNVERIFIED、多轮模型上下文属于包 2 尚未测，真实/发布门 NOT_RUN。完整报告链见[报告索引](../quality/reports/README.md)。
 
-同日：包 2 完整问答、角色与记忆由 Developer 完成实现和自动自测：fact/comparison/plan、结构化来源/推断/建议/缺失信息、本机角色及预算、带服务端来源核验和用户明确声明的记忆候选/确认/管理、最多 8 条先前 user question 的多轮参考上下文、历史持久化和 AskView 管理。当前资格门用于每次新检索；历史 assistant 不作为 passage；稳定 request ID 在角色/记忆/对话变化后重放已保存事件且不再次调用 provider。全量后端 399 passed，README 专项 Feishu 35 passed；Web 50 passed / 12 files；ruff、format、mypy、lock、uv build、OpenAPI 类型生成、Web typecheck/lint/build 均 exit 0。lint 保留两条 TodayView / ProjectsView effect warnings 和一条既有 Starlette/httpx deprecation。实际日志/退出码位于 `.local/dev/m3-package-2/`，报告见[包 2 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-DEV.md)。当前固定 SHA 的全新独立 QA pending，Sol 尚未判包级状态；真实服务、浏览器、runtime 和发布门仍 NOT_RUN / UNVERIFIED。**下一步：由 Sol 调度整包 QA**；包 3 和 M3 正式验收尚未完成。
+同日：包 2 完整问答、角色与记忆由 Developer 完成实现和自动自测：fact/comparison/plan、结构化来源/推断/建议/缺失信息、本机角色及预算、带服务端来源核验和用户明确声明的记忆候选/确认/管理、最多 8 条先前 user question 的多轮参考上下文、历史持久化和 AskView 管理。当前资格门用于每次新检索；历史 assistant 不作为 passage；稳定 request ID 在角色/记忆/对话变化后重放已保存事件且不再次调用 provider。原始自测后端 399 passed，README 专项 Feishu 35 passed；Web 50 passed / 12 files；日志位于 `.local/dev/m3-package-2/`，历史报告见[包 2 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-DEV.md)。后续 QA 与最后修复轮状态见本节最新更新；真实服务、浏览器、runtime 和发布门仍 NOT_RUN / UNVERIFIED。
 
-后续首轮 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，揭示历史范围 UI、短指代召回、422 错误状态和事实问答主体精度四项缺陷；[QA 原报告及证据](../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)不改写。Developer repair 1/2 已在固定源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 修复；新鲜全量检查为 guarded pytest 402 passed、Web 52 passed / 12 files、ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 全部 exit 0。新增行为及复演说明见[repair 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md)，日志与退出码在 `.local/dev/m3-package-2-repair-1/`。固定新 SHA 的整包独立 QA 尚未开始，Sol 未判包级状态；旧 FAIL 仍对应旧 SHA。包 3、M3 正式验收、真实服务/材料/凭据/Keychain/DMG/发布门均未启动或未测。
+后续首轮 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，揭示历史范围 UI、短指代召回、422 错误状态和事实问答主体精度四项缺陷；[QA 原报告及证据](../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)不改写。repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 的新鲜全量检查通过，但独立 QA 判 FAIL 并发现礼貌事实问句无引用、连续指代混入旧主体；[repair 1 QA 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)及其证据保留。最后获准的 repair 2/2 已固定源码 `51891ef5d6ed13461d1595fd99d448b6a159ee25`，基于临时当前语料主题线索、最近有界真实 user 问题和完整问题主题边界修复；未知主体与无主题问题不继承旧主题，comparison / plan 保持多材料召回。全量自测 guarded pytest 404 passed、Web 52 passed / 12 files，ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 全部 exit 0；[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)，真实日志和退出码在 `.local/dev/m3-package-2-repair-2/`。全新独立 QA 尚待 Sol 调度，Sol 未判包级状态；本轮是最后自动修复轮次。包 3、M3 正式验收、真实服务/材料/凭据/Keychain/DMG/发布门均未启动或未测。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
@@ -16,7 +16,7 @@
 
 精确源码的独立离线 QA 已通过的范围仅包括 M1、Stage B 离线范围及 M3 包 1；后续真实门与 M3–M5 继续按全 v1 计划，原授权次数不重置。历史报告只对应各自 SHA。
 
-**下一步：** 对包 2 固定源码 SHA 由全新 QA 在独立 checkout 完整验收；QA findings 仍按最多两轮修复流程处理。首轮 QA FAIL 原报告保持历史结论，修复目标另由新 SHA 通过。QA 未通过前不能将包 2 写为 PASS；包 3、M3 正式验收与重要里程碑合并尚待后续阶段。
+**下一步：** 由 Sol 调度全新 QA 在独立 checkout 验收包 2 repair 2 固定源码 SHA `51891ef5d6ed13461d1595fd99d448b6a159ee25`。QA 未通过前不能将包 2 写为 PASS；两轮自动修复额度已用尽，若 QA 仍 FAIL 需由用户决定后续。包 3、M3 正式验收与重要里程碑合并尚待后续阶段。
 
 ### C03 非空删除提示本地化跟进（2026-10-11；已合入 main）
 
@@ -44,8 +44,9 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
-| M3 包 1 会话与历史 | Developer 实现 / 自测完成 | 独立整包 QA 待开始 | 固定源码 SHA 及日志见 LATEST 与 DEV 报告；M3 包 2 / 3 未开始 |
-| M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
+| M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
+| M3 包 2 完整问答、角色与记忆 | Developer repair 2/2 自测完成 | 独立整包 QA 待开始 | 固定源码 `51891ef5d6ed13461d1595fd99d448b6a159ee25`；两轮 QA FAIL 均保留；QA 未过不得记 PASS |
+| M3 包 3 连续状态与归档压缩 | 未开始 | 未开始 | 依赖包 2 QA gate；按现有事务与 action receipts 复用 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 

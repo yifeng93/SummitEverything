@@ -1,16 +1,16 @@
 # 最新实现交接
 
-## 2026-10-11 M3 包 2：完整问答、角色与记忆（repair 1 Developer 完成，待独立 QA）
+## 当前状态（2026-10-12）
 
-**当前工作状态：** 分支 `codex/m3-integrated-packages`，包 1 已由 Sol 判定离线集成 PASS。包 2 首轮受测源码 `082744738f300525e57dfd6655245adb98e13628` 的独立 QA 判 FAIL，原报告与证据保留；首轮报告中的 stale-index 夹具假阳性已由验收者撤回并记入原报告。当前是 repair 1/2，修复源码固定于 `0df323efc26e388d62f234e0471f853b2b54be4d`；Developer 自测完成，等待 Sol 调度全新独立 QA。本轮不改写首轮 QA 报告，不把 Developer 检查记作 QA PASS。
+M3 包 1 会话与历史已由 Sol 判离线集成 PASS；包 2 完整问答、角色与记忆的最后自动修复轮次 repair 2/2 已完成 Developer 自测，源码固定于 `51891ef5d6ed13461d1595fd99d448b6a159ee25`，全新独立 QA 待 Sol 调度。repair 1 QA 仍是其固定 SHA `0df323efc26e388d62f234e0471f853b2b54be4d` 的 FAIL；首轮 QA 与 repair 1 QA 原报告和证据均保留，Developer 自测不构成 QA PASS，Sol 尚未判包 2 状态。当前分支为 `codex/m3-integrated-packages`。
 
-修复处理四项发现：AskView 允许用户选择当前或历史资料范围，并显示 superseded / invalid 效力；短指代追问只把最近一条真实用户问题作为检索提示，不读取旧 assistant 答案，各轮仍重新过当前资格门；服务端 422 输入/预算拒绝显示为“回答失败”和可读消息，而不是连接中断或创建假历史；fact 模式按明确主体过滤不相干项目，comparison / plan 保留跨材料检索。原产品规格、三类问答、角色/记忆与本机隔离边界不变。
+repair 2 处理 repair 1 QA 的两项遗留缺陷：礼貌自然请求中的真实语料主体可以匹配，不把整个前缀当作过滤实体；连续指代从最多 8 条真实 user question 倒序找最近主题，跳过中间指代但在未知主体或无主题完整问题处停止。subject hints 每次从当前 manifest 与 HISTORY 资格有效的页面重建，不持久化 NLP/别名索引；assistant 历史仍不是检索证据；每轮重新核对当前/历史资格、hash 和引用效力。未知主体仍安全返回无引用缺资料结果，comparison / plan 继续允许跨材料检索。完整实现和开发者测试边界见[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)。
 
-包 2 原始实现源码 SHA `daef5250b355179de93cc3d622b93e9b28f17286`，修复源码 SHA `0df323efc26e388d62f234e0471f853b2b54be4d`。最终全量自测：guarded pytest 402 passed；Web 52 tests / 12 files；ruff、format、mypy（40 source files）、lock check、uv build、OpenAPI 类型生成、Web typecheck/lint/build 均 exit 0。保留 1 条 Starlette/httpx deprecation 与 TodayView / ProjectsView 两条既有 lint warnings。日志和真实退出码位于 `.local/dev/m3-package-2-repair-1/`；[repair 1 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md)列有命令、结果与独立 QA 复演范围。
+包 2 原始实现源码 SHA `daef5250b355179de93cc3d622b93e9b28f17286`，repair 1 QA 固定源码 `0df323efc26e388d62f234e0471f853b2b54be4d`，当前 repair 2 固定源码 `51891ef5d6ed13461d1595fd99d448b6a159ee25`。repair 2 全量自测：guarded pytest 404 passed；Web 52 tests / 12 files；ruff、format、mypy（40 source files）、lock check、uv build、OpenAPI 类型生成、Web typecheck/lint/build 均 exit 0。保留 1 条 Starlette/httpx deprecation 与 TodayView / ProjectsView 两条既有 lint warnings。日志和真实退出码位于 `.local/dev/m3-package-2-repair-2/`。repair 1 和 repair 2 的 DEV/QA 链见[报告索引](../quality/reports/README.md)；repair 1 的失败并不被本轮自测覆盖。
 
-新 QA 固定 `0df323efc26e388d62f234e0471f853b2b54be4d`，重跑原报告 QA-1 至 QA-4，并额外复核：历史范围可达、current/history citation validity 显示、更新且失效的复合状态、短追问用最近 user question 召回且不带 assistant answer、切换对象后不带入旧主题、每轮资格门重查、预算 422 无历史副作用、青岚 fact 排除朱雀且比较模式保留双方。沿用首轮报告中的隔离 Fake workspace / MockTransport harness；只把 harness 复制到新 SHA 下 `.local/qa/m3-package-2-qa/harness/` 再按原报告步骤启动本地服务。QA 不在本 checkout 改源码或 tracked tests。
+新 QA 应固定 `51891ef5d6ed13461d1595fd99d448b6a159ee25`，重跑首轮报告 QA-1 至 QA-4 及 repair 1 报告的范围历史与修复项，并验证 repair 2：自然礼貌事实问句返回合格引用；青岚→“它呢”→“它什么时候启动”不混入朱雀；新已知/未知主体切换、无主题完整问题边界；页面改版后旧 chunk/hash 失效；比较与 plan 仍跨材料。每轮资格复核、角色/记忆、幂等重放和 API/UI 行为按原 QA 报告验收。沿用原报告中隔离 Fake workspace / MockTransport harness，在 QA 独立 checkout 按报告步骤启动本地服务；QA 不在此开发 checkout 改实现或 tracked tests。
 
-真实 DeepSeek / Feishu、真实材料、Keychain、native、DMG、五日、双机和发布门均 NOT_RUN；runtime 元数据 UNVERIFIED。包 3 尚未开始，M3 正式验收和重要里程碑合并未完成。
+真实 DeepSeek / Feishu、真实材料、Keychain、native、DMG、五日、双机和发布门均 NOT_RUN；runtime 元数据 UNVERIFIED。包 3 尚未开始，M3 正式验收和重要里程碑合并未完成。repair 2 是最后获准的自动修复轮；若新 QA 仍 FAIL，需用户决定是否继续。
 
 包 1 QA 覆盖包括真实浏览器新库首问/历史重开续问、SSE complete/cancel/non-empty partial restart、updated/unavailable/superseded 部分引用资格，以及 profile/workspace 隔离。包 2 还需由独立 QA 复核多轮上下文 provider payload 与 request hash、新旧会话 schema 兼容、角色/记忆上下文预算、确认来源与跨 profile 隔离。
 

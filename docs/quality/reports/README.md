@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## M3 功能包 2 repair 2 Developer（2026-10-12，待独立 QA）
+
+[repair 2 Developer 报告](2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)：固定源码 `51891ef5d6ed13461d1595fd99d448b6a159ee25`，repair 2/2 是最后获准自动修复轮。基于当轮临时语料主体线索与有界真实 user-question 反向追踪，修复礼貌事实问题无引用和连续指代混入旧主体；明确新主题/未知主体/无主题完整问题形成边界，保留每轮资格复核及比较/plan 多材料检索。全量 guarded pytest 404 passed、Web 52 passed / 12 files；ruff、format、mypy、lock、build、OpenAPI 生成、Web typecheck/lint/build 均 exit 0。repair 1 QA FAIL 原报告不改写；新固定 SHA 独立 QA 尚待 Sol 调度，Developer 自测不是 QA PASS。证据日志在 `.local/dev/m3-package-2-repair-2/`。
+
 ## M3 功能包 2 repair 1 独立 QA（2026-10-12）
 
 [固定 SHA QA 报告](2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)：受测产品源码 `0df323efc26e388d62f234e0471f853b2b54be4d`，QA 固定 checkout `d38f546cac8fd923539bea6a8ef9db925e5d959c`。C13 UI current/history 选择、历史效力与引用可用性，C20 provenance/候选/预算，C21 workspace/profile 隔离及 C14 会话 replay/cancel/partial restart 恢复通过；README 全量检查 exit 0。真实浏览器 fresh-index 复验发现礼貌自然事实问句误判对象、连续短追问将另一主体作为事实支持两项缺陷，故本包 FAIL，等待 repair 2 与全新独立 QA。报告与脱敏 harness/raw logs/exit/hash manifest 见[证据目录](evidence/2026-10-12-m3-package-2-qa-repair-1-0df323e/)；DevTools console/Network、real/native/DMG/五日/双机为 NOT_RUN，runtime metadata UNVERIFIED。

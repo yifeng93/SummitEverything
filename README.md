@@ -12,9 +12,9 @@
 
 权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
-C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 按三个集成开发包推进；包 1“会话与历史”由 Sol 判定离线集成 PASS：修复源码 `a9078bd327f73f2cde3bab14a8665885d0f57c1c`，QA 固定提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4`。包 2 首轮独立 QA 在源码 `082744738f300525e57dfd6655245adb98e13628` 发现四项缺陷，原报告与证据保留；repair 1 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 已完成 Developer 修复和全量自动检查，等待全新独立 QA。完整交接见[最新实现](docs/handoff/LATEST-IMPLEMENTATION.md)与[报告索引](docs/quality/reports/README.md)。包 3（连续工作与归档压缩）尚未开始。M3 完整验收及真实/发布门仍未完成。
+C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 按三个集成开发包推进；包 1“会话与历史”由 Sol 判定离线集成 PASS：修复源码 `a9078bd327f73f2cde3bab14a8665885d0f57c1c`，QA 固定提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4`。包 2 首轮与 repair 1 独立 QA 均为 FAIL，原报告与证据保留；最后获准修复轮 repair 2 的源码 `51891ef5d6ed13461d1595fd99d448b6a159ee25` 已由 Developer 完成并通过 README 自动检查，现待全新独立 QA，Sol 尚未判包级状态。完整交接见[最新实现](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)与[报告索引](docs/quality/reports/README.md)。包 3（连续工作与归档压缩）尚未开始。M3 完整验收及真实/发布门仍未完成。
 
-开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。包 1 离线集成已通过；包 2 Developer 实现和自动自测完成，等待整包独立 QA，尚未判包 2 PASS。Stage C 与发布 / 实际试用门仍独立未测。
+开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。包 1 离线集成已通过；包 2 repair 2 Developer 实现和自动自测完成，等待整包独立 QA，尚未判包 2 PASS。Stage C 与发布 / 实际试用门仍独立未测。
 
 ## 先读哪些文件
 
