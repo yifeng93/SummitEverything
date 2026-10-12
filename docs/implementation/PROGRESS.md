@@ -4,15 +4,15 @@
 
 ## 当前状态与下一步
 
-2026-10-12 最新结果：用户授权的 extra 1 已完成；历史确认/效力及本人偏好两修均通过，包 2 仍因 C19 无依据回答误报缓存/资格异常而 FAIL（P2 提示误导，无数字编造或证据泄漏）。固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，QA 固定 `507cc1f197ce3af3b22aa53c98148e4ca45ff935`。停止产品修改，等待用户是否授权下一轮；包 1 保留 PASS，包 3 尚未实施。 [Sol 核证与接续](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。下方 QA pending/授权状态是对应交接发布时历史，由本条取代。
+2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。extra 1 QA 曾 FAIL，用户明确批准仅一轮 extra 2；Developer 已固定 `c41147fe54bf95103c741df192fc76eb9df0f9e7` 并完成自测，待全新独立 QA 和 Sol 判门。若 extra 2 QA 仍 FAIL，自动修复额度耗尽，停止并交用户决定。旧 FAIL 报告/证据均保留；包 3 未实施，M3 正式验收/合并及真实/发布门未执行，runtime UNVERIFIED。见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)及[extra 1 Sol 历史门](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。
 
-2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 repair 2/2 QA 曾判 FAIL；随后用户明确批准仅一轮额外修复。extra 1 Developer 源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，README 自动检查已完成，等待全新独立 QA 和 Sol 判门；这不代表 QA PASS。若 extra 1 仍 FAIL，自动修复停止并交用户决定。首轮、repair 1/2、repair 2/2 原始失败报告均保留，Sol 原门报告是该时点历史结论。包 3 只读准备完成、实现未开始；M3 正式验收和合并未执行。见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)、[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。
+历史交接：extra 1 期间 QA pending 的状态已被本节最新状态取代；该轮真实结论见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)、[extra 1 Sol 门](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)和其原始 QA 报告。
 
 2026-10-11：M3 包 1“会话与历史”首轮独立 QA 在固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 发现 P1/P2，原报告保留；repair 1/2 后源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c` 由全新 QA 在集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4` 通过，Sol 最终判定包 1 离线集成 PASS。53 项证据 manifest 无 mismatch、产品树与源码 SHA 一致。QA 实际浏览器/Uvicorn 通过首问、历史续问、旧引用提示、取消、非空 partial 重启、profile/workspace 隔离；README 自动门 guarded pytest 395、Web 49/12 及静态/生成/构建均 PASS。限制：浏览器 request body/response header 未直接捕获，console NOT_RUN、runtime UNVERIFIED、多轮模型上下文属于包 2 尚未测，真实/发布门 NOT_RUN。完整报告链见[报告索引](../quality/reports/README.md)。
 
 同日：包 2 完整问答、角色与记忆由 Developer 完成实现和自动自测：fact/comparison/plan、结构化来源/推断/建议/缺失信息、本机角色及预算、带服务端来源核验和用户明确声明的记忆候选/确认/管理、最多 8 条先前 user question 的多轮参考上下文、历史持久化和 AskView 管理。当前资格门用于每次新检索；历史 assistant 不作为 passage；稳定 request ID 在角色/记忆/对话变化后重放已保存事件且不再次调用 provider。原始自测后端 399 passed，README 专项 Feishu 35 passed；Web 50 passed / 12 files；日志位于 `.local/dev/m3-package-2/`，历史报告见[包 2 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-DEV.md)。后续 QA 与最后修复轮状态见本节最新更新；真实服务、浏览器、runtime 和发布门仍 NOT_RUN / UNVERIFIED。
 
-后续首轮 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，揭示历史范围 UI、短指代召回、422 错误状态和事实问答主体精度四项缺陷；[QA 原报告及证据](../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)不改写。repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 均判 FAIL，原报告与证据保留。repair 2 修复了主体精度和主题边界，但 QA 又发现已批准历史页误标待确认、本人明确偏好因提到“资料”误拒；详见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)。用户明确批准仅一轮额外修复，extra 1 新源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 分开处理批准 hash 与 knowledge validity，并基于已核验 user 历史原文和所选跨度上下文识别材料引述：保留 invalid hash 的重确认警告和历史效力显示，不将失效/被替代页面提为 current；直接本人偏好可提及资料、引用或来源，但从材料引文中截取的第一人称不能成为候选。extra 1 全量自测 guarded pytest 407 passed、Web 55 passed / 12 files；ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 全部 exit 0。完整行为、真实退出码和 QA 交接见[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)，日志在 `.local/dev/m3-package-2-extra-1/`。当前 QA pending；若仍 FAIL，不自动继续。包 3、M3 正式验收与真实/发布门尚未启动或未测。
+历史记录：首轮 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，揭示历史范围 UI、短指代召回、422 错误状态和事实问答主体精度四项缺陷；[QA 原报告及证据](../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)不改写。repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 均判 FAIL，原报告与证据保留。repair 2 修复了主体精度和主题边界，但 QA 又发现已批准历史页误标待确认、本人明确偏好因提到“资料”误拒；详见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)。用户明确批准仅一轮额外修复，extra 1 新源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 分开处理批准 hash 与 knowledge validity，并基于已核验 user 历史原文和所选跨度上下文识别材料引述：保留 invalid hash 的重确认警告和历史效力显示，不将失效/被替代页面提为 current；直接本人偏好可提及资料、引用或来源，但从材料引文中截取的第一人称不能成为候选。extra 1 全量自测 guarded pytest 407 passed、Web 55 passed / 12 files；ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 全部 exit 0。完整行为、真实退出码和 QA 交接见[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)，日志在 `.local/dev/m3-package-2-extra-1/`。上述 QA pending/自动修复额度说明均为 extra 1 当时状态，现由本节顶部 extra 2 状态取代。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
@@ -20,7 +20,7 @@
 
 精确源码的独立离线 QA 已通过的范围仅包括 M1、Stage B 离线范围及 M3 包 1；后续真实门与 M3–M5 继续按全 v1 计划，原授权次数不重置。历史报告只对应各自 SHA。
 
-**下一步：** 由 Sol 调度全新 QA 在独立 checkout 验收包 2 repair 2 固定源码 SHA `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`。QA 未通过前不能将包 2 写为 PASS；两轮自动修复额度已用尽，若 QA 仍 FAIL 需由用户决定后续。包 3、M3 正式验收与重要里程碑合并尚待后续阶段。
+**历史下一步（repair 2 交接时）：** 该段固定 SHA 和两轮额度状态已被后续 Sol 门及用户额外授权取代；当前 QA 目标见本节顶部 extra 2 固定 SHA。
 
 ### C03 非空删除提示本地化跟进（2026-10-11；已合入 main）
 

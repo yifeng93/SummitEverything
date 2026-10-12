@@ -1,12 +1,16 @@
 # 开发与独立验收报告索引
 
-2026-10-12 最新结果：用户授权的 extra 1 已完成；历史确认/效力及本人偏好两修均通过，包 2 仍因 C19 无依据回答误报缓存/资格异常而 FAIL（P2 提示误导，无数字编造或证据泄漏）。固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，QA 固定 `507cc1f197ce3af3b22aa53c98148e4ca45ff935`。停止产品修改，等待用户是否授权下一轮；包 1 保留 PASS，包 3 尚未实施。 [Sol 核证与接续](2026-10-12-M3-SOL-EXTRA-1-GATE.md)。下方 QA pending/授权状态是对应交接发布时历史，由本条取代。
+2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 extra 1 QA 曾 FAIL，用户明确批准仅一轮 extra 2；Developer 自测固定源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，当前待全新独立 QA，尚无 QA/Sol PASS。历史 QA FAIL 报告完整保留；若 extra 2 QA 仍 FAIL，自动修复额度耗尽并交用户决定。包 3 未实施，M3 正式门与合并、真实/发布门未执行。详见[extra 2 DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)及[extra 1 Sol 历史门](2026-10-12-M3-SOL-EXTRA-1-GATE.md)。
 
 ## 当前 M3 门状态（2026-10-12）
 
-[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)保留 repair 2/2 当时 FAIL 的核证与证据；其“等待用户是否授权额外一轮”仅为该报告发布时的状态。用户之后明确批准**仅一轮额外修复**。extra 1 Developer 已固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并完成自测，[DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)及日志已留存；现在等待全新独立 QA 与 Sol 判门，不能视为 PASS。若该轮 QA FAIL，额外自动修复额度耗尽，必须停下交用户决定。包 1 离线集成 PASS；包 3 只读准备完成、实现 NOT_RUN；M3 正式验收和真实/发布门未通过。以下报告中的 pending 仅是各报告发布时历史。
+[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)保留 repair 2/2 当时 FAIL 的核证与证据；其“等待用户是否授权额外一轮”仅为该报告发布时的状态。用户之后明确批准**仅一轮额外修复**。extra 1 Developer 已固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并完成自测，[DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)及日志已留存；extra 1 已被新获授权的 extra 2 取代；其 pending 状态仅为历史。包 1 离线集成 PASS；包 3 只读准备完成、实现 NOT_RUN；M3 正式验收和真实/发布门未通过。以下报告中的 pending 仅是各报告发布时历史。
 
-## M3 功能包 2 extra 1 Developer（2026-10-12，待独立 QA）
+## M3 功能包 2 extra 2 Developer（2026-10-12，待独立 QA）
+
+[extra 2 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)：用户明确批准的额外修复轮，固定产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`。修复 no-evidence 诊断不再把新鲜 ready 索引内的无关查询说成缓存/hash/资格故障，并区分资格/hash 拒绝、生成期间内容变化和页面不可用；三模式主文/missing 同步且零引用不调用 answer provider。README 自动矩阵全 exit 0：guarded pytest 417 passed、Web 55 tests / 12 files，ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 完成。DEV 自测非 QA；等待全新独立 QA。若 FAIL，本轮额度用尽，交用户决定。真实服务/资料/凭据、native/DMG、五日/双机及发布门 NOT_RUN，runtime UNVERIFIED。
+
+## M3 功能包 2 extra 1 Developer（2026-10-12，QA FAIL 历史）
 
 [extra 1 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)：用户在 repair 2/2 QA FAIL 后明确授权的唯一额外修复轮，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`。区分历史页面批准 hash 与 current/superseded/invalid 效力；仅对真实 user 历史中的候选原文跨度核验归属语境，使自然偏好提及资料、引用、来源可建 pending 候选，同时拒绝材料 attribution、裸引号和 Markdown 引文中的第一人称片段。guarded pytest 407 passed、Web 55 tests / 12 files；README 全量检查及生成契约各命令的实际 `.exit` 均为 0，日志在 `.local/dev/m3-package-2-extra-1/raw-logs/`。这是 Developer 自测，非 QA；新 SHA 等待 Sol 调度的全新独立 QA。若 FAIL 不自动继续。真实服务/资料/凭据、native/DMG、五日/双机及发布门 NOT_RUN；runtime UNVERIFIED。
 

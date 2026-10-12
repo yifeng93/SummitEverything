@@ -1,12 +1,18 @@
 # 最新实现交接
 
-2026-10-12 最新结果：用户授权的 extra 1 已完成；历史确认/效力及本人偏好两修均通过，包 2 仍因 C19 无依据回答误报缓存/资格异常而 FAIL（P2 提示误导，无数字编造或证据泄漏）。固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，QA 固定 `507cc1f197ce3af3b22aa53c98148e4ca45ff935`。停止产品修改，等待用户是否授权下一轮；包 1 保留 PASS，包 3 尚未实施。 [Sol 核证与接续](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。下方 QA pending/授权状态是对应交接发布时历史，由本条取代。
+2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 extra 1 QA 曾 FAIL，用户已明确批准仅一轮 extra 2；Developer extra 2 固定源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，自测完成，待全新独立 QA 和 Sol 判门。若仍 FAIL，自动修复额度耗尽并交用户决定。全部旧 FAIL 报告与证据保留；包 3 未开始，M3 正式门/合并及真实/发布门未执行，runtime UNVERIFIED。详见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)。下方 extra 1 及更早内容均为历史记录。
 
 ## 当前状态（2026-10-12）
 
-2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 repair 2/2 曾由独立 QA 判 FAIL，Sol 时点结论见[门判断报告](../quality/reports/2026-10-12-M3-SOL-GATE.md)；用户之后明确批准仅一轮额外修复。extra 1 Developer 源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，等待全新独立 QA 和 Sol 判门，Developer 自测不是 QA PASS。若 extra 1 仍 FAIL，停止自动修复并交用户决定。首轮、repair 1/2 与 repair 2/2 QA 原报告及证据均保留。包 3 只读准备完成、实现未开始；M3 正式验收和合并未执行。以下 repair 2 等旧交接作为历史记录保留。
+历史交接（extra 1）：当时记录包 2 repair 2/2 QA FAIL 后用户批准一轮额外修复，源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并等待独立 QA。该状态已由本文当前状态与 extra 2 交接取代；Sol 后续门与 QA 结果见 extra 1 历史报告。
 
-### 包 2 extra 1 Developer 交接（待全新独立 QA）
+### 包 2 extra 2 Developer 交接（待全新独立 QA）
+
+extra 2 起点 `09fd94c6127cdd4bb60827a102446cb352eb32be`，产品源码提交 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，分支 `codex/m3-integrated-packages`。本轮是用户在 extra 1 QA FAIL 后明确批准的唯一追加轮次；README 全量自动检查已完成，日志及 `.exit` 在 `.local/dev/m3-package-2-extra-2/raw-logs/`。行为、命令和复演范围见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)。等待 Sol 调度全新独立 QA；不得将自测标成 QA/PACK PASS。
+
+C19 的无引用诊断现区分无相关证据、资格/hash 排除和生成期间页面变化；missing 与主文同步。fresh ready index 的无关查询不会误称缓存问题；hash 不匹配仍报告版本/资格原因，页面在生成中不可读先报告不可用。三种回答模式及零 provider 调用回归见固定源码。QA 后若 FAIL，停止并交用户，不继续自动修复；包 3 仍未开始。
+
+### 包 2 extra 1 Developer 历史交接（已 QA FAIL）
 
 extra 1 起点 `36a0cc32757f761bd1c31abcddde07f1a2a426c6`，源码提交 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，分支 `codex/m3-integrated-packages`。文档-only 交接提交会另行固定；Developer 工作区收口后 clean。额外轮由用户明确批准，仅此一轮，历史 repair 1/2、repair 2/2 计数不重置。实现和自测说明见[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)，日志与真实 `.exit` 位于开发 checkout 的 `.local/dev/m3-package-2-extra-1/raw-logs/`（本地忽略目录，不提交）。
 
