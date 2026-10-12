@@ -1,0 +1,39 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA3
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 27 items
+
+.local/preqa/test_preqa_round3.py ...........................            [100%]
+
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED .local/preqa/test_preqa_round3.py::test_d2_still_fixed[\u9ebb\u70e6\u5e2e\u6211\u770b\u770b\u67ab\u6e7e\u6d3b\u52a8\u7684\u7ecf\u8d39\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_round3.py::test_d2_still_fixed[\u5e2e\u6211\u67e5\u4e00\u4e0b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u3002]
+PASSED .local/preqa/test_preqa_round3.py::test_d2_still_fixed[\u770b\u770b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97]
+PASSED .local/preqa/test_preqa_round3.py::test_d2_still_fixed[\u67e5\u4e00\u4e0b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97]
+PASSED .local/preqa/test_preqa_round3.py::test_d4_still_fixed[fact]
+PASSED .local/preqa/test_preqa_round3.py::test_d4_still_fixed[comparison]
+PASSED .local/preqa/test_preqa_round3.py::test_d4_still_fixed[plan]
+PASSED .local/preqa/test_preqa_round3.py::test_d3_limit1_no_absence_wording_and_names_uncovered_scope[fact]
+PASSED .local/preqa/test_preqa_round3.py::test_d3_limit1_no_absence_wording_and_names_uncovered_scope[comparison]
+PASSED .local/preqa/test_preqa_round3.py::test_d3_limit1_no_absence_wording_and_names_uncovered_scope[plan]
+PASSED .local/preqa/test_preqa_round3.py::test_d3_default_limit5_no_absence_wording
+PASSED .local/preqa/test_preqa_round3.py::test_d3_no_truncation_keeps_real_absence_wording
+PASSED .local/preqa/test_preqa_round3.py::test_d1_unchanged_as_declared
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_registered_object_name_intact[\u770b\u770b\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_registered_object_name_intact[\u603b\u7ed3\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_registered_object_name_intact[\u68b3\u7406\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_registered_object_name_intact[\u67e5\u770b\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_registered_object_name_intact[\u544a\u8bc9\u6211\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u603b\u7ed3\u62a5\u544a]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u67e5\u770b\u7ec6\u5219]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u68b3\u7406\u8bb0\u5f55]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u544a\u8bc9\u6211\u53f0\u8d26]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u770b\u770b\u62a5\u544a]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u8bf4\u660e\u4e00\u4e0b\u8bb0\u5f55]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_unregistered_object_name_intact[\u67e5\u4e00\u67e5\u62a5\u544a]
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_registered_lookup_prefix_is_cleaned
+PASSED .local/preqa/test_preqa_round3.py::test_two_tier_overstrip_does_not_pull_unrelated_evidence
+============================== 27 passed in 1.24s ==============================

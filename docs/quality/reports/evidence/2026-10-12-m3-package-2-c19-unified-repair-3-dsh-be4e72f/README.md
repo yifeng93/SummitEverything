@@ -19,6 +19,7 @@
 - `raw-logs/` — 逐命令 `.log` 与 `.exit`，以及 RED/GREEN 的 JSONL 观测。
 - `commands.tsv` — 命令、exit 与结果。
 - `final-state.txt` — 工作树、SHA、监听端口与外部边界。
+- `subagent-preqa/` — DSH 子代理对抗性预验证（**非官方独立 QA**）的 round-3 harness、原始日志与 65 名矩阵 A/B 日志；`matrix_r3_base.log` 与 `matrix_r3_new.log` 逐字节相同，即新 SHA 相对基线 `f79f613` 0/65 名称行为改变。
 - `SHA256SUMS` — 本目录文件哈希清单。
 
 ## RED → GREEN 关键原始日志

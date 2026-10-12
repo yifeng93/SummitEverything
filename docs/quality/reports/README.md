@@ -1,6 +1,7 @@
 # 开发与独立验收报告索引
 
 2026-10-12 DSH C19 repair 3（**DEV PASS；独立 QA NOT_RUN**）：[DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-3-DEV.md)与 [evidence](evidence/2026-10-12-m3-package-2-c19-unified-repair-3-dsh-be4e72f/README.md)。用户指定 Deepseek Harness V4.1 flash 在分支 `codex/dsh-c19-20261012` 独立试修；起点 `b3d0dff587c94ee295dfe5379bd67916c98184ec`，受测固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac`。修复请求外壳与主题内容的共享归一化边界：信息性限定词（设备/年度/专项/工作）不再被全局删除，`专项` 不再充当对象名后缀，伪对象 `的专项` 被拒绝，对象跨度与主题跨度分离。RED 12+22 矩阵 7 failed/27 passed → GREEN 34 passed；新增 tracked 回归 19 项；全量后端 469 passed、Web 56/12 与静态/构建检查全部 exit 0；隔离 loopback API/SSE 13/13 观测 PASS（含 partial/zero 与 history reopen）。DSH 子代理对抗性预验证另发现三项反例（礼貌查词伪对象、`term:` 泄漏、截断措辞），已在本轮修复并加回归；1 项标题/别名归属契约问题保留待 QA 独立判定。历史 FAIL 不改写；本轮不宣告 C19/M3 通过、不合并 main。独立 QA 由 Sol 在另一个 checkout 对固定 SHA 调度。
+2026-10-12 DSH C19 repair 3 三轮预验收口：DSH 子代理在独立 checkout 对 `80cabed`、`9836365`、`7e772ea` 做了三轮对抗性黑盒预验证（**非官方独立 QA**）。第 3 轮（产品源 `be4e72f`）判定：产品树一致；冻结 34、tracked 19、全量 469、子代理 harness 27 项与 loopback 全 PASS；D2/D3/D4/D5 均已修复（D5 的 65 名矩阵相对基线 `f79f613` 0/65 行为改变）；唯一遗留 FAIL 为 D1「标题/别名元数据是否可把页面绑定到另一对象名」，已按计划「项目/页元数据可确定归属」声明为产品契约待定项，交 QA/Sol 判定。子代理 harness 与矩阵原始日志已存入 evidence 的 `subagent-preqa/`。
 
 2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
 

@@ -1,4 +1,4 @@
-720001f98abd0375fb2ec645bae9b2d2c0b07f84777c6173d9973e6c4fd0e9ae  ./README.md
+59d44ef484a3fcadba771ca5705ddffed2f8ada899a1b35c6a8181898b1bc356  ./README.md
 dbf01703d9a237146506a1d6673143edaa18af96035c5a076fd4a03256cdc483  ./commands.tsv
 014544482d42c9810f78d1eb9a44f364a42695529b07bc143eeebea74f90526e  ./final-state.txt
 8e2343a5f8303d3eb1d693e28e082b4a703133eb7abf00a53775d3d6e0f7c48e  ./git-identity.txt
@@ -54,3 +54,11 @@ f46d7dbe943b5a4a56191872b2190a8a4d08ccffaf7cf740d6ac5400f0fd696d  ./raw-logs/pre
 8d1a16d7c48f4fbf3a5439de96b7803298b01d7178abbed70ed1be2512aa4951  ./raw-logs/web-tests.log
 418a5c17f33c70e99b0cc0a07fce69191489cfedc94164bfa903785777c5bd4b  ./raw-logs/web-typecheck.exit
 91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87  ./raw-logs/web-typecheck.log
+8369817831c7603745b06cf311869f0d6384b5062aeacd19f62878909600027a  ./subagent-preqa/SUPERSEDED-round1-REPORT.md
+a66cfab4b233ac5855b1a2d9646dd71f25cb88c522fe5e5baa275d635bdc5574  ./subagent-preqa/matrix_r3_base.log
+a66cfab4b233ac5855b1a2d9646dd71f25cb88c522fe5e5baa275d635bdc5574  ./subagent-preqa/matrix_r3_new.log
+92dbb7c30bbe4cbc5411fa2e8fa08d10df2a1b52b8433ee21fdee87970e13628  ./subagent-preqa/preqa_lib.py
+155ff5af64bd3b49a9926e4261ecc081742ff0454c7a224d52cc7c4d1ca7fe03  ./subagent-preqa/preqa_round1_harness_v3.log
+9b25c54e1c720905c5ee857ed55010c996c48887896451f7609d99240e37edd5  ./subagent-preqa/preqa_round2_harness_v3.log
+b6c0bc2b9b68d423a3b5da046225fba694d1d47ae7566685d1bcff581f6b652e  ./subagent-preqa/preqa_round3.log
+7c777fec86b07a991adaea06122446128252f5ff0fa30c2bd7c7dff3b71db8ec  ./subagent-preqa/test_preqa_round3.py

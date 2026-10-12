@@ -86,7 +86,11 @@ RED 原始输出：`raw-logs/baseline-holdout-34.log`、`raw-logs/baseline-devic
 | D5 过宽/名损（第 2 轮，本轮引入） | 共享 `_REQUEST_SHELL` 也用于清理**独立**对象候选，未注册名 `总结报告/梳理工程/查看细则` 被改写成 `报告/工程/细则`，`总结方案` 被静默丢弃却仍称完整 | **已修**（改动见下），并加 tracked 正控 |
 | D3 措辞（第 2 轮复核判定未真正修好） | 截断提示虽已追加，但逐对 `缺少…依据` 条目仍在，答案依然断言已知资料缺失 | **终修**：截断时不再输出任何 `缺少…依据` 条目，只输出一条点名未覆盖对象/主题的截断说明 |
 
-D1 判定说明：计划的确定边界写明「项目/页元数据可确定归属」，且既有 tracked 用例（`青榆` 作为 `aliases` 元数据、正文与项目名都不含该词）要求 alias 必须能建立对象归属；本轮把标题/别名视为同级归属信号与该设计一致，改成不绑定会破坏既有已接受行为。反例原文与最小 fixture 已存入 `raw-logs/fix-preqa-findings.jsonl`（`D1-title-alias-binding`：正文 `预算上限为九万元。` 被作为「枫湾活动的预算」引用）。是否收紧为「只有 project/line/aliases 绑定、裸 title 不绑定」属于产品契约决定，交 Sol/QA；本轮不擅自改。
+第 3 轮（`…-DSH-C19-PREQA3`，固定 `7e772ea` / 产品源 `be4e72f`）复验结果：产品树一致；冻结 34、tracked 19、全量 469、子代理自建 round-3 harness 27 项与 loopback 全部 PASS；**D5 PASS**；**D3 PASS**；D2/D4 仍修复；D1 仍为唯一 FAIL（已声明为契约问题）。关键独立证据：子代理把原始基线 `f79f613` 用 `git archive` 解出做 A/B，13 前缀 × 5 词根的 65 个未注册对象名矩阵在新 SHA 与基线之间**逐字节一致（0/65 行为改变）**，且每行 `citations=1`、无无关页被拉入；`比较总结报告与松墨展会的预算` 端到端只引用 `松墨展会预算上限为七万元。` 并把 `总结报告` 报告为缺失。截断场景在 limit=1/5 三模式下**不再出现任何逐对 `缺少…依据`**，只有点名未覆盖对象/主题的上限说明；未截断场景不变。原始 harness 与矩阵日志见 `evidence/2026-10-12-m3-package-2-c19-unified-repair-3-dsh-be4e72f/subagent-preqa/`（`matrix_r3_base.log` 与 `matrix_r3_new.log` 逐字节相同）。
+
+子代理同时列出**与基线逐字一致的既有语言边界**（非本轮引入、未恶化）：lookup 动词后接**未注册**对象时动词并入对象名（`看看云岬营地`）；`…，另外看看…` 产生伪对象 `另外看看`；对象名为 `查看明细项目` 时多出伪兄弟 `明细项目`；主题跨度以 总结/查看/梳理 开头时缩成 `term:报告`/`term:记录`。这些属于同一类边界，建议在后续轮次或 QA 观察中单独定级。
+
+D1 判定说明：计划的确定边界写明「项目/页元数据可确定归属」，且既有 tracked 用例（`青榆` 作为 `aliases` 元数据、正文与项目名都不含该词）要求 alias 必须能建立对象归属；本轮把标题/别名视为同级归属信号与该设计一致，改成不绑定会破坏既有已接受行为。三轮子代理预验证均确认该反例未变；反例原文与最小 fixture 已存入 `raw-logs/fix-preqa-findings.jsonl`（`D1-title-alias-binding`：正文 `预算上限为九万元。` 被作为「枫湾活动的预算」引用）。是否收紧为「只有 project/line/aliases 绑定、裸 title 不绑定」属于产品契约决定，交 Sol/QA；本轮不擅自改。
 
 ## 验收标准对照（S01–S14 与 ACCEPTANCE 原要求保留）
 
@@ -141,6 +145,7 @@ D1 判定说明：计划的确定边界写明「项目/页元数据可确定归�
 ## 交接与下一步
 
 - 分支/工作树：`codex/dsh-c19-20261012` / `/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012`；受测固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac`；工作树 clean、测试服务已停止。
+- 子代理三轮预验的 harness 与原始日志副本见 `evidence/2026-10-12-m3-package-2-c19-unified-repair-3-dsh-be4e72f/subagent-preqa/`（明确标注为 DSH 子代理材料，非官方 QA）。
 - 本报告的结论仅为 **DEV PASS**。独立 QA 需在另一个 checkout 固定同一 SHA，复跑 34 项 holdout、19 项新回归、README 适用全量检查，并独立复演 API/UI 的完整、partial、zero 与 history reopen；**QA NOT_RUN**，由 Sol 调度。子代理预验证不得作为官方 QA 结论引用。
 - 建议 QA 优先独立判定 D1（标题/别名归属）与 D3 深层公平性，这两项是本轮明确保留的未闭合边界。
 - 即使独立 QA 通过 C19，包 2 门、M3 正式验收与合并 main 仍需用户批准；历史 FAIL 继续有效。
