@@ -4,9 +4,9 @@
 
 ## 当前状态与下一步
 
-### C19 统一证据范围候选（2026-10-12，DEV 完成，fresh QA 待开始）
+### C19 统一证据范围 repair 1/2（2026-10-12，DEV 完成，fresh QA 待开始）
 
-用户在 extra 2 QA FAIL 后明确重新授权统一修复。产品源码固定 `247f6708c68812e8b217b1079a2fe953ebb06960`；范围约束统一覆盖 fact / comparison / plan 的对象×维度证据、邻页、最终 passage/citation 与产品层 missing，维持批准/hash gate。实现与 S01–S14 对照见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)，Sol 研究契约见[执行计划](../superpowers/plans/2026-10-12-c19-unified-evidence-scope.md)。源码自测 guarded pytest 446 passed，Web 56 passed / 12 files，Ruff/format/mypy/lock/build、OpenAPI 生成及 Web typecheck/lint/build 有记录的检查均 exit 0；详细实际结果和警告见 DEV 报告与 `.local/dev/c19-unified/`。这些是 Developer 自测，不是独立 QA；fresh QA NOT_RUN。extra 2 的 C19 P1 FAIL 与旧 QA 证据保持不变，M3 整体门未通过。
+用户在 extra 2 QA FAIL 后明确重新授权统一修复；本轮初验 QA `d2236c2` 也判 C19 P1 FAIL，原报告与证据保留。当前产品源码固定 `df1aac288a002e86a24132a9954fbe0b18d41d1f`。共享范围仍覆盖 fact / comparison / plan 的对象×维度证据、邻页、最终 passage/citation 与产品层 missing，批准/hash gate 不变；新增明确 exact topic 分类，避免未知主题退化为广域检索，同时保留泛化方案和开放属性查询。S01–S14 实际覆盖、语言边界和失败/通过日志见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)，Sol 原始研究契约见[执行计划](../superpowers/plans/2026-10-12-c19-unified-evidence-scope.md)。Developer 自测：定向 qualified retrieval 27 passed、QA holdout 12 passed、guarded pytest 449 passed、Web 56 passed / 12 files，README 所有适用检查 exit 0。fresh QA NOT_RUN；M3 整体门未通过。
 
 M3 包 1、包 3离线集成由 Sol 判 PASS；包 3复验报告见[Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立 QA](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。包 2 C19 当前候选、QA 状态和未测边界见上方与[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
@@ -53,7 +53,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
-| M3 包 2 完整问答、角色与记忆 | DEV 源码 `247f6708`；fresh QA 待开始 | extra 2 QA 曾 FAIL / C19 P1；当前 DEV 候选未判 | 统一对象×维度范围候选待独立复验；M3 总门仍未通过 |
+| M3 包 2 完整问答、角色与记忆 | C19 repair 1/2 DEV 源码 `df1aac2`；fresh QA 待开始 | extra 2 与统一候选初验均有 C19 P1 FAIL；当前候选未判 | exact topic 范围修复等待全新复验；M3 总门仍未通过 |
 | M3 包 3 连续状态与归档压缩 | repair 1/2 源码 `ea11fc5`；QA 固定 `7fd8a53` | Sol 判离线集成 PASS | C22 lease 异常已独立复验关闭；C22/C23/C21相关离线范围通过；包 2 C19 P1 保留，M3 正式门未通过 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |

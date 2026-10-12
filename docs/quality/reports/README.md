@@ -1,10 +1,10 @@
 # 开发与独立验收报告索引
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 P1 曾由 extra 2 QA 判 FAIL；用户随后明确重新授权统一修复。Developer 候选源码 `247f6708c68812e8b217b1079a2fe953ebb06960` 已完成自测，等待全新独立 QA，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2 和统一候选初验的 P1 FAIL 均保留；用户重新授权后的 repair 1/2 产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已由 Developer 自测，fresh 独立 QA 待开始。Developer 自测不能改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
-## 当前包 2 C19 候选（2026-10-12，DEV 完成，fresh QA 待开始）
+## 当前包 2 C19 统一修复 repair 1/2（2026-10-12，DEV 完成，fresh QA 待开始）
 
-[C19 统一修复 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)：用户在 extra 2 FAIL 后明确重新授权；固定源码 `247f6708c68812e8b217b1079a2fe953ebb06960`。Developer 自测 guarded pytest 446 passed、Web 56 tests / 12 files，相关 static/types/build/generation checks exit 0；日志在 `.local/dev/c19-unified/`。这不是 QA 结论。extra 2 固定 SHA 的 P1 FAIL 与原报告/证据保留，fresh QA 对本候选为 NOT_RUN，M3 未正式通过。
+[C19 repair 1 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)：固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`。unknown information topics 按 exact scope 处理；礼貌请求、对象名内含维度词、无“的”并列、主题有资料/缺资料、开放属性问题和泛化方案均有回归。Developer 自测 qualified retrieval 27 passed、QA holdout 12 passed、guarded pytest 449 passed、Web 56 tests / 12 files；README 全量适用检查 exit 0，日志在 `.local/dev/c19-unified/`。统一候选初验固定 SHA `d2236c2` 的 P1 FAIL 与原报告/证据保留；repair 1 fresh QA 为 NOT_RUN，M3 未正式通过。
 
 ## M3 已判门与历史失败（2026-10-12）
 

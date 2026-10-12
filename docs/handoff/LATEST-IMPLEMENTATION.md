@@ -4,11 +4,13 @@
 
 ## 当前状态（2026-10-12）
 
-### 包 2 C19 统一修复候选（DEV 完成；fresh QA 待开始）
+### 包 2 C19 统一修复 repair 1/2（DEV 完成；fresh QA 待开始）
 
-用户在 extra 2 QA FAIL 后明确重新授权统一修复。固定产品源码 `247f6708c68812e8b217b1079a2fe953ebb06960`（`fix(retrieval): enforce shared evidence scope`）。三模式共享对象×维度范围；未识别并列对象保留为 missing，候选/重排/邻页/最终 provider passage 与 citation 重用范围门，按对象和维度核实覆盖，provider `missing_information=[]` 不能抹除产品已知缺口。未指定对象的广义多资料路径和有依据的跨材料方案保留；CURRENT/HISTORY、批准/hash 与生成后版本复核未放宽。API/OpenAPI/TS 无契约变化。
+用户在 extra 2 QA FAIL 后重新授权统一修复；本次初验 QA 又判 C19 P1 FAIL，原始报告和证据保留。repair 1/2 固定产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`（`fix(retrieval): classify exact unknown topics`）。planner 现在区分 explicit topic、generic plan、open question 与 unresolved scope；已知对象名从 topic 解析前剥离，陌生的具体主题保留 exact term，不再因为未命中有限 family labels 而退化为广域搜索。明确对象×维度范围、邻页和最终 passage/citation 共享约束；无依据时缺资料、零引用、零 provider 调用。礼貌外壳、嵌入维度词的项目名、无“的”并列问题、精确标题“排期”、短 metadata alias 均有回归；开放属性查询和泛化下一步方案仍走原路径。API/OpenAPI/TS 无契约变化。
 
-Developer 检查：guarded pytest 446 passed；Web 56 tests / 12 files；Ruff check/format、mypy（43 source files）、lock check、uv build、OpenAPI types、Web typecheck/lint/build 的结果见 DEV 报告。guarded pytest 和 Web 全量日志在开发 checkout `.local/dev/c19-unified/`。保留 1 条既有 Starlette/httpx deprecation 和 2 条既有 React effect lint warnings。fresh QA 尚未运行；旧 extra 2 C19 P1 FAIL 仍是当前 Sol 门，不能据自测宣称包 2或 M3通过。支持语言边界与 S01–S14 观察见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)。真实模型/服务/材料/凭据、Keychain、native/DMG、五日/双机和发布仍 NOT_RUN，runtime UNVERIFIED。
+Developer 检查：源码提交后 qualified retrieval 27 passed、QA holdout 12 passed；README 全量 guarded pytest 449 passed，Web 56 tests / 12 files。Ruff/format、mypy（43 source files）、lock、uv build、OpenAPI types、Web typecheck/lint/build 均 exit 0。原始日志在开发 checkout `.local/dev/c19-unified/`；保留 1 条既有 Starlette/httpx deprecation 和 2 条既有 React effect lint warnings。fresh QA 尚未运行；extra 2 与统一候选初验的 C19 P1 FAIL 均是历史 Sol 门，不据自测宣称包 2或 M3通过。S01–S14 映射和解析语言边界见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)。真实模型/服务/材料/凭据、Keychain、native/DMG、五日/双机和发布仍 NOT_RUN，runtime UNVERIFIED。
+
+本轮复核了 planner 的三种可能回退路径：已知 topic family 用归一化维度；未识别但信息明确的 topic 生成 exact term；没有明确 topic 的已知开放属性或无对象泛化方案才维持 open/generic。request-prefix 清理后若仍有具体信息主题，不会通过空 dimensions 回退到广域检索；无法解析的对象/约束仍标 unresolved。QA holdout 12/12 已在固定源码上通过。请独立 QA 变化对象名、主题和完整问法结构，并检验该区分不把开放问句或通用方案误收窄。
 
 ### M3 包 3：独立离线集成 PASS
 

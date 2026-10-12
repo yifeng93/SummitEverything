@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 P1 曾由 extra 2 QA 判 FAIL；用户随后明确重新授权统一修复。Developer 候选源码 `247f6708c68812e8b217b1079a2fe953ebb06960` 已完成自测，等待全新独立 QA，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 详见[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与当前 C19 [DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md)。
+- 2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2 与统一候选初验的 P1 FAIL 均保留；用户重新授权后的 repair 1/2 Developer 源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已完成自测，等待全新独立 QA，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。详见[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与当前 C19 [repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -27,7 +27,7 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 当前状态：包 2 C19 P1 的 extra 2 QA FAIL 保留；用户随后重新授权统一证据范围修复，Developer 固定候选 `247f6708c68812e8b217b1079a2fe953ebb06960`，自测完成、fresh QA 待开始。包 3 repair 1/2 离线集成 PASS；M3 总门仍未通过。
+2026-10-12 当前状态：包 2 C19 P1 的 extra 2 和统一候选初验 QA FAIL 均保留；用户重新授权后的 repair 1/2 Developer 固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`，定向与全量自测完成、fresh QA 待开始。包 3 repair 1/2 离线集成 PASS；M3 总门仍未通过。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
