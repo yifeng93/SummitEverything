@@ -1,0 +1,7 @@
+/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra2/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra2/SummitEverything/.local/qa/m3-package-2-extra-2/harness/bootstrap_workspace.py", line 18, in <module>
+    assert opened.status_code in {200, 201}, (opened.status_code, opened.text)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (422, '{"error":{"code":"validation_error","message":"Workspace name is required","request_id":"55e56f1b2dc9206b"}}')

@@ -1,0 +1,48 @@
+{
+  "case": "C19-not-ready-index-three-modes",
+  "workspace_open_http": 201,
+  "index": {
+    "fingerprint": null,
+    "pages": 0,
+    "chunks": 0,
+    "state": "not_ready",
+    "current_pages": 0,
+    "stale_pages": 0
+  },
+  "queries": [
+    {
+      "mode": "fact",
+      "http": 200,
+      "index_status": "not_ready",
+      "citations": 0,
+      "missing_information": [
+        "请先完成当前模型版本的索引。"
+      ],
+      "provider_before": 14,
+      "provider_after": 14
+    },
+    {
+      "mode": "comparison",
+      "http": 200,
+      "index_status": "not_ready",
+      "citations": 0,
+      "missing_information": [
+        "请先完成当前模型版本的索引。"
+      ],
+      "provider_before": 14,
+      "provider_after": 14
+    },
+    {
+      "mode": "plan",
+      "http": 200,
+      "index_status": "not_ready",
+      "citations": 0,
+      "missing_information": [
+        "请先完成当前模型版本的索引。"
+      ],
+      "provider_before": 14,
+      "provider_after": 14
+    }
+  ],
+  "status": "PASS"
+}
