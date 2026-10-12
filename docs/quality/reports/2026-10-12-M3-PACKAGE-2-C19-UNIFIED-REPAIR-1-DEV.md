@@ -39,6 +39,6 @@ README 全量矩阵（固定源码树）：`uv sync --locked --group dev`、`npm
 
 ## QA 状态和限制
 
-这是 Developer 自测，不是 QA PASS。C19 统一候选初验独立 QA 在 `d2236c2` 判 FAIL，Sol 结论与原报告保持不变；其报告及 evidence 不改写。当前源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 等待全新独立 QA。M3 包 2 / M3 正式门未通过；包 3既有离线 PASS 不受影响。真实 provider、真实材料/服务/凭据、Keychain、native/DMG、五日、双机和发布 NOT_RUN；runtime UNVERIFIED；有限 smoke 未消费。
+这是 Developer 自测，不是 QA PASS。C19 统一候选初验独立 QA 固定 `400dc98c4b0a555561bb98f6633cf1d22ece8550`（产品源码 `247f6708c68812e8b217b1079a2fe953ebb06960`）判 FAIL，Sol 结论与原报告保持不变；其报告及 evidence 不改写。`d2236c2` 属于更早的包 2 extra 2 QA。当前源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 等待全新独立 QA。M3 包 2 / M3 正式门未通过；包 3既有离线 PASS 不受影响。真实 provider、真实材料/服务/凭据、Keychain、native/DMG、五日、双机和发布 NOT_RUN；runtime UNVERIFIED；有限 smoke 未消费。
 
 QA 交接：在独立 checkout 固定本报告所列产品源码 SHA。重跑完整包 2/C19验收与原 QA 通过的 7 项正控；特别 holdout 新的自然礼貌前缀、对象名称含维度词、没有“的”的并列主题、短 alias + 未知主题、裸 exact topic 负控、已有主题正文正控、精确“排期”标题的通用比较、地点/时间开放属性和工作方案正控。跨 fact/comparison/plan 断言最终 citations/passages 与所问对象/主题一致、partial missing 完整、无依据时零 provider 调用，资格/hash 与 SSE/session replay 不退化。Sol 独立判断门状态。
