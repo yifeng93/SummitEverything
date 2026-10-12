@@ -413,7 +413,7 @@ class QueryService:
                 not retrieval_plan.explicit_subjects
                 and retrieval_plan.scope_kind == "explicit_topic"
             ):
-                scope_missing = self._scope_missing((), retrieval_plan.dimensions)
+                scope_missing = self._scope_missing_pairs(set(retrieval_plan.required_pairs))
                 message = "当前已确认资料中没有找到该主题的依据；" + "；".join(scope_missing)
                 return self._empty_answer(
                     question,
@@ -425,9 +425,7 @@ class QueryService:
             if not retrieval_plan.explicit_subjects:
                 message = self._no_evidence_message({}, purpose, answer_mode=answer_mode)
                 return self._empty_answer(question, purpose, message, answer_mode=answer_mode)
-            scope_missing = self._scope_missing(
-                retrieval_plan.explicit_subjects, retrieval_plan.dimensions
-            )
+            scope_missing = self._scope_missing_pairs(set(retrieval_plan.required_pairs))
             if scope_missing:
                 message = "没有找到能确认该对象和主题的已确认资料；" + "；".join(scope_missing)
                 return self._empty_answer(
@@ -891,15 +889,6 @@ class QueryService:
             index_status="ready",
             missing_information=missing or [message],
         )
-
-    @staticmethod
-    def _scope_missing(subjects: tuple[str, ...], dimensions: tuple[str, ...]) -> list[str]:
-        pairs = {
-            (subject, dimension) for subject in subjects for dimension in (dimensions or ("",))
-        }
-        if not subjects:
-            pairs = {("", dimension) for dimension in dimensions}
-        return QueryService._scope_missing_pairs(pairs)
 
     @staticmethod
     def _scope_missing_pairs(pairs: set[tuple[str, str]]) -> list[str]:

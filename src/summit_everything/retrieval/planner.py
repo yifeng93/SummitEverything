@@ -117,7 +117,7 @@ def plan_retrieval(
     current_subjects, current_unresolved = _extract_explicit_subjects(
         normalized, aliases, object_names
     )
-    dimensions = query_dimensions(normalized, current_subjects)
+    dimensions, required_pairs = query_scope(normalized, current_subjects)
     current_scope_kind = _scope_kind(normalized, dimensions, current_unresolved)
 
     if current_subjects or current_unresolved or not is_follow_up:
@@ -127,7 +127,7 @@ def plan_retrieval(
             False,
             unresolved_topic=current_unresolved,
             dimensions=dimensions,
-            required_pairs=query_pairs(normalized, current_subjects, dimensions),
+            required_pairs=required_pairs,
             scope_kind=current_scope_kind,
         )
 
@@ -138,13 +138,13 @@ def plan_retrieval(
             continue
         prior_subjects, prior_unresolved = _extract_explicit_subjects(prior, aliases, object_names)
         if prior_subjects:
-            followup_dimensions = query_dimensions(normalized, prior_subjects)
+            followup_dimensions, followup_pairs = query_scope(normalized, prior_subjects)
             return RetrievalPlan(
                 f"{prior}\n追问：{normalized}",
                 prior_subjects,
                 True,
                 dimensions=followup_dimensions,
-                required_pairs=query_pairs(normalized, prior_subjects, followup_dimensions),
+                required_pairs=followup_pairs,
                 scope_kind=_scope_kind(normalized, followup_dimensions, False),
             )
         if _is_follow_up(prior) and not prior_unresolved:
@@ -191,7 +191,7 @@ def _extract_explicit_subjects(
     if subject_clause:
         matched = tuple(
             alias
-            for alias in _matching_aliases(subject_clause, aliases)
+            for alias in all_matches
             if _alias_has_entity_role(alias) or alias in object_aliases
         )
     else:
@@ -201,6 +201,7 @@ def _extract_explicit_subjects(
             if _alias_is_subject_in_question(source_question, alias)
             or (alias in object_aliases and _alias_has_topic_after(source_question, alias))
         )
+    entity_mentions = _entity_mentions(source_question, matched)
     subject_clause = _TRAILING_CONTEXT.sub("", subject_clause.strip(" \t\r\n？?，,。；;：:"))
     # If the clause is a request sentence, its whole prefix is not a safe entity.
     # An unrecognized request is treated as unresolved instead of filtering on that text.
@@ -243,6 +244,7 @@ def _extract_explicit_subjects(
             for alias in matched:
                 normalized_candidate = normalized_candidate.replace(_normalize(alias), "")
             candidate = _SUBJECT_REQUEST_PREFIX.sub("", normalized_candidate).strip()
+            candidate = _trim_topic_after_entity_suffix(candidate)
             candidate = _TOPIC_FILLER.sub("", candidate).strip()
             if _REQUEST_CLAUSE.search(candidate):
                 continue
@@ -256,7 +258,15 @@ def _extract_explicit_subjects(
                 candidates.append(candidate)
     # Matched corpus names and unmatched parallel names are both part of the
     # requested set; a hit cannot erase a second, unknown comparison subject.
-    values = [*matched, *candidates]
+    entity_keys = {_normalize(value) for value in entity_mentions}
+    filtered_candidates = [
+        candidate
+        for candidate in candidates
+        if not any(
+            key != _normalize(candidate) and key in _normalize(candidate) for key in entity_keys
+        )
+    ]
+    values = [*matched, *entity_mentions, *filtered_candidates]
     unresolved_request = (
         request_like and not values and not query_dimensions(source_question, tuple(values))
     )
@@ -294,6 +304,90 @@ def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str
     # Empty topic phrases are genuinely open questions or generic plans; an
     # unfamiliar but explicit noun phrase remains an exact local scope.
     return ()
+
+
+def query_scope(
+    question: str, subjects: tuple[str, ...]
+) -> tuple[tuple[str, ...], tuple[tuple[str, str], ...]]:
+    """Resolve local subject/topic pairs first; dimensions are their union."""
+    if not subjects:
+        dimensions = _topic_dimensions(question)
+        if not dimensions:
+            dimensions = query_dimensions(question)
+        return dimensions, tuple(("", dimension) for dimension in dimensions)
+
+    local = _local_subject_topics(question, subjects)
+    if not any(local.values()):
+        dimensions = query_dimensions(question, subjects)
+        pairs = tuple((subject, dimension) for subject in subjects for dimension in dimensions)
+        if not dimensions:
+            pairs = tuple((subject, "") for subject in subjects)
+        return dimensions, pairs
+
+    # A topic after the last subject is shared only when every preceding
+    # subject span contains connectors but no local topic of its own.
+    last_subject = max(
+        subjects,
+        key=lambda subject: question.find(subject) if question.find(subject) >= 0 else -1,
+    )
+    earlier = [subject for subject in subjects if subject != last_subject]
+    if local[last_subject] and all(not local[subject] for subject in earlier):
+        pairs = tuple(
+            (subject, dimension) for subject in subjects for dimension in local[last_subject]
+        )
+    else:
+        pairs = tuple(
+            (subject, dimension) for subject in subjects for dimension in (local[subject] or ("",))
+        )
+    dimensions = tuple(dict.fromkeys(dimension for _, dimension in pairs if dimension))
+    return dimensions, pairs
+
+
+def _local_subject_topics(question: str, subjects: tuple[str, ...]) -> dict[str, tuple[str, ...]]:
+    occurrences: list[tuple[int, int, str]] = []
+    for subject in subjects:
+        start = question.find(subject)
+        if start >= 0:
+            occurrences.append((start, start + len(subject), subject))
+    occurrences.sort(key=lambda item: (item[0], -(item[1] - item[0])))
+    # If a long alias and its short stem overlap at the same span, retain only
+    # the maximal source span. Keep distinct aliases at distinct positions.
+    selected: list[tuple[int, int, str]] = []
+    for occurrence in occurrences:
+        if selected and occurrence[0] < selected[-1][1]:
+            continue
+        selected.append(occurrence)
+
+    topics: dict[str, tuple[str, ...]] = {subject: () for subject in subjects}
+    for index, (_start, end, subject) in enumerate(selected):
+        next_start = selected[index + 1][0] if index + 1 < len(selected) else len(question)
+        span = question[end:next_start]
+        topics[subject] = _topic_dimensions(span)
+    return topics
+
+
+def _topic_dimensions(span: str) -> tuple[str, ...]:
+    normalized_span = span.strip(" \t\r\n的和与及、,，:：")
+    if not normalized_span:
+        return ()
+
+    # Split only when each side independently expresses a topic. This keeps
+    # modifiers such as “彩色牙刷储存规则” as one exact scope.
+    fragments = re.split(r"(?:和|与|及|、|,|，)", normalized_span)
+    if len(fragments) > 1:
+        fragment_dimensions = [_single_topic_dimension(fragment) for fragment in fragments]
+        if all(fragment_dimensions):
+            return tuple(
+                dict.fromkeys(dimension for values in fragment_dimensions for dimension in values)
+            )
+    return _single_topic_dimension(normalized_span)
+
+
+def _single_topic_dimension(span: str) -> tuple[str, ...]:
+    cleaned = _TOPIC_PREFIX.sub("", span.strip())
+    cleaned = _TOPIC_SUFFIX.sub("", cleaned)
+    dimensions = query_dimensions(cleaned)
+    return dimensions
 
 
 def _topic_phrase(question: str, subjects: tuple[str, ...]) -> str:
@@ -336,6 +430,35 @@ def _alias_has_entity_role(alias: str) -> bool:
     return any(_normalize(suffix) in normalized_alias for suffix in _ENTITY_SUFFIXES)
 
 
+def _entity_mentions(question: str, known_subjects: tuple[str, ...]) -> tuple[str, ...]:
+    """Find source-local names ending in a known entity noun, independent of order."""
+    pattern = re.compile(r"[\u3400-\u9fffA-Za-z0-9]{1,16}?(?:项目|计划|工程|专项|工作坊|课题|产品)")
+    stripped = _TOPIC_PREFIX.sub("", question.strip())
+    for subject in sorted(known_subjects, key=len, reverse=True):
+        stripped = stripped.replace(subject, " " * len(subject))
+    values: list[str] = []
+    for region in re.split(r"(?:和|与|及|、|,|，|。|？|\?|；|;)", stripped):
+        region = _COMPARISON_PREFIX.sub("", region).strip()
+        for match in pattern.finditer(region):
+            candidate = match.group().strip()
+            if candidate and not _is_generic_subject(candidate):
+                values.append(candidate)
+    return tuple(values)
+
+
+def _trim_topic_after_entity_suffix(candidate: str) -> str:
+    """Separate a recognized topic only when an entity suffix closes the name."""
+    for terms in _TOPIC_CLASSES.values():
+        for term in sorted(terms, key=len, reverse=True):
+            position = candidate.find(term)
+            if position <= 0:
+                continue
+            prefix = candidate[:position]
+            if any(prefix.endswith(suffix) for suffix in _ENTITY_SUFFIXES):
+                return prefix
+    return candidate
+
+
 def _alias_has_topic_after(question: str, alias: str) -> bool:
     normalized_question = _normalize(question)
     normalized_alias = _normalize(alias)
@@ -355,51 +478,6 @@ def supported_dimensions(text: str, dimensions: tuple[str, ...]) -> tuple[str, .
         if found:
             supported.append(dimension)
     return tuple(supported)
-
-
-def query_pairs(
-    question: str, subjects: tuple[str, ...], dimensions: tuple[str, ...]
-) -> tuple[tuple[str, str], ...]:
-    """Resolve explicitly paired subjects/topics, otherwise use the shared scope."""
-    if not subjects:
-        return tuple(("", dimension) for dimension in dimensions)
-    if not dimensions:
-        return tuple((subject, "") for subject in subjects)
-    if len(subjects) < 2:
-        return tuple((subjects[0], dimension) for dimension in dimensions)
-
-    normalized = _normalize(question)
-    assignments: dict[str, tuple[str, ...]] = {}
-    for subject in subjects:
-        needle = _normalize(subject)
-        position = normalized.find(needle)
-        if position < 0:
-            continue
-        next_positions = [
-            normalized.find(_normalize(other), position + len(needle))
-            for other in subjects
-            if other != subject
-        ]
-        next_positions = [value for value in next_positions if value >= 0]
-        end = min(next_positions) if next_positions else len(normalized)
-        # Normalize indices are stable here because both subject and question
-        # use the same normalization that removes only punctuation/spacing.
-        span = normalized[position + len(needle) : end]
-        found = tuple(
-            dimension for dimension in dimensions if _dimension_mentioned(span, dimension)
-        )
-        if found:
-            assignments[subject] = found
-    if len(assignments) == len(subjects):
-        return tuple(
-            (subject, dimension) for subject in subjects for dimension in assignments[subject]
-        )
-    # “A 和 B 的预算、排期” asks the shared dimensions of both subjects.
-    return tuple((subject, dimension) for subject in subjects for dimension in dimensions)
-
-
-def _dimension_mentioned(text: str, dimension: str) -> bool:
-    return all(_dimension_part_supported(text, part) for part in dimension.split("&"))
 
 
 def _dimension_part_supported(normalized_text: str, part: str) -> bool:

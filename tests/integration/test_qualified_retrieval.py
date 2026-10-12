@@ -1253,6 +1253,302 @@ def test_c19_limit_truncation_reports_uncovered_comparison_subject(
     assert any("白鹭工程" in value or "霜塔项目" in value for value in answer.missing_information)
 
 
+def test_c19_keeps_local_topics_paired_with_their_subjects(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    budget_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭预算",
+        body="白鹭工程预算上限为十八万元。",
+    )
+    topic_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="赤陶证章领取",
+        body="赤陶项目活动证章领取须出示邀请函。",
+    )
+    visitor_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青榆访客注销",
+        body="青榆项目访客证件注销须交回实体卡。",
+    )
+    badge_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="橡果活动领取",
+        body="橡果工程活动证章领取须出示邀请函。",
+    )
+    same_subject_topic_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭证章领取",
+        body="白鹭工程活动证章领取须出示邀请函。",
+    )
+    calls: list[list[str]] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append([str(passage["excerpt"]) for passage in passages])
+            return GroundedAnswer(text="依据已确认资料。", missing_information=[])
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    full_questions = (
+        "比较白鹭工程预算与赤陶项目的活动证章领取办法",
+        "比较赤陶项目的活动证章领取办法与白鹭工程预算",
+    )
+    object_aliases: list[str] = []
+    aliases = retrieval._subject_aliases(root, load_manifest(root), object_aliases=object_aliases)
+    plan = plan_retrieval(full_questions[0], [], aliases, object_aliases=object_aliases)
+    assert plan.required_pairs == (
+        ("白鹭工程", "budget"),
+        ("赤陶项目", "term:活动证章领取"),
+    ), (plan, aliases, object_aliases)
+    for question, expected in (
+        (
+            "比较青榆项目的访客证件注销办法与橡果工程的活动证章领取办法",
+            {visitor_id, badge_id},
+        ),
+        (
+            "比较白鹭工程的预算和活动证章领取办法",
+            {budget_id, same_subject_topic_id},
+        ),
+    ):
+        answer = retrieval.query(
+            root,
+            question,
+            fingerprint="fake-v1",
+            answer_mode="comparison",
+        )
+        assert {citation.page_id for citation in answer.citations} == expected, (
+            question,
+            answer.model_dump(),
+        )
+    scope_checks = (
+        (
+            "比较预算与活动证章领取办法",
+            {("", "budget"), ("", "term:活动证章领取")},
+        ),
+        (
+            "比较访客证件注销与活动证章领取办法",
+            {("", "term:访客证件注销"), ("", "term:活动证章领取")},
+        ),
+        (
+            "比较白鹭工程与赤陶项目的预算和排期",
+            {
+                ("白鹭工程", "budget"),
+                ("白鹭工程", "schedule"),
+                ("赤陶项目", "budget"),
+                ("赤陶项目", "schedule"),
+            },
+        ),
+        (
+            "比较白鹭工程的预算和活动证章领取办法",
+            {
+                ("白鹭工程", "budget"),
+                ("白鹭工程", "term:活动证章领取"),
+            },
+        ),
+        (
+            "比较青榆项目的访客证件注销办法与橡果工程的活动证章领取办法",
+            {
+                ("青榆项目", "term:访客证件注销"),
+                ("橡果工程", "term:活动证章领取"),
+            },
+        ),
+        (
+            "比较白鹭工程与赤陶项目的彩色牙刷储存规则",
+            {
+                ("白鹭工程", "storage&term:彩色牙刷"),
+                ("赤陶项目", "storage&term:彩色牙刷"),
+            },
+        ),
+        (
+            "比较白鹭工程预算与赤陶项目",
+            {("白鹭工程", "budget"), ("赤陶项目", "")},
+        ),
+    )
+    for question, expected_pairs in scope_checks:
+        plan = plan_retrieval(question, [], aliases, object_aliases=object_aliases)
+        assert set(plan.required_pairs) == expected_pairs, (question, plan)
+
+    open_topic_answers = (
+        retrieval.query(
+            root,
+            "比较预算与活动证章领取办法",
+            fingerprint="fake-v1",
+            answer_mode="comparison",
+        ),
+        retrieval.query(
+            root,
+            "比较访客证件注销与活动证章领取办法",
+            fingerprint="fake-v1",
+            answer_mode="comparison",
+        ),
+    )
+    assert {
+        budget_id,
+        topic_id,
+        badge_id,
+        same_subject_topic_id,
+    } <= {citation.page_id for citation in open_topic_answers[0].citations}
+    assert {visitor_id, topic_id, badge_id} <= {
+        citation.page_id for citation in open_topic_answers[1].citations
+    }
+    assert all(not answer.missing_information for answer in open_topic_answers)
+
+    partial_open_root, partial_open_line, partial_open_project = create_test_workspace(
+        tmp_path / "partial-open-workspace"
+    )
+    partial_budget_id, _ = approve_page(
+        partial_open_root,
+        partial_open_line,
+        partial_open_project,
+        title="预算记录",
+        body="预算上限为十八万元。",
+    )
+    partial_open = QueryService(
+        IndexStore(tmp_path / "partial-open-profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    partial_open.rebuild(partial_open_root, fingerprint="fake-v1")
+    calls.clear()
+    partial_answer = partial_open.query(
+        partial_open_root,
+        "比较预算与活动证章领取办法",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+    assert {citation.page_id for citation in partial_answer.citations} == {partial_budget_id}
+    assert any("活动证章领取" in value for value in partial_answer.missing_information)
+    assert not any("预算" in value for value in partial_answer.missing_information)
+    assert calls and "预算上限为十八万元" in " ".join(calls[0])
+
+    empty_open_root, empty_open_line, empty_open_project = create_test_workspace(
+        tmp_path / "empty-open-workspace"
+    )
+    approve_page(
+        empty_open_root,
+        empty_open_line,
+        empty_open_project,
+        title="无关归档",
+        body="每周存储并备份运营记录。",
+    )
+    empty_open_calls: list[str] = []
+
+    class EmptyOpenAnswerer:
+        def answer(self, question, passages, context=None):
+            empty_open_calls.append(question)
+            return GroundedAnswer(text="不应调用 answer provider。", missing_information=[])
+
+    empty_open = QueryService(
+        IndexStore(tmp_path / "empty-open-profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=EmptyOpenAnswerer(),
+    )
+    empty_open.rebuild(empty_open_root, fingerprint="fake-v1")
+    empty_answer = empty_open.query(
+        empty_open_root,
+        "比较预算与活动证章领取办法",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+    assert empty_answer.citations == []
+    assert empty_open_calls == []
+    assert any("预算" in value for value in empty_answer.missing_information)
+    assert any("活动证章领取" in value for value in empty_answer.missing_information)
+
+    for mode in ("fact", "comparison", "plan"):
+        for question in full_questions:
+            calls.clear()
+            answer = retrieval.query(
+                root,
+                question,
+                fingerprint="fake-v1",
+                answer_mode=mode,
+            )
+            cited = {citation.page_id for citation in answer.citations}
+            assert cited == {budget_id, topic_id}, (question, mode, answer.model_dump())
+            assert answer.missing_information == [], (question, mode, answer.model_dump())
+            sent = " ".join(excerpt for call in calls for excerpt in call)
+            assert "白鹭工程预算上限" in sent
+            assert "活动证章领取须出示邀请函" in sent
+
+    # With one pair absent, preserve the supported fact and report only the
+    # missing subject/topic pair.
+    partial_root, partial_line, partial_project = create_test_workspace(
+        tmp_path / "partial-workspace"
+    )
+    partial_id, _ = approve_page(
+        partial_root,
+        partial_line,
+        partial_project,
+        title="白鹭预算",
+        body="白鹭工程预算上限为十八万元。",
+    )
+    partial = QueryService(
+        IndexStore(tmp_path / "partial-profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    partial.rebuild(partial_root, fingerprint="fake-v1")
+    calls.clear()
+    answer = partial.query(
+        partial_root,
+        full_questions[0],
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+    assert {citation.page_id for citation in answer.citations} == {partial_id}
+    assert any("赤陶项目" in value for value in answer.missing_information)
+    assert not any("白鹭工程" in value for value in answer.missing_information)
+    assert "白鹭工程预算上限" in " ".join(excerpt for call in calls for excerpt in call)
+
+    empty_root, empty_line, empty_project = create_test_workspace(tmp_path / "empty-workspace")
+    approve_page(
+        empty_root,
+        empty_line,
+        empty_project,
+        title="朱雀储存规则",
+        body="朱雀项目文件每周备份一次。",
+    )
+    empty_calls: list[str] = []
+
+    class EmptyAnswerer:
+        def answer(self, question, passages, context=None):
+            empty_calls.append(question)
+            return GroundedAnswer(text="不应调用 answer provider。", missing_information=[])
+
+    empty = QueryService(
+        IndexStore(tmp_path / "empty-profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=EmptyAnswerer(),
+    )
+    empty.rebuild(empty_root, fingerprint="fake-v1")
+    answer = empty.query(
+        empty_root,
+        full_questions[0],
+        fingerprint="fake-v1",
+        answer_mode="plan",
+    )
+    assert answer.citations == []
+    assert empty_calls == []
+    assert any("白鹭工程" in value for value in answer.missing_information)
+    assert any("赤陶项目" in value for value in answer.missing_information)
+
+
 def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
     tmp_path: Path,
 ) -> None:
