@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 计划起点为 clean main `5fd91c78930c80b2365957197b8a605757694a91`（历史）；当前分支已完成包 1，包 2 repair 2 Developer 自测固定于 `51891ef5d6ed13461d1595fd99d448b6a159ee25`，待全新独立 QA。M3 完整验收仍未完成。
+- 计划起点为 clean main `5fd91c78930c80b2365957197b8a605757694a91`（历史）；当前分支已完成包 1，包 2 repair 2 Developer 自测固定于 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，待全新独立 QA。M3 完整验收仍未完成。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -34,9 +34,9 @@
 - [x] 仅可从可核验的明确用户表达生成记忆候选；来源/assistant 不能自成用户事实，接受/编辑后才活跃；活跃记忆管理和预算（Developer 完成；QA pending）。
 - [x] 两 profile 同库各自历史/角色/记忆/索引独立；答案不自动写知识；当前/历史依据始终复验统一资格门（Developer 完成；QA pending）。
 - [x] Developer 持续定向检查，收口全量后端/Web/静态/类型/构建与生成契约检查（自动门结果见包 2 DEV 报告；Sol 尚未判门）。
-- [ ] 固定 SHA `51891ef5d6ed13461d1595fd99d448b6a159ee25` 的整包独立 QA：C19、C20、C21，C13/C14 回归及实际浏览器三类问答、角色、记忆确认与删除；另覆盖礼貌问句主体识别、有界连续用户指代/主题边界、当前资格复核、比较/plan 多资料负控。QA 尚待 Sol 调度。
+- [ ] 固定 SHA `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的整包独立 QA：C19、C20、C21，C13/C14 回归及实际浏览器三类问答、角色、记忆确认与删除；另覆盖礼貌问句主体识别、有界连续用户指代/主题边界、当前资格复核、比较/plan 多资料负控。QA 尚待 Sol 调度。
 
-包 2 首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，四项缺陷和原始证据保留在[首轮报告](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)。Repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 的[独立 QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)判 FAIL，原报告与证据不改写。最后自动修复轮 repair 2/2 已在源码 `51891ef5d6ed13461d1595fd99d448b6a159ee25` 完成，行为及全量 Developer 检查见[repair 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)。此轮 QA pending；Developer 检查不构成 QA PASS，如再失败须用户决定后续。
+包 2 首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，四项缺陷和原始证据保留在[首轮报告](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)。Repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 的[独立 QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)判 FAIL，原报告与证据不改写。最后自动修复轮 repair 2/2 已在源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 完成，行为及全量 Developer 检查见[repair 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)。此轮 QA pending；Developer 检查不构成 QA PASS，如再失败须用户决定后续。
 
 ## 包 3：连续工作与归档压缩
 
