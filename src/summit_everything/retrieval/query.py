@@ -13,13 +13,24 @@ from summit_everything.domain.content import (
     StorageArea,
     retrieval_eligibility,
 )
-from summit_everything.domain.models import Answer, Citation, IndexPlan, IndexResult, PageSnapshot
+from summit_everything.domain.models import (
+    Answer,
+    Citation,
+    IndexPlan,
+    IndexResult,
+    PageSnapshot,
+    WorkspaceManifest,
+)
 from summit_everything.integrations.embedding import FakeEmbedding, cosine_similarity
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import FakeReranker
 from summit_everything.local.answer_context import AnswerContext
 from summit_everything.retrieval.chunking import TextChunk, chunk_markdown
-from summit_everything.retrieval.planner import matches_explicit_subject, plan_retrieval
+from summit_everything.retrieval.planner import (
+    aliases_from_subject_text,
+    matches_explicit_subject,
+    plan_retrieval,
+)
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.reader import list_pages, read_page
@@ -229,7 +240,18 @@ class QueryService:
                 index_status="empty",
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
-        retrieval_plan = plan_retrieval(question, context.previous_user_questions)
+        retrieval_plan = plan_retrieval(
+            question,
+            context.previous_user_questions,
+            self._subject_aliases(root, manifest),
+        )
+        if answer_mode == "fact" and retrieval_plan.unresolved_topic:
+            return self._empty_answer(
+                question,
+                purpose,
+                "没有找到能确认该对象的已确认资料。",
+                answer_mode=answer_mode,
+            )
         query_vector = self.embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
         self._check_cancelled(cancelled)
         dense = sorted(
@@ -433,6 +455,25 @@ class QueryService:
             if eligibility.eligible:
                 qualified.append(page)
         return qualified
+
+    def _subject_aliases(self, root: Path, manifest: WorkspaceManifest) -> tuple[str, ...]:
+        """Read temporary subject hints from workspace names and eligible pages."""
+        aliases: list[str] = []
+        for record in manifest.lines:
+            aliases.append(record.name)
+        for project in manifest.projects:
+            aliases.append(project.name)
+        for page in self._eligible_pages(list_pages(root), purpose=RetrievalPurpose.HISTORY):
+            title = page.metadata.get("title")
+            if isinstance(title, str):
+                aliases.append(title)
+            page_aliases = page.metadata.get("aliases", [])
+            if isinstance(page_aliases, str):
+                aliases.append(page_aliases)
+            elif isinstance(page_aliases, list):
+                aliases.extend(value for value in page_aliases if isinstance(value, str))
+            aliases.extend(aliases_from_subject_text(page.body))
+        return tuple(aliases)
 
     @staticmethod
     def _one_passage_per_page(citations: list[Citation]) -> list[Citation]:

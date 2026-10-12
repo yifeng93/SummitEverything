@@ -8,6 +8,7 @@ from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.local.answer_context import AnswerContext
+from summit_everything.retrieval.planner import plan_retrieval
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -173,6 +174,16 @@ def test_external_edit_and_reapproval_reject_old_cached_chunk(tmp_path: Path) ->
         root, "蓝松演示地点", fingerprint="fake-v1", purpose=RetrievalPurpose.CURRENT
     )
     assert after_reapproval.citations == []
+    after_reapproval_followup = retrieval.query(
+        root,
+        "它呢？",
+        fingerprint="fake-v1",
+        purpose=RetrievalPurpose.CURRENT,
+        context=AnswerContext(
+            previous_user_questions=["蓝松项目的演示地点在哪里？"], answer_mode="fact"
+        ),
+    )
+    assert after_reapproval_followup.citations == []
 
 
 def test_unchanged_chunks_reuse_embedding_and_plan_reports_cost(tmp_path: Path) -> None:
@@ -295,12 +306,152 @@ def test_explicit_fact_subject_excludes_a_different_project_but_comparison_keeps
         fingerprint="fake-v1",
         answer_mode="comparison",
     )
+    plan = retrieval.query(
+        root,
+        "请为青岚计划和朱雀项目制定下一步方案。",
+        fingerprint="fake-v1",
+        answer_mode="plan",
+    )
 
     assert qinglan_id in {citation.page_id for citation in fact.citations}
     assert zhuque_id not in {citation.page_id for citation in fact.citations}
     assert missing_subject.citations == []
     assert "没有找到能确认该对象" in missing_subject.text
     assert {qinglan_id, zhuque_id} <= {citation.page_id for citation in comparison.citations}
+    assert {qinglan_id, zhuque_id} <= {citation.page_id for citation in plan.citations}
+
+
+def test_fact_subject_is_found_inside_a_polite_request_without_filtering_the_prefix(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    qinglan_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="QA 青岚预算与排期",
+        body="青岚计划的设备采购预算上限为 19 万元，负责人已确认。",
+    )
+    zhuque_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="朱雀项目预算",
+        body="朱雀项目的设备采购预算上限为 12 万元，负责人已确认。",
+    )
+    songshi_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="松石项目预算",
+        body="松石项目的设备采购预算上限为 16 万元，负责人已确认。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "你能告诉我青岚计划的预算上限是多少吗？",
+        fingerprint="fake-v1",
+    )
+
+    citation_ids = {citation.page_id for citation in answer.citations}
+    assert qinglan_id in citation_ids
+    assert zhuque_id not in citation_ids
+
+    songshi = retrieval.query(
+        root,
+        "我想知道松石项目的预算上限。",
+        fingerprint="fake-v1",
+    )
+    assert {citation.page_id for citation in songshi.citations} == {songshi_id}
+
+    unknown = retrieval.query(
+        root,
+        "麻烦帮我确认紫藤计划的预算上限。",
+        fingerprint="fake-v1",
+    )
+    assert unknown.citations == []
+
+
+def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    qinglan_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青岚计划进度",
+        body="青岚计划的预算上限为 19 万元，计划于 11 月启动。",
+    )
+    zhuque_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="朱雀项目进度",
+        body="朱雀项目的预算上限为 12 万元，计划于 12 月启动。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+    first = "青岚计划的预算上限是多少？"
+
+    chained = retrieval.query(
+        root,
+        "它什么时候启动？",
+        fingerprint="fake-v1",
+        context=AnswerContext(previous_user_questions=[first, "它呢？"], answer_mode="fact"),
+    )
+    assert {citation.page_id for citation in chained.citations} == {qinglan_id}
+
+    switched_to_known_topic = retrieval.query(
+        root,
+        "它什么时候启动？",
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[
+                first,
+                "它呢？",
+                "朱雀项目的预算上限是多少？",
+            ],
+            answer_mode="fact",
+        ),
+    )
+    assert {citation.page_id for citation in switched_to_known_topic.citations} == {zhuque_id}
+
+    switched = retrieval.query(
+        root,
+        "它什么时候启动？",
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[first, "它呢？", "紫藤计划的预算上限是多少？"],
+            answer_mode="fact",
+        ),
+    )
+    assert switched.citations == []
+    assert "没有找到能确认该对象" in switched.text
+
+    topicless_boundary = plan_retrieval(
+        "它什么时候启动？",
+        [first, "现在的预算情况如何？"],
+        ["青岚计划", "朱雀项目"],
+    )
+    assert not topicless_boundary.used_history_hint
+    assert topicless_boundary.unresolved_topic
+
+    bounded_by_nonreferential_question = retrieval.query(
+        root,
+        "它什么时候启动？",
+        fingerprint="fake-v1",
+        context=AnswerContext(
+            previous_user_questions=[first, "现在的预算情况如何？"],
+            answer_mode="fact",
+        ),
+    )
+    assert bounded_by_nonreferential_question.citations == []
+    assert zhuque_id not in {
+        citation.page_id for citation in bounded_by_nonreferential_question.citations
+    }
 
 
 def test_referential_followup_uses_only_latest_user_question_as_retrieval_hint(
