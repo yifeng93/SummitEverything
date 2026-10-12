@@ -4,9 +4,9 @@
 
 ## 当前状态与下一步
 
-2026-10-12 当前：包 1 离线集成由 Sol 判 PASS；包 2 extra 2 QA / Sol 门判 C19 P1 FAIL，证据保留且本轮未修。用户明确开始包 3；初验 QA 对 `d03c548b69a4ec48a947486df191bd4af009b6e2` 判 C22 lease 异常清理 FAIL。repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 修复、自测，待独立 QA；此为 DEV 状态，不是 QA/M3 PASS。M3 正式门未通过，真实/发布门 NOT_RUN，runtime UNVERIFIED。入口见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)、[初验 QA 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)、[最新交接](../handoff/LATEST-IMPLEMENTATION.md)与[Sol 包 2门](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 依据见[包 3 Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)、[独立复验](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)及[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
-包 3实现包括跨 profile intake 状态读取、同机 advisory attempt lease、dead-owner unknown/no-resend、provider checkpoint 仅恢复本地稿件的 CAS 流程；完成 intake items/jobs、capture、mutation、SHA write-intent、Feishu import receipts 的 active+monthly summary 回放；profile-only 轮转诊断日志。原件、完整稿件和确认记录保留，未知/未终态不归档。120 条合成流程样本跨 2026-06 至 09：120 item + 120 job + 366 transaction receipt 进入各自月汇总；另有一个 unknown 新流程和一个无日期 legacy item/job 保持 active。setup 在 2026-10 的两条 SHA receipt 单独报告；4 个合成 Feishu receipt 仅测文件归档路径，Fake provider 导入/回放由独立集成测试覆盖。详见 DEV 报告与 `.local/dev/m3-package-3/` 原始日志。
+包 3实现包括跨 profile intake 状态读取、同机 advisory attempt lease、dead-owner unknown/no-resend、provider checkpoint 仅恢复本地稿件的 CAS 流程；完成 intake items/jobs、capture、mutation、SHA write-intent、Feishu import receipts 的 active+monthly summary 回放；profile-only 轮转诊断日志。原件、完整稿件和确认记录保留，未知/未终态不归档。120 条合成流程样本跨 2026-06 至 09：120 item + 120 job + 366 transaction receipt 进入各自月汇总；另有一个 unknown 新流程和一个无日期 legacy item 保持 active。setup 在 2026-10 的两条 SHA receipt 单独报告；4 个合成 Feishu receipt 仅测文件归档路径，Fake provider 导入/回放由独立集成测试覆盖。详见 DEV 报告与 `.local/dev/m3-package-3/` 原始日志。
 
 2026-10-11：M3 包 1“会话与历史”首轮独立 QA 在固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 发现 P1/P2，原报告保留；repair 1/2 后源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c` 由全新 QA 在集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4` 通过，Sol 最终判定包 1 离线集成 PASS。53 项证据 manifest 无 mismatch、产品树与源码 SHA 一致。QA 实际浏览器/Uvicorn 通过首问、历史续问、旧引用提示、取消、非空 partial 重启、profile/workspace 隔离；README 自动门 guarded pytest 395、Web 49/12 及静态/生成/构建均 PASS。限制：浏览器 request body/response header 未直接捕获，console NOT_RUN、runtime UNVERIFIED、多轮模型上下文属于包 2 尚未测，真实/发布门 NOT_RUN。完整报告链见[报告索引](../quality/reports/README.md)。
 
@@ -50,7 +50,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
 | M3 包 2 完整问答、角色与记忆 | extra 2 固定 QA SHA `d2236c2` | Sol 判 FAIL / C19 P1 | 无资料比较仍误引其他预算；当前未修，用户调整顺序先做包 3 |
-| M3 包 3 连续状态与归档压缩 | repair 1/2 Developer 源码 `ea11fc5` 完成 | 初验 C22 FAIL；repair 1 待独立 QA | lease 异常清理修复及当前完整自测见 repair 1 DEV 报告；包 2 C19 P1 FAIL 保留，M3 正式门未通过 |
+| M3 包 3 连续状态与归档压缩 | repair 1/2 源码 `ea11fc5`；QA 固定 `7fd8a53` | Sol 判离线集成 PASS | C22 lease 异常已独立复验关闭；C22/C23/C21相关离线范围通过；包 2 C19 P1 保留，M3 正式门未通过 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 

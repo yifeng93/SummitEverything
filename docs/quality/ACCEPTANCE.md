@@ -4,7 +4,7 @@
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
-2026-10-12 当前 M3 状态：包 1离线集成由 Sol 判 PASS；包 2 extra 2 固定 QA `d2236c2` 由 Sol 判 C19 P1 FAIL；用户明确调整顺序开始包 3。包 3初验固定 `22e5ad9` 判 C22 lease 异常清理 FAIL；repair 1/2 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 修复并自测，等待全新独立 QA。该状态不更改下方验收期望；包 2 FAIL 原报告与包 3初验 FAIL 证据均保留，M3 总门未通过。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 C22/C23/C21为已测离线包级范围，C19不豁免。固定版本和证据见[Sol 门](reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[QA 复验](reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)；下方产品验收要求不变。
 
 ## 当前结论与范围（2026-10-11）
 

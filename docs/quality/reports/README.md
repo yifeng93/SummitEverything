@@ -1,14 +1,14 @@
 # 开发与独立验收报告索引
 
-2026-10-12 当前：包 1离线集成由 Sol 判 PASS；包 2 extra 2 QA/Sol 判 C19 P1 FAIL；用户明确直接开始包 3。包 3初验源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的 C22 lease cleanup 判 FAIL，报告及证据保留。repair 1/2 Developer 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已修复并自测，待全新独立 QA。包 2 FAIL 不改写；M3 正式门未通过。详情见[repair 1 DEV 报告](2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)、[初验 QA 报告](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)、[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)及[Sol 包 2门](2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
 ## 当前 M3 门状态（2026-10-12）
 
-[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)保留 repair 2/2 当时 FAIL 的核证与证据；其“等待用户是否授权额外一轮”仅为该报告发布时的状态。用户之后明确批准**仅一轮额外修复**。extra 1 Developer 已固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并完成自测，[DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)及日志已留存；extra 1 已被新获授权的 extra 2 取代；其 pending 状态仅为历史。包 1 离线集成 PASS；包 3初验 `d03c548b69a4ec48a947486df191bd4af009b6e2` 判 C22 FAIL，当前 repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已固定并待新 QA；M3 正式验收和真实/发布门未通过。旧报告中的 pending 仅是各报告发布时历史。
+[包 3 Sol 门判断](2026-10-12-M3-PACKAGE-3-SOL-GATE.md)：产品源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 的 repair 1/2 已由全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 复验，Sol核验53项manifest、真实退出码及源码diff0后判包3离线集成 PASS。[独立复验报告](2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)、[初验 FAIL](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)与所有原始证据保留。包2的追加修复已暂停，其[最新C19P1 FAIL门](2026-10-12-M3-SOL-EXTRA-2-GATE.md)继续有效；M3正式验收和合并未通过。旧报告中的待QA/待授权仅是其发布时间的历史状态。
 
-## M3 功能包 3 repair 1 Developer（2026-10-12，待全新独立 QA）
+## M3 功能包 3 repair 1 Developer（2026-10-12，历史 DEV；后续独立 QA PASS）
 
-[repair 1 DEV 报告](2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)：初验 QA 固定源码 `22e5ad9` 在 C22 发现 action running receipt 保存失败后 lease 依赖 GC 才释放；初验报告与证据见[固定 SHA QA](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)。repair 1 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，为 action running receipt 发布与 intake job jobs-directory 创建两处 acquire 后发布前异常路径补显式 lease 清理，并新增异常 traceback 保持存活时的回归。定向集成 105 passed、全量 guarded pytest 440 passed；Ruff/format/mypy/lock/build exit 0。120 条 FakeLLM 流程复跑后 active lease 0。此为 DEV 自测，C22 初验 FAIL 只待新 SHA 独立 QA 判定；C23/C21与整包尚未重新验收，不能视作 PASS。包 2 C19 P1 FAIL 不变。
+[repair 1 DEV 报告](2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)：初验 QA 固定源码 `22e5ad9` 在 C22 发现 action running receipt 保存失败后 lease 依赖 GC 才释放；初验报告与证据见[固定 SHA QA](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)。repair 1 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，为 action running receipt 发布与 intake job jobs-directory 创建两处 acquire 后发布前异常路径补显式 lease 清理，并新增异常 traceback 保持存活时的回归。定向集成 105 passed、全量 guarded pytest 440 passed；Ruff/format/mypy/lock/build exit 0。120 条 FakeLLM 流程复跑后 active lease 0。此段为当时 DEV 自测；随后新 SHA 已完成独立 QA，当前门见上方 Sol / QA 报告。包 2 C19 P1 FAIL 不变。
 
 [初验包 3 DEV 报告](2026-10-12-M3-PACKAGE-3-DEV.md)：受测源码 `d03c548b69a4ec48a947486df191bd4af009b6e2`；初验 QA 的 lease 缺陷已由上述 repair 1 处理。其 438 后端 / 56 Web 自测与 120 条 bulk 统计仍为该历史源码的 Developer 记录，当前修复 SHA 及检查见 repair 1 DEV 报告。
 

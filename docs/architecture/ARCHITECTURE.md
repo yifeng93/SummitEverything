@@ -1,6 +1,6 @@
 # 运行架构与模块责任
 
-2026-10-12 当前：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 由 Sol 判 C19 P1 FAIL（无资料比较仍引用无关预算），该 FAIL 未修。用户明确开始包 3；初验 QA 对 `d03c548b69a4ec48a947486df191bd4af009b6e2` 判 C22 lease 异常清理 FAIL。repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 修复、自测并待全新 QA。见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)、[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)、[初验 QA 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)和[Sol 包 2门报告](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。历史结论只对应各自受测 SHA；Developer 自测不代表 QA 或 M3 正式 PASS。
+2026-10-12 当前：M3 包 1和包 3离线集成由 Sol 判 PASS；包 3 repair 1/2 受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已经全新独立 QA 复验及 Sol 核证。初验 C22 FAIL 和原证据保留；包 2 C19 P1 仍 FAIL、追加修复已暂停，M3 正式验收与合并尚未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED。 依据见[包 3 Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
 状态：v1 工程基准；产品语义以产品规格和工作库契约为准。
 
@@ -29,7 +29,7 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 | native/ | 薄 macOS 壳与生命周期测试 |
 | tests/ | 单元、契约、集成和去标识材料 |
 
-当前已实现 M1 本地闭环、M2.1–M2.3 Fake-only 工作流及 M3 三包源码；包 1 离线集成 PASS、包 2 因 C19 P1 FAIL、包 3初验因 C22 lease cleanup FAIL，repair 1/2 源码已固定并待独立 QA。M3 正式验收、Stage C 真实 provider / Keychain、M4 和 M5 仍未完成。不要创建无实际用途的空服务。
+当前已实现 M1 本地闭环、M2.1–M2.3 Fake-only 工作流及 M3 三包源码；包 1和包 3离线集成 PASS、包 2 因 C19 P1 FAIL。M3 正式验收、Stage C 真实 provider / Keychain、M4 和 M5 仍未完成。不要创建无实际用途的空服务。
 
 工作库 context 至少携带 workspace_id、root、local_profile_dir。API 的活动工作库绑定到服务 context，请求不能提交任意绝对路径跳过 root 边界。
 

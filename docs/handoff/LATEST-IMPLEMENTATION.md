@@ -1,12 +1,16 @@
 # 最新实现交接
 
-2026-10-12 当前门：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 独立 QA 由 Sol 判 C19 P1 FAIL，见[门报告](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。用户明确开始包 3后，初验 QA 固定 `22e5ad945353929ebd781e1397f641c9d5fcf963` 判 C22 lease 异常清理 FAIL，原始[QA 报告与证据](../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)保留。repair 1/2 Developer 修复源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已固定并完成自测，等待全新独立 QA；M3 总门仍未通过。具体变更、自测、日志与复演范围见[repair 1 DEV](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)和[报告索引](../quality/reports/README.md)。包 2 C19 P1 未修；真实服务/材料/凭据、Keychain、native/DMG、五日、双机和发布门 **NOT_RUN**，runtime **UNVERIFIED**。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 见[Sol 门判断](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[新 SHA 独立复验](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
 
 ## 当前状态（2026-10-12）
 
-### M3 包 3 repair 1 Developer 交接（待全新独立 QA）
+### M3 包 3：独立离线集成 PASS
 
-固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，分支 `codex/m3-integrated-packages`。初验所测源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的 C22 lease cleanup 已判 FAIL；repair 1 在 Action 首次 running receipt 写失败与 intake job 目录创建失败时立即清除已取得 lease。异常 traceback 保持存活时新回归验证 lease 已移除；Action receipt 保持 confirmed、provider 0 次，同 operation 重试仅成功一次；review job 保持 pending 且 FakeLLM 0 次。120 流程 bulk 复跑后 lease 仍为 0。完整行为、自测命令/`.exit` 和 QA 复演说明见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)，日志在 `.local/dev/m3-package-3-repair-1/`。后端全套 guarded pytest 440 passed，相关 integrations 105 passed，Ruff/format/mypy/lock/build exit 0；一条既有 Starlette/httpx deprecation。请全新独立 QA 固定上述 SHA 重跑包 3范围与 lease 失败路径。DEV 自测不是 QA PASS；包 2 C19 P1、M3 总门与真实/发布未测项保持原状。
+产品源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`；QA 固定交接 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`；报告提交 `a251c6cb3bad8b99fdac8abb5b9f16dc7090092b`。分支 `codex/m3-integrated-packages`，开发工作目录 `/Users/yifengstudio/.codex/worktrees/m3-integrated-packages/SummitEverything`。后续 HEAD 为报告和门账本文档增量，产品树保持受测源码。main 未合并。
+
+初验 FAIL 仅在 repair 1/2 的新 SHA 上关闭：Action 首次 running receipt 保存失败、整理 job 目录创建失败都立即清理 lease，异常 traceback 存活时仍无锁/无 provider 调用；同意图重试仅一次副作用。新 QA 独立后端 440、核心 99、资格/变更 37、Web 56 及静态/类型/lock/build/OpenAPI 检查通过；120 流程跨四月归档和 provider 重放计数通过。两 profile 实际浏览器查看共享待审稿、unknown及显式重处理提示通过。53 项证据哈希全部经 Sol 匹配；产品 diff 0、QA clean、服务停止。首次 fresh checkout 缺 Web 依赖的 runner 失败日志保留，npm ci 后全套通过。
+
+本机 lease 不保证跨机同步锁；工作库轮流写入的产品边界不变。legacy undated记录不伪造完成日期，unknown不自动重发；原件和完整稿保留，恢复不自动批准知识。DevTools console/network/PNG、真实服务/材料/Keychain/native/DMG/五日/双机/发布 NOT_RUN，runtime UNVERIFIED，有限 smoke 各项保持 0/1。包 2 C19 P1仍阻塞整体 M3；未获得恢复其追加修复或重要里程碑合并的批准，不启动旧 Stage B、Stage C 或 M4/M5。
 
 历史交接（extra 1）：当时记录包 2 repair 2/2 QA FAIL 后用户批准一轮额外修复，源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并等待独立 QA。该状态已由本文当前状态与 extra 2 交接取代；Sol 后续门与 QA 结果见 extra 1 历史报告。
 

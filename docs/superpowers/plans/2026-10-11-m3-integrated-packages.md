@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 2026-10-12 当前执行顺序由用户明确调整为直接开始包 3；不改变规格和正式门。包 1 离线集成由 Sol 判 PASS；包 2 extra 2 QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75` 判 C19 P1 FAIL，当前不在修复中。包 3初验 QA 固定 `22e5ad945353929ebd781e1397f641c9d5fcf963` 判 C22 lease cleanup FAIL；repair 1/2 Developer 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已修复、自测并等待全新 QA。M3 完整验收仍未完成，详见[repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)与[初验 QA 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)。
+- 2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。初验 C22 lease 异常清理 FAIL 已在新 SHA 关闭，原报告保留。包 2 C19 P1 仍 FAIL，M3 正式验收与合并未通过；用户此前暂停包 2追加修复，后续恢复需重新授权。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。 具体证据见[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -27,7 +27,7 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 当前状态：包 2 extra 2 独立 QA 与 Sol 门判 C19 P1 FAIL；用户直接明确开始包 3。本实现依用户变更的顺序继续，不修包 2、不改变验收门。包 3初验 QA 判 C22 lease cleanup FAIL；repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 自测固定，待全新独立 QA。两轮旧 FAIL 原报告与证据完整保留。详见[repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)、[初验 QA 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)和[Sol 包 2门报告](../../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
+2026-10-12 当前状态：包 2 C19 P1 FAIL保留，追加修复已由用户暂停；用户调整顺序先包 3，现包 3 repair 1/2 独立离线集成 PASS。M3 总门仍未通过。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
@@ -40,19 +40,16 @@
 
 包 2 原首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，[报告与证据](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)保留；repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 也均判 FAIL，原报告不改写。extra 1 是用户明确批准的单轮额外修复，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，行为、自测、限制和全新 QA 复演范围见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。extra 1 QA 最终 FAIL，用户随后明确批准 extra 2；extra 1 的旧 QA pending 文案仅保留为历史。extra 2 QA 最终由 Sol 判 C19 P1 FAIL；该缺陷仍存在且本轮未修。用户随后授权直接进入包 3，本文件下方包 3为当前任务。
 
-## 包 3：连续工作与归档压缩
+## 包 3：连续工作与归档压缩（离线集成 PASS）
 
-用户明确调整执行顺序，当前包 2 C19 P1 FAIL 保留且未修；包 3仅按其原范围实施，具体QA须如实记录这个已知失败。
+用户明确改为先执行包 3；包 2 C19 P1 FAIL不改写。产品源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`，[独立复验](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)及[Sol 门判断](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)。
 
-依赖：现有 source/intake/review、writer journals、action receipts；复用已有月汇总，补全未完成部分。主要模块 workspace state/archives、local logging 和对应 API/UI。
-
-- [x] Developer 回归跨 profile 可见待审稿、部分完成、活 owner 与死 owner unknown/no-resend、checkpoint 仅恢复本地稿、CAS 拒绝取消后的迟到结果、显式 reprocess 警示；待独立 QA。
-- [x] Developer 归档 intake items/jobs、capture journal、mutation/write_intent SHA/Feishu import 完成回执，按 active+月摘要扫描重放；unknown/running保留，原件/draft/确认保留；待独立 QA。
-- [x] Developer 覆盖摘要损坏/冲突/非法日期、写摘要后恢复、同一收据重放、旧无日期 item 首次 reprocess 的 undated parent 链；待独立 QA。
-- [x] Developer 验证诊断轮转仅 profile，本机 120 个合成流程跨 4 个月的文件计数；详见包 3 DEV 报告，待独立 QA。
-- [x] README 后端/Web/static/types/lock/build/OpenAPI 全矩阵由 Developer 自测并记录退出码；完整 Fake UI 链路待 QA 观察。
-- [x] 初验固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的整包独立 QA 已完成；C22 action receipt 预发布异常导致 lease 迟至 GC 才释放，判 FAIL，原报告与证据保留。
-- [ ] repair 1/2 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 的全新整包 QA：复验 C22 lease 异常清理，并回归 C22/C23/C21 存储边界、C13/C14/C19/C20、跨 profile 与故障恢复；包 2 已知 C19 P1 应如实重现和报告，不能视作已修复。
+- [x] 跨 profile 待审稿和部分完成状态接续；活 owner 与死 owner unknown/no-resend、checkpoint仅恢复本地稿、取消后迟到结果CAS、显式reprocess提醒及同意图幂等已验收。
+- [x] intake items/jobs与capture、mutation、SHA write-intent、Feishu import完成回执按active+月摘要读取/重放；未知/运行中保持active，原件、完整稿及确认历史保留。
+- [x] 摘要原子写中断、相同副本恢复、冲突/损坏/非法月份/意外副本阻断，以及legacy undated和版本parent链检查通过。
+- [x] profile-only allowlist轮转诊断日志与存储隔离；120条合成流程跨四月计数和provider重放计数通过；真实双机与性能基准不作通过推断。
+- [x] 初验C22锁清理FAIL保留；自动返工1/2后两异常路径已由全新QA证明即时清理、无provider副作用且同意图重试仅一次。
+- [x] 固定SHA的整包独立QA及Sol核证：guarded440、核心99、资格/变更37、Web56及适用静态/类型/构建检查通过；双profile真实浏览器短复演通过。C19基线FAIL、真实/发布NOT_RUN与runtimeUNVERIFIED保持。
 
 ## 完成与正式门
 
