@@ -18,6 +18,7 @@ from summit_everything.workspace.manifest import (
     create_line,
     create_project,
     create_workspace,
+    load_manifest,
 )
 from summit_everything.workspace.reader import list_pages, read_page
 from summit_everything.workspace.writer import PageWriter
@@ -1035,6 +1036,186 @@ def test_c19_general_comparison_keeps_multiple_material_path_without_object_gate
     assert not polite.unresolved_topic
     assert polite.explicit_subjects == ()
     assert set(polite.dimensions) == {"budget", "schedule"}
+
+
+def test_c19_unknown_exact_topics_are_separated_from_object_names_and_keep_positive_matches(
+    tmp_path: Path,
+) -> None:
+    root, line_id, _ = create_test_workspace(tmp_path / "workspace")
+    project = create_project(root, UUID(line_id), "预算时间工作坊", "scope-workshop")
+    budget_id, _ = approve_page(
+        root,
+        line_id,
+        str(project.id),
+        title="预算记录",
+        body="预算时间工作坊预算上限为五万元，开会时间为六月。",
+    )
+    signin_id, _ = approve_page(
+        root,
+        line_id,
+        str(project.id),
+        title="培训签到",
+        body="培训签到须现场登记并核验姓名。",
+    )
+    visitor_id, _ = approve_page(
+        root,
+        line_id,
+        str(project.id),
+        title="访客登记",
+        body="青榆的访客登记须由前台核验姓名并记录来访时间。",
+        metadata_extra={"aliases": ["青榆"]},
+    )
+    asset_id, _ = approve_page(
+        root,
+        line_id,
+        str(project.id),
+        title="资产借还",
+        body="资产借还应记录设备编号并由经手人签收。",
+    )
+    calls: list[tuple[str, list[str]]]
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append((question, [passage["excerpt"] for passage in passages]))
+            return GroundedAnswer(text="根据材料回答。")
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    cases = (
+        ("预算时间工作坊的培训签到办法是什么", "fact", signin_id),
+        ("为预算时间工作坊制定培训签到流程", "plan", signin_id),
+        ("比较预算时间工作坊培训签到安排", "comparison", signin_id),
+        ("青榆访客登记办法是什么", "fact", visitor_id),
+        ("培训签到办法怎么安排", "plan", signin_id),
+        ("访客登记流程是什么", "fact", visitor_id),
+        ("资产借还手续怎么处理", "plan", asset_id),
+    )
+    for question, mode, expected_id in cases:
+        calls = []
+        object_aliases: list[str] = []
+        aliases = retrieval._subject_aliases(
+            root, load_manifest(root), object_aliases=object_aliases
+        )
+        plan = plan_retrieval(question, [], aliases, object_aliases=object_aliases)
+        answer = retrieval.query(
+            root,
+            question,
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        assert not plan.unresolved_topic, (question, plan)
+        if question == "青榆访客登记办法是什么":
+            assert plan.explicit_subjects == ("青榆",)
+            assert plan.dimensions == ("term:访客登记",)
+        assert {citation.page_id for citation in answer.citations} == {expected_id}, (
+            question,
+            plan,
+            answer.model_dump(),
+        )
+        assert all(citation.page_id != budget_id for citation in answer.citations), (
+            question,
+            answer.model_dump(),
+        )
+        expected_term = (
+            "培训签到"
+            if expected_id == signin_id
+            else "访客登记"
+            if expected_id == visitor_id
+            else "资产借还"
+        )
+        assert calls and expected_term in "\n".join(calls[-1][1])
+
+
+def test_c19_unknown_exact_topic_without_evidence_is_fail_closed_in_all_modes(
+    tmp_path: Path,
+) -> None:
+    root, line_id, _ = create_test_workspace(tmp_path / "workspace")
+    project = create_project(root, UUID(line_id), "青岚计划", "known-scope")
+    approve_page(
+        root,
+        line_id,
+        str(project.id),
+        title="预算排期",
+        body="青岚计划预算上限为五万元，预计六月启动。",
+    )
+    calls: list[str] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="不应以无关主题回答。", missing_information=[])
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    for question in (
+        "青岚计划的访客登记办法是什么",
+        "青岚计划访客登记办法是什么",
+        "访客登记办法怎么安排",
+        "访客登记",
+        "青岚计划的资产借还流程是什么",
+        "资产借还流程怎么处理",
+        "培训签到",
+    ):
+        plan = plan_retrieval(question, [], retrieval._subject_aliases(root, load_manifest(root)))
+        assert not plan.unresolved_topic, (question, plan)
+        assert plan.dimensions, (question, plan)
+        for mode in ("fact", "comparison", "plan"):
+            calls.clear()
+            answer = retrieval.query(
+                root,
+                question,
+                fingerprint="fake-v1",
+                answer_mode=mode,
+            )
+            assert answer.citations == [], (question, mode, plan, answer.model_dump())
+            assert answer.source_statements == []
+            assert answer.inferences == [] and answer.advice == []
+            assert answer.missing_information
+            assert calls == []
+
+
+def test_c19_broad_dimensions_ignore_page_title_as_subject_but_keep_schedule_evidence(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    budget_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="预算汇总",
+        body="专项预算上限为二十万元。",
+    )
+    schedule_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="排期",
+        body="综合项目预计于十二月启动。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+    aliases = retrieval._subject_aliases(root, load_manifest(root))
+    plan = plan_retrieval("比较预算和排期建议", [], aliases)
+    assert plan.explicit_subjects == ()
+    assert set(plan.dimensions) == {"budget", "schedule"}
+    answer = retrieval.query(
+        root,
+        "比较预算和排期建议",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+    assert {citation.page_id for citation in answer.citations} == {budget_id, schedule_id}
+    assert answer.missing_information == []
 
 
 def test_c19_limit_truncation_reports_uncovered_comparison_subject(

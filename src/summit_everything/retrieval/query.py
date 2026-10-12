@@ -278,8 +278,14 @@ class QueryService:
                 index_status="empty",
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
-        subject_aliases = self._subject_aliases(root, manifest)
-        retrieval_plan = plan_retrieval(question, context.previous_user_questions, subject_aliases)
+        object_aliases: list[str] = []
+        subject_aliases = self._subject_aliases(root, manifest, object_aliases=object_aliases)
+        retrieval_plan = plan_retrieval(
+            question,
+            context.previous_user_questions,
+            subject_aliases,
+            object_aliases=object_aliases,
+        )
         if retrieval_plan.unresolved_topic:
             return self._empty_answer(
                 question,
@@ -298,7 +304,17 @@ class QueryService:
         subject_pages: dict[UUID, PageSnapshot | None] = {}
         scope_pairs_by_chunk: dict[str, set[tuple[str, str]]] = {}
         scope_excerpt_by_chunk: dict[str, str] = {}
-        all_subject_aliases = subject_aliases
+        requested_exact_topics = {
+            part.removeprefix("term:")
+            for dimension in retrieval_plan.dimensions
+            for part in dimension.split("&")
+            if part.startswith("term:")
+        }
+        all_subject_aliases = tuple(
+            alias
+            for alias in subject_aliases
+            if alias.casefold() not in {topic.casefold() for topic in requested_exact_topics}
+        )
 
         def in_scope(item: dict[str, Any]) -> bool:
             page_id = item["page_id"]
@@ -393,6 +409,19 @@ class QueryService:
                     matching_rejections, purpose, answer_mode=answer_mode
                 )
                 return self._empty_answer(question, purpose, message, answer_mode=answer_mode)
+            if (
+                not retrieval_plan.explicit_subjects
+                and retrieval_plan.scope_kind == "explicit_topic"
+            ):
+                scope_missing = self._scope_missing((), retrieval_plan.dimensions)
+                message = "当前已确认资料中没有找到该主题的依据；" + "；".join(scope_missing)
+                return self._empty_answer(
+                    question,
+                    purpose,
+                    message,
+                    answer_mode=answer_mode,
+                    missing=scope_missing,
+                )
             if not retrieval_plan.explicit_subjects:
                 message = self._no_evidence_message({}, purpose, answer_mode=answer_mode)
                 return self._empty_answer(question, purpose, message, answer_mode=answer_mode)
@@ -652,13 +681,22 @@ class QueryService:
                 qualified.append(page)
         return qualified
 
-    def _subject_aliases(self, root: Path, manifest: WorkspaceManifest) -> tuple[str, ...]:
+    def _subject_aliases(
+        self,
+        root: Path,
+        manifest: WorkspaceManifest,
+        *,
+        object_aliases: list[str] | None = None,
+    ) -> tuple[str, ...]:
         """Read temporary subject hints from workspace names and eligible pages."""
         aliases: list[str] = []
+        object_names = object_aliases if object_aliases is not None else []
         for record in manifest.lines:
             aliases.append(record.name)
+            object_names.append(record.name)
         for project in manifest.projects:
             aliases.append(project.name)
+            object_names.append(project.name)
         for page in self._eligible_pages(list_pages(root), purpose=RetrievalPurpose.HISTORY):
             title = page.metadata.get("title")
             if isinstance(title, str):
@@ -666,9 +704,14 @@ class QueryService:
             page_aliases = page.metadata.get("aliases", [])
             if isinstance(page_aliases, str):
                 aliases.append(page_aliases)
+                object_names.append(page_aliases)
             elif isinstance(page_aliases, list):
-                aliases.extend(value for value in page_aliases if isinstance(value, str))
-            aliases.extend(aliases_from_subject_text(page.body))
+                string_aliases = [value for value in page_aliases if isinstance(value, str)]
+                aliases.extend(string_aliases)
+                object_names.extend(string_aliases)
+            body_aliases = aliases_from_subject_text(page.body)
+            aliases.extend(body_aliases)
+            object_names.extend(body_aliases)
         return tuple(aliases)
 
     @staticmethod

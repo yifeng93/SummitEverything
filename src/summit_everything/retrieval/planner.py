@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Literal
 
 _FOLLOW_UP = re.compile(
     r"^(?:它|这(?:个|项|件|里|些)?|那(?:个|项|件|里|些)?|上述|继续|还有|再问|then\b|"
@@ -64,9 +65,26 @@ _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
     "owner": ("负责人", "联系人", "所有者", "责任人"),
 }
 _TOPIC_FILLER = re.compile(
-    r"(?:分别|分别是多少|是什么|是谁|有什么|如何|怎么|多少|哪些|哪一个|哪项|规则|情况|信息|资料|内容|上限|是多少|吗|呢|知道|先|核对|确认|希望|比较|对比|汇总|现有|目前|当前|现行|最新|和|与|及|并|下一步|需要补什么|补什么|需要补充|还缺什么|方案|建议|？|\?|。|！|!)"
+    r"(?:分别|分别是多少|是什么|是谁|有什么|如何|怎么|多少|哪些|哪一个|哪项|规则|情况|信息|资料|内容|上限|是多少|是|设备|年度|专项|工作|列出|缺失|吗|呢|知道|先|核对|确认|希望|比较|对比|汇总|现有|目前|当前|现行|最新|和|与|及|并|制定|提出|给出|下一步|需要补什么|补什么|需要补充|还缺什么|方案|建议|？|\?|。|！|!)"
 )
 _TOPIC_REQUEST_SUFFIX = re.compile(r"(?:提出|制定|给出|说明|告诉|并列出|列出|再给|请|帮我).*")
+_TOPIC_PREFIX = re.compile(
+    r"^(?:(?:麻烦(?:帮我)?|请问|请|我希望|我想(?:知道|问|了解)?|你能告诉我|您能告诉我|"
+    r"帮我|先核对|核对|确认|查询|了解|能否|可否|比较|对比|对照|分析一下|为|给|针对|关于|"
+    r"制定|提出|汇总|总结|查看|查一下|查|告诉我|说明一下|梳理|并)+)+"
+)
+_TOPIC_SUFFIX = re.compile(
+    r"(?:(?:分别|是什么|是谁|有什么|怎么(?:安排|处理|办|做)?|如何|安排|办理|办法|方式|流程|手续|"
+    r"规则|情况|信息|资料|内容|建议|方案|上限|多少|哪些|哪一个|哪项|吗|呢|吧|啊|一下|"
+    r"再给简短结论|并汇总现有资料|并汇总|现有资料|简短结论|。|！|!|？|\?)+)$"
+)
+_ENTITY_SUFFIXES = ("项目", "计划", "工程", "专项", "工作坊", "课题", "产品")
+_EXPLICIT_TOPIC_FORM = re.compile(r"(?:规则|办法|流程|手续|安排|方案|程序|制度|规范|要求|指南)")
+_OPEN_FACT_QUESTION = re.compile(r"(?:哪里|哪儿|在哪|多少|什么时候|何时|几号|几点)")
+_DATE_VALUE = re.compile(
+    r"(?:[0-9一二三四五六七八九十]+年)?[0-9一二三四五六七八九十]+月"
+    r"[0-9一二三四五六七八九十]+日"
+)
 
 
 @dataclass(frozen=True)
@@ -77,12 +95,15 @@ class RetrievalPlan:
     unresolved_topic: bool = False
     dimensions: tuple[str, ...] = ()
     required_pairs: tuple[tuple[str, str], ...] = ()
+    scope_kind: Literal["explicit_topic", "generic_plan", "open", "unresolved"] = "open"
 
 
 def plan_retrieval(
     question: str,
     previous_user_questions: list[str],
     subject_aliases: Iterable[str] = (),
+    *,
+    object_aliases: Iterable[str] = (),
 ) -> RetrievalPlan:
     """Use only an explicit subject or the nearest bounded user-question topic.
 
@@ -91,9 +112,13 @@ def plan_retrieval(
     """
     normalized = question.strip()
     aliases = _clean_aliases(subject_aliases)
+    object_names = set(_clean_aliases(object_aliases))
     is_follow_up = _is_follow_up(normalized)
-    current_subjects, current_unresolved = _extract_explicit_subjects(normalized, aliases)
-    dimension_subjects = _dimension_subjects(current_subjects, aliases)
+    current_subjects, current_unresolved = _extract_explicit_subjects(
+        normalized, aliases, object_names
+    )
+    dimensions = query_dimensions(normalized, current_subjects)
+    current_scope_kind = _scope_kind(normalized, dimensions, current_unresolved)
 
     if current_subjects or current_unresolved or not is_follow_up:
         return RetrievalPlan(
@@ -101,12 +126,9 @@ def plan_retrieval(
             current_subjects,
             False,
             unresolved_topic=current_unresolved,
-            dimensions=query_dimensions(normalized, dimension_subjects),
-            required_pairs=query_pairs(
-                normalized,
-                current_subjects,
-                query_dimensions(normalized, dimension_subjects),
-            ),
+            dimensions=dimensions,
+            required_pairs=query_pairs(normalized, current_subjects, dimensions),
+            scope_kind=current_scope_kind,
         )
 
     # Skip intervening pronoun-only questions, but never cross a complete question.
@@ -114,26 +136,23 @@ def plan_retrieval(
         prior = prior_question.strip()
         if not prior:
             continue
-        prior_subjects, prior_unresolved = _extract_explicit_subjects(prior, aliases)
+        prior_subjects, prior_unresolved = _extract_explicit_subjects(prior, aliases, object_names)
         if prior_subjects:
-            prior_dimension_subjects = _dimension_subjects(prior_subjects, aliases)
+            followup_dimensions = query_dimensions(normalized, prior_subjects)
             return RetrievalPlan(
                 f"{prior}\n追问：{normalized}",
                 prior_subjects,
                 True,
-                dimensions=query_dimensions(normalized, prior_dimension_subjects),
-                required_pairs=query_pairs(
-                    normalized,
-                    prior_subjects,
-                    query_dimensions(normalized, prior_dimension_subjects),
-                ),
+                dimensions=followup_dimensions,
+                required_pairs=query_pairs(normalized, prior_subjects, followup_dimensions),
+                scope_kind=_scope_kind(normalized, followup_dimensions, False),
             )
         if _is_follow_up(prior) and not prior_unresolved:
             continue
         # An unresolved or subjectless complete question still starts a new topic.
-        return RetrievalPlan(normalized, (), False, unresolved_topic=True)
+        return RetrievalPlan(normalized, (), False, unresolved_topic=True, scope_kind="unresolved")
 
-    return RetrievalPlan(normalized, (), False, unresolved_topic=True)
+    return RetrievalPlan(normalized, (), False, unresolved_topic=True, scope_kind="unresolved")
 
 
 def matches_explicit_subject(text: str, subjects: tuple[str, ...]) -> bool:
@@ -144,12 +163,18 @@ def matches_explicit_subject(text: str, subjects: tuple[str, ...]) -> bool:
     return any(_normalize(subject) in normalized_text for subject in subjects)
 
 
-def _dimension_subjects(subjects: tuple[str, ...], aliases: tuple[str, ...]) -> tuple[str, ...]:
-    """Remove established object names but retain a lone unknown topic descriptor."""
-    known = tuple(subject for subject in subjects if _matching_aliases(subject, aliases))
-    if known:
-        return subjects if len(subjects) > 1 else known
-    return subjects if len(subjects) > 1 else ()
+def _scope_kind(
+    question: str,
+    dimensions: tuple[str, ...],
+    unresolved: bool,
+) -> Literal["explicit_topic", "generic_plan", "open", "unresolved"]:
+    if unresolved:
+        return "unresolved"
+    if dimensions:
+        return "explicit_topic"
+    if re.search(r"(?:下一步|工作方案|方案建议|制定方案)", question):
+        return "generic_plan"
+    return "open"
 
 
 def _is_follow_up(question: str) -> bool:
@@ -157,22 +182,32 @@ def _is_follow_up(question: str) -> bool:
 
 
 def _extract_explicit_subjects(
-    question: str, aliases: tuple[str, ...]
+    question: str, aliases: tuple[str, ...], object_aliases: set[str] | None = None
 ) -> tuple[tuple[str, ...], bool]:
+    object_aliases = object_aliases or set()
     source_question = question.split("\n追问：", maxsplit=1)[0]
-    subject_clause = _subject_clause(source_question)
-    matched = _matching_aliases(question, aliases)
-    if not subject_clause:
-        return matched, False
+    subject_clause = _subject_clause(source_question, aliases)
+    all_matches = _matching_aliases(question, aliases)
+    if subject_clause:
+        matched = tuple(
+            alias
+            for alias in _matching_aliases(subject_clause, aliases)
+            if _alias_has_entity_role(alias) or alias in object_aliases
+        )
+    else:
+        matched = tuple(
+            alias
+            for alias in all_matches
+            if _alias_is_subject_in_question(source_question, alias)
+            or (alias in object_aliases and _alias_has_topic_after(source_question, alias))
+        )
     subject_clause = _TRAILING_CONTEXT.sub("", subject_clause.strip(" \t\r\n？?，,。；;：:"))
-    if not subject_clause or _is_generic_subject(subject_clause):
-        return matched, False
     # If the clause is a request sentence, its whole prefix is not a safe entity.
     # An unrecognized request is treated as unresolved instead of filtering on that text.
     cleaned_clause = _COMPARISON_PREFIX.sub("", subject_clause).strip()
-    request_like = bool(_REQUEST_CLAUSE.search(subject_clause))
+    request_like = bool(subject_clause and _REQUEST_CLAUSE.search(subject_clause))
     candidates = []
-    subject_regions = [cleaned_clause]
+    subject_regions = [cleaned_clause] if cleaned_clause else []
     if "的" not in source_question:
         topic_terms = sorted(
             {term for terms in _TOPIC_CLASSES.values() for term in terms},
@@ -222,26 +257,21 @@ def _extract_explicit_subjects(
     # Matched corpus names and unmatched parallel names are both part of the
     # requested set; a hit cannot erase a second, unknown comparison subject.
     values = [*matched, *candidates]
-    unresolved_request = request_like and not values and not query_dimensions(source_question)
+    unresolved_request = (
+        request_like and not values and not query_dimensions(source_question, tuple(values))
+    )
     return tuple(dict.fromkeys(values)), unresolved_request
 
 
 def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str, ...]:
-    """Return compact semantic topic labels, using exact terms for unfamiliar topics."""
-    normalized = _normalize(question)
+    """Return an explicit family or exact topic after removing object spans."""
+    topic_phrase = _topic_phrase(question, subjects)
+    normalized = _normalize(topic_phrase)
     matched = [
         label
         for label, terms in _TOPIC_CLASSES.items()
         if any(_normalize(term) in normalized for term in terms)
     ]
-    source_question = question.split("\n追问：", maxsplit=1)[-1]
-    topic_phrase = (
-        source_question.rsplit("的", maxsplit=1)[-1] if "的" in source_question else source_question
-    )
-    for subject in subjects:
-        topic_phrase = topic_phrase.replace(subject, " ")
-    topic_phrase = _COMPARISON_PREFIX.sub("", topic_phrase)
-    topic_phrase = _TOPIC_REQUEST_SUFFIX.sub("", topic_phrase)
     if matched:
         specific = topic_phrase
         for terms in _TOPIC_CLASSES.values():
@@ -254,11 +284,66 @@ def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str
         if len(specific) >= 2:
             return (f"{'+'.join(matched)}&term:{specific}",)
         return tuple(matched)
-    # Unknown exact terms refine a recognized topic family (for example,
-    # storage of a named object). Ordinary open questions such as “where is
-    # it?” keep the existing ranked retrieval path instead of becoming an
-    # accidental exact-keyword gate.
+    exact = _normalize(topic_phrase)
+    if len(exact) >= 2:
+        if not _EXPLICIT_TOPIC_FORM.search(question) and (
+            _OPEN_FACT_QUESTION.search(question) or _DATE_VALUE.search(question)
+        ):
+            return ()
+        return (f"term:{exact}",)
+    # Empty topic phrases are genuinely open questions or generic plans; an
+    # unfamiliar but explicit noun phrase remains an exact local scope.
     return ()
+
+
+def _topic_phrase(question: str, subjects: tuple[str, ...]) -> str:
+    source_question = question.split("\n追问：", maxsplit=1)[-1]
+    masked = source_question
+    for subject in sorted(subjects, key=len, reverse=True):
+        masked = re.sub(re.escape(subject), " ", masked, flags=re.IGNORECASE)
+    masked = masked.replace("的", " ")
+    topic = _TOPIC_PREFIX.sub("", masked.strip())
+    previous = None
+    while topic != previous:
+        previous = topic
+        topic = _TOPIC_SUFFIX.sub("", topic.strip())
+        topic = _TOPIC_FILLER.sub("", topic)
+    return topic
+
+
+def _alias_is_subject_in_question(question: str, alias: str) -> bool:
+    normalized_question = _normalize(question)
+    normalized_alias = _normalize(alias)
+    position = normalized_question.find(normalized_alias)
+    if position < 0:
+        return False
+    if "的" in question:
+        before_de = _normalize(question.split("的", maxsplit=1)[0])
+        if normalized_alias in before_de and _alias_has_entity_role(alias):
+            return True
+    if _alias_has_entity_role(alias):
+        return True
+    tail = normalized_question[position + len(normalized_alias) :]
+    if any(_normalize(term) in tail for terms in _TOPIC_CLASSES.values() for term in terms):
+        return True
+    cleaned_tail = _TOPIC_SUFFIX.sub("", tail)
+    cleaned_tail = _TOPIC_FILLER.sub("", cleaned_tail)
+    return len(cleaned_tail) >= 2 and not _topic_phrase(tail, ())
+
+
+def _alias_has_entity_role(alias: str) -> bool:
+    normalized_alias = _normalize(alias)
+    return any(_normalize(suffix) in normalized_alias for suffix in _ENTITY_SUFFIXES)
+
+
+def _alias_has_topic_after(question: str, alias: str) -> bool:
+    normalized_question = _normalize(question)
+    normalized_alias = _normalize(alias)
+    position = normalized_question.find(normalized_alias)
+    if position < 0:
+        return False
+    topic_tail = normalized_question[position + len(normalized_alias) :]
+    return bool(_topic_phrase(topic_tail, ()))
 
 
 def supported_dimensions(text: str, dimensions: tuple[str, ...]) -> tuple[str, ...]:
@@ -327,7 +412,7 @@ def _dimension_part_supported(normalized_text: str, part: str) -> bool:
     )
 
 
-def _subject_clause(question: str) -> str:
+def _subject_clause(question: str, aliases: tuple[str, ...] = ()) -> str:
     if "的" in question:
         return question.split("的", maxsplit=1)[0]
     english_subject = re.search(r"\bfor\s+([^?!.]+)", question, re.I)
@@ -340,11 +425,24 @@ def _subject_clause(question: str) -> str:
     # Bound the candidate object region at the first recognizable topic or
     # request predicate, so the whole request sentence is never treated as an
     # entity name.
-    prefix = _COMPARISON_PREFIX.sub("", question.strip())
+    scan_question = question
+    for alias in sorted(aliases, key=len, reverse=True):
+        scan_question = re.sub(
+            re.escape(alias),
+            lambda match: " " * len(match.group(0)),
+            scan_question,
+        )
+    prefix = _COMPARISON_PREFIX.sub("", scan_question.strip())
     markers = [term for terms in _TOPIC_CLASSES.values() for term in terms if term in prefix]
     markers.extend(("制定", "提出", "给出", "下一步", "方案"))
     positions = [prefix.find(marker) for marker in markers if prefix.find(marker) >= 0]
-    return prefix[: min(positions)].strip(" \t\r\n？?，,。；;：:") if positions else ""
+    if not positions:
+        return ""
+    # Reapply the same leading comparison wrapper to retain source offsets.
+    raw_prefix = question.strip()
+    wrapper = _COMPARISON_PREFIX.match(raw_prefix)
+    offset = wrapper.end() if wrapper else 0
+    return question[offset : offset + min(positions)].strip(" \t\r\n？?，,。；;：:")
 
 
 def _matching_aliases(region: str, aliases: tuple[str, ...]) -> tuple[str, ...]:
@@ -365,12 +463,36 @@ def _matching_aliases(region: str, aliases: tuple[str, ...]) -> tuple[str, ...]:
 
 def _clean_aliases(values: Iterable[str]) -> tuple[str, ...]:
     aliases: list[str] = []
+    topical_terms = {_normalize(term) for terms in _TOPIC_CLASSES.values() for term in terms}
     for value in values:
         candidate = value.strip()
-        if len(_normalize(candidate)) < 2 or _is_generic_subject(candidate):
+        normalized = _normalize(candidate)
+        if len(normalized) < 2 or _is_generic_subject(candidate) or normalized in topical_terms:
             continue
+        # A page title like “青岚计划预算” can hint at its object, while the
+        # trailing family word remains part of the question topic.
+        for terms in _TOPIC_CLASSES.values():
+            for term in sorted(terms, key=len, reverse=True):
+                if candidate.endswith(term):
+                    stem = candidate[: -len(term)].strip()
+                    if len(_normalize(stem)) >= 2 and any(
+                        _normalize(suffix) in _normalize(stem) for suffix in _ENTITY_SUFFIXES
+                    ):
+                        candidate = stem
+                        normalized = _normalize(candidate)
+                    break
         if candidate not in aliases:
             aliases.append(candidate)
+        for suffix in ("项目", "计划", "工程"):
+            if candidate.endswith(suffix):
+                stem = candidate[: -len(suffix)].strip()
+                if (
+                    len(_normalize(stem)) >= 2
+                    and not _is_generic_subject(stem)
+                    and stem not in aliases
+                ):
+                    aliases.append(stem)
+                break
     return tuple(sorted(aliases, key=lambda value: len(_normalize(value)), reverse=True))
 
 
@@ -391,7 +513,8 @@ def aliases_from_subject_text(text: str) -> tuple[str, ...]:
 
 def _is_generic_subject(value: str) -> bool:
     normalized = _normalize(value)
-    return normalized in {_normalize(item) for item in _GENERIC_SUBJECTS}
+    topical_terms = {_normalize(term) for terms in _TOPIC_CLASSES.values() for term in terms}
+    return normalized in {_normalize(item) for item in _GENERIC_SUBJECTS} | topical_terms
 
 
 def _normalize(value: str) -> str:
