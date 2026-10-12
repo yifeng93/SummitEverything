@@ -4,6 +4,8 @@
 
 ## 当前状态与下一步
 
+2026-10-12 最新结果：用户授权的 extra 1 已完成；历史确认/效力及本人偏好两修均通过，包 2 仍因 C19 无依据回答误报缓存/资格异常而 FAIL（P2 提示误导，无数字编造或证据泄漏）。固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，QA 固定 `507cc1f197ce3af3b22aa53c98148e4ca45ff935`。停止产品修改，等待用户是否授权下一轮；包 1 保留 PASS，包 3 尚未实施。 [Sol 核证与接续](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。下方 QA pending/授权状态是对应交接发布时历史，由本条取代。
+
 2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 repair 2/2 QA 曾判 FAIL；随后用户明确批准仅一轮额外修复。extra 1 Developer 源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，README 自动检查已完成，等待全新独立 QA 和 Sol 判门；这不代表 QA PASS。若 extra 1 仍 FAIL，自动修复停止并交用户决定。首轮、repair 1/2、repair 2/2 原始失败报告均保留，Sol 原门报告是该时点历史结论。包 3 只读准备完成、实现未开始；M3 正式验收和合并未执行。见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)、[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。
 
 2026-10-11：M3 包 1“会话与历史”首轮独立 QA 在固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 发现 P1/P2，原报告保留；repair 1/2 后源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c` 由全新 QA 在集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4` 通过，Sol 最终判定包 1 离线集成 PASS。53 项证据 manifest 无 mismatch、产品树与源码 SHA 一致。QA 实际浏览器/Uvicorn 通过首问、历史续问、旧引用提示、取消、非空 partial 重启、profile/workspace 隔离；README 自动门 guarded pytest 395、Web 49/12 及静态/生成/构建均 PASS。限制：浏览器 request body/response header 未直接捕获，console NOT_RUN、runtime UNVERIFIED、多轮模型上下文属于包 2 尚未测，真实/发布门 NOT_RUN。完整报告链见[报告索引](../quality/reports/README.md)。
@@ -47,7 +49,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
-| M3 包 2 完整问答、角色与记忆 | 实现及两轮修复完成 | Sol 判 FAIL | 固定源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`；全部 QA FAIL 保留；额外修复需用户授权 |
+| M3 包 2 完整问答、角色与记忆 | extra 1 完成 | Sol 判 FAIL | 固定源码 `bb997a42`，QA `507cc1f`；C19 无依据原因误报，继续修复需用户授权 |
 | M3 包 3 连续状态与归档压缩 | 未开始 | 未开始 | 依赖包 2 QA gate；按现有事务与 action receipts 复用 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |

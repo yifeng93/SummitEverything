@@ -6,6 +6,8 @@
 
 ## 当前状态
 
+2026-10-12 最新结果：用户授权的 extra 1 已完成；历史确认/效力及本人偏好两修均通过，包 2 仍因 C19 无依据回答误报缓存/资格异常而 FAIL（P2 提示误导，无数字编造或证据泄漏）。固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，QA 固定 `507cc1f197ce3af3b22aa53c98148e4ca45ff935`。停止产品修改，等待用户是否授权下一轮；包 1 保留 PASS，包 3 尚未实施。 [Sol 核证与接续](docs/quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。下方 QA pending/授权状态是对应交接发布时历史，由本条取代。
+
 2026-10-12 最新状态：包 1 离线集成由 Sol 判 PASS。包 2 的 repair 2/2 QA 曾判 FAIL，见[Sol 门判断](docs/quality/reports/2026-10-12-M3-SOL-GATE.md)；用户随后明确批准仅一轮额外修复。Developer 已在源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 完成 extra 1 自测，现待全新独立 QA；这不是 QA PASS 或 Sol 门结论。此前首轮及 repair 1/2、repair 2/2 的 QA FAIL 原报告继续保留。若 extra 1 QA 仍 FAIL，需再次由用户决定，不能自动继续。包 3 只完成只读准备，待包 2 QA 通过后接续；M3 正式验收和合并尚未执行。最新实现、受测 SHA 与自测结果见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)和[extra 1 DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
