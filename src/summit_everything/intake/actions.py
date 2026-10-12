@@ -294,11 +294,15 @@ class ActionService:
             lease = AttemptLease(root, attempt_id)
             if not lease.acquire(blocking=False):
                 raise WorkspaceWriteConflict("Action attempt lease could not be acquired")
-            item.state = "running"
-            item.attempt_session = self.session
-            item.attempt_id = attempt_id
-            item.started_at = self.now()
-            save_receipt(root, item)
+            try:
+                item.state = "running"
+                item.attempt_session = self.session
+                item.attempt_id = attempt_id
+                item.started_at = self.now()
+                save_receipt(root, item)
+            except BaseException:
+                lease.__exit__(None, None, None)
+                raise
         try:
             with lease:
                 try:

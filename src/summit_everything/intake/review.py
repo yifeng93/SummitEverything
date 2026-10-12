@@ -184,8 +184,8 @@ class IntakeReviewService:
             lease = AttemptLease(root, attempt_id)
             if not lease.acquire(blocking=False):
                 raise WorkspaceError("A job attempt with this identity is already active", 409)
-            jobs_root.mkdir(parents=True, exist_ok=True)
             try:
+                jobs_root.mkdir(parents=True, exist_ok=True)
                 atomic_write(job_path, job.model_dump_json(indent=2).encode())
                 for item in selected:
                     assert item is not None
@@ -219,7 +219,7 @@ class IntakeReviewService:
                         }
                     )
                     atomic_write(item_path, updated.model_dump_json(indent=2).encode())
-            except Exception:
+            except BaseException:
                 lease.__exit__(None, None, None)
                 raise
         return self._run_attempt(root, job, inputs, line_id, project_id, lease)

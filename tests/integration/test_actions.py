@@ -1024,3 +1024,47 @@ def test_live_attempt_blocks_user_outcome_until_provider_returns(tmp_path):
     assert second.get(PREFIX + "/" + approved["action_id"]).json() == result
     assert execute(second, approved).json() == result
     assert len(second.get(TASKS).json()["items"]) == 1
+
+
+def test_running_receipt_write_failure_releases_action_lease_without_gc(tmp_path, monkeypatch):
+    import json
+
+    import pytest
+
+    import summit_everything.intake.actions as actions_module
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+    from summit_everything.workspace.action_receipts import save_receipt as real_save
+    from summit_everything.workspace.state import attempt_is_live
+
+    provider = FakeFeishu(tmp_path / "remote")
+    c = client(tmp_path, provider=provider)
+    approved = confirm(c, proposal(c))
+    root = tmp_path / "workspace"
+    attempt_ids = []
+
+    def fail_running_receipt(workspace, item):
+        if item.state == "running":
+            attempt_ids.append(item.attempt_id)
+            raise OSError("synthetic running receipt failure")
+        real_save(workspace, item)
+
+    monkeypatch.setattr(actions_module, "save_receipt", fail_running_receipt)
+    with pytest.raises(OSError, match="synthetic running receipt failure") as raised:
+        execute(c, approved)
+
+    # Keep the exception traceback alive: lease cleanup must not rely on GC.
+    assert raised.value is not None
+    assert len(attempt_ids) == 1 and attempt_ids[0] is not None
+    lease_path = root / ".summit-everything" / "attempt-leases" / f"{attempt_ids[0]}.lock"
+    receipt_path = (
+        root / ".summit-everything" / "action_receipts" / "active" / f"{approved['action_id']}.json"
+    )
+    assert not lease_path.exists()
+    assert not attempt_is_live(root, attempt_ids[0])
+    assert json.loads(receipt_path.read_text())["state"] == "confirmed"
+    assert c.get(TASKS).json()["items"] == []
+
+    monkeypatch.setattr(actions_module, "save_receipt", real_save)
+    retried = execute(c, approved)
+    assert retried.status_code == 200 and retried.json()["state"] == "succeeded"
+    assert len(c.get(TASKS).json()["items"]) == 1

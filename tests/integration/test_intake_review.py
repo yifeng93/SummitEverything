@@ -1402,3 +1402,43 @@ def test_one_selected_project_can_receive_multiple_drafts_from_one_source(tmp_pa
     )
     assert intake.list_items(root)[0].state == "completed"
     assert not review.list_actions(root)
+
+
+def test_job_start_directory_failure_releases_attempt_lease_without_gc(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import pytest
+
+    root = make_workspace(tmp_path / "workspace")
+    line = create_line(root, "模拟主线", "line")
+    project = create_project(root, line.id, "模拟项目", "project")
+    provider = FakeLLM()
+    item = IntakeService().add_text(
+        root, "保留原件。", filename="source.txt", operation_id="source"
+    )
+    jobs_root = root / ".summit-everything" / "intake" / "jobs"
+    assert not jobs_root.exists()
+    real_mkdir = Path.mkdir
+
+    def fail_job_directory(path, *args, **kwargs):
+        if path == jobs_root:
+            raise OSError("synthetic jobs directory failure")
+        return real_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", fail_job_directory)
+    with pytest.raises(OSError, match="synthetic jobs directory failure") as raised:
+        IntakeReviewService(provider).create_job(
+            root,
+            [item.item_id],
+            operation_id="job-directory-failure",
+            line_id=line.id,
+            project_id=project.id,
+        )
+
+    # The held traceback retains create_job locals, so cleanup must be explicit.
+    assert raised.value is not None
+    lease_root = root / ".summit-everything" / "attempt-leases"
+    assert list(lease_root.glob("*.lock")) == []
+    assert IntakeService().list_items(root)[0].state == "pending"
+    assert not jobs_root.exists()
+    assert provider.calls == 0
