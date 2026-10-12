@@ -1,0 +1,113 @@
+{
+  "page": {
+    "page_id": "00000000-0000-0000-0000-0000000003eb",
+    "approval_state": "confirmed",
+    "validity": "superseded",
+    "content_sha256": "197a1988db4fd78a43fc3655c79112fe53ca13e84963ee78b503df10697cea95",
+    "proof_sha256": "197a1988db4fd78a43fc3655c79112fe53ca13e84963ee78b503df10697cea95",
+    "hash_match": true,
+    "body": "青岚计划旧版预算上限为 21 万元。"
+  },
+  "old_history_messages": [
+    {
+      "conversation_id": "96553f9f-8bfa-448e-a864-71bea83eaca2",
+      "request_id": "db7cb4fe-7146-49c1-b860-efcc951c47ce",
+      "state": "completed",
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003eb",
+          "content_sha256": "de4f14b99571bef11a998c3466dc98f1cb1a7229f212648adeac944ee0d089ed",
+          "chunk_id": "f57d194cfffc91d69b1796dfad28e85f4f7023fda568bb10f9affe4a25302fda",
+          "heading": "",
+          "excerpt": "青岚计划旧版预算上限为 20 万元。",
+          "validity": "superseded",
+          "availability": "updated"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "content_sha256": "d8bab147a746e623054c99c54f14f376271d6b26bca8bf8a28bb6de5d8ad74ac",
+          "chunk_id": "7242cc3246dd7e0a5226708b26dbdf8cd41d07122d34a9fd4e2adb19a7369e27",
+          "heading": "",
+          "excerpt": "青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+          "validity": "current",
+          "availability": "available"
+        }
+      ]
+    },
+    {
+      "conversation_id": "3ab27d87-4cec-49f3-a207-84689002ff79",
+      "request_id": "df45057b-a3c5-4130-91f2-9f3160bcd5f9",
+      "state": "completed",
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003eb",
+          "content_sha256": "de4f14b99571bef11a998c3466dc98f1cb1a7229f212648adeac944ee0d089ed",
+          "chunk_id": "f57d194cfffc91d69b1796dfad28e85f4f7023fda568bb10f9affe4a25302fda",
+          "heading": "",
+          "excerpt": "青岚计划旧版预算上限为 20 万元。",
+          "validity": "superseded",
+          "availability": "updated"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "content_sha256": "d8bab147a746e623054c99c54f14f376271d6b26bca8bf8a28bb6de5d8ad74ac",
+          "chunk_id": "7242cc3246dd7e0a5226708b26dbdf8cd41d07122d34a9fd4e2adb19a7369e27",
+          "heading": "",
+          "excerpt": "青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+          "validity": "current",
+          "availability": "available"
+        }
+      ]
+    },
+    {
+      "conversation_id": "3f97edba-5dea-4208-bacf-c7a042fffb02",
+      "request_id": "aab7e93b-292d-4bfc-86b0-de8324f40370",
+      "state": "completed",
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "content_sha256": "d8bab147a746e623054c99c54f14f376271d6b26bca8bf8a28bb6de5d8ad74ac",
+          "chunk_id": "7242cc3246dd7e0a5226708b26dbdf8cd41d07122d34a9fd4e2adb19a7369e27",
+          "heading": "",
+          "excerpt": "青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+          "validity": "current",
+          "availability": "available"
+        }
+      ]
+    }
+  ],
+  "old_citation_expected_hash": "de4f14b99571bef11a998c3466dc98f1cb1a7229f212648adeac944ee0d089ed",
+  "old_citation_reopen_http": 409,
+  "old_citation_reopen_body": "{\"error\":{\"code\":\"version_conflict\",\"message\":\"Page content has changed since this citation was created\",\"request_id\":\"811789581c56a997\"}}",
+  "current_query": {
+    "http": 200,
+    "citations": [
+      {
+        "page_id": "00000000-0000-0000-0000-0000000003e9",
+        "validity": "current",
+        "availability": "available",
+        "content_sha256": "d8bab147a746e623054c99c54f14f376271d6b26bca8bf8a28bb6de5d8ad74ac"
+      }
+    ],
+    "target_included": false
+  },
+  "history_query": {
+    "http": 200,
+    "citations": [
+      {
+        "page_id": "00000000-0000-0000-0000-0000000003eb",
+        "validity": "superseded",
+        "availability": "available",
+        "content_sha256": "197a1988db4fd78a43fc3655c79112fe53ca13e84963ee78b503df10697cea95"
+      },
+      {
+        "page_id": "00000000-0000-0000-0000-0000000003e9",
+        "validity": "current",
+        "availability": "available",
+        "content_sha256": "d8bab147a746e623054c99c54f14f376271d6b26bca8bf8a28bb6de5d8ad74ac"
+      }
+    ],
+    "target_included": true
+  },
+  "pass": true
+}

@@ -1,0 +1,53 @@
+{
+  "profile_b_open_http": 201,
+  "workspace_c_create_http": 201,
+  "switch_http": [
+    201,
+    201
+  ],
+  "pass": true,
+  "snapshots": {
+    "workspace_a_before": {
+      "profile": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra1/SummitEverything/.local/qa/m3-package-2-extra-1/profiles-r2-A/57948da2-3b8f-4d9a-8a3d-b58b9798f2ff",
+      "role_count": 1,
+      "memory_count": 1,
+      "history_count": 25,
+      "questions_count": 28
+    },
+    "profile_b_same_workspace": {
+      "profile": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra1/SummitEverything/.local/qa/m3-package-2-extra-1/profiles-r2-B/57948da2-3b8f-4d9a-8a3d-b58b9798f2ff",
+      "role_count": 0,
+      "memory_count": 0,
+      "history_count": 0,
+      "questions_count": 0
+    },
+    "workspace_c_populated": {
+      "profile": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra1/SummitEverything/.local/qa/m3-package-2-extra-1/profiles-r2-A/50398aa6-8b9a-4c02-a53c-64656ff47579",
+      "role_count": 1,
+      "memory_count": 1,
+      "history_count": 1,
+      "questions_count": 1
+    },
+    "workspace_a_during": {
+      "profile": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra1/SummitEverything/.local/qa/m3-package-2-extra-1/profiles-r2-A/57948da2-3b8f-4d9a-8a3d-b58b9798f2ff",
+      "role_count": 1,
+      "memory_count": 1,
+      "history_count": 25,
+      "questions_count": 28
+    },
+    "workspace_c_after_return": {
+      "profile": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra1/SummitEverything/.local/qa/m3-package-2-extra-1/profiles-r2-A/50398aa6-8b9a-4c02-a53c-64656ff47579",
+      "role_count": 1,
+      "memory_count": 1,
+      "history_count": 1,
+      "questions_count": 1
+    },
+    "profile_b_after": {
+      "profile": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra1/SummitEverything/.local/qa/m3-package-2-extra-1/profiles-r2-B/57948da2-3b8f-4d9a-8a3d-b58b9798f2ff",
+      "role_count": 0,
+      "memory_count": 0,
+      "history_count": 0,
+      "questions_count": 0
+    }
+  }
+}

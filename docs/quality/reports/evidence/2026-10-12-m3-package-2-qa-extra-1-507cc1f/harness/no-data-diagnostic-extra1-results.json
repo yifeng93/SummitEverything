@@ -1,0 +1,31 @@
+{
+  "question": "为风铃工程的彩色牙刷储存规则提出方案，并列出缺失信息。",
+  "index_status_before": {
+    "fingerprint": "summit-fake-embedding-v1",
+    "pages": 7,
+    "chunks": 7,
+    "state": "ready",
+    "current_pages": 7,
+    "stale_pages": 0
+  },
+  "http": 200,
+  "event_types": [
+    "status",
+    "delta",
+    "completed"
+  ],
+  "completed": {
+    "text": "缺少可用的已确认依据，暂不能提出有事实支撑的工作方案。",
+    "citations": [],
+    "source_statements": [],
+    "inferences": [],
+    "advice": [],
+    "missing_information": [
+      "已缓存的资料版本与当前工作库不一致，或当前资格检查未通过。"
+    ],
+    "index_status": "ready"
+  },
+  "provider_calls_before": 19,
+  "provider_calls_after": 19,
+  "provider_called": false
+}
