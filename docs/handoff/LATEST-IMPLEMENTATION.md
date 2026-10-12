@@ -1,18 +1,20 @@
 # 最新实现交接
 
-2026-10-12 最新门：extra 2 的无依据诊断修复通过，但比较无资料对象仍引用无关预算，C19 P1 导致包 2 FAIL。产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`。已用完当前授权轮次，停止产品修改；包 3 未实施，待用户决定额外收口授权。 [Sol 核证和待批收口](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。下方旧轮次状态按历史保留，由本条取代。
-
-2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 extra 1 QA 曾 FAIL，用户已明确批准仅一轮 extra 2；Developer extra 2 固定源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，自测完成，待全新独立 QA 和 Sol 判门。若仍 FAIL，自动修复额度耗尽并交用户决定。全部旧 FAIL 报告与证据保留；包 3 未开始，M3 正式门/合并及真实/发布门未执行，runtime UNVERIFIED。详见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)。下方 extra 1 及更早内容均为历史记录。
+2026-10-12 当前门：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 独立 QA 由 Sol 判 C19 P1 FAIL（无资料比较仍引用无关预算），见[门报告](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。用户随后明确开始包 3，不涉及修包 2或改变正式验收规格。包 3源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已由 Developer 固定，README 检查完成，等待独立 QA；M3 总门仍未通过。报告见[包 3 DEV](../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)和[报告索引](../quality/reports/README.md)。旧 FAIL 报告/证据保留；真实服务/材料/凭据、Keychain、native/DMG、五日、双机和发布门 **NOT_RUN**，runtime **UNVERIFIED**。
 
 ## 当前状态（2026-10-12）
 
+### M3 包 3 Developer 交接（待全新独立 QA）
+
+固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2`，分支 `codex/m3-integrated-packages`；源码提交与 Developer 检查日志分别见该 SHA 和 `.local/dev/m3-package-3/raw-logs/`。包 3实现 intake 跨 profile 状态恢复、同机 attempt lease/CAS、checkpoint 本地恢复、unknown no-resend、完整 receipt family active+monthly summary replay、profile-only 轮转日志及显式 reprocess UI。批量复演为 120 条 FakeLLM 完成流程跨 4 个业务月份，120 item / 120 job / 366 transaction receipts 入摘要；完整 counts、legacy undated / unknown 分类、日志和 QA 复演指引见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)。README 自动门 guarded pytest 438 passed、Web 56 tests / 12 files、类型/静态/lock/build/OpenAPI checks 全 exit 0；lint 有两个既有 warning、pytest 有一个既有 Starlette/httpx deprecation。DEV 不等于 QA/PASS。请在独立 checkout 固定该源码验收 C22/C23/C21 并回归 C13/C14/C19/C20；包 2的已知 C19 P1 要原样报告。
+
 历史交接（extra 1）：当时记录包 2 repair 2/2 QA FAIL 后用户批准一轮额外修复，源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并等待独立 QA。该状态已由本文当前状态与 extra 2 交接取代；Sol 后续门与 QA 结果见 extra 1 历史报告。
 
-### 包 2 extra 2 Developer 交接（待全新独立 QA）
+### 包 2 extra 2 Developer 交接（历史 DEV；QA 已 FAIL）
 
-extra 2 起点 `09fd94c6127cdd4bb60827a102446cb352eb32be`，产品源码提交 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，分支 `codex/m3-integrated-packages`。本轮是用户在 extra 1 QA FAIL 后明确批准的唯一追加轮次；README 全量自动检查已完成，日志及 `.exit` 在 `.local/dev/m3-package-2-extra-2/raw-logs/`。行为、命令和复演范围见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)。等待 Sol 调度全新独立 QA；不得将自测标成 QA/PACK PASS。
+extra 2 起点 `09fd94c6127cdd4bb60827a102446cb352eb32be`，产品源码提交 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，分支 `codex/m3-integrated-packages`。本轮是用户在 extra 1 QA FAIL 后明确批准的唯一追加轮次；README 全量自动检查已完成，日志及 `.exit` 在 `.local/dev/m3-package-2-extra-2/raw-logs/`。行为、命令和复演范围见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)。QA 后由 Sol 判 C19 P1 FAIL；该 FAIL 保留，包 2 当前未获准修复。
 
-C19 的无引用诊断现区分无相关证据、资格/hash 排除和生成期间页面变化；missing 与主文同步。fresh ready index 的无关查询不会误称缓存问题；hash 不匹配仍报告版本/资格原因，页面在生成中不可读先报告不可用。三种回答模式及零 provider 调用回归见固定源码。QA 后若 FAIL，停止并交用户，不继续自动修复；包 3 仍未开始。
+C19 的无引用诊断现区分无相关证据、资格/hash 排除和生成期间页面变化；missing 与主文同步。fresh ready index 的无关查询不会误称缓存问题；hash 不匹配仍报告版本/资格原因，页面在生成中不可读先报告不可用。三种回答模式及零 provider 调用回归见固定源码。QA 已判 FAIL，用户明确直接开始包 3；本轮不继续修复包 2。
 
 ### 包 2 extra 1 Developer 历史交接（已 QA FAIL）
 
@@ -34,7 +36,7 @@ repair 2 处理 repair 1 QA 的主体精度遗留缺陷：礼貌自然请求中�
 
 新 QA 应固定 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，重跑首轮报告 QA-1 至 QA-4 及 repair 1 报告的范围历史与修复项，并验证 repair 2：自然礼貌事实问句返回合格引用；青岚→“它呢”→“它什么时候启动”不混入朱雀；“那朱雀项目……”明确换题、未知主体与无主题完整问题边界；标题、显式 alias 或 manifest project 名是唯一主体线索时 fresh index 仍引用该正式页且不把名称添加到 excerpt；页面改版后旧 chunk/hash 失效；比较与 plan 仍跨材料。每轮资格复核、角色/记忆、幂等重放和 API/UI 行为按原 QA 报告验收。沿用原报告中隔离 Fake workspace / MockTransport harness，在 QA 独立 checkout 按报告步骤启动本地服务；QA 不在此开发 checkout 改实现或 tracked tests。
 
-真实 DeepSeek / Feishu、真实材料、Keychain、native、DMG、五日、双机和发布门均 NOT_RUN；runtime 元数据 UNVERIFIED。包 3 尚未开始，M3 正式验收和重要里程碑合并未完成。repair 2 是最后获准的自动修复轮；若新 QA 仍 FAIL，需用户决定是否继续。
+历史 repair 2 交接当时记录：包 3 尚未开始，repair 2 是当时已授权的最后修复轮。该状态已被当前包 2 C19 P1 FAIL 及用户直接开始包 3取代；不能用作当前执行指令。真实服务/材料/凭据、Keychain、native、DMG、五日、双机与发布门保持 NOT_RUN，runtime UNVERIFIED。
 
 包 1 QA 覆盖包括真实浏览器新库首问/历史重开续问、SSE complete/cancel/non-empty partial restart、updated/unavailable/superseded 部分引用资格，以及 profile/workspace 隔离。包 2 还需由独立 QA 复核多轮上下文 provider payload 与 request hash、新旧会话 schema 兼容、角色/记忆上下文预算、确认来源与跨 profile 隔离。
 

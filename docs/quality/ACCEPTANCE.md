@@ -4,6 +4,8 @@
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
+2026-10-12 当前 M3 状态：包 1离线集成由 Sol 判 PASS；包 2 extra 2 固定 QA `d2236c2` 由 Sol 判 C19 P1 FAIL；用户明确授权包 3直接实施，Developer 固定 `d03c548b69a4ec48a947486df191bd4af009b6e2` 并自测完成，独立 QA pending。该状态说明不更改下方验收期望；M3 总门未通过。包 2 FAIL 原报告及证据保留。
+
 ## 当前结论与范围（2026-10-11）
 
 固定源码 `576895f6983ca41cacbbad45a9075b97b9986189` 的独立离线QA已通过，并以PR #10 / merge `41207e5bfb81b535c0254fd4ac242df11da40d67` 合入main。后端388项、25项独立失败路径与实际合成浏览器/原生开发壳复验通过；合并后13项检查通过（Web45）。历史7f/8b/fd FAIL保留，缺陷只在新SHA复验后关闭。真实接入、OS Keychain、模型R03质量与安装包等门仍NOT_RUN；完整Stage B/v1未验收。证据发布范围与合并后初次瞬时失败见[收口记录](reports/2026-10-11-STAGE-B-POSTMERGE.md)。

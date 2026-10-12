@@ -29,13 +29,26 @@
     drafts/                 # 待审正文
     actions/                # 待执行 / unknown 外部动作
     transactions/           # 未完成本地写操作
+    archives/
+      intake-items/{YYYY-MM|undated}/summary.json
+      intake-jobs/{YYYY-MM|undated}/summary.json
+      transactions/{YYYY-MM|undated}/summary.json
+    attempt-leases/{attempt UUID}.lock # 同机运行中的临时 advisory lease
     sources/YYYY-MM.json    # 来源目录、hash、来源标识
     history/YYYY-MM.json    # 完成流程与结果汇总
 ~~~
 
 这不是固定项目集合。项目内不强制类型子目录；页面标题可读，重名生成明确不覆盖的文件名。conventions.md 是本契约的人类可读说明，不是自由执行的脚本。
 
-每条待处理项以 `state` 表达来源到整理作业 / 稿件的当前关系：`pending`（尚未整理）、`processing`（整理作业进行中）、`reviewing`（已有待审核稿）、`completed`（关联稿件均已确认）、`failed`（整理失败）、`cancelled`（用户取消）。`latest_job_id` 指向最近一次显式整理。只有 `pending` 可直接整理；完成、失败或取消的来源需要明确的重新整理动作，处理中或待审核来源始终拒绝重复生成。旧库没有 `latest_job_id` 时由作业记录恢复状态。
+每条待处理项以 `state` 表达来源到整理作业 / 稿件的当前关系：`pending`（尚未整理）、`processing`（整理作业进行中）、`reviewing`（已有待审核稿）、`completed`（关联稿件均已确认）、`failed`（整理失败）、`cancelled`（用户取消）、`unknown`（进程失效或 provider 结果未知，禁止自动重发）。`latest_job_id` 指向最近一次显式整理；兼容追加字段 `attempt_no`、`revision`、`previous_attempt_sha256`、`finished_at` 用于 CAS 与版本链。只有 `pending` 可直接整理；完成、失败、取消或 unknown 的来源需要用户显式开启新的 reprocess operation；处理中或待审核来源拒绝重复生成。旧库缺少新字段时使用默认值；没有完成时间的旧终态不伪造日期，首次新 attempt 前保存在 `undated` 历史摘要中。
+
+`intake/jobs/{id}.json` 的整理作业状态使用 `running`、`provider_calling`、`completed`、`failed`、`cancelled`、`unknown`。`attempt_id`、`revision` 与可选 `checkpoint_sha256` 是新增兼容字段。`completed` 仅表示 provider 结果已本地落为稿件/候选，不表示稿件已获确认；稿件逐条独立确认。checkpoint 仅恢复本地稿件或候选，不能批准知识。job/item/replay 查询可读 active 文件或月摘要。旧库读取缺失的新字段时使用默认值，不要求迁移原件和稿件。
+
+完成的 item、job 和本地事务回执在各自业务 finish month 写入摘要后再删除 active receipt。月摘要 schema 为 `{schema: "workspace-month-v1", namespace, month, items: {stable_name: {sha256, value}}}`，月份与物理目录、每条 `finished_at` 必须相符；历史无时间记录仅允许进入 `undated`，该桶不表示某个业务月份。读写扫描摘要本身，不另建索引。active 与 summary 同值副本可用于崩溃恢复，不同 payload、损坏摘要或冲突副本必须阻断写入。原件字节、完整稿件正文和确认记录不随回执压缩。
+
+同机服务用 attempt UUID 对应的 advisory lease 判断 owner 活性；profile 不同不表示 worker 已死。lease 只用于同一台机器的进程活性，不是 OneDrive/跨机分布式锁。用户同步后应轮流写；不同机器的并发写不受支持。死 owner 无可用 checkpoint 时保守标 `unknown` 并由用户决定是否创建新 operation，不自动重新调用 provider。
+
+诊断事件只写在当前本机 profile 的 `diagnostics.log`（最多 256 KiB，3 个轮转备份），不在工作库同步区；字段为受控事件名、时间、安全记录 ID、状态和计数，不含原文、prompt、token、凭据或本机绝对路径。
 
 ## 2. 页面元数据与正文
 

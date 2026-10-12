@@ -1,42 +1,44 @@
 # 开发与独立验收报告索引
 
-2026-10-12 最新门：extra 2 的无依据诊断修复通过，但比较无资料对象仍引用无关预算，C19 P1 导致包 2 FAIL。产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`。已用完当前授权轮次，停止产品修改；包 3 未实施，待用户决定额外收口授权。 [Sol 核证和待批收口](2026-10-12-M3-SOL-EXTRA-2-GATE.md)。下方旧轮次状态按历史保留，由本条取代。
-
-2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 extra 1 QA 曾 FAIL，用户明确批准仅一轮 extra 2；Developer 自测固定源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，当前待全新独立 QA，尚无 QA/Sol PASS。历史 QA FAIL 报告完整保留；若 extra 2 QA 仍 FAIL，自动修复额度耗尽并交用户决定。包 3 未实施，M3 正式门与合并、真实/发布门未执行。详见[extra 2 DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)及[extra 1 Sol 历史门](2026-10-12-M3-SOL-EXTRA-1-GATE.md)。
+2026-10-12 当前：包 1离线集成由 Sol 判 PASS；包 2 extra 2 QA/Sol 判 C19 P1 FAIL；用户明确直接开始包 3。本仓库包 3 Developer 源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已固定并完成 README 自测，独立 QA pending。包 2 FAIL 历史报告不改写；M3 正式门未通过。详情见[包 3 DEV 报告](2026-10-12-M3-PACKAGE-3-DEV.md)、[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)及[Sol 包 2门](2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
 
 ## 当前 M3 门状态（2026-10-12）
 
-[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)保留 repair 2/2 当时 FAIL 的核证与证据；其“等待用户是否授权额外一轮”仅为该报告发布时的状态。用户之后明确批准**仅一轮额外修复**。extra 1 Developer 已固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并完成自测，[DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)及日志已留存；extra 1 已被新获授权的 extra 2 取代；其 pending 状态仅为历史。包 1 离线集成 PASS；包 3 只读准备完成、实现 NOT_RUN；M3 正式验收和真实/发布门未通过。以下报告中的 pending 仅是各报告发布时历史。
+[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)保留 repair 2/2 当时 FAIL 的核证与证据；其“等待用户是否授权额外一轮”仅为该报告发布时的状态。用户之后明确批准**仅一轮额外修复**。extra 1 Developer 已固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并完成自测，[DEV 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)及日志已留存；extra 1 已被新获授权的 extra 2 取代；其 pending 状态仅为历史。包 1 离线集成 PASS；用户随后明确开始包 3，Developer 固定 SHA `d03c548b69a4ec48a947486df191bd4af009b6e2` 已完成并待独立 QA；M3 正式验收和真实/发布门未通过。旧报告中的 pending 仅是各报告发布时历史。
 
-## M3 功能包 2 extra 2 Developer（2026-10-12，待独立 QA）
+## M3 功能包 3 Developer（2026-10-12，待独立 QA）
 
-[extra 2 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)：用户明确批准的额外修复轮，固定产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`。修复 no-evidence 诊断不再把新鲜 ready 索引内的无关查询说成缓存/hash/资格故障，并区分资格/hash 拒绝、生成期间内容变化和页面不可用；三模式主文/missing 同步且零引用不调用 answer provider。README 自动矩阵全 exit 0：guarded pytest 417 passed、Web 55 tests / 12 files，ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 完成。DEV 自测非 QA；等待全新独立 QA。若 FAIL，本轮额度用尽，交用户决定。真实服务/资料/凭据、native/DMG、五日/双机及发布门 NOT_RUN，runtime UNVERIFIED。
+[包 3 DEV 报告](2026-10-12-M3-PACKAGE-3-DEV.md)：固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2`，实现跨 profile 整理接续、同机 lease 与 attempt CAS、dead-owner unknown/no-resend、checkpoint 仅本地稿件恢复、active+monthly archive union/replay、profile-only 轮转日志和 TodayView 状态。README 全量自测 guarded pytest 438 passed、Web 56 / 12 files，ruff/format/mypy/lock/build/OpenAPI/types/Web lint/type/build 均 exit 0。120 条 FakeLLM 流程跨 4 个月，所有 counts / legacy 和 unknown 分类见 DEV 报告。独立 QA pending；这不是 C22/C23/M3 PASS。包 2 C19 P1 FAIL 不变。
+
+## M3 功能包 2 extra 2 Developer（2026-10-12，QA FAIL 历史）
+
+[extra 2 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)：用户明确批准的额外修复轮，固定产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`。修复 no-evidence 诊断不再把新鲜 ready 索引内的无关查询说成缓存/hash/资格故障，并区分资格/hash 拒绝、生成期间内容变化和页面不可用；三模式主文/missing 同步且零引用不调用 answer provider。README 自动矩阵全 exit 0：guarded pytest 417 passed、Web 55 tests / 12 files，ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 完成。DEV 自测非 QA；随后独立 QA / Sol 判 C19 P1 FAIL，完整报告和证据保留。用户明确改序开始包 3；本轮未修复该缺陷。真实服务/资料/凭据、native/DMG、五日/双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
 ## M3 功能包 2 extra 1 Developer（2026-10-12，QA FAIL 历史）
 
 [extra 1 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)：用户在 repair 2/2 QA FAIL 后明确授权的唯一额外修复轮，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`。区分历史页面批准 hash 与 current/superseded/invalid 效力；仅对真实 user 历史中的候选原文跨度核验归属语境，使自然偏好提及资料、引用、来源可建 pending 候选，同时拒绝材料 attribution、裸引号和 Markdown 引文中的第一人称片段。guarded pytest 407 passed、Web 55 tests / 12 files；README 全量检查及生成契约各命令的实际 `.exit` 均为 0，日志在 `.local/dev/m3-package-2-extra-1/raw-logs/`。这是 Developer 自测，非 QA；新 SHA 等待 Sol 调度的全新独立 QA。若 FAIL 不自动继续。真实服务/资料/凭据、native/DMG、五日/双机及发布门 NOT_RUN；runtime UNVERIFIED。
 
-## M3 功能包 2 repair 2 Developer（2026-10-12，待独立 QA）
+## M3 功能包 2 repair 2 Developer（2026-10-12，QA FAIL 历史）
 
-[repair 2 Developer 报告](2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)：固定源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，repair 2/2 是最后获准自动修复轮。基于当轮临时语料主体线索与有界真实 user-question 反向追踪，修复礼貌事实问题无引用和连续指代混入旧主体；明确新主题/未知主体/无主题完整问题形成边界，标题/别名/project 归属线索只参与通过当前资格与 expected hash 检查的候选匹配，不进入引用正文。全量 guarded pytest 405 passed、Web 52 passed / 12 files；ruff、format、mypy、lock、build、OpenAPI 生成、Web typecheck/lint/build 均 exit 0。repair 1 QA FAIL 原报告不改写；新固定 SHA 独立 QA 尚待 Sol 调度，Developer 自测不是 QA PASS。证据日志在 `.local/dev/m3-package-2-repair-2/`。
+[repair 2 Developer 报告](2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)：固定源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，repair 2/2 是当时最后获准自动修复轮。该轮实施和自测保持原始记录；后续独立 QA 判 FAIL，历史批准/效力与本人偏好来源问题详见[固定 SHA QA 报告](2026-10-12-M3-PACKAGE-2-REPAIR-2-QA-94854ba.md)及后续 Sol 门报告。原报告与证据不改写；此处开发时的“待 QA”不代表当前状态。证据日志在 `.local/dev/m3-package-2-repair-2/`。
 
 ## M3 功能包 2 repair 1 独立 QA（2026-10-12）
 
 [固定 SHA QA 报告](2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)：受测产品源码 `0df323efc26e388d62f234e0471f853b2b54be4d`，QA 固定 checkout `d38f546cac8fd923539bea6a8ef9db925e5d959c`。C13 UI current/history 选择、历史效力与引用可用性，C20 provenance/候选/预算，C21 workspace/profile 隔离及 C14 会话 replay/cancel/partial restart 恢复通过；README 全量检查 exit 0。真实浏览器 fresh-index 复验发现礼貌自然事实问句误判对象、连续短追问将另一主体作为事实支持两项缺陷，故本包 FAIL，等待 repair 2 与全新独立 QA。报告与脱敏 harness/raw logs/exit/hash manifest 见[证据目录](evidence/2026-10-12-m3-package-2-qa-repair-1-0df323e/)；DevTools console/Network、real/native/DMG/五日/双机为 NOT_RUN，runtime metadata UNVERIFIED。
 
-## M3 功能包 2 repair 1：问答范围、追问召回与错误反馈（2026-10-11，Developer 完成，独立 QA pending）
+## M3 功能包 2 repair 1：问答范围、追问召回与错误反馈（2026-10-11，QA FAIL 历史）
 
-[repair 1 Developer 报告](2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md)：固定源码 SHA `0df323efc26e388d62f234e0471f853b2b54be4d`，修复首轮 QA 的四项缺陷：AskView 可选历史资料范围并同时显示引用可用性 / 效力；简短指代追问只把最近用户问题用作检索提示，每轮仍走当前资格复核；HTTP 422 输入/预算错误显示为回答失败而非断流；事实问答按用户明确对象限制候选，comparison / plan 保留跨材料路径。定向后端 14 passed、全量 guarded pytest 402 passed、Web 52 passed / 12 files；ruff、format、mypy、lock、uv build、OpenAPI 类型生成及 Web typecheck/lint/build 全部 exit 0。首轮 QA 原报告 [0827447](2026-10-11-M3-PACKAGE-2-QA-0827447.md) 保持 FAIL；新 SHA 等待独立 QA 与 Sol 判定，实际浏览器、真实模型 / 服务及发布门仍 NOT_RUN，runtime UNVERIFIED。
+[repair 1 Developer 报告](2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md)：固定源码 SHA `0df323efc26e388d62f234e0471f853b2b54be4d`，开发时修复首轮 QA 提出的 AskView 历史范围、短指代、422 错误反馈和事实主体筛选问题。其当轮检查和原始证据见 DEV 报告；后续固定 SHA 独立 QA 又发现礼貌事实问句无引用与连续追问混入旧主体，故该轮 QA FAIL，见[固定 SHA QA 报告](2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md)。后续轮次与当前包状态见上方记录。
 
-## M3 功能包 2：完整问答、角色与记忆（2026-10-11，Developer 完成，独立 QA pending）
+## M3 功能包 2：完整问答、角色与记忆（2026-10-11，QA FAIL 历史）
 
-[包 2 Developer 报告](2026-10-11-M3-PACKAGE-2-DEV.md)：源码 SHA `daef5250b355179de93cc3d622b93e9b28f17286`。fact / comparison / plan、profile/workspace 角色与记忆、多轮 user-question context、provider payload、结构化历史和 WebUI 已实现；后端 399 passed、Web 50 passed / 12 files，lint/type/build/生成契约及其他 README 适用门均 exit 0。该报告只记 DEV 自测，QA 和 Sol 门判断尚未完成；实际浏览器、runtime 与真实服务/发布门保持 NOT_RUN / UNVERIFIED。
+[包 2 Developer 报告](2026-10-11-M3-PACKAGE-2-DEV.md)：源码 SHA `daef5250b355179de93cc3d622b93e9b28f17286`。该报告保留当轮实现与 DEV 自测结果；后续独立 QA 连续发现缺陷，最终包 2 状态由 extra 2 Sol 门判 C19 P1 FAIL。开发时的 pending 不代表当前状态；失败原因及未修复边界见当前门记录。真实浏览器、runtime 与真实服务/发布门保持 NOT_RUN / UNVERIFIED。
 
 ## M3 功能包 1：会话与历史（2026-10-11，Sol 判离线集成 PASS）
 
 [首次 Developer 报告](2026-10-11-M3-PACKAGE-1-DEV.md)：源码 `faf1563d406cf0cf092550f9845626efb9b09c72`，后续 QA 固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 判 FAIL；原始 report/evidence 保留。QA 揭示新库首问 404 和 updated 引用提示随页面导航丢失。
 
-[Repair 1 Developer 报告](2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)：修复源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`。首问省略 conversation ID 并从响应头获取服务端会话 ID；updated 引用导航校验原 hash 并在目标页面保留版本提示。后端 **395 passed**、Web **49 passed / 12 files**，会话集成 **6 passed**，静态、类型、OpenAPI 生成、打包和 Web build 门禁 exit 0。当前独立 QA 尚待 Sol 调度；该 DEV 自测不等于 QA PASS。实际浏览器 / 原生壳 / runtime 元数据分别 NOT_RUN / NOT_RUN / UNVERIFIED，真实 provider、资料、凭据与发布门未运行。
+[Repair 1 Developer 报告](2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md)：修复源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`。首问省略 conversation ID 并从响应头获取服务端会话 ID；updated 引用导航校验原 hash 并在目标页面保留版本提示。后端 **395 passed**、Web **49 passed / 12 files**，会话集成 **6 passed**，静态、类型、OpenAPI 生成、打包和 Web build 门禁 exit 0。后续固定 SHA 独立 QA 与 Sol 离线集成判 PASS，见其下方 QA 报告；该 DEV 自测本身不构成 QA PASS。实际浏览器 / 原生壳 / runtime 元数据分别 NOT_RUN / NOT_RUN / UNVERIFIED，真实 provider、资料、凭据与发布门未运行。
 
 [Repair 1 独立 QA 报告](2026-10-11-M3-PACKAGE-1-QA-bc3deab.md)：受测集成 SHA `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4`，产品源码等同修复 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c`；本轮 guarded pytest 395 passed、Web 49 passed / 12 files，README 适用自动门均 exit 0。真实 Fake 浏览器复验首问建会话、历史重开续问、updated 引用打开新正文并持续显示版本提示；真实 Uvicorn 复验幂等冲突、取消、非空 partial 中断重启与两 workspace/profile 隔离。53 项 manifest 零 mismatch、产品树一致；Sol 已判包 1 离线集成 PASS。QA 限制与逐项范围见[QA 报告](2026-10-11-M3-PACKAGE-1-QA-bc3deab.md)及[证据目录](evidence/2026-10-11-m3-package-1-qa-bc3deab/README.md)。
 

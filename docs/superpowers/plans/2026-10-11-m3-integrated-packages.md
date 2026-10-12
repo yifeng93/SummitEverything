@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 计划起点为 clean main `5fd91c78930c80b2365957197b8a605757694a91`（历史）；包 1 离线集成由 Sol 判 PASS。包 2 repair 2/2 与 extra 1 QA 曾 FAIL；用户随后明确批准仅一轮 extra 2，Developer 自测固定源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，现待全新独立 QA。M3 完整验收仍未完成。
+- 2026-10-12 当前执行顺序由用户明确调整为直接开始包 3；不改变规格和正式门。包 1 离线集成由 Sol 判 PASS；包 2 extra 2 QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75` 判 C19 P1 FAIL，当前不在修复中；包 3 Developer 已固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 并完成自测，等待独立 QA。M3 完整验收仍未完成，详见[包 3 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -27,31 +27,31 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 最新门：extra 2 的无依据诊断修复通过，但比较无资料对象仍引用无关预算，C19 P1 导致包 2 FAIL。产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`。已用完当前授权轮次，停止产品修改；包 3 未实施，待用户决定额外收口授权。 [Sol 核证和待批收口](../../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。下方旧轮次状态按历史保留，由本条取代。
-
-2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS；包 2 extra 1 QA 曾 FAIL。用户明确批准仅一轮 extra 2，Developer 固定产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7` 并完成全量自动自测，当前待全新独立 QA，尚无 extra 2 QA/Sol PASS。若该轮 QA 仍 FAIL，自动修复额度耗尽，交用户决定。包 3只读准备完成、实现未开始；M3 正式门与合并未执行。细节及 QA 复演范围见[extra 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)；extra 1 历史门见[Sol 报告](../../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。
+2026-10-12 当前状态：包 2 extra 2 独立 QA 与 Sol 门判 C19 P1 FAIL；用户直接明确开始包 3。本实现依用户变更的顺序继续，不修包 2、不改变验收门。包 3源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已由 Developer 自测固定，待独立 QA；历史包 2 FAIL 原报告和证据完整保留。详见[包 3 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)和[Sol 包 2门报告](../../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
-- [x] 事实、跨材料比较、工作方案三类明确路径和独立合成问题；来源陈述、推断/建议、缺失资料分开；引用及效力清晰，无资料不补造业务数字（Developer extra 2 自测完成；新 QA pending，不能视为包级通过）。
-- [x] 本地每库角色 CRUD、预算与实际问答上下文；不能解除证据/批准/工具权限，不改变整理忠实性（Developer 完成；QA pending）。
-- [x] 仅可从可核验的明确用户表达生成记忆候选；来源/assistant 不能自成用户事实，接受/编辑后才活跃；活跃记忆管理和预算（extra 1 的实现保持真实 user message、原文跨度、本人表达声明和单独确认门；extra 2 新 QA pending）。
-- [x] 两 profile 同库各自历史/角色/记忆/索引独立；答案不自动写知识；当前/历史依据始终复验统一资格门（Developer 完成；QA pending）。
-- [x] Developer extra 2 定向检查及 README 全量后端/Web/静态/类型/构建与生成契约检查；guarded pytest 417 passed、Web 55 tests / 12 files，所有自动门 exit 0（自测结果见[extra 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)；不等于包级通过）。
-- [ ] 固定 SHA `c41147fe54bf95103c741df192fc76eb9df0f9e7` 的整包独立 QA：重跑历史 QA 的 C13/C14/C19/C20/C21 与浏览器问答/角色/记忆场景；重点核验 fresh ready 索引无关主体缺资料提示不再误报缓存/资格异常，未就绪/空索引、CURRENT 排除 history/无批准、真实旧 hash 及生成中页面变化/不可用分别给出准确说明；三模式 missing 与主文一致、零引用不调用 answer provider，同时复核历史批准/效力、记忆 provenance、CURRENT/HISTORY、比较/方案多材料及 earlier repairs。QA 尚待 Sol 调度；若 FAIL，停止自动修复并交用户决定。
+- [x] 事实、跨材料比较、工作方案三类明确路径和独立合成问题；来源陈述、推断/建议、缺失资料分开；引用及效力清晰，无资料不补造业务数字（Developer extra 2 自测完成；QA 已最终判 C19 P1 FAIL；不能视为包级通过）。
+- [x] 本地每库角色 CRUD、预算与实际问答上下文；不能解除证据/批准/工具权限，不改变整理忠实性（Developer 完成；QA 固定 SHA `d2236c2` 判 C19 P1 FAIL）。
+- [x] 仅可从可核验的明确用户表达生成记忆候选；来源/assistant 不能自成用户事实，接受/编辑后才活跃；活跃记忆管理和预算（extra 1 的实现保持真实 user message、原文跨度、本人表达声明和单独确认门；extra 2 QA 后判 C19 P1 FAIL）。
+- [x] 两 profile 同库各自历史/角色/记忆/索引独立；答案不自动写知识；当前/历史依据始终复验统一资格门（Developer 完成；QA 固定 SHA `d2236c2` 判 C19 P1 FAIL）。
+- [x] Developer extra 2 定向检查及 README 全量后端/Web/静态/类型/构建与生成契约检查；guarded pytest 417 passed、Web 55 tests / 12 files，所有自动门 exit 0（DEV 自测非 QA；固定 SHA `d2236c2` 最终 QA 因 C19 P1 判 FAIL）。
+- [x] 固定 SHA `d2236c243ac28c86b94acd8e8dd139dc865b7b75` 的整包独立 QA 已完成；Sol 判 C19 P1 FAIL，无资料比较仍引用不相关预算。用户随后直接授权包 3，未授权继续修包 2；完整证据见 extra 2 QA / Sol 门报告。
 
-包 2 原首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，[报告与证据](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)保留；repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 也均判 FAIL，原报告不改写。extra 1 是用户明确批准的单轮额外修复，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，行为、自测、限制和全新 QA 复演范围见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。extra 1 QA 最终 FAIL，用户随后明确批准 extra 2；extra 1 的旧 QA pending 文案仅保留为历史。当前 extra 2 QA pending；若 QA 仍 FAIL，不能自行启动下一轮。
+包 2 原首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，[报告与证据](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)保留；repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 也均判 FAIL，原报告不改写。extra 1 是用户明确批准的单轮额外修复，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，行为、自测、限制和全新 QA 复演范围见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。extra 1 QA 最终 FAIL，用户随后明确批准 extra 2；extra 1 的旧 QA pending 文案仅保留为历史。extra 2 QA 最终由 Sol 判 C19 P1 FAIL；该缺陷仍存在且本轮未修。用户随后授权直接进入包 3，本文件下方包 3为当前任务。
 
 ## 包 3：连续工作与归档压缩
 
+用户明确调整执行顺序，当前包 2 C19 P1 FAIL 保留且未修；包 3仅按其原范围实施，具体QA须如实记录这个已知失败。
+
 依赖：现有 source/intake/review、writer journals、action receipts；复用已有月汇总，补全未完成部分。主要模块 workspace state/archives、local logging 和对应 API/UI。
 
-- [ ] 中断整理后另一 profile 接续可见，部分完成稿件/流程准确，未知模型请求不自动重发，显式重新处理说明可能新增调用。
-- [ ] 待处理只有当前业务记录，完成按月归档；receipt 可查且同意图幂等，unknown/running 不清除；不删除原件与稿件正文。
-- [ ] 原子归档/压缩中断、并发相同意图、重复或冲突副本可解释恢复，不丢确认内容，不让未确认内容入库。
-- [ ] 同步库无 SQLite/WAL、凭据、历史、角色、记忆、诊断日志；本地日志轮转，模拟大量流程并报告文件数量随流程/月数变化。
-- [ ] Developer 持续定向检查，收口全量自动检查及完整 v1 Fake UI 链路。
-- [ ] 固定 SHA 的整包独立 QA：C22、C23、C21 存储边界、C13/C14/C19/C20 回归，跨 profile 和故障恢复黑盒证据。
+- [x] Developer 回归跨 profile 可见待审稿、部分完成、活 owner 与死 owner unknown/no-resend、checkpoint 仅恢复本地稿、CAS 拒绝取消后的迟到结果、显式 reprocess 警示；待独立 QA。
+- [x] Developer 归档 intake items/jobs、capture journal、mutation/write_intent SHA/Feishu import 完成回执，按 active+月摘要扫描重放；unknown/running保留，原件/draft/确认保留；待独立 QA。
+- [x] Developer 覆盖摘要损坏/冲突/非法日期、写摘要后恢复、同一收据重放、旧无日期 item 首次 reprocess 的 undated parent 链；待独立 QA。
+- [x] Developer 验证诊断轮转仅 profile，本机 120 个合成流程跨 4 个月的文件计数；详见包 3 DEV 报告，待独立 QA。
+- [x] README 后端/Web/static/types/lock/build/OpenAPI 全矩阵由 Developer 自测并记录退出码；完整 Fake UI 链路待 QA 观察。
+- [ ] 固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的整包独立 QA：C22、C23、C21 存储边界、C13/C14/C19/C20 回归，跨 profile 和故障恢复黑盒证据；包 2 已知 C19 P1 应如实重现和报告，不能视作已修复。
 
 ## 完成与正式门
 
