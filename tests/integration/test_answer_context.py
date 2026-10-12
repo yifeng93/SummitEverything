@@ -101,6 +101,8 @@ def test_role_memory_and_followup_context_are_verified_and_profile_local(tmp_pat
     )
     assert first.status_code == 200, first.text
     assert _events(first)[-1]["type"] == "completed"
+    assert _events(first)[-1]["data"]["citations"]
+    assert captured and captured[0][0] == first_question
     assistant_text = str(_events(first)[-1]["data"]["text"])
     assistant_candidate = client.post(
         "/api/v1/memory/candidates",
@@ -356,7 +358,7 @@ def test_role_memory_and_followup_context_are_verified_and_profile_local(tmp_pat
     client.close()
 
 
-def test_api_no_evidence_plan_diagnostic_is_ready_and_never_calls_provider(
+def test_api_no_evidence_modes_are_ready_and_never_call_provider(
     tmp_path: Path,
 ) -> None:
     profile = tmp_path / "profile"
@@ -379,26 +381,29 @@ def test_api_no_evidence_plan_diagnostic_is_ready_and_never_calls_provider(
     assert index_status.json()["state"] == "ready"
     assert index_status.json()["stale_pages"] == 0
 
-    response = client.post(
-        "/api/v1/queries",
-        json={
-            "request_id": str(uuid4()),
-            "question": "为风铃工程的彩色牙刷储存规则提出方案，并列出缺失信息。",
-            "fingerprint": "answer-context-test",
-            "answer_mode": "plan",
-            "purpose": "current",
-        },
-    )
+    for answer_mode in ("fact", "comparison", "plan"):
+        response = client.post(
+            "/api/v1/queries",
+            json={
+                "request_id": str(uuid4()),
+                "question": "为风铃工程的彩色牙刷储存规则提出方案，并列出缺失信息。",
+                "fingerprint": "answer-context-test",
+                "answer_mode": answer_mode,
+                "purpose": "current",
+            },
+        )
 
-    assert response.status_code == 200, response.text
-    events = _events(response)
-    assert [event["type"] for event in events][-1] == "completed"
-    completed = events[-1]["data"]
-    assert completed["index_status"] == "ready"
-    assert completed["citations"] == []
-    assert completed["missing_information"] == ["当前已确认资料中没有找到可支撑方案的相关依据。"]
-    assert completed["text"] == completed["missing_information"][0]
-    assert "缓存" not in completed["missing_information"][0]
+        assert response.status_code == 200, response.text
+        events = _events(response)
+        assert [event["type"] for event in events][-1] == "completed"
+        completed = events[-1]["data"]
+        assert completed["index_status"] == "ready"
+        assert completed["citations"] == []
+        assert completed["missing_information"] == [
+            "风铃工程：缺少存储或保管规则（彩色牙刷）依据。"
+        ]
+        assert "存储或保管规则" in completed["text"]
+        assert "缓存" not in completed["missing_information"][0]
     assert calls == []
 
 

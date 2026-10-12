@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from threading import Event
 from typing import Any, Literal, Protocol
@@ -31,6 +32,7 @@ from summit_everything.retrieval.planner import (
     aliases_from_subject_text,
     matches_explicit_subject,
     plan_retrieval,
+    supported_dimensions,
 )
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
@@ -59,6 +61,41 @@ class AnswerProvider(Protocol):
     def answer(
         self, question: str, passages: list[dict[str, str]], context: AnswerContext
     ) -> GroundedAnswer: ...
+
+
+def _scope_segments(text: str, subjects: tuple[str, ...], dimensions: tuple[str, ...]) -> list[str]:
+    """Split evidence where a new explicit object begins a different topic."""
+    initial = [
+        segment.strip() for segment in re.split(r"(?<=[。！？；;，,\n])", text) if segment.strip()
+    ]
+    if len(subjects) < 2 or not dimensions:
+        return initial
+
+    result: list[str] = []
+    pending = list(initial)
+    while pending:
+        segment = pending.pop(0)
+        occurrences = sorted(
+            (position, subject) for subject in subjects if (position := segment.find(subject)) >= 0
+        )
+        split_at: int | None = None
+        for position, _subject in occurrences[1:]:
+            prefix = segment[:position]
+            suffix = segment[position:]
+            prefix_topics = set(supported_dimensions(prefix, dimensions))
+            suffix_topics = set(supported_dimensions(suffix, dimensions))
+            if prefix_topics and suffix_topics and prefix_topics != suffix_topics:
+                split_at = position
+                break
+        if split_at is None:
+            result.append(segment)
+        else:
+            prefix, suffix = segment[:split_at].strip(), segment[split_at:].strip()
+            if prefix:
+                result.append(prefix)
+            if suffix:
+                pending.insert(0, suffix)
+    return result
 
 
 class QueryService:
@@ -241,16 +278,13 @@ class QueryService:
                 index_status="empty",
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
-        retrieval_plan = plan_retrieval(
-            question,
-            context.previous_user_questions,
-            self._subject_aliases(root, manifest),
-        )
-        if answer_mode == "fact" and retrieval_plan.unresolved_topic:
+        subject_aliases = self._subject_aliases(root, manifest)
+        retrieval_plan = plan_retrieval(question, context.previous_user_questions, subject_aliases)
+        if retrieval_plan.unresolved_topic:
             return self._empty_answer(
                 question,
                 purpose,
-                "没有找到能确认该对象的已确认资料。",
+                "没有足够线索确定本次查询对象；请补充对象或完整问题。",
                 answer_mode=answer_mode,
             )
         query_vector = self.embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
@@ -261,47 +295,127 @@ class QueryService:
             reverse=True,
         )
         qualified, qualification_rejections = self._qualified_chunks(root, dense, purpose=purpose)
-        if answer_mode == "fact" and retrieval_plan.explicit_subjects:
-            subject_pages: dict[UUID, PageSnapshot | None] = {}
-            filtered: list[dict[str, Any]] = []
-            for item in qualified:
-                page_id = item["page_id"]
-                if page_id not in subject_pages:
-                    page, eligibility = self._read_page_eligibility(
-                        root,
-                        page_id,
-                        purpose=purpose,
-                        expected_content_sha256=str(item["content_sha256"]),
-                    )
-                    subject_pages[page_id] = page
-                    if page is None:
-                        qualification_rejections[page_id] = eligibility.reason
-                page = subject_pages[page_id]
+        subject_pages: dict[UUID, PageSnapshot | None] = {}
+        scope_pairs_by_chunk: dict[str, set[tuple[str, str]]] = {}
+        scope_excerpt_by_chunk: dict[str, str] = {}
+        all_subject_aliases = subject_aliases
+
+        def in_scope(item: dict[str, Any]) -> bool:
+            page_id = item["page_id"]
+            if page_id not in subject_pages:
+                page, eligibility = self._read_page_eligibility(
+                    root,
+                    page_id,
+                    purpose=purpose,
+                    expected_content_sha256=str(item["content_sha256"]),
+                )
+                subject_pages[page_id] = page
                 if page is None:
+                    qualification_rejections[page_id] = eligibility.reason
+            page = subject_pages[page_id]
+            if page is None:
+                return False
+            subject_names = self._page_subject_names(page, manifest)
+            text = str(item["text"])
+            segments = _scope_segments(
+                text, retrieval_plan.explicit_subjects, retrieval_plan.dimensions
+            )
+            if not retrieval_plan.explicit_subjects and not retrieval_plan.dimensions:
+                # Unscoped exploratory questions retain the existing ranked path.
+                scope_pairs_by_chunk[str(item["chunk_id"])] = set()
+                scope_excerpt_by_chunk[str(item["chunk_id"])] = text
+                return True
+
+            pairs: set[tuple[str, str]] = set()
+            supported_segments: list[str] = []
+            for segment in segments:
+                if not segment:
                     continue
-                subject_names = self._page_subject_names(page, manifest)
-                if matches_explicit_subject(
-                    f"{subject_names} {item['heading']} {item['text']}",
-                    retrieval_plan.explicit_subjects,
+                matching_dimensions = supported_dimensions(segment, retrieval_plan.dimensions)
+                if retrieval_plan.dimensions and not matching_dimensions:
+                    continue
+                mentioned_query_subjects = tuple(
+                    subject
+                    for subject in retrieval_plan.explicit_subjects
+                    if matches_explicit_subject(segment, (subject,))
+                )
+                mentions_any_subject = any(
+                    matches_explicit_subject(segment, (alias,)) for alias in all_subject_aliases
+                )
+                if retrieval_plan.explicit_subjects:
+                    if mentioned_query_subjects:
+                        segment_subjects = mentioned_query_subjects
+                    elif mentions_any_subject:
+                        # A sentence naming a different object cannot inherit the
+                        # page owner's project association.
+                        continue
+                    else:
+                        segment_subjects = tuple(
+                            subject
+                            for subject in retrieval_plan.explicit_subjects
+                            if matches_explicit_subject(subject_names, (subject,))
+                        )
+                    if not segment_subjects:
+                        continue
+                    segment_dimensions = matching_dimensions or ("",)
+                    segment_pairs = {
+                        (subject, dimension)
+                        for subject in segment_subjects
+                        for dimension in segment_dimensions
+                    }
+                    segment_pairs &= set(retrieval_plan.required_pairs)
+                else:
+                    segment_pairs = {("", dimension) for dimension in matching_dimensions}
+                    segment_pairs &= set(retrieval_plan.required_pairs)
+                if segment_pairs or (
+                    not retrieval_plan.required_pairs and not retrieval_plan.dimensions
                 ):
-                    filtered.append(item)
-            qualified = filtered
-            if not qualified:
-                matching_rejections = self._subject_rejection_reasons(
-                    root, manifest, qualification_rejections, retrieval_plan.explicit_subjects
+                    pairs.update(segment_pairs)
+                    supported_segments.append(segment)
+            if not supported_segments:
+                return False
+            chunk_id = str(item["chunk_id"])
+            scope_pairs_by_chunk[chunk_id] = pairs
+            scope_excerpt_by_chunk[chunk_id] = " ".join(supported_segments)
+            return True
+
+        scope_candidates = [item for item in qualified if in_scope(item)]
+        if not scope_candidates:
+            matching_rejections = self._scope_rejection_reasons(
+                root,
+                manifest,
+                qualification_rejections,
+                retrieval_plan.explicit_subjects,
+                retrieval_plan.dimensions,
+            )
+            if matching_rejections:
+                message = self._no_evidence_message(
+                    matching_rejections, purpose, answer_mode=answer_mode
                 )
-                message = (
-                    self._no_evidence_message(matching_rejections, purpose, answer_mode=answer_mode)
-                    if matching_rejections
-                    else "没有找到能确认该对象的已确认资料。"
-                )
+                return self._empty_answer(question, purpose, message, answer_mode=answer_mode)
+            if not retrieval_plan.explicit_subjects:
+                message = self._no_evidence_message({}, purpose, answer_mode=answer_mode)
+                return self._empty_answer(question, purpose, message, answer_mode=answer_mode)
+            scope_missing = self._scope_missing(
+                retrieval_plan.explicit_subjects, retrieval_plan.dimensions
+            )
+            if scope_missing:
+                message = "没有找到能确认该对象和主题的已确认资料；" + "；".join(scope_missing)
                 return self._empty_answer(
                     question,
                     purpose,
                     message,
                     answer_mode=answer_mode,
+                    missing=scope_missing,
                 )
-        candidates = qualified[:20]
+            matching_rejections = qualification_rejections
+            return self._empty_answer(
+                question,
+                purpose,
+                self._no_evidence_message(matching_rejections, purpose, answer_mode=answer_mode),
+                answer_mode=answer_mode,
+            )
+        candidates = scope_candidates[:20]
         if not candidates:
             return self._empty_answer(
                 question,
@@ -336,7 +450,11 @@ class QueryService:
         for rank, item in enumerate(lexical, start=1):
             ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
         ranked = sorted(candidates, key=lambda item: ranks[item["chunk_id"]], reverse=True)
-        relevant = [item for item in ranked if lexical_scores.get(str(item["chunk_id"]), 0) > 0]
+        relevant = (
+            ranked
+            if retrieval_plan.explicit_subjects or retrieval_plan.dimensions
+            else [item for item in ranked if lexical_scores.get(str(item["chunk_id"]), 0) > 0]
+        )
         related_ids = self._related_page_ids(root, relevant[: min(limit, 3)])
         ranked = relevant
         if related_ids:
@@ -344,7 +462,9 @@ class QueryService:
             ranked.extend(
                 item
                 for item in qualified
-                if item["page_id"] in related_ids and item["chunk_id"] not in seen
+                if item["page_id"] in related_ids
+                and item["chunk_id"] not in seen
+                and in_scope(item)
             )
         citations: list[Citation] = []
         citation_rejections: dict[UUID, str] = {}
@@ -369,7 +489,7 @@ class QueryService:
                     content_sha256=item["content_sha256"],
                     chunk_id=item["chunk_id"],
                     heading=item["heading"],
-                    excerpt=item["text"][:600],
+                    excerpt=scope_excerpt_by_chunk.get(str(item["chunk_id"]), str(item["text"])),
                     validity=validity,
                 )
             )
@@ -394,7 +514,7 @@ class QueryService:
                 "heading": citation.heading or "页面内容",
                 "excerpt": citation.excerpt,
             }
-            for citation in self._one_passage_per_page(citations)
+            for citation in citations
         ]
         context_bytes = len(
             json.dumps(
@@ -437,21 +557,50 @@ class QueryService:
             )
         source_statements = [f"{passage['heading']}：{passage['excerpt']}" for passage in passages]
         source_count = len({passage["source_id"] for passage in passages})
+        required_pairs = set(retrieval_plan.required_pairs)
+        covered_pairs = {
+            pair
+            for citation in citations
+            for pair in scope_pairs_by_chunk.get(citation.chunk_id, set())
+        }
+        missing_pairs = required_pairs - covered_pairs
+        scope_missing = self._scope_missing_pairs(missing_pairs)
         comparison_missing = (
             ["可用材料不足两组，无法进行跨材料比较。"]
-            if answer_mode == "comparison" and source_count < 2
+            if answer_mode == "comparison"
+            and source_count < 2
+            and not retrieval_plan.explicit_subjects
             else []
         )
         comparison_inference = (
             ["这里仅比较当前列出的已确认材料，不推断未提供的维度。"]
-            if answer_mode == "comparison" and source_count >= 2
+            if answer_mode == "comparison" and source_count >= 2 and not scope_missing
             else []
+        )
+        missing_information = list(
+            dict.fromkeys(
+                [
+                    *scope_missing,
+                    *comparison_missing,
+                    *(answer.missing_information if answer is not None else []),
+                ]
+            )
+        )
+        partial_text = (
+            "当前资料只覆盖了部分所问范围：\n\n"
+            + "\n\n".join(source_statements)
+            + "\n\n仍缺少："
+            + "；".join(scope_missing)
+            if scope_missing
+            else None
         )
         return Answer(
             answer_id=uuid4(),
             question=question,
             text=(
-                answer.text
+                partial_text
+                if partial_text is not None
+                else answer.text
                 if answer is not None
                 else "根据以下已确认资料：\n\n"
                 + "\n\n".join(
@@ -461,15 +610,25 @@ class QueryService:
             citations=citations,
             answer_mode=answer_mode,
             source_statements=source_statements,
-            inferences=answer.inferences if answer is not None else comparison_inference,
-            advice=answer.advice
-            if answer is not None
-            else (
-                ["先核对以上依据，再补齐缺失条件后决定下一步。"] if answer_mode == "plan" else []
+            inferences=(
+                []
+                if partial_text is not None
+                else answer.inferences
+                if answer is not None
+                else comparison_inference
             ),
-            missing_information=(
-                answer.missing_information if answer is not None else comparison_missing
+            advice=(
+                []
+                if partial_text is not None
+                else answer.advice
+                if answer is not None
+                else (
+                    ["先核对以上依据，再补齐缺失条件后决定下一步。"]
+                    if answer_mode == "plan"
+                    else []
+                )
             ),
+            missing_information=missing_information,
             purpose=purpose.value,
             index_status="ready",
         )
@@ -537,16 +696,6 @@ class QueryService:
             names.append(line.name)
         return " ".join(names)
 
-    @staticmethod
-    def _one_passage_per_page(citations: list[Citation]) -> list[Citation]:
-        seen: set[UUID] = set()
-        unique: list[Citation] = []
-        for citation in citations:
-            if citation.page_id not in seen:
-                seen.add(citation.page_id)
-                unique.append(citation)
-        return unique
-
     def _qualified_chunks(
         self,
         root: Path,
@@ -575,22 +724,33 @@ class QueryService:
                 qualified.append(chunk)
         return qualified, rejections
 
-    def _subject_rejection_reasons(
+    def _scope_rejection_reasons(
         self,
         root: Path,
         manifest: WorkspaceManifest,
         rejections: dict[UUID, str],
         subjects: tuple[str, ...],
+        dimensions: tuple[str, ...],
     ) -> dict[UUID, str]:
-        """Associate failed gates with explicit topics for diagnostics only."""
+        """Keep version/trust diagnostics only for pages inside this query's scope."""
         matching: dict[UUID, str] = {}
         for page_id, reason in rejections.items():
             try:
                 page = read_page(root, page_id)
             except (WorkspaceError, OSError):
+                # An unavailable page has no readable content to establish scope.
+                if reason == "unavailable":
+                    continue
                 continue
             names = self._page_subject_names(page, manifest)
-            if matches_explicit_subject(f"{names} {page.body}", subjects):
+            body = page.body
+            object_match = not subjects or any(
+                matches_explicit_subject(names, (subject,))
+                or matches_explicit_subject(body, (subject,))
+                for subject in subjects
+            )
+            dimension_match = not dimensions or bool(supported_dimensions(body, dimensions))
+            if object_match and dimension_match:
                 matching[page_id] = reason
         return matching
 
@@ -677,6 +837,7 @@ class QueryService:
         message: str,
         *,
         answer_mode: Literal["fact", "comparison", "plan"] = "fact",
+        missing: list[str] | None = None,
     ) -> Answer:
         return Answer(
             answer_id=uuid4(),
@@ -685,8 +846,44 @@ class QueryService:
             purpose=purpose.value,
             answer_mode=answer_mode,
             index_status="ready",
-            missing_information=[message],
+            missing_information=missing or [message],
         )
+
+    @staticmethod
+    def _scope_missing(subjects: tuple[str, ...], dimensions: tuple[str, ...]) -> list[str]:
+        pairs = {
+            (subject, dimension) for subject in subjects for dimension in (dimensions or ("",))
+        }
+        if not subjects:
+            pairs = {("", dimension) for dimension in dimensions}
+        return QueryService._scope_missing_pairs(pairs)
+
+    @staticmethod
+    def _scope_missing_pairs(pairs: set[tuple[str, str]]) -> list[str]:
+        labels = {
+            "budget": "预算",
+            "schedule": "排期或启动时间",
+            "storage": "存储或保管规则",
+            "owner": "负责人信息",
+        }
+
+        def readable_dimension(dimension: str, subject: str) -> str:
+            base, *qualifiers = dimension.split("&")
+            base_label = "、".join(labels.get(item, item) for item in base.split("+"))
+            qualifier_labels = [
+                item.removeprefix("term:")
+                for item in qualifiers
+                if item.startswith("term:") and item.removeprefix("term:") != subject
+            ]
+            return (
+                f"{base_label}（{'、'.join(qualifier_labels)}）" if qualifier_labels else base_label
+            )
+
+        return [
+            f"{subject or '未限定对象'}：缺少"
+            f"{readable_dimension(dimension, subject) or '可引用的主题资料'}依据。"
+            for subject, dimension in sorted(pairs)
+        ]
 
     def _related_page_ids(self, root: Path, chunks: list[dict[str, object]]) -> set[UUID]:
         related: set[UUID] = set()

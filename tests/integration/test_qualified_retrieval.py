@@ -138,13 +138,9 @@ def test_unrelated_query_reports_missing_relevance_without_claiming_index_failur
 
         assert answer.index_status == "ready"
         assert answer.citations == []
-        expected = {
-            "fact": "当前已确认资料中没有找到与问题相关的依据。",
-            "comparison": "当前已确认资料中没有找到足以进行比较的相关材料。",
-            "plan": "当前已确认资料中没有找到可支撑方案的相关依据。",
-        }[mode]
+        expected = "彩色牙刷：缺少存储或保管规则依据。"
         assert answer.missing_information == [expected]
-        assert answer.text == expected
+        assert expected in answer.text
         assert "缓存" not in answer.missing_information[0]
         assert "资格检查未通过" not in answer.missing_information[0]
     assert calls == []
@@ -287,6 +283,42 @@ def test_rejected_stale_hash_is_reported_as_version_change(tmp_path: Path) -> No
         assert "资格检查未通过" not in answer.missing_information[0]
     assert retrieval.status(root)["state"] == "stale"
     assert calls == []
+
+
+def test_unrelated_stale_page_does_not_pollute_scoped_query_diagnostics(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    relevant_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="白鹭工程的预算上限为 19 万元。",
+        title="白鹭预算",
+    )
+    unrelated_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="朱雀项目的保管规则为每月检查。",
+        title="朱雀保管规则",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+    unrelated = next(page for page in list_pages(root) if page.page_id == unrelated_id)
+    page_path = root / unrelated.relative_path
+    page_path.write_text(
+        page_path.read_text(encoding="utf-8").replace("每月检查", "每周检查"),
+        encoding="utf-8",
+    )
+
+    answer = retrieval.query(
+        root,
+        "白鹭工程预算上限",
+        fingerprint="fake-v1",
+    )
+
+    assert {citation.page_id for citation in answer.citations} == {relevant_id}
+    assert "缓存" not in answer.text
+    assert "索引" not in answer.text
 
 
 def test_not_ready_and_empty_index_are_distinct_and_never_call_answer_provider(
@@ -618,6 +650,9 @@ def test_fact_subject_is_found_inside_a_polite_request_without_filtering_the_pre
         "你能告诉我青岚计划的预算上限是多少吗？",
         fingerprint="fake-v1",
     )
+    plan = plan_retrieval("你能告诉我青岚计划的预算上限是多少吗？", [], ("青岚计划",))
+    assert plan.explicit_subjects == ("青岚计划",)
+    assert plan.required_pairs == (("青岚计划", "budget"),)
 
     citation_ids = {citation.page_id for citation in answer.citations}
     assert qinglan_id in citation_ids
@@ -682,6 +717,361 @@ def test_fact_subject_matching_uses_qualified_page_and_workspace_names(tmp_path:
         )
 
 
+def test_c19_scopes_every_answer_mode_to_named_objects_and_requested_dimensions(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    known_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭预算与排期",
+        body="白鹭工程的设备预算上限为 24 万元。",
+    )
+    other_budget_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭补充预算",
+        body="白鹭工程的年度专项预算为 30 万元。",
+    )
+    unrelated_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="玄武预算",
+        body="玄武项目的设备预算上限为 12 万元。",
+    )
+    other_dimension_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="玄武排期",
+        body="玄武项目预计于十月启动。",
+    )
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭仓库保管规则",
+        body="白鹭工程的仓库文件由专人保管并每周核验。",
+    )
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="玄武备份规则",
+        body="玄武项目每周备份一次合同文件。",
+    )
+    calls: list[tuple[str, list[str]]]
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append((question, [passage["excerpt"] for passage in passages]))
+            # A permissive provider must not erase product-known missing scope.
+            return GroundedAnswer(text="资料已经完整。", missing_information=[])
+
+    class HighScoreReranker:
+        def rank(self, query, texts):
+            return [(index, 99.0 - index) for index in reversed(range(len(texts)))]
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        HighScoreReranker(),
+        Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    # Two unknown objects and an unknown dimension must never fall back to
+    # globally high-scoring budget pages, in any answer mode.
+    for mode in ("fact", "comparison", "plan"):
+        calls = []
+        answer = retrieval.query(
+            root,
+            "比较风铃工程与霜塔项目的彩色牙刷储存规则。",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        assert answer.citations == []
+        assert answer.source_statements == []
+        assert answer.inferences == []
+        assert answer.advice == []
+        assert calls == []
+
+    # Missing “的” does not turn a parallel unknown subject into an unscoped
+    # request; both comparison and planning forms preserve the named objects.
+    for question in (
+        "比较风铃工程和霜塔项目预算上限",
+        "为风铃工程和霜塔项目制定下一步方案",
+    ):
+        for mode in ("fact", "comparison", "plan"):
+            calls = []
+            answer = retrieval.query(
+                root,
+                question,
+                fingerprint="fake-v1",
+                answer_mode=mode,
+            )
+            assert answer.citations == []
+            assert calls == []
+
+    # The same compact syntax preserves a known object and records only the
+    # unknown peer as missing; a matching known-object page cannot imply the
+    # second object's facts.
+    for question, mode in (
+        ("比较白鹭工程和霜塔项目预算上限", "comparison"),
+        ("为白鹭工程和霜塔项目制定下一步方案", "plan"),
+        ("白鹭工程预算上限和霜塔项目启动时间分别是什么", "comparison"),
+    ):
+        answer = retrieval.query(root, question, fingerprint="fake-v1", answer_mode=mode)
+        assert answer.citations
+        assert any("霜塔" in value for value in answer.missing_information)
+        assert unrelated_id not in {citation.page_id for citation in answer.citations}
+        assert "完整" not in answer.text
+
+    # Two pages for one object do not fill the second object's budget slot;
+    # a third project's budget is never a substitute for the unknown object.
+    for mode in ("fact", "comparison", "plan"):
+        calls = []
+        answer = retrieval.query(
+            root,
+            "白鹭工程和霜塔项目的设备预算上限分别是多少？",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        cited = {citation.page_id for citation in answer.citations}
+        assert known_id in cited or other_budget_id in cited
+        assert unrelated_id not in cited
+        assert other_dimension_id not in cited
+        assert any("霜塔" in value for value in answer.missing_information)
+        assert "完整" not in answer.text
+
+    paired = retrieval.query(
+        root,
+        "白鹭工程的预算和玄武项目的启动时间分别是什么？",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+    paired_ids = {citation.page_id for citation in paired.citations}
+    assert known_id in paired_ids or other_budget_id in paired_ids
+    assert other_dimension_id in paired_ids
+    assert paired.missing_information == []
+
+    # A shared topic list applies to each named object, while partial coverage
+    # remains explicit even when one object has several matching pages.
+    shared = retrieval.query(
+        root,
+        "白鹭工程和玄武项目的预算和启动时间分别是什么？",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+    assert any("白鹭工程" in value and "启动" in value for value in shared.missing_information)
+
+    # Known subjects do not make unfamiliar, more specifically named topics
+    # relevant merely because their broad semantic family matches.
+    for mode in ("fact", "comparison", "plan"):
+        for topic in ("彩色牙刷储存规则", "橙色雨伞保管规则"):
+            calls = []
+            answer = retrieval.query(
+                root,
+                f"白鹭工程和玄武项目的{topic}是什么？",
+                fingerprint="fake-v1",
+                answer_mode=mode,
+            )
+            assert answer.citations == []
+            assert calls == []
+
+    # Broad wording without “的” still preserves the exact named topic. Pages
+    # about other kinds of storage cannot support an umbrella rule.
+    for mode in ("fact", "comparison", "plan"):
+        calls = []
+        answer = retrieval.query(
+            root,
+            "比较橙色雨伞保管规则",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        assert answer.citations == []
+        assert calls == []
+
+    # A known budget plus a missing schedule remains explicitly partial; the
+    # other project's schedule cannot cover the missing requested pair.
+    for mode in ("fact", "comparison", "plan"):
+        calls = []
+        answer = retrieval.query(
+            root,
+            "白鹭工程的预算和启动时间分别是什么？",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+        )
+        cited = {citation.page_id for citation in answer.citations}
+        assert known_id in cited or other_budget_id in cited
+        assert other_dimension_id not in cited
+        assert any("启动" in value or "时间" in value for value in answer.missing_information), (
+            answer
+        )
+        assert "完整" not in answer.text
+
+
+def test_c19_same_chunk_does_not_cross_assign_subjects_to_other_dimensions(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="混合预算与排期",
+        body=(
+            "白鹭工程的预算上限为 19 万元；玄武项目预计于十一月启动。"
+            "白鹭工程预算上限为 19 万元，玄武项目预计于十一月启动。"
+            "白鹭工程预算上限为 19 万元, 玄武项目预计于十一月启动。"
+            "白鹭工程预算上限为 19 万元，以及玄武项目预计于十一月启动。"
+        ),
+    )
+    calls: list[str] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            calls.append(question)
+            return GroundedAnswer(text="不应发生跨对象推断。")
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    for mode in ("fact", "comparison", "plan"):
+        for question in (
+            "白鹭工程的启动时间和玄武项目的预算分别是什么？",
+            "白鹭工程启动时间和玄武项目预算分别是什么？",
+        ):
+            answer = retrieval.query(
+                root,
+                question,
+                fingerprint="fake-v1",
+                answer_mode=mode,
+            )
+            assert answer.citations == []
+            assert answer.source_statements == []
+        assert calls == []
+
+
+def test_c19_neighbor_expansion_reuses_scope_and_keeps_valid_same_topic_neighbor(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    from uuid import uuid4
+
+    same_topic_id = uuid4()
+    unrelated_id = uuid4()
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭主预算",
+        body="白鹭工程的预算上限为 19 万元，详情见关联页面。",
+        metadata_extra={"related_page_ids": [str(same_topic_id), str(unrelated_id)]},
+    )
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="白鹭补充预算",
+        body="白鹭工程的设备预算另有 4 万元专项额度。",
+        page_id=same_topic_id,
+    )
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="朱雀储存规则",
+        body="朱雀项目的设备保管规则是双人登记。",
+        page_id=unrelated_id,
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "白鹭工程预算上限是多少？",
+        fingerprint="fake-v1",
+        answer_mode="fact",
+    )
+
+    cited = {citation.page_id for citation in answer.citations}
+    assert same_topic_id in cited
+    assert unrelated_id not in cited
+    assert all("保管规则" not in citation.excerpt for citation in answer.citations)
+
+
+def test_c19_general_comparison_keeps_multiple_material_path_without_object_gate(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    budget_id, _ = approve_page(
+        root, line_id, project_id, title="预算汇总", body="专项储备上限为 3.6 万元。"
+    )
+    schedule_id, _ = approve_page(
+        root, line_id, project_id, title="时间安排", body="各项工作计划于九月启动。"
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "比较预算和排期，并汇总现有资料。",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+
+    assert {budget_id, schedule_id} <= {citation.page_id for citation in answer.citations}
+    assert answer.missing_information == []
+
+    polite = plan_retrieval("我希望先核对预算和排期，再给简短结论。", [], ())
+    assert not polite.unresolved_topic
+    assert polite.explicit_subjects == ()
+    assert set(polite.dimensions) == {"budget", "schedule"}
+
+
+def test_c19_limit_truncation_reports_uncovered_comparison_subject(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    for index in range(22):
+        approve_page(
+            root,
+            line_id,
+            project_id,
+            title=f"白鹭预算记录 {index}",
+            body=f"白鹭工程的预算上限记录 {index} 为 {index + 1} 万元。",
+        )
+    _, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="霜塔预算",
+        body="霜塔项目的预算上限为 90 万元。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "比较白鹭工程和霜塔项目的预算上限。",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+        limit=1,
+    )
+
+    assert len(answer.citations) == 1
+    assert answer.missing_information
+    assert any("白鹭工程" in value or "霜塔项目" in value for value in answer.missing_information)
+
+
 def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
     tmp_path: Path,
 ) -> None:
@@ -711,6 +1101,16 @@ def test_multi_turn_followup_skips_intermediate_pronouns_but_stops_at_new_topic(
         context=AnswerContext(previous_user_questions=[first, "它呢？"], answer_mode="fact"),
     )
     assert {citation.page_id for citation in chained.citations} == {qinglan_id}
+
+    for mode in ("comparison", "plan"):
+        cross_mode_followup = retrieval.query(
+            root,
+            "它什么时候启动？",
+            fingerprint="fake-v1",
+            answer_mode=mode,
+            context=AnswerContext(previous_user_questions=[first], answer_mode=mode),
+        )
+        assert {citation.page_id for citation in cross_mode_followup.citations} == {qinglan_id}
 
     switched_to_known_topic = retrieval.query(
         root,
