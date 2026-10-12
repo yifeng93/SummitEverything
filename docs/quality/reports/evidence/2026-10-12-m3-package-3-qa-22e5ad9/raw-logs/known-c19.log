@@ -1,0 +1,52 @@
+/Users/yifengstudio/.codex/worktrees/m3-package-3-qa/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+{
+  "http": 200,
+  "answer_mode": "comparison",
+  "citations": [
+    {
+      "page_id": "9a575002-52b5-43a1-9dc3-38d4750e99f8",
+      "content_sha256": "9989e0ae07fbe381f8c276361da7b1e280bef23f6d51798ab32aedb9916c1407",
+      "chunk_id": "f7279fa405438b59edc3f267983deb3dcb098307f4448a6f3f94cb585f554f17",
+      "heading": "",
+      "excerpt": "朱雀项目设备预算上限为 12 万元。",
+      "validity": "current",
+      "availability": "available"
+    }
+  ],
+  "source_statements": [
+    "页面内容：朱雀项目设备预算上限为 12 万元。"
+  ],
+  "missing_information": [
+    "可用材料不足两组，无法进行跨材料比较。"
+  ],
+  "provider_calls_before": 0,
+  "provider_calls_after": 1,
+  "final": {
+    "answer_id": "15855695-c104-4c48-80d0-3342c1e559f7",
+    "question": "比较风铃工程与霜塔项目的彩色牙刷储存规则。",
+    "text": "跨材料比较暂不能完成：当前只有一组可用材料。",
+    "citations": [
+      {
+        "page_id": "9a575002-52b5-43a1-9dc3-38d4750e99f8",
+        "content_sha256": "9989e0ae07fbe381f8c276361da7b1e280bef23f6d51798ab32aedb9916c1407",
+        "chunk_id": "f7279fa405438b59edc3f267983deb3dcb098307f4448a6f3f94cb585f554f17",
+        "heading": "",
+        "excerpt": "朱雀项目设备预算上限为 12 万元。",
+        "validity": "current",
+        "availability": "available"
+      }
+    ],
+    "answer_mode": "comparison",
+    "source_statements": [
+      "页面内容：朱雀项目设备预算上限为 12 万元。"
+    ],
+    "inferences": [],
+    "advice": [],
+    "missing_information": [
+      "可用材料不足两组，无法进行跨材料比较。"
+    ],
+    "purpose": "current",
+    "index_status": "ready"
+  }
+}

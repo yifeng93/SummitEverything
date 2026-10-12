@@ -1,0 +1,17 @@
+.local/qa/m3-package-3/workspace
+.local/qa/m3-package-3/workspace/.summit-everything
+.local/qa/m3-package-3/workspace/.summit-everything/archives
+.local/qa/m3-package-3/workspace/.summit-everything/archives/intake-jobs
+.local/qa/m3-package-3/workspace/.summit-everything/archives/transactions
+.local/qa/m3-package-3/workspace/.summit-everything/attempt-leases
+.local/qa/m3-package-3/workspace/.summit-everything/drafts
+.local/qa/m3-package-3/workspace/.summit-everything/intake
+.local/qa/m3-package-3/workspace/.summit-everything/intake/checkpoints
+.local/qa/m3-package-3/workspace/.summit-everything/intake/items
+.local/qa/m3-package-3/workspace/.summit-everything/intake/jobs
+.local/qa/m3-package-3/workspace/.summit-everything/sources
+.local/qa/m3-package-3/workspace/.summit-everything/transactions
+.local/qa/m3-package-3/workspace/Synthetic-workstream
+.local/qa/m3-package-3/workspace/Synthetic-workstream/Synthetic-project
+.local/qa/m3-package-3/workspace/原件
+.local/qa/m3-package-3/workspace/原件/2026-10
