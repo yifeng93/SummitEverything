@@ -6,6 +6,8 @@
 
 ## 当前状态
 
+2026-10-12 最新门判断：包 1 离线集成 PASS；包 2 repair 2/2 独立 QA 仍 FAIL（已批准历史页误标待确认、明确本人偏好误拒）。固定产品源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，QA 固定 `94854bafc0f6aec4d79e55c851be2640ef436739`。两轮自动返工额度用尽，停止产品修改，等待用户决定是否授权额外一轮；包 3 仅完成只读准备，尚未实现，M3 正式验收和合并未执行。 证据与接续边界见[Sol 门判断](docs/quality/reports/2026-10-12-M3-SOL-GATE.md)。以下 DEV 交接中的待 QA 状态仅记录当时历史，由本条取代。
+
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
@@ -14,7 +16,7 @@
 
 C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 按三个集成开发包推进；包 1“会话与历史”由 Sol 判定离线集成 PASS：修复源码 `a9078bd327f73f2cde3bab14a8665885d0f57c1c`，QA 固定提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4`。包 2 首轮与 repair 1 独立 QA 均为 FAIL，原报告与证据保留；最后获准修复轮 repair 2 的源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 已由 Developer 完成并通过 README 自动检查，现待全新独立 QA，Sol 尚未判包级状态。完整交接见[最新实现](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)与[报告索引](docs/quality/reports/README.md)。包 3（连续工作与归档压缩）尚未开始。M3 完整验收及真实/发布门仍未完成。
 
-开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。包 1 离线集成已通过；包 2 repair 2 Developer 实现和自动自测完成，等待整包独立 QA，尚未判包 2 PASS。Stage C 与发布 / 实际试用门仍独立未测。
+开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。包 1 离线集成已通过；包 2 repair 2 独立 QA 已结束，Sol 判 FAIL，自动返工额度用尽，待用户决定额外修复授权。Stage C 与发布 / 实际试用门仍独立未测。
 
 ## 先读哪些文件
 

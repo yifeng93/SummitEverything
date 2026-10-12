@@ -27,6 +27,8 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
+2026-10-12 最新门判断：包 1 离线集成 PASS；包 2 repair 2/2 独立 QA 仍 FAIL（已批准历史页误标待确认、明确本人偏好误拒）。固定产品源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，QA 固定 `94854bafc0f6aec4d79e55c851be2640ef436739`。两轮自动返工额度用尽，停止产品修改，等待用户决定是否授权额外一轮；包 3 仅完成只读准备，尚未实现，M3 正式验收和合并未执行。 详见[Sol 门判断](../../quality/reports/2026-10-12-M3-SOL-GATE.md)。当前状态取代下方 DEV 收口时的 QA pending；未通过条目不能记为验收完成。
+
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
 - [x] 事实、跨材料比较、工作方案三类明确路径和独立合成问题；来源陈述、推断/建议、缺失资料分开；引用及效力清晰，无资料不补造业务数字（Developer 完成；QA pending）。

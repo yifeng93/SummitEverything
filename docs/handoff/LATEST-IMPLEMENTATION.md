@@ -2,6 +2,10 @@
 
 ## 当前状态（2026-10-12）
 
+2026-10-12 最新门判断：包 1 离线集成 PASS；包 2 repair 2/2 独立 QA 仍 FAIL（已批准历史页误标待确认、明确本人偏好误拒）。固定产品源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，QA 固定 `94854bafc0f6aec4d79e55c851be2640ef436739`。两轮自动返工额度用尽，停止产品修改，等待用户决定是否授权额外一轮；包 3 仅完成只读准备，尚未实现，M3 正式验收和合并未执行。 证据与接续边界见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)。以下 DEV 交接中的待 QA 状态仅记录当时历史，由本条取代。
+
+### repair 2 Developer 历史交接（本轮 QA 结束前）
+
 M3 包 1 会话与历史已由 Sol 判离线集成 PASS；包 2 完整问答、角色与记忆的最后自动修复轮次 repair 2/2 已完成 Developer 自测，源码固定于 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，全新独立 QA 待 Sol 调度。repair 1 QA 仍是其固定 SHA `0df323efc26e388d62f234e0471f853b2b54be4d` 的 FAIL；首轮 QA 与 repair 1 QA 原报告和证据均保留，Developer 自测不构成 QA PASS，Sol 尚未判包 2 状态。当前分支为 `codex/m3-integrated-packages`。
 
 repair 2 处理 repair 1 QA 的主体精度遗留缺陷：礼貌自然请求中的真实语料主体可以匹配，不把整个前缀当作过滤实体；连续指代从最多 8 条真实 user question 倒序找最近主题，跳过纯指代，但“那朱雀项目的预算呢？”等包含明确或未知主体的指代式换题会建立边界；完整无主题问题也会截断旧主题。subject hints 每次从当前 manifest 与 HISTORY 资格有效的页面重建，不持久化 NLP/别名索引；候选主体匹配还使用已通过本轮资格/expected hash 的正式页标题、别名和归属 project/line 名称，仅用于筛选，不伪装成引用正文。assistant 历史仍不是检索证据；每轮重新核对当前/历史资格、hash 和引用效力。未知主体仍安全返回无引用缺资料结果，comparison / plan 继续允许跨材料检索。完整实现和开发者测试边界见[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)。

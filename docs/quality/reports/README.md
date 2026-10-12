@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## 当前 M3 门判断（2026-10-12）
+
+[Sol 核证与接续记录](2026-10-12-M3-SOL-GATE.md)：包 1 PASS；包 2 最后自动修复轮次的[独立 QA](2026-10-12-M3-PACKAGE-2-REPAIR-2-QA-94854ba.md)仍 FAIL，源码 `b7cfd32` / 固定 QA `94854ba`。此前自然问句和连续指代已通过；已批准历史页误标待确认、本人偏好误拒阻断 C13/C20。405 后端、52 Web 及全矩阵 exit 0；84 项证据 manifest 无 mismatch。停止自动返工，待用户是否授权额外一轮。包 3 只读准备完成、实现 NOT_RUN；正式/真实/发布门未通过。以下报告中的 pending 仅是各报告发布时历史。
+
 ## M3 功能包 2 repair 2 Developer（2026-10-12，待独立 QA）
 
 [repair 2 Developer 报告](2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md)：固定源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15`，repair 2/2 是最后获准自动修复轮。基于当轮临时语料主体线索与有界真实 user-question 反向追踪，修复礼貌事实问题无引用和连续指代混入旧主体；明确新主题/未知主体/无主题完整问题形成边界，标题/别名/project 归属线索只参与通过当前资格与 expected hash 检查的候选匹配，不进入引用正文。全量 guarded pytest 405 passed、Web 52 passed / 12 files；ruff、format、mypy、lock、build、OpenAPI 生成、Web typecheck/lint/build 均 exit 0。repair 1 QA FAIL 原报告不改写；新固定 SHA 独立 QA 尚待 Sol 调度，Developer 自测不是 QA PASS。证据日志在 `.local/dev/m3-package-2-repair-2/`。

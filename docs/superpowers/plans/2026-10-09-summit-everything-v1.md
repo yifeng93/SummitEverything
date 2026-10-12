@@ -1,5 +1,7 @@
 # SummitEverything v1 Implementation Plan
 
+2026-10-12 当前实施状态以[Sol 门判断](../../quality/reports/2026-10-12-M3-SOL-GATE.md)为准：M3 包 1 离线 PASS，包 2 两轮返工后 FAIL、等待额外修复授权，包 3 未实现。下方早期基线/路线图不代表当前进度；产品完整范围及真实/发布门保持不变。
+
 > 给 agent：按 executing-plans 的逐任务方式执行。阶段验收须由独立执行环境完成；M1 已由独立 QA 在固定 checkout 验收。后续阶段继续使用隔离模拟材料，不能假设真实外部门已获授权。
 
 **Goal:** 在一个可安装的 Mac 应用中完成可信工作知识积累、检索问答和飞书日常工作。
