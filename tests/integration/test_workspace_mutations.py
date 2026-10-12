@@ -55,7 +55,9 @@ def test_page_is_written_as_confirmed_only_through_explicit_confirmation(tmp_pat
     assert page.approval_state == "confirmed"
     assert page.metadata["custom_field"] == {"preserve": True}
     assert page.metadata["approval"]["confirmation_id"] == "user-confirmation-1"
-    transaction_receipts = (root / ".summit-everything" / "transactions").glob("mutation-*.json")
+    transaction_receipts = list(
+        (root / ".summit-everything" / "transactions").glob("mutation-*.json")
+    ) + list((root / ".summit-everything" / "archives" / "transactions").glob("*/*.json"))
     assert all(
         "隔离模拟的已确认事实" not in receipt.read_text() for receipt in transaction_receipts
     )

@@ -2490,6 +2490,16 @@
               }
             }
           },
+          "202": {
+            "description": "Existing provider attempt is still running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeJob"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -4585,6 +4595,17 @@
             ],
             "title": "Attempt Session"
           },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
           "provider_result": {
             "anyOf": [
               {
@@ -5344,6 +5365,18 @@
             "type": "string",
             "format": "uuid",
             "title": "Draft Id"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
           },
           "input_ids": {
             "items": {
@@ -6113,7 +6146,8 @@
               "reviewing",
               "completed",
               "failed",
-              "cancelled"
+              "cancelled",
+              "unknown"
             ],
             "title": "State",
             "default": "pending"
@@ -6129,6 +6163,41 @@
               }
             ],
             "title": "Latest Job Id"
+          },
+          "attempt_no": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Attempt No",
+            "default": 0
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Revision",
+            "default": 0
+          },
+          "previous_attempt_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Attempt Sha256"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
           }
         },
         "additionalProperties": true,
@@ -6158,6 +6227,30 @@
             "type": "array",
             "title": "Item Ids"
           },
+          "line_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
           "request_hash": {
             "type": "string",
             "title": "Request Hash"
@@ -6166,9 +6259,11 @@
             "type": "string",
             "enum": [
               "running",
+              "provider_calling",
               "completed",
               "failed",
-              "cancelled"
+              "cancelled",
+              "unknown"
             ],
             "title": "State"
           },
@@ -6203,6 +6298,46 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Revision",
+            "default": 0
+          },
+          "checkpoint_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint Sha256"
           }
         },
         "additionalProperties": true,

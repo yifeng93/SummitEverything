@@ -294,6 +294,34 @@ def test_concurrent_running_is_durable_before_provider_call(tmp_path):
     assert len(c.get(TASKS).json()["items"]) == 1
 
 
+def test_second_profile_does_not_mark_same_host_action_unknown(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+
+    from summit_everything.integrations.feishu.fake import FakeFeishu
+
+    entered, release = Event(), Event()
+    root = tmp_path / "shared-workspace"
+
+    class Slow(FakeFeishu):
+        def task_create(self, credentials, body):
+            entered.set()
+            assert release.wait(5)
+            return super().task_create(credentials, body)
+
+    first = client(tmp_path / "profile-a", root=root, provider=Slow(tmp_path / "remote"))
+    approved = confirm(first, proposal(first))
+    second = client(tmp_path / "profile-b", root=root, provider=FakeFeishu(tmp_path / "remote"))
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(execute, first, approved)
+        assert entered.wait(5)
+        observed = second.get(PREFIX + "/" + approved["action_id"]).json()
+        assert observed["state"] == "running"
+        assert not any(row.get("kind") == "interrupted" for row in observed["evidence"])
+        release.set()
+        assert future.result().json()["state"] == "succeeded"
+
+
 def test_process_exit_restarts_unknown_remote_survives_and_archive_lookup(tmp_path):
     import json
     import subprocess
@@ -890,7 +918,7 @@ def test_edit_requires_fresh_confirmation_and_outcome_replay(tmp_path):
     )
 
 
-def test_late_response_preserves_cross_session_reconciliation_evidence(tmp_path):
+def test_live_same_host_attempt_is_not_misclassified_from_another_profile(tmp_path):
     from concurrent.futures import ThreadPoolExecutor
     from threading import Event
 
@@ -912,16 +940,16 @@ def test_late_response_preserves_cross_session_reconciliation_evidence(tmp_path)
         future = pool.submit(execute, c, approved)
         assert entered.wait(5)
         try:
-            assert second.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "unknown"
-            reconciled = second.post(
+            assert second.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "running"
+            still_running = second.post(
                 PREFIX + "/" + approved["action_id"] + "/reconciliations", json={}
             ).json()
-            assert reconciled["state"] == "unknown"
+            assert still_running["state"] == "running"
         finally:
             release.set()
         result = future.result().json()
     assert result["state"] == "succeeded"
-    assert {"interrupted", "provider_lookup"}.issubset({e["kind"] for e in result["evidence"]})
+    assert not any(e["kind"] == "interrupted" for e in result["evidence"])
     assert len(second.get(TASKS).json()["items"]) == 1
 
 
@@ -956,7 +984,7 @@ def test_rejects_coerced_date_boolean_and_empty_confirmation_evidence(tmp_path):
     assert c.get(TASKS).json()["items"] == []
 
 
-def test_late_response_does_not_overwrite_final_user_outcome(tmp_path):
+def test_live_attempt_blocks_user_outcome_until_provider_returns(tmp_path):
     from concurrent.futures import ThreadPoolExecutor
     from threading import Event
 
@@ -978,8 +1006,8 @@ def test_late_response_does_not_overwrite_final_user_outcome(tmp_path):
         future = pool.submit(execute, c, approved)
         assert entered.wait(5)
         try:
-            assert second.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "unknown"
-            finalized = second.post(
+            assert second.get(PREFIX + "/" + approved["action_id"]).json()["state"] == "running"
+            premature = second.post(
                 PREFIX + "/" + approved["action_id"] + "/outcomes",
                 json={
                     "payload_sha256": approved["payload_sha256"],
@@ -987,11 +1015,12 @@ def test_late_response_does_not_overwrite_final_user_outcome(tmp_path):
                     "state": "failed",
                     "evidence": "用户独立提供的核实结果",
                 },
-            ).json()
+            )
+            assert premature.status_code == 409
         finally:
             release.set()
         result = future.result().json()
-    assert result == finalized
-    assert second.get(PREFIX + "/" + approved["action_id"]).json() == finalized
-    assert execute(second, approved).json() == finalized
+    assert result["state"] == "succeeded"
+    assert second.get(PREFIX + "/" + approved["action_id"]).json() == result
+    assert execute(second, approved).json() == result
     assert len(second.get(TASKS).json()["items"]) == 1

@@ -8,7 +8,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
-from uuid import UUID, uuid5
+from uuid import UUID, uuid4, uuid5
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -26,6 +26,7 @@ from summit_everything.workspace.action_receipts import (
     save_receipt,
 )
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
+from summit_everything.workspace.state import AttemptLease, attempt_is_live
 from summit_everything.workspace.transactions import workspace_lock
 from summit_everything.workspace.writer import ProjectProgressWriter, WorkspaceWriteConflict
 
@@ -94,6 +95,7 @@ class Action(StrictModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     attempt_session: str | None = None
+    attempt_id: str | None = None
     provider_result: dict[str, Any] | None = None
     evidence: list[dict[str, Any]] = Field(default_factory=list)
 
@@ -156,7 +158,7 @@ class ActionService:
         load_manifest(root)
         actions = read_receipts(root)
         for item in actions.values():
-            if item.state == "running" and item.attempt_session != self.session:
+            if item.state == "running" and not attempt_is_live(root, item.attempt_id):
                 item.state = "unknown"
                 item.evidence.append({"kind": "interrupted", "at": self.now().isoformat()})
                 save_receipt(root, item)
@@ -288,52 +290,65 @@ class ActionService:
             if item.state != "confirmed":
                 return item
             self._require_write(item.kind)
+            attempt_id = str(uuid4())
+            lease = AttemptLease(root, attempt_id)
+            if not lease.acquire(blocking=False):
+                raise WorkspaceWriteConflict("Action attempt lease could not be acquired")
             item.state = "running"
             item.attempt_session = self.session
+            item.attempt_id = attempt_id
             item.started_at = self.now()
             save_receipt(root, item)
         try:
-            if item.kind == "project_progress":
-                payload = ProgressPayload.model_validate(item.payload)
-                item.provider_result = ProjectProgressWriter().apply(
-                    root,
-                    project_id=payload.project_id,
-                    expected_version=payload.expected_version,
-                    progress=payload.progress,
-                    operation_id="progress:" + self.token(root, item),
-                    confirmation_id=item.confirmation_id or "",
-                )
-            else:
-                task = self.tasks.execute(item.kind, item.payload, self.token(root, item))
-                item.provider_result = {"task": task.model_dump(mode="json")}
-            item.state = "succeeded"
-            item.finished_at = self.now()
-        except (WorkspaceWriteConflict, WorkspaceError):
-            item.state = "failed"
-            item.finished_at = self.now()
-            item.provider_result = {
-                "error_code": "version_conflict",
-                "message": "项目进度已变化或项目不可用，请重新查看。",
-            }
-        except FeishuError as exc:
-            item.state = (
-                "failed"
-                if exc.code in {"not_authorized", "token_expired", "missing_scope", "not_found"}
-                else "unknown"
-            )
-            item.provider_result = {
-                "error_code": exc.code,
-                "message": "动作未得到明确成功结果，请核实。",
-            }
-            if item.state == "failed":
-                item.finished_at = self.now()
-        with workspace_lock(root):
-            current = self._get(root, action_id)
-            if current.state in {"succeeded", "failed"}:
-                return current
-            item.evidence = current.evidence
-            save_receipt(root, item)
-        return item
+            with lease:
+                try:
+                    if item.kind == "project_progress":
+                        payload = ProgressPayload.model_validate(item.payload)
+                        item.provider_result = ProjectProgressWriter().apply(
+                            root,
+                            project_id=payload.project_id,
+                            expected_version=payload.expected_version,
+                            progress=payload.progress,
+                            operation_id="progress:" + self.token(root, item),
+                            confirmation_id=item.confirmation_id or "",
+                        )
+                    else:
+                        task = self.tasks.execute(item.kind, item.payload, self.token(root, item))
+                        item.provider_result = {"task": task.model_dump(mode="json")}
+                    item.state = "succeeded"
+                    item.finished_at = self.now()
+                except (WorkspaceWriteConflict, WorkspaceError):
+                    item.state = "failed"
+                    item.finished_at = self.now()
+                    item.provider_result = {
+                        "error_code": "version_conflict",
+                        "message": "项目进度已变化或项目不可用，请重新查看。",
+                    }
+                except FeishuError as exc:
+                    item.state = (
+                        "failed"
+                        if exc.code
+                        in {"not_authorized", "token_expired", "missing_scope", "not_found"}
+                        else "unknown"
+                    )
+                    item.provider_result = {
+                        "error_code": exc.code,
+                        "message": "动作未得到明确成功结果，请核实。",
+                    }
+                    if item.state == "failed":
+                        item.finished_at = self.now()
+                with workspace_lock(root):
+                    current = self._get(root, action_id)
+                    if current.state in {"succeeded", "failed", "unknown"}:
+                        return current
+                    if current.attempt_id != attempt_id or current.state != "running":
+                        return current
+                    item.evidence = current.evidence
+                    save_receipt(root, item)
+                return item
+        finally:
+            if lease.file is not None:
+                lease.__exit__(None, None, None)
 
     def reconcile(self, root: Path, action_id: UUID) -> Action:
         item = self.get(root, action_id)
@@ -347,9 +362,15 @@ class ActionService:
             operation_id = "progress:" + self.token(root, item)
             key = hashlib.sha256(operation_id.encode()).hexdigest()
             journal = root / ".summit-everything/transactions" / f"{key}.json"
-            if journal.exists():
+            from summit_everything.workspace.archives import (
+                archive_completed_transactions,
+                read_active_or_archived,
+            )
+
+            archive_completed_transactions(root)
+            receipt = read_active_or_archived(root, journal, "transactions", journal.name)
+            if receipt is not None:
                 try:
-                    receipt = json.loads(journal.read_bytes())
                     if (
                         receipt.get("operation_id") == operation_id
                         and receipt.get("relative_path") == ".summit-everything/manifest.json"

@@ -1057,6 +1057,8 @@ export interface components {
             finished_at?: string | null;
             /** Attempt Session */
             attempt_session?: string | null;
+            /** Attempt Id */
+            attempt_id?: string | null;
             /** Provider Result */
             provider_result?: {
                 [key: string]: unknown;
@@ -1391,6 +1393,8 @@ export interface components {
              * Format: uuid
              */
             draft_id: string;
+            /** Job Id */
+            job_id?: string | null;
             /** Input Ids */
             input_ids: string[];
             /** Target Page Id */
@@ -1726,9 +1730,23 @@ export interface components {
              * @default pending
              * @enum {string}
              */
-            state: "pending" | "processing" | "reviewing" | "completed" | "failed" | "cancelled";
+            state: "pending" | "processing" | "reviewing" | "completed" | "failed" | "cancelled" | "unknown";
             /** Latest Job Id */
             latest_job_id?: string | null;
+            /**
+             * Attempt No
+             * @default 0
+             */
+            attempt_no: number;
+            /**
+             * Revision
+             * @default 0
+             */
+            revision: number;
+            /** Previous Attempt Sha256 */
+            previous_attempt_sha256?: string | null;
+            /** Finished At */
+            finished_at?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -1741,13 +1759,17 @@ export interface components {
             job_id: string;
             /** Item Ids */
             item_ids: string[];
+            /** Line Id */
+            line_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
             /** Request Hash */
             request_hash: string;
             /**
              * State
              * @enum {string}
              */
-            state: "running" | "completed" | "failed" | "cancelled";
+            state: "running" | "provider_calling" | "completed" | "failed" | "cancelled" | "unknown";
             /** Draft Ids */
             draft_ids?: string[];
             /** Action Candidates */
@@ -1761,6 +1783,17 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Attempt Id */
+            attempt_id?: string | null;
+            /**
+             * Revision
+             * @default 0
+             */
+            revision: number;
+            /** Checkpoint Sha256 */
+            checkpoint_sha256?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -3909,6 +3942,15 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeJob"];
+                };
+            };
+            /** @description Existing provider attempt is still running */
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };

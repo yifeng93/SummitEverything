@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
@@ -350,6 +351,17 @@ def test_selected_body_calls_and_restart_replay(tmp_path: Path) -> None:
     payload = {"material_ids": ["minute-2"], "operation_id": "restart"}
     result = c.post(PREFIX + "/imports", json=payload).json()
     assert calls == ["minute-2"]
+    transaction_root = tmp_path / "workspace" / ".summit-everything" / "transactions"
+    assert not list(transaction_root.glob("feishu-import-*.json"))
+    summaries = list(
+        (tmp_path / "workspace" / ".summit-everything" / "archives" / "transactions").glob(
+            "*/summary.json"
+        )
+    )
+    assert any(
+        any(name.startswith("feishu-import-") for name in json.loads(path.read_text())["items"])
+        for path in summaries
+    )
     c2 = client(tmp_path)
     assert c2.post(PREFIX + "/imports", json=payload).json() == result
     assert len(c2.get("/api/v1/intake/items").json()) == 1

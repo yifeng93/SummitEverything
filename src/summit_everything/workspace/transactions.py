@@ -9,6 +9,7 @@ import os
 import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -66,10 +67,16 @@ def write_intent(
     """Apply one idempotent file replacement, with intent and result receipts."""
     safe_id = hashlib.sha256(operation_id.encode("utf-8")).hexdigest()
     journal = root / ".summit-everything" / "transactions" / f"{safe_id}.json"
+    from summit_everything.workspace.archives import (
+        archive_completed_transactions,
+        read_active_or_archived,
+    )
+
+    archive_completed_transactions(root, locked=True)
     request_hash = hashlib.sha256(content).hexdigest()
     current = path.read_bytes() if path.exists() else None
-    if journal.exists():
-        prior = json.loads(journal.read_text(encoding="utf-8"))
+    prior = read_active_or_archived(root, journal, "transactions", journal.name)
+    if prior is not None:
         if prior["request_hash"] != request_hash:
             raise IntentConflict("operation_id was already used for a different payload")
         if prior["state"] == "succeeded":
@@ -93,5 +100,7 @@ def write_intent(
         atomic_write(path, content)
     result_hash = hashlib.sha256(content).hexdigest()
     intent.update(state="succeeded", result_hash=result_hash)
+    intent["finished_at"] = datetime.now(UTC).isoformat()
     atomic_write(journal, json.dumps(intent, sort_keys=True).encode("utf-8"))
+    archive_completed_transactions(root, locked=True)
     return result_hash

@@ -114,6 +114,7 @@ from summit_everything.local.conversations import (
     QueryConflict,
     QueryStart,
 )
+from summit_everything.local.event_log import profile_event
 from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -1298,12 +1299,19 @@ def create_app(
         payload: IntakeTextRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IntakeItem:
-        return intake_service.add_text(
+        item = intake_service.add_text(
             Path(workspace.root),
             payload.text,
             filename=payload.filename,
             operation_id=payload.operation_id,
         )
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_saved",
+            record_id=str(item.item_id),
+            state=item.state,
+        )
+        return item
 
     @app.post("/api/v1/intake/files", status_code=201, dependencies=[Depends(authenticated)])
     async def intake_file(
@@ -1317,18 +1325,33 @@ def create_app(
                 status_code=413,
                 detail={"code": "file_too_large", "message": "File must be 20 MB or smaller"},
             )
-        return intake_service.add_file(
+        item = intake_service.add_file(
             Path(workspace.root),
             raw,
             filename=file.filename or "source.txt",
             operation_id=operation_id,
         )
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_saved",
+            record_id=str(item.item_id),
+            state=item.state,
+        )
+        return item
 
     @app.get("/api/v1/intake/items", dependencies=[Depends(authenticated)])
     def intake_list(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> list[IntakeItem]:
-        return intake_service.list_items(Path(workspace.root))
+        root = Path(workspace.root)
+        items = intake_service.list_items(root)
+        active_review = review_for(workspace)
+        for item in items:
+            if item.latest_job_id is not None and item.state in {"processing", "unknown"}:
+                # This only checks the local lease and replays a durable local
+                # checkpoint; it never retries the external model call.
+                active_review.get_job(root, item.latest_job_id)
+        return intake_service.list_items(root)
 
     @app.get("/api/v1/sources/{source_id}", dependencies=[Depends(authenticated)])
     def source_get(
@@ -1337,12 +1360,20 @@ def create_app(
     ) -> SourceDetail:
         return intake_service.get_source(Path(workspace.root), source_id)
 
-    @app.post("/api/v1/intake/jobs", status_code=201, dependencies=[Depends(authenticated)])
+    @app.post(
+        "/api/v1/intake/jobs",
+        status_code=201,
+        responses={
+            202: {"model": IntakeJob, "description": "Existing provider attempt is still running"}
+        },
+        dependencies=[Depends(authenticated)],
+    )
     def intake_job_create(
         payload: IntakeJobRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        response: Response,
     ) -> IntakeJob:
-        return review_for(workspace).create_job(
+        job = review_for(workspace).create_job(
             Path(workspace.root),
             payload.item_ids,
             operation_id=payload.operation_id,
@@ -1350,18 +1381,43 @@ def create_app(
             project_id=payload.project_id,
             reprocess=payload.reprocess,
         )
+        if job.state in {"running", "provider_calling"}:
+            response.status_code = 202
+            response.headers["Location"] = f"/api/v1/jobs/{job.job_id}"
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_job",
+            record_id=str(job.job_id),
+            state=job.state,
+            count=len(job.draft_ids),
+        )
+        return job
 
     @app.get("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])
     def intake_job_get(
         job_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> IntakeJob:
-        return review.get_job(Path(workspace.root), job_id)
+        job = review.get_job(Path(workspace.root), job_id)
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_job",
+            record_id=str(job.job_id),
+            state=job.state,
+        )
+        return job
 
     @app.delete("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])
     def intake_job_cancel(
         job_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> IntakeJob:
-        return review.cancel_job(Path(workspace.root), job_id)
+        job = review.cancel_job(Path(workspace.root), job_id)
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_job",
+            record_id=str(job.job_id),
+            state=job.state,
+        )
+        return job
 
     @app.get("/api/v1/drafts", dependencies=[Depends(authenticated)])
     def drafts(
@@ -1397,7 +1453,7 @@ def create_app(
         payload: DraftConfirmationRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
-        return index_after_approval(
+        result = index_after_approval(
             workspace,
             review.confirm_draft(
                 Path(workspace.root),
@@ -1408,6 +1464,13 @@ def create_app(
                 conflict_resolutions=payload.conflict_resolutions,
             ),
         )
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "draft_confirmed",
+            record_id=str(draft_id),
+            state=result.state,
+        )
+        return result
 
     @app.get("/api/v1/actions", dependencies=[Depends(authenticated)])
     def action_candidates(
