@@ -144,5 +144,64 @@ def main() -> None:
         )
 
 
+    # D5 (round 2): a shell verb must not truncate an unregistered object name.
+    with tempfile.TemporaryDirectory(prefix="c19-d5-") as temp:
+        root, service, answerer = make_query(
+            Path(temp),
+            [
+                ("松墨展会", "预算", "松墨展会预算上限为七万元。", None),
+                ("榆木论坛", "无关", "榆木论坛开放时间为周六。", None),
+            ],
+        )
+        d5 = {}
+        for question in (
+            "比较总结报告与松墨展会的预算",
+            "比较总结方案与松墨展会的预算",
+            "比较查看细则与松墨展会的预算",
+            "比较梳理工程与松墨展会的预算",
+        ):
+            planned = scope(service, root, question)
+            answer = ask(service, root, question, "comparison")
+            d5[question] = {
+                "subjects": list(planned.explicit_subjects),
+                "pairs": [list(pair) for pair in planned.required_pairs],
+                "missing": answer.missing_information,
+                "citation_excerpts": excerpts(answer),
+            }
+        record(
+            "D5-shell-verb-over-strip",
+            "unknown object names that begin with a shell word must survive intact.",
+            d5,
+            "object name kept whole; the unrelated page is never cited; the named object is reported, not dropped",
+        )
+
+    # D3 (round 2): a truncated pair must not be worded as absent knowledge.
+    with tempfile.TemporaryDirectory(prefix="c19-d3b-") as temp:
+        pages = [
+            ("枫湾活动", "枫湾预算", "枫湾活动预算上限为七万二千元。", None),
+            ("枫湾活动", "枫湾排期", "枫湾活动启动时间为十月。", None),
+            ("玄石展览", "玄石预算", "玄石展览预算上限为三万元。", None),
+            ("玄石展览", "玄石排期", "玄石展览启动时间为十一月。", None),
+            ("云岬营地", "云岬预算", "云岬营地预算上限为八万元。", None),
+            ("云岬营地", "云岬排期", "云岬营地启动时间为十二月。", None),
+        ]
+        root, service, answerer = make_query(Path(temp), pages)
+        question = "比较枫湾活动、玄石展览和云岬营地的预算和排期。"
+        for label, limit in (("limit5", 5), ("limit1", 1), ("no-truncation", 12)):
+            answer = service.query(
+                root, question, fingerprint="fresh-holdout-v1",
+                answer_mode="comparison", limit=limit,
+            )
+            record(
+                f"D3b-truncation-{label}",
+                "truncated pairs must be reported as truncation, not as missing evidence.",
+                {
+                    "citations": len(answer.citations),
+                    "missing": answer.missing_information,
+                },
+                "no '缺少…依据' entry when the cap cut candidates; truncation notice names the uncovered scope",
+            )
+
+
 if __name__ == "__main__":
     main()

@@ -5,13 +5,13 @@ baseline-holdout-34	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pyte
 baseline-device-topic	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:$PWD/.local/dsh/c19/harness" uv run python .local/dsh/c19/harness/reproduce_device_topic.py	0	RED captured: plan term:访客领用, single question 0 citation / 0 provider call
 baseline-pytest-full	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	0	PASS 450 passed (pre-fix baseline)
 fix-holdout-34	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q .local/dsh/c19/harness/test_c19_previous_holdout.py .local/dsh/c19/harness/test_c19_fresh_holdout.py	0	GREEN 34 passed
-fix-tracked-regressions	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q tests/integration/test_c19_topic_scope_normalization.py	0	GREEN 18 passed
+fix-tracked-regressions	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q tests/integration/test_c19_topic_scope_normalization.py	0	GREEN 19 passed
 fix-device-topic	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:$PWD/.local/dsh/c19/harness" uv run python .local/dsh/c19/harness/reproduce_device_topic.py	0	GREEN 4/4 both supports in citations and provider passages, missing empty
 fix-scope-normalization	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:$PWD/.local/dsh/c19/harness" uv run python .local/dsh/c19/harness/reproduce_scope_normalization.py	0	GREEN qualifier and object/topic boundaries observed
-fix-preqa-findings	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:$PWD/.local/dsh/c19/harness" uv run python .local/dsh/c19/harness/reproduce_preqa_findings.py	0	D2/D3/D4 fixed; D1 metadata-binding boundary recorded for contract decision
+fix-preqa-findings	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:$PWD/.local/dsh/c19/harness" uv run python .local/dsh/c19/harness/reproduce_preqa_findings.py	0	D2/D3/D4 and round-2 D5 over-strip fixed; D1 metadata-binding boundary recorded for contract decision
 fix-api-replay	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run python .local/dsh/c19/harness/api_c19_replay.py	0	PASS 13/13 loopback API/SSE observations incl. history reopen; listener stopped
-fix-pytest-full	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	0	PASS 468 passed
-guarded-pytest	env PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	0	PASS 468 passed, 1 existing warning
+fix-pytest-full	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	0	PASS 469 passed
+guarded-pytest	env PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	0	PASS 469 passed, 1 existing warning
 ruff-check	uv run ruff check src tests	0	PASS
 ruff-format	uv run ruff format --check src tests	0	PASS 79 files already formatted
 mypy	uv run mypy src	0	PASS 43 source files

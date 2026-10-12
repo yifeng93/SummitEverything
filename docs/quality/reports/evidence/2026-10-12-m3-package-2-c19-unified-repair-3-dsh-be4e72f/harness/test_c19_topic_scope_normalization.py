@@ -299,13 +299,38 @@ def test_limit_truncation_is_reported_as_truncation_not_absent_evidence(tmp_path
         root, question, fingerprint=FINGERPRINT, answer_mode="comparison", limit=5
     )
     assert len(truncated.citations) == 5
-    assert any("条数已达上限" in item for item in truncated.missing_information), (
-        truncated.missing_information
-    )
+    # A truncation shortfall must not be presented as absent knowledge.
+    assert not [
+        item for item in truncated.missing_information if "缺少" in item and "依据" in item
+    ], truncated.missing_information
+    notice = next((item for item in truncated.missing_information if "条数已达上限" in item), None)
+    assert notice is not None, truncated.missing_information
+    assert any(name in notice for name in ("枫湾活动", "玄石展览", "云岬营地")), notice
 
     # Without truncation the answer keeps only real scope gaps.
     complete = service.query(
         root, question, fingerprint=FINGERPRINT, answer_mode="comparison", limit=12
     )
-    assert not any("条数已达上限" in item for item in complete.missing_information)
+    assert complete.missing_information == []
     assert len({citation.page_id for citation in complete.citations}) == 6
+
+
+def test_unregistered_names_starting_with_request_words_survive(tmp_path: Path) -> None:
+    root, service, _answerer = build_query(
+        tmp_path,
+        [
+            ("松墨展会", "预算", "松墨展会预算上限为七万元。"),
+            ("榆木论坛", "无关", "榆木论坛开放时间为周六。"),
+        ],
+    )
+    # 总结报告 is an unregistered object name: stripping the request verb from a
+    # standalone candidate would silently rename it to 报告.
+    planned = scope(service, root, "比较总结报告与松墨展会的预算")
+    assert "总结报告" in planned.explicit_subjects, planned.explicit_subjects
+    assert "报告" not in planned.explicit_subjects, planned.explicit_subjects
+
+    answer = ask(service, root, "比较总结报告与松墨展会的预算", "comparison")
+    assert "松墨展会预算上限为七万元" in excerpts(answer)
+    assert any("总结报告" in item for item in answer.missing_information), (
+        answer.missing_information
+    )
