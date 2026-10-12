@@ -1,0 +1,44 @@
+{'mode': 'fact', 'citations': [], 'missing_information': ['白鹭工程：缺少预算（活动证章领取）依据。', '赤陶项目：缺少预算（活动证章领取）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。'}
+{'mode': 'comparison', 'citations': [], 'missing_information': ['白鹭工程：缺少预算（活动证章领取）依据。', '赤陶项目：缺少预算（活动证章领取）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。'}
+{'mode': 'plan', 'citations': [], 'missing_information': ['白鹭工程：缺少预算（活动证章领取）依据。', '赤陶项目：缺少预算（活动证章领取）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。'}
+F
+=================================== FAILURES ===================================
+_________ test_fresh_mixed_topics_are_not_collapsed_into_one_dimension _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-748/test_fresh_mixed_topics_are_no0')
+
+    def test_fresh_mixed_topics_are_not_collapsed_into_one_dimension(tmp_path):
+        root, service, answerer = make_query(tmp_path, [
+            ("白鹭工程", "预算记录", "白鹭工程预算上限为十八万元。", None),
+            ("赤陶项目", "活动安排", "赤陶项目活动证章领取须出示邀请函。", None),
+        ])
+        for mode in ("fact", "comparison", "plan"):
+            answer = ask(
+                service,
+                root,
+                "比较白鹭工程预算与赤陶项目的活动证章领取办法",
+                mode,
+            )
+            observed = {
+                "mode": mode,
+                "citations": [citation.model_dump(mode="json") for citation in answer.citations],
+                "missing_information": answer.missing_information,
+                "provider_calls": len(answerer.calls),
+                "body": answer.text,
+            }
+            print(observed)
+>       assert all(item["citations"] for item in [
+            {
+                "citations": [citation.model_dump(mode="json") for citation in ask(
+                    service, root, "比较白鹭工程预算与赤陶项目的活动证章领取办法", mode
+                ).citations]
+            }
+            for mode in ("fact", "comparison", "plan")
+        ])
+E       assert False
+E        +  where False = all(<generator object test_fresh_mixed_topics_are_not_collapsed_into_one_dimension.<locals>.<genexpr> at 0x109b28520>)
+
+.local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED .local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py::test_fresh_mixed_topics_are_not_collapsed_into_one_dimension
+1 failed in 0.14s

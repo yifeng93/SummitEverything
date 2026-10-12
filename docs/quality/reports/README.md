@@ -1,10 +1,10 @@
 # 开发与独立验收报告索引
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2 和统一候选初验的 P1 FAIL 均保留；用户重新授权后的 repair 1/2 产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已由 Developer 自测，fresh 独立 QA 待开始。Developer 自测不能改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2 和统一候选初验的 P1 FAIL 均保留；repair 1/2 产品源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已由全新独立 QA 固定 checkout `04a0239012068598123966ab31340127a6f8ff76` 复验，发现混合对象/主题范围 P1 FAIL；详细结果见本轮 QA 报告。此前两份 FAIL 均不被覆盖；repair 2/2 尚待 Sol 协调。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
 
-## 当前包 2 C19 统一修复 repair 1/2（2026-10-12，DEV 完成，fresh QA 待开始）
+## 当前包 2 C19 统一修复 repair 1/2（2026-10-12，DEV 与独立 QA 完成；P1 FAIL）
 
-[C19 repair 1 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)：固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`。unknown information topics 按 exact scope 处理；礼貌请求、对象名内含维度词、无“的”并列、主题有资料/缺资料、开放属性问题和泛化方案均有回归。Developer 自测 qualified retrieval 27 passed、QA holdout 12 passed、guarded pytest 449 passed、Web 56 tests / 12 files；README 全量适用检查 exit 0，日志在 `.local/dev/c19-unified/`。统一候选初验固定 SHA `d2236c2` 的 P1 FAIL 与原报告/证据保留；repair 1 fresh QA 为 NOT_RUN，M3 未正式通过。
+[C19 repair 1 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)：固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`。unknown information topics 按 exact scope 处理；礼貌请求、对象名内含维度词、无“的”并列、主题有资料/缺资料、开放属性问题和泛化方案均有回归。Developer 自测 qualified retrieval 27 passed、QA holdout 12 passed、guarded pytest 449 passed、Web 56 tests / 12 files。全新 QA 固定该产品源码复跑全矩阵，发现 `(白鹭工程,预算)` 与 `(赤陶项目,活动证章领取)` 被折成同一缺失范围，三种回答模式均漏掉两份已有依据，判 P1 FAIL；旧 QA 12 项与本轮共享维度正控通过。见[C19 repair 1/2 QA 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-QA-04a0239.md)及 evidence。统一候选初验和先前 extra 2 P1 FAIL 与原报告/证据保留；Sol 可协调 repair 2/2；M3 未正式通过。
 
 ## M3 已判门与历史失败（2026-10-12）
 
