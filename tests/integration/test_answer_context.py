@@ -527,6 +527,7 @@ def test_memory_candidate_distinguishes_first_person_preferences_from_quoted_sou
             "材料原文：“项目于十月启动。”另外，我偏好回答时注明引用来源。",
             "我偏好回答时注明引用来源",
         ),
+        ("我偏好用“资料不足”提示。", "我偏好用“资料不足”提示。"),
     )
     for question, preference in preferences:
         request_id = uuid4()
@@ -575,4 +576,32 @@ def test_memory_candidate_distinguishes_first_person_preferences_from_quoted_sou
     )
     assert quoted.status_code == 422
     assert "引用或材料" in quoted.json()["error"]["message"]
+
+    quoted_expressions = (
+        ("“我偏好简短回答。”", "“我偏好简短回答。”"),
+        ("“我偏好简短回答。”", "我偏好简短回答"),
+        ("> 我偏好简短回答。", "> 我偏好简短回答。"),
+        ("> 我偏好简短回答。", "我偏好简短回答"),
+    )
+    for quote, candidate_text in quoted_expressions:
+        request_id = uuid4()
+        response = client.post(
+            "/api/v1/queries",
+            json={
+                "request_id": str(request_id),
+                "conversation_id": conversation_id,
+                "question": quote,
+                "fingerprint": "answer-context-test",
+            },
+        )
+        assert response.status_code == 200, response.text
+        quoted_expression = client.post(
+            "/api/v1/memory/candidates",
+            json={
+                "message_id": str(request_id),
+                "text": candidate_text,
+                "user_expression": True,
+            },
+        )
+        assert quoted_expression.status_code == 422
     client.close()

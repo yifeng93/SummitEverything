@@ -154,11 +154,31 @@ _FORWARDED_CONTENT_PREFIX = re.compile(
     _FORWARDED_CONTENT.pattern + r"[\s\"“‘「『]*$", re.IGNORECASE
 )
 _QUOTE_PAIRS = (("“", "”"), ("‘", "’"), ("「", "」"), ("『", "』"), ('"', '"'), ("'", "'"))
+_FIRST_PERSON_EXPRESSION = re.compile(
+    r"^\s*(?:我(?:希望|偏好|喜欢|不喜欢|需要|负责|通常|习惯|是|计划)|我的(?:工作|目标|偏好))"
+)
+
+
+def _contains_quoted_first_person(text: str) -> bool:
+    for opening, closing in _QUOTE_PAIRS:
+        start = text.find(opening)
+        while start >= 0:
+            end = text.find(closing, start + len(opening))
+            if end < 0:
+                break
+            if _FIRST_PERSON_EXPRESSION.match(text[start + len(opening) : end].strip()):
+                return True
+            start = text.find(opening, end + len(closing))
+    return False
 
 
 def _is_attributed_source_text(source: str, candidate: str) -> bool:
     """Reject candidate spans framed as external source text in the real user message."""
     if _SOURCE_ATTRIBUTION.search(candidate) or _FORWARDED_CONTENT.search(candidate):
+        return True
+    if _contains_quoted_first_person(candidate) and not _FIRST_PERSON_EXPRESSION.match(
+        candidate.strip()
+    ):
         return True
     if any(line.lstrip().startswith(">") for line in candidate.splitlines()):
         return True
@@ -177,6 +197,9 @@ def _is_attributed_source_text(source: str, candidate: str) -> bool:
             quote_end = source.find(closing, end)
             if quote_start < 0 or quote_end < end:
                 continue
+            quoted_expression = source[quote_start + len(opening) : quote_end].strip()
+            if _FIRST_PERSON_EXPRESSION.match(quoted_expression):
+                return True
             attribution = source[max(0, quote_start - 80) : quote_start]
             if _SOURCE_ATTRIBUTION_PREFIX.search(attribution) or _FORWARDED_CONTENT_PREFIX.search(
                 attribution
