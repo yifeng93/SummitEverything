@@ -1,6 +1,6 @@
 # SummitEverything v1 Implementation Plan
 
-2026-10-12 当前：包 1 离线集成由 Sol 判 PASS；包 2 extra 2 因 C19 P1 由 Sol 判 FAIL，当前不在修复中；用户随后明确开始包 3，源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已由 Developer 固定并完成自测，等待独立 QA。包 3 DEV 不代表 QA 或 M3 正式 PASS。当前门、报告和已调整的执行顺序见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)及[包 3 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)；历史条目保留其原始时间和 SHA。产品完整范围及真实/发布门保持不变。
+2026-10-12 当前：包 1 离线集成由 Sol 判 PASS；包 2 extra 2 因 C19 P1 由 Sol 判 FAIL，当前不在修复中；用户明确调整顺序开始包 3。包 3初验 QA 固定 `d03c548b69a4ec48a947486df191bd4af009b6e2` 判 C22 lease cleanup FAIL，repair 1/2 新源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 固定并自测完成，待全新 QA。DEV 不代表 QA 或 M3 正式 PASS。当前状态见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)、[repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)及[初验 QA 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)；历史条目保留原始结论和 SHA。产品规格及真实/发布门保持不变。
 
 > 给 agent：按 executing-plans 的逐任务方式执行。阶段验收须由独立执行环境完成；M1 已由独立 QA 在固定 checkout 验收。后续阶段继续使用隔离模拟材料，不能假设真实外部门已获授权。
 
@@ -14,7 +14,7 @@
 
 ## 当前阶段记录（更新于 2026-10-12；下方历史任务清单保留）
 
-M1 与 M2 阶段 A 在 Fake-only 范围已收口，Stage B 离线源码 / 开发壳已独立 QA 并合入 main；细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。M3 包 1离线集成 PASS、包 2 C19 P1 FAIL、包 3 DEV 已完成待独立 QA。Stage C、M3 正式验收及 M4–M5 仍未通过；不重复执行历史 Stage B 提示词。
+M1 与 M2 阶段 A 在 Fake-only 范围已收口，Stage B 离线源码 / 开发壳已独立 QA 并合入 main；细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。M3 包 1离线集成 PASS、包 2 C19 P1 FAIL；包 3初验因 C22 lease cleanup FAIL，repair 1/2 源码已完成 Developer 自测并待全新 QA。Stage C、M3 正式验收及 M4–M5 仍未通过；不重复执行历史 Stage B 提示词。
 
 ## 全局执行规则与验收门
 
@@ -166,9 +166,10 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 - [x] Developer 实现并回归 intake items/jobs、capture journal、mutation、write_intent SHA、Feishu import 的 active+月摘要查找/重放；同 hash 双副本可恢复，冲突/损坏/非法桶阻断；unknown/未完成留 active，原件/完整 draft 保留。待独立 QA。
 - [x] 本机轮转诊断日志只在 profile；C22 120 条合成流程、4 个业务月份 bulk 结果已实测并留日志。同步区无诊断日志、SQLite/WAL、凭据、会话/角色/记忆数据的代码与定向检查已完成；此为 DEV 自测，待独立 QA。
 - [x] Developer 定向检查、README guarded pytest / Python 静态/类型/lock/build、OpenAPI 生成、Web tests/typecheck/lint/build 已执行并记录真实退出码；完整 v1 Fake UI 链路待 QA 观察。
-- [ ] 固定 SHA `d03c548b69a4ec48a947486df191bd4af009b6e2` 的整包独立 QA：C22、C23、C21 存储边界、C13/C14/C19/C20 回归，跨 profile 和故障恢复黑盒证据。
+- [x] 初验源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的整包独立 QA 已执行，发现 C22 lease 异常清理 FAIL；按原报告记录，不覆盖或删减 FAIL。
+- [ ] repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 的全新整包独立 QA：复验 C22/C23/C21 存储边界、C13/C14/C19/C20 回归，跨 profile 和故障恢复黑盒证据。
 
-**M3 DEV 门：** 仅当包 1/2/3 的独立离线验收全部通过后评定。当前包 2 C19 P1 FAIL；包 3 Developer 完成待独立 QA；M3 门未通过。真实样板 / 外部能力与发布门另行验收。历史范围、归档和跨材料方案仍按产品规格验证。
+**M3 DEV 门：** 仅当包 1/2/3 的独立离线验收全部通过后评定。当前包 2 C19 P1 FAIL；包 3初验 C22 FAIL，repair 1/2 Developer 完成待独立 QA；M3 门未通过。真实样板 / 外部能力与发布门另行验收。历史范围、归档和跨材料方案仍按产品规格验证。
 
 ## M4 — 单机交付与实际试用
 

@@ -4,7 +4,7 @@
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
-2026-10-12 当前 M3 状态：包 1离线集成由 Sol 判 PASS；包 2 extra 2 固定 QA `d2236c2` 由 Sol 判 C19 P1 FAIL；用户明确授权包 3直接实施，Developer 固定 `d03c548b69a4ec48a947486df191bd4af009b6e2` 并自测完成，独立 QA pending。该状态说明不更改下方验收期望；M3 总门未通过。包 2 FAIL 原报告及证据保留。
+2026-10-12 当前 M3 状态：包 1离线集成由 Sol 判 PASS；包 2 extra 2 固定 QA `d2236c2` 由 Sol 判 C19 P1 FAIL；用户明确调整顺序开始包 3。包 3初验固定 `22e5ad9` 判 C22 lease 异常清理 FAIL；repair 1/2 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 修复并自测，等待全新独立 QA。该状态不更改下方验收期望；包 2 FAIL 原报告与包 3初验 FAIL 证据均保留，M3 总门未通过。
 
 ## 当前结论与范围（2026-10-11）
 

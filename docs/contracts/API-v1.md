@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：v1 完整实施基准；截至 2026-10-12，M3 包 1由 Sol 判离线集成 PASS，包 2 C19 P1 FAIL，包 3 Developer 源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已完成并待独立 QA；不代表 M3 正式通过。Stage B 离线实现与真实业务模型/Feishu disabled 状态见[报告索引](../quality/reports/README.md)。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 完整实施基准；截至 2026-10-12，M3 包 1由 Sol 判离线集成 PASS，包 2 C19 P1 FAIL；包 3初验 C22 lease cleanup FAIL，repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已修复并待独立 QA；不代表 M3 正式通过。Stage B 离线实现与真实业务模型/Feishu disabled 状态见[报告索引](../quality/reports/README.md)。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 

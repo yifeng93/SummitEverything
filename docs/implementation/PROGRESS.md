@@ -4,7 +4,7 @@
 
 ## 当前状态与下一步
 
-2026-10-12 当前：包 1 离线集成由 Sol 判 PASS；包 2 extra 2 独立 QA / Sol 门判 C19 P1 FAIL，失败证据保留且本轮未修。用户明确开始包 3后，Developer 在源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 完成 M3.2 实现与 README 自动矩阵，当前待独立 QA。包 3 Developer 不判 QA/M3 PASS；M3 正式门仍未通过，真实/发布门 NOT_RUN、runtime UNVERIFIED。完整入口见[包 3 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)、[最新交接](../handoff/LATEST-IMPLEMENTATION.md)与[Sol 包 2门](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
+2026-10-12 当前：包 1 离线集成由 Sol 判 PASS；包 2 extra 2 QA / Sol 门判 C19 P1 FAIL，证据保留且本轮未修。用户明确开始包 3；初验 QA 对 `d03c548b69a4ec48a947486df191bd4af009b6e2` 判 C22 lease 异常清理 FAIL。repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 修复、自测，待独立 QA；此为 DEV 状态，不是 QA/M3 PASS。M3 正式门未通过，真实/发布门 NOT_RUN，runtime UNVERIFIED。入口见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)、[初验 QA 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)、[最新交接](../handoff/LATEST-IMPLEMENTATION.md)与[Sol 包 2门](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
 
 包 3实现包括跨 profile intake 状态读取、同机 advisory attempt lease、dead-owner unknown/no-resend、provider checkpoint 仅恢复本地稿件的 CAS 流程；完成 intake items/jobs、capture、mutation、SHA write-intent、Feishu import receipts 的 active+monthly summary 回放；profile-only 轮转诊断日志。原件、完整稿件和确认记录保留，未知/未终态不归档。120 条合成流程样本跨 2026-06 至 09：120 item + 120 job + 366 transaction receipt 进入各自月汇总；另有一个 unknown 新流程和一个无日期 legacy item/job 保持 active。setup 在 2026-10 的两条 SHA receipt 单独报告；4 个合成 Feishu receipt 仅测文件归档路径，Fake provider 导入/回放由独立集成测试覆盖。详见 DEV 报告与 `.local/dev/m3-package-3/` 原始日志。
 
@@ -50,7 +50,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
 | M3 包 2 完整问答、角色与记忆 | extra 2 固定 QA SHA `d2236c2` | Sol 判 FAIL / C19 P1 | 无资料比较仍误引其他预算；当前未修，用户调整顺序先做包 3 |
-| M3 包 3 连续状态与归档压缩 | Developer 源码 `d03c548` 完成 | 独立 QA pending | 用户明确开始包 3；报告与全量自测见 M3 包 3 DEV 报告；M3 正式门未通过 |
+| M3 包 3 连续状态与归档压缩 | repair 1/2 Developer 源码 `ea11fc5` 完成 | 初验 C22 FAIL；repair 1 待独立 QA | lease 异常清理修复及当前完整自测见 repair 1 DEV 报告；包 2 C19 P1 FAIL 保留，M3 正式门未通过 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 

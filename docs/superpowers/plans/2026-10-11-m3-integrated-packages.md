@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 2026-10-12 当前执行顺序由用户明确调整为直接开始包 3；不改变规格和正式门。包 1 离线集成由 Sol 判 PASS；包 2 extra 2 QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75` 判 C19 P1 FAIL，当前不在修复中；包 3 Developer 已固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 并完成自测，等待独立 QA。M3 完整验收仍未完成，详见[包 3 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)。
+- 2026-10-12 当前执行顺序由用户明确调整为直接开始包 3；不改变规格和正式门。包 1 离线集成由 Sol 判 PASS；包 2 extra 2 QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75` 判 C19 P1 FAIL，当前不在修复中。包 3初验 QA 固定 `22e5ad945353929ebd781e1397f641c9d5fcf963` 判 C22 lease cleanup FAIL；repair 1/2 Developer 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已修复、自测并等待全新 QA。M3 完整验收仍未完成，详见[repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)与[初验 QA 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -27,7 +27,7 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 当前状态：包 2 extra 2 独立 QA 与 Sol 门判 C19 P1 FAIL；用户直接明确开始包 3。本实现依用户变更的顺序继续，不修包 2、不改变验收门。包 3源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已由 Developer 自测固定，待独立 QA；历史包 2 FAIL 原报告和证据完整保留。详见[包 3 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)和[Sol 包 2门报告](../../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
+2026-10-12 当前状态：包 2 extra 2 独立 QA 与 Sol 门判 C19 P1 FAIL；用户直接明确开始包 3。本实现依用户变更的顺序继续，不修包 2、不改变验收门。包 3初验 QA 判 C22 lease cleanup FAIL；repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由 Developer 自测固定，待全新独立 QA。两轮旧 FAIL 原报告与证据完整保留。详见[repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)、[初验 QA 报告](../../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)和[Sol 包 2门报告](../../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
@@ -51,7 +51,8 @@
 - [x] Developer 覆盖摘要损坏/冲突/非法日期、写摘要后恢复、同一收据重放、旧无日期 item 首次 reprocess 的 undated parent 链；待独立 QA。
 - [x] Developer 验证诊断轮转仅 profile，本机 120 个合成流程跨 4 个月的文件计数；详见包 3 DEV 报告，待独立 QA。
 - [x] README 后端/Web/static/types/lock/build/OpenAPI 全矩阵由 Developer 自测并记录退出码；完整 Fake UI 链路待 QA 观察。
-- [ ] 固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的整包独立 QA：C22、C23、C21 存储边界、C13/C14/C19/C20 回归，跨 profile 和故障恢复黑盒证据；包 2 已知 C19 P1 应如实重现和报告，不能视作已修复。
+- [x] 初验固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的整包独立 QA 已完成；C22 action receipt 预发布异常导致 lease 迟至 GC 才释放，判 FAIL，原报告与证据保留。
+- [ ] repair 1/2 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 的全新整包 QA：复验 C22 lease 异常清理，并回归 C22/C23/C21 存储边界、C13/C14/C19/C20、跨 profile 与故障恢复；包 2 已知 C19 P1 应如实重现和报告，不能视作已修复。
 
 ## 完成与正式门
 

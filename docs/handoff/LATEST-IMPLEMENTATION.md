@@ -1,12 +1,12 @@
 # 最新实现交接
 
-2026-10-12 当前门：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 独立 QA 由 Sol 判 C19 P1 FAIL（无资料比较仍引用无关预算），见[门报告](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。用户随后明确开始包 3，不涉及修包 2或改变正式验收规格。包 3源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 已由 Developer 固定，README 检查完成，等待独立 QA；M3 总门仍未通过。报告见[包 3 DEV](../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)和[报告索引](../quality/reports/README.md)。旧 FAIL 报告/证据保留；真实服务/材料/凭据、Keychain、native/DMG、五日、双机和发布门 **NOT_RUN**，runtime **UNVERIFIED**。
+2026-10-12 当前门：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 独立 QA 由 Sol 判 C19 P1 FAIL，见[门报告](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。用户明确开始包 3后，初验 QA 固定 `22e5ad945353929ebd781e1397f641c9d5fcf963` 判 C22 lease 异常清理 FAIL，原始[QA 报告与证据](../quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)保留。repair 1/2 Developer 修复源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已固定并完成自测，等待全新独立 QA；M3 总门仍未通过。具体变更、自测、日志与复演范围见[repair 1 DEV](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)和[报告索引](../quality/reports/README.md)。包 2 C19 P1 未修；真实服务/材料/凭据、Keychain、native/DMG、五日、双机和发布门 **NOT_RUN**，runtime **UNVERIFIED**。
 
 ## 当前状态（2026-10-12）
 
-### M3 包 3 Developer 交接（待全新独立 QA）
+### M3 包 3 repair 1 Developer 交接（待全新独立 QA）
 
-固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2`，分支 `codex/m3-integrated-packages`；源码提交与 Developer 检查日志分别见该 SHA 和 `.local/dev/m3-package-3/raw-logs/`。包 3实现 intake 跨 profile 状态恢复、同机 attempt lease/CAS、checkpoint 本地恢复、unknown no-resend、完整 receipt family active+monthly summary replay、profile-only 轮转日志及显式 reprocess UI。批量复演为 120 条 FakeLLM 完成流程跨 4 个业务月份，120 item / 120 job / 366 transaction receipts 入摘要；完整 counts、legacy undated / unknown 分类、日志和 QA 复演指引见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)。README 自动门 guarded pytest 438 passed、Web 56 tests / 12 files、类型/静态/lock/build/OpenAPI checks 全 exit 0；lint 有两个既有 warning、pytest 有一个既有 Starlette/httpx deprecation。DEV 不等于 QA/PASS。请在独立 checkout 固定该源码验收 C22/C23/C21 并回归 C13/C14/C19/C20；包 2的已知 C19 P1 要原样报告。
+固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，分支 `codex/m3-integrated-packages`。初验所测源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的 C22 lease cleanup 已判 FAIL；repair 1 在 Action 首次 running receipt 写失败与 intake job 目录创建失败时立即清除已取得 lease。异常 traceback 保持存活时新回归验证 lease 已移除；Action receipt 保持 confirmed、provider 0 次，同 operation 重试仅成功一次；review job 保持 pending 且 FakeLLM 0 次。120 流程 bulk 复跑后 lease 仍为 0。完整行为、自测命令/`.exit` 和 QA 复演说明见[repair 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)，日志在 `.local/dev/m3-package-3-repair-1/`。后端全套 guarded pytest 440 passed，相关 integrations 105 passed，Ruff/format/mypy/lock/build exit 0；一条既有 Starlette/httpx deprecation。请全新独立 QA 固定上述 SHA 重跑包 3范围与 lease 失败路径。DEV 自测不是 QA PASS；包 2 C19 P1、M3 总门与真实/发布未测项保持原状。
 
 历史交接（extra 1）：当时记录包 2 repair 2/2 QA FAIL 后用户批准一轮额外修复，源码固定 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 并等待独立 QA。该状态已由本文当前状态与 extra 2 交接取代；Sol 后续门与 QA 结果见 extra 1 历史报告。
 

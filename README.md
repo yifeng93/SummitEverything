@@ -6,9 +6,9 @@
 
 ## 当前状态
 
-2026-10-12 当前门：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 因 C19 P1（比较无资料对象仍引用无关预算）判 FAIL，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`，Sol 门见[报告](docs/quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。用户随后明确开始包 3；包 3 Developer 已固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2`，本机开发检查完成，正在等待独立 QA。Developer 自测不等于 QA 或整包 PASS；包 2 的 FAIL 保留，未获准修复或改写。M3 正式验收、合并及真实/发布门仍未完成；runtime UNVERIFIED。完整包 3 交接见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-3-DEV.md)与[报告索引](docs/quality/reports/README.md)。
+2026-10-12 当前门：M3 包 1 离线集成由 Sol 判 PASS；包 2 extra 2 因 C19 P1（比较无资料对象仍引用无关预算）判 FAIL，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`，Sol 门见[报告](docs/quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。用户明确调整顺序开始包 3；初验 QA 固定 `22e5ad945353929ebd781e1397f641c9d5fcf963` 判 C22 lease 异常清理 FAIL，见[QA 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md)。当前 repair 1/2 Developer 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已完成自测并待全新 QA；没有改变 QA 期望。包 2 FAIL 保留，M3 正式验收/合并及真实发布门未通过；runtime UNVERIFIED。交接见[最新实现](docs/handoff/LATEST-IMPLEMENTATION.md)、[repair 1 DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md)和[报告索引](docs/quality/reports/README.md)。
 
-包 3 使用用户明确调整后的执行顺序，不改变原产品规格或 Sol 验收门；旧 QA FAIL 报告及证据均保留。C21/C22/C23 独立验收仍 pending，真实服务、材料、凭据/Keychain、native/DMG、五日和双机为 NOT_RUN，runtime 为 UNVERIFIED。
+包 3 使用用户明确调整后的执行顺序，不改变原产品规格或 Sol 验收门；初验 FAIL 报告及证据保留。repair 1/2 源码正在等待独立 QA；C22/C23/C21 整包仍未通过。真实服务、材料、凭据/Keychain、native/DMG、五日和双机为 NOT_RUN，runtime 为 UNVERIFIED。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
@@ -16,9 +16,9 @@
 
 权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
 
-C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 包 1“会话与历史”由 Sol 判定离线集成 PASS，包 2 多轮 QA 的 FAIL 及当前 C19 P1 状态见本节当前门。用户直接授权包 3后，Developer 固定源码 `d03c548b69a4ec48a947486df191bd4af009b6e2` 并完成本机自测，等待独立 QA；DEV 自测不构成 QA PASS。M3 正式验收及真实/发布门仍未完成。
+C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。M3 包 1“会话与历史”由 Sol 判定离线集成 PASS，包 2 多轮 QA 的 FAIL 及当前 C19 P1 状态见本节当前门。包 3初验 `d03c548b69a4ec48a947486df191bd4af009b6e2` 的 C22 lease 清理判 FAIL；repair 1/2 Developer 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已固定，待新 QA。DEV 自测不构成 QA PASS；M3 正式验收及真实/发布门仍未完成。
 
-开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。包 1 离线集成已通过；包 2 extra 2 独立 QA 由 Sol 判 C19 P1 FAIL，当前不在修复中。用户直接授权包 3后，Developer 固定 `d03c548b69a4ec48a947486df191bd4af009b6e2`，等待独立 QA。Stage C 与发布 / 实际试用门仍独立未测。
+开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 完成整个功能包并固定 SHA，再由独立 QA Luna 验收，Sol 判定最终门。包 1 离线集成已通过；包 2 extra 2 独立 QA 由 Sol 判 C19 P1 FAIL，当前不在修复中。包 3初验的 C22 FAIL 正在 repair 1/2 固定源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 上复验。Stage C 与发布 / 实际试用门仍独立未测。
 
 ## 先读哪些文件
 
