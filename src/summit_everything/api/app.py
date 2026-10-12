@@ -5,6 +5,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import secrets
 import tempfile
 from collections.abc import AsyncIterator
@@ -135,6 +136,54 @@ from summit_everything.workspace.writer import (
     WorkspaceWriteConflict,
     WorkspaceWriter,
 )
+
+_SOURCE_ATTRIBUTION = re.compile(
+    r"(?:原文|原件|材料|资料|文档|文件|页面|邮件|记录|通知|对方|他人|朋友|团队|同事|source|document|email|message|team)"
+    r"[^\n。！？]{0,24}(?:写(?:着|道|到)?|提到|记载|表示|称|说|指出|显示|内容(?:是|为)|如下|[:：])",
+    re.IGNORECASE,
+)
+_FORWARDED_CONTENT = re.compile(
+    r"(?:我)?(?:转发|粘贴|复制|转述|摘录|引用)(?:过|的)?(?:这段|该)?"
+    r"(?:内容|文字|信息|原文)?(?:是|为|如下|[:：])",
+    re.IGNORECASE,
+)
+_SOURCE_ATTRIBUTION_PREFIX = re.compile(
+    _SOURCE_ATTRIBUTION.pattern + r"[\s\"“‘「『]*$", re.IGNORECASE
+)
+_FORWARDED_CONTENT_PREFIX = re.compile(
+    _FORWARDED_CONTENT.pattern + r"[\s\"“‘「『]*$", re.IGNORECASE
+)
+_QUOTE_PAIRS = (("“", "”"), ("‘", "’"), ("「", "」"), ("『", "』"), ('"', '"'), ("'", "'"))
+
+
+def _is_attributed_source_text(source: str, candidate: str) -> bool:
+    """Reject candidate spans framed as external source text in the real user message."""
+    if _SOURCE_ATTRIBUTION.search(candidate) or _FORWARDED_CONTENT.search(candidate):
+        return True
+    if any(line.lstrip().startswith(">") for line in candidate.splitlines()):
+        return True
+
+    start = source.find(candidate)
+    while start >= 0:
+        end = start + len(candidate)
+        prefix = source[max(0, start - 80) : start]
+        if _SOURCE_ATTRIBUTION_PREFIX.search(prefix) or _FORWARDED_CONTENT_PREFIX.search(prefix):
+            return True
+        line_start = source.rfind("\n", 0, start) + 1
+        if source[line_start:start].lstrip().startswith(">"):
+            return True
+        for opening, closing in _QUOTE_PAIRS:
+            quote_start = source.rfind(opening, 0, start)
+            quote_end = source.find(closing, end)
+            if quote_start < 0 or quote_end < end:
+                continue
+            attribution = source[max(0, quote_start - 80) : quote_start]
+            if _SOURCE_ATTRIBUTION_PREFIX.search(attribution) or _FORWARDED_CONTENT_PREFIX.search(
+                attribution
+            ):
+                return True
+        start = source.find(candidate, start + 1)
+    return False
 
 
 class RequestModel(BaseModel):
@@ -1521,42 +1570,7 @@ def create_app(
                     "message": "只能从本人历史问题中的原文提取记忆。",
                 },
             )
-        provenance_markers = (
-            "原文",
-            "原件",
-            "来源",
-            "材料",
-            "资料",
-            "引用",
-            "转述",
-            "摘录",
-            "粘贴",
-            "转发",
-            "以下内容",
-            "这段内容",
-            "文档写",
-            "页面写",
-            "邮件写",
-            "记录写",
-            "according to",
-            "source says",
-            "quoted",
-            "excerpt",
-            "forwarded",
-            "paste",
-            "“",
-            "”",
-            '"',
-            "‘",
-            "’",
-            "'",
-            "「",
-            "」",
-            "『",
-            "』",
-            ">",
-        )
-        if any(marker.casefold() in text.casefold() for marker in provenance_markers):
+        if _is_attributed_source_text(source, text):
             raise HTTPException(
                 status_code=422,
                 detail={

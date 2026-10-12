@@ -206,14 +206,14 @@ it('does not retry a stream that ends without its single terminal event', async 
 it('sends the selected answer mode and role, and confirms a server-verified memory candidate', async () => {
   vi.stubGlobal('crypto', { randomUUID: vi.fn().mockReturnValueOnce('request-1').mockReturnValueOnce('confirmation-1') })
   const role = { role_id: 'role-1', name: '简明', instructions: '先列依据', context_budget: 2000, created_at: '', updated_at: '' }
-  const candidate = { candidate_id: 'candidate-1', message_id: 'request-1', text: '我偏好简短回答。', state: 'pending', created_at: '' }
+  const candidate = { candidate_id: 'candidate-1', message_id: 'request-1', text: '我偏好用简短中文回答，并明确标出资料没有提供的数字。', state: 'pending', created_at: '' }
   let roles: typeof role[] = []
   let candidates: typeof candidate[] = []
   const queryBodies: Record<string, unknown>[] = []
   let confirmation: Record<string, unknown> | null = null
   const conversation = {
     conversation_id: 'conversation-1', title: '工作问题', created_at: '', updated_at: '', message_count: 1, state: 'completed',
-    messages: [{ request_id: 'request-1', question: '我偏好简短回答。', answer: '已确认资料回答。', state: 'completed', purpose: 'current', answer_mode: 'plan', source_statements: ['预算已确认。'], inferences: [], advice: ['补齐负责人。'], missing_information: ['未提供负责人。'], citations: [], events: [], created_at: '' }],
+    messages: [{ request_id: 'request-1', question: '我偏好用简短中文回答，并明确标出资料没有提供的数字。', answer: '已确认资料回答。', state: 'completed', purpose: 'current', answer_mode: 'plan', source_statements: ['预算已确认。'], inferences: [], advice: ['补齐负责人。'], missing_information: ['未提供负责人。'], citations: [], events: [], created_at: '' }],
   }
   const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
@@ -263,5 +263,5 @@ it('sends the selected answer mode and role, and confirms a server-verified memo
   fireEvent.click(await screen.findByLabelText('这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用'))
   fireEvent.click(await screen.findByRole('button', { name: '创建待确认记忆候选' }))
   fireEvent.click(await screen.findByRole('button', { name: '确认并保存' }))
-  await waitFor(() => expect(confirmation).toMatchObject({ confirmation_id: 'confirmation-1', text: '我偏好简短回答。' }))
+  await waitFor(() => expect(confirmation).toMatchObject({ confirmation_id: 'confirmation-1', text: '我偏好用简短中文回答，并明确标出资料没有提供的数字。' }))
 })

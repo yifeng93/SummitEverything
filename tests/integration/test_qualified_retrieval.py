@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 
-from summit_everything.domain.content import RetrievalPurpose
+import yaml
+
+from summit_everything.domain.content import RetrievalPurpose, content_sha256
 from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
@@ -17,7 +19,7 @@ from summit_everything.workspace.manifest import (
     create_project,
     create_workspace,
 )
-from summit_everything.workspace.reader import list_pages
+from summit_everything.workspace.reader import list_pages, read_page
 from summit_everything.workspace.writer import PageWriter
 
 
@@ -275,6 +277,60 @@ def test_current_and_history_queries_label_superseded_knowledge(tmp_path: Path) 
     assert superseded_id not in {citation.page_id for citation in current.citations}
     old_citation = next(c for c in history.citations if c.page_id == superseded_id)
     assert old_citation.validity == "superseded"
+
+
+def test_approval_state_is_independent_of_knowledge_validity_and_still_hash_bound(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    page_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        body="经确认的旧规则正文。",
+        title="旧规则",
+        metadata_extra={"validity": "superseded"},
+    )
+
+    superseded = read_page(root, page_id)
+    assert superseded.approval_state == "confirmed"
+    assert superseded.validity == "superseded"
+
+    # Reconfirming an invalidated page records the reviewed content without
+    # changing its knowledge lifecycle status or making it current.
+    invalid_metadata = {**superseded.metadata, "validity": "invalid"}
+    invalid_path = root / superseded.relative_path
+    metadata_text = yaml.safe_dump(invalid_metadata, allow_unicode=True, sort_keys=False)
+    invalid_path.write_text(f"---\n{metadata_text}---\n{superseded.body}", encoding="utf-8")
+    approval = invalid_metadata["approval"]
+    assert isinstance(approval, dict)
+    approval["content_sha256"] = content_sha256(invalid_metadata, superseded.body)
+    metadata_text = yaml.safe_dump(invalid_metadata, allow_unicode=True, sort_keys=False)
+    invalid_path.write_text(f"---\n{metadata_text}---\n{superseded.body}", encoding="utf-8")
+
+    invalid = read_page(root, page_id)
+    assert invalid.approval_state == "confirmed"
+    assert invalid.validity == "invalid"
+    result = PageWriter().confirm(
+        root,
+        metadata=invalid.metadata,
+        body=invalid.body,
+        confirmation_id="confirm-invalid-version",
+        operation_id="confirm-invalid-version",
+        expected_base_sha256=invalid.content_sha256,
+    )
+    assert result.page_versions[str(page_id)] == invalid.content_sha256
+    reapproved = read_page(root, page_id)
+    assert reapproved.approval_state == "confirmed"
+    assert reapproved.validity == "invalid"
+
+    invalid_path.write_text(
+        invalid_path.read_text(encoding="utf-8").replace("经确认的旧规则正文。", "外部改动正文。"),
+        encoding="utf-8",
+    )
+    changed = read_page(root, page_id)
+    assert changed.approval_state == "invalid"
+    assert changed.validity == "invalid"
 
 
 def test_explicit_fact_subject_excludes_a_different_project_but_comparison_keeps_both(

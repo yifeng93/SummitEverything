@@ -484,7 +484,7 @@ class PageWriter:
             area=StorageArea.FORMAL,
             purpose=(
                 RetrievalPurpose.HISTORY
-                if approved_metadata.get("validity") == "superseded"
+                if approved_metadata.get("validity") in {"superseded", "invalid"}
                 else RetrievalPurpose.CURRENT
             ),
         )

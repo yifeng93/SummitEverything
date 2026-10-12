@@ -158,7 +158,9 @@ def _approval_state(metadata: dict[str, Any], body: str, area: StorageName) -> A
         metadata,
         body,
         area=StorageArea(area),
-        purpose=RetrievalPurpose.CURRENT,
+        # Approval describes whether this exact content was confirmed. Validity
+        # separately controls whether it is current knowledge or history-only.
+        purpose=RetrievalPurpose.HISTORY,
     )
     return "confirmed" if result.eligible else "invalid"
 

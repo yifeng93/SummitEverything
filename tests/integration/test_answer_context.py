@@ -499,3 +499,80 @@ def test_role_budget_and_intent_hash_reject_context_changes(tmp_path: Path) -> N
     assert rejected.json()["error"]["code"] == "context_budget_exceeded"
     assert client.get("/api/v1/conversations").json()["items"] == []
     client.close()
+
+
+def test_memory_candidate_distinguishes_first_person_preferences_from_quoted_source(
+    tmp_path: Path,
+) -> None:
+    profile = tmp_path / "profile"
+    root = tmp_path / "workspace"
+    service = _ready_workspace(root, profile)
+    client = TestClient(
+        create_app(session_token=TOKEN, profile_root=profile, query_service=service)
+    )
+    client.headers.update({"Authorization": f"Bearer {TOKEN}"})
+    _open(client, root)
+    conversation_id: str | None = None
+
+    preferences = (
+        (
+            "我偏好用简短中文回答，并明确标出资料没有提供的数字。",
+            "我偏好用简短中文回答，并明确标出资料没有提供的数字。",
+        ),
+        (
+            "我希望回答时标明引用来源，并说明资料没有覆盖的部分。",
+            "我希望回答时标明引用来源，并说明资料没有覆盖的部分。",
+        ),
+        (
+            "材料原文：“项目于十月启动。”另外，我偏好回答时注明引用来源。",
+            "我偏好回答时注明引用来源",
+        ),
+    )
+    for question, preference in preferences:
+        request_id = uuid4()
+        response = client.post(
+            "/api/v1/queries",
+            json={
+                "request_id": str(request_id),
+                "conversation_id": conversation_id,
+                "question": question,
+                "fingerprint": "answer-context-test",
+            },
+        )
+        assert response.status_code == 200, response.text
+        if conversation_id is None:
+            conversation_id = response.headers["X-Conversation-ID"]
+        candidate = client.post(
+            "/api/v1/memory/candidates",
+            json={
+                "message_id": str(request_id),
+                "text": preference,
+                "user_expression": True,
+            },
+        )
+        assert candidate.status_code == 201, candidate.text
+        assert candidate.json()["state"] == "pending"
+
+    quoted_source = "材料原文：“我偏好简短回答。”"
+    request_id = uuid4()
+    response = client.post(
+        "/api/v1/queries",
+        json={
+            "request_id": str(request_id),
+            "conversation_id": conversation_id,
+            "question": quoted_source,
+            "fingerprint": "answer-context-test",
+        },
+    )
+    assert response.status_code == 200, response.text
+    quoted = client.post(
+        "/api/v1/memory/candidates",
+        json={
+            "message_id": str(request_id),
+            "text": "我偏好简短回答",
+            "user_expression": True,
+        },
+    )
+    assert quoted.status_code == 422
+    assert "引用或材料" in quoted.json()["error"]["message"]
+    client.close()
