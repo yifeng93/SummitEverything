@@ -1,5 +1,7 @@
 # 最新实现交接
 
+2026-10-12 最新门：extra 2 的无依据诊断修复通过，但比较无资料对象仍引用无关预算，C19 P1 导致包 2 FAIL。产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`。已用完当前授权轮次，停止产品修改；包 3 未实施，待用户决定额外收口授权。 [Sol 核证和待批收口](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。下方旧轮次状态按历史保留，由本条取代。
+
 2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。包 2 extra 1 QA 曾 FAIL，用户已明确批准仅一轮 extra 2；Developer extra 2 固定源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，自测完成，待全新独立 QA 和 Sol 判门。若仍 FAIL，自动修复额度耗尽并交用户决定。全部旧 FAIL 报告与证据保留；包 3 未开始，M3 正式门/合并及真实/发布门未执行，runtime UNVERIFIED。详见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)。下方 extra 1 及更早内容均为历史记录。
 
 ## 当前状态（2026-10-12）

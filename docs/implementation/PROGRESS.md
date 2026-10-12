@@ -4,6 +4,8 @@
 
 ## 当前状态与下一步
 
+2026-10-12 最新门：extra 2 的无依据诊断修复通过，但比较无资料对象仍引用无关预算，C19 P1 导致包 2 FAIL。产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`。已用完当前授权轮次，停止产品修改；包 3 未实施，待用户决定额外收口授权。 [Sol 核证和待批收口](../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。下方旧轮次状态按历史保留，由本条取代。
+
 2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS。extra 1 QA 曾 FAIL，用户明确批准仅一轮 extra 2；Developer 已固定 `c41147fe54bf95103c741df192fc76eb9df0f9e7` 并完成自测，待全新独立 QA 和 Sol 判门。若 extra 2 QA 仍 FAIL，自动修复额度耗尽，停止并交用户决定。旧 FAIL 报告/证据均保留；包 3 未实施，M3 正式验收/合并及真实/发布门未执行，runtime UNVERIFIED。见[extra 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)及[extra 1 Sol 历史门](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。
 
 历史交接：extra 1 期间 QA pending 的状态已被本节最新状态取代；该轮真实结论见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)、[extra 1 Sol 门](../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)和其原始 QA 报告。
@@ -49,7 +51,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
-| M3 包 2 完整问答、角色与记忆 | extra 1 完成 | Sol 判 FAIL | 固定源码 `bb997a42`，QA `507cc1f`；C19 无依据原因误报，继续修复需用户授权 |
+| M3 包 2 完整问答、角色与记忆 | extra 2 完成 | Sol 判 FAIL / C19 P1 | 无依据诊断已修；比较无资料对象误引其他预算；额外收口需用户授权 |
 | M3 包 3 连续状态与归档压缩 | 未开始 | 未开始 | 依赖包 2 QA gate；按现有事务与 action receipts 复用 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |

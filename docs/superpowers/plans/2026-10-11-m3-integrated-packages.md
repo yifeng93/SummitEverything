@@ -27,6 +27,8 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
+2026-10-12 最新门：extra 2 的无依据诊断修复通过，但比较无资料对象仍引用无关预算，C19 P1 导致包 2 FAIL。产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7`，QA 固定 `d2236c243ac28c86b94acd8e8dd139dc865b7b75`。已用完当前授权轮次，停止产品修改；包 3 未实施，待用户决定额外收口授权。 [Sol 核证和待批收口](../../quality/reports/2026-10-12-M3-SOL-EXTRA-2-GATE.md)。下方旧轮次状态按历史保留，由本条取代。
+
 2026-10-12 当前状态：包 1 离线集成由 Sol 判 PASS；包 2 extra 1 QA 曾 FAIL。用户明确批准仅一轮 extra 2，Developer 固定产品源码 `c41147fe54bf95103c741df192fc76eb9df0f9e7` 并完成全量自动自测，当前待全新独立 QA，尚无 extra 2 QA/Sol PASS。若该轮 QA 仍 FAIL，自动修复额度耗尽，交用户决定。包 3只读准备完成、实现未开始；M3 正式门与合并未执行。细节及 QA 复演范围见[extra 2 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md)；extra 1 历史门见[Sol 报告](../../quality/reports/2026-10-12-M3-SOL-EXTRA-1-GATE.md)。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
