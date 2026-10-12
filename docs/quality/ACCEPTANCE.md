@@ -4,15 +4,15 @@
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 统一修复 repair 2/2 Developer 候选 `f79f613a902758da3173a5b27219fa568a912f5e` 已完成自测、fresh QA NOT_RUN；repair 1/2 C19 P1 FAIL与此前历史结论保留，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。C22/C23/C21为已测离线包级范围，C19不豁免。固定版本和证据见[Sol 门](reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)、[包 3 QA 复验](reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)与[C19 repair 2 DEV 记录](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)；下方产品验收要求不变。
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
 ## 当前结论与范围（2026-10-11）
 
 固定源码 `576895f6983ca41cacbbad45a9075b97b9986189` 的独立离线QA已通过，并以PR #10 / merge `41207e5bfb81b535c0254fd4ac242df11da40d67` 合入main。后端388项、25项独立失败路径与实际合成浏览器/原生开发壳复验通过；合并后13项检查通过（Web45）。历史7f/8b/fd FAIL保留，缺陷只在新SHA复验后关闭。真实接入、OS Keychain、模型R03质量与安装包等门仍NOT_RUN；完整Stage B/v1未验收。证据发布范围与合并后初次瞬时失败见[收口记录](reports/2026-10-11-STAGE-B-POSTMERGE.md)。
 
-### C19 统一候选状态（2026-10-12）
+### C19统一周期状态（2026-10-12）
 
-包 2 C19 P1 的 extra 2、统一候选初验与 repair 1/2 QA FAIL 均保留各自历史结论。最后自动 repair 2/2 Developer 固定源码 `f79f613a902758da3173a5b27219fa568a912f5e` 自测完成，fresh 独立 QA NOT_RUN。对象跨度→局部pair→维度并集的收口、无对象多主题与 partial/no-evidence 回归见[repair 2 DEV 报告](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)。不改 C19 产品标准、不据 DEV 自测覆盖历史 FAIL，也不代表 M3通过。
+最终repair2/2独立QA与Sol判FAIL，剩余信息性主题词剥除P1；已用完两轮自动返工，待用户决定追加范围。固定版本/原始证据见[Sol门](reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)及[最终QA](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。下方C19及全部产品验收要求不变；不以自动检查或旧反例通过替代本次实际失败。
 
 ### 阶段 A 历史结论
 

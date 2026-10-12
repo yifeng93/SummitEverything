@@ -1,10 +1,12 @@
 # 开发与独立验收报告索引
 
-2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2、统一候选初验和 repair 1/2 的 P1 FAIL 均保留；最后自动 repair 2/2 产品源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已完成 DEV 自测，fresh QA NOT_RUN。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
-## 当前包 2 C19 统一范围 repair 2/2（DEV 完成，fresh QA 待运行）
+## 当前 C19 周期：最终 repair 2/2 FAIL，待用户决定
 
-[C19 repair 2 DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)：固定源码 `f79f613a902758da3173a5b27219fa568a912f5e`。对象及局部主题 pairs 成为范围、引用 passage 和 missing 的真源；覆盖混合 family+exact、exact+exact、主题顺序、共享后缀、同对象/无对象多主题、partial 与无依据零 provider。最终矩阵 guarded pytest 450 passed、Web 56/12 files，其余适用检查 exit 0；旧 QA holdout 本地副本12/12、修正后的新 holdout副本9/9、qualified retrieval28/28。Developer 自测不关闭 repair 1/2 P1 FAIL；fresh QA 待运行。日志与退出码在 `.local/dev/c19-unified/r2-final/run2/`。
+[Sol最终门](2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)核证[最终独立QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)：固定源码 `f79f613a902758da3173a5b27219fa568a912f5e`，QA `262f4eaa418d70f983f3b0b260d3635cd2e28c92`，57项manifest匹配；原12+纠正9项通过，新结构矩阵15 PASS/7 FAIL同归一化P1。450后端/Web56/静态/构建与隔离OpenAPI生成PASS；浏览器真实复现并history reopen保留。两轮自动返工均已结束，停止源码修改，未批准第三轮或M3正式合并。
+
+[repair2 DEV](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)保留当时自测/待QA记录；后续结果以固定SHA独立QA与Sol门为准。此前的初验、repair1 FAIL及更早extra历史不撤销；旧错误missing断言的纠正只在独立副本进行，原证据未改。
 
 ## 包 2 C19 统一修复 repair 1/2（2026-10-12，历史 DEV 与独立 QA 完成；P1 FAIL）
 

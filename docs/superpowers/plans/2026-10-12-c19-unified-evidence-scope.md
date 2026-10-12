@@ -99,3 +99,7 @@ repair 1 固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`、QA HEAD `04a0
 旧QA的 `test_fresh_same_page_multiple_objects_do_not_cross_pair_dimensions` 断言要求已有赤陶证章正文仍报告赤陶 missing，与“完整对象×主题 pair”验收含义矛盾。未改动旧 QA 报告、harness 或证据；仅在 Developer 本地副本纠正该项完整预期并增加 citation/provider passage 命中断言，再补缺少赤陶证章正文的partial反例，见repair2报告。fresh QA 应重新证明这两种情况，不继承本地副本的自测结论。
 
 候选尚未经过 fresh QA。repair 1/2 C19 P1 FAIL仍有效；包 2及整体 M3未通过正式验收或合并。真实 provider/服务/材料/凭据、Keychain、native/DMG、五日/双机/发布仍NOT_RUN，runtime UNVERIFIED。
+
+## 当前结论：最后自动返工结束
+
+最终source `f79f613a902758da3173a5b27219fa568a912f5e` / QA `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 仍有主题词剥除P1，原12+纠正9项通过，新15 PASS/7 FAIL同根因。自动repair2/2已结束，不因额度中断再开始第三轮。证据与具体待批提议见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)；源码冻结，正式M3未通过。

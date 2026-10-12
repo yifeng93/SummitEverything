@@ -4,13 +4,11 @@
 
 ## 当前状态与下一步
 
-### C19 统一证据范围 repair 2/2（2026-10-12，DEV 完成，fresh QA 待运行）
+### C19统一周期收口（最后自动返工仍 FAIL，待用户决定）
 
-最后自动返工候选固定产品源码 `f79f613a902758da3173a5b27219fa568a912f5e`。按局部对象跨度先得到所问对象×主题 pairs，再从 pairs 汇总维度；对象主题顺序、无对象的并列主题、共享预算/排期后缀、exact+exact 和同对象多主题均有回归。对象、句段、citation/passages 与 missing 继续使用同一 pairs；current/hash 资格门不变，零支持时零 provider 调用。旧 QA 12 项 holdout 副本 12 passed；repair 1 新增 holdout 的本地副本经 Sol 核定纠正一条与已存在赤陶正文冲突的 missing 断言后 9 passed，并新增 partial 对照。版本控制中的旧 QA harness 与证据均未修改。完整覆盖、断言纠正理由、边界和独立 QA 指南见[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)与[统一范围计划](../superpowers/plans/2026-10-12-c19-unified-evidence-scope.md)。
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 证据见[Sol门](../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[QA](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
-README 适用全矩阵最终执行：guarded pytest 450 passed；Web 56 tests / 12 files；Ruff check/format、mypy 43 源文件、lock、uv build、OpenAPI types 生成、Web typecheck/lint/build 均 exit 0。原始日志与实际退出码在开发 checkout `.local/dev/c19-unified/r2-final/run2/`；第一次 format check 的布局失败也保留于 `run1/`，修正后最终全矩阵通过。仅有 1 条既有 Starlette/httpx deprecation 和既有 React effect lint warnings。当前 fresh QA 为 NOT_RUN；repair 1/2 C19 P1 FAIL仍是有效历史，DEV 自测不代表包 2或 M3 PASS。
-
-M3 包 1、包 3离线集成由 Sol 判 PASS；包 3复验报告见[Sol 门](../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立 QA](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。包 2 C19 当前候选、QA 状态和未测边界见上方与[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
+本次实现已统一对象/局部主题pair、候选/邻页/最终引用和missing覆盖；原反例已闭，剩余主题归一化P1未闭。完整代码、初验及两轮QA原始证据保留；额度中断不重置返工次数。下一步建议Sol直接修复请求外壳/主题内容边界再fresh QA，但尚未获追加授权。main未合并，不创建真实任务/知识副作用，不调用真实服务。
 
 包 3实现包括跨 profile intake 状态读取、同机 advisory attempt lease、dead-owner unknown/no-resend、provider checkpoint 仅恢复本地稿件的 CAS 流程；完成 intake items/jobs、capture、mutation、SHA write-intent、Feishu import receipts 的 active+monthly summary 回放；profile-only 轮转诊断日志。原件、完整稿件和确认记录保留，未知/未终态不归档。120 条合成流程样本跨 2026-06 至 09：120 item + 120 job + 366 transaction receipt 进入各自月汇总；另有一个 unknown 新流程和一个无日期 legacy item 保持 active。setup 在 2026-10 的两条 SHA receipt 单独报告；4 个合成 Feishu receipt 仅测文件归档路径，Fake provider 导入/回放由独立集成测试覆盖。详见 DEV 报告与 `.local/dev/m3-package-3/` 原始日志。
 
@@ -55,7 +53,7 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
 | M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
-| M3 包 2 完整问答、角色与记忆 | C19 repair 1/2 DEV 源码 `df1aac2`；fresh QA 待开始 | extra 2 与统一候选初验均有 C19 P1 FAIL；当前候选未判 | exact topic 范围修复等待全新复验；M3 总门仍未通过 |
+| M3 包 2 完整问答、角色与记忆 | 统一 repair 2/2 源码 `f79f613` / QA `262f4ea` | Sol 判 FAIL / C19 P1 | 主题词剥除造成已有资料误缺失；本周期两轮用完，待用户决定 |
 | M3 包 3 连续状态与归档压缩 | repair 1/2 源码 `ea11fc5`；QA 固定 `7fd8a53` | Sol 判离线集成 PASS | C22 lease 异常已独立复验关闭；C22/C23/C21相关离线范围通过；包 2 C19 P1 保留，M3 正式门未通过 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |

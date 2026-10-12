@@ -1,6 +1,6 @@
 # SummitEverything v1 Implementation Plan
 
-2026-10-12 当前：M3 包 1和包 3离线集成由 Sol 判 PASS；包 3 repair 1/2 受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已经全新独立 QA 复验及 Sol 核证。包 2 C19 extra 2 与统一候选初验的 P1 FAIL 均保留；用户重新授权后的 repair 1/2 Developer 源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已自测并等待全新 QA，未获 Sol 评定。M3 正式验收与合并尚未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED。证据见[当前 C19 repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)、[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)；历史条目保持各自版本归属。
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
 > 给 agent：按 executing-plans 的逐任务方式执行。阶段验收须由独立执行环境完成；M1 已由独立 QA 在固定 checkout 验收。后续阶段继续使用隔离模拟材料，不能假设真实外部门已获授权。
 
@@ -14,7 +14,7 @@
 
 ## 当前阶段记录（更新于 2026-10-12；下方历史任务清单保留）
 
-M1 与 M2 阶段 A 在 Fake-only 范围已收口，Stage B 离线源码 / 开发壳已独立 QA 并合入 main；细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。M3 包 1和包 3离线集成 PASS；包 2 C19 extra 2 与统一候选初验的 P1 FAIL 保留，当前 repair 1/2 源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 等待独立 QA，故仍阻塞 M3 正式门。Stage C、M3 正式验收及 M4–M5 仍未通过；不重复执行历史 Stage B 提示词。
+M1与M2阶段A和StageB的离线基线已收口并合入main；历史细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)及[报告索引](../../quality/reports/README.md)。M3包1/3保持离线PASS，包2C19统一repair2/2已独立QA并由Sol判FAIL，停止自动修改，等待用户决定。正式M3、StageC、M4/M5均未通过；不重复执行旧StageB提示词。
 
 ## 全局执行规则与验收门
 

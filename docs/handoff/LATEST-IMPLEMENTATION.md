@@ -1,16 +1,16 @@
 # 最新实现交接
 
-2026-10-12 当前总状态见下方各包交接：包 1、包 3离线集成 PASS；包 2 C19 repair 2/2 Developer 候选源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已完成自测，等待全新独立 QA。C19 repair 1/2 QA P1 FAIL 与更早 FAIL 历史仍有效；包 2和 M3 正式验收、合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
 ## 当前状态（2026-10-12）
 
-### 包 2 C19 统一修复 repair 2/2（DEV 完成；fresh QA 待运行）
+### 包 2 C19：统一周期结束，repair 2/2 QA / Sol FAIL
 
-用户已授权的最后自动修复轮完成，产品源码固定 `f79f613a902758da3173a5b27219fa568a912f5e`。局部请求解析先确定原文对象跨度及其主题 pair，然后再汇总 dimensions；不再从合并后的全局维度反推 pair。明确并列的对象/主题、同一对象的多主题、共享预算/排期后缀和无显式对象的并列 exact/family 主题均直接过 pair 真源。彩色牙刷储存等复合描述不拆成宽泛存储 scope。scope gate、句段关联、citation passage 和 missing 使用 required_pairs；预算/hash资格门未变，partial 和无依据保持精确 missing，零证据时不调用 provider。
+产品源码 `f79f613a902758da3173a5b27219fa568a912f5e`；固定QA交接 `262f4eaa418d70f983f3b0b260d3635cd2e28c92`；QA-only提交 `2061b6260ece1b3887fc1ba34cc3960e61716b2a` 已导入功能分支。57项证据逐项经Sol匹配，生成物隔离核对通过，产品diff0/QA clean/服务停止。当前HEAD仅报告与状态文档增量，产品源码冻结。
 
-最终 README 矩阵全部 exit 0：guarded pytest 450 passed；12 项旧 QA holdout 副本 12 passed、repair 1 新增 QA holdout 本地副本 9 passed、qualified retrieval 28 passed；Web 56 tests / 12 files；Ruff、mypy 43 个源文件、lock/build/OpenAPI types/Web typecheck/lint/build 均通过。原始日志与退出码在 Developer worktree `.local/dev/c19-unified/r2-final/run2/`；首轮纯格式检查失败留在 `run1/`，格式修正后最终重跑全矩阵通过。对新的9项本地副本中一条赤陶 missing 错误断言的纠正和 partial 对照说明见[repair 2 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)。版本控制中的旧 QA harness、报告和证据未改。
+原12及纠正后的9项holdout通过；新15 PASS/7 FAIL集中为未知主题“访客设备领用”被改成“访客领用”，现有正文无法匹配。真实浏览器/history reopen复现。自动450后端、Web56/静态/类型/lock/build与OpenAPI隔离生成PASS不改变C19 FAIL。完整材料见[最终QA](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)和[Sol门](../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)；历史失败不改写，旧harness中错误missing断言仅在副本纠正并加强完整/partial对照。
 
-repair 1/2 独立 QA 对混合对象/主题仍判 P1 FAIL；该报告、此前 extra/初验 FAIL与 M3 正式未通过状态均保留。当前 fresh QA NOT_RUN；请按本报告固定 SHA 独立验收并变化实体、主题、顺序、并列标点和“的”表达，覆盖完整、partial、双方无依据、三种回答模式、现有7项正控、12项旧 holdout，以及本轮9项 fresh 复演。无对象多主题与共享后缀需单独核 citation/passages，不能因为缺少显式对象而跨主题取材。真实模型/服务/材料/凭据、Keychain、native/DMG、五日/双机和发布仍 NOT_RUN，runtime UNVERIFIED。包 2与 M3未通过正式验收或合并。
+本次用户重新授权的统一周期已用完自动修复1/2、2/2，按AGENTS第62行停止源码修改并请用户决定。提议由Sol直接收口请求外壳与主题内容的归一化边界、主题内伪对象识别，再固定SHA交全新QA；尚未批准。主分支仍未合并，正式M3/真实门未通过，不重启旧Stage B、Stage C或M4/M5。
 
 ### M3 包 3：独立离线集成 PASS
 

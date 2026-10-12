@@ -4,7 +4,7 @@
 
 ## 起点与执行规则
 
-- 2026-10-12 当前：M3 包 1、包 3离线集成由 Sol 判 PASS；包 3受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，全新 QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2` 完成 repair 1/2 复验。包 2 C19 extra 2 与统一候选初验的 P1 FAIL 均保留；用户重新授权后的 repair 1/2 Developer 源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 已完成自测，等待全新独立 QA，不能据 DEV 自测改判包 2或 M3 PASS。M3 正式验收与合并未通过。真实服务/材料/凭据、Keychain、native/DMG、五日、双机及发布门 NOT_RUN，runtime UNVERIFIED。详见[包 3 Sol 门](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)与当前 C19 [repair 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md)。
+- 2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -27,7 +27,7 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 当前状态：包 2 C19 P1 的 extra 2 和统一候选初验 QA FAIL 均保留；用户重新授权后的 repair 1/2 Developer 固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`，定向与全量自测完成、fresh QA 待开始。包 3 repair 1/2 离线集成 PASS；M3 总门仍未通过。
+2026-10-12 当前状态：用户重新授权C19后，统一初验及两轮自动返工均已独立QA；最终repair2/2源码 `f79f613` 仍有主题词剥除P1，Sol判FAIL。停止自动修改、待用户决定。包1/3保持各自离线PASS，M3正式门未通过。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
@@ -38,7 +38,7 @@
 - [x] Developer extra 2 定向检查及 README 全量后端/Web/静态/类型/构建与生成契约检查；guarded pytest 417 passed、Web 55 tests / 12 files，所有自动门 exit 0（DEV 自测非 QA；固定 SHA `d2236c2` 最终 QA 因 C19 P1 判 FAIL）。
 - [x] 固定 SHA `d2236c243ac28c86b94acd8e8dd139dc865b7b75` 的整包独立 QA 已完成；Sol 判 C19 P1 FAIL，无资料比较仍引用不相关预算。用户随后直接授权包 3，未授权继续修包 2；完整证据见 extra 2 QA / Sol 门报告。
 
-包 2 原首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，[报告与证据](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)保留；repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 也均判 FAIL，原报告不改写。extra 1 是用户明确批准的单轮额外修复，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，行为、自测、限制和全新 QA 复演范围见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。extra 1 QA 最终 FAIL，用户随后明确批准 extra 2；extra 1 的旧 QA pending 文案仅保留为历史。extra 2 QA 最终由 Sol 判 C19 P1 FAIL；该结论对应当时受测 SHA 且原报告保留。用户随后直接授权包 3，后又重新授权 C19 统一修复；当前固定 DEV 候选与待验状态见本节顶部。
+包 2 原首轮独立 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，[报告与证据](../../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)保留；repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 也均判 FAIL，原报告不改写。extra 1 是用户明确批准的单轮额外修复，固定源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6`，行为、自测、限制和全新 QA 复演范围见[extra 1 DEV 报告](../../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)。extra 1 QA 最终 FAIL，用户随后明确批准 extra 2；extra 1 的旧 QA pending 文案仅保留为历史。extra 2 QA 最终由 Sol 判 C19 P1 FAIL；该结论对应当时受测 SHA 且原报告保留。用户随后直接授权包 3，后又重新授权 C19 统一修复；当前固定源码、最终QA FAIL及待用户决定状态见本节顶部。
 
 ## 包 3：连续工作与归档压缩（离线集成 PASS）
 

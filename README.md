@@ -6,13 +6,13 @@
 
 ## 当前状态
 
-2026-10-12 当前 C19 统一修复 repair 2/2 Developer 候选源码 `f79f613a902758da3173a5b27219fa568a912f5e` 已固定，README 适用矩阵全部 exit 0（guarded pytest 450、Web 56）。fresh 独立 QA 尚未运行；repair 1/2 QA 的 C19 P1 FAIL及更早 extra/候选初验 FAIL 历史均保留，不因 DEV 自测改判。pair 解析规则、旧 holdout 断言纠正说明、完整自测与新 QA 交接见[repair 2 DEV 报告](docs/quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md)。M3 正式验收与合并未通过。
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](docs/quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](docs/quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
-M3 包 1、包 3离线集成由 Sol 判 PASS；包 3源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`。包 2 C19 现有 DEV 候选与旧 FAIL 状态见上方；M3 正式验收及合并未通过。包 3证据见[Sol 门判断](docs/quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立复验](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
+M3 包 1、包 3离线集成由 Sol 判 PASS；包 3源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`。包 2 C19 最终 QA / Sol FAIL 与待用户决定状态见上方；M3 正式验收及合并未通过。包 3证据见[Sol 门判断](docs/quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立复验](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
 
 包 3交付跨 profile 待审流程接续、中断后的未知状态及 checkpoint 本地恢复、完成回执月归档与稳定重放、仅本机 profile 的轮转诊断日志。原件、完整稿和确认记录保留；未知调用不会自动重发。120 条合成流程跨四个业务月，完成流程 active item/job、checkpoint、lease 均为 0，unknown 和 legacy undated 例外保留。
 
-独立后端 440、Web 56 项及适用静态/类型/构建检查通过；双 profile 浏览器接续与未知状态提醒通过。开发和证据在 `codex/m3-integrated-packages`，未合并 main。当前入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。
+包 3当时独立后端 440、Web 56 项及适用静态/类型/构建检查通过；双 profile 浏览器接续与未知状态提醒通过。最新 C19 独立检查450项及其产品 FAIL见上方。开发和证据在 `codex/m3-integrated-packages`，未合并 main。当前入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。
 
 2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
