@@ -1,0 +1,42 @@
+{
+  "case": "C20-real-user-message-provenance-and-classification",
+  "ui_observation": {
+    "message_entered_with_browser_setValue": true,
+    "user_expression_checkbox_checked": true,
+    "create_candidate_enabled": true,
+    "rendered_result": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。"
+  },
+  "message_results": {
+    "first_person_preference": {
+      "conversation_id": "559148ab-2be5-4b27-a58c-3e2c44c2afde",
+      "message_id": "ea44a3d1-70de-4545-bac1-fdcc16ecd613",
+      "state": "completed",
+      "user_expression": true,
+      "http": 422,
+      "code": "validation_error",
+      "message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+      "candidate_id": null
+    },
+    "short_first_person_control": {
+      "conversation_id": "2b7f5463-5253-4331-a4fb-3d5becaf8f0a",
+      "message_id": "6417a78c-9f17-48bf-a9e3-5c83aa0d1fce",
+      "state": "completed",
+      "user_expression": true,
+      "http": 201,
+      "code": null,
+      "message": null,
+      "candidate_id": "96a27c76-4cbd-4dcb-8b78-18f9ab173fb6",
+      "observed_pending_candidate_id": "96a27c76-4cbd-4dcb-8b78-18f9ab173fb6"
+    },
+    "quoted_source_canary": {
+      "conversation_id": "a749ef48-3b2b-42e7-b512-8016280401d2",
+      "message_id": "6278bbc3-a365-4626-b56d-2e242d04a815",
+      "state": "completed",
+      "user_expression": true,
+      "http": 422,
+      "code": "validation_error",
+      "message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+      "candidate_id": null
+    }
+  }
+}

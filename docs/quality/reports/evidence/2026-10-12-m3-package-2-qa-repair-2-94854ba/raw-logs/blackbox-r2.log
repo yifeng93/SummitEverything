@@ -1,0 +1,195 @@
+[
+  {
+    "case": "C21-profile-B-open",
+    "status": "PASS",
+    "detail": {
+      "http": 201
+    }
+  },
+  {
+    "case": "C21-profile-B-local-state-isolation",
+    "status": "PASS",
+    "detail": {
+      "roles": 0,
+      "memories": 0,
+      "history": 0,
+      "index": "ready"
+    }
+  },
+  {
+    "case": "C20-synthetic-user-message-setup",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "message_found": true
+    }
+  },
+  {
+    "case": "C20-real-user-message-source",
+    "status": "PASS",
+    "detail": {
+      "request_id": "4f448989-8098-4537-b375-fd21ddacf071",
+      "conversation_id": "6f7d3ad8-fc91-4d79-a410-7d6cca8fcf19"
+    }
+  },
+  {
+    "case": "C20-no-attestation-rejected",
+    "status": "PASS",
+    "detail": {
+      "http": 422,
+      "body": {
+        "error": {
+          "code": "validation_error",
+          "message": "Request contains invalid fields",
+          "request_id": "85a1837bae998c34"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-assistant-text-rejected",
+    "status": "PASS",
+    "detail": {
+      "http": 422,
+      "body": {
+        "error": {
+          "code": "validation_error",
+          "message": "只能从本人历史问题中的原文提取记忆。",
+          "request_id": "16b41029e1acad3f"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-forged-message-id-rejected",
+    "status": "PASS",
+    "detail": {
+      "http": 422,
+      "body": {
+        "error": {
+          "code": "validation_error",
+          "message": "只能从本人历史问题中的原文提取记忆。",
+          "request_id": "10c57d725ca9d40d"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-quoted-source-canary-rejected",
+    "status": "PASS",
+    "detail": {
+      "query_http": 200,
+      "candidate_http": 422,
+      "candidate_body": {
+        "error": {
+          "code": "validation_error",
+          "message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+          "request_id": "936f4a685642a3b3"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-pending-candidate-idempotency",
+    "status": "PASS",
+    "detail": {
+      "query_http": 200,
+      "first_http": 201,
+      "second_http": 201,
+      "same_id": true
+    }
+  },
+  {
+    "case": "C13-current-history-qualification-api",
+    "status": "FAIL",
+    "detail": {
+      "current_status": 200,
+      "history_status": 200,
+      "current_validities": [],
+      "history_validities": []
+    }
+  },
+  {
+    "case": "C14-idempotent-replay-after-context-change",
+    "status": "PASS",
+    "detail": {
+      "initial_http": 200,
+      "replay_http": 200,
+      "same_sse": false,
+      "same_events": true,
+      "initial_types": [
+        "status",
+        "delta",
+        "completed"
+      ],
+      "replay_types": [
+        "status",
+        "delta",
+        "completed"
+      ],
+      "initial_final": {
+        "request_id": "0474b0dc-546f-44c9-b556-0dc62da22770",
+        "seq": 3,
+        "type": "completed",
+        "data": {
+          "answer_id": "efad60e7-0d7c-4c2c-83be-76ca9fb2cc82",
+          "question": "青岚计划的预算上限是多少？",
+          "text": "本地索引尚未就绪。",
+          "citations": [],
+          "answer_mode": "fact",
+          "source_statements": [],
+          "inferences": [],
+          "advice": [],
+          "missing_information": [
+            "请先完成当前模型版本的索引。"
+          ],
+          "purpose": "current",
+          "index_status": "not_ready"
+        }
+      },
+      "replay_final": {
+        "request_id": "0474b0dc-546f-44c9-b556-0dc62da22770",
+        "seq": 3,
+        "type": "completed",
+        "data": {
+          "advice": [],
+          "answer_id": "efad60e7-0d7c-4c2c-83be-76ca9fb2cc82",
+          "answer_mode": "fact",
+          "citations": [],
+          "index_status": "not_ready",
+          "inferences": [],
+          "missing_information": [
+            "请先完成当前模型版本的索引。"
+          ],
+          "purpose": "current",
+          "question": "青岚计划的预算上限是多少？",
+          "source_statements": [],
+          "text": "本地索引尚未就绪。"
+        }
+      },
+      "provider_calls_before_replay": 0,
+      "provider_calls_after_replay": 0
+    }
+  },
+  {
+    "case": "C14-same-request-id-different-mode-conflict",
+    "status": "PASS",
+    "detail": {
+      "http": 409
+    }
+  },
+  {
+    "case": "C14-structured-history-fields",
+    "status": "PASS",
+    "detail": {
+      "fields_present": [
+        "answer_mode",
+        "source_statements",
+        "inferences",
+        "advice",
+        "missing_information"
+      ],
+      "role_id_retained": true
+    }
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "case": "C21-same-profile-workspace-switch-isolation",
+  "open_http": [
+    201,
+    201,
+    201
+  ],
+  "workspace_b_before": {
+    "workspace_id": "4acaeb8f-add6-4b72-b06d-d4c5dbf4cdcb",
+    "roles": 0,
+    "memories": 0,
+    "history": 0,
+    "index": "not_ready"
+  },
+  "workspace_a_during": {
+    "workspace_id": "803b7989-bd8b-492a-888f-534df56b5100",
+    "role_names": [
+      "QA 回放角色"
+    ],
+    "memory_count": 0,
+    "history_count": 19,
+    "workspace_b_markers_absent": true,
+    "index": "ready",
+    "profile_path": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-r2/SummitEverything/.local/qa/m3-package-2-repair-2/profiles-r2-A/803b7989-bd8b-492a-888f-534df56b5100"
+  },
+  "workspace_b_after_return": {
+    "workspace_id": "4acaeb8f-add6-4b72-b06d-d4c5dbf4cdcb",
+    "role_marker_present": true,
+    "memory_marker_present": true,
+    "history_marker_present": true,
+    "index": "not_ready"
+  },
+  "profile_b_same_workspace_separate_local_state": {
+    "profile_path": "/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-r2/SummitEverything/.local/qa/m3-package-2-repair-2/profiles-r2-B/803b7989-bd8b-492a-888f-534df56b5100",
+    "different_local_profile_path": true,
+    "roles": 0,
+    "memories": 0,
+    "history": 0,
+    "workspace_b_marker_absent": true
+  },
+  "cleanup_http": {
+    "memory": 204,
+    "role": 204
+  },
+  "status": "PASS"
+}

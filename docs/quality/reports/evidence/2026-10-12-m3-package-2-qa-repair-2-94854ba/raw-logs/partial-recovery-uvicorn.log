@@ -1,0 +1,21 @@
+INFO:     Started server process [89561]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18796 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64156 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64158 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64160 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64162 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     Started server process [89564]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18796 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64173 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:64175 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64177 - "GET /api/v1/conversations/246a8f25-2fac-4974-9d60-af7eaa0cf569 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64179 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64181 - "GET /api/v1/conversations/246a8f25-2fac-4974-9d60-af7eaa0cf569 HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89564]

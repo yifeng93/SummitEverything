@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m3-package-2-qa-r2/SummitEverything/web
+
+
+ Test Files  12 passed (12)
+      Tests  52 passed (52)
+   Start at  08:26:45
+   Duration  1.46s (environment 49%, tests 32%, import 10%, transform 10%)
+
