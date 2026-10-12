@@ -1,0 +1,58 @@
+{
+  "question": "白榆工程的培训签到办法是什么",
+  "mode": "plan",
+  "answer": {
+    "answer_id": "29d508f7-feaf-42bf-b4b1-cc5316694cc8",
+    "question": "白榆工程的培训签到办法是什么",
+    "text": "根据提供的材料回答。",
+    "citations": [
+      {
+        "page_id": "d1720d22-81b6-470c-a708-388efb6a4cc1",
+        "content_sha256": "75a46f7b51d2bb1411608e73f7d676972ae9e1429e90b168e930787f94f11502",
+        "chunk_id": "c6efdc64f04be917d41a0ed360efca776472cef5c092330006911c19c6e50174",
+        "heading": "",
+        "excerpt": "白榆工程预算上限为二十万元。 白榆工程启动时间为五月。",
+        "validity": "current",
+        "availability": "available"
+      }
+    ],
+    "answer_mode": "plan",
+    "source_statements": [
+      "页面内容：白榆工程预算上限为二十万元。 白榆工程启动时间为五月。"
+    ],
+    "inferences": [
+      "推断"
+    ],
+    "advice": [
+      "建议"
+    ],
+    "missing_information": [],
+    "purpose": "current",
+    "index_status": "ready"
+  },
+  "provider_calls": [
+    {
+      "question": "白榆工程的培训签到办法是什么",
+      "passages": [
+        {
+          "source_id": "d1720d22-81b6-470c-a708-388efb6a4cc1",
+          "heading": "页面内容",
+          "excerpt": "白榆工程预算上限为二十万元。 白榆工程启动时间为五月。"
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "citations": [],
+    "provider_calls": 0,
+    "missing": "培训签到办法资料不足"
+  },
+  "actual": {
+    "citation_excerpts": [
+      "白榆工程预算上限为二十万元。 白榆工程启动时间为五月。"
+    ],
+    "provider_calls": 1,
+    "missing": [],
+    "text": "根据提供的材料回答。"
+  }
+}

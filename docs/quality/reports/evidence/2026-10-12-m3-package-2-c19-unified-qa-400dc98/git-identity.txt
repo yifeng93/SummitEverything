@@ -1,0 +1,7 @@
+HEAD=400dc98c4b0a555561bb98f6633cf1d22ece8550
+PRODUCT_SOURCE=247f6708c68812e8b217b1079a2fe953ebb06960
+product_tree_paths=src,web,native,tests (git diff candidate..HEAD empty for each)
+worktree_initial=clean
+worktree_final_before_QA_report=clean
+api_listener_after_stop=lsof exit 1 (no LISTEN result)
+web_listener_after_stop=lsof exit 1 (no LISTEN result)
