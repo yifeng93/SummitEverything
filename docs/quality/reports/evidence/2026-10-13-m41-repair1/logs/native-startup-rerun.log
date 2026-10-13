@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/launch_native_candidate.py", line 11, in <module>
+    probe.bind(('127.0.0.1', 18793))
+OSError: [Errno 48] Address already in use

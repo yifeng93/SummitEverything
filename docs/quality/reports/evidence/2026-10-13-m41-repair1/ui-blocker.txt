@@ -1,0 +1,4 @@
+CUA initial native-app inventory result (2026-10-13):
+{"apps":[],"browsers":[],"errors":["Native apps: Error: The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing."]}
+
+No automated unlock or credentials access was attempted. This blocks visual observation and interaction with NSOpenPanel. Controlled native App process startup/readiness was separately tested under an explicit temporary profile.

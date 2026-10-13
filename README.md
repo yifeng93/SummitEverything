@@ -4,7 +4,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 三个离线功能包、用户批准的离线模拟验收及 2026-10-13 清理维护均是已完成的历史固定 SHA 结论，详见[报告索引](docs/quality/reports/README.md)。当前分支 `codex/m41-internal-app-20261013` 的 M4.1 Developer 已固定源码 SHA `b9321d64c5404feadffebc05964793e9402a07aa`，并完成 clean-SHA Internal App/DMG 候选构建、离线自测和有限原生 UI 复演；当前等待独立 QA。DEV 证据和精确产物身份见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[M4.1 DEV 报告](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。这不代表 M4.1 或 M4 阶段通过。
+M3 三个离线功能包、用户批准的离线模拟验收及 2026-10-13 清理维护均是已完成的历史固定 SHA 结论，详见[报告索引](docs/quality/reports/README.md)。当前分支 `codex/m41-internal-app-20261013` 的原始 M4.1 候选 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 经初次独立 QA 发现文件选择面板缺失（历史 FAIL）；修复轮 1 固定产品源码 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4`，从该 clean SHA 重建 App/DMG，并完成开发者侧真实原生文件面板与 Fake 导入闭环自测。当前等待 fresh QA 独立验收。产物身份和逐项证据见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[修复轮 1 DEV 报告](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-DEV-REPAIR1.md)。这不代表 M4.1 或 M4 阶段通过。
 
 本轮实现了内置 Python onedir 后端、强制重建静态前端、独立 Internal bundle/profile、每次运行新 token、健康身份与资源指纹校验、loopback Bearer API 和原生生命周期。构建目标为 arm64、最低系统版本声明 macOS 13；本机实测环境为 arm64 macOS 27.0.1，其他架构与系统版本未测。内部候选未公证，实际用户安装、签名证书/公证、真实模型与飞书、真实材料、OS Keychain、M4.2、五日试用、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 
@@ -38,7 +38,7 @@ swift test --package-path native
 
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
-这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.1 Developer 自测和 QA handoff 见最新交接。
+这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.1 修复轮 1 Developer 自测与 QA handoff 见最新交接。
 
 ### 构建 M4.1 Internal 候选
 

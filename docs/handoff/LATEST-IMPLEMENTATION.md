@@ -1,12 +1,14 @@
 # 最新实现交接
 
-## 当前 M4.1 Developer 交接
+## 当前 M4.1 修复轮 1 Developer 交接
 
-用户 2026-10-13 授权本分支 `codex/m41-internal-app-20261013` 连续实现和自测离线 M4.1 Internal App/DMG。固定受测源码 SHA：`b9321d64c5404feadffebc05964793e9402a07aa`（产品实现提交；本交接和 DEV 报告是后续 doc-only 提交）。唯一 FastAPI + React 由同服务提供发布静态资源；Swift App 内启动 PyInstaller onedir Python 后端，loopback API 继续强制 Bearer。内部包使用独立名称/bundle/profile，每次启动生成新 token，包内记录源码、dirty、App 版本、build、实际前端指纹及 Python/前端锁和依赖清单身份。
+用户 2026-10-13 授权本分支 `codex/m41-internal-app-20261013` 连续实现和自测离线 M4.1 Internal App/DMG。初始产品 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 的独立 QA 发现 M41-QA-001：WKWebView HTML 文件导入没有原生面板；该 SHA 的 FAIL 记录保留在[初次 QA 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-b9321d6.md)。修复轮 1 固定产品源码 SHA：`3f6eaa408a8860ff5a438be8a874a2c3904733e4`（后续只提交 docs/evidence）。
 
-clean-SHA 候选 App：`/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app`，目录 SHA-256 `96face5e21c4d237018bc86e8ab89d74651ac4bad5caaea653580a93475def73`；DMG：`/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg`，SHA-256 `1822e655836d591dcc612f6de4dfeda095dc16bd8e194e87e33cf5b5894c72fd`。manifest `dirty=false`、App 版本 `0.1.0`、build `20261013T052105Z-577f0cc805f2`、frontend `577f0cc805f2f7727add28c1e0d4714c0c15040fa7c094fce7e6234c65239fc6`、dependencies `2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f`。clean-SHA 重建命令、各 gate 退出码、实际原生 UI 与未测项见[M4.1 DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)和[tracked raw evidence](../quality/reports/evidence/2026-10-13-m41-dev/README.md)。backend smoke 与原生窗口复演分别记录。Sol 尚未完成独立 QA，本轮没有 QA verdict。
+新 clean-SHA 候选 App：`/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything Internal fix1 3f6eaa4.app`，目录 SHA-256 `1e58574ea68174ffa20f77b7838796d1c180c35cab7e43b66c274a3587b2f4eb`；DMG：`/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything-Internal-fix1-3f6eaa4.dmg`，SHA-256 `554b7ab3d2bc22728ec6484d1109d9bee8b149814aac556571e45a1d1d7f59d8`。manifest `dirty=false`、App 版本 `0.1.0`、build `20261013T060945Z-577f0cc805f2`、frontend `577f0cc805f2f7727add28c1e0d4714c0c15040fa7c094fce7e6234c65239fc6`、dependencies `2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f`。完整命令 exit、UI 观察和隔离测试见[修复轮 1 DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV-REPAIR1.md)及[tracked evidence](../quality/reports/evidence/2026-10-13-m41-repair1/README.md)。
 
-架构构建声明 arm64 / macOS 13 minimum；本次实测宿主仅 arm64 macOS 27.0.1，因此 Intel 与较低系统版本均 NOT_RUN。内部候选为未公证构建，不安装到 `/Applications`，不覆盖旧 App。M4.2 真实材料/服务、Keychain、正式用户安装、Developer ID/公证、五日、双机和发布均 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
+开发者实际 native UI 自测 PASS：打开系统面板、Cancel 后收件箱仍空、选择合成 TXT/MD 后待整理状态和源字节 SHA 核对、Fake 整理与逐条批准、2 页索引及两条引用查询均有记录。App 菜单 Quit 后自有 App/backend PID 与 18793 listener 清理；Cmd+Q 尝试未退出，原因未推断，fresh QA 需独立复验。此为开发者观察，不是 QA 结论。主机仅 arm64 macOS 27.0.1；arm64 / macOS 13 是构建声明，Intel 和其他系统未测。fresh QA 尚待 Sol 调度，本交接没有 QA verdict，也不代表 M4.1/M4 通过。
+
+真实 provider / Feishu、真实业务材料、OS Keychain、正式用户安装、Developer ID / 公证、M4.2、五日、双机与发布仍 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
 
 ## 已合入并验收的产品基线
 

@@ -1,0 +1,8 @@
+app_pid=86034
+app_copy=/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-upload-fix1-c8ca93d1/SummitEverything Internal fix1 3f6eaa4.app
+profile=/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-upload-fix1-c8ca93d1/profile
+readiness=PASS
+health_run_id=A03F9D36-FB9D-4AEB-8003-6F8940DEF793
+backend_child_pids=86036
+app_exit=-15
+parent_cleanup=PASS

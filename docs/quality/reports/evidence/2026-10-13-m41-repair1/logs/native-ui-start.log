@@ -1,0 +1,15 @@
+{
+  "app_pid": 87031,
+  "app_copy": "/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/SummitEverything Internal fix1 3f6eaa4.app",
+  "profile": "/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/profile",
+  "workspace": "/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/workspace",
+  "inputs": "/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/synthetic-inputs",
+  "fixture_sha256": {
+    "synthetic-upload.txt": "3b812250b73e5d04eb19f02d5add415c952257901f9943157c37be551801e0c3",
+    "synthetic-upload.md": "0011ca9fcc813fb79657035006baa3562339cb7ed60f8e95e27d225a536fc01c"
+  },
+  "log": "/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/native-app.log"
+}
+readiness=PASS
+profile_is_in_darwin_temp=True
+health_source_sha=3f6eaa408a8860ff5a438be8a874a2c3904733e4

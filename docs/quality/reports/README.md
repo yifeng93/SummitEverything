@@ -8,11 +8,13 @@ M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码
 
 用户已授权 M4.1 离线 Developer 集成与自测；该活动报告只表明具体 DEV 证据，不代表独立 QA 或 M4.1/M4 阶段通过。
 
-M4.1 Developer 已固定产品源码 SHA `b9321d64c5404feadffebc05964793e9402a07aa`，完成 clean-SHA App/DMG 候选及有限原生 UI / 生命周期复演。独立 QA 仍 `NOT_RUN`，详细产物身份、证据路径及未测项见本轮 DEV 报告。
+M4.1 初始产品 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 的独立 QA 记录原生文件面板缺失（历史 FAIL）。修复轮 1 固定产品 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4`，重建 App/DMG 并完成开发者实际 UI 自测；新 SHA 的独立 QA 待运行。两轮报告与证据分别保留，开发者自测不代表阶段验收。
 
 | 报告 | 范围 |
 |---|---|
-| [M4.1 Internal App/DMG DEV](2026-10-13-M41-INTERNAL-APP-DEV.md) | 固定源码 SHA 的实现者自测、候选身份、实际 UI / lifecycle、命令 exit code 与 NOT_RUN；独立 QA 待办 |
+| [M4.1 初始 DEV](2026-10-13-M41-INTERNAL-APP-DEV.md) | 初始候选与首次 QA 前自测，产品源码 SHA `b9321d6` |
+| [M4.1 初始 QA](2026-10-13-M41-INTERNAL-APP-QA-b9321d6.md) | 固定 `b9321d6` 的独立 QA；文件面板缺失为历史 FAIL |
+| [M4.1 修复轮 1 DEV](2026-10-13-M41-INTERNAL-APP-DEV-REPAIR1.md) | 固定源码 SHA `3f6eaa4`、新候选、开发者实际 UI、逐命令 exit 与 NOT_RUN；fresh QA 待办 |
 | [本轮清理 DEV](2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md) | 文档收拢、私有 helper 审计、DEV 自测与恢复记录；验收结果见独立 QA |
 | [本轮清理独立 QA](2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md) | 固定源码 `6a33259` 的离线清理验收 PASS；真实 / 人工门仍按报告标记未测 |
 | [C19 固定源码 QA](2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md) | C19 新回归、API/SSE、浏览器与离线自动检查 |
