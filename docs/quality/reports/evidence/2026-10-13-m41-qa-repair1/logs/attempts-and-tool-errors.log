@@ -1,0 +1,10 @@
+Recorded setup/action failures (not product PASS evidence):
+
+1. Initial wrong-identity listener was run as a background child of a short-lived shell. The child exited with the shell; invalid attempt. The listener request log contains only health requests from this invalid attempt and is not used as a pass.
+2. `npm ci` at repository root failed because there is no root npm workspace/package manifest. Corrected command `npm ci --prefix web` exited 0 (126 added, 0 vulnerabilities).
+3. First delayed-readiness wrapper returned shell exit 1 after the harness ran because zsh's read-only special variable `status` was assigned. The harness was rerun with `rc`; the recorded corrected run exited 0.
+4. During copied-app starts, stdout contained `sandbox_extension_issue_file_to_process failed for .../SummitEverything QA.app: 1 (Operation not permitted)`. Exact process/profile lock, readiness, and window observations were separately verified; the line was not treated as proof of app failure.
+5. On wrong-identity alert, CUA click returned NSCocoaErrorDomain Code 256 / LaunchServices `procNotFound: no eligible process with specified descriptor`; a subsequent key action returned “Computer Use is not active” for the app. The app PID was still present with the isolated profile lock, so I terminated only that exact PID and separately verified the synthetic listener stayed alive.
+6. An earlier CUA getApp after the invalid setup auto-launched a fresh app with no test profile environment. I did not inspect or modify the resulting default-profile content. The process ended; its app instance and request activity are not part of valid wrong-identity evidence.
+
+No product source was changed as a result of these attempts.
