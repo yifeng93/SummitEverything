@@ -1,0 +1,23 @@
+group	command	result	exit
+identity	git rev-parse HEAD / origin/main; git show -s --format='%H%n%P%n%s' HEAD	exact fixed merge SHA; expected first and second parents	0
+ancestry	git merge-base --is-ancestor 0a1b8dc94a5d8f797161c38430dccfcb211a9e07 HEAD	approved candidate is ancestor	0
+scope	git diff --quiet 0a1b8dc94a5d8f797161c38430dccfcb211a9e07 HEAD -- src web native tests scripts pyproject.toml uv.lock	no product/config/dependency diff	0
+preservation	git diff --quiet 696d1dacaba92b090f742b9c9ba5e2d0a0b64ad8 HEAD -- docs/quality/reports/evidence ':(exclude)docs/quality/reports/evidence/2026-10-13-m3-postmerge-qa-47a3971/**'	historical evidence unchanged; excludes this report's new directory	0
+evidence	(cd docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc && shasum -a 256 -c SHA256SUMS)	71/71 files OK	0
+dependencies	uv sync --locked --group dev	PASS	0
+dependencies	cd web && npm ci	PASS; 0 vulnerabilities	0
+backend	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	491 passed; 1 existing Starlette/httpx deprecation warning	0
+python	uv run ruff check src tests	PASS	0
+python	uv run ruff format --check src tests	79 files formatted	0
+python	uv run mypy src	43 source files PASS	0
+python	uv lock --check	PASS	0
+python	uv build	wheel and sdist built	0
+web	cd web && npm test -- --run	56 tests / 12 files PASS	0
+web	cd web && npm run typecheck	PASS	0
+web	cd web && npm run lint	PASS (existing React effect warnings retained)	0
+web	cd web && npm run build	PASS	0
+openapi	PYTHONPATH="$PWD/src" uv run python .local/qa/m3-postmerge-47a3971/export_openapi.py	isolated export to .local; PASS	0
+openapi	./web/node_modules/.bin/openapi-typescript .local/qa/m3-postmerge-47a3971/openapi/openapi.json -o .local/qa/m3-postmerge-47a3971/openapi/generated.ts	isolated generated TS; PASS	0
+openapi	diff -u web/src/api/generated.ts .local/qa/m3-postmerge-47a3971/openapi/generated.ts	empty diff; output SHA-256 equals tracked generated.ts	0
+repo	git diff --check	PASS	0
+coverage	C19 adversarial holdouts, HTTP/SSE, browser UI, history reopen, real providers, DMG	NOT_RUN in post-merge integration scope; candidate QA results remain separately attributed	—

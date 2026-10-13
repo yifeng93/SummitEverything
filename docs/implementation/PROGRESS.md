@@ -1,6 +1,8 @@
 # 实施进展账本
 
-2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收及合并；离线正式门PASS，合并执行中。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；main / M3冻结 / DSH交接不变且干净。本轮1/2返工收口，第2轮未使用。
+合并后独立QA在固定 47a3971ea3dccf6ffbc7107b2d5995043b4e25a2 上复跑491后端、56Web及适用检查通过；Sol校验49项证据全部匹配，见[合并后QA](../quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)。后续文档整合不改变受测产品树。
+
+2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收，并经[PR #13](https://github.com/yifeng93/SummitEverything/pull/13)合入main，merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`；离线正式门PASS，固定merge的全新独立QA已PASS。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；PR #13产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`；当前main HEAD以实际Git为准，后续文档整合保持受测产品树；M3冻结与DSH交接不变。本轮1/2返工收口，第2轮未使用。
 
 未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
 
@@ -15,9 +17,9 @@
 
 ## 当前状态与下一步
 
-### C19 DSH 候选返工1/2（离线技术PASS，等待M3正式批准）
+### C19 DSH 候选返工1/2（离线PASS，M3已批准合并）
 
-当前状态见本账本顶部与Sol门：固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 通过全新独立QA，既有C19 P1/P2在此SHA关闭；包2离线集成PASS。包1/3不重开发。下一步取得用户对M3模拟离线范围正式验收及main合并的批准。旧失败与额度保留历史，不再提示重新修已关闭问题。
+当前状态见本账本顶部与Sol门：固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 通过全新独立QA，既有C19 P1/P2在此SHA关闭；包2离线集成PASS。包1/3不重开发。用户已批准；PR #13已合并并经固定merge独立核验，C19不再待修。旧失败与额度保留历史，不再提示重新修已关闭问题。
 
 ### C19 统一周期收口（2026-10-12 历史 QA FAIL，已进入新返工）
 

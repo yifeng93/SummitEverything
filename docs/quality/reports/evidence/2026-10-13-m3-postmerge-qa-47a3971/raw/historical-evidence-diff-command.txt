@@ -1,0 +1,1 @@
+git diff --quiet 696d1dacaba92b090f742b9c9ba5e2d0a0b64ad8 HEAD -- docs/quality/reports/evidence ':(exclude)docs/quality/reports/evidence/2026-10-13-m3-postmerge-qa-47a3971/**'
