@@ -1,0 +1,19 @@
+{
+  "tested_merge": "47a3971ea3dccf6ffbc7107b2d5995043b4e25a2",
+  "qa_commit": "21ec1edd29d30878c44fba19720f76907b8e8788",
+  "qa_correction": "c5db4c935b623f1021f34ddf632d6b121b49e358",
+  "manifests": {
+    "2026-10-13-m3-postmerge-qa-47a3971": {
+      "entries": 49,
+      "mismatches": [],
+      "sha256": "fea86e113d493f454af8ee73ef9d306db79a31e18058628d0f8a02abf9aa8096"
+    },
+    "2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc": {
+      "entries": 71,
+      "mismatches": [],
+      "sha256": "1b2330156cad44a06cbd535fb8f5363586b6068e41b56be05595097b6e5d018b"
+    }
+  },
+  "product_diff_exit": 0,
+  "history_preservation_exit": 0
+}

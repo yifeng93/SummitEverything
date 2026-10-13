@@ -1,6 +1,6 @@
 # M3 离线模拟正式验收与合并授权
 
-2026-10-13。**用户已批准M3离线模拟范围正式验收及合并；离线正式门PASS，合并执行中。** 不等同完整v1、真实服务、模型质量或安装包验收通过。
+2026-10-13。**用户已批准M3离线模拟范围正式验收及合并；离线正式门PASS，已随[PR #13](https://github.com/yifeng93/SummitEverything/pull/13)合入main，merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。** 不等同完整v1、真实服务、模型质量或安装包验收通过。
 
 ## 用户批准与固定候选
 
@@ -29,3 +29,15 @@
 真实provider/飞书/业务材料/凭据/Keychain、native/DMG、模型R03质量、五日/双机、发布和M4/M5均没有由本轮验证；相应门NOT_RUN，runtime UNVERIFIED，有限smoke各0/1未消费。后续只按全v1计划与实际授权推进，不能把本批准扩大成真实操作授权。
 
 合并后另建固定merge SHA独立QA checkout，核对受测产品树、祖先/父提交、历史证据、依赖与关联检查，留下postmerge报告；更新交接为真实main状态。若GitHub或新main导致产品树变化，应先停止合并并重新验证该新候选，不能自动沿用本SHA结论。
+
+## 实际合并及合并后核验
+
+PR #13 已于 `2026-10-13T01:02:58Z` 正常merge（未用admin/force），合并SHA `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`，两个父提交为 `5fd91c78930c80b2365957197b8a605757694a91` 与 `696d1dacaba92b090f742b9c9ba5e2d0a0b64ad8`。主checkout已fast-forward且clean，实际产品diff相对独立受测源码0a1b8dc为0。全新QA在另一个独立checkout固定该merge核验，具体结果在完成后追加；不能从候选PASS推断其尚未执行的命令通过。
+
+## 合并后实际结论
+
+固定merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2` 由全新QA核验PASS。报告提交 `21ec1edd29d30878c44fba19720f76907b8e8788`，原作者计数更正 `c5db4c935b623f1021f34ddf632d6b121b49e358` 仅改报告措辞。Sol实际读取[合并后QA](2026-10-13-M3-POSTMERGE-QA-47a3971.md)，核对49项证据全匹配，清单SHA-256 `fea86e113d493f454af8ee73ef9d306db79a31e18058628d0f8a02abf9aa8096`。guarded491、Web56及适用静态/类型/lock/build/隔离生成均exit0；父提交、祖先、产品树及既有71项证据保持均PASS。未重测候选UI/HTTP/对抗性矩阵，也未关闭真实或工具未测门。
+
+首次日志包装器误用zsh只读变量status、切入web后相对日志路径错误，QA保留初次输出，修正包装器后复跑取得实际退出码。最终原始日志通过；未将包装器错误判作产品失败或伪装首次全绿。
+
+本轮开发、独立验收、人批准、PR合并及postmerge核验已完成。下一位从实际main新建分支，不重新修C19或重启旧Stage B；未来阶段与真实动作仍须遵守全v1计划及实际授权。收尾提交仅文档/evidence，产品树保持受测merge。

@@ -1,5 +1,7 @@
 # C19 DSH 交接：Sol 审查与独立门
 
+2026-10-13 实际合并：用户批准的M3离线模拟候选已经[PR #13](https://github.com/yifeng93/SummitEverything/pull/13)合入main，merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。产品树与固定受测0a1b8dc一致，合并后全新独立QA已PASS，Sol核对49项证据全匹配；见[最终验收记录](2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。下方批准前/初验/固定基线描述均为历史。
+
 2026-10-13 用户已明确批准M3离线模拟正式验收及候选合入main；[批准记录](2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。下方“待批准/不合并”均为批准前的技术收口历史，真实门仍保留。
 
 2026-10-13 最终技术门：**C19 / 包2离线集成 PASS；M3模拟范围已具备提交用户正式验收的条件，尚未正式批准或合并。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`；全新独立 QA 报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`，已以 `c9d32c6a051105017d81123649cd896b094b33e2` 导入 `codex/c19-dsh-sol-gate`。Sol 实际核对报告、原始日志、退出码、UI观察、71项manifest及固定产品diff；71项全部匹配，清单 SHA-256 `1b2330156cad44a06cbd535fb8f5363586b6068e41b56be05595097b6e5d018b`。此次修复用1轮自动返工收口，不启动第2轮；历史FAIL只对应其受测SHA，不改写。
