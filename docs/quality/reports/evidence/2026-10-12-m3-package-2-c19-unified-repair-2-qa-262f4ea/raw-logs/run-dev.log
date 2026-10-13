@@ -1,0 +1,101 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.4  ready in 78 ms
+
+  ➜  Local:   http://127.0.0.1:15172/
+INFO:     Started server process [36220]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18872 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53002 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:18872/api/v1/health
+WebUI: http://127.0.0.1:15172/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:53206 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:53207 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:53236 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53243 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53245 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53246 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53247 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53248 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53254 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53253 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53257 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53258 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53250 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53260 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53244 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53262 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53264 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53333 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53335 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53336 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53340 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53341 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53343 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53356 - "POST /api/v1/lines HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53360 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53361 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53362 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53369 - "POST /api/v1/projects HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53373 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53374 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53375 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53392 - "POST /api/v1/projects/af52605c-77c3-5d0c-9eeb-9cca98ac3b79/overview/confirmations HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53396 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53398 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53412 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53415 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53416 - "GET /api/v1/memory/candidates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53414 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53413 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53427 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53429 - "POST /api/v1/index/plans HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53440 - "POST /api/v1/index/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53442 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53456 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53457 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53458 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53461 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53462 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53464 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53475 - "POST /api/v1/projects HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53480 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53479 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53481 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53502 - "POST /api/v1/projects/c8eb78ca-6e9a-5e25-92a2-cab6a5b0bb0a/overview/confirmations HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53507 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53506 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53508 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53519 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53520 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53521 - "GET /api/v1/memory/candidates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53518 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53517 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53545 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53547 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53549 - "POST /api/v1/conversations/9b5b4e41-a562-434e-97c5-233b0a3f21c6/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53551 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "POST /api/v1/conversations/9b5b4e41-a562-434e-97c5-233b0a3f21c6/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53576 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53621 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53623 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53625 - "POST /api/v1/conversations/500b4b83-6cc1-4607-82c4-87e0145a2fad/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53627 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53684 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53686 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53688 - "POST /api/v1/conversations/db1a4b67-3e43-4f74-9321-f47039f29c1b/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53690 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53713 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53715 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53718 - "POST /api/v1/conversations/0c1e2b4b-edbd-4abb-b803-c03633a75446/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53720 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [36220]

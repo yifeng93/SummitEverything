@@ -1,0 +1,30 @@
+/Users/yifengstudio/.codex/worktrees/m3-package-3-qa-r1/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+{
+  "action_receipt_state_before_reconcile": "unknown",
+  "archived_transaction_receipts": 0,
+  "active_sha_transaction_receipts": 0,
+  "transaction_month_summary_count": 1,
+  "archive_contains_progress_proof": true,
+  "summary_paths": [
+    "/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m3-p3-progress-archive-7a4h8v7h/workspace/.summit-everything/archives/transactions/2026-10/summary.json"
+  ],
+  "summary_months": [
+    "2026-10"
+  ],
+  "progress_proof_records": [
+    {
+      "expected_hash": "e2054091f90f0f2b9cf3ed30d2feb562caa2876ce39f882e24e45728323ba806",
+      "finished_at": "2026-10-12T06:47:46.236698+00:00",
+      "operation_id": "progress:78e8083f-2a98-50a4-90b3-7f0d026bc46d",
+      "relative_path": ".summit-everything/manifest.json",
+      "request_hash": "cb939c683d49103a077b701249fe44442f7e4e5606b45b03ede102cf4ec8a35e",
+      "result_hash": "cb939c683d49103a077b701249fe44442f7e4e5606b45b03ede102cf4ec8a35e",
+      "state": "succeeded"
+    }
+  ],
+  "reconcile_http": 200,
+  "reconcile_state": "succeeded",
+  "progress_version_before_reconcile": 1,
+  "progress_version_after_reconcile": 1
+}

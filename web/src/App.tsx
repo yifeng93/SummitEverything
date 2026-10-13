@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type Page, type Workspace } from './api/client'
+import { api, ApiError, type Page, type Workspace } from './api/client'
 import { AskView } from './components/AskView'
 import { ProjectsView } from './components/ProjectsView'
 import { PageReader } from './components/PageReader'
@@ -34,7 +34,17 @@ export default function App() {
       setPage(await api.get<Page>('/pages/' + pageId + query))
       setError('')
     } catch (cause) {
-      setPage(null)
+      if (expectedHash && cause instanceof ApiError && cause.code === 'version_conflict') {
+        try {
+          setPage(await api.get<Page>('/pages/' + pageId))
+          setError('引用保存的是回答当时的页面版本；该页面已更新。当前显示的是新版本，不能替代原回答依据。')
+          return
+        } catch {
+          setPage(null)
+        }
+      } else {
+        setPage(null)
+      }
       setError(cause instanceof Error ? cause.message : '无法打开页面')
     }
   }

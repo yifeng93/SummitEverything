@@ -1,0 +1,75 @@
+RUN	ruff-check
+All checks passed!
+EXIT	ruff-check	0
+RUN	ruff-format
+79 files already formatted
+EXIT	ruff-format	0
+RUN	mypy
+Success: no issues found in 43 source files
+EXIT	mypy	0
+RUN	uv-lock
+Resolved 41 packages in 4ms
+EXIT	uv-lock	0
+RUN	build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/summit_everything-0.1.0.tar.gz
+Successfully built dist/summit_everything-0.1.0-py3-none-any.whl
+EXIT	build	0
+RUN	api-types
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [66.4ms]
+EXIT	api-types	0
+RUN	web-test
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m3-c19-dsh-sol-gate/SummitEverything/web
+
+
+ Test Files  12 passed (12)
+      Tests  56 passed (56)
+   Start at  08:21:56
+   Duration  1.52s (environment 49%, tests 34%, import 11%, transform 7%)
+
+EXIT	web-test	0
+RUN	web-typecheck
+
+> web@0.0.0 typecheck
+> tsc -b --pretty
+
+EXIT	web-typecheck	0
+RUN	web-lint
+
+> web@0.0.0 lint
+> oxlint
+
+src/components/TodayView.tsx:70:26: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/components/ProjectsView.tsx:40:26: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+EXIT	web-lint	0
+RUN	web-build
+
+> web@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 28 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.62 kB │ gzip:  0.39 kB
+dist/assets/index-B3KNOB32.css   28.63 kB │ gzip:  6.26 kB
+dist/assets/index-AQdiLvuF.js   319.29 kB │ gzip: 94.56 kB
+
+✓ built in 71ms
+EXIT	web-build	0
+RUN	diff-check
+EXIT	diff-check	0
+generated-artifacts-no-diff	0

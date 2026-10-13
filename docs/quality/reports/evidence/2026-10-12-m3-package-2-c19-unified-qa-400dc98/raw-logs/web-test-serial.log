@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m3-c19-unified-qa/SummitEverything/web
+
+
+ Test Files  12 passed (12)
+      Tests  56 passed (56)
+   Start at  16:32:54
+   Duration  1.60s (environment 48%, tests 33%, transform 10%, import 9%)
+

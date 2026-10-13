@@ -1,5 +1,9 @@
 # SummitEverything v1 Implementation Plan
 
+2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
+
+2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
+
 > 给 agent：按 executing-plans 的逐任务方式执行。阶段验收须由独立执行环境完成；M1 已由独立 QA 在固定 checkout 验收。后续阶段继续使用隔离模拟材料，不能假设真实外部门已获授权。
 
 **Goal:** 在一个可安装的 Mac 应用中完成可信工作知识积累、检索问答和飞书日常工作。
@@ -10,13 +14,13 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
-## 当前阶段记录（更新于 2026-10-11；历史任务清单保留）
+## 当前阶段记录（更新于 2026-10-12；下方历史任务清单保留）
 
-M1 与 M2 阶段 A 在 Fake-only 范围已收口，最终受测修复代码为 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main 为 `117086eb2075726730cd7aa62ea0b61498e96f0c`。Stage B 离线源码 / 开发壳受测代码为 `576895f6983ca41cacbbad45a9075b97b9986189`，已独立 QA 并合入 main；完整范围与真实未测门见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)和[报告索引](../../quality/reports/README.md)。Stage C 与 M3–M5 未开始；不重复执行历史 Stage B 提示词。下一项推荐为下方记录的 M3.1 本地问答状态薄切片。
+M1与M2阶段A和StageB的离线基线已收口并合入main；历史细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)及[报告索引](../../quality/reports/README.md)。M3包1/3保持离线PASS，包2C19统一repair2/2已独立QA并由Sol判FAIL，停止自动修改，等待用户决定。正式M3、StageC、M4/M5均未通过；不重复执行旧StageB提示词。
 
 ## 全局执行规则与验收门
 
-B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B 离线源码候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已独立 QA 并合入 main，范围仅为离线源码和开发壳；真实账户 / 协议、OS Keychain 与 R03 质量仍未完成。Stage C 尚未开始，必须在 B 后逐项取得真实操作授权并验证具体协议与模型质量。C 仅前置验证 M4 的部分外部门，不能提前标记 M3、DMG、真实样板初始化、五日或双机完成。当前 main 之后的推荐路线图任务为 M3.1 本地问答状态薄切片：conversation store / API、列表 / 重开 / 删除、SSE 完成 / 取消 / 断流状态及旧版本引用标记；先做 store/API，再接 UI。M3.1 与整个 M3 均未开始，完整范围见下方任务清单与 C14 / C21。
+B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B 离线源码候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已独立 QA 并合入 main，范围仅为离线源码和开发壳；真实账户 / 协议、OS Keychain 与 R03 质量仍未完成。Stage C 尚未开始，必须逐项取得真实操作授权并验证具体协议与模型质量。C 不能提前标记 M3、DMG、真实样板初始化、五日或双机完成。下面逐项 M3.1 / M3.2 列表保留原规格追溯；当前执行由 2026-10-11 三功能包计划组织，最新状态见本文顶部。M3.1/M3.2 已有实现不等于独立验收或 M3 门通过。
 
 当前 Sol / Luna 开发与验收分工见 [ADR 0008](../../decisions/0008-sol-luna-development-workflow.md)；这里不重复工作流全文。
 
@@ -158,13 +162,14 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 
 ### M3.2：状态可迁移与归档压缩
 
-文件：workspace/state.py、workspace/archives.py、local/logging.py。
+文件：workspace/state.py、workspace/archives.py、local/event_log.py。包3离线集成PASS，受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`；[全新独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)和[Sol核证](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)。
 
-- [ ] 测试另一 profile 读取同一待审流程，部分完成状态正确，未知调用不会自动重发。
-- [ ] 待处理一份当前记录，完成按月归档；完成 receipt 可查，unknown 不删；压缩中断可恢复。
-- [ ] 验证同步区没有 SQLite / WAL、凭据、历史、角色、记忆和诊断日志。模拟大量流程，报告文件数量随流程 / 月份变化的实际结果。
+- [x] 另一profile读取待审流程与部分完成稿；活owner、dead owner unknown/no-resend、checkpoint本地恢复、迟到结果CAS、显式reprocess和旧undated版本链验收通过。
+- [x] 完成intake items/jobs、capture/mutation/SHA write-intent/Feishu import回执的active+月摘要回放；摘要故障及冲突/损坏/非法桶阻断、unknown保留与原件/完整稿保留验收通过。
+- [x] 诊断日志只在本机profile并轮转；120合成流程、四业务月归档及provider重放计数通过；本机两profile存储边界已测，真实双机NOT_RUN。
+- [x] README适用检查、固定SHA整包独立QA与双profile真实浏览器短复演通过；首轮C22 lease异常FAIL经自动返工1/2在新SHA关闭，初验报告和失败日志保留。
 
-**M3 DEV 门：** 完整 v1 业务界面和模拟链路均可用，准备真实样板 / 外部能力质量验收。历史范围、归档和跨材料方案均有引用与效力标记。
+**M3门：** 包1、包3离线集成PASS；包2 C19 的 extra 2 与统一候选初验 P1 FAIL 均保留，repair 1/2 源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 等待 fresh QA。用户已重新授权当前修复，不需要再次授权；M3正式验收和合并尚未通过。真实样板、外部能力与发布门单独验收，原产品规格不变。
 
 ## M4 — 单机交付与实际试用
 

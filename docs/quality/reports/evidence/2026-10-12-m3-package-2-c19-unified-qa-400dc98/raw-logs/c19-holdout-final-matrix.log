@@ -1,0 +1,98 @@
+...F...FF.FF                                                             [100%]
+=================================== FAILURES ===================================
+___ test_h04_metadata_owner_does_not_turn_other_body_dimension_into_evidence ___
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-718/test_h04_metadata_owner_does_n0')
+
+    def test_h04_metadata_owner_does_not_turn_other_body_dimension_into_evidence(tmp_path):
+        root, service, spy = make_query(tmp_path, [
+            ("白榆工程", "综合事实", "白榆工程预算上限为二十万元。白榆工程启动时间为五月。"),
+            ("玄岩项目", "玄岩排期", "玄岩项目启动时间为十二月。"),
+        ], high_score=True)
+        answer = ask(service, root, "白榆工程的培训签到办法是什么", "plan")
+>       assert answer.citations == [] and not spy.calls
+E       AssertionError: assert ([Citation(pag...='available')] == []
+E         
+E         Left contains one more item: Citation(page_id=UUID('7ed735d2-379f-4c9c-a0e6-a30d6234c4ec'), content_sha256='c9ba5c5ac113e39026a0f1a8a60c3c6b061ba11...719d587ed6bf57b0dfe3', heading='', excerpt='白榆工程预算上限为二十万元。 白榆工程启动时间为五月。', validity='current', availability='available')
+E         Use -v to get more diff)
+
+.local/qa/c19-unified/harness/test_c19_holdout.py:119: AssertionError
+_ test_h08_unknown_named_and_general_topic_is_not_satisfied_by_other_dimensions _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-718/test_h08_unknown_named_and_gen0')
+
+    def test_h08_unknown_named_and_general_topic_is_not_satisfied_by_other_dimensions(tmp_path):
+        root, service, spy = make_query(tmp_path, [
+            ("预算时间专项", "综合安排", "预算时间专项已批准预算五万元，启动时间为六月。"),
+        ], high_score=True, complete=True)
+        questions = [
+            ("预算时间专项的培训签到办法是什么", "fact"),
+            ("为预算时间专项制定培训签到流程", "plan"),
+            ("比较预算时间专项培训签到安排", "comparison"),
+            ("培训签到办法怎么安排", "plan"),
+        ]
+        for question, mode in questions:
+            answer = ask(service, root, question, mode)
+>           assert answer.citations == [], (question, answer.model_dump())
+E           AssertionError: ('为预算时间专项制定培训签到流程', {'answer_id': UUID('24e8fad5-85e9-4690-8a5a-de4d18728d64'), 'question': '为预算时间专项制定培训签到流程', 'text':...6d9f64b9f', 'chunk_id': 'e047495ff0c4c4404a6842cb8afa076a9211bffd17f1ea4f6e3c7b94ade95747', 'heading': '', ...}], ...})
+E           assert [Citation(pag...='available')] == []
+E             
+E             Left contains one more item: Citation(page_id=UUID('7a1579ab-77aa-4070-8cf4-0f7d0e0c9374'), content_sha256='d149e122305d5bb0bc990c982af035c0d491b0e...7f1ea4f6e3c7b94ade95747', heading='', excerpt='预算时间专项已批准预算五万元， 启动时间为六月。', validity='current', availability='available')
+E             Use -v to get more diff
+
+.local/qa/c19-unified/harness/test_c19_holdout.py:190: AssertionError
+_ test_h09_named_object_with_dimension_words_does_not_lend_them_to_other_topic _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-718/test_h09_named_object_with_dim0')
+
+    def test_h09_named_object_with_dimension_words_does_not_lend_them_to_other_topic(tmp_path):
+        root, service, spy = make_query(tmp_path, [
+            ("预算时间工作坊", "预算记录", "预算时间工作坊预算已批五万元，开会时间是六月。"),
+            ("预算时间工作坊", "培训记录", "培训签到须现场登记并核验姓名。"),
+        ], high_score=True)
+        answer = ask(service, root, "预算时间工作坊签到办法是什么", "fact")
+>       assert answer.citations and all("培训签到" in c.excerpt for c in answer.citations)
+E       AssertionError: assert ([])
+E        +  where [] = Answer(answer_id=UUID('220eccee-e329-439e-943e-a777712be5dd'), question='预算时间工作坊签到办法是什么', text='没有找到能确认该对象和主题的已确认资料；预算...ferences=[], advice=[], missing_information=['预算时间工作坊：缺少预算、排期或启动时间（签到办法）依据。'], purpose='current', index_status='ready').citations
+
+.local/qa/c19-unified/harness/test_c19_holdout.py:202: AssertionError
+__ test_h11_unknown_topic_without_named_object_does_not_take_unrelated_pages ___
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-718/test_h11_unknown_topic_without0')
+
+    def test_h11_unknown_topic_without_named_object_does_not_take_unrelated_pages(tmp_path):
+        root, service, spy = make_query(tmp_path, [
+            ("白榆工程", "资金情况", "白榆工程预算上限为二十万元。"),
+            ("玄岩项目", "进度情况", "玄岩项目启动时间为十二月。"),
+        ], high_score=True, complete=True)
+        answer = ask(service, root, "培训签到办法怎么安排", "plan")
+>       assert answer.citations == []
+E       AssertionError: assert [Citation(pag...='available')] == []
+E         
+E         Left contains 2 more items, first extra item: Citation(page_id=UUID('220b292b-8f4d-4738-b68b-cd61dac31fcc'), content_sha256='7a560b40b5539b219c59de946a28e7fb61c9940...5e47e263c7b533144136ae0ede07232403', heading='', excerpt='玄岩项目启动时间为十二月。', validity='current', availability='available')
+E         Use -v to get more diff
+
+.local/qa/c19-unified/harness/test_c19_holdout.py:224: AssertionError
+___ test_h12_schedule_page_title_does_not_turn_broad_dimension_into_subject ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-718/test_h12_schedule_page_title_d0')
+
+    def test_h12_schedule_page_title_does_not_turn_broad_dimension_into_subject(tmp_path):
+        root, service, spy = make_query(tmp_path, [
+            ("白榆工程", "预算汇总", "白榆工程预算上限为二十万元。"),
+            ("玄岩项目", "排期", "玄岩项目启动时间为十二月。"),
+        ], high_score=True)
+        answer = ask(service, root, "比较预算和排期建议", "comparison")
+        excerpts = "\n".join(c.excerpt for c in answer.citations)
+>       assert "白榆工程预算" in excerpts and "玄岩项目启动时间" in excerpts, answer.model_dump()
+E       AssertionError: {'answer_id': UUID('1f174463-869a-4328-bd06-7d56e0fd52ca'), 'question': '比较预算和排期建议', 'text': '没有找到能确认该对象和主题的已确认资料；排期：缺少预算依据。；排期：缺少排期或启动时间依据。', 'citations': [], ...}
+E       assert ('白榆工程预算' in '')
+
+.local/qa/c19-unified/harness/test_c19_holdout.py:237: AssertionError
+=========================== short test summary info ============================
+FAILED .local/qa/c19-unified/harness/test_c19_holdout.py::test_h04_metadata_owner_does_not_turn_other_body_dimension_into_evidence
+FAILED .local/qa/c19-unified/harness/test_c19_holdout.py::test_h08_unknown_named_and_general_topic_is_not_satisfied_by_other_dimensions
+FAILED .local/qa/c19-unified/harness/test_c19_holdout.py::test_h09_named_object_with_dimension_words_does_not_lend_them_to_other_topic
+FAILED .local/qa/c19-unified/harness/test_c19_holdout.py::test_h11_unknown_topic_without_named_object_does_not_take_unrelated_pages
+FAILED .local/qa/c19-unified/harness/test_c19_holdout.py::test_h12_schedule_page_title_does_not_turn_broad_dimension_into_subject
+5 failed, 7 passed in 0.90s

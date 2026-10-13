@@ -93,14 +93,19 @@ class IntakeItem(OpenModel):
     filename: str
     original_relative_path: str
     created_at: datetime
-    state: Literal["pending", "processing", "reviewing", "completed", "failed", "cancelled"] = (
-        "pending"
-    )
+    state: Literal[
+        "pending", "processing", "reviewing", "completed", "failed", "cancelled", "unknown"
+    ] = "pending"
     latest_job_id: UUID | None = None
+    attempt_no: int = Field(default=0, ge=0)
+    revision: int = Field(default=0, ge=0)
+    previous_attempt_sha256: str | None = None
+    finished_at: datetime | None = None
 
 
 class Draft(OpenModel):
     draft_id: UUID
+    job_id: UUID | None = None
     input_ids: list[UUID]
     target_page_id: UUID | None = None
     metadata: dict[str, Any]
@@ -118,12 +123,18 @@ class Draft(OpenModel):
 class IntakeJob(OpenModel):
     job_id: UUID
     item_ids: list[UUID]
+    line_id: UUID | None = None
+    project_id: UUID | None = None
     request_hash: str
-    state: Literal["running", "completed", "failed", "cancelled"]
+    state: Literal["running", "provider_calling", "completed", "failed", "cancelled", "unknown"]
     draft_ids: list[UUID] = Field(default_factory=list)
     action_candidates: list[dict[str, Any]] = Field(default_factory=list)
     error: str | None = None
     created_at: datetime
+    finished_at: datetime | None = None
+    attempt_id: str | None = None
+    revision: int = Field(default=0, ge=0)
+    checkpoint_sha256: str | None = None
 
 
 class ActionCandidate(OpenModel):
@@ -143,6 +154,7 @@ class Citation(BaseModel):
     heading: str
     excerpt: str
     validity: Literal["current", "superseded", "invalid"] = "current"
+    availability: Literal["available", "updated", "unavailable"] = "available"
 
 
 class Answer(BaseModel):
@@ -150,7 +162,10 @@ class Answer(BaseModel):
     question: str
     text: str
     citations: list[Citation] = Field(default_factory=list)
+    answer_mode: Literal["fact", "comparison", "plan"] = "fact"
+    source_statements: list[str] = Field(default_factory=list)
     inferences: list[str] = Field(default_factory=list)
+    advice: list[str] = Field(default_factory=list)
     missing_information: list[str] = Field(default_factory=list)
     purpose: Literal["current", "history"] = "current"
     index_status: Literal["ready", "empty", "not_ready"]

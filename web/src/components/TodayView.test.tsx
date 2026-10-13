@@ -79,3 +79,29 @@ it('shows source lifecycle states and requires an explicit reprocess action', as
   })
   expect(jobBodies[2]).toMatchObject({ item_ids: ['completed-id'], reprocess: true })
 })
+
+it('keeps unknown attempts visible and warns before an explicit new operation', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
+  const items = [
+    { item_id: 'unknown-id', source_id: 'source-unknown', title: '状态未知来源', filename: 'unknown.txt', original_relative_path: '原件/unknown.txt', created_at: '2026-10-09T00:00:00Z', state: 'unknown' },
+  ]
+  const responses: Record<string, unknown> = {
+    '/api/v1/intake/items': items,
+    '/api/v1/drafts': [], '/api/v1/actions': [],
+    '/api/v1/lines': [{ id: 'line-id', name: '模拟主线', directory: '模拟主线' }],
+    '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '模拟项目', directory: '模拟主线/模拟项目', overview_id: 'overview-id', archived: false }],
+    '/api/v1/pages': [],
+    '/api/v1/intake/jobs': { job_id: 'new-job', state: 'completed' },
+  }
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => ({
+    ok: true, status: 200, json: async () => responses[String(input)],
+  })))
+
+  render(<TodayView onError={vi.fn()} />)
+  expect(await screen.findByText('请求状态未知')).toBeTruthy()
+  const row = screen.getByText('状态未知来源').closest('li')
+  fireEvent.click(within(row as HTMLElement).getByRole('checkbox'))
+  expect(screen.getByText(/不会自动重发.*可能再次调用模型/)).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '重新整理所选 · 1' }))
+  await waitFor(() => expect(String(vi.mocked(fetch).mock.calls.at(-1)?.[0])).toContain('/intake/jobs'))
+})

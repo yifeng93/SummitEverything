@@ -1,0 +1,91 @@
+{
+  "positive_terms_citation_source": {
+    "expected": "pending",
+    "query_http": 200,
+    "query_request_id": "f1aeaa24-ebdd-47f8-9ba8-e0982ecdd86c",
+    "candidate_http": 201,
+    "candidate_id": "5bc95510-4409-407b-90fb-f5c4d407f0cb",
+    "error_code": null,
+    "error_message": null,
+    "pass": true
+  },
+  "positive_quoted_internal_term": {
+    "expected": "pending",
+    "query_http": 200,
+    "query_request_id": "46598465-ecd0-4d3d-a3f8-2f5103ad5b27",
+    "candidate_http": 201,
+    "candidate_id": "4c494031-892b-436f-be19-4b631d425222",
+    "error_code": null,
+    "error_message": null,
+    "pass": true
+  },
+  "positive_after_material_attribution": {
+    "expected": "pending",
+    "query_http": 200,
+    "query_request_id": "60f5baa5-c208-41dd-b48c-5920f9138d8e",
+    "candidate_http": 201,
+    "candidate_id": "2028baad-b560-451b-b044-997ae1c88b77",
+    "error_code": null,
+    "error_message": null,
+    "pass": true
+  },
+  "negative_bare_quote": {
+    "expected": "rejected",
+    "query_http": 200,
+    "query_request_id": "a08654f1-897f-4f42-a002-90d95c1d83b2",
+    "candidate_http": 422,
+    "candidate_id": null,
+    "error_code": "validation_error",
+    "error_message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+    "pass": true
+  },
+  "negative_markdown_blockquote": {
+    "expected": "rejected",
+    "query_http": 200,
+    "query_request_id": "7d8edac2-ea1e-43d1-a744-c712848124e4",
+    "candidate_http": 422,
+    "candidate_id": null,
+    "error_code": "validation_error",
+    "error_message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+    "pass": true
+  },
+  "negative_quote_substring": {
+    "expected": "rejected",
+    "query_http": 200,
+    "query_request_id": "92be9023-f06f-4343-be10-409ed2668df1",
+    "candidate_http": 422,
+    "candidate_id": null,
+    "error_code": "validation_error",
+    "error_message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+    "pass": true
+  },
+  "negative_markdown_substring": {
+    "expected": "rejected",
+    "query_http": 200,
+    "query_request_id": "ea33342e-0596-473a-b797-12a4296eec5b",
+    "candidate_http": 422,
+    "candidate_id": null,
+    "error_code": "validation_error",
+    "error_message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+    "pass": true
+  },
+  "negative_false_attestation": {
+    "http": 422,
+    "pass": true
+  },
+  "negative_forged_id": {
+    "http": 422,
+    "pass": true
+  },
+  "pending_not_in_active_provider": {
+    "candidate_http": 201,
+    "candidate_id": "14a48211-2d3b-4994-9208-23b65920ec74",
+    "probe_http": 200,
+    "pending_text_in_active_prompt": false,
+    "active_memories": [
+      "我偏好简短中文，并明确标出资料未提供的数字。"
+    ],
+    "pass": true
+  },
+  "all_expected": true
+}

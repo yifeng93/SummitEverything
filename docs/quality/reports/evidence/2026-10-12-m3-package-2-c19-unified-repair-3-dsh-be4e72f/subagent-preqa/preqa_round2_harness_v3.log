@@ -1,0 +1,243 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA3
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 28 items
+
+.local/preqa/test_preqa_round2.py .......FFFF...........FFFF..           [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_d3_truncation_notice_is_present _____________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_d3_truncation_notice_is_p0')
+
+    def test_d3_truncation_notice_is_present(tmp_path: Path):
+        probe = build(tmp_path, [FENG, XUAN])
+        q = "比较枫湾活动的预算与玄石展览的访客设备领用"
+        answer = probe.ask(q, "comparison", limit=1)
+        joined = " ".join(answer.missing_information)
+>       assert "上限" in joined and "截断" in joined, detail(probe, answer, q)
+E       AssertionError: 
+E         question='比较枫湾活动的预算与玄石展览的访客设备领用'
+E         pairs=(('枫湾活动', 'budget'), ('玄石展览', 'term:访客设备领用'))
+E         subjects=('枫湾活动', '玄石展览')
+E         citations=1 excerpts=['玄石展览访客设备领用须登记姓名并归还胸牌。']
+E         missing=['本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。']
+E         provider_calls=1
+E         provider_passages='玄石展览访客设备领用须登记姓名并归还胸牌。'
+E       assert ('上限' in '本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。' and '截断' in '本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。')
+
+.local/preqa/test_preqa_round2.py:67: AssertionError
+__________________ test_d3_truncation_must_not_assert_absence __________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_d3_truncation_must_not_as0')
+
+    def test_d3_truncation_must_not_assert_absence(tmp_path: Path):
+        """The per-pair shortfall entry still claims the known evidence is missing."""
+        probe = build(tmp_path, [FENG, XUAN])
+        q = "比较枫湾活动的预算与玄石展览的访客设备领用"
+        answer = probe.ask(q, "comparison", limit=1)
+        joined = " ".join(answer.missing_information)
+>       assert "枫湾活动" not in joined, detail(probe, answer, q)
+E       AssertionError: 
+E         question='比较枫湾活动的预算与玄石展览的访客设备领用'
+E         pairs=(('枫湾活动', 'budget'), ('玄石展览', 'term:访客设备领用'))
+E         subjects=('枫湾活动', '玄石展览')
+E         citations=1 excerpts=['玄石展览访客设备领用须登记姓名并归还胸牌。']
+E         missing=['本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。']
+E         provider_calls=1
+E         provider_passages='玄石展览访客设备领用须登记姓名并归还胸牌。'
+E       assert '枫湾活动' not in '本次引用条数已达上限，...少所问对象/主题后重试。'
+E         
+E         '枫湾活动' is contained here:
+E           本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。
+E         ?                       ++++
+
+.local/preqa/test_preqa_round2.py:76: AssertionError
+_________________________ test_d3_default_limit_notice _________________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_d3_default_limit_notice0')
+
+    def test_d3_default_limit_notice(tmp_path: Path):
+        """API default limit=5 with 6 pairs: notice present, and the absence claim."""
+        pages = []
+        for name, budget, sched in [
+            ("云岬营地", "云岬营地预算额度为八万六千元。", "云岬营地启动时间为上午九点。"),
+            ("松墨展会", "松墨展会预算额度为十三万元。", "松墨展会启动时间为上午十点。"),
+            ("汀屿计划", "汀屿计划预算额度为五万元。", "汀屿计划启动时间为十一点。"),
+        ]:
+            pages.append((name, "预算", budget))
+            pages.append((name, "排期", sched))
+        probe = build(tmp_path, pages)
+        q = "比较云岬营地、松墨展会与汀屿计划的预算和排期"
+        answer = probe.ask(q, "comparison")
+        ctx = detail(probe, answer, q)
+>       assert any("截断" in item for item in answer.missing_information), ctx
+E       AssertionError: 
+E         question='比较云岬营地、松墨展会与汀屿计划的预算和排期'
+E         pairs=(('云岬营地', 'budget'), ('云岬营地', 'schedule'), ('松墨展会', 'budget'), ('松墨展会', 'schedule'), ('汀屿计划', 'budget'), ('汀屿计划', 'schedule'))
+E         subjects=('云岬营地', '松墨展会', '汀屿计划')
+E         citations=5 excerpts=['云岬营地预算额度为八万六千元。', '松墨展会预算额度为十三万元。', '汀屿计划启动时间为十一点。', '松墨展会启动时间为上午十点。', '汀屿计划预算额度为五万元。']
+E         missing=['本次引用条数已达上限，以下所问范围尚未覆盖：云岬营地：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。']
+E         provider_calls=1
+E         provider_passages='云岬营地预算额度为八万六千元。\n松墨展会预算额度为十三万元。\n汀屿计划启动时间为十一点。\n松墨展会启动时间为上午十点。\n汀屿计划预算额度为五万元。'
+E       assert False
+E        +  where False = any(<generator object test_d3_default_limit_notice.<locals>.<genexpr> at 0x10a072330>)
+
+.local/preqa/test_preqa_round2.py:93: AssertionError
+______________ test_d1_title_alias_hit_still_supplies_the_object _______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_d1_title_alias_hit_still_0')
+
+    def test_d1_title_alias_hit_still_supplies_the_object(tmp_path: Path):
+        probe = build(tmp_path, [("玄石展览", "枫湾活动预算", "预算上限为九万元。")])
+        q = "枫湾活动的预算上限是多少？"
+        answer = probe.ask(q, "fact")
+        ctx = detail(probe, answer, q)
+>       assert answer.citations == [], ctx
+E       AssertionError: 
+E         question='枫湾活动的预算上限是多少？'
+E         pairs=(('枫湾活动', 'budget'),)
+E         subjects=('枫湾活动',)
+E         citations=1 excerpts=['预算上限为九万元。']
+E         missing=[]
+E         provider_calls=1
+E         provider_passages='预算上限为九万元。'
+E       assert [Citation(pag...='available')] == []
+E         
+E         Left contains one more item: Citation(page_id=UUID('1a7cb123-805f-4892-a83f-26a2aba2d8b1'), content_sha256='b2df6baf850242bb53bf9920af54be2b73071ce...291176d2c11e3b97cbd2f1fb9eef75a746a959', heading='', excerpt='预算上限为九万元。', validity='current', availability='available')
+E         Use -v to get more diff
+
+.local/preqa/test_preqa_round2.py:103: AssertionError
+_ test_new_unknown_object_is_never_silently_dropped[\u603b\u7ed3\u65b9\u6848] __
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_new_unknown_object_is_nev0')
+name = '总结方案'
+
+    @pytest.mark.parametrize("name", ["总结方案", "查看方案", "梳理方案", "看看方案"])
+    def test_new_unknown_object_is_never_silently_dropped(tmp_path: Path, name):
+        """A named comparison object must not vanish while missing stays empty."""
+        probe = build(tmp_path, [("松墨展会", "经费", "松墨展会预算上限为七万元。")])
+        q = f"比较{name}与松墨展会的预算"
+        answer = probe.ask(q, "comparison")
+        ctx = detail(probe, answer, q)
+>       assert any(name in item or "方案" in item for item in answer.missing_information), ctx
+E       AssertionError: 
+E         question='比较总结方案与松墨展会的预算'
+E         pairs=(('松墨展会', 'budget'), ('总结', 'budget'))
+E         subjects=('松墨展会', '总结')
+E         citations=1 excerpts=['松墨展会预算上限为七万元。']
+E         missing=['总结：缺少预算依据。']
+E         provider_calls=1
+E         provider_passages='松墨展会预算上限为七万元。'
+E       assert False
+E        +  where False = any(<generator object test_new_unknown_object_is_never_silently_dropped.<locals>.<genexpr> at 0x10a0728e0>)
+
+.local/preqa/test_preqa_round2.py:135: AssertionError
+_ test_new_unknown_object_is_never_silently_dropped[\u67e5\u770b\u65b9\u6848] __
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_new_unknown_object_is_nev1')
+name = '查看方案'
+
+    @pytest.mark.parametrize("name", ["总结方案", "查看方案", "梳理方案", "看看方案"])
+    def test_new_unknown_object_is_never_silently_dropped(tmp_path: Path, name):
+        """A named comparison object must not vanish while missing stays empty."""
+        probe = build(tmp_path, [("松墨展会", "经费", "松墨展会预算上限为七万元。")])
+        q = f"比较{name}与松墨展会的预算"
+        answer = probe.ask(q, "comparison")
+        ctx = detail(probe, answer, q)
+>       assert any(name in item or "方案" in item for item in answer.missing_information), ctx
+E       AssertionError: 
+E         question='比较查看方案与松墨展会的预算'
+E         pairs=(('松墨展会', 'budget'), ('查看', 'budget'))
+E         subjects=('松墨展会', '查看')
+E         citations=1 excerpts=['松墨展会预算上限为七万元。']
+E         missing=['查看：缺少预算依据。']
+E         provider_calls=1
+E         provider_passages='松墨展会预算上限为七万元。'
+E       assert False
+E        +  where False = any(<generator object test_new_unknown_object_is_never_silently_dropped.<locals>.<genexpr> at 0x10a0ed970>)
+
+.local/preqa/test_preqa_round2.py:135: AssertionError
+_ test_new_unknown_object_is_never_silently_dropped[\u68b3\u7406\u65b9\u6848] __
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_new_unknown_object_is_nev2')
+name = '梳理方案'
+
+    @pytest.mark.parametrize("name", ["总结方案", "查看方案", "梳理方案", "看看方案"])
+    def test_new_unknown_object_is_never_silently_dropped(tmp_path: Path, name):
+        """A named comparison object must not vanish while missing stays empty."""
+        probe = build(tmp_path, [("松墨展会", "经费", "松墨展会预算上限为七万元。")])
+        q = f"比较{name}与松墨展会的预算"
+        answer = probe.ask(q, "comparison")
+        ctx = detail(probe, answer, q)
+>       assert any(name in item or "方案" in item for item in answer.missing_information), ctx
+E       AssertionError: 
+E         question='比较梳理方案与松墨展会的预算'
+E         pairs=(('松墨展会', 'budget'), ('梳理', 'budget'))
+E         subjects=('松墨展会', '梳理')
+E         citations=1 excerpts=['松墨展会预算上限为七万元。']
+E         missing=['梳理：缺少预算依据。']
+E         provider_calls=1
+E         provider_passages='松墨展会预算上限为七万元。'
+E       assert False
+E        +  where False = any(<generator object test_new_unknown_object_is_never_silently_dropped.<locals>.<genexpr> at 0x10a0ff030>)
+
+.local/preqa/test_preqa_round2.py:135: AssertionError
+_ test_new_unknown_object_is_never_silently_dropped[\u770b\u770b\u65b9\u6848] __
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-840/test_new_unknown_object_is_nev3')
+name = '看看方案'
+
+    @pytest.mark.parametrize("name", ["总结方案", "查看方案", "梳理方案", "看看方案"])
+    def test_new_unknown_object_is_never_silently_dropped(tmp_path: Path, name):
+        """A named comparison object must not vanish while missing stays empty."""
+        probe = build(tmp_path, [("松墨展会", "经费", "松墨展会预算上限为七万元。")])
+        q = f"比较{name}与松墨展会的预算"
+        answer = probe.ask(q, "comparison")
+        ctx = detail(probe, answer, q)
+>       assert any(name in item or "方案" in item for item in answer.missing_information), ctx
+E       AssertionError: 
+E         question='比较看看方案与松墨展会的预算'
+E         pairs=(('松墨展会', 'budget'), ('看看', 'budget'))
+E         subjects=('松墨展会', '看看')
+E         citations=1 excerpts=['松墨展会预算上限为七万元。']
+E         missing=['看看：缺少预算依据。']
+E         provider_calls=1
+E         provider_passages='松墨展会预算上限为七万元。'
+E       assert False
+E        +  where False = any(<generator object test_new_unknown_object_is_never_silently_dropped.<locals>.<genexpr> at 0x10a0ef780>)
+
+.local/preqa/test_preqa_round2.py:135: AssertionError
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED .local/preqa/test_preqa_round2.py::test_d2_polite_verb_never_becomes_a_pseudo_object[\u9ebb\u70e6\u5e2e\u6211\u770b\u770b\u67ab\u6e7e\u6d3b\u52a8\u7684\u7ecf\u8d39\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_round2.py::test_d2_polite_verb_never_becomes_a_pseudo_object[\u5e2e\u6211\u67e5\u4e00\u4e0b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u3002]
+PASSED .local/preqa/test_preqa_round2.py::test_d2_polite_verb_never_becomes_a_pseudo_object[\u770b\u770b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97]
+PASSED .local/preqa/test_preqa_round2.py::test_d2_polite_verb_never_becomes_a_pseudo_object[\u67e5\u4e00\u4e0b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97]
+PASSED .local/preqa/test_preqa_round2.py::test_d4_no_internal_term_marker_in_user_text[fact]
+PASSED .local/preqa/test_preqa_round2.py::test_d4_no_internal_term_marker_in_user_text[comparison]
+PASSED .local/preqa/test_preqa_round2.py::test_d4_no_internal_term_marker_in_user_text[plan]
+PASSED .local/preqa/test_preqa_round2.py::test_new_registered_object_with_shell_prefix_survives[\u770b\u770b\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round2.py::test_new_registered_object_with_shell_prefix_survives[\u603b\u7ed3\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round2.py::test_new_registered_object_with_shell_prefix_survives[\u68b3\u7406\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round2.py::test_new_registered_object_with_shell_prefix_survives[\u67e5\u770b\u9879\u76ee]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u603b\u7ed3\u62a5\u544a]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u67e5\u770b\u7ec6\u5219]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u68b3\u7406\u6e05\u5355]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u544a\u8bc9\u6211\u53f0\u8d26]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u770b\u770b\u62a5\u544a]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u8bf4\u660e\u4e00\u4e0b\u8bb0\u5f55]
+PASSED .local/preqa/test_preqa_round2.py::test_new_unknown_object_with_shell_prefix_keeps_its_name[\u67e5\u4e00\u67e5\u62a5\u544a]
+PASSED .local/preqa/test_preqa_round2.py::test_new_overstrip_does_not_pull_unrelated_evidence
+PASSED .local/preqa/test_preqa_round2.py::test_truncation_notice_absent_when_nothing_was_cut
+FAILED .local/preqa/test_preqa_round2.py::test_d3_truncation_notice_is_present
+FAILED .local/preqa/test_preqa_round2.py::test_d3_truncation_must_not_assert_absence
+FAILED .local/preqa/test_preqa_round2.py::test_d3_default_limit_notice - Asse...
+FAILED .local/preqa/test_preqa_round2.py::test_d1_title_alias_hit_still_supplies_the_object
+FAILED .local/preqa/test_preqa_round2.py::test_new_unknown_object_is_never_silently_dropped[\u603b\u7ed3\u65b9\u6848]
+FAILED .local/preqa/test_preqa_round2.py::test_new_unknown_object_is_never_silently_dropped[\u67e5\u770b\u65b9\u6848]
+FAILED .local/preqa/test_preqa_round2.py::test_new_unknown_object_is_never_silently_dropped[\u68b3\u7406\u65b9\u6848]
+FAILED .local/preqa/test_preqa_round2.py::test_new_unknown_object_is_never_silently_dropped[\u770b\u770b\u65b9\u6848]
+========================= 8 failed, 20 passed in 1.61s =========================

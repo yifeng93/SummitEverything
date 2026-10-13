@@ -1,0 +1,52 @@
+INFO:     Started server process [74323]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18795 (Press CTRL+C to quit)
+INFO:     127.0.0.1:62288 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:62290 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62292 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62294 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62296 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62330 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:62332 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62334 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62336 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62338 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62415 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62417 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62419 - "GET /api/v1/workspaces/current HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62571 - "GET /api/v1/roles HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62641 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:62645 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62647 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62649 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62651 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63056 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63058 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63060 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63062 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63064 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63220 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63224 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63226 - "POST /api/v1/index/plans HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63228 - "POST /api/v1/index/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63232 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63236 - "GET /api/v1/workspaces/current HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63261 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63263 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63265 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63269 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63273 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63277 - "GET /api/v1/workspaces/current HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63548 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63550 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63808 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63812 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63814 - "GET /api/v1/workspaces/current HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64084 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64086 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64088 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64090 - "GET /api/v1/conversations/b8384524-295b-48ec-bf3a-71b9c60b0ba3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64092 - "GET /api/v1/workspaces/current HTTP/1.1" 200 OK

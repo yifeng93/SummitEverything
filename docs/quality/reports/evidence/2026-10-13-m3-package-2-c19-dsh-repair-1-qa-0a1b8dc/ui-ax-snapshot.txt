@@ -1,0 +1,22 @@
+C19 QA UI AX snapshot
+Application: Google Chrome
+Window: SummitEverything — 本地知识工作台
+URL: 127.0.0.1:15180/
+Observed current state: connected workspace “C19 QA WebUI 合成库”; local index ready, 9 pages, 9 chunks, summit-fake-embedding-v1.
+Main view: 知识问答; “仅使用已确认知识”; no pending or confirmed memory.
+Selected conversation title / user question:
+“白萤会展的年度访客信息登记办法是什么？”
+Visible answer:
+“页面内容：白萤会展年度访客信息登记须核验身份并登记姓名。”
+Status:
+“已确认资料中的陈述”
+Visible citation:
+“1 页面内容 白萤会展年度访客信息登记须核验身份并登记姓名。 引用版本仍可用”
+Visible completed history entries:
+- 云岬营地预算是多少？ — 1 个问题 · 已完成
+- 比较云岬营地预算与汀屿计划的排期 — 1 个问题 · 已完成
+- 白萤近似的访客信息登记怎么办？ — 1 个问题 · 已完成
+- 彩色牙刷的存储规则是什么？ — 1 个问题 · 已完成
+- 比较白萤会展的年度访客信息登记与汀屿计划的排期 — 1 个问题 · 已完成
+- 白萤会展的年度访客信息登记办法是什么？ — 1 个问题 · 已完成
+Observed via Chrome CUA accessibility tree after reopening history; not a screenshot.

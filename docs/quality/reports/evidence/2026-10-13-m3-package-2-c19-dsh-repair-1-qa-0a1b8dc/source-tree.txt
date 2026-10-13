@@ -1,0 +1,7 @@
+Fixed product SHA: 0a1b8dc94a5d8f797161c38430dccfcb211a9e07
+QA checkout HEAD before QA-only report commit: 0a1b8dc94a5d8f797161c38430dccfcb211a9e07
+Product source paths compared: src web native tests scripts pyproject.toml uv.lock
+Product diff exit: 0 (0 = unchanged)
+Working tree before QA report commit:
+?? docs/quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md
+?? docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc/

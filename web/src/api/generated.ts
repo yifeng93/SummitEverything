@@ -696,6 +696,164 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversation List */
+        get: operations["conversation_list_api_v1_conversations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversation Get */
+        get: operations["conversation_get_api_v1_conversations__conversation_id__get"];
+        put?: never;
+        post?: never;
+        /** Conversation Delete */
+        delete: operations["conversation_delete_api_v1_conversations__conversation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversation_id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Conversation Reopen */
+        post: operations["conversation_reopen_api_v1_conversations__conversation_id__reopen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Roles List */
+        get: operations["roles_list_api_v1_roles_get"];
+        put?: never;
+        /** Roles Create */
+        post: operations["roles_create_api_v1_roles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/roles/{role_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Roles Delete */
+        delete: operations["roles_delete_api_v1_roles__role_id__delete"];
+        options?: never;
+        head?: never;
+        /** Roles Update */
+        patch: operations["roles_update_api_v1_roles__role_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/memory/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Memory Candidates */
+        get: operations["memory_candidates_api_v1_memory_candidates_get"];
+        put?: never;
+        /** Memory Candidate Create */
+        post: operations["memory_candidate_create_api_v1_memory_candidates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/memory/candidates/{candidate_id}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Memory Candidate Confirm */
+        post: operations["memory_candidate_confirm_api_v1_memory_candidates__candidate_id__confirmations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/memory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Memory List */
+        get: operations["memory_list_api_v1_memory_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/memory/{memory_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Memory Delete */
+        delete: operations["memory_delete_api_v1_memory__memory_id__delete"];
+        options?: never;
+        head?: never;
+        /** Memory Update */
+        patch: operations["memory_update_api_v1_memory__memory_id__patch"];
+        trace?: never;
+    };
     "/api/v1/queries": {
         parameters: {
             query?: never;
@@ -899,6 +1057,8 @@ export interface components {
             finished_at?: string | null;
             /** Attempt Session */
             attempt_session?: string | null;
+            /** Attempt Id */
+            attempt_id?: string | null;
             /** Provider Result */
             provider_result?: {
                 [key: string]: unknown;
@@ -985,6 +1145,36 @@ export interface components {
             /** Candidate Id */
             candidate_id?: string | null;
         };
+        /** AnswerRole */
+        AnswerRole: {
+            /** Name */
+            name: string;
+            /**
+             * Instructions
+             * @default
+             */
+            instructions: string;
+            /**
+             * Context Budget
+             * @default 2000
+             */
+            context_budget: number;
+            /**
+             * Role Id
+             * Format: uuid
+             */
+            role_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** AuthorizationStart */
         AuthorizationStart: {
             /** Authorization Url */
@@ -1039,6 +1229,148 @@ export interface components {
             /** Disabled Reason */
             disabled_reason: string | null;
         };
+        /** Citation */
+        Citation: {
+            /**
+             * Page Id
+             * Format: uuid
+             */
+            page_id: string;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Chunk Id */
+            chunk_id: string;
+            /** Heading */
+            heading: string;
+            /** Excerpt */
+            excerpt: string;
+            /**
+             * Validity
+             * @default current
+             * @enum {string}
+             */
+            validity: "current" | "superseded" | "invalid";
+            /**
+             * Availability
+             * @default available
+             * @enum {string}
+             */
+            availability: "available" | "updated" | "unavailable";
+        };
+        /** ConversationDetail */
+        ConversationDetail: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Message Count */
+            message_count: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "completed" | "error" | "cancelled" | "interrupted";
+            /** Messages */
+            messages: components["schemas"]["ConversationMessage"][];
+        };
+        /** ConversationMessage */
+        ConversationMessage: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "completed" | "error" | "cancelled" | "interrupted";
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "current" | "history";
+            /**
+             * Answer Mode
+             * @default fact
+             * @enum {string}
+             */
+            answer_mode: "fact" | "comparison" | "plan";
+            /** Role Id */
+            role_id?: string | null;
+            /** Source Statements */
+            source_statements?: string[];
+            /** Inferences */
+            inferences?: string[];
+            /** Advice */
+            advice?: string[];
+            /** Missing Information */
+            missing_information?: string[];
+            /** Citations */
+            citations?: components["schemas"]["Citation"][];
+            /** Events */
+            events?: components["schemas"]["QueryEvent"][];
+            /** Error */
+            error?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Completed At */
+            completed_at?: string | null;
+        };
+        /** ConversationPage */
+        ConversationPage: {
+            /** Items */
+            items: components["schemas"]["ConversationSummary"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** ConversationSummary */
+        ConversationSummary: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Message Count */
+            message_count: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "completed" | "error" | "cancelled" | "interrupted";
+        };
         /** CredentialAccountRequest */
         CredentialAccountRequest: {
             /** Account Id */
@@ -1061,6 +1393,8 @@ export interface components {
              * Format: uuid
              */
             draft_id: string;
+            /** Job Id */
+            job_id?: string | null;
             /** Input Ids */
             input_ids: string[];
             /** Target Page Id */
@@ -1396,9 +1730,23 @@ export interface components {
              * @default pending
              * @enum {string}
              */
-            state: "pending" | "processing" | "reviewing" | "completed" | "failed" | "cancelled";
+            state: "pending" | "processing" | "reviewing" | "completed" | "failed" | "cancelled" | "unknown";
             /** Latest Job Id */
             latest_job_id?: string | null;
+            /**
+             * Attempt No
+             * @default 0
+             */
+            attempt_no: number;
+            /**
+             * Revision
+             * @default 0
+             */
+            revision: number;
+            /** Previous Attempt Sha256 */
+            previous_attempt_sha256?: string | null;
+            /** Finished At */
+            finished_at?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -1411,13 +1759,17 @@ export interface components {
             job_id: string;
             /** Item Ids */
             item_ids: string[];
+            /** Line Id */
+            line_id?: string | null;
+            /** Project Id */
+            project_id?: string | null;
             /** Request Hash */
             request_hash: string;
             /**
              * State
              * @enum {string}
              */
-            state: "running" | "completed" | "failed" | "cancelled";
+            state: "running" | "provider_calling" | "completed" | "failed" | "cancelled" | "unknown";
             /** Draft Ids */
             draft_ids?: string[];
             /** Action Candidates */
@@ -1431,6 +1783,17 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Attempt Id */
+            attempt_id?: string | null;
+            /**
+             * Revision
+             * @default 0
+             */
+            revision: number;
+            /** Checkpoint Sha256 */
+            checkpoint_sha256?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -1581,6 +1944,55 @@ export interface components {
             items: components["schemas"]["Material"][];
             /** Next Cursor */
             next_cursor?: string | null;
+        };
+        /** MemoryCandidate */
+        MemoryCandidate: {
+            /**
+             * Candidate Id
+             * Format: uuid
+             */
+            candidate_id: string;
+            /**
+             * Message Id
+             * Format: uuid
+             */
+            message_id: string;
+            /** Text */
+            text: string;
+            /** State */
+            state: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** MemoryCandidateRequest */
+        MemoryCandidateRequest: {
+            /**
+             * Message Id
+             * Format: uuid
+             */
+            message_id: string;
+            /** Text */
+            text: string;
+            /**
+             * User Expression
+             * @constant
+             */
+            user_expression: true;
+        };
+        /** MemoryConfirmationRequest */
+        MemoryConfirmationRequest: {
+            /** Confirmation Id */
+            confirmation_id: string;
+            /** Text */
+            text: string;
+        };
+        /** MemoryPatchRequest */
+        MemoryPatchRequest: {
+            /** Text */
+            text: string;
         };
         /** ModelStudioSettingsPatch */
         ModelStudioSettingsPatch: {
@@ -1784,6 +2196,25 @@ export interface components {
             embedding?: components["schemas"]["ModelStudioSettingsPatch"] | null;
             rerank?: components["schemas"]["ModelStudioSettingsPatch"] | null;
         };
+        /** QueryEvent */
+        QueryEvent: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Seq */
+            seq: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "status" | "citation" | "delta" | "completed" | "error";
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+        };
         /** QueryRequest */
         QueryRequest: {
             /** Question */
@@ -1796,8 +2227,18 @@ export interface components {
              * @enum {string}
              */
             purpose: "current" | "history";
+            /**
+             * Answer Mode
+             * @default fact
+             * @enum {string}
+             */
+            answer_mode: "fact" | "comparison" | "plan";
+            /** Role Id */
+            role_id?: string | null;
             /** Request Id */
             request_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
         };
         /** RerankSettings */
         RerankSettings: {
@@ -1830,6 +2271,21 @@ export interface components {
              * @default false
              */
             enabled: boolean;
+        };
+        /** RoleInput */
+        RoleInput: {
+            /** Name */
+            name: string;
+            /**
+             * Instructions
+             * @default
+             */
+            instructions: string;
+            /**
+             * Context Budget
+             * @default 2000
+             */
+            context_budget: number;
         };
         /** SettingsSummary */
         SettingsSummary: {
@@ -1901,6 +2357,31 @@ export interface components {
             /** Next Cursor */
             next_cursor?: string | null;
         };
+        /** UserMemory */
+        UserMemory: {
+            /**
+             * Memory Id
+             * Format: uuid
+             */
+            memory_id: string;
+            /**
+             * Source Message Id
+             * Format: uuid
+             */
+            source_message_id: string;
+            /** Text */
+            text: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** UserOutcome */
         UserOutcome: {
             /** Payload Sha256 */
@@ -1958,28 +2439,6 @@ export interface components {
             /** Operation Id */
             operation_id: string;
         };
-        /** Citation */
-        Citation: {
-            /**
-             * Page Id
-             * Format: uuid
-             */
-            page_id: string;
-            /** Content Sha256 */
-            content_sha256: string;
-            /** Chunk Id */
-            chunk_id: string;
-            /** Heading */
-            heading: string;
-            /** Excerpt */
-            excerpt: string;
-            /**
-             * Validity
-             * @default current
-             * @enum {string}
-             */
-            validity: "current" | "superseded" | "invalid";
-        };
         /** Answer */
         Answer: {
             /**
@@ -1993,8 +2452,18 @@ export interface components {
             text: string;
             /** Citations */
             citations?: components["schemas"]["Citation"][];
+            /**
+             * Answer Mode
+             * @default fact
+             * @enum {string}
+             */
+            answer_mode: "fact" | "comparison" | "plan";
+            /** Source Statements */
+            source_statements?: string[];
             /** Inferences */
             inferences?: string[];
+            /** Advice */
+            advice?: string[];
             /** Missing Information */
             missing_information?: string[];
             /**
@@ -3480,6 +3949,15 @@ export interface operations {
                     "application/json": components["schemas"]["IntakeJob"];
                 };
             };
+            /** @description Existing provider attempt is still running */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeJob"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3785,6 +4263,473 @@ export interface operations {
                     "application/json": {
                         [key: string]: number | string | null;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_list_api_v1_conversations_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_get_api_v1_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_delete_api_v1_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conversation_reopen_api_v1_conversations__conversation_id__reopen_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    roles_list_api_v1_roles_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerRole"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    roles_create_api_v1_roles_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerRole"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    roles_delete_api_v1_roles__role_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                role_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    roles_update_api_v1_roles__role_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                role_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerRole"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    memory_candidates_api_v1_memory_candidates_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryCandidate"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    memory_candidate_create_api_v1_memory_candidates_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemoryCandidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryCandidate"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    memory_candidate_confirm_api_v1_memory_candidates__candidate_id__confirmations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemoryConfirmationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserMemory"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    memory_list_api_v1_memory_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserMemory"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    memory_delete_api_v1_memory__memory_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                memory_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    memory_update_api_v1_memory__memory_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                memory_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemoryPatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserMemory"];
                 };
             };
             /** @description Validation Error */

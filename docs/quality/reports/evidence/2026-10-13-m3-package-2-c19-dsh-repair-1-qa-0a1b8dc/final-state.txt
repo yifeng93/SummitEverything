@@ -1,0 +1,5 @@
+Tested source SHA: 0a1b8dc94a5d8f797161c38430dccfcb211a9e07
+Target HEAD was verified unchanged before evaluation and after tests.
+Product-source diff against tested SHA: 0
+Test services stopped: process-stop-check.exit and process-stop-check.json (wrapper exit 0; each lsof exit 1 with empty stdout; no process match)
+QA-only documentation/evidence staged separately from product source. The final QA commit SHA is recorded in parent handoff after commit.

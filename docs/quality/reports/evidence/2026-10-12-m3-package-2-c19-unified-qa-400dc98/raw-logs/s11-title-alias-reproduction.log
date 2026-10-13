@@ -1,0 +1,41 @@
+{
+  "question": "比较预算和排期建议",
+  "mode": "comparison",
+  "expected": "将预算、排期解析为两个维度；引用预算汇总和排期材料，不将‘排期’标题误判为对象；不报告缺失。",
+  "plan": {
+    "subjects": [
+      "排期"
+    ],
+    "dimensions": [
+      "budget",
+      "schedule"
+    ],
+    "required_pairs": [
+      [
+        "排期",
+        "budget"
+      ],
+      [
+        "排期",
+        "schedule"
+      ]
+    ]
+  },
+  "answer": {
+    "answer_id": "659f1440-90c5-40ee-a6cc-0a3348df7d37",
+    "question": "比较预算和排期建议",
+    "text": "没有找到能确认该对象和主题的已确认资料；排期：缺少预算依据。；排期：缺少排期或启动时间依据。",
+    "citations": [],
+    "answer_mode": "comparison",
+    "source_statements": [],
+    "inferences": [],
+    "advice": [],
+    "missing_information": [
+      "排期：缺少预算依据。",
+      "排期：缺少排期或启动时间依据。"
+    ],
+    "purpose": "current",
+    "index_status": "ready"
+  },
+  "provider_calls": []
+}

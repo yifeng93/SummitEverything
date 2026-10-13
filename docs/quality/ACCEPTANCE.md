@@ -1,12 +1,26 @@
 # 独立验收矩阵
 
+2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收及合并；离线正式门PASS，合并执行中。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；main / M3冻结 / DSH交接不变且干净。本轮1/2返工收口，第2轮未使用。
+
+未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
+
+2026-10-13 DEV/初验历史：DSH 固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac` 经全新独立 QA / Sol 判 FAIL，复合主题“信息”全局剥除 P1 与默认limit掩盖真缺失 P2尚未关闭。原设备与53个不同回归通过，D1有限元数据/正文对照符合现有契约。进入本次候选初验后的统一自动返工1/2；Developer在 `codex/c19-dsh-sol-gate` 连续实施，固定新SHA后全新QA集中复验。main / M3冻结基线 / DSH原交接不改，包1/3保留既有离线PASS，正式包2/M3验收及合并未通过。见 [Sol门与统一修复契约](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [固定源码独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。下方DSH自测及旧周期均为历史记录，不覆盖本行当前状态。
+
+2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
+
 依据：产品规格、工作库 v1、API v1、完整实施计划。执行者自测不能替代本矩阵的独立结果。
 
 结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
 
+2026-10-12 最近受测结果（收尾前）：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、原周期已停止；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
+
 ## 当前结论与范围（2026-10-11）
 
 固定源码 `576895f6983ca41cacbbad45a9075b97b9986189` 的独立离线QA已通过，并以PR #10 / merge `41207e5bfb81b535c0254fd4ac242df11da40d67` 合入main。后端388项、25项独立失败路径与实际合成浏览器/原生开发壳复验通过；合并后13项检查通过（Web45）。历史7f/8b/fd FAIL保留，缺陷只在新SHA复验后关闭。真实接入、OS Keychain、模型R03质量与安装包等门仍NOT_RUN；完整Stage B/v1未验收。证据发布范围与合并后初次瞬时失败见[收口记录](reports/2026-10-11-STAGE-B-POSTMERGE.md)。
+
+### C19统一周期状态（2026-10-12）
+
+最终repair2/2独立QA与Sol判FAIL，剩余信息性主题词剥除P1；已用完两轮自动返工，待用户决定追加范围。固定版本/原始证据见[Sol门](reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)及[最终QA](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。下方C19及全部产品验收要求不变；不以自动检查或旧反例通过替代本次实际失败。
 
 ### 阶段 A 历史结论
 

@@ -1,0 +1,101 @@
+{'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第3项为60000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第5项为80000元。'], 'provider_calls': 1, 'missing': ['本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'], 'text': '当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度第6项为90000元。\n\n页面内容：云岬营地预算额度第4项为70000元。\n\n页面内容：云岬营地预算额度第3项为60000元。\n\n页面内容：云岬营地预算额度第1项为40000元。\n\n页面内容：云岬营地预算额度第5项为80000元。\n\n仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'}
+F{'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第2项为50000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第5项为80000元。'], 'provider_calls': 1, 'missing': ['本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'], 'text': '当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度第6项为90000元。\n\n页面内容：云岬营地预算额度第4项为70000元。\n\n页面内容：云岬营地预算额度第2项为50000元。\n\n页面内容：云岬营地预算额度第1项为40000元。\n\n页面内容：云岬营地预算额度第5项为80000元。\n\n仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'}
+F{'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第3项为60000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第2项为50000元。'], 'provider_calls': 1, 'missing': ['本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'], 'text': '当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度第6项为90000元。\n\n页面内容：云岬营地预算额度第4项为70000元。\n\n页面内容：云岬营地预算额度第3项为60000元。\n\n页面内容：云岬营地预算额度第1项为40000元。\n\n页面内容：云岬营地预算额度第2项为50000元。\n\n仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'}
+F{'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第5项为80000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第2项为50000元。', '云岬营地预算额度第3项为60000元。'], 'provider_calls': 1, 'missing': ['汀屿计划：缺少排期或启动时间依据。'], 'text': '当前资料只覆盖了部分所问范围：\n\n页面内容：云岬营地预算额度第6项为90000元。\n\n页面内容：云岬营地预算额度第4项为70000元。\n\n页面内容：云岬营地预算额度第5项为80000元。\n\n页面内容：云岬营地预算额度第1项为40000元。\n\n页面内容：云岬营地预算额度第2项为50000元。\n\n页面内容：云岬营地预算额度第3项为60000元。\n\n仍缺少：汀屿计划：缺少排期或启动时间依据。'}
+.
+=================================== FAILURES ===================================
+_________ test_default_limit_does_not_mask_genuinely_absent_pair[fact] _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-850/test_default_limit_does_not_ma0')
+mode = 'fact'
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    def test_default_limit_does_not_mask_genuinely_absent_pair(tmp_path: Path, mode: str) -> None:
+        root, service, answerer = make_query(tmp_path, PAGES)
+        answer = ask(service, root, QUESTION, mode)
+        observed = {
+            "citations": [citation.excerpt for citation in answer.citations],
+            "provider_calls": len(answerer.calls),
+            "missing": answer.missing_information,
+            "text": answer.text,
+        }
+        print(observed)
+        # The fixture has six valid A-budget candidates and no B-schedule support.
+        # Default limit=5 may produce a cap notice for additionally uncovered pairs,
+        # but must retain the independently true B absence rather than replace it.
+        assert len(answer.citations) == 5, observed
+>       assert any("汀屿计划" in item and "缺少" in item for item in answer.missing_information), observed
+E       AssertionError: {'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第3项为60000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第5...n页面内容：云岬营地预算额度第1项为40000元。
+E         
+E         页面内容：云岬营地预算额度第5项为80000元。
+E         
+E         仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'}
+E       assert False
+E        +  where False = any(<generator object test_default_limit_does_not_mask_genuinely_absent_pair.<locals>.<genexpr> at 0x109357850>)
+
+.local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py:33: AssertionError
+______ test_default_limit_does_not_mask_genuinely_absent_pair[comparison] ______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-850/test_default_limit_does_not_ma1')
+mode = 'comparison'
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    def test_default_limit_does_not_mask_genuinely_absent_pair(tmp_path: Path, mode: str) -> None:
+        root, service, answerer = make_query(tmp_path, PAGES)
+        answer = ask(service, root, QUESTION, mode)
+        observed = {
+            "citations": [citation.excerpt for citation in answer.citations],
+            "provider_calls": len(answerer.calls),
+            "missing": answer.missing_information,
+            "text": answer.text,
+        }
+        print(observed)
+        # The fixture has six valid A-budget candidates and no B-schedule support.
+        # Default limit=5 may produce a cap notice for additionally uncovered pairs,
+        # but must retain the independently true B absence rather than replace it.
+        assert len(answer.citations) == 5, observed
+>       assert any("汀屿计划" in item and "缺少" in item for item in answer.missing_information), observed
+E       AssertionError: {'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第2项为50000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第5...n页面内容：云岬营地预算额度第1项为40000元。
+E         
+E         页面内容：云岬营地预算额度第5项为80000元。
+E         
+E         仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'}
+E       assert False
+E        +  where False = any(<generator object test_default_limit_does_not_mask_genuinely_absent_pair.<locals>.<genexpr> at 0x1098472a0>)
+
+.local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py:33: AssertionError
+_________ test_default_limit_does_not_mask_genuinely_absent_pair[plan] _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-850/test_default_limit_does_not_ma2')
+mode = 'plan'
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    def test_default_limit_does_not_mask_genuinely_absent_pair(tmp_path: Path, mode: str) -> None:
+        root, service, answerer = make_query(tmp_path, PAGES)
+        answer = ask(service, root, QUESTION, mode)
+        observed = {
+            "citations": [citation.excerpt for citation in answer.citations],
+            "provider_calls": len(answerer.calls),
+            "missing": answer.missing_information,
+            "text": answer.text,
+        }
+        print(observed)
+        # The fixture has six valid A-budget candidates and no B-schedule support.
+        # Default limit=5 may produce a cap notice for additionally uncovered pairs,
+        # but must retain the independently true B absence rather than replace it.
+        assert len(answer.citations) == 5, observed
+>       assert any("汀屿计划" in item and "缺少" in item for item in answer.missing_information), observed
+E       AssertionError: {'citations': ['云岬营地预算额度第6项为90000元。', '云岬营地预算额度第4项为70000元。', '云岬营地预算额度第3项为60000元。', '云岬营地预算额度第1项为40000元。', '云岬营地预算额度第2...n页面内容：云岬营地预算额度第1项为40000元。
+E         
+E         页面内容：云岬营地预算额度第2项为50000元。
+E         
+E         仍缺少：本次引用条数已达上限，以下所问范围尚未覆盖：汀屿计划：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'}
+E       assert False
+E        +  where False = any(<generator object test_default_limit_does_not_mask_genuinely_absent_pair.<locals>.<genexpr> at 0x10984f920>)
+
+.local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED .local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py::test_default_limit_does_not_mask_genuinely_absent_pair[fact]
+FAILED .local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py::test_default_limit_does_not_mask_genuinely_absent_pair[comparison]
+FAILED .local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py::test_default_limit_does_not_mask_genuinely_absent_pair[plan]
+3 failed, 1 passed in 0.99s

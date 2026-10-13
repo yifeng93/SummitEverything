@@ -22,6 +22,10 @@ from summit_everything.domain.content import (
     retrieval_eligibility,
 )
 from summit_everything.domain.models import MutationResult, WorkspaceManifest
+from summit_everything.workspace.archives import (
+    archive_completed_transactions,
+    read_active_or_archived,
+)
 from summit_everything.workspace.manifest import (
     WorkspaceError,
     _safe_directory,
@@ -125,6 +129,10 @@ def _read_intent(path: Path) -> dict[str, Any]:
         intent = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise WorkspaceWriteConflict("Workspace transaction journal is invalid") from exc
+    return _validate_intent(intent)
+
+
+def _validate_intent(intent: dict[str, Any]) -> dict[str, Any]:
     if (
         not isinstance(intent, dict)
         or intent.get("schema") != "workspace-mutation-v1"
@@ -160,12 +168,14 @@ class WorkspaceWriter:
         root = root.resolve()
         with workspace_lock(root):
             journal_path = _operation_path(root, operation_id)
-            if not journal_path.exists():
+            receipt = read_active_or_archived(root, journal_path, "transactions", journal_path.name)
+            if receipt is None:
                 return None
-            intent = _read_intent(journal_path)
+            intent = _validate_intent(receipt)
             self._check_intent(intent, operation_id, intent_hash)
             if intent.get("state") != "succeeded":
                 intent = self._resume(root, journal_path, intent)
+            archive_completed_transactions(root, locked=True)
             return _result(intent)
 
     def apply(
@@ -180,6 +190,7 @@ class WorkspaceWriter:
     ) -> MutationResult:
         root = root.resolve()
         self.recover(root)
+        archive_completed_transactions(root)
         if not operation_id.strip() or set(expected_versions) != set(changes) or not changes:
             raise WorkspaceWriteConflict("A mutation needs an ID and matching expected versions")
         normalized: list[dict[str, Any]] = []
@@ -206,12 +217,16 @@ class WorkspaceWriter:
         )
         journal_path = _operation_path(root, operation_id)
         with workspace_lock(root):
-            if journal_path.exists():
-                intent = _read_intent(journal_path)
+            receipt = read_active_or_archived(root, journal_path, "transactions", journal_path.name)
+            if receipt is not None:
+                intent = _validate_intent(receipt)
                 self._check_intent(intent, operation_id, payload_hash)
                 if intent.get("state") == "succeeded":
+                    archive_completed_transactions(root, locked=True)
                     return _result(intent)
-                return _result(self._resume(root, journal_path, intent))
+                result = self._resume(root, journal_path, intent)
+                archive_completed_transactions(root, locked=True)
+                return _result(result)
             for change in normalized:
                 target = _safe_target(root, change["path"])
                 if _read_digest(target) != change["expected_hash"]:
@@ -226,7 +241,9 @@ class WorkspaceWriter:
                 "applied_paths": [],
             }
             atomic_write(journal_path, json.dumps(intent, sort_keys=True).encode("utf-8"))
-            return _result(self._resume(root, journal_path, intent))
+            result = self._resume(root, journal_path, intent)
+            archive_completed_transactions(root, locked=True)
+            return _result(result)
 
     def recover(self, root: Path) -> None:
         root = root.resolve()
@@ -241,6 +258,7 @@ class WorkspaceWriter:
                     and intent.get("state") != "succeeded"
                 ):
                     self._resume(root, journal_path, intent)
+            archive_completed_transactions(root, locked=True)
 
     def _check_intent(self, intent: dict[str, Any], operation_id: str, payload_hash: str) -> None:
         if (
@@ -274,6 +292,7 @@ class WorkspaceWriter:
             intent["applied_paths"].append(change["path"])
             atomic_write(journal_path, json.dumps(intent, sort_keys=True).encode("utf-8"))
         intent["state"] = "succeeded"
+        intent["finished_at"] = datetime.now(UTC).isoformat()
         for change in intent["changes"]:
             change.pop("content_b64", None)
         atomic_write(journal_path, json.dumps(intent, sort_keys=True).encode("utf-8"))
@@ -484,7 +503,7 @@ class PageWriter:
             area=StorageArea.FORMAL,
             purpose=(
                 RetrievalPurpose.HISTORY
-                if approved_metadata.get("validity") == "superseded"
+                if approved_metadata.get("validity") in {"superseded", "invalid"}
                 else RetrievalPurpose.CURRENT
             ),
         )

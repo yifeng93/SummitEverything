@@ -1,0 +1,306 @@
+[
+  {
+    "case": "C19-fresh-ready-no-evidence-fact",
+    "status": "PASS",
+    "http": 200,
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 6,
+      "chunks": 6,
+      "state": "ready",
+      "current_pages": 6,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "892e0fef-83c2-4ef6-ba02-7d9c1342e355",
+      "question": "风铃工程的彩色牙刷储存规则是什么？",
+      "text": "没有找到能确认该对象的已确认资料。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "没有找到能确认该对象的已确认资料。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "event_types": [
+      "status",
+      "delta",
+      "completed"
+    ],
+    "provider_calls_before": 4,
+    "provider_calls_after": 4,
+    "prohibited_cache_diagnosis": false,
+    "fabricated_number": false
+  },
+  {
+    "case": "C19-fresh-ready-no-evidence-comparison",
+    "status": "FAIL",
+    "http": 200,
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 6,
+      "chunks": 6,
+      "state": "ready",
+      "current_pages": 6,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "fafe21bc-c219-44d5-8333-ad59966f37d6",
+      "question": "比较风铃工程与霜塔项目的彩色牙刷储存规则。",
+      "text": "本地合成 provider 已收到问题与合格材料；请以来源陈述为准。",
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ed",
+          "content_sha256": "df124b8ceb5a0ffca5d77c09eb80cc8ee881ef85f09b361beccd0ad4d55b2a27",
+          "chunk_id": "0e7a646f48f6f8cb77de576ff42915819e1601c03fddd5b127c3ffa67c431b4f",
+          "heading": "",
+          "excerpt": "项目专项储备上限为 3.6 万元。",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ea",
+          "content_sha256": "a779f3c006801db224bf6ac1611b7c823382b58e0dbe3bc64972eab8f72bb8a8",
+          "chunk_id": "2e0bf5f13200679a2773f198a1b43c0fd5343c49724b91afd827e84261f67c4d",
+          "heading": "",
+          "excerpt": "朱雀项目的设备采购预算上限为 12 万元，负责人已确认。排期为 12 月启动；运维费用未提供。",
+          "validity": "current",
+          "availability": "available"
+        }
+      ],
+      "answer_mode": "comparison",
+      "source_statements": [
+        "页面内容：项目专项储备上限为 3.6 万元。",
+        "页面内容：朱雀项目的设备采购预算上限为 12 万元，负责人已确认。排期为 12 月启动；运维费用未提供。"
+      ],
+      "inferences": [
+        "该结论只适用于当前列出的材料。"
+      ],
+      "advice": [],
+      "missing_information": [],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "event_types": [
+      "status",
+      "citation",
+      "citation",
+      "delta",
+      "completed"
+    ],
+    "provider_calls_before": 4,
+    "provider_calls_after": 5,
+    "prohibited_cache_diagnosis": false,
+    "fabricated_number": false
+  },
+  {
+    "case": "C19-fresh-ready-no-evidence-plan",
+    "status": "FAIL",
+    "http": 200,
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 6,
+      "chunks": 6,
+      "state": "ready",
+      "current_pages": 6,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "2063ce15-3e70-4107-8cc1-47c4b7f8ebeb",
+      "question": "为风铃工程的彩色牙刷储存规则提出方案，并列出缺失信息。",
+      "text": "当前已确认资料中没有找到可支撑方案的相关依据。",
+      "citations": [],
+      "answer_mode": "plan",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "当前已确认资料中没有找到可支撑方案的相关依据。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "event_types": [
+      "status",
+      "delta",
+      "completed"
+    ],
+    "provider_calls_before": 4,
+    "provider_calls_after": 5,
+    "prohibited_cache_diagnosis": false,
+    "fabricated_number": false
+  },
+  {
+    "case": "C19-unrelated-stale-page-does-not-contaminate-diagnostic",
+    "status": "PASS",
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 6,
+      "chunks": 6,
+      "state": "stale",
+      "current_pages": 5,
+      "stale_pages": 1
+    },
+    "answer": {
+      "answer_id": "3dea19f8-1727-43a2-9148-153bfcbaf686",
+      "question": "为风铃工程的彩色牙刷储存规则提出方案，并列出缺失信息。",
+      "text": "当前已确认资料中没有找到可支撑方案的相关依据。",
+      "citations": [],
+      "answer_mode": "plan",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "当前已确认资料中没有找到可支撑方案的相关依据。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "provider_calls_before": 5,
+    "provider_calls_after": 5,
+    "false_stale_report": false
+  },
+  {
+    "case": "C19-current-excludes-unapproved-indexed-page",
+    "status": "PASS",
+    "answer": {
+      "answer_id": "079800a3-885e-494b-b5ed-493660c7db7e",
+      "question": "青岚计划的预算上限是多少？",
+      "text": "索引中的材料未通过本次查询的批准或资格核验，未作为依据。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "索引中的材料未通过本次查询的批准或资格核验，未作为依据。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "provider_calls_before": 5,
+    "provider_calls_after": 5
+  },
+  {
+    "case": "C19-real-content-hash-mismatch",
+    "status": "PASS",
+    "expected_hash_sha256": "d2d264839989dcc1a141ae9d9be2251d51b9b4bd8de30ff0dbf010306dcef4ab",
+    "actual_hash_sha256": "a92cbde1fec970b6d4364466bffb59a5e2084a3abb99484632fda654837831aa",
+    "index_before_query": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 6,
+      "chunks": 6,
+      "state": "ready",
+      "current_pages": 6,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "98891702-31dd-4a3d-a796-ae06f40b6d76",
+      "question": "青岚计划的预算上限是多少？",
+      "text": "页面正文与确认记录不一致，未作为依据；请核验并确认正式内容后查询。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "页面正文与确认记录不一致，未作为依据；请核验并确认正式内容后查询。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "provider_calls_before": 5,
+    "provider_calls_after": 5
+  },
+  {
+    "case": "C19-empty-index-no-evidence-fact",
+    "status": "PASS",
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 0,
+      "chunks": 0,
+      "state": "ready",
+      "current_pages": 0,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "f28f7240-c57b-4d63-879e-f0ab8580eb95",
+      "question": "空索引的fact缺少什么资料？",
+      "text": "没有找到经确认且仍为当前版本的相关资料。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "当前索引中没有可引用的知识页。"
+      ],
+      "purpose": "current",
+      "index_status": "empty"
+    },
+    "provider_calls_before": 5,
+    "provider_calls_after": 5
+  },
+  {
+    "case": "C19-empty-index-no-evidence-comparison",
+    "status": "PASS",
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 0,
+      "chunks": 0,
+      "state": "ready",
+      "current_pages": 0,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "e61653e1-26ad-4e38-b2ee-670c8199ef37",
+      "question": "空索引的comparison缺少什么资料？",
+      "text": "没有找到经确认且仍为当前版本的相关资料。",
+      "citations": [],
+      "answer_mode": "comparison",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "当前索引中没有可引用的知识页。"
+      ],
+      "purpose": "current",
+      "index_status": "empty"
+    },
+    "provider_calls_before": 5,
+    "provider_calls_after": 5
+  },
+  {
+    "case": "C19-empty-index-no-evidence-plan",
+    "status": "PASS",
+    "index": {
+      "fingerprint": "summit-fake-embedding-v1",
+      "pages": 0,
+      "chunks": 0,
+      "state": "ready",
+      "current_pages": 0,
+      "stale_pages": 0
+    },
+    "answer": {
+      "answer_id": "1cca208a-701d-4ec6-ac96-0e9b52379923",
+      "question": "空索引的plan缺少什么资料？",
+      "text": "没有找到经确认且仍为当前版本的相关资料。",
+      "citations": [],
+      "answer_mode": "plan",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "当前索引中没有可引用的知识页。"
+      ],
+      "purpose": "current",
+      "index_status": "empty"
+    },
+    "provider_calls_before": 5,
+    "provider_calls_after": 5
+  }
+]

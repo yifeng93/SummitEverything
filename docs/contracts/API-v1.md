@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：v1 完整实施基准；M1 与 M2.1–M2.3 Fake 路由已实现。当前 Stage B 候选增加 profile 设置、Keychain 边界、stub-tested DeepSeek / Model Studio adapters、Fake-only Feishu 生命周期，以及**真实 Feishu HTTP adapter**（应用身份优先、按 endpoint 记录 scope，见[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)）。真实业务模型调用与真实飞书数据读取在服务端保持 disabled；另有三个只接受固定合成输入、profile 级每 provider 限一次的模型 smoke 路由。Feishu 真实 adapter 已实现但真实请求次数为 0。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 完整实施基准；截至 2026-10-12，M3 包 1由 Sol 判离线集成 PASS，包 2 C19 P1 FAIL；包 3 repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由全新 QA 复验并由 Sol 判离线集成 PASS，初验 FAIL 保留；不代表 M3 正式通过。Stage B 离线实现与真实业务模型/Feishu disabled 状态见[报告索引](../quality/reports/README.md)。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -9,9 +9,10 @@
 - Action：action_id、kind（feishu_task_create / feishu_task_update / feishu_task_complete / project_progress）、payload、payload_sha256、state、confirmation_id、provider_result。
 - MutationResult：operation_id、state、changed_paths、page_versions、saved_locally；正式页确认入口另返回 index_update（not_enabled / updated / update_failed），区分首次索引、成功自动增量和保存后索引失败。没有自动 cloud_synced 字段。
 - Job：job_id、kind、state（queued / running / succeeded / failed / unknown / cancelled）、progress、result、error。进度不虚构百分比，取消不保证远端未计费。
-- IntakeItem：item_id、source_id、title、filename、original_relative_path、state（pending / processing / reviewing / completed / failed / cancelled）、latest_job_id。状态反映最新整理作业与其稿件，不由前端猜测。
+- IntakeItem：item_id、source_id、title、filename、original_relative_path、state（pending / processing / reviewing / completed / failed / cancelled / unknown）、latest_job_id；新增可选兼容字段 `attempt_no`、`revision`、`previous_attempt_sha256`、`finished_at`。`unknown` 不自动重发；显式 reprocess 要求新 operation_id。
+- IntakeJob：job_id、item_ids、request_hash、state（running / provider_calling / completed / failed / cancelled / unknown）、draft_ids、created_at；可选 `finished_at`、`attempt_id`、`revision`、`checkpoint_sha256`。`completed` 表示 provider 输出已保存为本地稿件/候选，不表示稿件已批准。Draft 新增可选 `job_id` 以关联恢复与完成作业。
 - Citation：page_id、content_sha256、chunk_id、heading、excerpt、validity；客户端用稳定页面路由打开，不信任任意文件 URL。
-- Answer：answer_id、question、text、citations、inferences、missing_information、purpose、index_status。infer / advice 不伪装来源事实。
+- Answer：answer_id、question、text、citations、answer_mode、source_statements、inferences、advice、missing_information、purpose、index_status。来源陈述、推断、建议和缺失资料分别展示，不能互相伪装。
 
 服务 context 决定活动工作库和本地 profile。除工作库打开外，请求不接受任意 root / 绝对路径。业务 API 使用启动器传递的 Bearer token；allowlist origin，拒绝非本机绑定和无 token 的状态修改。浏览器 OAuth 回调无法携带此 Bearer，是唯一认证例外：必须验证本机先前发起、绑定会话、限时且一次性的 state，再处理授权结果；回调不能访问其他业务功能。
 
@@ -53,9 +54,9 @@
 | POST /projects/{id}/overview/confirmations | 显式确认新建或更新稳定 overview_id 页面；更新必须提交当前 expected_content_sha256，过期版本 409；独立于项目进度 Action |
 | POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型（已实现） |
 | POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节（已实现，20 MB 上限） |
-| GET /intake/items | 可见待整理列表，不调用模型（已实现） |
-| POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目、可选 reprocess=true → Job；FakeLLM 生成多个稿与 action 候选（已实现）。有未审核稿或正在运行的来源拒绝新作业；完成、失败、取消的来源必须由用户明确选择重新整理，且使用新的 operation_id。相同 operation_id 重试只返回原作业状态，不重复调用 provider。 |
-| GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消（已实现；同步 provider 当前无法中断运行中的调用） |
+| GET /intake/items | 从 active 与完成摘要读取状态；无活跃 lease 且无可恢复 checkpoint 的旧 running attempt 标 unknown，不触发 provider 重发。 |
+| POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目、可选 reprocess=true → IntakeJob；FakeLLM 生成稿与 action 候选（已实现）。处理中/待审拒绝新作业；completed/failed/cancelled/unknown 均要求用户明确 reprocess，且用新的 operation_id。相同 operation_id / 相同请求体返回现有 job，不重复调用 provider；进行中的同一意图返回 HTTP 202 和指向该 job 的 Location。unknown 的显式 reprocess 是新意图，可能再次调用模型。 |
+| GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消。成功 checkpoint 只恢复本地稿件/候选，CAS 防止迟到输出覆盖 cancelled/unknown/终态；同步 provider 调用不能被本地强制中断。 |
 | GET /drafts；GET /drafts/{id}；PATCH /drafts/{id} | 完整稿、来源、冲突；编辑带稿件版本（已实现） |
 | POST /drafts/{id}/confirmations | confirmation_id、expected_version、重要冲突处理结果 → MutationResult（已实现） |
 | GET /actions；GET /action-intents；GET /actions/{id} | 旧候选数组兼容；显式 cursor/limit 候选分页；独立 Action 列表 / 回执按 cursor/limit 查询（M2.2 Fake 已实现） |
@@ -71,16 +72,24 @@
 | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
 | POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
 | POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有索引时，批准 mutation 自动执行同 fingerprint 的 incremental。状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
-| POST /queries；DELETE /queries/{request_id} | question、conversation_id?、role_id?、purpose:current/history → SSE / 取消 |
-| GET /conversations；GET /conversations/{id}；DELETE /conversations/{id} | 本机历史；不进入工作库语料 |
-| GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机角色，不能修改批准 / 工具权限 |
-| GET /memory/candidates；POST /memory/candidates | 仅用户明确表达的 message_id / text → 本机待确认候选 |
-| POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑内容 → 活跃本机记忆 |
-| GET /memory；PATCH /memory/{id}；DELETE /memory/{id} | 管理活跃本机记忆 |
+| POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
+| GET /conversations?cursor&limit；GET /conversations/{id}；POST /conversations/{id}/reopen；DELETE /conversations/{id} | 按本地 profile 与当前 workspace 隔离的问答历史；列表默认 20、limit 1–100；历史只读重开可接续提问或删除；不进入工作库语料 |
+| GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机 profile+workspace 角色 CRUD；instructions 最多 4000 字符，角色上下文预算 0–6000 字节且每次查询会校验实际长度。角色只影响表达，不修改批准 / 工具权限 |
+| GET /memory/candidates；POST /memory/candidates | 用户必须明确勾选 `user_expression=true`，`message_id` 必须是当前 profile/workspace 历史中的真实用户问题，`text` 必须与问题原文相符且表达本人偏好 / 习惯 / 事实；引用、来源、转述、粘贴及来源 canary 文本拒绝；服务端核验消息来源，不信任 UI 标签；响应是本机 pending 候选，不能直接进入上下文 |
+| POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑后的正文 → 活跃本机记忆；保留来源 message_id 与确认意图，重放同意图幂等，改内容冲突 |
+| GET /memory；PATCH /memory/{id}；DELETE /memory/{id} | 查看、编辑、删除活跃本机记忆；按 profile 与 workspace 隔离，不写工作库 |
 | GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置；Stage B 候选已实现原子本地保存；设置读取 / 保存不联网 |
 | PUT /credentials/{provider}；DELETE /credentials/{provider} | Stage B 候选已实现显式 macOS Keychain 和测试注入边界；响应只返回 configured 状态 |
 | POST /settings/connections/{provider} | 计划路由；尚未实现。连接检查进入 Stage C 授权门，不能由刷新设置触发 |
 | GET /provider-smoke；POST /provider-smoke/deepseek-chat；POST /provider-smoke/model-studio-embedding；POST /provider-smoke/model-studio-rerank | 单独限额的合成连接 smoke；provider 在本机已保存并启用 Real 配置时可调用，固定合成输入、每个 app profile 每 provider 最多一次。尝试在出网前原子记账，失败/超时也占额，无自动重试；普通业务模型路径仍被服务端拒绝。真实 smoke 尚未执行；Feishu OAuth 没有对应 smoke 路由 |
+
+### Intake 作业恢复与回执归档
+
+`IntakeItem.state` 支持 `pending`、`processing`、`reviewing`、`completed`、`failed`、`cancelled`、`unknown`；`IntakeJob.state` 支持 `running`、`provider_calling`、`completed`、`failed`、`cancelled`、`unknown`。扩展字段为可选，以兼容旧工作库。`unknown` 表示无法证明 provider 是否完成；读取或恢复不得隐式重新调用。用户显式 reprocess 必须创建新的 `operation_id`，UI 明示可能新增 provider 调用。完成 job 表示稿件 / 候选已保存到本地，不等于其全部得到确认。
+
+进行中的相同 operation 重放返回 HTTP 202，并以 `Location: /api/v1/jobs/{job_id}` 指向状态资源；completed 或其他终态的相同 operation / payload 重放旧结果，不再次调用 provider。相同 operation ID 携带不同意图返回 409。成功 checkpoint 可恢复本地稿件 / action 候选，但不能批准知识；attempt / revision CAS 阻止迟到结果覆盖 cancelled、unknown 或其他终态。
+
+实现中的回执扫描以 active 文件及 `.summit-everything/archives/{intake-items,intake-jobs,transactions}/{YYYY-MM|undated}/summary.json` 为真源，按 operation、source、稳定 receipt ID 做查重 / replay；摘要结构、冲突恢复及旧无时间记录边界见[工作库契约第 1 节](WORKSPACE-v1.md#1-工作库布局与状态)。`undated` 仅兼容历史无 `finished_at` 的记录，不代表虚构月份。运行中的 owner lease 与本机诊断日志都留在本地 profile；API 不暴露 lease / 日志文件，且不同机器须在同步完成后轮流写，不提供分布式锁。
 
 直接撰写保存是用户确认入口，不是模型可用工具。对已有页确认前以最新磁盘版本比较基准；写入 API 不能接受模型提交的 approval。
 
@@ -88,7 +97,7 @@
 
 ## 查询 SSE
 
-每事件 JSON 为 request_id、seq、type、data；seq 严格递增。type 为 status、citation、delta、completed、error。completed 携带完整 Answer，error 有统一错误结构；取消 / 断流不写一个“成功完整答案”。
+每事件 JSON 为 request_id、seq、type、data；seq 严格递增。type 为 status、citation、delta、completed、error。completed 携带完整 Answer，error 有统一错误结构；同 workspace/profile 内稳定 request_id 和相同输入只重放既有事件，不重复调用查询，改输入返回 409。取消与断流分别保留真实 partial 和准确状态；不可发送终态的断流不伪造 completed。每次查询事件、partial 和原引用快照保存在本地 profile SQLite，不进入工作库目录或正式知识语料。历史引用保留原 content hash / excerpt；读取时依据统一检索资格门返回 available / updated / unavailable，不能以当前页内容替换原回答引用。打开旧版本时仍传 expected_content_sha256；版本变化后 UI 明示差异并可查看当前页。
 
 在聚合上下文、邻页扩展和引用阶段读取 PageSnapshot，再用统一 gate 加缓存版本复验。索引未就绪或部分更新时返回 index_status，不能用旧片段补齐缺失证据。
 

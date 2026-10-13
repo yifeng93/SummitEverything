@@ -1,0 +1,29 @@
+# C19 repair 3 DSH final state
+generated_at: 2026-10-12T14:29:41Z
+
+## git
+HEAD_before_docs_commit: be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac
+branch: codex/dsh-c19-20261012
+worktree: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012
+product_source_tree_clean: yes
+
+## product tree diff vs baseline product source f79f613 (src web native tests scripts pyproject.toml uv.lock)
+ src/summit_everything/retrieval/planner.py         |  99 +++++-
+ src/summit_everything/retrieval/query.py           |  49 ++-
+ .../test_c19_topic_scope_normalization.py          | 336 +++++++++++++++++++++
+ 3 files changed, 456 insertions(+), 28 deletions(-)
+
+## baseline identity check
+b3d0dff product source == f79f613: yes
+
+## listeners after replay/stop
+uvicorn replay port: 61333
+lsof -nP -iTCP:61333 -sTCP:LISTEN => 0 line(s); 0 means no listener
+
+## external boundaries not exercised
+real provider/feishu/credentials/keychain/real materials: NOT_RUN
+native shell, DMG, five-day, two-machine, release: NOT_RUN
+limited smoke: 0/1 consumed (unchanged)
+browser Chrome DevTools console/network/PNG: NOT_RUN (no tool interface this round)
+runtime metadata exposure: UNVERIFIED
+independent QA: NOT_RUN (DSH subagent pre-verification only)

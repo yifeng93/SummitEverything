@@ -1,0 +1,49 @@
+{
+  "case": "C13-history-page-approval-banner-baseline",
+  "page": {
+    "page_id": "00000000-0000-0000-0000-0000000003eb",
+    "relative_path": "QA青岚与朱雀合成线/QA青岚朱雀对照项目/青岚旧预算规则.md",
+    "validity": "superseded",
+    "content_sha256": "eab770193da79776ea96aaab7659889de40a1065dd732b1b03299b7877fcd9fb",
+    "approval_sha256": "eab770193da79776ea96aaab7659889de40a1065dd732b1b03299b7877fcd9fb",
+    "approval_state": "invalid",
+    "hashes_match": true
+  },
+  "query_results": {
+    "current": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "validity": "current",
+          "availability": "available",
+          "content_sha256": "481a785c496f08984c1bffec9cee493f15b1cd6e8dc2549e4be5ef403d42e728"
+        }
+      ],
+      "source_statements": [
+        "页面内容：青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。"
+      ]
+    },
+    "history": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003eb",
+          "validity": "superseded",
+          "availability": "available",
+          "content_sha256": "eab770193da79776ea96aaab7659889de40a1065dd732b1b03299b7877fcd9fb"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "validity": "current",
+          "availability": "available",
+          "content_sha256": "481a785c496f08984c1bffec9cee493f15b1cd6e8dc2549e4be5ef403d42e728"
+        }
+      ],
+      "source_statements": [
+        "页面内容：青岚计划旧版预算上限为 20 万元。",
+        "页面内容：青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。"
+      ]
+    }
+  }
+}

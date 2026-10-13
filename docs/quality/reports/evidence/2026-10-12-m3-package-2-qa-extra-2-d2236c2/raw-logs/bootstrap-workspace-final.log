@@ -1,0 +1,3 @@
+/Users/yifengstudio/.codex/worktrees/m3-package-2-qa-extra2/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+{"workspace": 201, "line": {"id": "676ebbb2-15d4-53b4-bd0a-2e8dcd8ab8b6", "name": "QA青岚朱雀合成线", "directory": "QA青岚朱雀合成线"}, "project": {"id": "6e84f2c1-1da5-50f6-a94c-5ef5f4154a31", "line_id": "676ebbb2-15d4-53b4-bd0a-2e8dcd8ab8b6", "name": "QA青岚朱雀对照项目", "directory": "QA青岚朱雀合成线/QA青岚朱雀对照项目", "overview_id": "a986bcad-e275-53e5-ac6c-c25a461f5ab5", "archived": false, "progress": "", "progress_version": 0, "progress_confirmation_id": null}}

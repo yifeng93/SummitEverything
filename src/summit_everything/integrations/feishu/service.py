@@ -8,7 +8,7 @@ import json
 import secrets
 from collections.abc import Callable
 from contextlib import nullcontext
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from threading import Lock
@@ -439,17 +439,21 @@ class FeishuService:
         key = hashlib.sha256(payload.operation_id.encode()).hexdigest()
         journal = root / ".summit-everything" / "transactions" / f"feishu-import-{key}.json"
         lock_path = root / ".summit-everything" / "feishu-import.lock"
+        from summit_everything.workspace.archives import (
+            archive_completed_transactions,
+            read_active_or_archived,
+        )
+
+        archive_completed_transactions(root)
         with (
             self.operation(),
             lock_path.open("a+b") as lock,
         ):
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
             try:
-                intent: dict[str, Any] = (
-                    json.loads(journal.read_bytes())
-                    if journal.exists()
-                    else {"request_hash": request_hash, "outcomes": {}, "state": "running"}
-                )
+                intent = read_active_or_archived(root, journal, "transactions", journal.name)
+                if intent is None:
+                    intent = {"request_hash": request_hash, "outcomes": {}, "state": "running"}
                 if intent["request_hash"] != request_hash:
                     raise IntakeConflict("导入操作已用于另一组材料，请重新选择。")
                 if intent["state"] == "completed":
@@ -521,8 +525,13 @@ class FeishuService:
                     if successes
                     else "failed",
                 )
-                intent.update(state="completed", result=result.model_dump(mode="json"))
+                intent.update(
+                    state="completed",
+                    result=result.model_dump(mode="json"),
+                    finished_at=datetime.now(UTC).isoformat(),
+                )
                 atomic_write(journal, json.dumps(intent).encode())
+                archive_completed_transactions(root)
                 return result
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)

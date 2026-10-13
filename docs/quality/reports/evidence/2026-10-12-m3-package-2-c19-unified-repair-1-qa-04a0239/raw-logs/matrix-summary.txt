@@ -1,0 +1,10 @@
+guarded-pytest=0
+ruff-check=0
+ruff-format=0
+mypy=0
+lock-check=0
+uv-build=0
+web-tests=0
+web-typecheck=0
+web-lint=0
+web-build=0

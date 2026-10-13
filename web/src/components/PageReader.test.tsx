@@ -52,3 +52,58 @@ it('moves a confirmed page into the selected project and records cross-project c
   await waitFor(() => expect(onClose).toHaveBeenCalled())
   expect(JSON.parse(moveBodies[0])).toMatchObject({ destination_relative_path: 'line/project-b/facts.md', operation_id: 'operation-id', structure_confirmation_id: 'operation-id' })
 })
+
+it.each([
+  ['superseded', '已被替代', '仅供历史参考'],
+  ['invalid', '已失效', '仅供历史参考'],
+] as const)('shows approved %s knowledge validity separately from confirmation', async (validity, label, description) => {
+  const page: Page = {
+    page_id: `page-${validity}`,
+    relative_path: 'line/project/old-facts.md',
+    metadata: { id: `page-${validity}`, title: '历史事实', role: 'knowledge', kind: 'topic', line_id: 'line-1', project_id: 'project-1' },
+    body: '已批准的历史正文',
+    content_sha256: 'a'.repeat(64),
+    storage_area: 'formal',
+    approval_state: 'confirmed',
+    validity,
+  }
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => [] }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => [page] }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<PageReader page={page} onClose={vi.fn()} onReload={vi.fn(async () => {})} />)
+
+  expect(await screen.findByText(`已确认 · ${label}`)).toBeTruthy()
+  expect(screen.getByRole('status').textContent).toContain(description)
+  expect(screen.getByText('已批准的历史正文')).toBeTruthy()
+  expect(screen.queryByText('待确认')).toBeNull()
+  expect(screen.queryByLabelText('重新确认当前页面')).toBeNull()
+})
+
+it('keeps the reconfirmation warning when the approved content hash no longer matches', () => {
+  const changedPage: Page = {
+    page_id: 'page-changed',
+    relative_path: 'line/project/facts.md',
+    metadata: { id: 'page-changed', title: '已变化事实', role: 'knowledge', kind: 'topic', line_id: 'line-1', project_id: 'project-1' },
+    body: '外部编辑后的正文',
+    content_sha256: 'b'.repeat(64),
+    storage_area: 'formal',
+    approval_state: 'invalid',
+    validity: 'superseded',
+  }
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => [] }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => [changedPage] }
+    throw new Error(`Unexpected request ${url}`)
+  }))
+  render(<PageReader page={changedPage} onClose={vi.fn()} onReload={vi.fn(async () => {})} />)
+
+  expect(screen.getByText('待确认 · 已被替代')).toBeTruthy()
+  expect(screen.getByText(/已被替代，仅供历史参考/)).toBeTruthy()
+  expect(screen.getByText(/自上次确认后已有变化/)).toBeTruthy()
+  expect(screen.getByLabelText('页面正文')).toBeTruthy()
+})

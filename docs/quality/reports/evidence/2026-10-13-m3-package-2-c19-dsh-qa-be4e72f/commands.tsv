@@ -1,0 +1,20 @@
+command/result	exit	log	outcome
+npm --prefix web ci	0	setup-observations.txt	PASS (126 packages; zero audit vulnerabilities)
+uv sync --locked --group dev	0	setup-observations.txt	PASS
+PYTHONPATH=... uv run pytest -q [previous12 + expanded22 + tracked19; 22 duplicate corrected/expanded case executions]	0	raw-logs/c19-matrix.log	75 executions passed; 53 distinct cases
+PYTHONPATH=... uv run pytest -q	0	raw-logs/guarded-full.log	469 passed, 1 deprecation warning
+uv run ruff check src tests	0	raw-logs/ruff-check.log	PASS
+uv run ruff format --check src tests	0	raw-logs/ruff-format.log	PASS (79 files formatted)
+uv run mypy src/summit_everything	0	raw-logs/mypy.log	PASS (43 source files)
+uv lock --check	0	raw-logs/lock-check.log	PASS
+uv build	0	raw-logs/uv-build.log	PASS
+npm --prefix web test -- --run	0	raw-logs/web-tests.log	56 passed / 12 files
+npm --prefix web run typecheck	0	raw-logs/web-typecheck.log	PASS
+npm --prefix web run lint	0	raw-logs/web-lint.log	PASS (2 pre-existing warnings)
+npm --prefix web run build	0	raw-logs/web-build.log	PASS
+npm --prefix web run api:types	0	raw-logs/api-types.log	PASS; wrote tracked targets, byte-identical afterward
+isolated OpenAPI export + openapi-typescript + diff against tracked generated.ts	0	raw-logs/openapi-export-isolated.log; openapi-types-isolated.log; openapi-types-isolated.diff	PASS; no diff
+D1/D3 offline black-box probe	0	raw-logs/probe-d1-d3-recheck.json	PASS observations captured; D1 no contract defect, D3 defect
+D3 default limit=5 true-absence control; fact/comparison/plan	1	raw-logs/d3-default-limit.log	FAIL (3 modes hide true missing behind cap)
+C19 fixed/near-miss information qualifier matrix; fact/comparison/plan	1	raw-logs/information-qualifier.log	FAIL (5 failed, 1 passed)
+Local app + UI synthetic workspace/history/reopen/stale-citation smoke	0	raw-logs/run-dev-ui.log; ui-observations.md	PASS for observed flow; DevTools console/network/PNG NOT_RUN

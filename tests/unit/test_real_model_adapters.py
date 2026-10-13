@@ -8,6 +8,7 @@ import pytest
 from summit_everything.integrations.embedding import ModelStudioEmbedding
 from summit_everything.integrations.llm import DeepSeekLLM, GroundedAnswer, LLMProviderError
 from summit_everything.integrations.rerank import ModelStudioReranker
+from summit_everything.local.answer_context import AnswerContext
 
 
 def _client(content: str) -> httpx.Client:
@@ -69,6 +70,56 @@ def test_deepseek_grounded_answer_parses_only_answer_fields():
     )
 
     assert result == GroundedAnswer(**response)
+
+
+def test_deepseek_answer_payload_carries_mode_role_memory_and_user_only_followups():
+    response = {
+        "text": "建议补齐负责人。",
+        "source_statements": ["材料A已确认预算。"],
+        "inferences": [],
+        "advice": ["补齐负责人"],
+        "missing_information": ["负责人"],
+    }
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {"content": json.dumps(response, ensure_ascii=False)},
+                        "finish_reason": "stop",
+                    }
+                ]
+            },
+            request=request,
+        )
+
+    context = AnswerContext(
+        answer_mode="plan",
+        role_name="谨慎",
+        role_instructions="不要推测未知金额",
+        user_memories=["我偏好简洁"],
+        previous_user_questions=["上一轮问题"],
+    )
+    answer = DeepSeekLLM(
+        "synthetic-api-key", client=httpx.Client(transport=httpx.MockTransport(handler))
+    ).answer(
+        "下一步？", [{"source_id": "page-1", "heading": "预算", "excerpt": "已确认预算"}], context
+    )
+
+    sent = json.loads(seen[0].content)
+    assert sent["messages"][1]["content"]
+    content = json.loads(sent["messages"][1]["content"])
+    assert content["mode"] == "plan"
+    assert content["role"] == {"name": "谨慎", "style_guidance": "不要推测未知金额"}
+    assert content["user_memories"] == ["我偏好简洁"]
+    assert content["previous_user_questions_for_reference_only"] == ["上一轮问题"]
+    assert content["passages"][0]["source_id"] == "page-1"
+    assert answer.advice == ["补齐负责人"]
+    assert answer.missing_information == ["负责人"]
 
 
 @pytest.mark.parametrize("content", ["", "not json", '{"proposals": []}', '{"unexpected": []}'])

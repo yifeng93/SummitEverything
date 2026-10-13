@@ -1,0 +1,86 @@
+[
+  {
+    "case": "C19-provider-generation-content-changed",
+    "status": "PASS",
+    "http": 200,
+    "expected_note": "生成期间引用资料版本发生变化",
+    "answer": {
+      "answer_id": "42e2f77e-92e9-4e1c-a8b1-e5ae4f2ecc62",
+      "question": "青岚计划的预算上限是多少？ __qa_mutate_content__",
+      "text": "生成期间引用资料版本发生变化，回答已作废；请更新索引或确认当前版本后重新查询。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "生成期间引用资料版本发生变化，回答已作废；请更新索引或确认当前版本后重新查询。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "event_types": [
+      "status",
+      "delta",
+      "completed"
+    ],
+    "provider_calls_before": 5,
+    "provider_calls_after": 6
+  },
+  {
+    "case": "C19-provider-generation-moved-out-current",
+    "status": "PASS",
+    "http": 200,
+    "expected_note": "生成期间引用资料版本发生变化",
+    "answer": {
+      "answer_id": "0b030109-4c40-481f-8146-a99cbc219091",
+      "question": "青岚计划的预算上限是多少？ __qa_move_history__",
+      "text": "生成期间引用资料版本发生变化，回答已作废；请更新索引或确认当前版本后重新查询。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "生成期间引用资料版本发生变化，回答已作废；请更新索引或确认当前版本后重新查询。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "event_types": [
+      "status",
+      "delta",
+      "completed"
+    ],
+    "provider_calls_before": 6,
+    "provider_calls_after": 7
+  },
+  {
+    "case": "C19-provider-generation-page-unavailable",
+    "status": "PASS",
+    "http": 200,
+    "expected_note": "生成期间引用资料已不可用",
+    "answer": {
+      "answer_id": "89f99fb5-0346-4e71-aad8-c8b728ddc20d",
+      "question": "青岚计划的预算上限是多少？ __qa_delete_page__",
+      "text": "生成期间引用资料已不可用，回答已作废；请重新查询。",
+      "citations": [],
+      "answer_mode": "fact",
+      "source_statements": [],
+      "inferences": [],
+      "advice": [],
+      "missing_information": [
+        "生成期间引用资料已不可用，回答已作废；请重新查询。"
+      ],
+      "purpose": "current",
+      "index_status": "ready"
+    },
+    "event_types": [
+      "status",
+      "delta",
+      "completed"
+    ],
+    "provider_calls_before": 7,
+    "provider_calls_after": 8
+  }
+]

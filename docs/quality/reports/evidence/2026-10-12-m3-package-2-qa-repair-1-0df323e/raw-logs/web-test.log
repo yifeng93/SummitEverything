@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 <QA_CHECKOUT>/web
+
+
+ Test Files  12 passed (12)
+      Tests  52 passed (52)
+   Start at  07:52:52
+   Duration  1.55s (environment 48%, tests 32%, import 11%, transform 9%)
+

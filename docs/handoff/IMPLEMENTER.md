@@ -4,6 +4,8 @@
 
 ## 开始
 
+C19专项已在固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 经独立QA关闭，M3离线模拟正式验收及合并已获用户批准。下一位先核对LATEST/PROGRESS与实际main；不要再次执行DSH旧试修提示。旧冻结基线只作追溯，未合并前也不在基线目录写。真实门和未来阶段按全v1计划及实际授权处理。
+
 读根 AGENTS、README、PROGRESS、产品规格、架构 / 复用地图、两个契约和全 v1 计划。当前 M1 与 M2 阶段 A Fake-only 已收口；Stage B真实adapter已实现，当前固定源码及独立离线QA状态见LATEST-IMPLEMENTATION，不能回退到骨架或重复执行历史提示词。真实账号、OS与发布门仍单独待验。样板未批准不阻塞模拟开发。
 
 先检查工作区和已有进度，保存他人修改，不 reset / checkout 覆盖。使用 codex/ 分支小步提交；从整理后的 main 创建短期功能分支，旧 Foundation / QA 归档引用只作历史参考。当前执行状态以 `docs/implementation/PROGRESS.md` 和 `docs/handoff/LATEST-IMPLEMENTATION.md` 为准。已有候选闭环进入修复或独立验收时，先继续该固定候选，不得因文档旧模板回退到 M1.1 或启动未来阶段。

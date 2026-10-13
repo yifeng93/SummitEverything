@@ -1,0 +1,14 @@
+{
+  "case": "C20-confirmation-idempotency-edit-delete",
+  "user_message_http": 200,
+  "candidate_http": 201,
+  "first_confirm_http": 200,
+  "second_confirm_http": 200,
+  "same_memory_id": true,
+  "same_confirmation_conflict_http": 409,
+  "edit_http": 200,
+  "updated_text": "我偏好用短句，并区分事实和建议。",
+  "delete_http": 204,
+  "remaining_memories": 0,
+  "status": "PASS"
+}

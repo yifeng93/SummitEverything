@@ -11,8 +11,22 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid5
 
-from summit_everything.domain.models import Draft, IntakeItem, IntakeJob, SourceDetail, SourceRecord
+from summit_everything.domain.models import Draft, IntakeItem, SourceDetail, SourceRecord
+from summit_everything.workspace.archives import (
+    archive_completed_transactions,
+    read_active_or_archived,
+)
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
+from summit_everything.workspace.state import (
+    archive_intake,
+    attempt_is_live,
+)
+from summit_everything.workspace.state import (
+    get_job as read_job,
+)
+from summit_everything.workspace.state import (
+    list_items as read_shared_items,
+)
 from summit_everything.workspace.transactions import atomic_write, workspace_lock
 
 
@@ -55,14 +69,24 @@ class SourceStore:
         except UnicodeDecodeError as exc:
             raise WorkspaceError("Only UTF-8 text sources can be added") from exc
         self.recover(root)
+        archive_completed_transactions(root)
         journal_path = _operation_path(root, operation_id)
         with workspace_lock(root):
-            if journal_path.exists():
-                intent = self._read_intent(journal_path)
+            prior = read_active_or_archived(root, journal_path, "transactions", journal_path.name)
+            if prior is not None:
+                intent = self._read_intent_value(prior)
                 if intent.get("request_hash") != self._request_hash(
                     raw, filename, external_identity
                 ):
                     raise IntakeConflict("operation_id was already used for different intake")
+                if journal_path.exists():
+                    item = self._resume(root, journal_path, intent)
+                    archive_completed_transactions(root, locked=True)
+                    return item
+                items = {item.item_id: item for item in read_shared_items(root, archive=False)}
+                prior_item = items.get(UUID(intent["item_id"]))
+                if prior_item is not None:
+                    return prior_item
                 return self._resume(root, journal_path, intent)
             manifest = load_manifest(root)
             created_at = datetime.now(UTC)
@@ -86,69 +110,72 @@ class SourceStore:
                 "state": "running",
             }
             atomic_write(journal_path, json.dumps(intent, sort_keys=True).encode("utf-8"))
-            return self._resume(root, journal_path, intent)
+            item = self._resume(root, journal_path, intent)
+            archive_completed_transactions(root, locked=True)
+            return item
 
     def list_items(self, root: Path) -> list[IntakeItem]:
         root = root.resolve()
         self.recover(root)
+        archive_completed_transactions(root)
         items_root = root / ".summit-everything" / "intake" / "items"
-        items: list[IntakeItem] = []
-        if not items_root.exists():
-            return items
         with workspace_lock(root):
-            for path in sorted(items_root.glob("*.json")):
-                try:
-                    item = IntakeItem.model_validate_json(path.read_text(encoding="utf-8"))
-                    state = self.derived_state(root, item)
-                    if item.state != state:
-                        item = item.model_copy(update={"state": state})
-                        atomic_write(path, item.model_dump_json(indent=2).encode())
-                    items.append(item)
-                except (OSError, ValueError) as exc:
-                    raise WorkspaceError("An intake queue item is invalid") from exc
+            # Re-read under the writer lock: an unlocked snapshot could carry an
+            # older attempt into this derived-state write and erase a reprocess.
+            items = read_shared_items(root, archive=False)
+            for index, item in enumerate(items):
+                path = items_root / f"{item.item_id}.json"
+                state = self.derived_state(root, item)
+                if item.state != state and path.exists():
+                    item = item.model_copy(
+                        update={
+                            "state": state,
+                            "revision": item.revision + 1,
+                            "finished_at": datetime.now(UTC)
+                            if state in {"completed", "failed", "cancelled"}
+                            else None,
+                        }
+                    )
+                    atomic_write(path, item.model_dump_json(indent=2).encode())
+                    items[index] = item
         return sorted(items, key=lambda item: (item.created_at, str(item.item_id)))
 
     def refresh_items(self, root: Path, item_ids: list[UUID] | None = None) -> None:
         root = root.resolve()
         items_root = root / ".summit-everything" / "intake" / "items"
-        if not items_root.exists():
-            return
         selected_ids = {str(item_id) for item_id in item_ids} if item_ids is not None else None
         with workspace_lock(root):
-            for path in sorted(items_root.glob("*.json")):
-                try:
-                    item = IntakeItem.model_validate_json(path.read_text(encoding="utf-8"))
-                    if selected_ids is not None and str(item.item_id) not in selected_ids:
-                        continue
-                    state = self.derived_state(root, item)
-                    if item.state != state:
-                        updated = item.model_copy(update={"state": state})
-                        atomic_write(path, updated.model_dump_json(indent=2).encode())
-                except (OSError, ValueError) as exc:
-                    raise WorkspaceError("An intake queue item is invalid") from exc
+            items = read_shared_items(root, archive=False)
+            for item in items:
+                if selected_ids is not None and str(item.item_id) not in selected_ids:
+                    continue
+                path = items_root / f"{item.item_id}.json"
+                if not path.exists():
+                    continue
+                state = self.derived_state(root, item)
+                if item.state != state:
+                    updated = item.model_copy(
+                        update={
+                            "state": state,
+                            "revision": item.revision + 1,
+                            "finished_at": datetime.now(UTC)
+                            if state in {"completed", "failed", "cancelled"}
+                            else None,
+                        }
+                    )
+                    atomic_write(path, updated.model_dump_json(indent=2).encode())
+        archive_intake(root)
 
     def derived_state(self, root: Path, item: IntakeItem) -> str:
-        jobs_root = root / ".summit-everything" / "intake" / "jobs"
-        if not jobs_root.exists():
+        if item.latest_job_id is None:
             return item.state
-        jobs: list[IntakeJob] = []
-        for path in jobs_root.glob("*.json"):
-            try:
-                job = IntakeJob.model_validate_json(path.read_text(encoding="utf-8"))
-            except (OSError, ValueError) as exc:
-                raise WorkspaceError("An intake job is invalid") from exc
-            if item.item_id in job.item_ids:
-                jobs.append(job)
-        if not jobs:
-            return item.state
-        if item.latest_job_id is not None:
-            latest = next((job for job in jobs if job.job_id == item.latest_job_id), None)
-            if latest is None:
-                raise WorkspaceError("An intake item refers to a missing job")
-        else:
-            latest = max(jobs, key=lambda job: (job.created_at, str(job.job_id)))
-        if latest.state == "running":
-            return "processing"
+        latest = read_job(root, item.latest_job_id)
+        if latest is None:
+            raise WorkspaceError("An intake item refers to a missing job", 409)
+        if latest.state in {"running", "provider_calling"}:
+            return "processing" if attempt_is_live(root, latest.attempt_id) else "unknown"
+        if latest.state == "unknown":
+            return "unknown"
         if latest.state == "failed":
             return "failed"
         if latest.state == "cancelled":
@@ -193,6 +220,7 @@ class SourceStore:
         raise WorkspaceError("Source record was not found", 404)
 
     def recover(self, root: Path) -> None:
+        archive_completed_transactions(root)
         journal_root = root / ".summit-everything" / "transactions"
         if not journal_root.exists():
             return
@@ -201,6 +229,7 @@ class SourceStore:
                 intent = self._read_intent(path)
                 if intent.get("state") != "succeeded":
                     self._resume(root, path, intent)
+            archive_completed_transactions(root, locked=True)
 
     def _request_hash(
         self, raw: bytes, filename: str, external_identity: dict[str, str] | None = None
@@ -224,6 +253,16 @@ class SourceStore:
         if (
             not isinstance(intent, dict)
             or intent.get("schema") != "intake-source-v1"
+            or not isinstance(intent.get("source_id"), str)
+            or not isinstance(intent.get("item_id"), str)
+            or intent.get("state") not in {"running", "succeeded"}
+        ):
+            raise IntakeConflict("Intake transaction journal is invalid")
+        return intent
+
+    def _read_intent_value(self, intent: dict[str, Any]) -> dict[str, Any]:
+        if (
+            intent.get("schema") != "intake-source-v1"
             or not isinstance(intent.get("source_id"), str)
             or not isinstance(intent.get("item_id"), str)
             or intent.get("state") not in {"running", "succeeded"}
@@ -308,6 +347,7 @@ class SourceStore:
         else:
             atomic_write(item_path, item.model_dump_json(indent=2).encode())
         intent["state"] = "succeeded"
+        intent.setdefault("finished_at", datetime.now(UTC).isoformat())
         intent.pop("raw_b64", None)
         atomic_write(journal_path, json.dumps(intent, sort_keys=True).encode("utf-8"))
         return item

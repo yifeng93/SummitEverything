@@ -1,0 +1,17 @@
+{
+  "case": "C19-fresh-ready-plan-isolated-provider-counter",
+  "http": 200,
+  "index_status": "ready",
+  "citations": [],
+  "missing_information": [
+    "当前已确认资料中没有找到可支撑方案的相关依据。"
+  ],
+  "source_statements": [],
+  "inferences": [],
+  "advice": [],
+  "provider_calls_before": 14,
+  "provider_calls_after": 14,
+  "provider_called": false,
+  "expected": "no provider call, no evidence, actionable missing information consistent with main answer",
+  "status": "PASS"
+}

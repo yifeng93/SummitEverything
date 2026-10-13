@@ -1,16 +1,45 @@
 # 实施进展账本
 
+2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收及合并；离线正式门PASS，合并执行中。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；main / M3冻结 / DSH交接不变且干净。本轮1/2返工收口，第2轮未使用。
+
+未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
+
+2026-10-13 DEV/初验历史：统一返工1/2 Developer 已固定源码 **`0a1b8dc94a5d8f797161c38430dccfcb211a9e07`**，DEV 自测 PASS，等待 Sol 调度全新独立 QA。信息/资料主题内容保持、family 限定连续片段、动词起始完整对象名、真实缺失与候选/引用上限分因均有回归；guarded 全量 491 passed，C19 固定矩阵 107 次执行 / 85 个不同测试 ID 通过，Web 56 和静态/构建门 PASS。工作树 `/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-sol-gate/SummitEverything`，分支 `codex/c19-dsh-sol-gate`；代码 SHA 与文档整合 HEAD 分开记录于 DEV evidence。main、M3 冻结基线、DSH 交接目录未改。独立 QA 尚未运行，包 2 / M3 尚未判 PASS、未合并。见 [repair 1/2 DEV 报告](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-DEV.md)、[evidence](../quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/README.md)、[Sol 修复契约](../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [初验独立 QA](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。真实 provider / 服务、材料、凭据 / Keychain、native / DMG、五日 / 双机与发布 NOT_RUN；runtime UNVERIFIED。
+
+2026-10-12 DSH C19 repair 3（用户指定的 DSH 独立试修，**仅 DEV PASS；独立 QA NOT_RUN**）：分支 `codex/dsh-c19-20261012`、工作树 `/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012`，起点 `b3d0dff587c94ee295dfe5379bd67916c98184ec`（产品源码仍等同 `f79f613a902758da3173a5b27219fa568a912f5e`）。根因是 `retrieval/planner.py` 把 `设备/年度/专项/工作` 等信息性限定词与请求外壳放进同一个全局删除集合 `_TOPIC_FILLER`，并用 `专项` 充当对象名后缀。修复只在共享归一化边界：限定词不再全局删除、只有纯计划用词才不成主题、`专项` 不再作为对象名后缀、单字虚词或含「的」词干不得成为伪对象、以已识别对象开头的片段不再产生第二对象、结尾主题词可与未匹配对象名分离。RED 为 12+22 矩阵 **7 failed / 27 passed**，GREEN 为 **34 passed**；新增 tracked 回归 19 项，全量后端 450 → **469 passed**，Web 56/12，ruff/format/mypy/lock/uv build/api:types/typecheck/lint/build 全部 exit 0，`git diff --check` exit 0；实际 loopback API/SSE 复演 13/13 观测 PASS 且 history reopen 保留两条引用；DSH 子代理对抗性预验证又发现并修复礼貌查词伪对象、`term:` 标记泄漏与截断措辞三项，保留 1 项标题/别名归属契约待定项。证据见[DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-3-DEV.md)与 [evidence](../quality/reports/evidence/2026-10-12-m3-package-2-c19-unified-repair-3-dsh-be4e72f/README.md)。受测固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac`；本轮不宣告 C19/M3 通过，不合并 main；真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke 未消费。C19 仍需由 Sol 调度的全新独立 QA 在另一 checkout 复验。
+2026-10-12 DSH C19 repair 3 三轮预验收口：DSH 子代理在独立 checkout 对 `80cabed`、`9836365`、`7e772ea` 做了三轮对抗性黑盒预验证（**非官方独立 QA**）。第 3 轮（产品源 `be4e72f`）判定：产品树一致；冻结 34、tracked 19、全量 469、子代理 harness 27 项与 loopback 全 PASS；D2/D3/D4/D5 均已修复（D5 的 65 名矩阵相对基线 `f79f613` 0/65 行为改变）；唯一遗留 FAIL 为 D1「标题/别名元数据是否可把页面绑定到另一对象名」，已按计划「项目/页元数据可确定归属」声明为产品契约待定项，交 QA/Sol 判定。子代理 harness 与矩阵原始日志已存入 evidence 的 `subagent-preqa/`。
+
+2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
+
 初始记录：2026-10-09。实现者维护，验收者另写报告；状态不从测试数量推断。
 
 ## 当前状态与下一步
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+### C19 DSH 候选返工1/2（离线技术PASS，等待M3正式批准）
+
+当前状态见本账本顶部与Sol门：固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 通过全新独立QA，既有C19 P1/P2在此SHA关闭；包2离线集成PASS。包1/3不重开发。下一步取得用户对M3模拟离线范围正式验收及main合并的批准。旧失败与额度保留历史，不再提示重新修已关闭问题。
+
+### C19 统一周期收口（2026-10-12 历史 QA FAIL，已进入新返工）
+
+2026-10-12 最近受测结果（收尾前）：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、原周期已停止；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 证据见[Sol门](../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[QA](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
+
+本次实现已统一对象/局部主题pair、候选/邻页/最终引用和missing覆盖；原反例已闭，剩余主题归一化P1未闭。完整代码、初验及两轮QA原始证据保留；额度中断不重置返工次数。下一步建议Sol直接修复请求外壳/主题内容边界再fresh QA，但尚未获追加授权。main未合并，不创建真实任务/知识副作用，不调用真实服务。
+
+包 3实现包括跨 profile intake 状态读取、同机 advisory attempt lease、dead-owner unknown/no-resend、provider checkpoint 仅恢复本地稿件的 CAS 流程；完成 intake items/jobs、capture、mutation、SHA write-intent、Feishu import receipts 的 active+monthly summary 回放；profile-only 轮转诊断日志。原件、完整稿件和确认记录保留，未知/未终态不归档。120 条合成流程样本跨 2026-06 至 09：120 item + 120 job + 366 transaction receipt 进入各自月汇总；另有一个 unknown 新流程和一个无日期 legacy item 保持 active。setup 在 2026-10 的两条 SHA receipt 单独报告；4 个合成 Feishu receipt 仅测文件归档路径，Fake provider 导入/回放由独立集成测试覆盖。详见 DEV 报告与 `.local/dev/m3-package-3/` 原始日志。
+
+2026-10-11：M3 包 1“会话与历史”首轮独立 QA 在固定 `c90fe6e2bec5677deb7b069b86fa8971da1d8dcd` 发现 P1/P2，原报告保留；repair 1/2 后源码 SHA `a9078bd327f73f2cde3bab14a8665885d0f57c1c` 由全新 QA 在集成提交 `bc3deabcc4cb6c18a9e8b4809b0ac19e9f20dfb4` 通过，Sol 最终判定包 1 离线集成 PASS。53 项证据 manifest 无 mismatch、产品树与源码 SHA 一致。QA 实际浏览器/Uvicorn 通过首问、历史续问、旧引用提示、取消、非空 partial 重启、profile/workspace 隔离；README 自动门 guarded pytest 395、Web 49/12 及静态/生成/构建均 PASS。限制：浏览器 request body/response header 未直接捕获，console NOT_RUN、runtime UNVERIFIED、多轮模型上下文属于包 2 尚未测，真实/发布门 NOT_RUN。完整报告链见[报告索引](../quality/reports/README.md)。
+
+同日：包 2 完整问答、角色与记忆由 Developer 完成实现和自动自测：fact/comparison/plan、结构化来源/推断/建议/缺失信息、本机角色及预算、带服务端来源核验和用户明确声明的记忆候选/确认/管理、最多 8 条先前 user question 的多轮参考上下文、历史持久化和 AskView 管理。当前资格门用于每次新检索；历史 assistant 不作为 passage；稳定 request ID 在角色/记忆/对话变化后重放已保存事件且不再次调用 provider。原始自测后端 399 passed，README 专项 Feishu 35 passed；Web 50 passed / 12 files；日志位于 `.local/dev/m3-package-2/`，历史报告见[包 2 DEV 报告](../quality/reports/2026-10-11-M3-PACKAGE-2-DEV.md)。后续 QA 与最后修复轮状态见本节最新更新；真实服务、浏览器、runtime 和发布门仍 NOT_RUN / UNVERIFIED。
+
+历史记录：首轮 QA 固定源码 `082744738f300525e57dfd6655245adb98e13628` 判 FAIL，揭示历史范围 UI、短指代召回、422 错误状态和事实问答主体精度四项缺陷；[QA 原报告及证据](../quality/reports/2026-10-11-M3-PACKAGE-2-QA-0827447.md)不改写。repair 1/2 源码 `0df323efc26e388d62f234e0471f853b2b54be4d` 与 repair 2/2 源码 `b7cfd32e1a1991db6e045f282bc0ab39d48aae15` 的独立 QA 均判 FAIL，原报告与证据保留。repair 2 修复了主体精度和主题边界，但 QA 又发现已批准历史页误标待确认、本人明确偏好因提到“资料”误拒；详见[Sol 门判断](../quality/reports/2026-10-12-M3-SOL-GATE.md)。用户明确批准仅一轮额外修复，extra 1 新源码 `bb997a42ed1d218e10527e3e07e6c587fc9929f6` 分开处理批准 hash 与 knowledge validity，并基于已核验 user 历史原文和所选跨度上下文识别材料引述：保留 invalid hash 的重确认警告和历史效力显示，不将失效/被替代页面提为 current；直接本人偏好可提及资料、引用或来源，但从材料引文中截取的第一人称不能成为候选。extra 1 全量自测 guarded pytest 407 passed、Web 55 passed / 12 files；ruff/format/mypy/lock/build/OpenAPI/typecheck/lint/Web build 全部 exit 0。完整行为、真实退出码和 QA 交接见[extra 1 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md)，日志在 `.local/dev/m3-package-2-extra-1/`。上述 QA pending/自动修复额度说明均为 extra 1 当时状态，现由本节顶部 extra 2 状态取代。
+
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](../quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖当时离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
-精确源码的独立离线QA已通过；后续真实门与M3–M5继续按全v1计划，原授权次数不重置。历史报告只对应各自SHA。
+精确源码的独立离线 QA 已通过的范围仅包括 M1、Stage B 离线范围及 M3 包 1；后续真实门与 M3–M5 继续按全 v1 计划，原授权次数不重置。历史报告只对应各自 SHA。
 
-**路线图建议（尚未实施）：** 下一项推荐 M3.1 问答本地状态薄切片：先实现每 workspace + profile 隔离的 conversation store/API（列表、重开、删除），再接 UI；明确记录 SSE 正常完成、取消、断流后的真实状态，并在历史引用指向旧内容版本时提示已更新。依据 API-v1 已定义的 conversations 路由、PRODUCT-SPEC 本地历史与版本绑定要求，以及 ACCEPTANCE C14 / C21。此建议不是缩减 M3：三类问答、角色、记忆和完整 C14/C21 验收仍未完成；M3 目前未开始。
+**历史下一步（repair 2 交接时）：** 该段固定 SHA 和两轮额度状态已被后续 Sol 门及用户额外授权取代；当前 QA 目标见本节顶部 extra 2 固定 SHA。
 
 ### C03 非空删除提示本地化跟进（2026-10-11；已合入 main）
 
@@ -38,7 +67,9 @@ Sol/Luna 协作规范与历史安装 overlay 补丁随 PR #11 进入 main，见 
 | M2 阶段 A（Fake-only） | 已收口 / 合入 main | QA通过（模拟范围） | 最终修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199`；收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`；完整报告链见最新交接 |
 | B 真实适配 / 本地配置 | 离线源码收口已合入main | 离线QA PASS；真实/OS门 NOT_RUN | 受测源码 `576895f6983ca41cacbbad45a9075b97b9986189`；388+25/Web45及实际浏览器/原生开发壳，真实调用全部0/1、任务写disabled |
 | C 受控真实验收 | 未开始 | NOT_RUN | B QA 后逐项外部授权；不替代 M3–M5 |
-| M3 完整问答 / 连续状态 | 未开始 | 未开始 | 角色 / 记忆 / 历史各机本地 |
+| M3 包 1 会话与历史 | Sol 判离线集成 PASS | 已通过 | 固定源码与 QA 提交见 LATEST；真实及发布门仍未测 |
+| M3 包 2 完整问答、角色与记忆 | 统一 repair 2/2 源码 `f79f613` / QA `262f4ea` | Sol 判 FAIL / C19 P1 | 主题词剥除造成已有资料误缺失；本周期两轮用完，待用户决定 |
+| M3 包 3 连续状态与归档压缩 | repair 1/2 源码 `ea11fc5`；QA 固定 `7fd8a53` | Sol 判离线集成 PASS | C22 lease 异常已独立复验关闭；C22/C23/C21相关离线范围通过；包 2 C19 P1 保留，M3 正式门未通过 |
 | M4 单机交付 / 五日试用 | 未开始 | 未开始 | 真实业务与模型质量不能由 mock 代替 |
 | M5 双机 | 未开始 | 未开始 | 先通过单机门 |
 

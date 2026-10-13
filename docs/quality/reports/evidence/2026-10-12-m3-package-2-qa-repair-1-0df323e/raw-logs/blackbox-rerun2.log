@@ -1,0 +1,209 @@
+[
+  {
+    "case": "C21-profile-B-open",
+    "status": "PASS",
+    "detail": {
+      "http": 201
+    }
+  },
+  {
+    "case": "C21-profile-B-local-state-isolation",
+    "status": "PASS",
+    "detail": {
+      "roles": 0,
+      "memories": 0,
+      "history": 0,
+      "index": "ready"
+    }
+  },
+  {
+    "case": "C20-real-user-message-source",
+    "status": "PASS",
+    "detail": {
+      "request_id": "bdc74e8c-1dad-4639-95fd-36c128223840",
+      "conversation_id": "a92daf94-4439-4574-931f-1cc2aaac4f18"
+    }
+  },
+  {
+    "case": "C20-no-attestation-rejected",
+    "status": "PASS",
+    "detail": {
+      "http": 422,
+      "body": {
+        "error": {
+          "code": "validation_error",
+          "message": "Request contains invalid fields",
+          "request_id": "50b22d1fb4ad5cf2"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-assistant-text-rejected",
+    "status": "PASS",
+    "detail": {
+      "http": 422,
+      "body": {
+        "error": {
+          "code": "validation_error",
+          "message": "只能从本人历史问题中的原文提取记忆。",
+          "request_id": "968829e6f76d08a9"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-forged-message-id-rejected",
+    "status": "PASS",
+    "detail": {
+      "http": 422,
+      "body": {
+        "error": {
+          "code": "validation_error",
+          "message": "只能从本人历史问题中的原文提取记忆。",
+          "request_id": "c9a1dffed5bcd713"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-quoted-source-canary-rejected",
+    "status": "PASS",
+    "detail": {
+      "query_http": 200,
+      "candidate_http": 422,
+      "candidate_body": {
+        "error": {
+          "code": "validation_error",
+          "message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+          "request_id": "068aae1e4d1bc936"
+        }
+      }
+    }
+  },
+  {
+    "case": "C20-pending-candidate-idempotency",
+    "status": "PASS",
+    "detail": {
+      "query_http": 200,
+      "first_http": 201,
+      "second_http": 201,
+      "same_id": true
+    }
+  },
+  {
+    "case": "C13-current-history-qualification-api",
+    "status": "FAIL",
+    "detail": {
+      "current_status": 200,
+      "history_status": 200,
+      "current_validities": [],
+      "history_validities": []
+    }
+  },
+  {
+    "case": "C14-idempotent-replay-after-context-change",
+    "status": "PASS",
+    "detail": {
+      "initial_http": 200,
+      "replay_http": 200,
+      "same_sse": false,
+      "same_events": true,
+      "initial_types": [
+        "status",
+        "citation",
+        "delta",
+        "completed"
+      ],
+      "replay_types": [
+        "status",
+        "citation",
+        "delta",
+        "completed"
+      ],
+      "initial_final": {
+        "request_id": "b1c13406-bca4-4ff5-9e69-3360e0ca59e5",
+        "seq": 4,
+        "type": "completed",
+        "data": {
+          "answer_id": "be0a39f8-cd4b-44d7-ae3f-4d16fb397e72",
+          "question": "青岚计划的预算上限是多少？",
+          "text": "本地合成 provider 已收到问题与合格材料；请以来源陈述为准。",
+          "citations": [
+            {
+              "page_id": "00000000-0000-0000-0000-0000000003e9",
+              "content_sha256": "e4908f3f18ca173ef3af3b2dd790c597521549e9cc5840e8bf3a062d33705efc",
+              "chunk_id": "e54fa2dffc37c54ea327dec3283187fe2bece737a8e62400956fd1f1cc681be3",
+              "heading": "",
+              "excerpt": "青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+              "validity": "current",
+              "availability": "available"
+            }
+          ],
+          "answer_mode": "fact",
+          "source_statements": [
+            "页面内容：青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。"
+          ],
+          "inferences": [],
+          "advice": [],
+          "missing_information": [],
+          "purpose": "current",
+          "index_status": "ready"
+        }
+      },
+      "replay_final": {
+        "request_id": "b1c13406-bca4-4ff5-9e69-3360e0ca59e5",
+        "seq": 4,
+        "type": "completed",
+        "data": {
+          "advice": [],
+          "answer_id": "be0a39f8-cd4b-44d7-ae3f-4d16fb397e72",
+          "answer_mode": "fact",
+          "citations": [
+            {
+              "availability": "available",
+              "chunk_id": "e54fa2dffc37c54ea327dec3283187fe2bece737a8e62400956fd1f1cc681be3",
+              "content_sha256": "e4908f3f18ca173ef3af3b2dd790c597521549e9cc5840e8bf3a062d33705efc",
+              "excerpt": "青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。",
+              "heading": "",
+              "page_id": "00000000-0000-0000-0000-0000000003e9",
+              "validity": "current"
+            }
+          ],
+          "index_status": "ready",
+          "inferences": [],
+          "missing_information": [],
+          "purpose": "current",
+          "question": "青岚计划的预算上限是多少？",
+          "source_statements": [
+            "页面内容：青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。"
+          ],
+          "text": "本地合成 provider 已收到问题与合格材料；请以来源陈述为准。"
+        }
+      },
+      "provider_calls_before_replay": 38,
+      "provider_calls_after_replay": 38
+    }
+  },
+  {
+    "case": "C14-same-request-id-different-mode-conflict",
+    "status": "PASS",
+    "detail": {
+      "http": 409
+    }
+  },
+  {
+    "case": "C14-structured-history-fields",
+    "status": "PASS",
+    "detail": {
+      "fields_present": [
+        "answer_mode",
+        "source_statements",
+        "inferences",
+        "advice",
+        "missing_information"
+      ],
+      "role_id_retained": true
+    }
+  }
+]

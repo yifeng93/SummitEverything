@@ -14,6 +14,11 @@ export function PageReader({ page, onClose, onReload }: Props) {
   const [moveProject, setMoveProject] = useState('')
   const [linkPage, setLinkPage] = useState('')
   const needsConfirmation = page.approval_state !== 'confirmed'
+  const historicalValidity = page.validity === 'superseded'
+    ? { label: '已被替代', description: '此页标记为已被替代，仅供历史参考，不作为当前问答依据。' }
+    : page.validity === 'invalid'
+      ? { label: '已失效', description: '此页标记为已失效，仅供历史参考，不作为当前问答依据。' }
+      : null
 
   useEffect(() => {
     void Promise.all([api.get<Project[]>('/projects'), api.get<Page[]>('/pages')]).then(([nextProjects, nextPages]) => {
@@ -79,10 +84,15 @@ export function PageReader({ page, onClose, onReload }: Props) {
     <article className="page-reader">
       <button className="back-link" onClick={onClose}>← 返回目录</button>
       <div className="page-meta">
-        <span className={needsConfirmation ? 'page-status-invalid' : ''}>{needsConfirmation ? '待确认' : '已确认知识'}</span>
+        <span className={needsConfirmation ? 'page-status-invalid' : historicalValidity ? 'page-status-historical' : ''}>
+          {needsConfirmation
+            ? historicalValidity ? `待确认 · ${historicalValidity.label}` : '待确认'
+            : historicalValidity ? `已确认 · ${historicalValidity.label}` : '已确认知识'}
+        </span>
         <span>{page.relative_path}</span>
       </div>
       <h1>{needsConfirmation ? '检查页面当前版本' : String(page.metadata.title ?? '未命名页面')}</h1>
+      {historicalValidity && <p role="status" className="page-validity-note">{historicalValidity.description}</p>}
       {needsConfirmation ? (
         <section className="page-reconfirmation" aria-label="重新确认当前页面">
           <p role="status">此页面自上次确认后已有变化，目前不会用于知识问答。请核对当前正文；只有点击确认后，新版本才会恢复检索资格。</p>

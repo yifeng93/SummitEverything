@@ -1,0 +1,49 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.4  ready in 76 ms
+
+  ➜  Local:   http://127.0.0.1:15179/
+INFO:     Started server process [56718]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18873 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57978 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:18873/api/v1/health
+WebUI: http://127.0.0.1:15179/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:57990 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:57991 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58010 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58012 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58032 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58039 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58042 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58044 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58043 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58048 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58041 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58050 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58052 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58046 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58054 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58056 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58058 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58040 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58060 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58075 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58074 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58076 - "GET /api/v1/memory/candidates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58070 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58088 - "POST /api/v1/conversations/d8b95162-47e6-4c70-8bc1-8a02890155aa/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58122 - "GET /api/v1/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58124 - "POST /api/v1/queries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58126 - "POST /api/v1/conversations/65be5971-e211-4c05-9345-29ea8c07259f/reopen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58128 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56718]

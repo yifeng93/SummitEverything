@@ -1,0 +1,9 @@
+branch: codex/dsh-c19-20261012
+worktree: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012
+main repo: /Users/yifengstudio/Documents/GitHub/SummitEverything
+baseline tag: handoff/c19-dsh-2026-10-12
+start commit: b3d0dff587c94ee295dfe5379bd67916c98184ec
+start product source: f79f613a902758da3173a5b27219fa568a912f5e
+commit chain: 18fe80a -> 6da7c3a -> 80cabed -> 0107d58 -> 9836365 -> be4e72f
+tested source SHA: be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac
+subagent pre-verification worktrees: SummitEverything-DSH-C19-PREQA (80cabed), SummitEverything-DSH-C19-PREQA2 (9836365) - detached, kept

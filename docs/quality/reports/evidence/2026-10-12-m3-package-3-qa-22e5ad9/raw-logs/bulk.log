@@ -1,0 +1,66 @@
+completed=30
+completed=60
+completed=90
+completed=120
+{
+  "active_item_category_note": "unknown is newflow; legacy-undated is separate; categories overlap total",
+  "active_item_records_total": 2,
+  "active_job_records_total": 1,
+  "active_transaction_files_by_family": {
+    "capture_intake": 0,
+    "feishu_import": 0,
+    "mutation": 0,
+    "write_intent_sha": 0
+  },
+  "checkpoint_files_after_completion": 0,
+  "completed_sample_items_still_active": 0,
+  "completed_sample_jobs_still_active": 0,
+  "draft_files_with_full_body": 120,
+  "flows_completed": 120,
+  "item_month_records": 120,
+  "job_month_records": 120,
+  "lease_files_after_completion": 0,
+  "legacy_undated_active_items": 1,
+  "monthly_summary_files": [
+    "intake-items/2026-06/summary.json",
+    "intake-items/2026-07/summary.json",
+    "intake-items/2026-08/summary.json",
+    "intake-items/2026-09/summary.json",
+    "intake-jobs/2026-06/summary.json",
+    "intake-jobs/2026-07/summary.json",
+    "intake-jobs/2026-08/summary.json",
+    "intake-jobs/2026-09/summary.json",
+    "transactions/2026-06/summary.json",
+    "transactions/2026-07/summary.json",
+    "transactions/2026-08/summary.json",
+    "transactions/2026-09/summary.json",
+    "transactions/2026-10/summary.json"
+  ],
+  "months": [
+    "2026-06",
+    "2026-07",
+    "2026-08",
+    "2026-09"
+  ],
+  "newflow_active_items_including_unknown": 1,
+  "newflow_active_jobs_including_unknown": 1,
+  "original_files": 120,
+  "provider_calls_including_replay": 120,
+  "replay_item_state": "completed",
+  "replay_job_state": "completed",
+  "setup_only_summary_months": [
+    "2026-10"
+  ],
+  "transaction_family_records": {
+    "capture_intake": 120,
+    "feishu_import_fake_provider_replay_test": "separate integration regression; not counted as bulk provider activity",
+    "feishu_import_synthetic_compression_records": 4,
+    "mutation": 120,
+    "write_intent_sha_bulk_sample": 120,
+    "write_intent_sha_setup": 2,
+    "write_intent_sha_total": 122
+  },
+  "transaction_month_records": 366,
+  "unknown_active_items": 1,
+  "unknown_active_jobs": 1
+}

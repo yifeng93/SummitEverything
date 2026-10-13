@@ -1,0 +1,52 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.4  ready in 76 ms
+
+  ➜  Local:   http://127.0.0.1:15173/
+INFO:     Started server process [73138]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18793 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60671 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:18793/api/v1/health
+WebUI: http://127.0.0.1:15173/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:60681 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60792 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:60794 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:60836 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60844 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60847 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60846 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60849 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60848 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60845 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60857 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60859 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60855 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60860 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60861 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60853 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60863 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60865 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60962 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60963 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60964 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60969 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60967 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60971 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60992 - "POST /api/v1/lines HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60997 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60998 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60999 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61018 - "POST /api/v1/projects HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61023 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61024 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61025 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [73138]

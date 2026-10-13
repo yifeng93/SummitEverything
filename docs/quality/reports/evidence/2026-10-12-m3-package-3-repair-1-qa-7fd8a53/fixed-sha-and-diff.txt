@@ -1,0 +1,9 @@
+QA checkout: /Users/yifengstudio/.codex/worktrees/m3-package-3-qa-r1/SummitEverything
+QA HEAD at start/end: 7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2
+Product source SHA: ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f
+Product diff command: git diff --quiet ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f HEAD -- src web native config tests
+Product diff exit: 0
+Initial QA SHA: 22e5ad945353929ebd781e1397f641c9d5fcf963
+Initial QA -> target product paths: src/summit_everything/intake/actions.py; src/summit_everything/intake/review.py; tests/integration/test_actions.py; tests/integration/test_intake_review.py
+Initial QA -> target web/native/config/API-contract paths: no diff
+Final git status before report commit: only this QA report and evidence directory; no product or test source changes.

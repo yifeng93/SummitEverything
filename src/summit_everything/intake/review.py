@@ -9,8 +9,8 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Protocol
-from uuid import UUID, uuid5
+from typing import Any, Protocol
+from uuid import UUID, uuid4, uuid5
 
 from summit_everything.domain.models import (
     ActionCandidate,
@@ -21,8 +21,23 @@ from summit_everything.domain.models import (
 )
 from summit_everything.intake.sources import SourceStore
 from summit_everything.integrations.llm import DraftProposal, FakeLLM, LLMProviderError
+from summit_everything.workspace.archives import (
+    archive_completed_transactions,
+)
 from summit_everything.workspace.manifest import WorkspaceError, load_manifest
 from summit_everything.workspace.reader import read_page
+from summit_everything.workspace.state import (
+    AttemptLease,
+    archive_intake,
+    attempt_is_live,
+    preserve_undated_item,
+)
+from summit_everything.workspace.state import (
+    get_job as read_job,
+)
+from summit_everything.workspace.state import (
+    list_items as read_items,
+)
 from summit_everything.workspace.transactions import atomic_write, workspace_lock
 from summit_everything.workspace.writer import PageWriter, WorkspaceWriteConflict
 
@@ -105,15 +120,22 @@ class IntakeReviewService:
                 separators=(",", ":"),
             ).encode("utf-8")
         ).hexdigest()
+        existing = read_job(root, job_id)
+        if existing is not None:
+            if existing.request_hash != request_hash:
+                raise WorkspaceWriteConflict("Job operation ID was reused for different inputs")
+            return existing
         jobs_root = _state_root(root) / "intake" / "jobs"
         job_path = jobs_root / f"{job_id}.json"
+        archive_intake(root)
+        archive_completed_transactions(root)
         with workspace_lock(root):
-            if job_path.exists():
-                prior = IntakeJob.model_validate_json(job_path.read_text(encoding="utf-8"))
+            prior = read_job(root, job_id)
+            if prior is not None:
                 if prior.request_hash != request_hash:
                     raise WorkspaceWriteConflict("Job operation ID was reused for different inputs")
                 return prior
-            items = self._load_items(root)
+            items = {item.item_id: item for item in read_items(root, archive=False)}
             selected = [items.get(item_id) for item_id in item_ids]
             if any(item is None for item in selected):
                 raise WorkspaceError("Every selected intake item must exist")
@@ -125,7 +147,7 @@ class IntakeReviewService:
                     raise WorkspaceError(
                         "This source already has an active job or drafts awaiting review"
                     )
-                if state != "pending" and not reprocess:
+                if (state != "pending" or item.latest_job_id is not None) and not reprocess:
                     raise WorkspaceError(
                         "This source was already processed; explicitly choose reprocess "
                         "to organize it again"
@@ -148,113 +170,376 @@ class IntakeReviewService:
                 except UnicodeDecodeError as exc:
                     raise WorkspaceError("Only UTF-8 text sources can be organized") from exc
                 inputs.append((item.item_id, item.source_id, text))
+            attempt_id = str(uuid4())
             job = IntakeJob(
                 job_id=job_id,
                 item_ids=item_ids,
+                line_id=line_id,
+                project_id=project_id,
                 request_hash=request_hash,
                 state="running",
+                attempt_id=attempt_id,
                 created_at=datetime.now(UTC),
             )
-            jobs_root.mkdir(parents=True, exist_ok=True)
-            atomic_write(job_path, job.model_dump_json(indent=2).encode())
-            for item in selected:
-                assert item is not None
-                item_path = _state_root(root) / "intake" / "items" / f"{item.item_id}.json"
-                updated = item.model_copy(update={"state": "processing", "latest_job_id": job_id})
-                atomic_write(item_path, updated.model_dump_json(indent=2).encode())
-        try:
-            proposals = self.provider.organize(inputs)
-            covered_inputs: set[int] = set()
-            for proposal in proposals:
-                if not proposal.input_indexes or len(set(proposal.input_indexes)) != len(
-                    proposal.input_indexes
+            lease = AttemptLease(root, attempt_id)
+            if not lease.acquire(blocking=False):
+                raise WorkspaceError("A job attempt with this identity is already active", 409)
+            try:
+                jobs_root.mkdir(parents=True, exist_ok=True)
+                atomic_write(job_path, job.model_dump_json(indent=2).encode())
+                for item in selected:
+                    assert item is not None
+                    item_path = _state_root(root) / "intake" / "items" / f"{item.item_id}.json"
+                    attempt_no = item.attempt_no
+                    parent_hash = item.previous_attempt_sha256
+                    if item.latest_job_id is not None or item.state != "pending":
+                        if item.finished_at is None and item.state in {
+                            "completed",
+                            "failed",
+                            "cancelled",
+                        }:
+                            preserve_undated_item(root, item)
+                        parent_hash = hashlib.sha256(
+                            json.dumps(
+                                item.model_dump(mode="json"),
+                                sort_keys=True,
+                                separators=(",", ":"),
+                                ensure_ascii=False,
+                            ).encode()
+                        ).hexdigest()
+                        attempt_no += 1
+                    updated = item.model_copy(
+                        update={
+                            "state": "processing",
+                            "latest_job_id": job_id,
+                            "attempt_no": attempt_no,
+                            "revision": item.revision + 1,
+                            "previous_attempt_sha256": parent_hash,
+                            "finished_at": None,
+                        }
+                    )
+                    atomic_write(item_path, updated.model_dump_json(indent=2).encode())
+            except BaseException:
+                lease.__exit__(None, None, None)
+                raise
+        return self._run_attempt(root, job, inputs, line_id, project_id, lease)
+
+    def _run_attempt(
+        self,
+        root: Path,
+        job: IntakeJob,
+        inputs: list[tuple[UUID, UUID, str]],
+        line_id: UUID,
+        project_id: UUID,
+        lease: AttemptLease,
+    ) -> IntakeJob:
+        assert job.attempt_id is not None
+        checkpoint_path = _state_root(root) / "intake" / "checkpoints" / f"{job.job_id}.json"
+        checkpoint_written = False
+        with lease:
+            with workspace_lock(root):
+                current = read_job(root, job.job_id)
+                if (
+                    current is None
+                    or current.state not in {"running", "provider_calling"}
+                    or current.attempt_id != job.attempt_id
+                    or current.revision != job.revision
                 ):
-                    raise LLMProviderError("Every proposal must identify its source inputs")
-                if any(index < 0 or index >= len(inputs) for index in proposal.input_indexes):
-                    raise LLMProviderError("Provider returned an unknown source input")
-                covered_inputs.update(proposal.input_indexes)
-            if covered_inputs != set(range(len(inputs))):
-                raise LLMProviderError("Every selected input must appear in a proposal")
-            drafts: list[Draft] = []
-            actions: list[ActionCandidate] = []
-            for index, proposal in enumerate(proposals):
-                proposal_inputs = [inputs[source_index] for source_index in proposal.input_indexes]
-                draft_id = uuid5(job_id, f"draft:{index}")
-                metadata = {
-                    "id": str(draft_id),
-                    "title": proposal.title,
-                    "role": "knowledge",
-                    "kind": proposal.kind,
-                    "line_id": str(line_id),
-                    "project_id": str(project_id),
-                }
-                draft = Draft(
-                    draft_id=draft_id,
-                    input_ids=[item_id for item_id, _source_id, _text in proposal_inputs],
-                    metadata=metadata,
-                    body=proposal.body,
-                    important_conflicts=[
-                        conflict.model_dump(mode="json")
-                        for conflict in proposal.important_conflicts
-                    ],
-                    action_suggestions=[
-                        suggestion.model_dump(mode="json")
-                        for suggestion in proposal.action_suggestions
-                    ],
-                    source_ids=list(
-                        dict.fromkeys(source_id for _item_id, source_id, _text in proposal_inputs)
-                    ),
-                    created_at=datetime.now(UTC),
+                    return current or job
+                calling = current.model_copy(
+                    update={"state": "provider_calling", "revision": current.revision + 1}
                 )
-                draft_path = _state_root(root) / "drafts" / f"{draft_id}.json"
-                atomic_write(draft_path, draft.model_dump_json(indent=2).encode())
-                drafts.append(draft)
-                for action_index, suggestion in enumerate(proposal.action_suggestions):
-                    action = ActionCandidate(
-                        action_id=uuid5(draft_id, f"action:{action_index}"),
-                        kind=suggestion.kind,
-                        description=suggestion.description,
-                        related_project_id=suggestion.related_project_id,
-                        source_draft_id=draft_id,
-                        created_at=datetime.now(UTC),
-                    )
-                    atomic_write(
-                        _state_root(root) / "actions" / f"{action.action_id}.json",
-                        action.model_dump_json(indent=2).encode(),
-                    )
-                    actions.append(action)
-            completed = job.model_copy(
-                update={
-                    "state": "completed",
-                    "draft_ids": [draft.draft_id for draft in drafts],
-                    "action_candidates": [action.model_dump(mode="json") for action in actions],
+                atomic_write(
+                    _state_root(root) / "intake" / "jobs" / f"{job.job_id}.json",
+                    calling.model_dump_json(indent=2).encode(),
+                )
+            try:
+                proposals = self.provider.organize(inputs)
+                covered_inputs: set[int] = set()
+                for proposal in proposals:
+                    if not proposal.input_indexes or len(set(proposal.input_indexes)) != len(
+                        proposal.input_indexes
+                    ):
+                        raise LLMProviderError("Every proposal must identify its source inputs")
+                    if any(index < 0 or index >= len(inputs) for index in proposal.input_indexes):
+                        raise LLMProviderError("Provider returned an unknown source input")
+                    covered_inputs.update(proposal.input_indexes)
+                if covered_inputs != set(range(len(inputs))):
+                    raise LLMProviderError("Every selected input must appear in a proposal")
+                checkpoint = {
+                    "schema": "intake-provider-checkpoint-v1",
+                    "job_id": str(job.job_id),
+                    "attempt_id": job.attempt_id,
+                    "request_hash": job.request_hash,
+                    "input_hashes": {
+                        str(item_id): hashlib.sha256(text.encode("utf-8")).hexdigest()
+                        for item_id, _source_id, text in inputs
+                    },
+                    "proposals": [proposal.model_dump(mode="json") for proposal in proposals],
                 }
+                payload_bytes = json.dumps(
+                    checkpoint, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                ).encode()
+                checkpoint_hash = hashlib.sha256(payload_bytes).hexdigest()
+                checkpoint_document = {**checkpoint, "checkpoint_sha256": checkpoint_hash}
+                checkpoint_bytes = json.dumps(
+                    checkpoint_document, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                ).encode()
+                with workspace_lock(root):
+                    current = read_job(root, job.job_id)
+                    if (
+                        current is None
+                        or current.state != "provider_calling"
+                        or current.attempt_id != job.attempt_id
+                        or current.revision != job.revision + 1
+                    ):
+                        return current or job
+                    atomic_write(checkpoint_path, checkpoint_bytes)
+                    checkpoint_written = True
+                    completed = self._apply_checkpoint(
+                        root,
+                        current,
+                        checkpoint,
+                        checkpoint_hash,
+                        line_id,
+                        project_id,
+                        inputs,
+                    )
+                SourceStore().refresh_items(root, job.item_ids)
+                archive_intake(root)
+                archive_completed_transactions(root)
+                return completed
+            except Exception as exc:
+                if checkpoint_written:
+                    raise
+                with workspace_lock(root):
+                    current = read_job(root, job.job_id)
+                    if (
+                        current is not None
+                        and current.state == "provider_calling"
+                        and current.attempt_id == job.attempt_id
+                    ):
+                        failed = current.model_copy(
+                            update={
+                                "state": "failed",
+                                "error": str(exc)[:500],
+                                "finished_at": datetime.now(UTC),
+                                "revision": current.revision + 1,
+                            }
+                        )
+                        atomic_write(
+                            _state_root(root) / "intake" / "jobs" / f"{job.job_id}.json",
+                            failed.model_dump_json(indent=2).encode(),
+                        )
+                SourceStore().refresh_items(root, job.item_ids)
+                archive_intake(root)
+                raise
+
+    def _apply_checkpoint(
+        self,
+        root: Path,
+        job: IntakeJob,
+        checkpoint: dict[str, Any],
+        checkpoint_hash: str,
+        line_id: UUID,
+        project_id: UUID,
+        inputs: list[tuple[UUID, UUID, str]],
+    ) -> IntakeJob:
+        proposals = [DraftProposal.model_validate(row) for row in checkpoint["proposals"]]
+        drafts: list[Draft] = []
+        actions: list[ActionCandidate] = []
+        for index, proposal in enumerate(proposals):
+            proposal_inputs = [inputs[source_index] for source_index in proposal.input_indexes]
+            draft_id = uuid5(job.job_id, f"draft:{index}")
+            metadata = {
+                "id": str(draft_id),
+                "title": proposal.title,
+                "role": "knowledge",
+                "kind": proposal.kind,
+                "line_id": str(line_id),
+                "project_id": str(project_id),
+            }
+            draft = Draft(
+                draft_id=draft_id,
+                job_id=job.job_id,
+                input_ids=[item_id for item_id, _source_id, _text in proposal_inputs],
+                metadata=metadata,
+                body=proposal.body,
+                important_conflicts=[
+                    conflict.model_dump(mode="json") for conflict in proposal.important_conflicts
+                ],
+                action_suggestions=[
+                    suggestion.model_dump(mode="json") for suggestion in proposal.action_suggestions
+                ],
+                source_ids=list(
+                    dict.fromkeys(source_id for _item_id, source_id, _text in proposal_inputs)
+                ),
+                created_at=job.created_at,
             )
-            atomic_write(job_path, completed.model_dump_json(indent=2).encode())
-            SourceStore().refresh_items(root, item_ids)
-            return completed
-        except Exception as exc:
-            failed = job.model_copy(update={"state": "failed", "error": str(exc)[:500]})
-            atomic_write(job_path, failed.model_dump_json(indent=2).encode())
-            SourceStore().refresh_items(root, item_ids)
-            raise
+            draft_path = _state_root(root) / "drafts" / f"{draft_id}.json"
+            atomic_write(draft_path, draft.model_dump_json(indent=2).encode())
+            drafts.append(draft)
+            for action_index, suggestion in enumerate(proposal.action_suggestions):
+                action = ActionCandidate(
+                    action_id=uuid5(draft_id, f"action:{action_index}"),
+                    kind=suggestion.kind,
+                    description=suggestion.description,
+                    related_project_id=suggestion.related_project_id,
+                    source_draft_id=draft_id,
+                    created_at=job.created_at,
+                )
+                atomic_write(
+                    _state_root(root) / "actions" / f"{action.action_id}.json",
+                    action.model_dump_json(indent=2).encode(),
+                )
+                actions.append(action)
+        completed = job.model_copy(
+            update={
+                "state": "completed",
+                "draft_ids": [draft.draft_id for draft in drafts],
+                "action_candidates": [action.model_dump(mode="json") for action in actions],
+                "finished_at": datetime.now(UTC),
+                "checkpoint_sha256": checkpoint_hash,
+                "revision": job.revision + 1,
+            }
+        )
+        atomic_write(
+            _state_root(root) / "intake" / "jobs" / f"{job.job_id}.json",
+            completed.model_dump_json(indent=2).encode(),
+        )
+        return completed
 
     def get_job(self, root: Path, job_id: UUID) -> IntakeJob:
-        path = _state_root(root) / "intake" / "jobs" / f"{job_id}.json"
-        try:
-            return IntakeJob.model_validate_json(path.read_text(encoding="utf-8"))
-        except FileNotFoundError as exc:
-            raise WorkspaceError("Intake job was not found", 404) from exc
+        root = root.resolve()
+        job = read_job(root, job_id)
+        if job is None:
+            raise WorkspaceError("Intake job was not found", 404)
+        if job.state not in {"running", "provider_calling"} or attempt_is_live(
+            root, job.attempt_id
+        ):
+            return job
+        path = _state_root(root) / "intake" / "checkpoints" / f"{job_id}.json"
+        checkpoint: dict[str, Any] | None = None
+        checkpoint_hash: str | None = None
+        if path.exists():
+            try:
+                document = json.loads(path.read_bytes())
+                checkpoint_hash = document.pop("checkpoint_sha256")
+                candidate_hash = hashlib.sha256(
+                    json.dumps(
+                        document,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        ensure_ascii=False,
+                    ).encode()
+                ).hexdigest()
+                if (
+                    document.get("schema") == "intake-provider-checkpoint-v1"
+                    and document.get("job_id") == str(job_id)
+                    and document.get("attempt_id") == job.attempt_id
+                    and document.get("request_hash") == job.request_hash
+                    and checkpoint_hash == candidate_hash
+                ):
+                    checkpoint = document
+            except (OSError, ValueError, TypeError, KeyError):
+                checkpoint = None
+        inputs = (
+            self._job_inputs(root, job, checkpoint.get("input_hashes", {}))
+            if checkpoint is not None
+            else None
+        )
+        with workspace_lock(root):
+            current = read_job(root, job_id)
+            if current is None or current.state not in {"running", "provider_calling"}:
+                return current or job
+            if current.attempt_id != job.attempt_id or current.revision != job.revision:
+                return current
+            if checkpoint is not None and checkpoint_hash is not None:
+                if (
+                    inputs is not None
+                    and current.line_id is not None
+                    and current.project_id is not None
+                ):
+                    completed = self._apply_checkpoint(
+                        root,
+                        current,
+                        checkpoint,
+                        checkpoint_hash,
+                        current.line_id,
+                        current.project_id,
+                        inputs,
+                    )
+                    recovered = True
+                else:
+                    completed = None
+                    recovered = False
+            else:
+                completed = None
+                recovered = False
+            if not recovered:
+                unknown = current.model_copy(
+                    update={
+                        "state": "unknown",
+                        "error": "模型请求状态未知；不会自动重新发送。请明确选择重新整理。",
+                        "revision": current.revision + 1,
+                    }
+                )
+                atomic_write(
+                    _state_root(root) / "intake" / "jobs" / f"{job_id}.json",
+                    unknown.model_dump_json(indent=2).encode(),
+                )
+                result = unknown
+            else:
+                assert completed is not None
+                result = completed
+        SourceStore().refresh_items(root, job.item_ids)
+        archive_intake(root)
+        archive_completed_transactions(root)
+        return result
+
+    def _job_inputs(
+        self, root: Path, job: IntakeJob, expected_hashes: dict[str, Any]
+    ) -> list[tuple[UUID, UUID, str]] | None:
+        items = {item.item_id: item for item in read_items(root)}
+        inputs: list[tuple[UUID, UUID, str]] = []
+        for item_id in job.item_ids:
+            item = items.get(item_id)
+            if item is None:
+                return None
+            path = (root / item.original_relative_path).resolve()
+            if not path.is_relative_to(root) or not path.is_file():
+                return None
+            raw = path.read_bytes()
+            source_id, digest = self._source_identity(root, item.source_id)
+            if source_id != item.source_id or hashlib.sha256(raw).hexdigest() != digest:
+                return None
+            try:
+                text = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                return None
+            if expected_hashes.get(str(item_id)) != hashlib.sha256(text.encode()).hexdigest():
+                return None
+            inputs.append((item.item_id, item.source_id, text))
+        return inputs
 
     def cancel_job(self, root: Path, job_id: UUID) -> IntakeJob:
+        root = root.resolve()
         path = _state_root(root) / "intake" / "jobs" / f"{job_id}.json"
-        try:
-            job = IntakeJob.model_validate_json(path.read_text(encoding="utf-8"))
-        except FileNotFoundError as exc:
-            raise WorkspaceError("Intake job was not found", 404) from exc
-        if job.state == "running":
-            job = job.model_copy(update={"state": "cancelled"})
-            atomic_write(path, job.model_dump_json(indent=2).encode())
+        with workspace_lock(root):
+            job = read_job(root, job_id)
+            if job is None:
+                raise WorkspaceError("Intake job was not found", 404)
+            if job.state in {"running", "provider_calling"}:
+                job = job.model_copy(
+                    update={
+                        "state": "cancelled",
+                        "finished_at": datetime.now(UTC),
+                        "revision": job.revision + 1,
+                    }
+                )
+                atomic_write(path, job.model_dump_json(indent=2).encode())
+        SourceStore().refresh_items(root, job.item_ids)
+        archive_intake(root)
         return job
 
     def list_actions(self, root: Path) -> list[ActionCandidate]:
@@ -275,6 +560,13 @@ class IntakeReviewService:
             Draft.model_validate_json(path.read_text(encoding="utf-8"))
             for path in draft_root.glob("*.json")
         ]
+        drafts = [
+            draft
+            for draft in drafts
+            if draft.job_id is None
+            or (job := read_job(root, draft.job_id)) is not None
+            and job.state == "completed"
+        ]
         if pending_only:
             drafts = [draft for draft in drafts if draft.state == "pending"]
         return sorted(drafts, key=lambda draft: (draft.created_at, str(draft.draft_id)))
@@ -282,9 +574,14 @@ class IntakeReviewService:
     def get_draft(self, root: Path, draft_id: UUID) -> Draft:
         path = _state_root(root) / "drafts" / f"{draft_id}.json"
         try:
-            return Draft.model_validate_json(path.read_text(encoding="utf-8"))
+            draft = Draft.model_validate_json(path.read_text(encoding="utf-8"))
         except FileNotFoundError as exc:
             raise WorkspaceError("Draft was not found", 404) from exc
+        if draft.job_id is not None:
+            job = read_job(root, draft.job_id)
+            if job is None or job.state != "completed":
+                raise WorkspaceError("Draft is not ready for review", 404)
+        return draft
 
     def edit_draft(
         self,
@@ -383,14 +680,7 @@ class IntakeReviewService:
             return result
 
     def _load_items(self, root: Path) -> dict[UUID, IntakeItem]:
-        item_root = _state_root(root) / "intake" / "items"
-        if not item_root.exists():
-            return {}
-        items = [
-            IntakeItem.model_validate_json(path.read_text(encoding="utf-8"))
-            for path in item_root.glob("*.json")
-        ]
-        return {item.item_id: item for item in items}
+        return {item.item_id: item for item in read_items(root)}
 
     def _source_identity(self, root: Path, source_id: UUID) -> tuple[UUID, str]:
         source_root = _state_root(root) / "sources"

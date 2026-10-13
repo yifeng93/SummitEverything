@@ -1,0 +1,17 @@
+{
+  "case": "C14-same-request-replay-after-role-and-memory-edit",
+  "source_http": 200,
+  "initial_http": 200,
+  "replay_http": 200,
+  "same_events": true,
+  "same_event_types": true,
+  "provider_calls_before_initial": 28,
+  "provider_calls_after_initial": 29,
+  "provider_calls_after_replay": 29,
+  "different_mode_conflict_http": 409,
+  "delete_http": {
+    "memory": 204,
+    "role": 204
+  },
+  "status": "PASS"
+}

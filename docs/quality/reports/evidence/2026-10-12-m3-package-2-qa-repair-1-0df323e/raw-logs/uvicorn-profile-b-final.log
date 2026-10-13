@@ -1,0 +1,24 @@
+INFO:     Started server process [85455]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18795 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [85455]
+INFO:     Started server process [85537]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18795 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59170 - "GET /api/v1/roles HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:59172 - "GET /api/v1/memory HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:59174 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:59186 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:59258 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59260 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59263 - "GET /api/v1/conversations?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59266 - "GET /api/v1/workspaces/current HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [85537]

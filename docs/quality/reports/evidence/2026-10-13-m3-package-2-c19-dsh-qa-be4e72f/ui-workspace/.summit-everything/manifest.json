@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "workspace_id": "ebde1bad-034d-4db4-9c00-937aabffa0c8",
+  "name": "C19 DSH 独立验收",
+  "created_at": "2026-10-12T23:38:58.239449Z",
+  "lines": [
+    {
+      "id": "2d7dd6d0-0f0e-50a5-83e1-6fdd339dfd70",
+      "name": "独立验收线",
+      "directory": "独立验收线"
+    }
+  ],
+  "projects": [
+    {
+      "id": "3cebd862-2b4e-5692-b7b1-eba36b60bac2",
+      "line_id": "2d7dd6d0-0f0e-50a5-83e1-6fdd339dfd70",
+      "name": "枫湾活动",
+      "directory": "独立验收线/枫湾活动",
+      "overview_id": "931fd442-f23a-5563-8c83-0de547b08941",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    }
+  ]
+}

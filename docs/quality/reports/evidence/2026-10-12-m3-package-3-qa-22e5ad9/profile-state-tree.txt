@@ -1,0 +1,10 @@
+.local/qa/m3-package-3/profile-a/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/answer_context.sqlite3
+.local/qa/m3-package-3/profile-a/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/answer_context.sqlite3-shm
+.local/qa/m3-package-3/profile-a/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/answer_context.sqlite3-wal
+.local/qa/m3-package-3/profile-a/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/diagnostics.log
+.local/qa/m3-package-3/profile-a/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/index.sqlite3
+.local/qa/m3-package-3/profile-b/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/answer_context.sqlite3
+.local/qa/m3-package-3/profile-b/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/answer_context.sqlite3-shm
+.local/qa/m3-package-3/profile-b/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/answer_context.sqlite3-wal
+.local/qa/m3-package-3/profile-b/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/diagnostics.log
+.local/qa/m3-package-3/profile-b/35fbb24c-bd74-4c5c-b119-7a9a6ef08197/index.sqlite3

@@ -1,0 +1,253 @@
+{
+  "cases": [
+    {
+      "question": "预算时间专项的培训签到办法是什么",
+      "mode": "fact",
+      "retrieval_plan": {
+        "subjects": [
+          "预算时间专项",
+          "培训签到"
+        ],
+        "dimensions": [
+          "budget+schedule&term:办法"
+        ],
+        "required_pairs": [
+          [
+            "预算时间专项",
+            "budget+schedule&term:办法"
+          ],
+          [
+            "培训签到",
+            "budget+schedule&term:办法"
+          ]
+        ]
+      },
+      "answer": {
+        "answer_id": "51872af1-1b20-4091-9b96-1bc4b3e9169c",
+        "question": "预算时间专项的培训签到办法是什么",
+        "text": "没有找到能确认该对象和主题的已确认资料；培训签到：缺少预算、排期或启动时间（办法）依据。；预算时间专项：缺少预算、排期或启动时间（办法）依据。",
+        "citations": [],
+        "answer_mode": "fact",
+        "source_statements": [],
+        "inferences": [],
+        "advice": [],
+        "missing_information": [
+          "培训签到：缺少预算、排期或启动时间（办法）依据。",
+          "预算时间专项：缺少预算、排期或启动时间（办法）依据。"
+        ],
+        "purpose": "current",
+        "index_status": "ready"
+      },
+      "provider_calls_for_question": [],
+      "expected": "只引用主题匹配的培训签到材料；预算/时间不得成为问题维度"
+    },
+    {
+      "question": "为预算时间专项制定培训签到流程",
+      "mode": "plan",
+      "retrieval_plan": {
+        "subjects": [
+          "预算时间专项",
+          "培训签到"
+        ],
+        "dimensions": [
+          "budget",
+          "schedule"
+        ],
+        "required_pairs": [
+          [
+            "预算时间专项",
+            "budget"
+          ],
+          [
+            "预算时间专项",
+            "schedule"
+          ],
+          [
+            "培训签到",
+            "budget"
+          ],
+          [
+            "培训签到",
+            "schedule"
+          ]
+        ]
+      },
+      "answer": {
+        "answer_id": "9fd5ea6c-4a4f-40aa-b543-3160b041c92b",
+        "question": "为预算时间专项制定培训签到流程",
+        "text": "当前资料只覆盖了部分所问范围：\n\n页面内容：预算时间专项已批准预算五万元， 启动时间为六月。\n\n仍缺少：培训签到：缺少预算依据。；培训签到：缺少排期或启动时间依据。",
+        "citations": [
+          {
+            "page_id": "00fe62ef-808e-4449-a94b-b798908452b3",
+            "content_sha256": "4c8889a5b703dc48a08a146fbdea120de1ed2db750798d5c1e866586490f1879",
+            "chunk_id": "99d100b146d29a1cb8e2f89eee1773bc2a26c93a02475b4af6768dac471fafad",
+            "heading": "",
+            "excerpt": "预算时间专项已批准预算五万元， 启动时间为六月。",
+            "validity": "current",
+            "availability": "available"
+          }
+        ],
+        "answer_mode": "plan",
+        "source_statements": [
+          "页面内容：预算时间专项已批准预算五万元， 启动时间为六月。"
+        ],
+        "inferences": [],
+        "advice": [],
+        "missing_information": [
+          "培训签到：缺少预算依据。",
+          "培训签到：缺少排期或启动时间依据。"
+        ],
+        "purpose": "current",
+        "index_status": "ready"
+      },
+      "provider_calls_for_question": [
+        {
+          "question": "为预算时间专项制定培训签到流程",
+          "passages": [
+            {
+              "source_id": "00fe62ef-808e-4449-a94b-b798908452b3",
+              "heading": "页面内容",
+              "excerpt": "预算时间专项已批准预算五万元， 启动时间为六月。"
+            }
+          ]
+        }
+      ],
+      "expected": "只引用主题匹配的培训签到材料；预算/时间不得成为问题维度"
+    },
+    {
+      "question": "比较预算时间专项培训签到安排",
+      "mode": "comparison",
+      "retrieval_plan": {
+        "subjects": [
+          "预算时间专项",
+          "培训签到"
+        ],
+        "dimensions": [
+          "budget+schedule&term:安排"
+        ],
+        "required_pairs": [
+          [
+            "预算时间专项",
+            "budget+schedule&term:安排"
+          ],
+          [
+            "培训签到",
+            "budget+schedule&term:安排"
+          ]
+        ]
+      },
+      "answer": {
+        "answer_id": "fe0c1a78-a4de-4cca-8655-826f641803c3",
+        "question": "比较预算时间专项培训签到安排",
+        "text": "没有找到能确认该对象和主题的已确认资料；培训签到：缺少预算、排期或启动时间（安排）依据。；预算时间专项：缺少预算、排期或启动时间（安排）依据。",
+        "citations": [],
+        "answer_mode": "comparison",
+        "source_statements": [],
+        "inferences": [],
+        "advice": [],
+        "missing_information": [
+          "培训签到：缺少预算、排期或启动时间（安排）依据。",
+          "预算时间专项：缺少预算、排期或启动时间（安排）依据。"
+        ],
+        "purpose": "current",
+        "index_status": "ready"
+      },
+      "provider_calls_for_question": [],
+      "expected": "只引用主题匹配的培训签到材料；预算/时间不得成为问题维度"
+    },
+    {
+      "question": "培训签到办法怎么安排",
+      "mode": "plan",
+      "retrieval_plan": {
+        "subjects": [
+          "培训签到"
+        ],
+        "dimensions": [],
+        "required_pairs": [
+          [
+            "培训签到",
+            ""
+          ]
+        ]
+      },
+      "answer": {
+        "answer_id": "73ef82c2-6d02-4511-a4ef-a9b8c442d17a",
+        "question": "培训签到办法怎么安排",
+        "text": "完整比较已经完成",
+        "citations": [
+          {
+            "page_id": "1fdb2f6b-cd74-4ce6-8825-d4aa25bb3624",
+            "content_sha256": "d75073fb1194b0e149404377902b4952bcc84017b644c4bbc4a8e70e3294a64e",
+            "chunk_id": "63bda8ff528ea5f404ae34a4f36124649efc8d80c76d222ea34172b320e09145",
+            "heading": "",
+            "excerpt": "培训签到须现场登记并核验姓名。",
+            "validity": "current",
+            "availability": "available"
+          }
+        ],
+        "answer_mode": "plan",
+        "source_statements": [
+          "页面内容：培训签到须现场登记并核验姓名。"
+        ],
+        "inferences": [
+          "推断"
+        ],
+        "advice": [
+          "建议"
+        ],
+        "missing_information": [],
+        "purpose": "current",
+        "index_status": "ready"
+      },
+      "provider_calls_for_question": [
+        {
+          "question": "培训签到办法怎么安排",
+          "passages": [
+            {
+              "source_id": "1fdb2f6b-cd74-4ce6-8825-d4aa25bb3624",
+              "heading": "页面内容",
+              "excerpt": "培训签到须现场登记并核验姓名。"
+            }
+          ]
+        }
+      ],
+      "expected": "只引用主题匹配的培训签到材料；预算/时间不得成为问题维度"
+    },
+    {
+      "question": "预算时间专项签到办法是什么",
+      "mode": "fact",
+      "retrieval_plan": {
+        "subjects": [
+          "预算时间专项"
+        ],
+        "dimensions": [
+          "budget+schedule&term:签到办法"
+        ],
+        "required_pairs": [
+          [
+            "预算时间专项",
+            "budget+schedule&term:签到办法"
+          ]
+        ]
+      },
+      "answer": {
+        "answer_id": "4e039088-edbd-4061-ba50-51ede65858cb",
+        "question": "预算时间专项签到办法是什么",
+        "text": "没有找到能确认该对象和主题的已确认资料；预算时间专项：缺少预算、排期或启动时间（签到办法）依据。",
+        "citations": [],
+        "answer_mode": "fact",
+        "source_statements": [],
+        "inferences": [],
+        "advice": [],
+        "missing_information": [
+          "预算时间专项：缺少预算、排期或启动时间（签到办法）依据。"
+        ],
+        "purpose": "current",
+        "index_status": "ready"
+      },
+      "provider_calls_for_question": [],
+      "expected": "只引用主题匹配的培训签到材料；预算/时间不得成为问题维度"
+    }
+  ],
+  "total_provider_calls": 2
+}

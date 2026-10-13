@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/harness/run_blackbox.py", line 46, in <module>
+    pref_detail = next(d for d in details if any(m["question"] == "我偏好简洁中文回答，并把建议和已确认事实分开。" for m in d.get("messages", [])))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration

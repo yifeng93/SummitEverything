@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<QA_CHECKOUT>/.local/qa/m3-package-2-repair-1/harness/add_invalid_fixture.py", line 20, in <module>
+    PageWriter().confirm(
+  File "<QA_CHECKOUT>/src/summit_everything/workspace/writer.py", line 492, in confirm
+    raise WorkspaceError(f"Page cannot be confirmed: {eligibility.reason}")
+summit_everything.workspace.manifest.WorkspaceError: Page cannot be confirmed: historical_only

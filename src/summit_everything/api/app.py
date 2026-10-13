@@ -5,6 +5,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import secrets
 import tempfile
 from collections.abc import AsyncIterator
@@ -33,7 +34,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from summit_everything.api.routes.actions import register_actions
-from summit_everything.domain.content import RetrievalPurpose
+from summit_everything.domain.content import RetrievalPurpose, StorageArea, retrieval_eligibility
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
@@ -95,6 +96,25 @@ from summit_everything.integrations.settings import (
     embedding_fingerprint,
     provider_settings_payload,
 )
+from summit_everything.local.answer_context import (
+    AnswerContext,
+    AnswerContextStore,
+    AnswerRole,
+    ContextConflict,
+    MemoryCandidate,
+    RoleInput,
+    UserMemory,
+)
+from summit_everything.local.conversations import (
+    ACTIVE_QUERIES,
+    ConversationDetail,
+    ConversationNotFound,
+    ConversationPage,
+    ConversationStore,
+    QueryConflict,
+    QueryStart,
+)
+from summit_everything.local.event_log import profile_event
 from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -117,6 +137,77 @@ from summit_everything.workspace.writer import (
     WorkspaceWriteConflict,
     WorkspaceWriter,
 )
+
+_SOURCE_ATTRIBUTION = re.compile(
+    r"(?:原文|原件|材料|资料|文档|文件|页面|邮件|记录|通知|对方|他人|朋友|团队|同事|source|document|email|message|team)"
+    r"[^\n。！？]{0,24}(?:写(?:着|道|到)?|提到|记载|表示|称|说|指出|显示|内容(?:是|为)|如下|[:：])",
+    re.IGNORECASE,
+)
+_FORWARDED_CONTENT = re.compile(
+    r"(?:我)?(?:转发|粘贴|复制|转述|摘录|引用)(?:过|的)?(?:这段|该)?"
+    r"(?:内容|文字|信息|原文)?(?:是|为|如下|[:：])",
+    re.IGNORECASE,
+)
+_SOURCE_ATTRIBUTION_PREFIX = re.compile(
+    _SOURCE_ATTRIBUTION.pattern + r"[\s\"“‘「『]*$", re.IGNORECASE
+)
+_FORWARDED_CONTENT_PREFIX = re.compile(
+    _FORWARDED_CONTENT.pattern + r"[\s\"“‘「『]*$", re.IGNORECASE
+)
+_QUOTE_PAIRS = (("“", "”"), ("‘", "’"), ("「", "」"), ("『", "』"), ('"', '"'), ("'", "'"))
+_FIRST_PERSON_EXPRESSION = re.compile(
+    r"^\s*(?:我(?:希望|偏好|喜欢|不喜欢|需要|负责|通常|习惯|是|计划)|我的(?:工作|目标|偏好))"
+)
+
+
+def _contains_quoted_first_person(text: str) -> bool:
+    for opening, closing in _QUOTE_PAIRS:
+        start = text.find(opening)
+        while start >= 0:
+            end = text.find(closing, start + len(opening))
+            if end < 0:
+                break
+            if _FIRST_PERSON_EXPRESSION.match(text[start + len(opening) : end].strip()):
+                return True
+            start = text.find(opening, end + len(closing))
+    return False
+
+
+def _is_attributed_source_text(source: str, candidate: str) -> bool:
+    """Reject candidate spans framed as external source text in the real user message."""
+    if _SOURCE_ATTRIBUTION.search(candidate) or _FORWARDED_CONTENT.search(candidate):
+        return True
+    if _contains_quoted_first_person(candidate) and not _FIRST_PERSON_EXPRESSION.match(
+        candidate.strip()
+    ):
+        return True
+    if any(line.lstrip().startswith(">") for line in candidate.splitlines()):
+        return True
+
+    start = source.find(candidate)
+    while start >= 0:
+        end = start + len(candidate)
+        prefix = source[max(0, start - 80) : start]
+        if _SOURCE_ATTRIBUTION_PREFIX.search(prefix) or _FORWARDED_CONTENT_PREFIX.search(prefix):
+            return True
+        line_start = source.rfind("\n", 0, start) + 1
+        if source[line_start:start].lstrip().startswith(">"):
+            return True
+        for opening, closing in _QUOTE_PAIRS:
+            quote_start = source.rfind(opening, 0, start)
+            quote_end = source.find(closing, end)
+            if quote_start < 0 or quote_end < end:
+                continue
+            quoted_expression = source[quote_start + len(opening) : quote_end].strip()
+            if _FIRST_PERSON_EXPRESSION.match(quoted_expression):
+                return True
+            attribution = source[max(0, quote_start - 80) : quote_start]
+            if _SOURCE_ATTRIBUTION_PREFIX.search(attribution) or _FORWARDED_CONTENT_PREFIX.search(
+                attribution
+            ):
+                return True
+        start = source.find(candidate, start + 1)
+    return False
 
 
 class RequestModel(BaseModel):
@@ -204,10 +295,28 @@ class IndexPlanRequest(RequestModel):
 
 
 class QueryRequest(RequestModel):
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=8000)
     fingerprint: str = Field(min_length=1)
     purpose: Literal["current", "history"] = "current"
+    answer_mode: Literal["fact", "comparison", "plan"] = "fact"
+    role_id: UUID | None = None
     request_id: UUID | None = None
+    conversation_id: UUID | None = None
+
+
+class MemoryCandidateRequest(RequestModel):
+    message_id: UUID
+    text: str = Field(min_length=1, max_length=4000)
+    user_expression: Literal[True]
+
+
+class MemoryConfirmationRequest(RequestModel):
+    confirmation_id: str = Field(min_length=1, max_length=200)
+    text: str = Field(min_length=1, max_length=4000)
+
+
+class MemoryPatchRequest(RequestModel):
+    text: str = Field(min_length=1, max_length=4000)
 
 
 class JournalRequest(RequestModel):
@@ -305,7 +414,8 @@ def create_app(
     review = review_service or IntakeReviewService(FakeLLM())
     app.state.intake_service = intake_service
     app.state.review_service = review
-    cancellations: dict[str, Event] = {}
+    cancellations: dict[tuple[str, str, str], Event] = {}
+    cancellation_requests: set[tuple[str, str, str]] = set()
     config = feishu_config or FeishuConfig()
     feishu_services: dict[tuple[str, ...], FeishuService] = {}
     auth_coordinators: dict[tuple[str, str], FeishuAuthCoordinator] = {}
@@ -618,14 +728,40 @@ def create_app(
             IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"),
             embedding=providers.embedding() if providers else None,
             reranker=providers.reranker() if providers else None,
-            answer_provider=(
-                cast(AnswerProvider, providers.llm())
-                if providers
-                and settings_store(workspace).read().mode == "real"
-                and settings_store(workspace).read().llm.provider != "fake"
-                else None
-            ),
+            answer_provider=(cast(AnswerProvider, providers.llm()) if providers else None),
         )
+
+    def conversations_for(workspace: WorkspaceContext) -> ConversationStore:
+        return ConversationStore(Path(workspace.local_profile_dir) / "conversations.sqlite3")
+
+    def answer_context_for(workspace: WorkspaceContext) -> AnswerContextStore:
+        return AnswerContextStore(Path(workspace.local_profile_dir) / "answer_context.sqlite3")
+
+    def query_cancellation_key(
+        workspace: WorkspaceContext, request_id: UUID
+    ) -> tuple[str, str, str]:
+        return (
+            str(Path(workspace.local_profile_dir).resolve()),
+            str(workspace.workspace_id),
+            str(request_id),
+        )
+
+    def current_citation_availability(
+        workspace: WorkspaceContext, citation: Any, purpose: str
+    ) -> str:
+        try:
+            page = read_page(Path(workspace.root), citation.page_id)
+        except WorkspaceError:
+            return "unavailable"
+        eligibility = retrieval_eligibility(
+            page.metadata,
+            page.body,
+            area=StorageArea(page.storage_area),
+            purpose=RetrievalPurpose(purpose),
+        )
+        if not eligibility.eligible:
+            return "unavailable"
+        return "available" if page.content_sha256 == citation.content_sha256 else "updated"
 
     @app.get("/api/v1/settings", dependencies=[Depends(authenticated)])
     def get_settings(
@@ -1163,12 +1299,19 @@ def create_app(
         payload: IntakeTextRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IntakeItem:
-        return intake_service.add_text(
+        item = intake_service.add_text(
             Path(workspace.root),
             payload.text,
             filename=payload.filename,
             operation_id=payload.operation_id,
         )
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_saved",
+            record_id=str(item.item_id),
+            state=item.state,
+        )
+        return item
 
     @app.post("/api/v1/intake/files", status_code=201, dependencies=[Depends(authenticated)])
     async def intake_file(
@@ -1182,18 +1325,33 @@ def create_app(
                 status_code=413,
                 detail={"code": "file_too_large", "message": "File must be 20 MB or smaller"},
             )
-        return intake_service.add_file(
+        item = intake_service.add_file(
             Path(workspace.root),
             raw,
             filename=file.filename or "source.txt",
             operation_id=operation_id,
         )
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_saved",
+            record_id=str(item.item_id),
+            state=item.state,
+        )
+        return item
 
     @app.get("/api/v1/intake/items", dependencies=[Depends(authenticated)])
     def intake_list(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> list[IntakeItem]:
-        return intake_service.list_items(Path(workspace.root))
+        root = Path(workspace.root)
+        items = intake_service.list_items(root)
+        active_review = review_for(workspace)
+        for item in items:
+            if item.latest_job_id is not None and item.state in {"processing", "unknown"}:
+                # This only checks the local lease and replays a durable local
+                # checkpoint; it never retries the external model call.
+                active_review.get_job(root, item.latest_job_id)
+        return intake_service.list_items(root)
 
     @app.get("/api/v1/sources/{source_id}", dependencies=[Depends(authenticated)])
     def source_get(
@@ -1202,12 +1360,20 @@ def create_app(
     ) -> SourceDetail:
         return intake_service.get_source(Path(workspace.root), source_id)
 
-    @app.post("/api/v1/intake/jobs", status_code=201, dependencies=[Depends(authenticated)])
+    @app.post(
+        "/api/v1/intake/jobs",
+        status_code=201,
+        responses={
+            202: {"model": IntakeJob, "description": "Existing provider attempt is still running"}
+        },
+        dependencies=[Depends(authenticated)],
+    )
     def intake_job_create(
         payload: IntakeJobRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        response: Response,
     ) -> IntakeJob:
-        return review_for(workspace).create_job(
+        job = review_for(workspace).create_job(
             Path(workspace.root),
             payload.item_ids,
             operation_id=payload.operation_id,
@@ -1215,18 +1381,43 @@ def create_app(
             project_id=payload.project_id,
             reprocess=payload.reprocess,
         )
+        if job.state in {"running", "provider_calling"}:
+            response.status_code = 202
+            response.headers["Location"] = f"/api/v1/jobs/{job.job_id}"
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_job",
+            record_id=str(job.job_id),
+            state=job.state,
+            count=len(job.draft_ids),
+        )
+        return job
 
     @app.get("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])
     def intake_job_get(
         job_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> IntakeJob:
-        return review.get_job(Path(workspace.root), job_id)
+        job = review.get_job(Path(workspace.root), job_id)
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_job",
+            record_id=str(job.job_id),
+            state=job.state,
+        )
+        return job
 
     @app.delete("/api/v1/jobs/{job_id}", dependencies=[Depends(authenticated)])
     def intake_job_cancel(
         job_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
     ) -> IntakeJob:
-        return review.cancel_job(Path(workspace.root), job_id)
+        job = review.cancel_job(Path(workspace.root), job_id)
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "intake_job",
+            record_id=str(job.job_id),
+            state=job.state,
+        )
+        return job
 
     @app.get("/api/v1/drafts", dependencies=[Depends(authenticated)])
     def drafts(
@@ -1262,7 +1453,7 @@ def create_app(
         payload: DraftConfirmationRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> MutationResult:
-        return index_after_approval(
+        result = index_after_approval(
             workspace,
             review.confirm_draft(
                 Path(workspace.root),
@@ -1273,6 +1464,13 @@ def create_app(
                 conflict_resolutions=payload.conflict_resolutions,
             ),
         )
+        profile_event(
+            Path(workspace.local_profile_dir),
+            "draft_confirmed",
+            record_id=str(draft_id),
+            state=result.state,
+        )
+        return result
 
     @app.get("/api/v1/actions", dependencies=[Depends(authenticated)])
     def action_candidates(
@@ -1324,6 +1522,239 @@ def create_app(
     ) -> dict[str, int | str | None]:
         return query_for(workspace).status(Path(workspace.root))
 
+    @app.get("/api/v1/conversations", dependencies=[Depends(authenticated)])
+    def conversation_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        cursor: str | None = None,
+        limit: int = Query(default=20, ge=1, le=100),
+    ) -> ConversationPage:
+        try:
+            return conversations_for(workspace).list(
+                workspace.workspace_id, cursor=cursor, limit=limit
+            )
+        except (ValueError, IndexError):
+            raise HTTPException(
+                status_code=422,
+                detail={"code": "invalid_cursor", "message": "历史分页位置无效。"},
+            ) from None
+
+    @app.get("/api/v1/conversations/{conversation_id}", dependencies=[Depends(authenticated)])
+    def conversation_get(
+        conversation_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> ConversationDetail:
+        store = conversations_for(workspace)
+        detail = store.get(workspace.workspace_id, conversation_id)
+        if detail is None:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这段问答历史。"}
+            )
+        messages = []
+        for message in detail.messages:
+            citations = [
+                citation.model_copy(
+                    update={
+                        "availability": current_citation_availability(
+                            workspace, citation, message.purpose
+                        )
+                    }
+                )
+                for citation in message.citations
+            ]
+            messages.append(message.model_copy(update={"citations": citations}))
+        return detail.model_copy(update={"messages": messages})
+
+    @app.post(
+        "/api/v1/conversations/{conversation_id}/reopen",
+        dependencies=[Depends(authenticated)],
+    )
+    def conversation_reopen(
+        conversation_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> ConversationDetail:
+        detail = conversation_get(conversation_id, workspace)
+        return detail
+
+    @app.delete(
+        "/api/v1/conversations/{conversation_id}",
+        status_code=204,
+        dependencies=[Depends(authenticated)],
+    )
+    def conversation_delete(
+        conversation_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        store = conversations_for(workspace)
+        running = store.running_requests(workspace.workspace_id, conversation_id)
+        for request_id in running:
+            cancellation = cancellations.get(query_cancellation_key(workspace, request_id))
+            if cancellation is not None:
+                cancellation.set()
+        if not store.delete(workspace.workspace_id, conversation_id):
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这段问答历史。"}
+            )
+        return Response(status_code=204)
+
+    @app.get("/api/v1/roles", dependencies=[Depends(authenticated)])
+    def roles_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[AnswerRole]:
+        return answer_context_for(workspace).list_roles(workspace.workspace_id)
+
+    @app.post("/api/v1/roles", status_code=201, dependencies=[Depends(authenticated)])
+    def roles_create(
+        payload: RoleInput,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> AnswerRole:
+        return answer_context_for(workspace).save_role(workspace.workspace_id, payload)
+
+    @app.patch("/api/v1/roles/{role_id}", dependencies=[Depends(authenticated)])
+    def roles_update(
+        role_id: UUID,
+        payload: RoleInput,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> AnswerRole:
+        store = answer_context_for(workspace)
+        if store.role(workspace.workspace_id, role_id) is None:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这个问答角色。"}
+            )
+        return store.save_role(workspace.workspace_id, payload, role_id)
+
+    @app.delete("/api/v1/roles/{role_id}", status_code=204, dependencies=[Depends(authenticated)])
+    def roles_delete(
+        role_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        if not answer_context_for(workspace).delete_role(workspace.workspace_id, role_id):
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这个问答角色。"}
+            )
+        return Response(status_code=204)
+
+    @app.get("/api/v1/memory/candidates", dependencies=[Depends(authenticated)])
+    def memory_candidates(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[MemoryCandidate]:
+        return answer_context_for(workspace).candidates(workspace.workspace_id)
+
+    @app.post("/api/v1/memory/candidates", status_code=201, dependencies=[Depends(authenticated)])
+    def memory_candidate_create(
+        payload: MemoryCandidateRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> MemoryCandidate:
+        source = conversations_for(workspace).user_message(
+            workspace.workspace_id, payload.message_id
+        )
+        text = payload.text.strip()
+        if source is None or text not in source:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": "只能从本人历史问题中的原文提取记忆。",
+                },
+            )
+        if _is_attributed_source_text(source, text):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": "这段内容看起来是引用或材料描述，不能作为本人记忆候选。",
+                },
+            )
+        explicit_expression = any(
+            marker in text
+            for marker in (
+                "我希望",
+                "我偏好",
+                "我喜欢",
+                "我不喜欢",
+                "我需要",
+                "我负责",
+                "我通常",
+                "我习惯",
+                "我的工作",
+                "我的目标",
+                "我的偏好",
+                "我是",
+                "我计划",
+            )
+        )
+        if not explicit_expression:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": (
+                        "请只选择你本人明确表达的偏好、习惯或事实；引用和粘贴材料不能作为记忆。"
+                    ),
+                },
+            )
+        return answer_context_for(workspace).create_candidate(
+            workspace.workspace_id, payload.message_id, text
+        )
+
+    @app.post(
+        "/api/v1/memory/candidates/{candidate_id}/confirmations",
+        dependencies=[Depends(authenticated)],
+    )
+    def memory_candidate_confirm(
+        candidate_id: UUID,
+        payload: MemoryConfirmationRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> UserMemory:
+        try:
+            return answer_context_for(workspace).confirm_candidate(
+                workspace.workspace_id,
+                candidate_id,
+                confirmation_id=payload.confirmation_id,
+                text=payload.text.strip(),
+            )
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": str(exc)}
+            ) from exc
+        except ContextConflict as exc:
+            raise HTTPException(
+                status_code=409, detail={"code": "intent_conflict", "message": str(exc)}
+            ) from exc
+
+    @app.get("/api/v1/memory", dependencies=[Depends(authenticated)])
+    def memory_list(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[UserMemory]:
+        return answer_context_for(workspace).memories(workspace.workspace_id)
+
+    @app.patch("/api/v1/memory/{memory_id}", dependencies=[Depends(authenticated)])
+    def memory_update(
+        memory_id: UUID,
+        payload: MemoryPatchRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> UserMemory:
+        updated = answer_context_for(workspace).update_memory(
+            workspace.workspace_id, memory_id, payload.text.strip()
+        )
+        if updated is None:
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这条已确认记忆。"}
+            )
+        return updated
+
+    @app.delete(
+        "/api/v1/memory/{memory_id}", status_code=204, dependencies=[Depends(authenticated)]
+    )
+    def memory_delete(
+        memory_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> Response:
+        if not answer_context_for(workspace).delete_memory(workspace.workspace_id, memory_id):
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": "找不到这条已确认记忆。"}
+            )
+        return Response(status_code=204)
+
     @app.post("/api/v1/queries", dependencies=[Depends(authenticated)])
     def query_stream(
         request: Request,
@@ -1332,13 +1763,103 @@ def create_app(
     ) -> StreamingResponse:
         ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
         request_id = str(payload.request_id or uuid4())
-        if request_id in cancellations:
+        stable_request_id = UUID(request_id)
+        store = conversations_for(workspace)
+        answer_store = answer_context_for(workspace)
+        replay_existing = store.has_request(workspace.workspace_id, stable_request_id)
+        context = AnswerContext(answer_mode=payload.answer_mode)
+        context_version = "replay-existing-request"
+        if not replay_existing:
+            selected_role = None
+            if payload.role_id is not None:
+                selected_role = answer_store.role(workspace.workspace_id, payload.role_id)
+                if selected_role is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail={"code": "not_found", "message": "找不到这个问答角色。"},
+                    )
+                if len(selected_role.instructions.encode("utf-8")) > selected_role.context_budget:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={
+                            "code": "context_budget_exceeded",
+                            "message": "角色说明超过设定预算；请编辑角色内容后重试。",
+                        },
+                    )
+            try:
+                memories = answer_store.active_memory_text(workspace.workspace_id)
+            except ContextConflict as exc:
+                raise HTTPException(
+                    status_code=422, detail={"code": "context_budget_exceeded", "message": str(exc)}
+                ) from exc
+            previous_questions = store.previous_user_questions(
+                workspace.workspace_id, payload.conversation_id, excluding=stable_request_id
+            )
+            context = AnswerContext(
+                answer_mode=payload.answer_mode,
+                role_name=selected_role.name if selected_role else "",
+                role_instructions=selected_role.instructions if selected_role else "",
+                user_memories=memories,
+                previous_user_questions=previous_questions,
+            )
+            context_version = hashlib.sha256(
+                json.dumps(
+                    context.model_dump(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+                ).encode("utf-8")
+            ).hexdigest()
+        active_query_key = (
+            str(Path(workspace.local_profile_dir).resolve() / "conversations.sqlite3"),
+            str(workspace.workspace_id),
+            request_id,
+        )
+        registered_before_begin = active_query_key not in ACTIVE_QUERIES
+        if registered_before_begin:
+            # Close the small window between committing `running` and registering the
+            # in-process attempt, during which a concurrent history read could recover it.
+            ACTIVE_QUERIES.add(active_query_key)
+        try:
+            created, conversation_id = store.begin(
+                workspace.workspace_id,
+                QueryStart(
+                    request_id=stable_request_id,
+                    conversation_id=payload.conversation_id,
+                    question=payload.question,
+                    fingerprint=payload.fingerprint,
+                    purpose=payload.purpose,
+                    answer_mode=payload.answer_mode,
+                    role_id=payload.role_id,
+                    context_version=context_version,
+                ),
+            )
+        except QueryConflict as exc:
+            if registered_before_begin:
+                ACTIVE_QUERIES.discard(active_query_key)
+            raise HTTPException(
+                status_code=409, detail={"code": "intent_conflict", "message": str(exc)}
+            ) from exc
+        except ConversationNotFound as exc:
+            if registered_before_begin:
+                ACTIVE_QUERIES.discard(active_query_key)
+            raise HTTPException(
+                status_code=404, detail={"code": "not_found", "message": str(exc)}
+            ) from exc
+        replay = store.replay(workspace.workspace_id, stable_request_id)
+        cancel_key = query_cancellation_key(workspace, stable_request_id)
+        if created and cancel_key in cancellations:
+            store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+            if registered_before_begin:
+                ACTIVE_QUERIES.discard(active_query_key)
             raise HTTPException(
                 status_code=409,
                 detail={"code": "intent_conflict", "message": "查询标识已在使用"},
             )
+        if created:
+            ACTIVE_QUERIES.add(active_query_key)
+        elif registered_before_begin:
+            ACTIVE_QUERIES.discard(active_query_key)
         cancelled = Event()
-        cancellations[request_id] = cancelled
+        if created:
+            cancellations[cancel_key] = cancelled
 
         def event(seq: int, event_type: str, data: Any) -> str:
             value = {
@@ -1350,11 +1871,27 @@ def create_app(
             return f"data: {json.dumps(value, ensure_ascii=False)}\n\n"
 
         async def generate() -> AsyncIterator[str]:
-            seq = 0
-            operation = query_for(workspace, remote=True) if query_service is None else None
+            operation = None
+            query_task: asyncio.Task[Any] | None = None
+            client_disconnected = False
             try:
-                seq += 1
-                yield event(seq, "status", {"state": "retrieving"})
+                if not created:
+                    if replay is not None:
+                        for saved_event in replay[1]:
+                            yield event(
+                                saved_event.seq,
+                                saved_event.type,
+                                saved_event.data,
+                            )
+                    return
+                operation = query_for(workspace, remote=True) if query_service is None else None
+                initial = store.append_event(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "status",
+                    {"state": "retrieving", "conversation_id": str(conversation_id)},
+                )
+                yield event(initial.seq, initial.type, initial.data)
                 if query_service is None and not fingerprint_is_current(
                     workspace, payload.fingerprint
                 ):
@@ -1366,64 +1903,164 @@ def create_app(
                         payload.question,
                         fingerprint=payload.fingerprint,
                         purpose=RetrievalPurpose(payload.purpose),
+                        answer_mode=payload.answer_mode,
+                        context=context,
                         cancelled=cancelled,
                     )
                 )
                 while not query_task.done():
                     if await request.is_disconnected():
+                        client_disconnected = True
                         cancelled.set()
                     await asyncio.sleep(0.05)
                 answer = await query_task
-                if await request.is_disconnected():
+                if client_disconnected or await request.is_disconnected():
                     cancelled.set()
+                    store.finish(workspace.workspace_id, stable_request_id, "interrupted")
                     return
                 if cancelled.is_set():
-                    seq += 1
-                    yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                    terminal = store.terminate(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "error",
+                        {"code": "cancelled", "message": "查询已取消"},
+                        "cancelled",
+                        error="查询已取消",
+                    )
+                    if terminal is not None:
+                        yield event(terminal.seq, terminal.type, terminal.data)
                     return
                 for citation in answer.citations:
-                    seq += 1
-                    yield event(seq, "citation", citation.model_dump(mode="json"))
+                    if await request.is_disconnected():
+                        store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                        return
+                    citation_event = store.append_event(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "citation",
+                        citation.model_dump(mode="json"),
+                    )
+                    yield event(citation_event.seq, citation_event.type, citation_event.data)
                 for offset in range(0, len(answer.text), 120):
                     if cancelled.is_set() or await request.is_disconnected():
                         cancelled.set()
                         if await request.is_disconnected():
+                            store.finish(workspace.workspace_id, stable_request_id, "interrupted")
                             return
-                        seq += 1
-                        yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                        terminal = store.terminate(
+                            workspace.workspace_id,
+                            stable_request_id,
+                            "error",
+                            {"code": "cancelled", "message": "查询已取消"},
+                            "cancelled",
+                            error="查询已取消",
+                        )
+                        if terminal is not None:
+                            yield event(terminal.seq, terminal.type, terminal.data)
                         return
-                    seq += 1
-                    yield event(seq, "delta", {"text": answer.text[offset : offset + 120]})
-                seq += 1
-                yield event(seq, "completed", answer.model_dump(mode="json"))
+                    delta = store.append_event(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "delta",
+                        {"text": answer.text[offset : offset + 120]},
+                    )
+                    yield event(delta.seq, delta.type, delta.data)
+                if cancelled.is_set() or await request.is_disconnected():
+                    if await request.is_disconnected():
+                        store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                        return
+                    terminal = store.terminate(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "error",
+                        {"code": "cancelled", "message": "查询已取消"},
+                        "cancelled",
+                        error="查询已取消",
+                    )
+                    if terminal is not None:
+                        yield event(terminal.seq, terminal.type, terminal.data)
+                    return
+                terminal = store.terminate(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "completed",
+                    answer.model_dump(mode="json"),
+                    "completed",
+                )
+                if terminal is not None:
+                    yield event(terminal.seq, terminal.type, terminal.data)
             except QueryCancelled:
-                seq += 1
-                yield event(seq, "error", {"code": "cancelled", "message": "查询已取消"})
+                if client_disconnected:
+                    store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                    return
+                terminal = store.terminate(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "error",
+                    {"code": "cancelled", "message": "查询已取消"},
+                    "cancelled",
+                    error="查询已取消",
+                )
+                if terminal is not None:
+                    yield event(terminal.seq, terminal.type, terminal.data)
+            except asyncio.CancelledError:
+                cancelled.set()
+                if cancel_key in cancellation_requests:
+                    store.terminate(
+                        workspace.workspace_id,
+                        stable_request_id,
+                        "error",
+                        {"code": "cancelled", "message": "查询已取消"},
+                        "cancelled",
+                        error="查询已取消",
+                    )
+                else:
+                    store.finish(workspace.workspace_id, stable_request_id, "interrupted")
+                raise
             except Exception as exc:
-                seq += 1
-                yield event(seq, "error", {"code": "query_error", "message": str(exc)})
+                terminal = store.terminate(
+                    workspace.workspace_id,
+                    stable_request_id,
+                    "error",
+                    {"code": "query_error", "message": str(exc)},
+                    "error",
+                    error=str(exc),
+                )
+                if terminal is not None:
+                    yield event(terminal.seq, terminal.type, terminal.data)
             finally:
-                cancellations.pop(request_id, None)
+                cancellations.pop(cancel_key, None)
+                cancellation_requests.discard(cancel_key)
+                ACTIVE_QUERIES.discard(active_query_key)
                 if operation is not None:
-                    operation.close()
+                    if query_task is None or query_task.done():
+                        operation.close()
+                    else:
+                        query_task.add_done_callback(lambda _task: operation.close())
 
         return StreamingResponse(
             generate(),
             media_type="text/event-stream",
-            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+                "X-Conversation-ID": str(conversation_id),
+            },
         )
 
     @app.delete(
         "/api/v1/queries/{request_id}", status_code=202, dependencies=[Depends(authenticated)]
     )
     def query_cancel(request_id: UUID) -> dict[str, str]:
-        cancellation = cancellations.get(str(request_id))
+        workspace = active_workspace()
+        cancellation = cancellations.get(query_cancellation_key(workspace, request_id))
         if cancellation is None:
             raise HTTPException(
                 status_code=404,
                 detail={"code": "not_found", "message": "查询已结束或不存在"},
             )
         cancellation.set()
+        cancellation_requests.add(query_cancellation_key(workspace, request_id))
         return {
             "request_id": str(request_id),
             "state": "cancellation_requested",

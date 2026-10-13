@@ -1,0 +1,8 @@
+Tested product source SHA: be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac
+Product code/diff gate: git diff --quiet be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac -- src web native tests scripts pyproject.toml uv.lock => exit 0
+Product working-tree at end of testing: clean before adding this report/evidence.
+Services: test Uvicorn and web dev server interrupted/stopped; lsof checks for API port 18873 and web port 15179 returned no listeners (exit 1 = no listener).
+No live provider, credentials, Keychain, real business data or paid smoke was used.
+Runtime metadata: UNVERIFIED.
+Real provider / Feishu / credentials / Keychain / installation DMG / five-day / two-machine / release: NOT_RUN.
+Browser DevTools console/network/PNG capture: NOT_RUN (no supported interface in this environment).

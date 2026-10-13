@@ -1,0 +1,158 @@
+{
+  "invalid_before_confirmation": {
+    "approval_state": "confirmed",
+    "validity": "invalid",
+    "content_hash": "5063439474f671cf7ca8a64c161e278a61743dbdfe726dfe2861221b66fd3290",
+    "proof_hash": "5063439474f671cf7ca8a64c161e278a61743dbdfe726dfe2861221b66fd3290",
+    "hash_match": true
+  },
+  "before_reconfirm": {
+    "current": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ed",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ec",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ea",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ee",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "validity": "current",
+          "availability": "available"
+        }
+      ],
+      "cited_invalid": false
+    },
+    "history": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ef",
+          "validity": "invalid",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ed",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ec",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ea",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ee",
+          "validity": "current",
+          "availability": "available"
+        }
+      ],
+      "cited_invalid": true
+    }
+  },
+  "explicit_reconfirm": {
+    "http": 200,
+    "mutation": {
+      "operation_id": "qa-extra1-invalid-explicit-write",
+      "state": "succeeded",
+      "changed_paths": [
+        "QA青岚与朱雀合成线/QA青岚朱雀对照项目/海棠失效事项.md"
+      ],
+      "page_versions": {
+        "00000000-0000-0000-0000-0000000003ef": "5063439474f671cf7ca8a64c161e278a61743dbdfe726dfe2861221b66fd3290"
+      },
+      "saved_locally": true,
+      "index_update": "updated"
+    }
+  },
+  "after_reconfirm": {
+    "approval_state": "confirmed",
+    "validity": "invalid",
+    "content_hash": "5063439474f671cf7ca8a64c161e278a61743dbdfe726dfe2861221b66fd3290",
+    "proof_hash": "5063439474f671cf7ca8a64c161e278a61743dbdfe726dfe2861221b66fd3290",
+    "hash_match": true,
+    "current_query": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ed",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ec",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ea",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ee",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "validity": "current",
+          "availability": "available"
+        }
+      ],
+      "cited_invalid": false
+    },
+    "history_query": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ef",
+          "validity": "invalid",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ed",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ec",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ea",
+          "validity": "current",
+          "availability": "available"
+        },
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003ee",
+          "validity": "current",
+          "availability": "available"
+        }
+      ],
+      "cited_invalid": true
+    }
+  },
+  "pass": true
+}

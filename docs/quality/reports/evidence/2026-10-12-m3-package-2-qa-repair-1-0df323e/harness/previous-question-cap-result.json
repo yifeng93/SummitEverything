@@ -1,0 +1,20 @@
+{
+  "case": "C14-previous-user-questions-reference-cap-8",
+  "http_all_200": true,
+  "conversation_created": true,
+  "final_current_question": "青岚计划设备预算问题第10轮是多少？",
+  "previous_count": 8,
+  "previous_are_actual_user_questions": true,
+  "previous_exact_last_8": true,
+  "assistant_output_excluded": true,
+  "provider_previous": [
+    "青岚计划设备预算问题第2轮是多少？",
+    "青岚计划设备预算问题第3轮是多少？",
+    "青岚计划设备预算问题第4轮是多少？",
+    "青岚计划设备预算问题第5轮是多少？",
+    "青岚计划设备预算问题第6轮是多少？",
+    "青岚计划设备预算问题第7轮是多少？",
+    "青岚计划设备预算问题第8轮是多少？",
+    "青岚计划设备预算问题第9轮是多少？"
+  ]
+}

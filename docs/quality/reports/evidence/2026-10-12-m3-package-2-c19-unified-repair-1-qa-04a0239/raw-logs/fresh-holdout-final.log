@@ -1,0 +1,93 @@
+...F{'mode': 'fact', 'citations': [], 'missing_information': ['白鹭工程：缺少预算（活动证章领取）依据。', '赤陶项目：缺少预算（活动证章领取）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。'}
+{'mode': 'comparison', 'citations': [], 'missing_information': ['白鹭工程：缺少预算（活动证章领取）依据。', '赤陶项目：缺少预算（活动证章领取）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。'}
+{'mode': 'plan', 'citations': [], 'missing_information': ['白鹭工程：缺少预算（活动证章领取）依据。', '赤陶项目：缺少预算（活动证章领取）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。'}
+F{'citations': [], 'missing_information': ['赤陶项目：缺少预算（活动证章领取办法白鹭工程）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；赤陶项目：缺少预算（活动证章领取办法白鹭工程）依据。'}
+F..
+=================================== FAILURES ===================================
+______ test_fresh_same_page_multiple_objects_do_not_cross_pair_dimensions ______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-751/test_fresh_same_page_multiple_0')
+
+    def test_fresh_same_page_multiple_objects_do_not_cross_pair_dimensions(tmp_path):
+        root, service, answerer = make_query(tmp_path, [
+            ("白鹭工程", "双维度记录", "白鹭工程预算上限为十八万元，启动时间为九月。", None),
+            ("赤陶项目", "活动安排", "赤陶项目活动证章领取须出示邀请函。", None),
+            ("赤陶项目", "财务", "赤陶项目预算为四万元。", None),
+        ])
+        answer = ask(service, root, "比较白鹭工程预算与赤陶项目的活动证章领取办法", "comparison")
+        joined = excerpts(answer)
+>       assert "白鹭工程预算上限" in joined, answer.model_dump()
+E       AssertionError: {'answer_id': UUID('5da16cd5-f158-45b1-a499-b3d973fb8653'), 'question': '比较白鹭工程预算与赤陶项目的活动证章领取办法', 'text': '没有找到能确认该对象和主题的已确认资料；白鹭工程：缺少预算（活动证章领取）依据。；赤陶项目：缺少预算（活动证章领取）依据。', 'citations': [], ...}
+E       assert '白鹭工程预算上限' in ''
+
+.local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py:129: AssertionError
+_________ test_fresh_mixed_topics_are_not_collapsed_into_one_dimension _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-751/test_fresh_mixed_topics_are_no0')
+
+    def test_fresh_mixed_topics_are_not_collapsed_into_one_dimension(tmp_path):
+        root, service, answerer = make_query(tmp_path, [
+            ("白鹭工程", "预算记录", "白鹭工程预算上限为十八万元。", None),
+            ("赤陶项目", "活动安排", "赤陶项目活动证章领取须出示邀请函。", None),
+        ])
+        answers = []
+        for mode in ("fact", "comparison", "plan"):
+            answer = ask(
+                service,
+                root,
+                "比较白鹭工程预算与赤陶项目的活动证章领取办法",
+                mode,
+            )
+            observed = {
+                "mode": mode,
+                "citations": [citation.model_dump(mode="json") for citation in answer.citations],
+                "missing_information": answer.missing_information,
+                "provider_calls": len(answerer.calls),
+                "body": answer.text,
+            }
+            print(observed)
+            answers.append(answer)
+>       assert all(
+            answer.citations
+            and "白鹭工程预算上限" in excerpts(answer)
+            and "活动证章领取须出示邀请函" in excerpts(answer)
+            and not answer.missing_information
+            for answer in answers
+        )
+E       assert False
+E        +  where False = all(<generator object test_fresh_mixed_topics_are_not_collapsed_into_one_dimension.<locals>.<genexpr> at 0x10b8ef680>)
+
+.local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py:160: AssertionError
+________ test_fresh_reversed_mixed_topics_still_keep_the_supported_pair ________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-751/test_fresh_reversed_mixed_topi0')
+
+    def test_fresh_reversed_mixed_topics_still_keep_the_supported_pair(tmp_path):
+        root, service, answerer = make_query(tmp_path, [
+            ("白鹭工程", "预算记录", "白鹭工程预算上限为十八万元。", None),
+            ("赤陶项目", "活动安排", "赤陶项目活动证章领取须出示邀请函。", None),
+        ])
+        answer = ask(
+            service,
+            root,
+            "比较赤陶项目的活动证章领取办法与白鹭工程预算",
+            "comparison",
+        )
+        actual = {
+            "citations": [citation.model_dump(mode="json") for citation in answer.citations],
+            "missing_information": answer.missing_information,
+            "provider_calls": len(answerer.calls),
+            "body": answer.text,
+        }
+        print(actual)
+>       assert answer.citations and len(answer.citations) == 2, actual
+E       AssertionError: {'citations': [], 'missing_information': ['赤陶项目：缺少预算（活动证章领取办法白鹭工程）依据。'], 'provider_calls': 0, 'body': '没有找到能确认该对象和主题的已确认资料；赤陶项目：缺少预算（活动证章领取办法白鹭工程）依据。'}
+E       assert ([])
+E        +  where [] = Answer(answer_id=UUID('38a4bb87-e91a-49d8-a9f3-23cd70e3e5d0'), question='比较赤陶项目的活动证章领取办法与白鹭工程预算', text='没有找到能确认该对象和主题的... inferences=[], advice=[], missing_information=['赤陶项目：缺少预算（活动证章领取办法白鹭工程）依据。'], purpose='current', index_status='ready').citations
+
+.local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py:190: AssertionError
+=========================== short test summary info ============================
+FAILED .local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py::test_fresh_same_page_multiple_objects_do_not_cross_pair_dimensions
+FAILED .local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py::test_fresh_mixed_topics_are_not_collapsed_into_one_dimension
+FAILED .local/qa/c19-unified-r1/harness/test_c19_fresh_holdout.py::test_fresh_reversed_mixed_topics_still_keep_the_supported_pair
+3 failed, 5 passed in 0.52s

@@ -1,0 +1,149 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA3
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 48 items
+
+.local/preqa/test_preqa_acceptance.py ................................F. [ 70%]
+............FF                                                           [100%]
+
+=================================== FAILURES ===================================
+____________ test_area5_title_alias_hit_must_not_supply_the_object _____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-838/test_area5_title_alias_hit_mus0')
+
+    def test_area5_title_alias_hit_must_not_supply_the_object(tmp_path):
+        """C19: an alias/title hit must never widen scope to another object's body."""
+        probe = build(tmp_path, [("玄石展览", "枫湾活动预算", "预算上限为九万元。")])
+        q = "枫湾活动的预算上限是多少？"
+        answer = probe.ask(q, "fact")
+        ctx = detail(probe, answer, q)
+>       assert answer.citations == [], ctx
+E       AssertionError: 
+E         question='枫湾活动的预算上限是多少？'
+E         pairs=(('枫湾活动', 'budget'),)
+E         citations=1 excerpts=['预算上限为九万元。']
+E         source_statements=['页面内容：预算上限为九万元。']
+E         inferences=['推断'] advice=['建议']
+E         missing=[]
+E         provider_calls=1
+E         provider_passages='预算上限为九万元。'
+E       assert [Citation(pag...='available')] == []
+E         
+E         Left contains one more item: Citation(page_id=UUID('dc59a321-5c6a-4be3-aeb2-0219c238b9ec'), content_sha256='1c308cbe0e3134b23b347f4909a1351f93e2f8e...4fd1bbd926b392f0844a34f50cc0625a835b95', heading='', excerpt='预算上限为九万元。', validity='current', availability='available')
+E         Use -v to get more diff
+
+.local/preqa/test_preqa_acceptance.py:294: AssertionError
+_______________ test_area6_limit_truncation_reported_accurately ________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-838/test_area6_limit_truncation_re0')
+
+    def test_area6_limit_truncation_reported_accurately(tmp_path):
+        """limit smaller than the number of in-scope supports must not claim absence."""
+        probe = build(tmp_path, [FENG, XUAN])
+        q = "比较枫湾活动的预算与玄石展览的访客设备领用"
+        answer = probe.ask(q, "comparison", limit=1)
+        joined = " ".join(answer.missing_information)
+>       assert "枫湾活动" not in joined, detail(probe, answer, q)
+E       AssertionError: 
+E         question='比较枫湾活动的预算与玄石展览的访客设备领用'
+E         pairs=(('枫湾活动', 'budget'), ('玄石展览', 'term:访客设备领用'))
+E         citations=1 excerpts=['玄石展览访客设备领用须登记姓名并归还胸牌。']
+E         source_statements=['页面内容：玄石展览访客设备领用须登记姓名并归还胸牌。']
+E         inferences=[] advice=[]
+E         missing=['本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。']
+E         provider_calls=1
+E         provider_passages='玄石展览访客设备领用须登记姓名并归还胸牌。'
+E       assert '枫湾活动' not in '本次引用条数已达上限，...少所问对象/主题后重试。'
+E         
+E         '枫湾活动' is contained here:
+E           本次引用条数已达上限，以下所问范围尚未覆盖：枫湾活动：预算。可缩小问题范围或减少所问对象/主题后重试。
+E         ?                       ++++
+
+.local/preqa/test_preqa_acceptance.py:391: AssertionError
+___________ test_area6_default_limit_does_not_falsely_report_missing ___________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-838/test_area6_default_limit_does_0')
+
+    def test_area6_default_limit_does_not_falsely_report_missing(tmp_path):
+        """The API default limit=5 with 3 objects x 2 topics must not claim absence."""
+        pages = []
+        for name, budget, sched in [
+            ("云岬营地", "云岬营地预算额度为八万六千元。", "云岬营地启动时间为上午九点。"),
+            ("松墨展会", "松墨展会预算额度为十三万元。", "松墨展会启动时间为上午十点。"),
+            ("汀屿计划", "汀屿计划预算额度为五万元。", "汀屿计划启动时间为上午十一点。"),
+        ]:
+            pages.append((name, "预算", budget))
+            pages.append((name, "排期", sched))
+        probe = build(tmp_path, pages)
+        q = "比较云岬营地、松墨展会与汀屿计划的预算和排期"
+        answer = probe.ask(q, "comparison")  # default limit=5, as the HTTP API uses
+        ctx = detail(probe, answer, q)
+>       assert answer.missing_information == [], ctx
+E       AssertionError: 
+E         question='比较云岬营地、松墨展会与汀屿计划的预算和排期'
+E         pairs=(('云岬营地', 'budget'), ('云岬营地', 'schedule'), ('松墨展会', 'budget'), ('松墨展会', 'schedule'), ('汀屿计划', 'budget'), ('汀屿计划', 'schedule'))
+E         citations=5 excerpts=['云岬营地预算额度为八万六千元。', '松墨展会预算额度为十三万元。', '汀屿计划预算额度为五万元。', '松墨展会启动时间为上午十点。', '汀屿计划启动时间为上午十一点。']
+E         source_statements=['页面内容：云岬营地预算额度为八万六千元。', '页面内容：松墨展会预算额度为十三万元。', '页面内容：汀屿计划预算额度为五万元。', '页面内容：松墨展会启动时间为上午十点。', '页面内容：汀屿计划启动时间为上午十一点。']
+E         inferences=[] advice=[]
+E         missing=['本次引用条数已达上限，以下所问范围尚未覆盖：云岬营地：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。']
+E         provider_calls=1
+E         provider_passages='云岬营地预算额度为八万六千元。\n松墨展会预算额度为十三万元。\n汀屿计划预算额度为五万元。\n松墨展会启动时间为上午十点。\n汀屿计划启动时间为上午十一点。'
+E       assert ['本次引用条数已达上限，...少所问对象/主题后重试。'] == []
+E         
+E         Left contains one more item: '本次引用条数已达上限，以下所问范围尚未覆盖：云岬营地：排期或启动时间。可缩小问题范围或减少所问对象/主题后重试。'
+E         Use -v to get more diff
+
+.local/preqa/test_preqa_acceptance.py:408: AssertionError
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_two_supports_cited_and_sent_in_every_mode[False-fact]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_two_supports_cited_and_sent_in_every_mode[False-comparison]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_two_supports_cited_and_sent_in_every_mode[False-plan]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_two_supports_cited_and_sent_in_every_mode[True-fact]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_two_supports_cited_and_sent_in_every_mode[True-comparison]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_two_supports_cited_and_sent_in_every_mode[True-plan]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_single_object_topic[fact]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_single_object_topic[comparison]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area1_single_object_topic[plan]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_topic_removed_only_a_cited_and_missing_names_b[fact]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_topic_removed_only_a_cited_and_missing_names_b[comparison]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_topic_removed_only_a_cited_and_missing_names_b[plan]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_both_removed_zero_and_provider_not_called[fact]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_both_removed_zero_and_provider_not_called[comparison]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_both_removed_zero_and_provider_not_called[plan]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area2_third_project_never_fills_the_gap
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_full_qualifier_cited_when_present[\u5e74\u5ea6\u8bbf\u5ba2\u767b\u8bb0-\u7384\u77f3\u5c55\u89c8\u5e74\u5ea6\u8bbf\u5ba2\u767b\u8bb0\u987b\u6bcf\u5e74\u6838\u5bf9\u540d\u5355\u3002-\u7384\u77f3\u5c55\u89c8\u8bbf\u5ba2\u767b\u8bb0\u987b\u767b\u8bb0\u59d3\u540d\u3002-\u7384\u77f3\u5c55\u89c8\u7684\u5e74\u5ea6\u8bbf\u5ba2\u767b\u8bb0\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_full_qualifier_cited_when_present[\u8bbe\u5907\u501f\u7528-\u4e91\u6816\u8bba\u575b\u8bbe\u5907\u501f\u7528\u987b\u63d0\u524d\u4e00\u5929\u9884\u7ea6\u3002-\u4e91\u6816\u8bba\u575b\u501f\u7528\u987b\u63d0\u524d\u4e00\u5929\u9884\u7ea6\u3002-\u4e91\u6816\u8bba\u575b\u7684\u8bbe\u5907\u501f\u7528\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_full_qualifier_cited_when_present[\u4e13\u9879\u7ecf\u8d39-\u5c9a\u5c7f\u5c55\u6f14\u4e13\u9879\u7ecf\u8d39\u4e0a\u9650\u4e3a\u4e94\u4e07\u5143\u3002-\u5c9a\u5c7f\u5c55\u6f14\u7ecf\u8d39\u4e0a\u9650\u4e3a\u4e94\u4e07\u5143\u3002-\u5c9a\u5c7f\u5c55\u6f14\u7684\u4e13\u9879\u7ecf\u8d39\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_full_qualifier_cited_when_present[\u5de5\u4f5c\u8bc1\u9886\u53d6-\u9752\u783e\u5de5\u7a0b\u5de5\u4f5c\u8bc1\u9886\u53d6\u987b\u767b\u8bb0\u5de5\u53f7\u3002-\u9752\u783e\u5de5\u7a0b\u8bc1\u9886\u53d6\u987b\u767b\u8bb0\u5de5\u53f7\u3002-\u9752\u783e\u5de5\u7a0b\u7684\u5de5\u4f5c\u8bc1\u9886\u53d6\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_missing_qualifier_not_claimed[\u5e74\u5ea6\u8bbf\u5ba2\u767b\u8bb0-\u7384\u77f3\u5c55\u89c8\u5e74\u5ea6\u8bbf\u5ba2\u767b\u8bb0\u987b\u6bcf\u5e74\u6838\u5bf9\u540d\u5355\u3002-\u7384\u77f3\u5c55\u89c8\u8bbf\u5ba2\u767b\u8bb0\u987b\u767b\u8bb0\u59d3\u540d\u3002-\u7384\u77f3\u5c55\u89c8\u7684\u5e74\u5ea6\u8bbf\u5ba2\u767b\u8bb0\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_missing_qualifier_not_claimed[\u8bbe\u5907\u501f\u7528-\u4e91\u6816\u8bba\u575b\u8bbe\u5907\u501f\u7528\u987b\u63d0\u524d\u4e00\u5929\u9884\u7ea6\u3002-\u4e91\u6816\u8bba\u575b\u501f\u7528\u987b\u63d0\u524d\u4e00\u5929\u9884\u7ea6\u3002-\u4e91\u6816\u8bba\u575b\u7684\u8bbe\u5907\u501f\u7528\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_missing_qualifier_not_claimed[\u4e13\u9879\u7ecf\u8d39-\u5c9a\u5c7f\u5c55\u6f14\u4e13\u9879\u7ecf\u8d39\u4e0a\u9650\u4e3a\u4e94\u4e07\u5143\u3002-\u5c9a\u5c7f\u5c55\u6f14\u7ecf\u8d39\u4e0a\u9650\u4e3a\u4e94\u4e07\u5143\u3002-\u5c9a\u5c7f\u5c55\u6f14\u7684\u4e13\u9879\u7ecf\u8d39\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_missing_qualifier_not_claimed[\u5de5\u4f5c\u8bc1\u9886\u53d6-\u9752\u783e\u5de5\u7a0b\u5de5\u4f5c\u8bc1\u9886\u53d6\u987b\u767b\u8bb0\u5de5\u53f7\u3002-\u9752\u783e\u5de5\u7a0b\u8bc1\u9886\u53d6\u987b\u767b\u8bb0\u5de5\u53f7\u3002-\u9752\u783e\u5de5\u7a0b\u7684\u5de5\u4f5c\u8bc1\u9886\u53d6\u529e\u6cd5\u662f\u4ec0\u4e48\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area3_pseudo_object_de_zhuanxiang_is_not_an_object
+PASSED .local/preqa/test_preqa_acceptance.py::test_area4_two_pairs_for_two_objects_two_topics
+PASSED .local/preqa/test_preqa_acceptance.py::test_area4_shared_budget_schedule_is_four_pairs
+PASSED .local/preqa/test_preqa_acceptance.py::test_area4_same_object_two_topics_no_cross_assign
+PASSED .local/preqa/test_preqa_acceptance.py::test_area4_subjectless_two_topics_do_not_cross_assign
+PASSED .local/preqa/test_preqa_acceptance.py::test_area4_same_page_two_objects_do_not_cross_assign
+PASSED .local/preqa/test_preqa_acceptance.py::test_area5_high_reranker_score_does_not_widen_scope
+PASSED .local/preqa/test_preqa_acceptance.py::test_area5_provider_missing_empty_does_not_erase_scope
+PASSED .local/preqa/test_preqa_acceptance.py::test_area5_related_page_neighbour_stays_out
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_standard_polite_phrasing[\u8bf7\u95ee\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_standard_polite_phrasing[\u6211\u60f3\u77e5\u9053\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u3002]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_standard_polite_phrasing[\u6838\u5bf9\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u3002]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_standard_polite_phrasing[\u4f60\u80fd\u544a\u8bc9\u6211\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u5417\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_standard_polite_phrasing[\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_extended_polite_phrasing_has_no_false_missing[\u9ebb\u70e6\u5e2e\u6211\u770b\u770b\u67ab\u6e7e\u6d3b\u52a8\u7684\u7ecf\u8d39\u4e0a\u9650\u662f\u591a\u5c11\uff1f]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_extended_polite_phrasing_has_no_false_missing[\u5e2e\u6211\u67e5\u4e00\u4e0b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97\u4e0a\u9650\u3002]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_extended_polite_phrasing_has_no_false_missing[\u770b\u770b\u67ab\u6e7e\u6d3b\u52a8\u7684\u9884\u7b97]
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_budget_synonyms
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_broad_summary_and_next_step_plan
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_recent_topic_continuation
+PASSED .local/preqa/test_preqa_acceptance.py::test_area6_unknown_object_does_not_fall_back
+FAILED .local/preqa/test_preqa_acceptance.py::test_area5_title_alias_hit_must_not_supply_the_object
+FAILED .local/preqa/test_preqa_acceptance.py::test_area6_limit_truncation_reported_accurately
+FAILED .local/preqa/test_preqa_acceptance.py::test_area6_default_limit_does_not_falsely_report_missing
+========================= 3 failed, 45 passed in 2.88s =========================

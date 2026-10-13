@@ -1,0 +1,17 @@
+{
+  "case": "C20-role-instruction-context-budget-readable-422-no-provider",
+  "role_http": 201,
+  "query_http": 422,
+  "error": {
+    "error": {
+      "code": "context_budget_exceeded",
+      "message": "角色说明超过设定预算；请编辑角色内容后重试。",
+      "request_id": "90ecccbe7c575fe6"
+    }
+  },
+  "provider_before": 17,
+  "provider_after": 17,
+  "role_id_redacted": "local synthetic role",
+  "status": "PASS",
+  "delete_role_http": 204
+}

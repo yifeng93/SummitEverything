@@ -194,7 +194,7 @@ export function TodayView({ onError }: Props) {
           </section>
 
           <section className="panel queue-panel">
-            <div className="panel-heading"><div><h2>待整理</h2><p>选择来源后，明确点击才会生成审核稿。</p></div><span className="count-badge">{items.length}</span></div>
+            <div className="panel-heading"><div><h2>待整理</h2><p>选择来源后，明确点击才会生成审核稿。</p></div><div className="review-actions"><button className="button secondary" onClick={() => void refresh()}>刷新状态</button><span className="count-badge">{items.length}</span></div></div>
             {items.length === 0 ? (
               <div className="empty-state"><span className="empty-mark">＋</span><strong>收件箱是空的</strong><span>文字记录或导入文件会先保存在这里。</span></div>
             ) : (
@@ -206,7 +206,7 @@ export function TodayView({ onError }: Props) {
                         <input type="checkbox" checked={selected.includes(item.item_id)} disabled={item.state === 'processing' || item.state === 'reviewing'} onChange={(event) => setSelected((current) => event.target.checked ? [...current, item.item_id] : current.filter((id) => id !== item.item_id))} />
                         <span className="file-glyph" aria-hidden="true">文</span>
                         <span className="source-title"><strong>{item.title}</strong><small>{item.filename} · {new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span>
-                        <span className="status-label">{{pending: '待整理', processing: '整理中', reviewing: '待审核', completed: '已完成', failed: '整理失败', cancelled: '已取消'}[item.state]}</span>
+                        <span className="status-label">{{pending: '待整理', processing: '整理中', reviewing: '待审核', completed: '已完成', failed: '整理失败', cancelled: '已取消', unknown: '请求状态未知'}[item.state]}</span>
                       </label>
                     </li>
                   ))}
@@ -216,7 +216,9 @@ export function TodayView({ onError }: Props) {
                   <label className="compact-field"><span>项目</span><select value={selectedProjectId} onChange={(event) => setProjectId(event.target.value)}><option value="">选择项目</option>{availableProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
                   <button className="button primary" disabled={!selected.length || !selectedProjectId || busy || selectedItems.some((item) => item.state === 'processing' || item.state === 'reviewing')} onClick={organize}>{reprocessing ? '重新整理所选' : '整理所选'} · {selected.length}</button>
                 </div>
-                {reprocessing && <p className="helper-line">已处理的来源会再次调用整理流程并生成新稿；原件与既有稿件会保留。</p>}
+                {reprocessing && selectedItems.some((item) => item.state === 'unknown')
+                  ? <p className="helper-line">请求状态未知，不会自动重发。明确重新整理会创建新操作，可能再次调用模型；原件与既有稿件会保留。</p>
+                  : reprocessing && <p className="helper-line">已处理的来源会再次调用整理流程并生成新稿；原件与既有稿件会保留。</p>}
                 {(!lines.length || !availableProjects.length) && <p className="helper-line">整理前请先在“项目与知识”建立主线和项目。</p>}
               </>
             )}

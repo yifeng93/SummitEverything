@@ -1,0 +1,102 @@
+{
+  "case": "C13-hard-trust-boundaries",
+  "page_ids": {
+    "pending": "4b2418d1-1a3f-5033-93f8-d38accb08535",
+    "source": "edaeb86d-93ee-552e-9a6b-305fd054ee84",
+    "draft": "df7bc07c-a40f-5966-af65-2cb371d0f409",
+    "invalid": "aca80151-998d-50fd-b7e3-53204e198ce4"
+  },
+  "index": {
+    "mode": "incremental",
+    "indexed_pages": 4,
+    "indexed_chunks": 4,
+    "embedded_chunks": 0,
+    "reused_chunks": 4
+  },
+  "checks": {
+    "current:pending": {
+      "http": 200,
+      "citation_ids": [],
+      "target_cited": false,
+      "validities": [],
+      "availability": []
+    },
+    "current:source": {
+      "http": 200,
+      "citation_ids": [],
+      "target_cited": false,
+      "validities": [],
+      "availability": []
+    },
+    "current:draft": {
+      "http": 200,
+      "citation_ids": [],
+      "target_cited": false,
+      "validities": [],
+      "availability": []
+    },
+    "current:invalid": {
+      "http": 200,
+      "citation_ids": [],
+      "target_cited": false,
+      "validities": [],
+      "availability": []
+    },
+    "history:pending": {
+      "http": 200,
+      "citation_ids": [
+        "aca80151-998d-50fd-b7e3-53204e198ce4"
+      ],
+      "target_cited": false,
+      "validities": [
+        "invalid"
+      ],
+      "availability": [
+        "available"
+      ]
+    },
+    "history:source": {
+      "http": 200,
+      "citation_ids": [
+        "aca80151-998d-50fd-b7e3-53204e198ce4"
+      ],
+      "target_cited": false,
+      "validities": [
+        "invalid"
+      ],
+      "availability": [
+        "available"
+      ]
+    },
+    "history:draft": {
+      "http": 200,
+      "citation_ids": [
+        "aca80151-998d-50fd-b7e3-53204e198ce4"
+      ],
+      "target_cited": false,
+      "validities": [
+        "invalid"
+      ],
+      "availability": [
+        "available"
+      ]
+    },
+    "history:invalid": {
+      "http": 200,
+      "citation_ids": [
+        "aca80151-998d-50fd-b7e3-53204e198ce4"
+      ],
+      "target_cited": true,
+      "validities": [
+        "invalid"
+      ],
+      "availability": [
+        "available"
+      ]
+    }
+  },
+  "expected": {
+    "current_target_citation": false,
+    "history_allows_only_approved_invalid": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "case": "C20-pending-memory-not-active-memory-and-active-memory-provider-context",
+  "pending_candidate_http": 201,
+  "profile_b_active_memories_before_query": 0,
+  "pending_body_user_memories": [],
+  "pending_phrase_in_user_memories": false,
+  "pending_phrase_in_previous_questions": false,
+  "pending_user_questions_field": "previous_user_questions_for_reference_only",
+  "active_body_user_memories": [
+    "我偏好用简短中文回答，并明确标出资料没有提供的数字",
+    "我偏好用简短中文回答，并明确标出资料没有提供的数字"
+  ],
+  "active_phrase_in_user_memories": true,
+  "payloads_sha256": {
+    "pending": "5a1bf12ee99e31f0fe184e5330048d823ec9673dfc98a4560dd41445394e7579",
+    "active": "fa830ccddf0f2c23c730810b18549c6dcdd747fcf93929f9f1b5ff68f8184b6b"
+  },
+  "status": "PASS",
+  "interpretation": "Pending candidate absent from dedicated active-memory field; source remains present as an actual prior user question in reference-only conversation context."
+}

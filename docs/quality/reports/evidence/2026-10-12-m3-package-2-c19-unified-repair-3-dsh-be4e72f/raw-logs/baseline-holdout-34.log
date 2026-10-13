@@ -1,0 +1,168 @@
+.....................FFFFFF......F                                       [100%]
+=================================== FAILURES ===================================
+______ test_r2_new_family_exact_full_partial_and_zero_matrix[False-fact] _______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_new_family_exact_full_0')
+mode = 'fact', reverse = False
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_r2_new_family_exact_full_partial_and_zero_matrix(tmp_path, mode, reverse):
+        a, b = "枫湾活动", "玄石展览"
+        q = f"比较{b}访客设备领用办法与{a}预算" if reverse else f"比较{a}预算与{b}的访客设备领用办法"
+        root, service, answerer = make_query(tmp_path, [
+            (a, "经费", "枫湾活动预算上限为七万二千元。", None),
+            (b, "场务", "玄石展览访客设备领用须登记姓名并归还胸牌。", None),
+            (b, "无关", "玄石展览开放时间为周六。", None),
+        ])
+        full = ask(service, root, q, mode)
+        full_text = excerpts(full)
+        assert "预算上限为七万二千元" in full_text, full.model_dump()
+>       assert "访客设备领用须登记姓名" in full_text, full.model_dump()
+E       AssertionError: {'answer_id': UUID('a23fcd9d-817a-4264-80a4-c96498daca51'), 'question': '比较枫湾活动预算与玄石展览的访客设备领用办法', 'text': '当前资料只覆盖了部分所...1a97d54ff5', 'chunk_id': '814758d48a84f2eedb3b4c8094f05e72e5b5dc2f951021fed6666f3b2fe01c83', 'heading': '', ...}], ...}
+E       assert '访客设备领用须登记姓名' in '枫湾活动预算上限为七万二千元。'
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:269: AssertionError
+___ test_r2_new_family_exact_full_partial_and_zero_matrix[False-comparison] ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_new_family_exact_full_1')
+mode = 'comparison', reverse = False
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_r2_new_family_exact_full_partial_and_zero_matrix(tmp_path, mode, reverse):
+        a, b = "枫湾活动", "玄石展览"
+        q = f"比较{b}访客设备领用办法与{a}预算" if reverse else f"比较{a}预算与{b}的访客设备领用办法"
+        root, service, answerer = make_query(tmp_path, [
+            (a, "经费", "枫湾活动预算上限为七万二千元。", None),
+            (b, "场务", "玄石展览访客设备领用须登记姓名并归还胸牌。", None),
+            (b, "无关", "玄石展览开放时间为周六。", None),
+        ])
+        full = ask(service, root, q, mode)
+        full_text = excerpts(full)
+        assert "预算上限为七万二千元" in full_text, full.model_dump()
+>       assert "访客设备领用须登记姓名" in full_text, full.model_dump()
+E       AssertionError: {'answer_id': UUID('7c0ef244-d1d8-4db8-962a-f8df02597a61'), 'question': '比较枫湾活动预算与玄石展览的访客设备领用办法', 'text': '当前资料只覆盖了部分所...5a6f42a9bf', 'chunk_id': '05eff89d98dd74679145f4762befe805f1c1d8bbc0d2bd33517ca147dd25c43d', 'heading': '', ...}], ...}
+E       assert '访客设备领用须登记姓名' in '枫湾活动预算上限为七万二千元。'
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:269: AssertionError
+______ test_r2_new_family_exact_full_partial_and_zero_matrix[False-plan] _______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_new_family_exact_full_2')
+mode = 'plan', reverse = False
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_r2_new_family_exact_full_partial_and_zero_matrix(tmp_path, mode, reverse):
+        a, b = "枫湾活动", "玄石展览"
+        q = f"比较{b}访客设备领用办法与{a}预算" if reverse else f"比较{a}预算与{b}的访客设备领用办法"
+        root, service, answerer = make_query(tmp_path, [
+            (a, "经费", "枫湾活动预算上限为七万二千元。", None),
+            (b, "场务", "玄石展览访客设备领用须登记姓名并归还胸牌。", None),
+            (b, "无关", "玄石展览开放时间为周六。", None),
+        ])
+        full = ask(service, root, q, mode)
+        full_text = excerpts(full)
+        assert "预算上限为七万二千元" in full_text, full.model_dump()
+>       assert "访客设备领用须登记姓名" in full_text, full.model_dump()
+E       AssertionError: {'answer_id': UUID('7059ac72-6351-44fa-a834-dd5678c7d01b'), 'question': '比较枫湾活动预算与玄石展览的访客设备领用办法', 'text': '当前资料只覆盖了部分所...09ec9e5326', 'chunk_id': '0cf9d3d1dca1173398870bab17897ef037fbaa0c7ce9801cc05123b7c869044d', 'heading': '', ...}], ...}
+E       assert '访客设备领用须登记姓名' in '枫湾活动预算上限为七万二千元。'
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:269: AssertionError
+_______ test_r2_new_family_exact_full_partial_and_zero_matrix[True-fact] _______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_new_family_exact_full_3')
+mode = 'fact', reverse = True
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_r2_new_family_exact_full_partial_and_zero_matrix(tmp_path, mode, reverse):
+        a, b = "枫湾活动", "玄石展览"
+        q = f"比较{b}访客设备领用办法与{a}预算" if reverse else f"比较{a}预算与{b}的访客设备领用办法"
+        root, service, answerer = make_query(tmp_path, [
+            (a, "经费", "枫湾活动预算上限为七万二千元。", None),
+            (b, "场务", "玄石展览访客设备领用须登记姓名并归还胸牌。", None),
+            (b, "无关", "玄石展览开放时间为周六。", None),
+        ])
+        full = ask(service, root, q, mode)
+        full_text = excerpts(full)
+        assert "预算上限为七万二千元" in full_text, full.model_dump()
+>       assert "访客设备领用须登记姓名" in full_text, full.model_dump()
+E       AssertionError: {'answer_id': UUID('002d23ed-b947-416c-abee-e24c8db14b74'), 'question': '比较玄石展览访客设备领用办法与枫湾活动预算', 'text': '当前资料只覆盖了部分所问...64f4d394e4', 'chunk_id': '9546f5ea3800c08a43d3a0b33dc4e6415e7205dad44ce9cb391a990447e1ef03', 'heading': '', ...}], ...}
+E       assert '访客设备领用须登记姓名' in '枫湾活动预算上限为七万二千元。'
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:269: AssertionError
+____ test_r2_new_family_exact_full_partial_and_zero_matrix[True-comparison] ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_new_family_exact_full_4')
+mode = 'comparison', reverse = True
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_r2_new_family_exact_full_partial_and_zero_matrix(tmp_path, mode, reverse):
+        a, b = "枫湾活动", "玄石展览"
+        q = f"比较{b}访客设备领用办法与{a}预算" if reverse else f"比较{a}预算与{b}的访客设备领用办法"
+        root, service, answerer = make_query(tmp_path, [
+            (a, "经费", "枫湾活动预算上限为七万二千元。", None),
+            (b, "场务", "玄石展览访客设备领用须登记姓名并归还胸牌。", None),
+            (b, "无关", "玄石展览开放时间为周六。", None),
+        ])
+        full = ask(service, root, q, mode)
+        full_text = excerpts(full)
+        assert "预算上限为七万二千元" in full_text, full.model_dump()
+>       assert "访客设备领用须登记姓名" in full_text, full.model_dump()
+E       AssertionError: {'answer_id': UUID('0ceeac3e-8737-42d5-aa7c-e87f9b66d6aa'), 'question': '比较玄石展览访客设备领用办法与枫湾活动预算', 'text': '当前资料只覆盖了部分所问...38b0f51e14', 'chunk_id': '1843171c89e8cdb7c53eaf758d92972763a6a693c3571070770129eec10ae7d4', 'heading': '', ...}], ...}
+E       assert '访客设备领用须登记姓名' in '枫湾活动预算上限为七万二千元。'
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:269: AssertionError
+_______ test_r2_new_family_exact_full_partial_and_zero_matrix[True-plan] _______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_new_family_exact_full_5')
+mode = 'plan', reverse = True
+
+    @pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_r2_new_family_exact_full_partial_and_zero_matrix(tmp_path, mode, reverse):
+        a, b = "枫湾活动", "玄石展览"
+        q = f"比较{b}访客设备领用办法与{a}预算" if reverse else f"比较{a}预算与{b}的访客设备领用办法"
+        root, service, answerer = make_query(tmp_path, [
+            (a, "经费", "枫湾活动预算上限为七万二千元。", None),
+            (b, "场务", "玄石展览访客设备领用须登记姓名并归还胸牌。", None),
+            (b, "无关", "玄石展览开放时间为周六。", None),
+        ])
+        full = ask(service, root, q, mode)
+        full_text = excerpts(full)
+        assert "预算上限为七万二千元" in full_text, full.model_dump()
+>       assert "访客设备领用须登记姓名" in full_text, full.model_dump()
+E       AssertionError: {'answer_id': UUID('4d7dabec-d6f3-498b-966b-cd24ba80dbb5'), 'question': '比较玄石展览访客设备领用办法与枫湾活动预算', 'text': '当前资料只覆盖了部分所问...14fc6a5157', 'chunk_id': 'ffa3fd3c7a0402764591c0a634eae8a0e5f4b7950b302a1c8324db6aca7aaffd', 'heading': '', ...}], ...}
+E       assert '访客设备领用须登记姓名' in '枫湾活动预算上限为七万二千元。'
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:269: AssertionError
+_ test_r2_bare_unknown_topic_has_zero_evidence_and_known_exact_remains_positive _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-795/test_r2_bare_unknown_topic_has0')
+
+    def test_r2_bare_unknown_topic_has_zero_evidence_and_known_exact_remains_positive(tmp_path):
+        root, service, answerer = make_query(tmp_path, [
+            ("访客设备中心", "预算", "预算时间创作坊预算额度为两万元。", None),
+            ("玄石展览", "设备", "玄石展览访客设备领用须签收胸牌。", None),
+        ])
+        unknown = ask(service, root, "活动餐券登记办法怎么安排？", "plan")
+        assert unknown.citations == [] and unknown.missing_information
+        assert not unknown.source_statements and not unknown.inferences and not unknown.advice
+        assert answerer.calls == []
+        known = ask(service, root, "玄石展览的访客设备领用办法是什么？", "fact")
+>       assert "签收胸牌" in excerpts(known)
+E       AssertionError: assert '签收胸牌' in ''
+E        +  where '' = excerpts(Answer(answer_id=UUID('410b95fd-9768-42d7-ac0c-c05fc24c0b61'), question='玄石展览的访客设备领用办法是什么？', text='没有找到能确认该对象和主题的已确认资料...nts=[], inferences=[], advice=[], missing_information=['玄石展览：缺少term:访客领用依据。'], purpose='current', index_status='ready'))
+
+.local/dsh/c19/harness/test_c19_fresh_holdout.py:395: AssertionError
+=========================== short test summary info ============================
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_new_family_exact_full_partial_and_zero_matrix[False-fact]
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_new_family_exact_full_partial_and_zero_matrix[False-comparison]
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_new_family_exact_full_partial_and_zero_matrix[False-plan]
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_new_family_exact_full_partial_and_zero_matrix[True-fact]
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_new_family_exact_full_partial_and_zero_matrix[True-comparison]
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_new_family_exact_full_partial_and_zero_matrix[True-plan]
+FAILED .local/dsh/c19/harness/test_c19_fresh_holdout.py::test_r2_bare_unknown_topic_has_zero_evidence_and_known_exact_remains_positive
+7 failed, 27 passed in 1.93s

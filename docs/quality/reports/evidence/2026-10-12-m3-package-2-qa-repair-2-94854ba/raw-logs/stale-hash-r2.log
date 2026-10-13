@@ -1,0 +1,49 @@
+{
+  "case": "C13-external-edit-stale-index-and-reopen",
+  "before": {
+    "content_sha256": "eab770193da79776ea96aaab7659889de40a1065dd732b1b03299b7877fcd9fb",
+    "approval_sha256": "eab770193da79776ea96aaab7659889de40a1065dd732b1b03299b7877fcd9fb",
+    "validity": "superseded"
+  },
+  "after_external_edit": {
+    "content_sha256": "a69253e19503437f654b28aa10fe128bb6c375749d170b76b55802754ac73693",
+    "approval_sha256": "eab770193da79776ea96aaab7659889de40a1065dd732b1b03299b7877fcd9fb",
+    "approval_state": "invalid",
+    "validity": "superseded",
+    "hash_mismatch": true
+  },
+  "queries": {
+    "current": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "validity": "current",
+          "availability": "available",
+          "content_sha256": "481a785c496f08984c1bffec9cee493f15b1cd6e8dc2549e4be5ef403d42e728"
+        }
+      ],
+      "source_statements": [
+        "页面内容：青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。"
+      ]
+    },
+    "history": {
+      "http": 200,
+      "citations": [
+        {
+          "page_id": "00000000-0000-0000-0000-0000000003e9",
+          "validity": "current",
+          "availability": "available",
+          "content_sha256": "481a785c496f08984c1bffec9cee493f15b1cd6e8dc2549e4be5ef403d42e728"
+        }
+      ],
+      "source_statements": [
+        "页面内容：青岚计划的设备采购预算上限为 18 万元，负责人已确认。排期为 11 月启动；运维费用未提供。"
+      ]
+    }
+  },
+  "historical_citation_reopen": {
+    "http": 409,
+    "body": "{\"error\":{\"code\":\"version_conflict\",\"message\":\"Page content has changed since this citation was created\",\"request_id\":\"c75f73bff9977b37\"}}"
+  }
+}

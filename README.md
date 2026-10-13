@@ -1,20 +1,32 @@
 # SummitEverything
 
+2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收及合并；离线正式门PASS，合并执行中。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](docs/quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](docs/quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](docs/quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；main / M3冻结 / DSH交接不变且干净。本轮1/2返工收口，第2轮未使用。
+
+未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
+
+2026-10-13 DEV/初验历史：DSH 固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac` 经全新独立 QA / Sol 判 FAIL，复合主题“信息”全局剥除 P1 与默认limit掩盖真缺失 P2尚未关闭。原设备与53个不同回归通过，D1有限元数据/正文对照符合现有契约。进入本次候选初验后的统一自动返工1/2；Developer在 `codex/c19-dsh-sol-gate` 连续实施，固定新SHA后全新QA集中复验。main / M3冻结基线 / DSH原交接不改，包1/3保留既有离线PASS，正式包2/M3验收及合并未通过。见 [Sol门与统一修复契约](docs/quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [固定源码独立QA](docs/quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。下方DSH自测及旧周期均为历史记录，不覆盖本行当前状态。
+
+2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
+
 个人工作知识应用：把工作材料整理成经本人确认、可复用、可迁移的 Markdown 资产，并在同一应用中完成检索问答与日常工作。
 
 首版交付 macOS DMG，内部使用 WebUI；每台电脑独立运行，本地目录或 OneDrive 保存工作库。核心栈为 Python / FastAPI、React / TypeScript、SQLite 和薄 macOS 壳。
 
 ## 当前状态
 
-2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M3–M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留既有Starlette弃用及3条React lint warning。
+2026-10-12 最近受测结果（收尾前）：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、原周期已停止；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](docs/quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](docs/quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
+
+M3 包 1、包 3离线集成由 Sol 判 PASS；包 3源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`，QA 固定 `7fd8a538cf99fd3b8b23bf30a7032cb9b42cdea2`。包 2 C19 最终 QA / Sol FAIL 与待用户决定状态见上方；M3 正式验收及合并未通过。包 3证据见[Sol 门判断](docs/quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)和[独立复验](docs/quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)。
+
+包 3交付跨 profile 待审流程接续、中断后的未知状态及 checkpoint 本地恢复、完成回执月归档与稳定重放、仅本机 profile 的轮转诊断日志。原件、完整稿和确认记录保留；未知调用不会自动重发。120 条合成流程跨四个业务月，完成流程 active item/job、checkpoint、lease 均为 0，unknown 和 legacy undated 例外保留。
+
+包 3当时独立后端 440、Web 56 项及适用静态/类型/构建检查通过；双 profile 浏览器接续与未知状态提醒通过。最新 C19 独立检查450项及其产品 FAIL见上方。开发和证据在 `codex/m3-integrated-packages`，未合并 main。当前入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。
+
+2026-10-11：Stage B 离线源码收口候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已由 Luna High 在独立 checkout 复验：后端388项与25项独立失败路径通过，Web45项及类型/构建检查通过；实际浏览器、原生冷启动、重启、5秒Web启动延迟与退出清理已复验。已合入main（PR #10，merge `41207e5bfb81b535c0254fd4ac242df11da40d67`），合并后核验、证据发布更正及归档清理见[收口记录](docs/quality/reports/2026-10-11-STAGE-B-POSTMERGE.md)。已采纳 DeepSeek R1–R4 中经复核的实现，并修复传输取消/资源所有权/大小边界、未知refresh跨重启重发、严格凭据解析和原生就绪问题。历史FAIL与原始证据保留。此结论仅覆盖离线源码和开发壳；真实账户/协议运行、OS Keychain、模型R03质量、DMG、M4/M5、五日/双机仍NOT_RUN，不能称完整Stage B或v1验收通过。保留当时的Starlette弃用及3条React lint warning。
 
 已有有限 smoke 授权保持：code exchange ≤1、必要 refresh ≤1、DeepSeek chat / embedding / rerank 各 ≤1；实际次数全部 **0/1**。不索取或使用密钥，不读取真实身份/材料/日历/task，不执行真实任务写入，也不因新 profile 重置次数。真实材料另有内容确认门。CNY 5 为旧提示词建议操作上限，不是用户指定预算；真正使用既有授权前须核对官方当前价格。
 
-权威入口：[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)、[进展账本](docs/implementation/PROGRESS.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)、[报告索引](docs/quality/reports/README.md)。DeepSeek 历史各轮报告与失败证据保留。
-
-C03 删除拒绝提示切片已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main（merge `2f08c764e740afa494a0445ec4d73382fdd55f3b`）；源码受测 SHA 为 `9c953f095086a95e63edbce2169657dba9e71cd1`，合并后核验见[交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
-
-开发协作按 [Sol / Luna 工作流 ADR](docs/decisions/0008-sol-luna-development-workflow.md)：Sol 规划和审查，Developer Luna 提交固定 SHA，独立 QA Luna 验收，Sol 判定最终门。当前推荐下一任务为 M3.1 本地问答历史 / 流状态薄切片，详见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)；M3 尚未开始，Stage C 与发布 / 实际试用门仍独立未测。
+C03 删除拒绝提示已随 [PR #11](https://github.com/yifeng93/SummitEverything/pull/11) 合入 main，历史基线和合并后核证见最新交接。功能包按 [Sol / Luna 工作流](docs/decisions/0008-sol-luna-development-workflow.md)连续实现、固定 SHA 后独立 QA；重要里程碑正式验收及合并仍需用户批准。
 
 ## 先读哪些文件
 

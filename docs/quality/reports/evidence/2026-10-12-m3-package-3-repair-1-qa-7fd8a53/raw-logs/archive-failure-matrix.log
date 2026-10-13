@@ -1,0 +1,6 @@
+{
+  "summary_write_failure_keeps_active": true,
+  "identical_active_archive_duplicate_readable": true,
+  "invalid_month_rejected": true,
+  "unexpected_copy_rejected_and_active_preserved": true
+}
