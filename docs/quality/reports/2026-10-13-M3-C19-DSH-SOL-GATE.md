@@ -1,5 +1,7 @@
 # C19 DSH 交接：Sol 审查与独立门
 
+2026-10-13 用户已明确批准M3离线模拟正式验收及候选合入main；[批准记录](2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。下方“待批准/不合并”均为批准前的技术收口历史，真实门仍保留。
+
 2026-10-13 最终技术门：**C19 / 包2离线集成 PASS；M3模拟范围已具备提交用户正式验收的条件，尚未正式批准或合并。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`；全新独立 QA 报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`，已以 `c9d32c6a051105017d81123649cd896b094b33e2` 导入 `codex/c19-dsh-sol-gate`。Sol 实际核对报告、原始日志、退出码、UI观察、71项manifest及固定产品diff；71项全部匹配，清单 SHA-256 `1b2330156cad44a06cbd535fb8f5363586b6068e41b56be05595097b6e5d018b`。此次修复用1轮自动返工收口，不启动第2轮；历史FAIL只对应其受测SHA，不改写。
 
 [独立QA报告](2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)、[QA证据](evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc/README.md)与[Sol实际核证](evidence/2026-10-13-m3-c19-dsh-sol-closeout/verification.json)。DEV文档HEAD `fdfa2533fdb998e39b6471bf59d431b0264833e0` 与源码树一致；14项DEV manifest也重新核对全匹配。main仍 `5fd91c78930c80b2365957197b8a605757694a91`；M3冻结 `b3d0dff` / DSH交接 `04a504f` / 冻结标签不变且各checkout clean。

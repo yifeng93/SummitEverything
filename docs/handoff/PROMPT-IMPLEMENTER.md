@@ -1,6 +1,6 @@
 # 新聊天实现者提示词
 
-当前 C19 专项优先使用 [DSH 完整提示词](DSH-C19.md)；本通用提示词不授权恢复已停止的 Sol / Luna 周期或在 main 上修复。
+C19专项已通过独立QA，M3离线模拟正式验收与合并已获用户批准。先读LATEST/PROGRESS及实际main状态；[DSH旧提示词](DSH-C19.md)只用于历史追溯，不授权重开已完成修复。
 
 你是 SummitEverything 的实现者。先按 AGENTS.md 阅读 README、PROGRESS、PRODUCT-SPEC、ARCHITECTURE、WORKSPACE/API契约、IMPLEMENTER、ACCEPTANCE、全v1计划与LATEST-IMPLEMENTATION。按最新交接的精确源码SHA和当前任务继续，不依据历史提示词重做已完成阶段或启动未来阶段。
 
