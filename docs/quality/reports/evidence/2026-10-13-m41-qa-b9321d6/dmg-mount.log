@@ -1,0 +1,6 @@
+预计CRC32 $28335A85
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
+/dev/disk5          	GUID_partition_scheme          	
+/dev/disk5s1        	Apple_APFS                     	
+/dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m41-qa-b9321d6/dmg-mount
