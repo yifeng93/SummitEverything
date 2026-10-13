@@ -1,6 +1,21 @@
 # C19 DSH 交接：Sol 审查与独立门
 
-2026-10-13 当前：统一返工1/2的固定产品源码为 **`0a1b8dc94a5d8f797161c38430dccfcb211a9e07`**。Sol 已审查3文件实现/测试 diff、实际退出码和14项 DEV manifest（全部匹配，清单 SHA-256 `fbfd9fde042b7c85566395cf9a825b3e44cb1c77a62bc8debcd76d9976412f98`）；DEV 文档 HEAD `fdfa2533fdb998e39b6471bf59d431b0264833e0` 与受测产品树一致，checkout clean。DEV 后端491 / Web56、85个不同C19测试ID（107执行含副本）、API/SSE完整/部分/零证据与历史重开自测通过。**全新独立 QA 正在独立工作树 `m3-c19-dsh-repair-1-qa/SummitEverything` 验收该固定 SHA；QA / Sol 本轮结论待定，不能把DEV通过替代QA。** 下列 be4 初验 FAIL 与契约记录保留，包2 / M3 正式门未通过，main未合并。
+2026-10-13 最终技术门：**C19 / 包2离线集成 PASS；M3模拟范围已具备提交用户正式验收的条件，尚未正式批准或合并。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`；全新独立 QA 报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`，已以 `c9d32c6a051105017d81123649cd896b094b33e2` 导入 `codex/c19-dsh-sol-gate`。Sol 实际核对报告、原始日志、退出码、UI观察、71项manifest及固定产品diff；71项全部匹配，清单 SHA-256 `1b2330156cad44a06cbd535fb8f5363586b6068e41b56be05595097b6e5d018b`。此次修复用1轮自动返工收口，不启动第2轮；历史FAIL只对应其受测SHA，不改写。
+
+[独立QA报告](2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)、[QA证据](evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc/README.md)与[Sol实际核证](evidence/2026-10-13-m3-c19-dsh-sol-closeout/verification.json)。DEV文档HEAD `fdfa2533fdb998e39b6471bf59d431b0264833e0` 与源码树一致；14项DEV manifest也重新核对全匹配。main仍 `5fd91c78930c80b2365957197b8a605757694a91`；M3冻结 `b3d0dff` / DSH交接 `04a504f` / 冻结标签不变且各checkout clean。
+
+| 本轮技术门 | Sol判定与实测限度 |
+|---|---|
+| 复合主题 / 近似正文 / 对象范围 | PASS：85个不同测试ID，完整信息主题三模式可引、少信息近似正文无引用/无Fake上下文；原设备及局部pair、相似名字正反控通过 |
+| 真缺失 / citation上限 / 前20候选 | PASS：default5三模式及high20的旧D3四控；tracked41中另含limit1、候选前20、旧hash/不合格尾项，真实缺失与有支持的截断分别提示；本轮没有改公平排序算法 |
+| D1批准元数据 / 显式反向对象正文 | PASS，有限对照符合现有契约：title/alias正例可引且Fake各调用1；反向正文不引，Fake调用0。无需新增产品决议，不能把目录项目名直接当唯一事实对象 |
+| 全量及生成契约 | PASS：guarded491 / Web56（12文件）、类型/静态/lock/build及最终隔离生成比较exit0；保留既有弃用和lint警告。首次错误CWD及其错误exit捕获留证，不算生成验证通过 |
+| 实际HTTP/SSE + Chrome UI + history重开/重启 | PASS，合成库/Fake范围：完整/部分/零证据、缺词反例、混合原因、纯上限；UI步骤及可见文字已核对，不用API200推断UI |
+| 开发脚本停止 | FAIL（本机wrapper清理）：Ctrl+C时PermissionError/exit1；独立后验无QA服务进程、两端口均无listener。脚本与main无diff，不定为本轮C19回归；后续单独复现诊断，不冒称清理exit0 |
+| M3正式验收 / main合并 | NOT_RUN，待用户明确批准；本技术结论没有豁免任何正式或真实门 |
+| 真实provider/飞书/材料/凭据/Keychain/native/DMG/五日/双机/发布 | NOT_RUN；runtime UNVERIFIED，smoke各0/1未消费；DevTools console/network与PNG导出NOT_RUN |
+
+包1和包3分别保持其固定SHA独立离线PASS；本候选包含其实现，本轮491全量回归覆盖关联测试，未冒充重新执行其所有历史浏览器/原生场景。包2结合既有不变角色/记忆/权限验收与此次C19集中补验判离线集成PASS。全v1与M4/M5/真实模型质量仍按原计划。下一步仅请求用户批准 **M3模拟离线范围正式验收及该候选合入main**；批准前不合并、推送或发布。
 
 2026-10-13 初验历史。**DSH 候选独立 QA / Sol FAIL：主题剥词 P1、上限原因 P2。** 原设备用例已关闭，但复合主题中的“信息”仍被全局删除；本轮新的默认上限对照也失败。DSH 自测和三轮子代理预验不替代此次全新 QA。原 f79 / 262 的 P1 FAIL 保留。进入本次固定候选初验后的自动统一返工 1/2，不重置或改写旧周期历史。
 
@@ -26,7 +41,7 @@ DSH 关于既有“青榆”测试的论据须更正：`tests/integration/test_q
 
 Sol 已将以下有界对照交全新 QA，并等待黑盒证据，不把静态怀疑冒充已验 FAIL：A 有多段相关正文触发 limit，B 所问范围完全无正文；A/B 本来完备但只实际传一部分；高limit无截断；资格失效的尾候选；dense前20丢覆盖。逐项核对真实来源 / actual provider passages与missing原因；provider empty missing 不可抹掉真实缺失。
 
-## 固定候选实际门判断
+## be4初验历史门判断
 
 Sol 已读取 [独立 QA 报告](2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)、原始 commands / exit / failure日志和 final-state，并核对 [71项manifest](evidence/2026-10-13-m3-package-2-c19-dsh-qa-be4e72f/SHA256SUMS)全数匹配：清单 SHA-256 `930fcecee7e4a003d272965eeab1ac7f6a62f26bc997a568864a411889d52607`。QA-only初始提交 `4c3464b834c53c0982a75348469d7a8680c18716`，原作者报告措辞更正提交 `b365e79cde324332d87f1997be6169934d261574`；未改产品或evidence，测试期间源be不变，产品diff0、checkout clean、端口18873 / 15179无监听。
 
@@ -53,4 +68,4 @@ Developer Luna 在 `codex/c19-dsh-sol-gate` 连续负责 planner.py / query.py�
 4. 对信息 / 资料词的完整与近似正文、计划请求尾壳、相似名字正反控，对limit1 / 默认5 / 高limit、同时真缺失、纯截断、candidate前20造成不足做有限结构矩阵。不要无限扩展语言词汇；所有原有数据/权限及M3包1/3边界保持。
 5. 在自己工作树安装依赖并跑适用完整guarded / Web / 静态 / lock / build和生成稳定性，实际API/SSE完整 / partial / zero / 混合原因及history流程，写DEV报告与raw exit/hash。固定新源码SHA后停止写入，交全新QA集中复验；Sol判门，最多两轮自动返工。此次为1/2；若失败按新发现统一修复2/2而非逐小提交QA。
 
-此文尚不签发 C19 / 包2 / M3 PASS。正式 M3验收与合并仍需用户批准；真实 provider / 飞书 / 凭据 / Keychain / 材料、native / DMG、五日 / 双机 / 发布均 NOT_RUN，runtime UNVERIFIED、smoke未消费。产品修复只在 QA结束固定提交后串行交 Developer，最多两轮自动返工并各由全新 QA 复验；旧报告与被测源码不移动、不改写。
+以上为初验及修复契约历史；最新C19/包2技术门见本文顶部，M3正式批准仍未签发。正式 M3验收与合并仍需用户批准；真实 provider / 飞书 / 凭据 / Keychain / 材料、native / DMG、五日 / 双机 / 发布均 NOT_RUN，runtime UNVERIFIED、smoke未消费。产品修复只在 QA结束固定提交后串行交 Developer，最多两轮自动返工并各由全新 QA 复验；旧报告与被测源码不移动、不改写。

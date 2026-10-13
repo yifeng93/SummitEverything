@@ -1,8 +1,10 @@
 # 独立验收矩阵
 
-2026-10-13 最新调度：固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的统一返工1/2已完成DEV自测；全新独立QA正在另一checkout集中复验，结论待定。main与M3/DSH冻结基线保持；包2/M3正式验收及合并仍未通过。下方为本轮DEV交接与初验历史，不替代新QA结论。
+2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；M3正式批准与合并待用户确认。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。整合分支 `codex/c19-dsh-sol-gate`；main / M3冻结 / DSH交接不变且干净。本轮1/2返工收口，第2轮未使用。
 
-2026-10-13 当前：DSH 固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac` 经全新独立 QA / Sol 判 FAIL，复合主题“信息”全局剥除 P1 与默认limit掩盖真缺失 P2尚未关闭。原设备与53个不同回归通过，D1有限元数据/正文对照符合现有契约。进入本次候选初验后的统一自动返工1/2；Developer在 `codex/c19-dsh-sol-gate` 连续实施，固定新SHA后全新QA集中复验。main / M3冻结基线 / DSH原交接不改，包1/3保留既有离线PASS，正式包2/M3验收及合并未通过。见 [Sol门与统一修复契约](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [固定源码独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。下方DSH自测及旧周期均为历史记录，不覆盖本行当前状态。
+未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
+
+2026-10-13 DEV/初验历史：DSH 固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac` 经全新独立 QA / Sol 判 FAIL，复合主题“信息”全局剥除 P1 与默认limit掩盖真缺失 P2尚未关闭。原设备与53个不同回归通过，D1有限元数据/正文对照符合现有契约。进入本次候选初验后的统一自动返工1/2；Developer在 `codex/c19-dsh-sol-gate` 连续实施，固定新SHA后全新QA集中复验。main / M3冻结基线 / DSH原交接不改，包1/3保留既有离线PASS，正式包2/M3验收及合并未通过。见 [Sol门与统一修复契约](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [固定源码独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。下方DSH自测及旧周期均为历史记录，不覆盖本行当前状态。
 
 2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
 

@@ -1,0 +1,54 @@
+{
+  "tested_source": "0a1b8dc94a5d8f797161c38430dccfcb211a9e07",
+  "qa_commit": "93bbf45e296abb7d2b234059138cf9f8cad84351",
+  "qa_import_commit": "c9d32c6a051105017d81123649cd896b094b33e2",
+  "checks": {
+    "product_diff_exit": 0,
+    "dev_runner_diff_vs_main_exit": 0,
+    "2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc_verified": true,
+    "2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc_verified": true
+  },
+  "manifests": {
+    "2026-10-13-m3-package-2-c19-dsh-repair-1-qa-0a1b8dc": {
+      "entries": 71,
+      "mismatches": [],
+      "sha256": "1b2330156cad44a06cbd535fb8f5363586b6068e41b56be05595097b6e5d018b"
+    },
+    "2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc": {
+      "entries": 14,
+      "mismatches": [],
+      "sha256": "fbfd9fde042b7c85566395cf9a825b3e44cb1c77a62bc8debcd76d9976412f98"
+    }
+  },
+  "protected_repos": {
+    "main": {
+      "head": "5fd91c78930c80b2365957197b8a605757694a91",
+      "status": ""
+    },
+    "M3 frozen": {
+      "head": "b3d0dff587c94ee295dfe5379bd67916c98184ec",
+      "status": ""
+    },
+    "DSH frozen": {
+      "head": "04a504f7e2716366fa9335da099b967554db256c",
+      "status": ""
+    },
+    "QA": {
+      "head": "93bbf45e296abb7d2b234059138cf9f8cad84351",
+      "status": ""
+    }
+  },
+  "frozen_tag": "b3d0dff587c94ee295dfe5379bd67916c98184ec",
+  "listeners": {
+    "18874": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    "15180": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    }
+  }
+}

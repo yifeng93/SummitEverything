@@ -1,5 +1,9 @@
 # M3 功能包实施计划
 
+2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；M3正式批准与合并待用户确认。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](../../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](../../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。整合分支 `codex/c19-dsh-sol-gate`；main / M3冻结 / DSH交接不变且干净。本轮1/2返工收口，第2轮未使用。
+
+未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
+
 2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
 
 日期：2026-10-11。用户已明确授权执行及实施顺序优化。产品规格和全 v1 计划不变。本计划替代逐小切片启动独立 QA 的节奏；不替代原 M3 验收要求。
@@ -29,7 +33,9 @@
 
 ## 包 2：完整问答能力、角色与记忆
 
-2026-10-12 当前状态：用户重新授权C19后，统一初验及两轮自动返工均已独立QA；最终repair2/2源码 `f79f613` 仍有主题词剥除P1，Sol判FAIL。停止自动修改、待用户决定。包1/3保持各自离线PASS，M3正式门未通过。
+2026-10-13 完成：本包离线集成PASS；最终固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 由全新QA复验，Sol核证关闭C19。下列实现清单和历史失败均保留；包级最新证据见顶部，不降低产品或真实门。
+
+2026-10-12 历史状态：用户重新授权C19后，统一初验及两轮自动返工均已独立QA；最终repair2/2源码 `f79f613` 仍有主题词剥除P1，Sol判FAIL。停止自动修改、待用户决定。包1/3保持各自离线PASS，M3正式门未通过。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
