@@ -1,0 +1,2062 @@
+......F..FFFFFFFFFFFFFFF...FFFFFFFFFFF..F..............FFFFFFFFFFFFFFFFF [ 67%]
+FFFFFFFFFFFFF..F.F.....F.......F...                                      [100%]
+=================================== FAILURES ===================================
+__________ test_r2_01_task_write_capability_summary_matches_the_route __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_01_task_write_capabili0')
+
+    def test_r2_01_task_write_capability_summary_matches_the_route(tmp_path):
+        client, _provider, _store = _client(tmp_path)
+        _configure_real(client, real_data=True)
+        assert (
+            client.put(
+                "/api/v1/credentials/feishu_app",
+                headers=HEADERS,
+                json={"account_id": APP_ID, "secret": "synthetic-app-secret"},
+            ).status_code
+            == 200
+        )
+    
+        capabilities = client.get("/api/v1/settings", headers=HEADERS).json()["capabilities"]
+        assert capabilities["feishu_task_write"]["available"] is False
+        assert capabilities["feishu_task_write"]["disabled_reason"] == "result_proof_unavailable"
+>       assert capabilities["feishu_task_read"]["available"] is True
+E       assert False is True
+
+tests/integration/test_stage_b_r2_regressions.py:246: AssertionError
+____ test_r2_02_calendar_with_only_app_secret_reaches_the_calendar_endpoint ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_02_calendar_with_only_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b5d7cb0>
+
+    def test_r2_02_calendar_with_only_app_secret_reaches_the_calendar_endpoint(tmp_path, monkeypatch):
+        client, stub = _real_client(tmp_path, monkeypatch)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"5878b45fce4e6cd7"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:411: AssertionError
+______________ test_r2_02_selected_body_uses_application_identity ______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_02_selected_body_uses_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b732e40>
+
+    def test_r2_02_selected_body_uses_application_identity(tmp_path, monkeypatch):
+        client, stub = _real_client(tmp_path, monkeypatch)
+        material = "obc" + "0" * 21
+        response = client.post(
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": [material], "operation_id": "imp-1"},
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"aeb832d9211e775e"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:424: AssertionError
+_______ test_r2_02_search_and_task_list_still_require_user_authorization _______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_02_search_and_task_lis0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b95f8c0>
+
+    def test_r2_02_search_and_task_list_still_require_user_authorization(tmp_path, monkeypatch):
+        client, stub = _real_client(tmp_path, monkeypatch)
+>       assert client.get("/api/v1/integrations/feishu/materials", headers=HEADERS).status_code == 401
+E       AssertionError: assert 409 == 401
+E        +  where 409 = <Response [409 Conflict]>.status_code
+E        +    where <Response [409 Conflict]> = get('/api/v1/integrations/feishu/materials', headers={'Authorization': 'Bearer synthetic-r2-session'})
+E        +      where get = <starlette.testclient.TestClient object at 0x10baa1fa0>.get
+
+tests/integration/test_stage_b_r2_regressions.py:432: AssertionError
+_____________ test_r2_02_missing_app_secret_is_reported_distinctly _____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_02_missing_app_secret_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b59f020>
+
+    def test_r2_02_missing_app_secret_is_reported_distinctly(tmp_path, monkeypatch):
+        client, stub = _real_client(tmp_path, monkeypatch)
+        removed = client.request(
+            "DELETE",
+            "/api/v1/credentials/feishu_app",
+            headers=HEADERS,
+            json={"account_id": APP_ID},
+        )
+        assert removed.status_code == 204, removed.text
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert response.status_code == 503, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"aefeda057db4c3b4"}}
+E       assert 409 == 503
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:456: AssertionError
+____________ test_r2_03_official_primary_calendar_shape_is_accepted ____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_official_primary_ca0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10bbf5580>
+
+    def test_r2_03_official_primary_calendar_shape_is_accepted(tmp_path, monkeypatch):
+        payload = {
+            "code": 0,
+            "msg": "success",
+            "data": {
+                "calendars": [
+                    {
+                        "calendar": {
+                            "calendar_id": "cal-explicit",
+                            "summary": "合成日历",
+                            "type": "shared",
+                            "role": "owner",
+                            "is_deleted": False,
+                        },
+                        "user_id": "ou_synthetic",
+                    }
+                ]
+            },
+        }
+        client, stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"a9eb1be7b18524d2"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:511: AssertionError
+___________ test_r2_03_explicit_calendar_id_skips_the_primary_lookup ___________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_explicit_calendar_i0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10bd2df70>
+
+    def test_r2_03_explicit_calendar_id_skips_the_primary_lookup(tmp_path, monkeypatch):
+        client, stub = _real_client(tmp_path, monkeypatch, calendar_id="cal-explicit")
+        response = _calendar_request(client)
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"781668f3f4570ae3"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:518: AssertionError
+________________ test_r2_03_empty_primary_calendar_is_reported _________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_empty_primary_calen0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10be8b920>
+
+    def test_r2_03_empty_primary_calendar_is_reported(tmp_path, monkeypatch):
+        payload = {"code": 0, "msg": "success", "data": {"calendars": []}}
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 404, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"e19143a01d32b38d"}}
+E       assert 409 == 404
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:527: AssertionError
+_______________ test_r2_03_ambiguous_primary_calendar_is_refused _______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_ambiguous_primary_c0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10baafcb0>
+
+    def test_r2_03_ambiguous_primary_calendar_is_refused(tmp_path, monkeypatch):
+        def entry(calendar_id: str, user_id: str) -> dict:
+            return {"calendar": {"calendar_id": calendar_id}, "user_id": user_id}
+    
+        payload = {
+            "code": 0,
+            "data": {"calendars": [entry("cal-a", "ou_a"), entry("cal-b", "ou_b")]},
+        }
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+        assert response.status_code == 409, response.text
+>       assert response.json()["error"]["code"] == "ambiguous_calendar"
+E       AssertionError: assert 'acceptance_plan_required' == 'ambiguous_calendar'
+E         
+E         - ambiguous_calendar
+E         + acceptance_plan_required
+
+tests/integration/test_stage_b_r2_regressions.py:542: AssertionError
+_________________ test_r2_03_deleted_calendar_is_not_selected __________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_deleted_calendar_is0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c1036b0>
+
+    def test_r2_03_deleted_calendar_is_not_selected(tmp_path, monkeypatch):
+        payload = {
+            "code": 0,
+            "data": {
+                "calendars": [
+                    {"calendar": {"calendar_id": "cal-deleted", "is_deleted": True}},
+                ]
+            },
+        }
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 404, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"362934d0390623ec"}}
+E       assert 409 == 404
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:556: AssertionError
+_________ test_r2_03_malformed_primary_calendar_is_rejected[payload0] __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_malformed_primary_c0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c26b4d0>
+payload = {'code': 0, 'data': {'calendars': [{'calendar': {'summary': 'no id'}}]}}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"code": 0, "data": {"calendars": [{"calendar": {"summary": "no id"}}]}},
+            {"code": 0, "data": {"calendars": [{"calendar": {"calendar_id": 42}}]}},
+            {"code": 0, "data": {"calendars": "not-a-list"}},
+            {"code": 0, "data": {}},
+        ],
+    )
+    def test_r2_03_malformed_primary_calendar_is_rejected(tmp_path, monkeypatch, payload):
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 502, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"f718561c7f859ab4"}}
+E       assert 409 == 502
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:572: AssertionError
+_________ test_r2_03_malformed_primary_calendar_is_rejected[payload1] __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_malformed_primary_c1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c0c40b0>
+payload = {'code': 0, 'data': {'calendars': [{'calendar': {'calendar_id': 42}}]}}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"code": 0, "data": {"calendars": [{"calendar": {"summary": "no id"}}]}},
+            {"code": 0, "data": {"calendars": [{"calendar": {"calendar_id": 42}}]}},
+            {"code": 0, "data": {"calendars": "not-a-list"}},
+            {"code": 0, "data": {}},
+        ],
+    )
+    def test_r2_03_malformed_primary_calendar_is_rejected(tmp_path, monkeypatch, payload):
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 502, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"9b87f2c79d968999"}}
+E       assert 409 == 502
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:572: AssertionError
+_________ test_r2_03_malformed_primary_calendar_is_rejected[payload2] __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_malformed_primary_c2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c3df620>
+payload = {'code': 0, 'data': {'calendars': 'not-a-list'}}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"code": 0, "data": {"calendars": [{"calendar": {"summary": "no id"}}]}},
+            {"code": 0, "data": {"calendars": [{"calendar": {"calendar_id": 42}}]}},
+            {"code": 0, "data": {"calendars": "not-a-list"}},
+            {"code": 0, "data": {}},
+        ],
+    )
+    def test_r2_03_malformed_primary_calendar_is_rejected(tmp_path, monkeypatch, payload):
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 502, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"e90a0a680bbdc89a"}}
+E       assert 409 == 502
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:572: AssertionError
+_________ test_r2_03_malformed_primary_calendar_is_rejected[payload3] __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_malformed_primary_c3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c61cbc0>
+payload = {'code': 0, 'data': {}}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"code": 0, "data": {"calendars": [{"calendar": {"summary": "no id"}}]}},
+            {"code": 0, "data": {"calendars": [{"calendar": {"calendar_id": 42}}]}},
+            {"code": 0, "data": {"calendars": "not-a-list"}},
+            {"code": 0, "data": {}},
+        ],
+    )
+    def test_r2_03_malformed_primary_calendar_is_rejected(tmp_path, monkeypatch, payload):
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 502, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"eb2f986eba3c03eb"}}
+E       assert 409 == 502
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:572: AssertionError
+_______________ test_r2_03_primary_permission_error_is_surfaced ________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_03_primary_permission_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c76bf20>
+
+    def test_r2_03_primary_permission_error_is_surfaced(tmp_path, monkeypatch):
+        payload = {"code": 99991672, "msg": "synthetic permission denied"}
+        client, _stub = _real_client(tmp_path, monkeypatch, calendar_id="", stub=PrimaryStub(payload))
+        response = _calendar_request(client)
+>       assert response.status_code == 403, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"19757eeea43ab44d"}}
+E       assert 409 == 403
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:580: AssertionError
+__ test_r2_04_identity_calendar_and_body_mode_change_take_effect_immediately ___
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_04_identity_calendar_a0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c557380>
+
+    def test_r2_04_identity_calendar_and_body_mode_change_take_effect_immediately(
+        tmp_path, monkeypatch
+    ):
+        store = StubCredentialStore(
+            user=_user_token(
+                [
+                    "minutes:minutes.search:read",
+                    "minutes:minutes.transcript:export",
+                    "minutes:minutes.artifacts:read",
+                    "calendar:calendar.event:read",
+                    "task:task:read",
+                ]
+            ),
+            app=_app_credentials(),
+        )
+        client, stub = _config_client(tmp_path, monkeypatch, store)
+        _patch_feishu(
+            client,
+            real_data_enabled=True,
+            identity="app",
+            calendar_id="cal-a",
+            material_content="transcript",
+        )
+    
+>       assert _calendar_request(client).status_code == 200
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+E        +    where <Response [409 Conflict]> = _calendar_request(<starlette.testclient.TestClient object at 0x10c4cc6b0>)
+
+tests/integration/test_stage_b_r2_regressions.py:684: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[0-20-0-False] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cb62de0>, count = 0
+limit = 20, expected_items = 0, expected_truncated = False
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"8619274eee8041e6"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[20-20-20-False] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ca89a60>
+count = 20, limit = 20, expected_items = 20, expected_truncated = False
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"709d0d68f7d09fdf"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[21-20-20-True] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ccc6ea0>
+count = 21, limit = 20, expected_items = 20, expected_truncated = True
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"eee4d1e4f71e700f"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[50-30-30-True] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ccc78f0>
+count = 50, limit = 30, expected_items = 30, expected_truncated = True
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"93dd6de4768a3e14"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[5-1-1-True] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cf18890>, count = 5
+limit = 1, expected_items = 1, expected_truncated = True
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"7e4f9a1918d057ff"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[1-1-1-False] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d05e0f0>, count = 1
+limit = 1, expected_items = 1, expected_truncated = False
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"3efa848a5c4a1ab3"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_ test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[3-30-3-False] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_calendar_returns_at6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ce42f30>, count = 3
+limit = 30, expected_items = 3, expected_truncated = False
+
+    @pytest.mark.parametrize(
+        "count,limit,expected_items,expected_truncated",
+        [
+            (0, 20, 0, False),
+            (20, 20, 20, False),
+            (21, 20, 20, True),
+            (50, 30, 30, True),
+            (5, 1, 1, True),
+            (1, 1, 1, False),
+            (3, 30, 3, False),
+        ],
+    )
+    def test_r2_05_calendar_returns_at_most_limit_and_reports_truncation(
+        tmp_path, monkeypatch, count, limit, expected_items, expected_truncated
+    ):
+        stub = CalendarStub(count)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": limit,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"e49af85c707a0e8a"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:923: AssertionError
+_______________ test_r2_05_upstream_has_more_reports_truncation ________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_upstream_has_more_r0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d2f97f0>
+
+    def test_r2_05_upstream_has_more_reports_truncation(tmp_path, monkeypatch):
+        stub = CalendarStub(3, has_more=True)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": 20,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"2389ef3253fbe1e5"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:944: AssertionError
+_________________ test_r2_05_malformed_item_is_still_rejected __________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_malformed_item_is_s0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d592750>
+
+    def test_r2_05_malformed_item_is_still_rejected(tmp_path, monkeypatch):
+        stub = CalendarStub(21, malformed_index=7)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": 20,
+            },
+        )
+>       assert response.status_code == 502, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"6a0a7b7a9ffc4a26"}}
+E       assert 409 == 502
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:962: AssertionError
+__________________ test_r2_05_explicit_range_never_paginates ___________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_explicit_range_neve0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d5b29c0>
+
+    def test_r2_05_explicit_range_never_paginates(tmp_path, monkeypatch):
+        stub = CalendarStub(50)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": 20,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"0607953d12165035"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:979: AssertionError
+________ test_r2_05_upstream_page_size_respects_the_documented_minimum _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r2_05_upstream_page_size_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d6f7950>
+
+    def test_r2_05_upstream_page_size_respects_the_documented_minimum(tmp_path, monkeypatch):
+        stub = CalendarStub(0)
+        client, _stub = _calendar_client(tmp_path, monkeypatch, stub)
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "limit": 5,
+            },
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"eb82fe2b0c7c570c"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:997: AssertionError
+_________________ test_real_import_source_is_not_labelled_fake _________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_real_import_source_is_not0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10dae9730>
+
+    def test_real_import_source_is_not_labelled_fake(tmp_path, monkeypatch):
+        store = StubCredentialStore(app=_app_credentials())
+        client, stub = _config_client(tmp_path, monkeypatch, store)
+        _patch_feishu(
+            client, real_data_enabled=True, calendar_id="cal-a", material_content="transcript"
+        )
+    
+        response = client.post(
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": ["obc" + "0" * 21], "operation_id": "imp-real"},
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"f7204c57d0e90717"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r2_regressions.py:1040: AssertionError
+_____ test_r3_02_valid_rotation_updates_credentials_and_keeps_one_request ______
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_valid_rotation_upda0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e51c260>
+
+    def test_r3_02_valid_rotation_updates_credentials_and_keeps_one_request(tmp_path, monkeypatch):
+        remote = TokenRemote(_valid_token_payload())
+        store = InstrumentedStore(app=_app_credentials(), user=_user_token(expires_in=5))
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"495367a9610c6582"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:549: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_refresh] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e29d580>
+mutate = <function <lambda> at 0x10abcdbc0>, label = 'missing_refresh'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('missing_refresh', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"1d2da7f97b59f3e5"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-reused_refresh] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e7f20f0>
+mutate = <function <lambda> at 0x10abce2a0>, label = 'reused_refresh'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('reused_refresh', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"5a365c8587c86acc"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_token_type] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e6c9fa0>
+mutate = <function <lambda> at 0x10abce340>, label = 'missing_token_type'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('missing_token_type', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"edc98e87d9635182"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-wrong_token_type] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e9d74a0>
+mutate = <function <lambda> at 0x10abccfe0>, label = 'wrong_token_type'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('wrong_token_type', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"93a371fee9fc0953"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_scope] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10eb3f800>
+mutate = <function <lambda> at 0x10abce480>, label = 'missing_scope'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('missing_scope', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"96ef91656352a40c"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-empty_scope] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ec038c0>
+mutate = <function <lambda> at 0x10abcdb20>, label = 'empty_scope'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('empty_scope', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"9b75a91535d9c79e"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10edef9b0>
+mutate = <function <lambda> at 0x10abce520>, label = 'missing_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('missing_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"2f06eebe38ceffb0"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-bool_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10eedc860>
+mutate = <function <lambda> at 0x10abce5c0>, label = 'bool_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('bool_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"fd615d02fe9f4687"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-nan_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res8')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10efb7a40>
+mutate = <function <lambda> at 0x10abcda80>, label = 'nan_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('nan_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"ae2183d3be8940d5"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-inf_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res9')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b18fa70>
+mutate = <function <lambda> at 0x10abce660>, label = 'inf_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('inf_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"aa877623365f8899"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-zero_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res10')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10abf1250>
+mutate = <function <lambda> at 0x10abccae0>, label = 'zero_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('zero_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"902f5d6d8dc4bd1a"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-negative_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res11')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f107770>
+mutate = <function <lambda> at 0x10abcca40>, label = 'negative_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('negative_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"77c48257e7c102e5"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_ test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-string_expiry] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_invalid_refresh_res12')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f1b7530>
+mutate = <function <lambda> at 0x10abcc9a0>, label = 'string_expiry'
+
+    @pytest.mark.parametrize(
+        "mutate,label",
+        [
+            (lambda p: p.pop("refresh_token"), "missing_refresh"),
+            (lambda p: p.__setitem__("refresh_token", "synthetic-refresh"), "reused_refresh"),
+            (lambda p: p.pop("token_type"), "missing_token_type"),
+            (lambda p: p.__setitem__("token_type", "mac"), "wrong_token_type"),
+            (lambda p: p.pop("scope"), "missing_scope"),
+            (lambda p: p.__setitem__("scope", ""), "empty_scope"),
+            (lambda p: p.pop("expires_in"), "missing_expiry"),
+            (lambda p: p.__setitem__("expires_in", True), "bool_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("nan")), "nan_expiry"),
+            (lambda p: p.__setitem__("expires_in", float("inf")), "inf_expiry"),
+            (lambda p: p.__setitem__("expires_in", 0), "zero_expiry"),
+            (lambda p: p.__setitem__("expires_in", -1), "negative_expiry"),
+            (lambda p: p.__setitem__("expires_in", "7200"), "string_expiry"),
+        ],
+    )
+    def test_r3_02_invalid_refresh_response_never_writes_credentials(
+        tmp_path, monkeypatch, mutate, label
+    ):
+        payload = _valid_token_payload()
+        mutate(payload)
+        remote = TokenRemote(payload)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {400, 401, 403, 502, 503}, (label, first.text)
+E       AssertionError: ('string_expiry', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"ecd6835ba7e1a520"}}')
+E       assert 409 in {400, 401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:586: AssertionError
+_________ test_r3_02_lost_response_does_not_write_credentials_or_retry _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_lost_response_does_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f403500>
+
+    def test_r3_02_lost_response_does_not_write_credentials_or_retry(tmp_path, monkeypatch):
+        remote = TokenRemote(None, token_timeout=True)
+        original = _user_token(expires_in=5)
+        store = InstrumentedStore(app=_app_credentials(), user=original)
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        first = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert first.status_code in {502, 503}, first.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"f29a8fb190c44756"}}
+E       assert 409 in {502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:606: AssertionError
+_ test_r3_02_business_errors_are_mapped_and_sanitized[payload0-expired-token_expired] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_business_errors_are0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f4bb950>
+payload = {'code': 20037, 'msg': 'refresh token expired'}, label = 'expired'
+expected = 'token_expired'
+
+    @pytest.mark.parametrize(
+        "payload,label,expected",
+        [
+            ({"code": 20037, "msg": "refresh token expired"}, "expired", "token_expired"),
+            ({"code": 20002, "msg": "bad secret"}, "bad_secret", "provider_unavailable"),
+        ],
+    )
+    def test_r3_02_business_errors_are_mapped_and_sanitized(
+        tmp_path, monkeypatch, payload, label, expected
+    ):
+        remote = TokenRemote(payload)
+        store = InstrumentedStore(app=_app_credentials(), user=_user_token(expires_in=5))
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert response.status_code in {401, 403, 502, 503}, (label, response.text)
+E       AssertionError: ('expired', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"2788ec7cd60638ac"}}')
+E       assert 409 in {401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:631: AssertionError
+_ test_r3_02_business_errors_are_mapped_and_sanitized[payload1-bad_secret-provider_unavailable] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_02_business_errors_are1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f4bbec0>
+payload = {'code': 20002, 'msg': 'bad secret'}, label = 'bad_secret'
+expected = 'provider_unavailable'
+
+    @pytest.mark.parametrize(
+        "payload,label,expected",
+        [
+            ({"code": 20037, "msg": "refresh token expired"}, "expired", "token_expired"),
+            ({"code": 20002, "msg": "bad secret"}, "bad_secret", "provider_unavailable"),
+        ],
+    )
+    def test_r3_02_business_errors_are_mapped_and_sanitized(
+        tmp_path, monkeypatch, payload, label, expected
+    ):
+        remote = TokenRemote(payload)
+        store = InstrumentedStore(app=_app_credentials(), user=_user_token(expires_in=5))
+        client = _http_client(tmp_path, monkeypatch, store, remote)
+    
+        response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert response.status_code in {401, 403, 502, 503}, (label, response.text)
+E       AssertionError: ('bad_secret', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"0609479b7a292709"}}')
+E       assert 409 in {401, 403, 502, 503}
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:631: AssertionError
+_ test_r3_03_calendar_operation_survives_a_config_change_between_primary_and_events _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_calendar_operation_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f8f0080>
+
+    def test_r3_03_calendar_operation_survives_a_config_change_between_primary_and_events(
+        tmp_path, monkeypatch
+    ):
+        remote = PausingRemote(pause_path="/events")
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+    
+        thread, box = _parallel(
+            client.get,
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert remote.entered.wait(10), "the old operation never reached the events step"
+E       AssertionError: the old operation never reached the events step
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10f7afec0: unset>.wait
+E        +      where <threading.Event at 0x10f7afec0: unset> = <test_stage_b_r3_regressions.PausingRemote object at 0x10f7aff50>.entered
+
+tests/integration/test_stage_b_r3_regressions.py:799: AssertionError
+_____ test_r3_03_retired_provider_closes_only_after_the_operation_finishes _____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_retired_provider_cl0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fa5a870>
+
+    def test_r3_03_retired_provider_closes_only_after_the_operation_finishes(tmp_path, monkeypatch):
+        remote = PausingRemote(pause_path="/events")
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+    
+        thread, box = _parallel(
+            client.get,
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert remote.entered.wait(10)
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10fa5b710: unset>.wait
+E        +      where <threading.Event at 0x10fa5b710: unset> = <test_stage_b_r3_regressions.PausingRemote object at 0x10f97b320>.entered
+
+tests/integration/test_stage_b_r3_regressions.py:849: AssertionError
+________ test_r3_03_body_fallback_across_two_endpoints_is_not_cut_short ________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_body_fallback_acros0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f62a3c0>
+
+    def test_r3_03_body_fallback_across_two_endpoints_is_not_cut_short(tmp_path, monkeypatch):
+        remote = PausingRemote(pause_path="/transcript", transcript_fallback=True)
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={"feishu": {"material_content": "transcript"}},
+            ).status_code
+            == 200
+        )
+        old_client = holder["client"]
+    
+        thread, box = _parallel(
+            client.post,
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": ["obc" + "0" * 21], "operation_id": "imp-fallback"},
+        )
+>       assert remote.entered.wait(10), "import never reached the transcript step"
+E       AssertionError: import never reached the transcript step
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10f628f50: unset>.wait
+E        +      where <threading.Event at 0x10f628f50: unset> = <test_stage_b_r3_regressions.PausingRemote object at 0x10f62a7b0>.entered
+
+tests/integration/test_stage_b_r3_regressions.py:881: AssertionError
+____ test_r3_03_multi_item_import_keeps_one_snapshot_across_a_config_change ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_multi_item_import_k0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fcabb90>
+
+    def test_r3_03_multi_item_import_keeps_one_snapshot_across_a_config_change(tmp_path, monkeypatch):
+        remote = PausingRemote(pause_path="/transcript", pause_at=2)
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={"feishu": {"material_content": "transcript"}},
+            ).status_code
+            == 200
+        )
+        old_client = holder["client"]
+        materials = ["obc" + "0" * 21, "obc" + "1" * 21, "obc" + "2" * 21]
+    
+        thread, box = _parallel(
+            client.post,
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": materials, "operation_id": "imp-multi"},
+        )
+>       assert remote.entered.wait(10), "import never reached the second body step"
+E       AssertionError: import never reached the second body step
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10fcaba40: unset>.wait
+E        +      where <threading.Event at 0x10fcaba40: unset> = <test_stage_b_r3_regressions.PausingRemote object at 0x10fcab710>.entered
+
+tests/integration/test_stage_b_r3_regressions.py:923: AssertionError
+____ test_r3_03_idle_retire_closes_exactly_once_and_rejects_new_operations _____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_idle_retire_closes_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fe03b30>
+
+    def test_r3_03_idle_retire_closes_exactly_once_and_rejects_new_operations(tmp_path, monkeypatch):
+        remote = PausingRemote()
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+>       assert _calendar_request_id(client, "cal-a") == 200
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_stage_b_r3_regressions.py:955: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <starlette.testclient.TestClient object at 0x10feea630>
+calendar_id = 'cal-a'
+
+    def _calendar_request_id(client: TestClient, calendar_id: str) -> int:
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert response.status_code == 200, (calendar_id, response.text)
+E       AssertionError: ('cal-a', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"dd2a8913bf5d9297"}}')
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:830: AssertionError
+__ test_r3_03_refresh_then_read_survives_a_config_change_without_rerefreshing __
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_refresh_then_read_s0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ff4ed80>
+
+    def test_r3_03_refresh_then_read_survives_a_config_change_without_rerefreshing(
+        tmp_path, monkeypatch
+    ):
+        """A lease must span refresh *and* the resource read that follows it."""
+        entered, release = Event(), Event()
+        remote = TokenRemote(_valid_token_payload(), token_gate=(entered, release))
+        store = InstrumentedStore(app=_app_credentials(), user=_user_token(expires_in=5))
+        client, holder = _http_lease_client(tmp_path, monkeypatch, store, remote)
+        old_client = holder["client"]
+    
+        thread, box = _parallel(client.get, "/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert entered.wait(10), "refresh never reached the token endpoint"
+E       AssertionError: refresh never reached the token endpoint
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10ff4da30: unset>.wait
+
+tests/integration/test_stage_b_r3_regressions.py:1031: AssertionError
+_____ test_r3_03_failed_body_call_still_releases_the_lease_and_closes_once _____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_03_failed_body_call_st0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fe00080>
+
+    def test_r3_03_failed_body_call_still_releases_the_lease_and_closes_once(tmp_path, monkeypatch):
+        remote = PausingRemote(body_error=httpx.ReadTimeout("synthetic body failure"))
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+        old_client = holder["client"]
+    
+        response = client.post(
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": ["obc" + "0" * 21], "operation_id": "imp-error"},
+        )
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"98dcc7dfcb9f0da1"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1061: AssertionError
+___ test_r3_04_application_identity_never_reads_a_broken_user_slot[missing] ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_04_application_identit0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c1869f0>
+user_state = 'missing'
+
+    @pytest.mark.parametrize("user_state", ["missing", "corrupt", "denied"])
+    def test_r3_04_application_identity_never_reads_a_broken_user_slot(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=None if user_state == "missing" else _user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                        "identity": "app",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+    
+        calendar = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert calendar.status_code == 200, (user_state, calendar.text)
+E       AssertionError: ('missing', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"4045a0c211d633ab"}}')
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1169: AssertionError
+___ test_r3_04_application_identity_never_reads_a_broken_user_slot[corrupt] ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_04_application_identit1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c1b7920>
+user_state = 'corrupt'
+
+    @pytest.mark.parametrize("user_state", ["missing", "corrupt", "denied"])
+    def test_r3_04_application_identity_never_reads_a_broken_user_slot(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=None if user_state == "missing" else _user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                        "identity": "app",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+    
+        calendar = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert calendar.status_code == 200, (user_state, calendar.text)
+E       AssertionError: ('corrupt', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"43561e9d9d0f4fdf"}}')
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1169: AssertionError
+____ test_r3_04_application_identity_never_reads_a_broken_user_slot[denied] ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_04_application_identit2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c199280>
+user_state = 'denied'
+
+    @pytest.mark.parametrize("user_state", ["missing", "corrupt", "denied"])
+    def test_r3_04_application_identity_never_reads_a_broken_user_slot(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=None if user_state == "missing" else _user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                        "identity": "app",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+    
+        calendar = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert calendar.status_code == 200, (user_state, calendar.text)
+E       AssertionError: ('denied', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"07a33be0d0ce674c"}}')
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1169: AssertionError
+___ test_r3_04_missing_app_secret_is_reported_without_reading_the_user_slot ____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_04_missing_app_secret_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10bb64b00>
+
+    def test_r3_04_missing_app_secret_is_reported_without_reading_the_user_slot(tmp_path, monkeypatch):
+        store = InstrumentedStore(app=None, user=_user_token(), corrupt_user=True)
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                        "calendar_id": "cal-a",
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        response = client.get(
+            "/api/v1/integrations/feishu/calendar",
+            headers=HEADERS,
+            params={
+                "start": "2026-10-09T00:00:00+08:00",
+                "end": "2026-10-10T00:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+            },
+        )
+>       assert response.status_code == 503, response.text
+E       AssertionError: {"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"8857b17aa728fe99"}}
+E       assert 409 == 503
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1216: AssertionError
+_ test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[corrupt] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_04_user_only_endpoints0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10bd8f950>
+user_state = 'corrupt'
+
+    @pytest.mark.parametrize("user_state", ["corrupt", "denied"])
+    def test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=_user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        for path in ("/api/v1/integrations/feishu/materials", "/api/v1/integrations/feishu/tasks"):
+            response = client.get(path, headers=HEADERS)
+>           assert response.status_code in {401, 403, 502, 503}, (user_state, path, response.text)
+E           AssertionError: ('corrupt', '/api/v1/integrations/feishu/materials', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"711e01d214fa34e4"}}')
+E           assert 409 in {401, 403, 502, 503}
+E            +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1250: AssertionError
+_ test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[denied] _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_04_user_only_endpoints1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b7b4d40>
+user_state = 'denied'
+
+    @pytest.mark.parametrize("user_state", ["corrupt", "denied"])
+    def test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken(
+        tmp_path, monkeypatch, user_state
+    ):
+        store = InstrumentedStore(
+            app=_app_credentials(),
+            user=_user_token(),
+            corrupt_user=user_state == "corrupt",
+            deny_user_read=user_state == "denied",
+        )
+        remote = IdentityRemote()
+        client = _identity_client(tmp_path, monkeypatch, store, remote)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "feishu": {
+                        "app_id": APP_ID,
+                        "redirect_uri": CALLBACK,
+                        "real_data_enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        for path in ("/api/v1/integrations/feishu/materials", "/api/v1/integrations/feishu/tasks"):
+            response = client.get(path, headers=HEADERS)
+>           assert response.status_code in {401, 403, 502, 503}, (user_state, path, response.text)
+E           AssertionError: ('denied', '/api/v1/integrations/feishu/materials', '{"error":{"code":"acceptance_plan_required","message":"真实飞书读取需先预览并确认本次范围。","request_id":"5daf2bab016e4137"}}')
+E           assert 409 in {401, 403, 502, 503}
+E            +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_stage_b_r3_regressions.py:1250: AssertionError
+_ test_r3_combo_multi_request_read_with_a_mid_operation_timeout_and_config_switch _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r3_combo_multi_request_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b772900>
+
+    def test_r3_combo_multi_request_read_with_a_mid_operation_timeout_and_config_switch(
+        tmp_path, monkeypatch
+    ):
+        """A timeout in the middle of a multi-item read does not corrupt the rest."""
+        remote = PausingRemote(pause_path="/transcript", pause_at=2, error_on_body_call=2)
+        client, holder = _lease_client(tmp_path, monkeypatch, remote)
+        _patch_calendar(client, "cal-a")
+        old_client = holder["client"]
+        materials = ["obc" + "0" * 21, "obc" + "1" * 21, "obc" + "2" * 21]
+    
+        thread, box = _parallel(
+            client.post,
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": materials, "operation_id": "imp-combo"},
+        )
+>       assert remote.entered.wait(10), "import never reached the second body step"
+E       AssertionError: import never reached the second body step
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10b75af00: unset>.wait
+E        +      where <threading.Event at 0x10b75af00: unset> = <test_stage_b_r3_regressions.PausingRemote object at 0x10b75a7e0>.entered
+
+tests/integration/test_stage_b_r3_regressions.py:1335: AssertionError
+_ test_r4_combo_2_old_trickling_read_is_cancelled_while_a_new_request_uses_new_config _
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r4_combo_2_old_trickling_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b75ba70>
+
+    def test_r4_combo_2_old_trickling_read_is_cancelled_while_a_new_request_uses_new_config(
+        tmp_path, monkeypatch
+    ):
+        import summit_everything.integrations.feishu.http as feishu_http
+        from summit_everything.integrations.http_boundary import live_transfer_workers
+    
+        server = TrickleServer()
+        backend = MemorySecretBackend()
+        remote = TokenRemote()
+        client, clients = _api(
+            tmp_path,
+            monkeypatch,
+            backend,
+            remote,
+            open_api_base=server.base,
+            use_mock=False,
+        )
+        old_client = clients[0]
+    
+        original_bounded_call = feishu_http.bounded_call
+    
+        def small_deadline(*args, **kwargs):  # type: ignore[no-untyped-def]
+            if kwargs.get("deadline_seconds") is None:
+                # Long enough that the configuration switch reliably lands while the
+                # first trickling body read is still in flight.
+                kwargs["deadline_seconds"] = 1.0
+            return original_bounded_call(*args, **kwargs)
+    
+        monkeypatch.setattr(feishu_http, "bounded_call", small_deadline)
+    
+        try:
+            materials = ["obc" + "0" * 21, "obc" + "1" * 21, "obc" + "2" * 21]
+            thread, box = _parallel(
+                client.post,
+                "/api/v1/integrations/feishu/imports",
+                headers=HEADERS,
+                json={"material_ids": materials, "operation_id": "imp-combo"},
+            )
+            # Wait until the trickling body read is running, then switch config
+            # while it is still in flight (its deadline is 1.0 s).
+            deadline = time.monotonic() + 10
+            while server.cfg["requests"] == 0 and time.monotonic() < deadline:
+                time.sleep(0.01)
+>           assert thread.is_alive(), "the read finished before the configuration switch"
+E           AssertionError: the read finished before the configuration switch
+E           assert False
+E            +  where False = is_alive()
+E            +    where is_alive = <Thread(Thread-347 (run), stopped 6160838656)>.is_alive
+
+tests/integration/test_stage_b_r4_combinations.py:422: AssertionError
+________ test_r4_03_e_config_change_keeps_the_old_read_on_its_snapshot _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_r4_03_e_config_change_kee0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ae315e0>
+
+    def test_r4_03_e_config_change_keeps_the_old_read_on_its_snapshot(tmp_path, monkeypatch):
+        backend = MemorySecretBackend()
+        remote = ApiRemote(pause_at_transcript=2)
+        client, clients = _api_client(tmp_path, monkeypatch, backend, remote)
+    
+        old_client = clients[0]
+        materials = ["obc" + "0" * 21, "obc" + "1" * 21, "obc" + "2" * 21]
+        thread, box = _parallel(
+            client.post,
+            "/api/v1/integrations/feishu/imports",
+            headers=HEADERS,
+            json={"material_ids": materials, "operation_id": "imp-r4"},
+        )
+>       assert remote.entered.wait(10), "the old read never reached its second body step"
+E       AssertionError: the old read never reached its second body step
+E       assert False
+E        +  where False = wait(10)
+E        +    where wait = <threading.Event at 0x10bda9fd0: unset>.wait
+E        +      where <threading.Event at 0x10bda9fd0: unset> = <test_stage_b_r4_lifecycle.ApiRemote object at 0x10ae329f0>.entered
+
+tests/integration/test_stage_b_r4_lifecycle.py:396: AssertionError
+___________ test_settings_flag_does_not_report_capability_as_enabled ___________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-944/test_settings_flag_does_not_re0')
+
+    def test_settings_flag_does_not_report_capability_as_enabled(tmp_path):
+        client = _client(tmp_path)
+        _open(client, tmp_path)
+        _configure_real(client)
+        assert (
+            client.patch(
+                "/api/v1/settings", headers=HEADERS, json={"feishu": {"real_data_enabled": True}}
+            ).status_code
+            == 200
+        )
+    
+        capabilities = client.get("/api/v1/settings", headers=HEADERS).json()["capabilities"]
+        assert capabilities["feishu_material_read"]["available"] is False
+    
+        # The explicit stub seam is used only by this offline adapter test. The
+        # capability stays disabled until an itemized acceptance plan exists.
+        response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+>       assert response.status_code == 401
+E       assert 409 == 401
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_feishu_real_gate.py:119: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_01_task_write_capability_summary_matches_the_route
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_02_calendar_with_only_app_secret_reaches_the_calendar_endpoint
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_02_selected_body_uses_application_identity
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_02_search_and_task_list_still_require_user_authorization
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_02_missing_app_secret_is_reported_distinctly
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_official_primary_calendar_shape_is_accepted
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_explicit_calendar_id_skips_the_primary_lookup
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_empty_primary_calendar_is_reported
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_ambiguous_primary_calendar_is_refused
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_deleted_calendar_is_not_selected
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_malformed_primary_calendar_is_rejected[payload0]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_malformed_primary_calendar_is_rejected[payload1]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_malformed_primary_calendar_is_rejected[payload2]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_malformed_primary_calendar_is_rejected[payload3]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_03_primary_permission_error_is_surfaced
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_04_identity_calendar_and_body_mode_change_take_effect_immediately
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[0-20-0-False]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[20-20-20-False]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[21-20-20-True]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[50-30-30-True]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[5-1-1-True]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[1-1-1-False]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_calendar_returns_at_most_limit_and_reports_truncation[3-30-3-False]
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_upstream_has_more_reports_truncation
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_malformed_item_is_still_rejected
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_explicit_range_never_paginates
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_r2_05_upstream_page_size_respects_the_documented_minimum
+FAILED tests/integration/test_stage_b_r2_regressions.py::test_real_import_source_is_not_labelled_fake
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_valid_rotation_updates_credentials_and_keeps_one_request
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_refresh]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-reused_refresh]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_token_type]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-wrong_token_type]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_scope]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-empty_scope]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-missing_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-bool_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-nan_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-inf_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-zero_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-negative_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_invalid_refresh_response_never_writes_credentials[<lambda>-string_expiry]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_lost_response_does_not_write_credentials_or_retry
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_business_errors_are_mapped_and_sanitized[payload0-expired-token_expired]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_02_business_errors_are_mapped_and_sanitized[payload1-bad_secret-provider_unavailable]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_calendar_operation_survives_a_config_change_between_primary_and_events
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_retired_provider_closes_only_after_the_operation_finishes
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_body_fallback_across_two_endpoints_is_not_cut_short
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_multi_item_import_keeps_one_snapshot_across_a_config_change
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_idle_retire_closes_exactly_once_and_rejects_new_operations
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_refresh_then_read_survives_a_config_change_without_rerefreshing
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_03_failed_body_call_still_releases_the_lease_and_closes_once
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_application_identity_never_reads_a_broken_user_slot[missing]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_application_identity_never_reads_a_broken_user_slot[corrupt]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_application_identity_never_reads_a_broken_user_slot[denied]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_missing_app_secret_is_reported_without_reading_the_user_slot
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[corrupt]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken[denied]
+FAILED tests/integration/test_stage_b_r3_regressions.py::test_r3_combo_multi_request_read_with_a_mid_operation_timeout_and_config_switch
+FAILED tests/integration/test_stage_b_r4_combinations.py::test_r4_combo_2_old_trickling_read_is_cancelled_while_a_new_request_uses_new_config
+FAILED tests/integration/test_stage_b_r4_lifecycle.py::test_r4_03_e_config_change_keeps_the_old_read_on_its_snapshot
+FAILED tests/integration/test_feishu_real_gate.py::test_settings_flag_does_not_report_capability_as_enabled
+62 failed, 45 passed, 1 warning in 85.35s (0:01:25)

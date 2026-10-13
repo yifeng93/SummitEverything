@@ -1,0 +1,543 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/TodayView.test.tsx src/components/AskView.test.tsx src/components/SettingsView.test.tsx src/components/FeishuPanel.test.tsx src/components/TasksPanel.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/web
+
+ ❯ src/components/TodayView.test.tsx (3 tests | 1 failed) 1266ms
+   × keeps unknown attempts visible and warns before an explicit new operation 1043ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/TodayView.test.tsx > keeps unknown attempts visible and warns before an explicit new operation
+AssertionError: expected '/api/v1/pages' to contain '/intake/jobs'
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"content-wrap today-view"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"eyebrow"[39m
+            [36m>[39m
+              [0m工作节奏[0m
+            [36m</div>[39m
+            [36m<h1>[39m
+              [0m今日[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"lede"[39m
+            [36m>[39m
+              [0m先记下来，再决定哪些内容值得整理成知识。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"date-label"[39m
+          [36m>[39m
+            [0m2026年10月13日星期二[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"today-grid"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"today-main"[39m
+          [36m>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"panel feishu-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"panel-heading"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<h2>[39m
+                    [0m飞书日常[0m
+                  [36m</h2>[39m
+                  [36m<p>[39m
+                    [0m模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"status-label"[39m
+                [36m>[39m
+                  [0m用户未授权[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"button-row"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m模拟授权飞书[0m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"helper-line"[39m
+                [33mrole[39m=[32m"alert"[39m
+              [36m>[39m
+                [0mCannot read properties of undefined (reading 'mode')[0m
+              [36m</p>[39m
+              [36m<h3>[39m
+                [0m材料[0m
+              [36m</h3>[39m
+              [36m<form[39m
+                [33mclass[39m=[32m"organize-row"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m搜索材料[0m
+                  [36m</span>[39m
+                  [36m<input[39m
+                    [33mvalue[39m=[32m""[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m可见范围[0m
+                  [36m</span>[39m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m""[39m
+                    [36m>[39m
+                      [0m全部可见[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"owner"[39m
+                    [36m>[39m
+                      [0m我拥有的[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"shared"[39m
+                    [36m>[39m
+                      [0m共享给我的[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [0m搜索 / 刷新材料[0m
+                [36m</button>[39m
+              [36m</form>[39m
+              [36m<h3>[39m
+                [0m日历[0m
+              [36m</h3>[39m
+              [36m<form[39m
+                [33mclass[39m=[32m"organize-row"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m开始日期[0m
+                  [36m</span>[39m
+                  [36m<input[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"date"[39m
+                    [33mvalue[39m=[32m"2026-10-13"[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m结束日期（不含）[0m
+                  [36m</span>[39m
+                  [36m<input[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"date"[39m
+                    [33mvalue[39m=[32m"2026-10-14"[39m
+                  [36m/>[39m
+                [36m</label>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m时区[0m
+                  [36m</span>[39m
+                  [36m<select>[39m
+                    [36m<option>[39m
+                      [0mAsia/Shanghai[0m
+                    [36m</option>[39m
+                    [36m<option>[39m
+                      [0mUTC[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [0m刷新日历[0m
+                [36m</button>[39m
+              [36m</form>[39m
+            [36m</section>[39m
+            [36m<section[39m
+              [33maria-busy[39m=[32m"false"[39m
+              [33mclass[39m=[32m"panel tasks-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"panel-heading"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<h2>[39m
+                    [0m飞书任务与独立动作[0m
+                  [36m</h2>[39m
+                  [36m<p>[39m
+                    [0m正在核对飞书模式；任务写入暂不可用。[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"button-row"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m刷新飞书任务[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [0m新建飞书任务[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m拟定项目进度变化[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m查看动作记录[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</section>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"panel capture-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"panel-heading"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<h2>[39m
+                    [0m随手记[0m
+                  [36m</h2>[39m
+                  [36m<p>[39m
+                    [0m记录原文不会调用模型，也不会自动写入正式知识。[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"panel-index"[39m
+                [36m>[39m
+                  [0m01[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<form>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mfor[39m=[32m"quick-capture"[39m
+                [36m>[39m
+                  [0m写下刚想到或刚收到的内容[0m
+                [36m</label>[39m
+                [36m<textarea[39m
+                  [33mid[39m=[32m"quick-capture"[39m
+                  [33mplaceholder[39m=[32m"写下刚想到或刚收到的内容…"[39m
+                  [33mrows[39m=[32m"5"[39m
+                [36m/>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"capture-actions"[39m
+                [36m>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"button secondary file-button"[39m
+                  [36m>[39m
+                    [0m导入 TXT / Markdown[0m
+                    [36m<input[39m
+                      [33maccept[39m=[32m".txt,.md,text/plain,text/markdown"[39m
+                      [33mtype[39m=[32m"file"[39m
+                    [36m/>[39m
+                  [36m</label>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"button-row"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"button secondary"[39m
+                      [33mdisabled[39m=[32m""[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [0m记入工作日志[0m
+                    [36m</button>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"button primary"[39m
+                      [33mdisabled[39m=[32m""[39m
+                    [36m>[39m
+                      [0m存入待整理[0m
+                    [36m</button>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</form>[39m
+            [36m</section>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"panel queue-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"panel-heading"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<h2>[39m
+                    [0m待整理[0m
+                  [36m</h2>[39m
+                  [36m<p>[39m
+                    [0m选择来源后，明确点击才会生成审核稿。[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"review-actions"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m刷新状态[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"count-badge"[39m
+                  [36m>[39m
+                    [0m1[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<ul[39m
+                [33mclass[39m=[32m"source-list"[39m
+              [36m>[39m
+                [36m<li>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"source-row"[39m
+                  [36m>[39m
+                    [36m<input[39m
+                      [33mtype[39m=[32m"checkbox"[39m
+                    [36m/>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"file-glyph"[39m
+                    [36m>[39m
+                      [0m文[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"source-title"[39m
+                    [36m>[39m
+                      [36m<strong>[39m
+                        [0m状态未知来源[0m
+                      [36m</strong>[39m
+                      [36m<small>[39m
+                        [0munknown.txt[0m
+                        [0m · [0m
+                        [0m2026/10/9[0m
+                      [36m</small>[39m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"status-label"[39m
+                    [36m>[39m
+                      [0m请求状态未知[0m
+                    [36m</span>[39m
+                  [36m</label>[39m
+                [36m</li>[39m
+              [36m</ul>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"organize-row"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m主线[0m
+                  [36m</span>[39m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m""[39m
+                    [36m>[39m
+                      [0m选择主线[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"line-id"[39m
+                    [36m>[39m
+                      [0m模拟主线[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"compact-field"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m项目[0m
+                  [36m</span>[39m
+                  [36m<select>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m""[39m
+                    [36m>[39m
+                      [0m选择项目[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"project-id"[39m
+                    [36m>[39m
+                      [0m模拟项目[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</label>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button primary"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [0m整理所选[0m
+                  [0m · [0m
+                  [0m0[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</section>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"panel review-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"panel-heading"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<h2>[39m
+                    [0m审核稿[0m
+                  [36m</h2>[39m
+                  [36m<p>[39m
+                    [0m每份稿件单独编辑、处理冲突并确认。[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"count-badge"[39m
+                [36m>[39m
+                  [0m0[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"quiet-empty"[39m
+              [36m>[39m
+                [0m没有待审核的稿件。[0m
+              [36m</div>[39m
+            [36m</section>[39m
+          [36m</div>[39m
+          [36m<aside[39m
+            [33mclass[39m=[32m"today-rail"[39m
+          [36m>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"rail-block"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"rail-heading"[39m
+              [36m>[39m
+                [36m<h2>[39m
+                  [0m工作方式[0m
+                [36m</h2>[39m
+                [36m<span>[39m
+                  [0m本机[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<p>[39m
+                [0m原件先留存。整理稿需要你逐份确认，才会成为正式知识。[0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"workflow-steps"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<b>[39m
+                    [0m1[0m
+                  [36m</b>[39m
+                  [36m<span>[39m
+                    [0m保存来源[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<b>[39m
+                    [0m2[0m
+                  [36m</b>[39m
+                  [36m<span>[39m
+                    [0m生成审核稿[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<b>[39m
+                    [0m3[0m
+                  [36m</b>[39m
+                  [36m<span>[39m
+                    [0m确认后归档[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</section>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"rail-block candidate-block"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"rail-heading"[39m
+              [36m>[39m
+                [36m<h2>[39m
+                  [0m行动建议[0m
+                [36m</h2>[39m
+                [36m<span>[39m
+                  [0m0[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"muted"[39m
+              [36m>[39m
+                [0m目前没有建议。任务仍由你在正式任务工具中管理。[0m
+              [36m</p>[39m
+            [36m</section>[39m
+            [36m<section[39m
+              [33mclass[39m=[32m"rail-note"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m![0m
+              [36m</span>[39m
+              [36m<p>[39m
+                [0m来源中出现的命令只作为资料内容。模型不会据此执行操作。[0m
+              [36m</p>[39m
+            [36m</section>[39m
+          [36m</aside>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+
+Expected: "/intake/jobs"
+Received: "/api/v1/pages"
+
+ ❯ src/components/TodayView.test.tsx:108:79
+    106|   expect(screen.getByText(/不会自动重发.*可能再次调用模型/)).toBeTruthy()
+    107|   fireEvent.click(screen.getByRole('button', { name: '重新整理所选 · 1' }))
+    108|   await waitFor(() => expect(String(vi.mocked(fetch).mock.calls.at(-1)…
+       |                                                                               ^
+    109| })
+    110|
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 38 passed (39)
+   Start at  22:23:35
+   Duration  1.76s (tests 60%, environment 27%, transform 7%, import 5%)
+

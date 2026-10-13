@@ -1,0 +1,41 @@
+status	command	exit	log
+focused-python	uv run pytest -q tests/unit/test_acceptance_plan_ledger.py tests/unit/test_real_model_adapters.py tests/integration/test_feishu_real_gate.py tests/integration/test_provider_settings_api.py tests/integration/test_conversations.py tests/integration/test_intake_review.py	1	01-focused-python.log
+focused-python-rerun	uv run pytest -q tests/unit/test_acceptance_plan_ledger.py tests/unit/test_real_model_adapters.py tests/integration/test_feishu_real_gate.py tests/integration/test_provider_settings_api.py tests/integration/test_conversations.py tests/integration/test_intake_review.py	1	02-focused-python.log
+focused-python-confirm-scope-fix	uv run pytest -q tests/unit/test_acceptance_plan_ledger.py tests/unit/test_real_model_adapters.py tests/integration/test_feishu_real_gate.py tests/integration/test_provider_settings_api.py tests/integration/test_conversations.py tests/integration/test_intake_review.py	0	03-focused-python.log
+focused-web	npm test -- --run TodayView AskView SettingsView FeishuPanel TasksPanel	1	04-focused-web.log
+focused-web-rerun	npm test -- --run TodayView AskView SettingsView FeishuPanel TasksPanel	0	05-focused-web-rerun.log
+api-types	npm run api:types	0	06-openapi-types.log
+web-typecheck	npm run typecheck	2	07-web-typecheck.log
+web-typecheck-rerun	npm run typecheck	0	08-web-typecheck-rerun.log
+focused-web-final	npm test -- --run TodayView AskView SettingsView FeishuPanel TasksPanel	0	09-focused-web-final.log
+format	uv run ruff format src tests	0	10-format.log
+pytest-full	PYTHONPATH=offline_guard:src uv run pytest -q	1	11-pytest-full.log
+12-targeted-root-causes	1	2026-10-13T22:41:33+0800
+13-targeted-root-causes-rerun	0	2026-10-13T22:42:59+0800
+14-real-adapter-loopback	1	2026-10-13T22:46:32+0800
+15-real-adapter-loopback-rerun	1	2026-10-13T22:47:09+0800
+16-real-adapter-loopback-retry	1	2026-10-13T22:48:37+0800
+17-real-adapter-loopback-green	0	2026-10-13T22:49:19+0800
+18-pytest-full-rerun	0	2026-10-13T22:50:55+0800
+22-uv-lock-check	0	2026-10-13T22:51:32+0800
+20-ruff-format-check	1	2026-10-13T22:51:32+0800
+19-ruff-check	1	2026-10-13T22:51:32+0800
+21-mypy	1	2026-10-13T22:51:35+0800
+23-uv-build	2	2026-10-13T22:51:41+0800
+24-swift-test	0	2026-10-13T22:51:42+0800
+25-ruff-autofix	1	2026-10-13T22:57:01+0800
+26-ruff-format	0	2026-10-13T22:57:18+0800
+29-ruff-format-check	0	2026-10-13T22:57:31+0800
+28-ruff-check	1	2026-10-13T22:57:31+0800
+30-mypy	1	2026-10-13T22:57:32+0800
+27-focused-python	0	2026-10-13T22:57:33+0800
+32-ruff-check	0	2026-10-13T22:58:36+0800
+33-ruff-format-check	0	2026-10-13T22:58:36+0800
+34-mypy	0	2026-10-13T22:58:36+0800
+31-python-usage-focused	0	2026-10-13T22:58:36+0800
+35-export-openapi	0	2026-10-13T22:59:02+0800
+36-api-types	0	2026-10-13T22:59:12+0800
+37-web-test	0	2026-10-13T22:59:21+0800
+38-web-typecheck	0	2026-10-13T22:59:21+0800
+39-web-lint	0	2026-10-13T22:59:22+0800
+40-web-build	0	2026-10-13T22:59:24+0800

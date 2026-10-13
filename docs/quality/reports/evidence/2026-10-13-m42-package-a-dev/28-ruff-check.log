@@ -1,0 +1,12 @@
+E501 Line too long (106 > 100)
+  --> tests/integration/test_real_model_approval_flow.py:80:75
+   |
+78 | …                     "title": "访客登记办法",
+79 | …                     "kind": "topic",
+80 | …                     "body": "## 访客登记\n\n青榆的访客登记须由前台核验姓名并记录来访时间。\n",
+   |                                                                                           ^^^^^^
+81 | …                     "input_indexes": [0],
+82 | …                     "important_conflicts": [],
+   |
+
+Found 1 error.

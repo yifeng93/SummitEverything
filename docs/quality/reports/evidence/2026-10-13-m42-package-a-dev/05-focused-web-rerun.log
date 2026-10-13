@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/TodayView.test.tsx src/components/AskView.test.tsx src/components/SettingsView.test.tsx src/components/FeishuPanel.test.tsx src/components/TasksPanel.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/web
+
+
+ Test Files  5 passed (5)
+      Tests  39 passed (39)
+   Start at  22:24:22
+   Duration  1.36s (tests 53%, environment 32%, transform 9%, import 6%)
+

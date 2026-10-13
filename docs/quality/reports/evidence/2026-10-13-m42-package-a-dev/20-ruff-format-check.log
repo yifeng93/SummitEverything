@@ -1,0 +1,72 @@
+unformatted: File would be reformatted
+   --> src/summit_everything/api/app.py:874:46
+    |
+873 |         # be a narrow adapter (for example, one that only exposes query()).
+    -         pages = QueryService._eligible_pages(
+    -             list_pages(Path(workspace.root)), purpose=purpose
+    -         )
+874 +         pages = QueryService._eligible_pages(list_pages(Path(workspace.root)), purpose=purpose)
+875 |         versions = {
+    |
+
+unformatted: File would be reformatted
+  --> tests/integration/authorized_feishu_client.py:18:29
+   |
+17 | class AuthorizedFeishuReadClient(TestClient):
+   -     def _create_and_confirm(self, operation: str, scope: dict[str, Any], headers: Any) -> str | None:
+18 +     def _create_and_confirm(
+19 +         self, operation: str, scope: dict[str, Any], headers: Any
+20 +     ) -> str | None:
+21 |         created = super().post(
+--------------------------------------------------------------------------------
+41 |         # mappings or sequences. Normalize both to the values FastAPI receives.
+   -         params = {key: value[-1] if isinstance(value, list) else value for key, value in params.items()}
+42 +         params = {
+43 +             key: value[-1] if isinstance(value, list) else value for key, value in params.items()
+44 +         }
+45 |         if isinstance(request_params, Mapping):
+   |
+
+unformatted: File would be reformatted
+   --> tests/integration/test_real_model_approval_flow.py:22:73
+    |
+21  |
+    - def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
+    -     tmp_path, monkeypatch
+    - ):
+22  + def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(tmp_path, monkeypatch):
+23  |     calls: list[tuple[str, dict[str, Any]]] = []
+--------------------------------------------------------------------------------
+100 |                 json={
+    -                     "choices": [
+    -                         {"message": {"content": content}, "finish_reason": "stop"}
+    -                     ],
+101 +                     "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+102 |                     "usage": {
+--------------------------------------------------------------------------------
+203 |         headers=HEADERS,
+    -         json={"scope_sha256": organize_plan["plan"]["scope_sha256"], "scope": organize_plan["scope"]},
+204 +         json={
+205 +             "scope_sha256": organize_plan["plan"]["scope_sha256"],
+206 +             "scope": organize_plan["scope"],
+207 +         },
+208 |     )
+--------------------------------------------------------------------------------
+256 |         headers=HEADERS,
+    -         json={"scope_sha256": index_preview["plan"]["scope_sha256"], "scope": index_preview["scope"]},
+257 +         json={
+258 +             "scope_sha256": index_preview["plan"]["scope_sha256"],
+259 +             "scope": index_preview["scope"],
+260 +         },
+261 |     )
+--------------------------------------------------------------------------------
+293 |         headers=HEADERS,
+    -         json={"scope_sha256": query_preview["plan"]["scope_sha256"], "scope": query_preview["scope"]},
+294 +         json={
+295 +             "scope_sha256": query_preview["plan"]["scope_sha256"],
+296 +             "scope": query_preview["scope"],
+297 +         },
+298 |     )
+    |
+
+3 files would be reformatted, 90 files already formatted

@@ -1,0 +1,6 @@
+src/summit_everything/integrations/acceptance_plans.py:293: error: Incompatible types in assignment (expression has type "BufferedRandom", variable has type "None")  [assignment]
+src/summit_everything/integrations/acceptance_plans.py:294: error: "None" has no attribute "fileno"  [attr-defined]
+src/summit_everything/api/app.py:2108: error: Argument 1 to "reserve_request" of "AcceptancePlanLedger" has incompatible type "UUID | None"; expected "UUID"  [arg-type]
+src/summit_everything/api/app.py:2338: error: Name "IndexPlanStale" is not defined  [name-defined]
+src/summit_everything/api/app.py:2347: error: Name "IndexPlanStale" is not defined  [name-defined]
+Found 5 errors in 2 files (checked 45 source files)
