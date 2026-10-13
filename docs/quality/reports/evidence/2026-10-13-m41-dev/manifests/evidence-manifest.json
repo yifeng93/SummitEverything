@@ -1,0 +1,158 @@
+{
+  "evidence_for_source_sha": "b9321d64c5404feadffebc05964793e9402a07aa",
+  "report_type": "developer_self_test_not_qa",
+  "artifact_app_tree_sha256": "96face5e21c4d237018bc86e8ab89d74651ac4bad5caaea653580a93475def73",
+  "artifact_dmg_sha256": "1822e655836d591dcc612f6de4dfeda095dc16bd8e194e87e33cf5b5894c72fd",
+  "commands": {
+    "guarded_pytest_final": {
+      "exit_code": 0,
+      "result": "499 passed, 1 warning"
+    },
+    "final_static": {
+      "exit_code": 0,
+      "result": "ruff, formatting, mypy, lock check, diff check passed"
+    },
+    "gates_full": {
+      "mixed": "contains preserved initial red and later green checks; per-command exit codes are in the log"
+    },
+    "sse_real_query_red": {
+      "exit_code": 1,
+      "result": "failed before task-exception-consume fix; loop exception handler captured Task exception was never retrieved"
+    },
+    "sse_real_query_green": {
+      "exit_code": 0,
+      "result": "1 passed"
+    },
+    "dev_runner_baseline": {
+      "exit_code": 241,
+      "result": "startup Ctrl+C from baseline commit 2c4e479"
+    },
+    "dev_runner_fixed": {
+      "exit_code": 0,
+      "result": "4 passed"
+    },
+    "final_build": {
+      "exit_code": 0
+    },
+    "packaged_backend_smoke": {
+      "exit_code": 0
+    },
+    "app_codesign_verify": {
+      "exit_code": 0
+    },
+    "dmg_verify": {
+      "exit_code": 0
+    },
+    "swift_release_build": {
+      "exit_code": 0
+    },
+    "native_ui_replay": {
+      "result": "PASS limited path; exact actions, app/backend PIDs, isolated paths and listener cleanup are in native-ui-final-observations.txt"
+    },
+    "remote_ci": {
+      "status": "NOT_RUN"
+    }
+  },
+  "files": [
+    {
+      "file": "logs/guarded-pytest-final.log",
+      "source": ".local/dev/m41/raw-logs/guarded-pytest-final.log",
+      "source_sha256": "a1c919f5bb24a0d94fb158ac192c098b156b2c9cdfb2f2999ec0034353792b59",
+      "tracked_sha256": "a1c919f5bb24a0d94fb158ac192c098b156b2c9cdfb2f2999ec0034353792b59",
+      "redactions": []
+    },
+    {
+      "file": "logs/final-static.log",
+      "source": ".local/dev/m41/raw-logs/final-static.log",
+      "source_sha256": "219683ccf55df62722466f894c02f5f8ae6aaec3e8b57f0deb70b901d08eef9f",
+      "tracked_sha256": "219683ccf55df62722466f894c02f5f8ae6aaec3e8b57f0deb70b901d08eef9f",
+      "redactions": []
+    },
+    {
+      "file": "logs/gates-full.log",
+      "source": ".local/dev/m41/raw-logs/gates-full.log",
+      "source_sha256": "d98ff935f426c9820488c0d6dff08b6bd93205ec311945c92bb0956531f975b9",
+      "tracked_sha256": "d98ff935f426c9820488c0d6dff08b6bd93205ec311945c92bb0956531f975b9",
+      "redactions": []
+    },
+    {
+      "file": "logs/sse-real-query-exception-red.log",
+      "source": ".local/dev/m41/raw-logs/sse-real-query-exception-red.log",
+      "source_sha256": "f38e1251c95d22dcd3968ecd6e2876ca0ed4bada14cdd108378f4165b5eab656",
+      "tracked_sha256": "eb7365c81571a6d85f7ca490b631e18a4c0f72d247db8706f20e629491832218",
+      "redactions": [
+        "replaced one synthetic test session-token literal; original remains in ignored .local DEV evidence"
+      ]
+    },
+    {
+      "file": "logs/sse-real-query-exception-green.log",
+      "source": ".local/dev/m41/raw-logs/sse-real-query-exception-green.log",
+      "source_sha256": "7aeb4e892b3e870a7d6884c79f8b5e7e040d57c70e5dbb21dea2f84ebf33e6b5",
+      "tracked_sha256": "7aeb4e892b3e870a7d6884c79f8b5e7e040d57c70e5dbb21dea2f84ebf33e6b5",
+      "redactions": []
+    },
+    {
+      "file": "logs/dev-runner-ctrl-c-baseline.log",
+      "source": ".local/dev/m41/raw-logs/dev-runner-ctrl-c-baseline.log",
+      "source_sha256": "d1f5343e0d5f37f3c92c538badf325fa4d627ced0c65e5a03381c0a4acc95874",
+      "tracked_sha256": "d1f5343e0d5f37f3c92c538badf325fa4d627ced0c65e5a03381c0a4acc95874",
+      "redactions": []
+    },
+    {
+      "file": "logs/dev-runner-ctrl-c-green.log",
+      "source": ".local/dev/m41/raw-logs/dev-runner-ctrl-c-green.log",
+      "source_sha256": "e77f4f3ece22553c223956ad097446c4d5a26d823c92b790f5e2f4a4ac16c269",
+      "tracked_sha256": "e77f4f3ece22553c223956ad097446c4d5a26d823c92b790f5e2f4a4ac16c269",
+      "redactions": []
+    },
+    {
+      "file": "logs/build-final-b9321d6.log",
+      "source": ".local/dev/m41/raw-logs/build-final-b9321d6.log",
+      "source_sha256": "5b9cb7cce8dbd02315623e8b432399477b8d1b7721774b1d1bc81a100a529a0d",
+      "tracked_sha256": "5b9cb7cce8dbd02315623e8b432399477b8d1b7721774b1d1bc81a100a529a0d",
+      "redactions": []
+    },
+    {
+      "file": "logs/packaged-backend-smoke-final.log",
+      "source": ".local/dev/m41/raw-logs/packaged-backend-smoke-final.log",
+      "source_sha256": "e95b84766bb48737b42748873585a1aad889342eca87997103c6b299043372d9",
+      "tracked_sha256": "e95b84766bb48737b42748873585a1aad889342eca87997103c6b299043372d9",
+      "redactions": []
+    },
+    {
+      "file": "logs/final-artifact-verification.log",
+      "source": ".local/dev/m41/raw-logs/final-artifact-verification.log",
+      "source_sha256": "f86ba6f3210eba2b7f33c4d381fd9bbd0605889622703da954edcd83a8575b6c",
+      "tracked_sha256": "f86ba6f3210eba2b7f33c4d381fd9bbd0605889622703da954edcd83a8575b6c",
+      "redactions": []
+    },
+    {
+      "file": "logs/native-ui-final-observations.txt",
+      "source": ".local/dev/m41/raw-logs/native-ui-final-observations.txt",
+      "source_sha256": "aba688236a6bf60311aa0ccce064da323c3b6b65216f59097df7e839babecc55",
+      "tracked_sha256": "aba688236a6bf60311aa0ccce064da323c3b6b65216f59097df7e839babecc55",
+      "redactions": []
+    },
+    {
+      "file": "logs/swift-build-final.log",
+      "source": ".local/dev/m41/raw-logs/swift-build-final.log",
+      "source_sha256": "b27b0ce3b95d7c2087190af3842acc14bb4b2a3a3750ce53ec93bcf743ee65ed",
+      "tracked_sha256": "b27b0ce3b95d7c2087190af3842acc14bb4b2a3a3750ce53ec93bcf743ee65ed",
+      "redactions": []
+    },
+    {
+      "file": "manifests/build-info.json",
+      "source": ".local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app/Contents/Resources/build-info.json",
+      "source_sha256": "2805b56b67ac356be37393b9fca47ce460a27b49c83e7c56d72e6188ae50f5b1",
+      "tracked_sha256": "2805b56b67ac356be37393b9fca47ce460a27b49c83e7c56d72e6188ae50f5b1",
+      "redactions": []
+    },
+    {
+      "file": "manifests/dependencies.json",
+      "source": ".local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app/Contents/Resources/dependencies.json",
+      "source_sha256": "2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f",
+      "tracked_sha256": "2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f",
+      "redactions": []
+    }
+  ]
+}

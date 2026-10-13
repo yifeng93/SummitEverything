@@ -1,0 +1,4 @@
+PASS: onedir backend starts with empty PATH; identity, static UI, unauthorized reads/writes, port conflicts, and parent-pipe cleanup verified
+
+COMMAND=SUMMIT_APP=/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything\ Internal\ M4.1\ b9321d6.app uv run --locked python scripts/smoke_packaged_app.py
+COMMAND_EXIT_CODE=0

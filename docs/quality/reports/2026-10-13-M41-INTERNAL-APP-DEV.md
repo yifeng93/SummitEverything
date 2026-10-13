@@ -16,24 +16,25 @@
 - manifest：`source_sha=b9321d64c5404feadffebc05964793e9402a07aa`，`dirty=false`，`app_version=0.1.0`，`build_id=20261013T052105Z-577f0cc805f2`，`frontend_sha256=577f0cc805f2f7727add28c1e0d4714c0c15040fa7c094fce7e6234c65239fc6`，`dependencies_sha256=2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f`。
 - 包内前端重新计算指纹与 manifest 完全一致；`CFBundleIdentifier=com.summiteverything.internal`、`CFBundleVersion=227.0.0`、架构 `arm64`、`SummitBuildID` 与 manifest 一致。
 - 确切 clean-SHA 构建命令（在仓库根目录）：`scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg"`，exit 0。构建强制重建前端，在 staging 中完成 app 签名校验、DMG 创建/验证/只读挂载校验后才产出目标文件。
+- 可长期复核的脱敏 raw logs、package manifests、源/副本摘要与退出状态见[tracked evidence bundle](evidence/2026-10-13-m41-dev/README.md)和[SHA256SUMS](evidence/2026-10-13-m41-dev/SHA256SUMS)。
 
 ## 实测结果
 
 | 检查 | 结果 | 证据与说明 |
 |---|---|---|
-| clean-SHA App + DMG 构建 | PASS，exit 0 | `.local/dev/m41/raw-logs/build-final-b9321d6.log`；输出仅在被忽略的 `.local` 下 |
+| clean-SHA App + DMG 构建 | PASS，exit 0 | [build log](evidence/2026-10-13-m41-dev/logs/build-final-b9321d6.log)；输出仅在被忽略的 `.local` 下 |
 | 最终 App 签名结构校验 | PASS，exit 0 | `codesign --verify --deep --strict "/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app"`；仅 ad-hoc |
 | DMG 校验 | PASS，exit 0 | `hdiutil verify "/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg"`，内含只读挂载、App 存在与签名检查；未执行安装 |
-| 可搬迁后端 smoke | PASS，exit 0 | `SUMMIT_APP="/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app" uv run --locked python scripts/smoke_packaged_app.py`；复制 bundle、空开发 `PATH`，验证服务身份、静态资源、未授权请求拒绝、固定端口冲突 fail-closed、父 pipe EOF 仅清理自有服务。日志区分此项为 backend smoke，不冒充 UI：`.local/dev/m41/raw-logs/packaged-backend-smoke-final.log` |
-| 最终包真实原生窗口 / 前端 | PASS（有限 UI 路径） | 把上述 App 复制到真实 `DARWIN_USER_TEMP_DIR` 下，再以空开发 `PATH` 启动。SwiftUI 窗口内真实 WKWebView 打开 loopback 页面；创建隔离工作库；保存一条含 `echo SYNTHETIC_TEST_ONLY` 的合成文本为待整理，UI 显示计数 1 和“资料命令不会执行”；Cmd+Q 后自有 App/backend 和端口消失；同 profile 重开后连接既有库且待整理计数仍为 1；关闭最后窗口后进程与 listener 消失。详细观察、临时目录、PID 与命令结果见 `.local/dev/m41/raw-logs/native-ui-final-observations.txt`。未复演文件选择、审核稿确认、完整索引和问答 UI。 |
+| 可搬迁后端 smoke | PASS，exit 0 | `SUMMIT_APP="/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app" uv run --locked python scripts/smoke_packaged_app.py`；复制 bundle、空开发 `PATH`，验证服务身份、静态资源、未授权请求拒绝、固定端口冲突 fail-closed、父 pipe EOF 仅清理自有服务。日志区分此项为 backend smoke，不冒充 UI：[packaged-backend-smoke-final.log](evidence/2026-10-13-m41-dev/logs/packaged-backend-smoke-final.log) |
+| 最终包真实原生窗口 / 前端 | PASS（有限 UI 路径） | 把上述 App 复制到真实 `DARWIN_USER_TEMP_DIR` 下，再以空开发 `PATH` 启动。SwiftUI 窗口内真实 WKWebView 打开 loopback 页面；创建隔离工作库；保存一条含 `echo SYNTHETIC_TEST_ONLY` 的合成文本为待整理，UI 显示计数 1 和“资料命令不会执行”；Cmd+Q 后自有 App/backend 和端口消失；同 profile 重开后连接既有库且待整理计数仍为 1；关闭最后窗口后进程与 listener 消失。详细观察、临时目录、PID 与命令结果见[native UI observations](evidence/2026-10-13-m41-dev/logs/native-ui-final-observations.txt)。未复演文件选择、审核稿确认、完整索引和问答 UI。 |
 | 固定 profile / workspace 本地内容检查 | PASS（此隔离副本） | 根路径均在 `DARWIN_USER_TEMP_DIR`。库仅有 Markdown、manifest、sources 索引、事务记录和锁；无 SQLite、凭据或诊断日志。profile 的日志仅写一条合成 `intake_saved` 事件；不包含 token。 |
-| guarded 后端完整测试 | PASS，499 passed，1 warning，exit 0 | `env PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --locked pytest -q`；`.local/dev/m41/raw-logs/guarded-pytest-final.log`。warning 是 Starlette `TestClient` 关于 httpx 的弃用提醒。 |
-| 其它本地门 | PASS，exit 0 | `.local/dev/m41/raw-logs/gates-full.log`：Web 56 tests、Web typecheck/lint/build、OpenAPI types 生成后无 diff、`uv build`、Swift release build；`.local/dev/m41/raw-logs/final-static.log`：ruff、format、mypy、`uv lock --check`、`git diff --check`；`.local/dev/m41/raw-logs/swift-build-final.log`：`MACOSX_DEPLOYMENT_TARGET=13.0 swift build -c release --package-path native`。Web lint 有两条 `set-state-in-effect` warning，命令 exit 0。 |
+| guarded 后端完整测试 | PASS，499 passed，1 warning，exit 0 | `env PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --locked pytest -q`；[guarded-pytest-final.log](evidence/2026-10-13-m41-dev/logs/guarded-pytest-final.log)。warning 是 Starlette `TestClient` 关于 httpx 的弃用提醒。 |
+| 其它本地门 | PASS，exit 0 | [gates-full.log](evidence/2026-10-13-m41-dev/logs/gates-full.log)：Web 56 tests、Web typecheck/lint/build、OpenAPI types 生成后无 diff、`uv build`、Swift release build；[final-static.log](evidence/2026-10-13-m41-dev/logs/final-static.log)：ruff、format、mypy、`uv lock --check`、`git diff --check`；[swift-build-final.log](evidence/2026-10-13-m41-dev/logs/swift-build-final.log)：`MACOSX_DEPLOYMENT_TARGET=13.0 swift build -c release --package-path native`。Web lint 有两条 `set-state-in-effect` warning，命令 exit 0。 |
 | 真实 HTTP SSE cancel / disconnect / reopen 与异常消费 | PASS，修复后 focused test exit 0 | `uv run --locked pytest -q tests/integration/test_http_sse_lifecycle.py`；使用真实 QueryService、IndexStore / SQLite、真实 route/server 和合成可取消 AnswerProvider。旧实现失败并由 loop exception handler 捕获 `Task exception was never retrieved`；原始 red 与修复后 green 留存于 `sse-real-query-exception-red.log` / `sse-real-query-exception-green.log`。cancel 终态、断流恢复/重开、task exception 消费均由 tracked `tests/integration/test_http_sse_lifecycle.py` 覆盖。 |
 | 开发 runner 启动期 Ctrl+C | PASS（回归实现） | 从基线 `2c4e479:scripts/run_dev.py` 复现启动中断，shell exit 241；没有复现历史 `PermissionError`。修复后 tracked runner 测试 4 passed、exit 0，受控子进程路径退出为 0。两份证据：`dev-runner-ctrl-c-baseline.log`、`dev-runner-ctrl-c-green.log`。不声称已证实历史 PermissionError 根因。 |
 | 远端 CI | NOT_RUN | workflow 已加入，但本轮没有 GitHub Actions 运行结果。 |
 
-完整构建 / 输出验收摘要在 `.local/dev/m41/raw-logs/final-artifact-verification.log`。早期完整 gate 曾发现 5 个已知 workspace/conflict 错误信息在安全脱敏时被泛化；实现改为固定安全消息映射后最终 499 测试通过。初始失败日志保存在 `.local/dev/m41/raw-logs/gates-full.log`，没有删除或放宽测试。
+完整构建 / 输出验收摘要在 [final-artifact-verification.log](evidence/2026-10-13-m41-dev/logs/final-artifact-verification.log)。早期完整 gate 曾发现 5 个已知 workspace/conflict 错误信息在安全脱敏时被泛化；实现改为固定安全消息映射后最终 499 测试通过。初始失败日志保存在 [gates-full.log](evidence/2026-10-13-m41-dev/logs/gates-full.log)，没有删除或放宽测试。
 
 ## 安全与边界记录
 

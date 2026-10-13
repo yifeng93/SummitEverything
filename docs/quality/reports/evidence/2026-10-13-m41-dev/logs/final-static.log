@@ -1,0 +1,24 @@
+
+===== ruff-check =====
+COMMAND=uv run --locked ruff check src tests scripts/build_macos_app.py scripts/packaged_server.py scripts/smoke_packaged_app.py 
+All checks passed!
+COMMAND_EXIT_CODE=0
+
+===== ruff-format =====
+COMMAND=uv run --locked ruff format --check src tests scripts/build_macos_app.py scripts/packaged_server.py scripts/smoke_packaged_app.py 
+85 files already formatted
+COMMAND_EXIT_CODE=0
+
+===== mypy =====
+COMMAND=uv run --locked mypy src 
+Success: no issues found in 44 source files
+COMMAND_EXIT_CODE=0
+
+===== uv-lock-check =====
+COMMAND=uv lock --check 
+Resolved 48 packages in 3ms
+COMMAND_EXIT_CODE=0
+
+===== git-diff-check =====
+COMMAND=git diff --check 
+COMMAND_EXIT_CODE=0

@@ -1,0 +1,26 @@
+APP_PID=82300
+BACKEND_PIDS=82302
+PORT=18793
+PROFILE_ROOT=/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-final.IgbZyp/profile
+WORKSPACE_ROOT=/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-final.IgbZyp/workspace
+PATH=<empty>
+SOURCE_SHA=b9321d64c5404feadffebc05964793e9402a07aa
+DIRTY=false
+BUILD_ID=20261013T052105Z-577f0cc805f2
+FRONTEND_SHA=577f0cc805f2f7727add28c1e0d4714c0c15040fa7c094fce7e6234c65239fc6
+DEPENDENCIES_SHA=2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f
+READINESS=HTTP 200
+
+FINAL_COPY_UI_REPLAY=PASS
+COPY_APP=/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-final.IgbZyp/SummitEverything Internal.app
+COPY_PROFILE=/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-final.IgbZyp/profile
+COPY_WORKSPACE=/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-final.IgbZyp/workspace
+NATIVE_UI=actual WKWebView in SwiftUI App; URL http://127.0.0.1:18793/
+LAUNCH=empty PATH; native PID 82300; backend PID 82302
+UI_ACTIONS=create workspace; save synthetic command-like text as intake; verified intake count 1 and command warning
+QUIT=Cmd+Q; PID 82300 and 82302 exited; loopback port 18793 listener absent (shell check exit 0)
+REOPEN=launched same copied bundle and isolated profile; chose Open Existing workspace; UI showed connected workspace and intake count 1
+LAST_WINDOW=clicked native close button; CUA reported LaunchServices procNotFound after close; PID 82410/82412 absent and port 18793 listener absent; codesign verify still exit 0
+WORKSPACE_FILES=conventions.md; synthetic markdown under 原件; .summit-everything manifest/source index/transaction/lock; no SQLite, credential, or diagnostic files
+PROFILE_FILES=diagnostics.log and instance.lock only
+BOUNDARY=actual copied app/profile/workspace under DARWIN_USER_TEMP_DIR; no old app, real user workspace, real account, real credential, or OS Keychain accessed
