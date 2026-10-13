@@ -24,6 +24,8 @@ QA 首次失败后最多两轮自动修复，每轮都要求 Developer 新 SHA �
 
 2026-10-13 用户针对 M4.1 明确授权一个 Developer Luna 连续完成整个内部 macOS App/DMG 集成、自测、实际候选构建和 DEV 交接；同一开发包内不要求每个小提交单独 QA。Developer 固定最终 clean 源码 SHA 并交付场景 / 命令 / 退出码 / 产物摘要后，由全新 QA 在独立 checkout 集中验证固定 SHA。该节奏不授权 M4.2 真实资料或服务、真实凭据 / Keychain、正式安装、签名公证、M4/M5 结论或发布；QA 结论由 Sol 判定，未测项保持 NOT_RUN。
 
+本轮 Developer 交接的产品源码 SHA 为 `b9321d64c5404feadffebc05964793e9402a07aa`；App 与 DMG 从该 clean SHA 构建，当前 DEV 报告和状态文档通过独立 doc-only 提交补齐，不移动 QA 目标。原生 UI 仅覆盖合成工作库保存、重开与退出清理；未测场景逐项留给 QA 或记为 NOT_RUN。详见[固定 SHA 的 M4.1 DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。
+
 固定 SHA 和串行修改提供明确的 QA 目标；Sol 保留最终 gate 责任。任务交接可在 agent 间自动往返，避免用户承担提示复制。runtime 可见性不足时必须保留 UNVERIFIED。真实门和产品既有完整 v1 验收要求不因工作流调整而缩小。
 
 ## 试点依据与限制

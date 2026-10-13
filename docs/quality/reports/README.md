@@ -8,6 +8,8 @@ M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码
 
 用户已授权 M4.1 离线 Developer 集成与自测；该活动报告只表明具体 DEV 证据，不代表独立 QA 或 M4.1/M4 阶段通过。
 
+M4.1 Developer 已固定产品源码 SHA `b9321d64c5404feadffebc05964793e9402a07aa`，完成 clean-SHA App/DMG 候选及有限原生 UI / 生命周期复演。独立 QA 仍 `NOT_RUN`，详细产物身份、证据路径及未测项见本轮 DEV 报告。
+
 | 报告 | 范围 |
 |---|---|
 | [M4.1 Internal App/DMG DEV](2026-10-13-M41-INTERNAL-APP-DEV.md) | 固定源码 SHA 的实现者自测、候选身份、实际 UI / lifecycle、命令 exit code 与 NOT_RUN；独立 QA 待办 |

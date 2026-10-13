@@ -42,10 +42,12 @@
 
 责任文件：README、PROGRESS、LATEST-IMPLEMENTATION、TESTER、新 DEV 报告、安装说明、证据 manifest。旧 QA 原件不改。
 
-- [ ] 在最终 commit 后跑 README guarded pytest、ruff、mypy、lock/build、Web tests/typecheck/lint/build、API types 一致性、Swift build 与最终 App/DMG harness，记录退出码。
+- [x] 在固定源码 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 跑 guarded pytest、ruff、mypy、lock/build、Web tests/typecheck/lint/build、API types 一致性、Swift build 与最终 App/DMG harness，记录退出码；完整命令和 NOT_RUN 见 DEV 报告。
 - [ ] 用实际 UI 在临时库完成目录选择、粘贴/文件导入、确认、索引、问答；重启复核知识与本地历史状态，工作库不得有 SQLite/凭据/日志。
-- [ ] 实现和自测完成后固定源码 SHA；从 clean SHA 重建最终候选；证据提交与受测源码 SHA 分开说明。
-- [ ] QA handoff 必须含固定 SHA、实际产物路径/摘要、精确命令、场景覆盖、退出码与 NOT_RUN；不得宣称 DEV 等于独立 PASS。
+- [x] 实现和自测后固定源码 SHA；从 clean SHA 重建最终候选；证据提交与受测源码 SHA 分开说明。
+- [x] QA handoff 含固定 SHA、实际产物路径/摘要、精确命令、场景覆盖、退出码与 NOT_RUN；独立 QA 尚未运行，不宣称 DEV 等于独立 PASS。
+
+本轮实际复制候选并启动原生 WKWebView，在真实 `DARWIN_USER_TEMP_DIR` 隔离 profile/workspace 中创建库、保存合成收件项、正常退出、重开并确认收件状态恢复、关闭最后窗口并确认自有服务退出。文件选择、审核稿确认、完整索引与问答 UI 未由 Developer 本轮复演，留 QA 覆盖或明确记 NOT_RUN。端口冲突、父 pipe EOF、真实 TCP SSE cancel/disconnect/reopen、任务异常消费与开发 runner Ctrl+C 的具体证据见 [M4.1 DEV 报告](../../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。
 
 ## 独立 QA 和 Sol 门
 

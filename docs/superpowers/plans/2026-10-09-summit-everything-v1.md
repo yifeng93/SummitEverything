@@ -167,17 +167,17 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 - [x] 诊断日志只在本机profile并轮转；120合成流程、四业务月归档及provider重放计数通过；本机两profile存储边界已测，真实双机NOT_RUN。
 - [x] README适用检查、固定SHA整包独立QA与双profile真实浏览器短复演通过；首轮C22 lease异常FAIL经自动返工1/2在新SHA关闭，初验报告和失败日志保留。
 
-**M3门：** 包1、包2、包3离线集成PASS；用户批准的离线模拟正式验收已合入 main 并完成固定 merge QA。历史 FAIL 仍保留在各自报告中，只对应当时受测 SHA。真实样板、外部能力、native/DMG、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。
+**M3门：** 包1、包2、包3离线集成PASS；用户批准的离线模拟正式验收已合入 main 并完成固定 merge QA。历史 FAIL 仍保留在各自报告中，只对应当时受测 SHA。真实样板、外部能力、M4.2 真实流程、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。native/DMG 当前由已授权的 M4.1 独立分支实现和自测，不代表历史 M3 QA 已覆盖或 M4.1 阶段已通过。
 
 ## M4 — 单机交付与实际试用
 
 ### M4.1：包、配置和生命周期
 
-文件：scripts/build-macos-app.sh、scripts/release-macos.sh、native 生命周期模块、CI 配置。
+文件：scripts/build_macos_app.py、scripts/release-macos.sh、native Swift 生命周期模块、CI 配置。
 
 - [x] 实现依赖锁定、强制 WebUI 构建、内部 bundle/DMG 构建和 manifest 身份 / 指纹检查脚本；开发者命令及对应退出码见本轮 DEV 报告。
-- [ ] 由独立 QA 固定 SHA 实测无需系统 Python / Node / Docker、完整窗口生命周期、失败 / 延迟 readiness、SSE 与钥匙串故障反馈；Developer 观察仅作交接证据，不代替验收。
-- [ ] 由独立 QA 对固定包复验 loopback、Bearer、Markdown、资料命令与旧 App 隔离；Developer 测试项见 DEV 报告，真实安装、签名和公证保持 NOT_RUN。
+- [ ] 由独立 QA 固定 SHA 实测无需系统 Python / Node / Docker、完整窗口生命周期、失败 / 延迟 readiness、SSE 与钥匙串故障反馈；Developer 的有限实际 UI / 生命周期与 SSE 证据仅作交接，不代替验收。
+- [ ] 由独立 QA 对固定包复验 loopback、Bearer、Markdown、资料命令与旧 App 隔离；Developer 测试项见 DEV 报告，真实安装、Developer ID 签名和公证保持 NOT_RUN。
 
 ### M4.2：真实验收门
 

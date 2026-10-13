@@ -4,7 +4,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 三个离线功能包、用户批准的离线模拟验收及 2026-10-13 清理维护均是已完成的历史固定 SHA 结论，详见[报告索引](docs/quality/reports/README.md)。当前分支 `codex/m41-internal-app-20261013` 正在执行用户授权的 M4.1 内部 macOS App/DMG 集成开发；本轮 DEV 证据和精确受测 SHA 见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[M4.1 DEV 报告](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。当前仅有开发者自测，不代表独立 QA 或 M4 阶段通过。
+M3 三个离线功能包、用户批准的离线模拟验收及 2026-10-13 清理维护均是已完成的历史固定 SHA 结论，详见[报告索引](docs/quality/reports/README.md)。当前分支 `codex/m41-internal-app-20261013` 的 M4.1 Developer 已固定源码 SHA `b9321d64c5404feadffebc05964793e9402a07aa`，并完成 clean-SHA Internal App/DMG 候选构建、离线自测和有限原生 UI 复演；当前等待独立 QA。DEV 证据和精确产物身份见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[M4.1 DEV 报告](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。这不代表 M4.1 或 M4 阶段通过。
 
 本轮实现了内置 Python onedir 后端、强制重建静态前端、独立 Internal bundle/profile、每次运行新 token、健康身份与资源指纹校验、loopback Bearer API 和原生生命周期。构建目标为 arm64、最低系统版本声明 macOS 13；本机实测环境为 arm64 macOS 27.0.1，其他架构与系统版本未测。内部候选未公证，实际用户安装、签名证书/公证、真实模型与飞书、真实材料、OS Keychain、M4.2、五日试用、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 

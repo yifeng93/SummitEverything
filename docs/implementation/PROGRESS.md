@@ -12,7 +12,7 @@
 | M3 包 2：问答、角色、记忆（C19） | 离线集成 PASS | [固定源码 QA](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)、[Sol 门](../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) |
 | M3 包 3：连续工作与归档 | 离线集成 PASS | [QA 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md) |
 | M3 离线模拟正式验收 | 用户批准并合入 | [验收记录](../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)、[合并后 QA](../quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md) |
-| M4.1 Internal App/DMG 开发自测 | 仅 DEV 证据；独立 QA NOT_RUN | [DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)；不表示 M4.1 / M4 通过 |
+| M4.1 Internal App/DMG 开发自测 | 固定源码 `b9321d64c5404feadffebc05964793e9402a07aa`；App/DMG clean-SHA 重建与有限原生 UI 复演已完成；独立 QA NOT_RUN | [DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)；不表示 M4.1 / M4 通过 |
 | 真实 provider / Feishu / 业务材料 / OS Keychain | NOT_RUN | 需要独立真实环境与用户选择的材料、范围和动作 |
 | M4.2真实验收、用户安装、Developer ID/公证、五日试用、双机与发布 | NOT_RUN | 内部未公证候选不代表实际安装或发布门通过 |
 | Runtime 配置元数据 | UNVERIFIED | 没有实际观测值 |
@@ -21,7 +21,7 @@
 
 ## 当前开发交接
 
-当前 M4.1 Developer 正在完成全门回归、最终 clean-SHA App/DMG 重建和独立验收交接。原清理维护的逐命令证据仍见[历史 DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)及其独立 QA 报告。未收到独立 QA 前，不将本轮记录标为验收通过；未获用户授权的真实连接、M4.2 和发布动作仍不执行。
+当前 M4.1 Developer 已完成全门回归、最终 clean-SHA App/DMG 重建及固定源码交接。产品源码 SHA 为 `b9321d64c5404feadffebc05964793e9402a07aa`；QA 将在独立 checkout 对其验收。未收到独立 QA 前，不将本轮记录标为验收通过；未获用户授权的真实连接、M4.2 和发布动作仍不执行。原清理维护的逐命令证据仍见[历史 DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)及其独立 QA 报告。
 
 ## 历史索引
 
