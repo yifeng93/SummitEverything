@@ -5,5 +5,9 @@ let package = Package(
     name: "SummitEverything",
     platforms: [.macOS(.v13)],
     products: [.executable(name: "SummitEverything", targets: ["SummitEverythingApp"])],
-    targets: [.executableTarget(name: "SummitEverythingApp")]
+    targets: [
+        .target(name: "NativeUploadPolicy"),
+        .executableTarget(name: "SummitEverythingApp", dependencies: ["NativeUploadPolicy"]),
+        .testTarget(name: "NativeUploadPolicyTests", dependencies: ["NativeUploadPolicy"]),
+    ]
 )

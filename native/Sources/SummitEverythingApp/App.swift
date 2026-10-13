@@ -5,6 +5,7 @@ import Foundation
 import Security
 import SwiftUI
 import WebKit
+import NativeUploadPolicy
 
 private let apiPort = 18793
 private let localOrigin = "http://127.0.0.1:\(apiPort)"
@@ -250,8 +251,42 @@ private struct LocalWebView: NSViewRepresentable {
             completionHandler(nil)
         }
 
-        private func trusted(_ origin: WKSecurityOrigin) -> Bool {
-            origin.protocol == "http" && origin.host == "127.0.0.1" && origin.port == apiPort
+        private func trustedMainFrame(_ candidate: WKWebView, _ frame: WKFrameInfo) -> Bool {
+            guard let trustedWebView = webView, trustedWebView === candidate else { return false }
+            return NativeUploadPolicy.permitsUpload(
+                isMainFrame: frame.isMainFrame,
+                allowsDirectories: false,
+                originScheme: frame.securityOrigin.protocol,
+                originHost: frame.securityOrigin.host,
+                originPort: frame.securityOrigin.port,
+                frameURL: frame.request.url,
+                pageURL: candidate.url,
+                expectedPort: apiPort
+            )
+        }
+
+        // macOS disables WKWebView file uploads unless this optional delegate method is implemented.
+        // Source: https://developer.apple.com/documentation/webkit/wkuidelegate/webview(_:runopenpanelwith:initiatedbyframe:completionhandler:)
+        @MainActor
+        func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters,
+                     initiatedByFrame frame: WKFrameInfo,
+                     completionHandler: @escaping ([URL]?) -> Void) {
+            var selectedFiles: [URL]?
+            if trustedMainFrame(webView, frame), !parameters.allowsDirectories {
+                let panel = NSOpenPanel()
+                panel.canChooseFiles = true
+                panel.canChooseDirectories = false
+                panel.allowsMultipleSelection = parameters.allowsMultipleSelection
+                panel.allowedContentTypes = NativeUploadPolicy.allowedContentTypes
+                panel.prompt = "选择文件"
+                if panel.runModal() == .OK {
+                    selectedFiles = NativeUploadPolicy.acceptedFiles(
+                        panel.urls,
+                        allowsMultipleSelection: parameters.allowsMultipleSelection
+                    )
+                }
+            }
+            completionHandler(selectedFiles)
         }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
@@ -285,9 +320,8 @@ private struct LocalWebView: NSViewRepresentable {
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.name == "selectWorkspaceFolder", message.frameInfo.isMainFrame,
-                  trusted(message.frameInfo.securityOrigin), let page = webView?.url,
-                  page.scheme == "http", page.host == "127.0.0.1", page.port == apiPort else { return }
+            guard message.name == "selectWorkspaceFolder", let webView,
+                  trustedMainFrame(webView, message.frameInfo) else { return }
             let panel = NSOpenPanel()
             panel.canChooseFiles = false
             panel.canChooseDirectories = true
@@ -297,7 +331,7 @@ private struct LocalWebView: NSViewRepresentable {
                   let data = try? JSONSerialization.data(withJSONObject: [path]),
                   let escaped = String(data: data, encoding: .utf8) else { return }
             let value = String(escaped.dropFirst().dropLast())
-            webView?.evaluateJavaScript("window.dispatchEvent(new CustomEvent('workspace-folder-selected', { detail: \(value) }));")
+            webView.evaluateJavaScript("window.dispatchEvent(new CustomEvent('workspace-folder-selected', { detail: \(value) }));")
         }
 
         private func showReadinessError() {

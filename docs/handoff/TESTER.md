@@ -24,6 +24,7 @@
 ### M4.1 Internal App / DMG 固定 SHA 验收
 
 - 对照最新 DEV 报告中的完整 SHA、产物路径和摘要；以隔离复制的 `.app` 与只读挂载 DMG 为受测对象。记录构建架构与最低系统声明；只在本机实测过的架构 / macOS 版本标 PASS。
+- 运行 `swift test --package-path native`；上传面板策略须验证可信 main frame、frame/page URL 各自精确匹配、拒绝 `localhost` 别名和 credentials URL、TXT/MD 过滤、取消为空、单选拒绝多文件。测试不能替代实际 NSOpenPanel UI 复演。
 - 将 App 置于 `DARWIN_USER_TEMP_DIR` 下独立目录，用显式临时 profile override 启动原生 bundle；先确认 profile 根目录、App/backend PID 和本机 readiness，再操作 UI。不要只通过 `HOME` 推断隔离成功。若出现早期错误 profile，只读检查并如实记录，不清理或迁移。
 - 分开验证真实 Swift 窗口生命周期与仅运行内置 backend 的 smoke：首启、首次开库、导入/确认/索引/问答、正常退出、关最后窗口、重开及状态恢复；端口占用、失败/延迟 readiness、自有服务退出、父进程中断也逐项记录。只有实际发生的操作可记 PASS。
 - C14 SSE 验证必须通过真实 TCP、真实 FastAPI route / QueryService / writer-reader / SQLite 与合成可取消 AnswerProvider，覆盖取消、客户端断流、终态与 reopen。整体替换 QueryService 的 unit 回归只能作局部异常处理证据。

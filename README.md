@@ -33,6 +33,7 @@ uv run ruff format --check src tests
 uv run mypy src
 uv lock --check
 uv build
+swift test --package-path native
 ~~~
 
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
