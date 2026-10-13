@@ -1,11 +1,5 @@
 # SummitEverything v1 Implementation Plan
 
-2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
-
-2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
-
-> 给 agent：按 executing-plans 的逐任务方式执行。阶段验收须由独立执行环境完成；M1 已由独立 QA 在固定 checkout 验收。后续阶段继续使用隔离模拟材料，不能假设真实外部门已获授权。
-
 **Goal:** 在一个可安装的 Mac 应用中完成可信工作知识积累、检索问答和飞书日常工作。
 
 **Architecture:** 单一 FastAPI 后端与 React WebUI，薄 macOS 壳；普通 Markdown / JSON 业务状态可迁移，SQLite / 会话 / 记忆 / 凭据留本机。
@@ -14,13 +8,15 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
-## 当前阶段记录（更新于 2026-10-12；下方历史任务清单保留）
+## 当前阶段记录（2026-10-13）
 
-M1与M2阶段A和StageB的离线基线已收口并合入main；历史细节见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)及[报告索引](../../quality/reports/README.md)。M3包1/3保持离线PASS，包2C19统一repair2/2已独立QA并由Sol判FAIL，停止自动修改，等待用户决定。正式M3、StageC、M4/M5均未通过；不重复执行旧StageB提示词。
+M3 三个离线功能包与离线模拟正式验收均已通过；用户批准的产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。`879c82464903a7aed91b30955d7355064fa85088` 是本轮清理前 main 基线，不是本轮维护验收 SHA。固定 C19 源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的独立 QA 与合并后复验见[报告索引](../../quality/reports/README.md)。本计划中的验收要求保持有效；各轮旧状态只描述其固定 SHA。
+
+真实模型质量、真实 Feishu / 业务材料、OS Keychain、native/DMG、五日试用、双机及发布均 NOT_RUN；runtime 元数据 UNVERIFIED。M4/M5 不属于本轮工作授权。
 
 ## 全局执行规则与验收门
 
-B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B 离线源码候选 `576895f6983ca41cacbbad45a9075b97b9986189` 已独立 QA 并合入 main，范围仅为离线源码和开发壳；真实账户 / 协议、OS Keychain 与 R03 质量仍未完成。Stage C 尚未开始，必须逐项取得真实操作授权并验证具体协议与模型质量。C 不能提前标记 M3、DMG、真实样板初始化、五日或双机完成。下面逐项 M3.1 / M3.2 列表保留原规格追溯；当前执行由 2026-10-11 三功能包计划组织，最新状态见本文顶部。M3.1/M3.2 已有实现不等于独立验收或 M3 门通过。
+B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B adapter 已实现，模拟 HTTP / 合成凭据范围经离线 QA；真实账户 / 协议、OS Keychain 与 R03 质量仍未验收。Stage C 的真实连接和质量验收尚未启动，必须逐项取得真实操作授权并验证具体协议与模型质量。C 不能提前标记 M4/M5、DMG、真实样板初始化、五日或双机完成。下方 M3.1 / M3.2 功能清单现均完成并由 M3 离线正式验收及固定 merge QA 收口；历史逐项 DEV / QA 记录仍只适用于各自 SHA。当前状态见本文顶部与 [M3 验收索引](../../quality/reports/README.md)。
 
 当前 Sol / Luna 开发与验收分工见 [ADR 0008](../../decisions/0008-sol-luna-development-workflow.md)；这里不重复工作流全文。
 
@@ -54,7 +50,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 ### M1.1：DTO、库打开、组织管理
 
-文件：domain/models.py、workspace/manifest.py、workspace/reader.py、workspace/writer.py、workspace/transactions.py、api/app.py、api/routes/workspaces.py；测试 tests/contract/test_workspace_api.py。
+文件：domain/models.py、domain/content.py、workspace/manifest.py、workspace/reader.py、workspace/writer.py、workspace/transactions.py、api/app.py（工作区路由）；测试 tests/contract/test_workspace_api.py。DTO 位于 `domain/models.py`；工作区路由未单独拆成 `api/routes/workspaces.py`。
 
 输入：WORKSPACE §1–4、API 基础对象、现有 content.py。输出：WorkspaceContext、PageSnapshot、line / project CRUD 和正式页读取。
 
@@ -77,7 +73,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 ### M1.3：来源、随手记录和多稿整理
 
-文件：intake/sources.py、intake/service.py、integrations/llm.py、api/routes/intake.py、api/routes/review.py；测试 tests/integration/test_intake_review.py。
+文件：intake/sources.py、intake/review.py、integrations/llm.py、api/app.py（整理与审阅路由）；测试 tests/integration/test_intake_review.py。整理编排由现有 intake 模块承担，没有单独的 intake/service.py。
 
 输入：选定 txt/md / 粘贴与 item_ids。输出：SourceRecord、完整 Draft 列表、独立 Action 候选。
 
@@ -88,7 +84,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 ### M1.4：增量索引、基本问答与引用
 
-文件：retrieval/chunking.py、retrieval/index.py、retrieval/store.py、retrieval/query.py、integrations/embedding.py、integrations/rerank.py；测试 tests/integration/test_qualified_retrieval.py。
+文件：retrieval/chunking.py、retrieval/store.py、retrieval/query.py、retrieval/planner.py、integrations/embedding.py、integrations/rerank.py、api/app.py；测试 tests/integration/test_qualified_retrieval.py。增量索引与问答编排位于现有 query 模块，没有单独的 retrieval/index.py。
 
 输入：当前 PageSnapshot、model fingerprint。输出：本机 SQLite 索引、Query Answer 与版本引用。
 
@@ -100,7 +96,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 ### M1.5：真实 WebUI 与首个可运行应用
 
-文件：web/、native/、api/routes/query.py；测试 web 的浏览器套件及 tests/integration/test_app_lifecycle.py。
+文件：web/、native/、api/app.py（问答路由）；测试 web 的浏览器套件及 tests/integration/test_app_lifecycle.py。API query 路由没有单独拆成 `api/routes/query.py`。
 
 默认导航：今日（随手记、待处理、日志 / 思考及日历待办入口）、项目、知识问答、设置。未实现功能明确未配置 / 未实现，不显示假的数据或成功状态。
 
@@ -117,9 +113,9 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 ### M2.1：飞书授权、材料和日历
 
-文件：integrations/feishu/{auth,materials,calendar}.py、api/routes/feishu.py、web 对应功能。
+文件：integrations/feishu/{provider,fake,service,http}.py、api/app.py、web/src/components/FeishuPanel.tsx。Fake、service 与 HTTP adapter 按现有边界组织，不使用早期拟定的 auth/materials/calendar 文件拆分。
 
-- [x] Fake 范围落实 OAuth / session 边界，state 绑定发起会话；scope、redirect 和 endpoint 使用配置值。凭据目前只由进程内 `MemoryCredentialStore` 保存；OS Keychain adapter、设置入口和持久化尚未实现（NOT_RUN）。
+- [x] Fake 范围落实 OAuth / session 边界，state 绑定发起会话；scope、redirect 和 endpoint 使用配置值。Fake 流程使用进程内凭据；真实 Keychain adapter、设置入口与 fail-closed 实现已存在，但真实 OS Keychain 验收仍为 NOT_RUN。
 - [x] 测试完整响应、过期 token、拒绝、分页、逐字稿文件内容、只获取被选材料；列表不调模型。
 - [x] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
 - [ ] 账户准备好后验证真实 scope、列表和正文读取；缺失权限给具体指引，保留手动文字入口。
@@ -139,7 +135,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 ### M2.3：工作日志、思考与项目总览
 
-文件：intake/journal.py、api/routes/journal.py、web 对应入口。
+文件：api/app.py（日志路由）、web/src/components/JournalView.tsx、web/src/components/ProjectsView.tsx；测试 tests/integration/test_journal_overviews.py。该实现没有单独的 intake/journal.py 或 api/routes/journal.py。
 
 - [x] 测试：日志 / 思考不绑项目可保存，关联线 / 项目也可；直接确认落盘使用同一 PageWriter；浏览不调模型；项目进度不被自动改。
 - [x] 提供自由正文、可选关联和显式 AI 辅助；建议独立可编辑 / 可取消，不自动覆盖已保存内容。
@@ -151,14 +147,16 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 
 ## M3 — 完整问答与连续工作
 
-### M3.1：三类问答与本地角色 / 历史 / 记忆
+### M3.1：三类问答与本地角色 / 历史 / 记忆（离线验收 PASS）
 
-文件：retrieval/planner.py、retrieval/answer.py、local/{conversations,roles,memory}.py、对应 API / web。
+固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 已通过全新独立 QA；详见[QA 报告](../../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol 门](../../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。
 
-- [ ] 事实、跨材料汇总比较和工作方案有独立测试问题；缺资料时不补造，方案区分已有依据与推断。
-- [ ] 实现本机每库历史、角色 CRUD 和预算；库切换不串上下文，角色不能改变批准 / 证据 / 工具权限。
-- [ ] 记忆候选只能来自用户明确表达，用户接受 / 编辑才活跃；源材料和 assistant 回答不能自己生效。
-- [ ] 测试两套本地 profile 指向同库时历史 / 角色 / 记忆独立；答案不自动写知识；引用绑定当前版本，旧历史引用显示已更新。
+文件：retrieval/planner.py、retrieval/query.py、local/{conversations,answer_context,event_log}.py、api/app.py、web/src/components/AskView.tsx。角色与记忆使用现有本地上下文及 API 实现，没有单独的 retrieval/answer.py 或 local/roles.py / memory.py。
+
+- [x] 事实、跨材料汇总比较和工作方案有独立测试问题；缺资料时不补造，方案区分已有依据与推断。
+- [x] 实现本机每库历史、角色 CRUD 和预算；库切换不串上下文，角色不能改变批准 / 证据 / 工具权限。
+- [x] 记忆候选只能来自用户明确表达，用户接受 / 编辑才活跃；源材料和 assistant 回答不能自己生效。
+- [x] 测试两套本地 profile 指向同库时历史 / 角色 / 记忆独立；答案不自动写知识；引用绑定当前版本，旧历史引用显示已更新。
 
 ### M3.2：状态可迁移与归档压缩
 
@@ -169,7 +167,7 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 - [x] 诊断日志只在本机profile并轮转；120合成流程、四业务月归档及provider重放计数通过；本机两profile存储边界已测，真实双机NOT_RUN。
 - [x] README适用检查、固定SHA整包独立QA与双profile真实浏览器短复演通过；首轮C22 lease异常FAIL经自动返工1/2在新SHA关闭，初验报告和失败日志保留。
 
-**M3门：** 包1、包3离线集成PASS；包2 C19 的 extra 2 与统一候选初验 P1 FAIL 均保留，repair 1/2 源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f` 等待 fresh QA。用户已重新授权当前修复，不需要再次授权；M3正式验收和合并尚未通过。真实样板、外部能力与发布门单独验收，原产品规格不变。
+**M3门：** 包1、包2、包3离线集成PASS；用户批准的离线模拟正式验收已合入 main 并完成固定 merge QA。历史 FAIL 仍保留在各自报告中，只对应当时受测 SHA。真实样板、外部能力、native/DMG、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。
 
 ## M4 — 单机交付与实际试用
 

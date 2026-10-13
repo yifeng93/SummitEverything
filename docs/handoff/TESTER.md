@@ -10,7 +10,7 @@
 
 可以使用 Codex 管理 worktree，传入明确 ref；或者使用 git worktree。不要在执行者共享目录切分支、uv sync、升级依赖、格式化或写测试；不删已有别人的目录。
 
-测试环境、临时库、截图和日志放该 checkout 的 .local/qa 或其他隔离目录。报告标注真实路径和版本。若最新交接尚未提供固定 SHA，验证 Foundation 可行但 M1 只能 NOT_RUN，并说明缺少实现者交接。
+测试环境、临时库、截图和日志放该 checkout 的 `.local/qa` 或其他隔离目录。报告标注真实路径和版本。若最新交接缺少固定 SHA，不要回退到 Foundation 或 M1 骨架；将验收标为 BLOCKED，联系 Sol 补齐固定 SHA、验收范围和隔离 checkout。
 
 ## 实际验收
 

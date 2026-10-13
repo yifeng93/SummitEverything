@@ -15,7 +15,6 @@ from uuid import UUID, uuid4, uuid5
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
-    IntakeItem,
     IntakeJob,
     MutationResult,
 )
@@ -678,9 +677,6 @@ class IntakeReviewService:
             atomic_write(path, confirmed.model_dump_json(indent=2).encode())
             SourceStore().refresh_items(root, draft.input_ids)
             return result
-
-    def _load_items(self, root: Path) -> dict[UUID, IntakeItem]:
-        return {item.item_id: item for item in read_items(root)}
 
     def _source_identity(self, root: Path, source_id: UUID) -> tuple[UUID, str]:
         source_root = _state_root(root) / "sources"

@@ -64,3 +64,9 @@
 - 低风险且可复验的任务可在仓库政策、保护规则、实际测试和所需审批均满足时自动提交及合并。重要里程碑合并、真实服务 / 资料 / 凭据操作、不可逆操作和验收门例外先取得用户明确批准。不得未经授权删除 branch 或 worktree。
 - Stage C 真实连接仍是单独 opt-in；真实凭据、材料、Keychain、DMG、五日和双机继续作为独立未测门。有限 smoke 额度按最新交接记录累计，不因 profile、聊天或轮次重置。
 - 当前权威状态读 README、PROGRESS 与 LATEST-IMPLEMENTATION 的真实 HEAD；Stage B 历史提示只用于追溯，不重启旧阶段。旧安装 overlay 原文归档于 [2026-10-11 历史安装补丁](docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)，仅保留来历，不能作为启动旧 Stage B 的指令。
+
+## 当前文档入口维护（2026-10-13，补充）
+
+- 当前状态集中维护在 README、`docs/implementation/PROGRESS.md` 与 `docs/handoff/LATEST-IMPLEMENTATION.md`；更新这些页面时直接纠正正文，不在顶部叠加互相覆盖的状态段。
+- 旧阶段的执行过程、旧 SHA 的 PASS / FAIL 及旧提示词移入明确标为历史的文件，并由当前入口提供链接。历史报告、原始 DEV / QA 证据、manifest 与签名字节保留原样。
+- 文档重排不得改变产品规格、验收场景、用户审批门或未测边界。历史状态只说明对应固定 SHA，不可直接当作当前 HEAD 的结论。

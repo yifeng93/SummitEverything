@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/maintenance-cleanup-20261013/SummitEverything/web
+
+
+ Test Files  12 passed (12)
+      Tests  56 passed (56)
+   Start at  09:47:40
+   Duration  1.47s (environment 47%, tests 33%, import 10%, transform 9%)
+

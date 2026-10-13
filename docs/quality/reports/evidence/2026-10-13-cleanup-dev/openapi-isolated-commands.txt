@@ -1,0 +1,5 @@
+Isolated from-repository-source OpenAPI export:
+PYTHONPATH=<temp>/src uv run python <temp>/scripts/export_openapi.py
+web/node_modules/.bin/openapi-typescript <temp>/web/openapi.json -o <temp>/web/generated.ts
+cmp <temp>/web/openapi.json web/openapi.json
+cmp <temp>/web/generated.ts web/src/api/generated.ts

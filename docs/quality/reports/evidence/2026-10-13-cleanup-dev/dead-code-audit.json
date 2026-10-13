@@ -1,0 +1,27 @@
+{
+  "baseline": "879c82464903a7aed91b30955d7355064fa85088",
+  "ast_scope": "All Python files under src/ and scripts/; module-level and class-level private function definitions; exported/public functions not classified as private",
+  "baseline_private_definitions": 189,
+  "current_private_definitions": 188,
+  "baseline_code_reference_search": {
+    "_load_items": {
+      "exit": 0,
+      "matches": [
+        "879c82464903a7aed91b30955d7355064fa85088:src/summit_everything/intake/review.py:682:    def _load_items(self, root: Path) -> dict[UUID, IntakeItem]:"
+      ]
+    },
+    "__aiter__": {
+      "exit": 0,
+      "matches": [
+        "879c82464903a7aed91b30955d7355064fa85088:src/summit_everything/integrations/transport.py:110:    async def __aiter__(self) -> AsyncIterator[bytes]:"
+      ]
+    }
+  },
+  "disposition": {
+    "_load_items": "Removed only after Sol reviewed class ownership and no call/register/export/API/fixture/reflection use; baseline grep shows only its definition in src/scripts/tests/web/native. Wrapper was three lines converting read_items into item_id map. The sole IntakeItem import became unused and was removed after Ruff reported F401.",
+    "__aiter__": "Kept: async iterator protocol method; lack of lexical caller is expected because async-for invokes protocol dynamically."
+  },
+  "other_candidates": "No other private helper or constant was independently justified as dead after static/lexical candidates were checked against registration, reflection, exports, fixtures, API entrypoints, TypeScript/native entrypoints and protocol roles. No parser rewrite or tests removed.",
+  "module_private_or_uppercase_constants_scanned": 84,
+  "textually_unreferenced_constant_candidates": 0
+}

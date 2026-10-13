@@ -1,0 +1,59 @@
+{
+  "initial_test_artifact_cleanup": {
+    "removed_count": 19,
+    "removed_paths": [
+      ".mypy_cache",
+      ".pytest_cache",
+      ".ruff_cache",
+      "dist",
+      "scripts/offline_guard/__pycache__",
+      "src/summit_everything/__pycache__",
+      "src/summit_everything/api/__pycache__",
+      "src/summit_everything/api/routes/__pycache__",
+      "src/summit_everything/domain/__pycache__",
+      "src/summit_everything/intake/__pycache__",
+      "src/summit_everything/integrations/__pycache__",
+      "src/summit_everything/integrations/feishu/__pycache__",
+      "src/summit_everything/local/__pycache__",
+      "src/summit_everything/retrieval/__pycache__",
+      "src/summit_everything/workspace/__pycache__",
+      "tests/contract/__pycache__",
+      "tests/integration/__pycache__",
+      "tests/unit/__pycache__",
+      "web/dist"
+    ]
+  },
+  "post_final_build_cleanup": {
+    "removed_count": 1,
+    "removed_paths": [
+      "dist"
+    ]
+  },
+  "unique_paths_removed": [
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "dist",
+    "scripts/offline_guard/__pycache__",
+    "src/summit_everything/__pycache__",
+    "src/summit_everything/api/__pycache__",
+    "src/summit_everything/api/routes/__pycache__",
+    "src/summit_everything/domain/__pycache__",
+    "src/summit_everything/intake/__pycache__",
+    "src/summit_everything/integrations/__pycache__",
+    "src/summit_everything/integrations/feishu/__pycache__",
+    "src/summit_everything/local/__pycache__",
+    "src/summit_everything/retrieval/__pycache__",
+    "src/summit_everything/workspace/__pycache__",
+    "tests/contract/__pycache__",
+    "tests/integration/__pycache__",
+    "tests/unit/__pycache__",
+    "web/dist"
+  ],
+  "unique_removed_count": 19,
+  "protected_path_presence": {
+    ".local": false,
+    ".venv": true,
+    "web/node_modules": true
+  }
+}

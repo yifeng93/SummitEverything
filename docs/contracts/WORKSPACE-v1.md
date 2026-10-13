@@ -1,6 +1,6 @@
 # 工作库契约 v1
 
-状态：Accepted engineering baseline，2026-10-09。本契约实现产品规格；当前 Python 骨架只覆盖 §4 的部分，完整读写由 M1 实现。
+状态：Accepted engineering baseline，2026-10-09。本契约定义工作库身份、内容、批准、写入、回执和本地状态边界；当前实现与验收进展见 [PROGRESS](../implementation/PROGRESS.md)。
 
 ## 1. 库与身份
 

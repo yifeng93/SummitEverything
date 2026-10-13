@@ -1,18 +1,13 @@
 # M3 功能包实施计划
 
-合并后独立QA在固定 47a3971ea3dccf6ffbc7107b2d5995043b4e25a2 上复跑491后端、56Web及适用检查通过；Sol校验49项证据全部匹配，见[合并后QA](../../quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)。后续文档整合不改变受测产品树。
 
-2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收，并经[PR #13](https://github.com/yifeng93/SummitEverything/pull/13)合入main，merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`；离线正式门PASS，固定merge的全新独立QA已PASS。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](../../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](../../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](../../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；PR #13产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`；当前main HEAD以实际Git为准，后续文档整合保持受测产品树；M3冻结与DSH交接不变。本轮1/2返工收口，第2轮未使用。
+> 历史实施计划：下方保留整包范围、失败复现和验收要求。当前 M3 离线结论以 [正式验收](../../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md) 和 [合并后 QA](../../quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md) 为准；旧 SHA 的 FAIL 不代表当前未通过。
 
-未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
+当前状态：包1、包2/C19、包3离线集成 PASS；M3离线模拟验收已获用户批准并合入 main。真实 provider / Feishu / 材料 / OS Keychain、native/DMG、五日/双机与发布仍 NOT_RUN，runtime UNVERIFIED。
 
-2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
+## 原执行规则（历史计划）
 
-日期：2026-10-11。用户已明确授权执行及实施顺序优化。产品规格和全 v1 计划不变。本计划替代逐小切片启动独立 QA 的节奏；不替代原 M3 验收要求。
-
-## 起点与执行规则
-
-- 2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
+- 2026-10-12 的 C19 FAIL 和停止修复状态属于历史；该 SHA 的原始结果见[Sol门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)与[QA](../../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。后续固定源码通过独立 QA，见本文开头链接。
 - 复用 M1/M2 的资格门、QueryService、SSE、稿件、事务、身份锁及 action receipts，不重复开发已完成能力。
 - Developer Luna 连续完成一包，允许多个逻辑提交，持续自测；Sol 只读协调和审查。
 - 包完成固定源码 SHA，停止实现修改；全新 QA Luna 在独立 checkout 验收整包，保留实际日志、退出码和黑盒证据。
@@ -37,7 +32,7 @@
 
 2026-10-13 完成：本包离线集成PASS；最终固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 由全新QA复验，Sol核证关闭C19。下列实现清单和历史失败均保留；包级最新证据见顶部，不降低产品或真实门。
 
-2026-10-12 历史状态：用户重新授权C19后，统一初验及两轮自动返工均已独立QA；最终repair2/2源码 `f79f613` 仍有主题词剥除P1，Sol判FAIL。停止自动修改、待用户决定。包1/3保持各自离线PASS，M3正式门未通过。
+2026-10-12 历史 FAIL：最终 repair 2/2 源码 `f79f613` 仍有主题词剥除 P1；该结论只对应受测 SHA。后续 C19 已在新 SHA 独立复验关闭。
 
 依赖：包 1 会话/message 身份。主要模块 retrieval、integrations/llm、local roles/memory、对应 API / WebUI。
 
@@ -59,7 +54,7 @@
 - [x] 摘要原子写中断、相同副本恢复、冲突/损坏/非法月份/意外副本阻断，以及legacy undated和版本parent链检查通过。
 - [x] profile-only allowlist轮转诊断日志与存储隔离；120条合成流程跨四月计数和provider重放计数通过；真实双机与性能基准不作通过推断。
 - [x] 初验C22锁清理FAIL保留；自动返工1/2后两异常路径已由全新QA证明即时清理、无provider副作用且同意图重试仅一次。
-- [x] 固定SHA的整包独立QA及Sol核证：guarded440、核心99、资格/变更37、Web56及适用静态/类型/构建检查通过；双profile真实浏览器短复演通过。C19基线FAIL、真实/发布NOT_RUN与runtimeUNVERIFIED保持。
+- [x] 固定SHA的整包独立QA及Sol核证：guarded440、核心99、资格/变更37、Web56及适用静态/类型/构建检查通过；双profile真实浏览器短复演通过。C19后续固定SHA已PASS；真实/发布NOT_RUN与runtimeUNVERIFIED保持。
 
 ## 完成与正式门
 
