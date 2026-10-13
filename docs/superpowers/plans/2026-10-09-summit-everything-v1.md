@@ -12,7 +12,7 @@
 
 M3 三个离线功能包与离线模拟正式验收均已通过；用户批准的产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。`879c82464903a7aed91b30955d7355064fa85088` 是本轮清理前 main 基线，不是本轮维护验收 SHA。固定 C19 源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的独立 QA 与合并后复验见[报告索引](../../quality/reports/README.md)。本计划中的验收要求保持有效；各轮旧状态只描述其固定 SHA。
 
-2026-10-13 用户新增授权离线 M4.1 Internal App/DMG 的连续开发、自测、最终 clean SHA 重建及交独立 QA；此授权不包含 M4.2 真实验收或用户安装、Developer ID/公证、五日试用、M5 双机与发布。M4.1 固定源码 `3f6eaa4` 的 fresh QA 和 Sol 适用离线技术门 PASS，正式收口 / 合并待用户批准；见[QA](../../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)与[Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。真实模型质量、Feishu / 业务材料、OS Keychain 均 NOT_RUN；runtime 元数据 UNVERIFIED。
+2026-10-13 用户新增授权离线 M4.1 Internal App/DMG 的连续开发、自测、最终 clean SHA 重建及交独立 QA；此授权不包含 M4.2 真实验收或用户安装、Developer ID/公证、五日试用、M5 双机与发布。M4.1 固定源码 `3f6eaa4` 的 fresh QA 和 Sol 适用离线技术门 PASS，用户已批准离线正式收口，PR #17 已合入 main；见[QA](../../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)与[Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。真实模型质量、Feishu / 业务材料、OS Keychain 均 NOT_RUN；runtime 元数据 UNVERIFIED。
 
 ## 全局执行规则与验收门
 
@@ -167,7 +167,7 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 - [x] 诊断日志只在本机profile并轮转；120合成流程、四业务月归档及provider重放计数通过；本机两profile存储边界已测，真实双机NOT_RUN。
 - [x] README适用检查、固定SHA整包独立QA与双profile真实浏览器短复演通过；首轮C22 lease异常FAIL经自动返工1/2在新SHA关闭，初验报告和失败日志保留。
 
-**M3门：** 包1、包2、包3离线集成PASS；用户批准的离线模拟正式验收已合入 main 并完成固定 merge QA。历史 FAIL 仍保留在各自报告中，只对应当时受测 SHA。真实样板、外部能力、M4.2 真实流程、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。native/DMG 当前由已授权的 M4.1 独立分支实现和自测，不代表历史 M3 QA 已覆盖或 M4.1 阶段已通过。
+**M3门：** 包1、包2、包3离线集成PASS；用户批准的离线模拟正式验收已合入 main 并完成固定 merge QA。历史 FAIL 仍保留在各自报告中，只对应当时受测 SHA。真实样板、外部能力、M4.2 真实流程、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。native/DMG 已由 M4.1 独立开发、固定 SHA QA 和用户批准的离线收口覆盖，PR #17 已合入；历史 M3 QA 不覆盖这些新增行为，真实门仍单独验收。
 
 ## M4 — 单机交付与实际试用
 

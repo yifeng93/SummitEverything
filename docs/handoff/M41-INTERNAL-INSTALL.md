@@ -1,6 +1,6 @@
 # M4.1 内部候选测试说明
 
-本说明对应源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的内部候选。独立 QA 的最终结果以 [LATEST-IMPLEMENTATION](LATEST-IMPLEMENTATION.md) 为准；未获用户批准前，不表示里程碑已合并或整个 M4 通过。
+本说明对应源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的内部候选。独立 QA 的最终结果以 [LATEST-IMPLEMENTATION](LATEST-IMPLEMENTATION.md) 为准；用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；整个 M4 和真实安装门仍未通过。
 
 ## 打开内部候选
 

@@ -56,4 +56,4 @@
 
 ## 当前执行结果
 
-固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 和 Sol 适用离线技术门 PASS；初验文件面板 P1 经自动修复 1/2 轮关闭。原始 FAIL 与全部证据保留。正式里程碑收口 / 合并等待用户批准；真实安装、签名公证、OS Keychain、M4.2、五日、双机和发布未测。见 [Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。
+固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 和 Sol 适用离线技术门 PASS；初验文件面板 P1 经自动修复 1/2 轮关闭。原始 FAIL 与全部证据保留。用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main；真实安装、签名公证、OS Keychain、M4.2、五日、双机和发布未测。见 [Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。
