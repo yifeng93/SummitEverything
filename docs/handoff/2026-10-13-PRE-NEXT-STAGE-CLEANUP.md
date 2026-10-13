@@ -23,6 +23,6 @@
 
 ## 独立验收收口
 
-产品源码固定 SHA `6a33259224097167cfdde689da93258fe925964e` 的独立离线 QA 判 PASS，QA-only 证据提交 `da76f56b765308a365eafd0927c84e88caec492e`，其 37 项 manifest SHA-256 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3` 经 Sol 核验。QA 报告见[独立 QA 记录](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。QA 后状态文档收口没有修改产品源码；合入状态以 Sol 后续 Git/PR 核对为准。
+产品源码固定 SHA `6a33259224097167cfdde689da93258fe925964e` 的独立离线 QA 判 PASS，QA-only 证据提交 `da76f56b765308a365eafd0927c84e88caec492e`，其 37 项 manifest SHA-256 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3` 经 Sol 核验。PR #15 已合入，合并点 `2238f1b47d4c7ee073e1d420dc86b23d7e75ffb6` 的产品树与固定 QA 源码一致。QA 报告见[独立 QA 记录](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。QA 后状态文档收口没有修改产品源码；Git 与远端最终状态以工作结束时实际查询及本机私有回执为准。
 
 随后在主 checkout 按白名单删除 19 个 ignored、未跟踪的可再生目录：`.pytest_cache`、`.mypy_cache`、`.ruff_cache`、根 `dist`、`web/dist`、已确认 ignored 的 `native/.build`，以及 `src/`、`tests/`、`scripts/` 下 13 个 `__pycache__`。逐路径检查确认目标不是 symlink 且没有 tracked 文件后才删除。完整路径清单和动作收据保存在主 checkout 私有 `.local/archives/2026-10-13-pre-next-stage-cleanup/primary-cache-cleanup-2026-10-13.json`（0600）；`.venv`、`web/node_modules`、全部 `.local` 数据、stash 与其他资料保留。

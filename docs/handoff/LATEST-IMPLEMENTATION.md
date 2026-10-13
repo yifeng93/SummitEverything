@@ -9,7 +9,7 @@
 
 ## 本轮维护交接
 
-Developer 已在 `codex/maintenance-cleanup-20261013` 基于清理前 main `879c824` 完成入口文档整理、旧工作树和冗余本地分支清理，并移除经调用关系审计确认未使用的私有薄封装 `_load_items` 及其变为未用的 import。产品行为、tracked tests 和验收条款保持不变。受测产品源码 SHA `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA；QA-only 报告 / evidence commit 为 `da76f56b765308a365eafd0927c84e88caec492e`，37 项 manifest SHA-256 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3` 已由 Sol 核验。详见[DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)和[QA 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。QA 后收口提交仅更新当前状态文档和索引，产品源码仍与固定受测 SHA 一致；等待 Sol 整合，不表示已经合入 main。
+Developer 已在 `codex/maintenance-cleanup-20261013` 基于清理前 main `879c824` 完成入口文档整理、旧工作树和冗余本地分支清理，并移除经调用关系审计确认未使用的私有薄封装 `_load_items` 及其变为未用的 import。产品行为、tracked tests 和验收条款保持不变。受测产品源码 SHA `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA，并由 PR #15 合入，合并点为 `2238f1b47d4c7ee073e1d420dc86b23d7e75ffb6`；该合并点产品树与固定 QA SHA 一致。QA-only 报告 / evidence commit 为 `da76f56b765308a365eafd0927c84e88caec492e`，37 项 manifest SHA-256 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3` 已由 Sol 核验。详见[DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)和[QA 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。Git 与远端最终状态以工作结束时实际查询及本机私有回执为准。
 
 ## 已知问题与未测门
 
