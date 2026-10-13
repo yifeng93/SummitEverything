@@ -31,7 +31,8 @@ _POLITE_SHELL = (
 )
 _LOOKUP_VERBS = r"看看|看一下|看下|瞧瞧|瞅瞅|查一查|查一下|查看"
 _TOPIC_SHELL_ONLY = (
-    r"告诉我|说明一下|梳理|总结|比较|对比|对照|分析一下|为|给|针对|关于|制定|提出|汇总|查|并"
+    r"告诉我|说明一下|梳理|总结|比较|对比|对照|分析一下|为|给|针对|关于|制定|提出|"
+    r"安排|拟定|下一步|汇总|查|并"
 )
 
 _SUBJECT_REQUEST_PREFIX = re.compile(rf"^(?:(?:{_POLITE_SHELL}))+")
@@ -42,6 +43,16 @@ _GENERIC_SUBJECTS = {
     "项目",
     "计划",
     "资料",
+    "汇总",
+    "总结",
+    "比较",
+    "对比",
+    "对照",
+    "制定",
+    "安排",
+    "拟定",
+    "提出",
+    "查",
     "内容",
     "合同",
     "预算",
@@ -57,10 +68,14 @@ _GENERIC_SUBJECTS = {
     "这个",
     "那个",
 }
-_GENERIC_PREFIXES = ("这个", "那个", "该", "此", "本", "我们", "我的", "你的")
+_GENERIC_PREFIXES = ("这个", "那个", "那", "该", "此", "本", "我们", "我的", "你的")
 _COMPARISON_PREFIX = re.compile(
     r"^(?:(?:请|麻烦|帮我|我想|我希望)(?:比较|对比|对照|分析一下)?|比较|对比|对照|分析一下|(?:为|给|针对|关于))"
 )
+_ENTITY_COMPARISON_PREFIX = re.compile(
+    r"^(?:(?:请|麻烦|帮我|我想|我希望)?(?:比较|对比|对照|分析一下))"
+)
+_ENTITY_REQUEST_PREFIX = re.compile(r"^(?:(?:请|麻烦|我希望|我想)?(?:给|为|针对|关于))")
 _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
     "budget": ("预算", "经费", "费用", "成本", "资金", "额度", "储备", "金额"),
     "schedule": (
@@ -85,9 +100,6 @@ _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
 # topic and must survive normalization, otherwise a body can neither match the
 # asked phrase nor be reported as missing. The plan shell that does need removing
 # (“下一步工作方案”) is matched by _PLAN_SHELL instead of a global deletion.
-_TOPIC_FILLER = re.compile(
-    r"(?:分别|分别是多少|是什么|是谁|有什么|如何|怎么|多少|哪些|哪一个|哪项|规则|情况|信息|资料|内容|上限|是多少|是|列出|缺失|吗|呢|知道|先|核对|确认|希望|比较|对比|汇总|现有|目前|当前|现行|最新|和|与|及|并|制定|提出|给出|下一步|需要补什么|补什么|需要补充|还缺什么|方案|建议|？|\?|。|！|!)"
-)
 # A span made only of plan vocabulary states no topic of its own, so it must not
 # become an exact scope such as term:工作.
 _PLAN_SHELL = re.compile(r"^(?:(?:下一步|后续|往后|接下来|工作|计划|安排|方案|任务|要点|总结))+$")
@@ -95,7 +107,7 @@ _TOPIC_REQUEST_SUFFIX = re.compile(r"(?:提出|制定|给出|说明|告诉|并�
 _TOPIC_PREFIX = re.compile(rf"^(?:(?:{_POLITE_SHELL}|{_LOOKUP_VERBS}|{_TOPIC_SHELL_ONLY})+)+")
 _TOPIC_SUFFIX = re.compile(
     r"(?:(?:分别|是什么|是谁|有什么|怎么(?:安排|处理|办|做)?|如何|安排|办理|办法|方式|流程|手续|"
-    r"规则|情况|信息|资料|内容|建议|方案|上限|多少|哪些|哪一个|哪项|吗|呢|吧|啊|一下|"
+    r"规则|情况|建议|方案|上限|多少|哪些|哪一个|哪项|目前|当前|现行|最新|是|吗|呢|吧|啊|一下|下一步需要补什么|"
     r"再给简短结论|并汇总现有资料|并汇总|现有资料|简短结论|。|！|!|？|\?)+)$"
 )
 # Object nouns that can close a corpus name. 专项 is deliberately excluded: it is
@@ -109,6 +121,22 @@ _DATE_VALUE = re.compile(
     r"(?:[0-9一二三四五六七八九十]+年)?[0-9一二三四五六七八九十]+月"
     r"[0-9一二三四五六七八九十]+日"
 )
+_PLAN_REQUEST = re.compile(r"^(?:为|给|针对|制定|提出|给出|安排|拟定)")
+_PLAN_REQUEST_SUFFIX = re.compile(r"(?:下一步)?工作方案$")
+_PLAN_CLAUSE_SUFFIX = re.compile(
+    r"[，,、]?(?:并)?(?:制定|提出|给出|安排|拟定)(?:下一步|后续|接下来)?"
+    r"(?:工作)?(?:方案|计划|安排|要点)?$"
+)
+_FAMILY_DOCUMENT_SUFFIX = re.compile(r"(?:信息|资料|内容)$")
+_FAMILY_DETAIL_SHELL = re.compile(r"^(?:上限|额度|总额|分别是多少|是多少|多少|情况)+$")
+_FAMILY_TERMS = tuple(
+    sorted(
+        {term for terms in _TOPIC_CLASSES.values() for term in terms},
+        key=len,
+        reverse=True,
+    )
+)
+_FAMILY_TERM_PATTERN = re.compile("|".join(re.escape(term) for term in _FAMILY_TERMS))
 
 
 @dataclass(frozen=True)
@@ -226,6 +254,17 @@ def _extract_explicit_subjects(
             or (alias in object_aliases and _alias_has_topic_after(source_question, alias))
         )
     entity_mentions = _entity_mentions(source_question, matched)
+    # A known short object alias embedded in a longer entity-shaped span is not
+    # the requested object by itself. Preserve the complete source name so an
+    # unknown prefix such as “查看明细项目” cannot borrow “明细项目” evidence.
+    matched = tuple(
+        alias
+        for alias in matched
+        if not any(
+            _normalize(alias) != _normalize(mention) and _normalize(alias) in _normalize(mention)
+            for mention in entity_mentions
+        )
+    )
     subject_clause = _TRAILING_CONTEXT.sub("", subject_clause.strip(" \t\r\n？?，,。；;：:"))
     # If the clause is a request sentence, its whole prefix is not a safe entity.
     # An unrecognized request is treated as unresolved instead of filtering on that text.
@@ -289,7 +328,6 @@ def _extract_explicit_subjects(
             )
             candidate = request_prefix.sub("", normalized_candidate).strip()
             candidate = _trim_topic_after_entity_suffix(candidate)
-            candidate = _TOPIC_FILLER.sub("", candidate).strip()
             if _REQUEST_CLAUSE.search(candidate):
                 continue
             if not candidate or _is_generic_subject(candidate):
@@ -327,16 +365,13 @@ def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str
         if any(_normalize(term) in normalized for term in terms)
     ]
     if matched:
-        specific = topic_phrase
-        for terms in _TOPIC_CLASSES.values():
-            for term in terms:
-                specific = specific.replace(term, " ")
-        specific = _TOPIC_FILLER.sub("", specific)
-        specific = _normalize(specific)
-        if _REQUEST_CLAUSE.search(specific):
+        if _REQUEST_CLAUSE.search(topic_phrase):
             return tuple(matched)
-        if len(specific) >= 2:
-            return (f"{'+'.join(matched)}&term:{specific}",)
+        if _FAMILY_TERM_PATTERN.search(topic_phrase):
+            topic_phrase = _FAMILY_DOCUMENT_SUFFIX.sub("", topic_phrase)
+        qualifiers = _family_residual_topics(topic_phrase)
+        if qualifiers:
+            return ("&".join(("+".join(matched), *(f"term:{part}" for part in qualifiers))),)
         return tuple(matched)
     exact = _normalize(topic_phrase)
     if len(exact) >= 2:
@@ -348,6 +383,34 @@ def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str
     # Empty topic phrases are genuinely open questions or generic plans; an
     # unfamiliar but explicit noun phrase remains an exact local scope.
     return ()
+
+
+def _family_residual_topics(topic_phrase: str) -> tuple[str, ...]:
+    """Keep meaningful family-adjacent text as separate, contiguous constraints.
+
+    Removing a family word and concatenating both sides would manufacture a phrase
+    that the user never asked for (and that may not exist in any source). Keeping
+    the original fragments as independent terms preserves both qualifiers.
+    """
+    fragments: list[str] = []
+    previous_end = 0
+    for match in _FAMILY_TERM_PATTERN.finditer(topic_phrase):
+        fragment = topic_phrase[previous_end : match.start()].strip(" \t\r\n的和与及、,，:：")
+        if fragment:
+            fragments.append(fragment)
+        previous_end = match.end()
+    tail = topic_phrase[previous_end:].strip(" \t\r\n的和与及、,，:：")
+    if tail:
+        fragments.append(tail)
+    return tuple(
+        dict.fromkeys(
+            normalized
+            for fragment in fragments
+            if not _FAMILY_DETAIL_SHELL.fullmatch(fragment)
+            if len(normalized := _normalize(fragment)) >= 2
+            and not _PLAN_SHELL.fullmatch(normalized)
+        )
+    )
 
 
 def query_scope(
@@ -428,7 +491,11 @@ def _topic_dimensions(span: str) -> tuple[str, ...]:
 
 
 def _single_topic_dimension(span: str) -> tuple[str, ...]:
-    cleaned = _TOPIC_PREFIX.sub("", span.strip())
+    cleaned = span.strip()
+    has_plan_request = bool(_PLAN_REQUEST.match(cleaned))
+    cleaned = _TOPIC_PREFIX.sub("", cleaned)
+    if has_plan_request:
+        cleaned = _PLAN_REQUEST_SUFFIX.sub("", cleaned)
     cleaned = _TOPIC_SUFFIX.sub("", cleaned)
     dimensions = query_dimensions(cleaned)
     return dimensions
@@ -438,14 +505,22 @@ def _topic_phrase(question: str, subjects: tuple[str, ...]) -> str:
     source_question = question.split("\n追问：", maxsplit=1)[-1]
     masked = source_question
     for subject in sorted(subjects, key=len, reverse=True):
-        masked = re.sub(re.escape(subject), " ", masked, flags=re.IGNORECASE)
-    masked = masked.replace("的", " ")
-    topic = _TOPIC_PREFIX.sub("", masked.strip())
+        # “的” is removed only when it is the possessive connector immediately
+        # following an identified object. Any occurrence inside the topic text is
+        # preserved for the same reason as other information-bearing wording.
+        masked = re.sub(re.escape(subject) + r"的?", " ", masked, flags=re.IGNORECASE)
+    topic = masked.strip(" \t\r\n的和与及、,，:：")
     previous = None
     while topic != previous:
         previous = topic
+        topic = _TOPIC_PREFIX.sub("", topic.strip())
+        topic = topic.strip(" \t\r\n的和与及、,，:：")
+        topic = _TOPIC_REQUEST_SUFFIX.sub("", topic.strip())
+        topic = _PLAN_CLAUSE_SUFFIX.sub("", topic.strip())
         topic = _TOPIC_SUFFIX.sub("", topic.strip())
-        topic = _TOPIC_FILLER.sub("", topic)
+        topic = topic.strip(" \t\r\n的和与及、,，:：")
+        if _PLAN_REQUEST_SUFFIX.fullmatch(topic):
+            return ""
     if _PLAN_SHELL.match(topic.strip()):
         return ""
     return topic
@@ -467,7 +542,6 @@ def _alias_is_subject_in_question(question: str, alias: str) -> bool:
     if any(_normalize(term) in tail for terms in _TOPIC_CLASSES.values() for term in terms):
         return True
     cleaned_tail = _TOPIC_SUFFIX.sub("", tail)
-    cleaned_tail = _TOPIC_FILLER.sub("", cleaned_tail)
     return len(cleaned_tail) >= 2 and not _topic_phrase(tail, ())
 
 
@@ -479,19 +553,44 @@ def _alias_has_entity_role(alias: str) -> bool:
 def _entity_mentions(question: str, known_subjects: tuple[str, ...]) -> tuple[str, ...]:
     """Find source-local names ending in a known entity noun, independent of order."""
     pattern = re.compile(r"([\u3400-\u9fffA-Za-z0-9]{1,16}?)(?:项目|计划|工程|工作坊|课题|产品)")
-    stripped = _TOPIC_PREFIX.sub("", question.strip())
-    for subject in sorted(known_subjects, key=len, reverse=True):
-        stripped = stripped.replace(subject, " " * len(subject))
+    # Remove only a comparison command at the start. Repeatedly applying the
+    # general topic/request prefix would erase real names beginning with a verb.
+    stripped = question.strip()
+    comparison_match = _ENTITY_COMPARISON_PREFIX.match(stripped)
+    if comparison_match:
+        stripped = stripped[comparison_match.end() :]
+    elif not any(stripped.startswith(alias) for alias in known_subjects):
+        stripped = _ENTITY_REQUEST_PREFIX.sub("", stripped, count=1)
     values: list[str] = []
     for region in re.split(r"(?:和|与|及|、|,|，|。|？|\?|；|;)", stripped):
-        region = _COMPARISON_PREFIX.sub("", region).strip()
+        region = region.strip()
         for match in pattern.finditer(region):
             candidate = match.group().strip()
             if not _is_name_stem(match.group(1)):
                 continue
             if candidate and not _is_generic_subject(candidate):
+                embedded_alias = next(
+                    (
+                        alias
+                        for alias in sorted(known_subjects, key=len, reverse=True)
+                        if candidate.endswith(alias)
+                        and _is_request_or_reference_prefix(candidate[: -len(alias)])
+                    ),
+                    None,
+                )
+                if embedded_alias is not None or candidate in known_subjects:
+                    continue
                 values.append(candidate)
     return tuple(values)
+
+
+def _is_request_or_reference_prefix(prefix: str) -> bool:
+    return (
+        not prefix
+        or bool(_SUBJECT_REQUEST_PREFIX.fullmatch(prefix))
+        or prefix in _GENERIC_PREFIXES
+        or prefix == "为"
+    )
 
 
 def _is_name_stem(stem: str) -> bool:

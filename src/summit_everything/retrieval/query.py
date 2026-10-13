@@ -497,9 +497,6 @@ class QueryService:
         citation_rejections: dict[UUID, str] = {}
         truncated_by_limit = False
         for item in ranked:
-            if len(citations) >= limit:
-                truncated_by_limit = True
-                break
             page, eligibility = self._read_page_eligibility(
                 root,
                 item["page_id"],
@@ -511,6 +508,12 @@ class QueryService:
                 continue
             validity = page.metadata.get("validity", "current")
             if validity not in {"current", "superseded", "invalid"}:
+                continue
+            if len(citations) >= limit:
+                # Check omitted candidates against the same current qualification
+                # gate before reporting a citation cap. A stale or invalid tail
+                # item is not evidence that an uncovered pair could have been cited.
+                truncated_by_limit = True
                 continue
             citations.append(
                 Citation(
@@ -593,12 +596,52 @@ class QueryService:
             for pair in scope_pairs_by_chunk.get(citation.chunk_id, set())
         }
         missing_pairs = required_pairs - covered_pairs
-        if truncated_by_limit and missing_pairs:
-            # The citation cap, not absent knowledge, is why these pairs are
-            # uncovered: say so and never present the shortfall as missing evidence.
-            scope_missing = [self._truncated_scope_notice(missing_pairs)]
-        else:
-            scope_missing = self._scope_missing_pairs(missing_pairs)
+        eligible_page_cache: dict[UUID, PageSnapshot | None] = {}
+        eligible_scope_pairs: set[tuple[str, str]] = set()
+        eligible_candidate_pairs: set[tuple[str, str]] = set()
+        for item in scope_candidates:
+            page_id = item["page_id"]
+            if page_id not in eligible_page_cache:
+                current_page, _ = self._read_page_eligibility(
+                    root,
+                    page_id,
+                    purpose=purpose,
+                    expected_content_sha256=str(item["content_sha256"]),
+                )
+                eligible_page_cache[page_id] = current_page
+            current_page = eligible_page_cache[page_id]
+            if current_page is None or current_page.metadata.get("validity", "current") not in {
+                "current",
+                "superseded",
+                "invalid",
+            }:
+                continue
+            pairs = scope_pairs_by_chunk.get(str(item["chunk_id"]), set())
+            eligible_scope_pairs.update(pairs)
+            if item in candidates:
+                eligible_candidate_pairs.update(pairs)
+
+        # A pair is “truncated” only when at least one still-qualified passage
+        # actually supports it outside the cited set. A dense top-20 omission is
+        # tracked separately from the public citation limit.
+        citation_truncated_pairs = (eligible_candidate_pairs - covered_pairs) & missing_pairs
+        candidate_truncated_pairs = (
+            eligible_scope_pairs - eligible_candidate_pairs
+        ) & missing_pairs
+        candidate_truncated_pairs -= citation_truncated_pairs
+        absent_pairs = missing_pairs - citation_truncated_pairs - candidate_truncated_pairs
+        scope_missing = self._scope_missing_pairs(absent_pairs)
+        if citation_truncated_pairs:
+            scope_missing.append(self._truncated_scope_notice(citation_truncated_pairs))
+        if candidate_truncated_pairs:
+            scope_missing.append(self._candidate_limit_notice(candidate_truncated_pairs))
+        if truncated_by_limit and not citation_truncated_pairs:
+            # The cap may exclude redundant material for a pair that is already
+            # covered. Report that observed limit neutrally, without suggesting it
+            # could explain a different pair that has no qualified support.
+            scope_missing.append(
+                "本次引用条数已达上限，另有同范围材料未列入引用；这不表示未覆盖主题已有依据。"
+            )
         comparison_missing = (
             ["可用材料不足两组，无法进行跨材料比较。"]
             if answer_mode == "comparison"
@@ -623,7 +666,7 @@ class QueryService:
         partial_text = (
             "当前资料只覆盖了部分所问范围：\n\n"
             + "\n\n".join(source_statements)
-            + "\n\n仍缺少："
+            + "\n\n范围未覆盖说明："
             + "；".join(scope_missing)
             if scope_missing
             else None
@@ -934,6 +977,18 @@ class QueryService:
             "本次引用条数已达上限，以下所问范围尚未覆盖："
             + "；".join(labels)
             + "。可缩小问题范围或减少所问对象/主题后重试。"
+        )
+
+    def _candidate_limit_notice(self, pairs: set[tuple[str, str]]) -> str:
+        labels = [
+            f"{subject or '未限定对象'}："
+            f"{self._readable_dimension(dimension, subject) or '所问主题'}"
+            for subject, dimension in sorted(pairs)
+        ]
+        return (
+            "检索前20条候选未包含以下已有资料范围："
+            + "；".join(labels)
+            + "。可缩小问题范围后重试。"
         )
 
     def _related_page_ids(self, root: Path, chunks: list[dict[str, object]]) -> set[UUID]:

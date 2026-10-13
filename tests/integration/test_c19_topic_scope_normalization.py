@@ -25,6 +25,7 @@ from summit_everything.workspace.manifest import (
     create_workspace,
     load_manifest,
 )
+from summit_everything.workspace.reader import list_pages
 from summit_everything.workspace.writer import PageWriter
 
 FINGERPRINT = "c19-normalization-v1"
@@ -334,3 +335,267 @@ def test_unregistered_names_starting_with_request_words_survive(tmp_path: Path) 
     assert any("总结报告" in item for item in answer.missing_information), (
         answer.missing_information
     )
+
+
+@pytest.mark.parametrize(
+    ("project", "topic", "positive_body", "near_miss_body", "question"),
+    [
+        (
+            "白萤会展",
+            "年度访客信息登记",
+            "白萤会展年度访客信息登记须核验身份。",
+            "白萤会展年度访客登记须核验身份。",
+            "白萤会展的年度访客信息登记办法是什么？",
+        ),
+        (
+            "松墨展会",
+            "访客资料提交",
+            "松墨展会访客资料提交须附来源清单。",
+            "松墨展会访客提交须附来源清单。",
+            "松墨展会的访客资料提交办法是什么？",
+        ),
+    ],
+)
+@pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+def test_information_words_inside_topics_are_not_global_shell(
+    tmp_path: Path,
+    project: str,
+    topic: str,
+    positive_body: str,
+    near_miss_body: str,
+    question: str,
+    mode: str,
+) -> None:
+    root, service, answerer = build_query(tmp_path, [(project, topic, positive_body)])
+    planned = scope(service, root, question)
+    assert planned.required_pairs == ((project, f"term:{topic}"),)
+    answer = ask(service, root, question, mode)
+    assert positive_body.rstrip("。").split("须")[0] in excerpts(answer)
+    assert answer.missing_information == []
+    assert answerer.calls and positive_body.rstrip("。").split("须")[0] in passages(answerer)
+
+    root, service, answerer = build_query(
+        tmp_path / "near-miss", [(project, topic, near_miss_body)]
+    )
+    answer = ask(service, root, question, mode)
+    assert answer.citations == [], answer.model_dump()
+    assert answer.missing_information and project in answer.missing_information[0]
+    assert topic in answer.missing_information[0]
+    assert answerer.calls == []
+
+
+@pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+def test_plan_work_scheme_suffix_is_request_shell_but_compound_topic_survives(
+    tmp_path: Path, mode: str
+) -> None:
+    project = "白萤会展"
+    pages = [
+        (project, "登记", "白萤会展年度访客信息登记须核验身份。"),
+        (project, "工作证", "白萤会展访客工作证领取须本人签名。"),
+    ]
+    root, service, answerer = build_query(tmp_path, pages)
+    query = "为白萤会展制定年度访客信息登记工作方案"
+    planned = scope(service, root, query)
+    assert planned.required_pairs == ((project, "term:年度访客信息登记"),)
+    answer = ask(service, root, query, mode)
+    assert "年度访客信息登记须核验身份" in excerpts(answer)
+    assert answer.missing_information == []
+    assert answerer.calls
+
+    compound = "白萤会展的访客工作证领取办法是什么"
+    compound_plan = scope(service, root, compound)
+    assert compound_plan.required_pairs == ((project, "term:访客工作证领取"),)
+    compound_answer = ask(service, root, compound, "fact")
+    assert "访客工作证领取须本人签名" in excerpts(compound_answer)
+
+
+@pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+def test_limit_notice_does_not_replace_real_absence_or_invent_omitted_support(
+    tmp_path: Path, mode: str
+) -> None:
+    pages = [
+        ("云岬营地", f"预算记录{i}", f"云岬营地预算额度第{i}项为{i * 10000 + 30000}元。")
+        for i in range(1, 7)
+    ] + [("汀屿计划", "流程记录", "汀屿计划访客登记须由前台核验。")]
+    root, service, answerer = build_query(tmp_path, pages)
+    question = "比较云岬营地预算与汀屿计划的排期"
+    answer = service.query(root, question, fingerprint=FINGERPRINT, answer_mode=mode, limit=5)
+    assert len(answer.citations) == 5
+    assert any("汀屿计划" in item and "缺少" in item for item in answer.missing_information)
+    # The unquoted sixth budget passage is real current support for an already
+    # covered pair; a neutral cap note may report that omission without claiming
+    # the independently missing B schedule might exist.
+    assert any("上限" in item for item in answer.missing_information)
+    assert "排期" not in passages(answerer)
+
+    complete = service.query(root, question, fingerprint=FINGERPRINT, answer_mode=mode, limit=20)
+    assert any("汀屿计划" in item and "缺少" in item for item in complete.missing_information)
+    assert not any("上限" in item for item in complete.missing_information)
+
+
+def test_candidate_budget_cap_requires_current_in_scope_support(tmp_path: Path) -> None:
+    # Twenty high-overlap but out-of-scope chunks must not make a genuinely
+    # absent requested pair look like it was merely omitted by the candidate cap.
+    pages = [
+        ("岚桥计划", f"预算记录{i}", f"岚桥计划预算额度第{i}项为{i * 10000}元。")
+        for i in range(1, 24)
+    ] + [("汀屿计划", "流程记录", "汀屿计划访客登记须由前台核验。")]
+    root, service, _answerer = build_query(tmp_path, pages)
+    answer = ask(service, root, "比较岚桥计划的预算与汀屿计划的排期", "comparison")
+    assert any("汀屿计划" in item and "缺少" in item for item in answer.missing_information)
+    assert not any("候选" in item and "汀屿计划" in item for item in answer.missing_information)
+
+
+def test_candidate_budget_notice_names_a_pair_with_support_beyond_top_twenty(
+    tmp_path: Path,
+) -> None:
+    pages = [
+        ("岚桥计划", f"预算记录{i}", f"岚桥计划预算额度第{i}项为{i * 10000}元。")
+        for i in range(1, 24)
+    ] + [("汀屿计划", "排期", "汀屿计划排期为十一月。")]
+    root, service, _answerer = build_query(tmp_path, pages)
+    answer = ask(
+        service,
+        root,
+        "比较岚桥计划的预算与汀屿计划的排期",
+        "comparison",
+    )
+    assert "汀屿计划排期" not in excerpts(answer)
+    assert any("汀屿计划" in item and "候选" in item for item in answer.missing_information)
+    assert not any("汀屿计划" in item and "缺少" in item for item in answer.missing_information)
+
+
+def test_stale_tail_candidate_does_not_count_as_limit_coverage(tmp_path: Path) -> None:
+    pages = [
+        ("岚桥计划", f"预算记录{i}", f"岚桥计划预算额度第{i}项为{i * 10000}元。")
+        for i in range(1, 7)
+    ] + [("汀屿计划", "排期", "汀屿计划排期为十一月。")]
+    root, service, _answerer = build_query(tmp_path, pages)
+    tail_page = next(page for page in list_pages(root) if page.metadata["title"] == "排期")
+    path = root / tail_page.relative_path
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("排期为十一月", "开放时间为周六"),
+        encoding="utf-8",
+    )
+    answer = ask(
+        service,
+        root,
+        "比较岚桥计划的预算与汀屿计划的排期",
+        "comparison",
+    )
+    assert any("汀屿计划" in item and "缺少" in item for item in answer.missing_information)
+    assert not any("候选" in item and "汀屿计划" in item for item in answer.missing_information)
+    assert not any(
+        "汀屿计划" in item and "引用条数已达上限，以下所问范围" in item
+        for item in answer.missing_information
+    )
+
+
+def test_single_citation_limit_reports_an_existing_uncovered_pair_as_truncated(
+    tmp_path: Path,
+) -> None:
+    pages = [
+        ("云岬营地", "预算", "云岬营地预算上限为八万元。"),
+        ("汀屿计划", "排期", "汀屿计划排期为十一月。"),
+    ]
+    root, service, _answerer = build_query(tmp_path, pages)
+    answer = service.query(
+        root,
+        "比较云岬营地预算与汀屿计划排期",
+        fingerprint=FINGERPRINT,
+        answer_mode="comparison",
+        limit=1,
+    )
+    assert len(answer.citations) == 1
+    assert any("条数已达上限" in item for item in answer.missing_information)
+    assert not any("缺少" in item and "依据" in item for item in answer.missing_information)
+
+
+@pytest.mark.parametrize("mode", ["fact", "comparison", "plan"])
+def test_family_terms_do_not_join_separated_topic_fragments(tmp_path: Path, mode: str) -> None:
+    project = "银杏工作坊"
+    full = "银杏工作坊年度资料保管签领须双人登记。"
+    question = {
+        "fact": "银杏工作坊的年度资料保管签领办法是什么？",
+        "comparison": "比较银杏工作坊的年度资料保管签领办法",
+        "plan": "为银杏工作坊制定年度资料保管签领方案",
+    }[mode]
+    root, service, answerer = build_query(tmp_path, [(project, "资料保管", full)])
+    planned = scope(service, root, question)
+    assert planned.required_pairs == ((project, "storage&term:年度资料&term:签领"),)
+    answer = ask(service, root, question, mode)
+    assert full.rstrip("。") in excerpts(answer)
+    assert answer.missing_information == []
+    assert answerer.calls and full.rstrip("。") in passages(answerer)
+
+    root, service, answerer = build_query(
+        tmp_path / "missing-tail",
+        [(project, "资料保管", "银杏工作坊年度资料保管须双人登记。")],
+    )
+    answer = ask(service, root, question, mode)
+    assert answer.citations == [], answer.model_dump()
+    assert answer.missing_information and "签领" in answer.missing_information[0]
+    assert answerer.calls == []
+
+
+def test_request_tail_does_not_become_a_missing_topic_dimension(tmp_path: Path) -> None:
+    root, service, _answerer = build_query(
+        tmp_path, [("其他项目", "其他", "其他项目的会场布置已确认。")]
+    )
+    question = "为彩色牙刷储存规则提出建议并列出缺失信息。"
+
+    planned = scope(service, root, question)
+    assert planned.explicit_subjects == ("彩色牙刷",)
+    assert planned.required_pairs == (("彩色牙刷", "storage"),)
+
+    answer = ask(service, root, question, "fact")
+    assert answer.citations == []
+    assert answer.missing_information == ["彩色牙刷：缺少存储或保管规则依据。"]
+
+
+def test_plan_question_suffix_keeps_supported_budget_and_schedule_pairs(
+    tmp_path: Path,
+) -> None:
+    root, service, _answerer = build_query(
+        tmp_path,
+        [
+            ("青松计划", "预算", "青松计划预算已确认上限为十二万元。"),
+            ("青松计划", "排期", "青松计划排期确认在十一月开始。"),
+        ],
+    )
+    question = "青松计划预算和排期下一步需要补什么？"
+
+    planned = scope(service, root, question)
+    assert set(planned.required_pairs) == {
+        ("青松计划", "budget"),
+        ("青松计划", "schedule"),
+    }
+    answer = ask(service, root, question, "plan")
+    assert answer.citations
+    assert answer.advice == ["建议"]
+    assert answer.missing_information == []
+
+
+def test_lookup_verb_at_the_start_of_an_unknown_name_does_not_match_shorter_object(
+    tmp_path: Path,
+) -> None:
+    root, service, _answerer = build_query(
+        tmp_path,
+        [
+            ("明细项目", "预算", "明细项目预算为四万元。"),
+            ("松墨展会", "预算", "松墨展会预算为八万元。"),
+        ],
+    )
+    answer = ask(
+        service,
+        root,
+        "比较查看明细项目与松墨展会的预算",
+        "comparison",
+    )
+
+    assert set(scope(service, root, "比较查看明细项目与松墨展会的预算").explicit_subjects) == {
+        "查看明细项目",
+        "松墨展会",
+    }
+    assert [citation.excerpt for citation in answer.citations] == ["松墨展会预算为八万元。"]
+    assert answer.missing_information == ["查看明细项目：缺少预算依据。"]
