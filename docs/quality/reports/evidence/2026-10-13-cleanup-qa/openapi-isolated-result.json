@@ -1,0 +1,12 @@
+{
+  "tested_sha": "6a33259224097167cfdde689da93258fe925964e",
+  "export_exit": 0,
+  "types_exit": 0,
+  "openapi_matches_tracked": true,
+  "typescript_matches_tracked": true,
+  "generated_openapi_sha256": "cdc9a4220ffffad89df9367a7d514129607e7511aa6f4e1d17cb51170306a829",
+  "tracked_openapi_sha256": "cdc9a4220ffffad89df9367a7d514129607e7511aa6f4e1d17cb51170306a829",
+  "generated_types_sha256": "c3110bdde2b62b4e026418ed0d4deb79bab3b40a2894c0e02c5ced88078d0cc3",
+  "tracked_types_sha256": "c3110bdde2b62b4e026418ed0d4deb79bab3b40a2894c0e02c5ced88078d0cc3",
+  "temporary_copy": true
+}

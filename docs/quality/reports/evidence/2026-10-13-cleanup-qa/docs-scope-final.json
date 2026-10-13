@@ -1,0 +1,13 @@
+{
+  "baseline_acceptance_bytes": 39122,
+  "history_bytes": 39274,
+  "baseline_full_acceptance_exact_substring_in_history": true,
+  "current_acceptance_preserves_C01_C31": true,
+  "historical_copy_preserves_C01_C31": true,
+  "matrix_status_vocabulary_all_retained": true,
+  "must_gate_retained": true,
+  "selftest_is_not_independent_QA": true,
+  "domain_models_dto_file_exists": true,
+  "domain_models_plan_note": true,
+  "three_unavailable_absolute_historical_paths_verified_in_immutable_report": true
+}

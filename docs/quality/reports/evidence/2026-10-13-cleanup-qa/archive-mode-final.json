@@ -1,0 +1,26 @@
+{
+  "archive_path": "/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/archives/2026-10-13-pre-next-stage-cleanup",
+  "directory_mode": "0o700",
+  "files": {
+    "SHA256SUMS": "0o600",
+    "SummitEverything-DSH-C19-20261012-local.tar.gz": "0o600",
+    "SummitEverything-DSH-C19-PREQA-local.tar.gz": "0o600",
+    "SummitEverything-DSH-C19-PREQA2-local.tar.gz": "0o600",
+    "SummitEverything-DSH-C19-PREQA3-local.tar.gz": "0o600",
+    "c03-delete-copy-pilot-local.tar.gz": "0o600",
+    "c03-delete-copy-qa-local.tar.gz": "0o600",
+    "c03-integration-qa-local.tar.gz": "0o600",
+    "cleanup-backups.json": "0o600",
+    "cleanup-pr-body.md": "0o600",
+    "inventory.json": "0o600",
+    "local-branch-removal.json": "0o600",
+    "m3-c19-dsh-independent-qa-local.tar.gz": "0o600",
+    "m3-c19-dsh-repair-1-qa-local.tar.gz": "0o600",
+    "m3-c19-dsh-sol-gate-local.tar.gz": "0o600",
+    "m3-postmerge-qa-local.tar.gz": "0o600",
+    "pre-next-stage-cleanup.bundle": "0o600",
+    "sol-remote-delete.json": "0o600",
+    "worktree-removal.json": "0o600"
+  },
+  "all_files_mode_0600": true
+}
