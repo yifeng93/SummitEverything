@@ -16,6 +16,7 @@
 | M4.1 修复轮 1 | 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4`；独立离线 QA 与 Sol 技术门 PASS；正式收口 / 合并待用户批准 | [fresh QA](../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门](../quality/reports/2026-10-13-M41-SOL-GATE.md) |
 | 真实 provider / Feishu / 业务材料 / OS Keychain | NOT_RUN | 需要独立真实环境与用户选择的材料、范围和动作 |
 | M4.2真实验收、用户安装、Developer ID/公证、五日试用、双机与发布 | NOT_RUN | 内部未公证候选不代表实际安装或发布门通过 |
+| 远端离线 CI | 两次 success，记录 head `f7ad5e4`；与固定 QA 产品树一致 | [CI 证据](../quality/reports/evidence/2026-10-13-m41-ci/README.md)；macOS 14.8.9 自动检查，不代替完整 GUI / 安装 |
 | Runtime 配置元数据 | UNVERIFIED | 没有实际观测值 |
 
 本轮复现开发 runner 启动期间 Ctrl+C 后返回负子进程码（shell exit 241），未复现历史 `PermissionError`；runner 中断清理现在正常返回，tracked 子进程回归覆盖该路径。App UI / 生命周期与仅 backend smoke 分开记录；C24/C25 未逐项复演者继续列为 NOT_RUN。

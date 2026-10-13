@@ -1,0 +1,23 @@
+{
+  "recorded_head_sha": "f7ad5e46a18d256483d5d2b89f464b46a4e10793",
+  "qa_product_sha": "3f6eaa408a8860ff5a438be8a874a2c3904733e4",
+  "github_cli_capture_exit": 0,
+  "runs": [
+    {
+      "run_id": 38363541676,
+      "head_sha": "f7ad5e46a18d256483d5d2b89f464b46a4e10793",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/yifeng93/SummitEverything/actions/runs/38363541676"
+    },
+    {
+      "run_id": 38363540856,
+      "head_sha": "f7ad5e46a18d256483d5d2b89f464b46a4e10793",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/yifeng93/SummitEverything/actions/runs/38363540856"
+    }
+  ]
+}

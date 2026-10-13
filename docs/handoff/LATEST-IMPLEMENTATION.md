@@ -12,6 +12,8 @@ fresh QA 已在独立 checkout 验收上述固定 SHA；[QA 报告](../quality/r
 
 真实 provider / Feishu、真实业务材料、OS Keychain、正式用户安装、Developer ID / 公证、M4.2、五日、双机与发布仍 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
 
+交付副本：`/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/3f6eaa4/SummitEverything-Internal.dmg`，摘要与候选相同。开发分支已 push，[PR #17](https://github.com/yifeng93/SummitEverything/pull/17) 为 draft，等待本次用户指定的正式收口 / 合并批准。远端两个离线 CI 运行在分支 `f7ad5e4` 均 success；该产品树与固定 QA SHA 一致，详见 [CI 原始证据](../quality/reports/evidence/2026-10-13-m41-ci/README.md)。后续仅文档变化不能被写成新的安装包验收。
+
 ## 已合入并验收的产品基线
 
 - 本轮清理前 main 基线：`879c82464903a7aed91b30955d7355064fa85088`。这是本轮维护的起点，不代表本轮维护代码 SHA 或后续合并后的 main HEAD。

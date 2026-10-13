@@ -4,7 +4,7 @@
 
 ## 打开内部候选
 
-1. 双击 `SummitEverything-Internal-fix1-3f6eaa4.dmg`。
+1. 双击内部测试 DMG。当前交付文件位于 `/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/3f6eaa4/SummitEverything-Internal.dmg`。
 2. 将其中的 `SummitEverything Internal fix1 3f6eaa4.app` 复制到一个新建的测试文件夹。保留旧应用；如果目标位置已有同名文件，选择另一个新文件夹，不替换。
 3. 双击复制后的 App。无需手动启动服务，也无需安装 Python、Node 或 Docker。
 4. 首次测试新建一个空的模拟工作库，或打开专门的模拟库。不要选择真实「场地与酒店」或旧业务库。
@@ -18,7 +18,7 @@
 
 内部版的名称和应用标识独立；本机状态默认保存在 `~/Library/Application Support/SummitEverything Internal/`。它不迁移旧应用的本地状态。开发复演曾在这个新目录产生合成状态，已经保留并记录；重新选择模拟库即可继续测试。
 
-候选仅实测 Apple Silicon、macOS 27.0.1。其他系统版本和 Intel 尚未验收。默认为模拟模式；真实模型、飞书、OS Keychain 与真实业务材料继续走单独授权和验收。
+候选仅实测 Apple Silicon、macOS 27.0.1。CI 已在 macOS 14.8.9 arm64 完成自动构建和后端启动检查；该系统完整窗口 / 安装、macOS 13 和 Intel 尚未验收。默认为模拟模式；真实模型、飞书、OS Keychain 与真实业务材料继续走单独授权和验收。
 
 候选包与摘要见 [修复轮 1 DEV 交接](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV-REPAIR1.md)。旧候选 `b9321d6` 的文件面板失败报告保留，不应作为当前候选使用。
 
