@@ -1,0 +1,51 @@
+{
+  "product_source_sha": "3f6eaa408a8860ff5a438be8a874a2c3904733e4",
+  "repair_round": 1,
+  "product_tree_dirty": false,
+  "app": {
+    "path": ".local/dev/m41/repair-1/artifacts/SummitEverything Internal fix1 3f6eaa4.app",
+    "tree_sha256": "1e58574ea68174ffa20f77b7838796d1c180c35cab7e43b66c274a3587b2f4eb",
+    "file_count": 156,
+    "executable_sha256": "b23fa16046cfe39c1aa8885f08b6bbbfe1b90e0d9744919f91f950e42f60cc64",
+    "architecture": "arm64",
+    "minimum_macos": "13.0",
+    "host": "arm64 macOS 27.0.1"
+  },
+  "dmg": {
+    "path": ".local/dev/m41/repair-1/artifacts/SummitEverything-Internal-fix1-3f6eaa4.dmg",
+    "sha256": "554b7ab3d2bc22728ec6484d1109d9bee8b149814aac556571e45a1d1d7f59d8"
+  },
+  "build_identity": {
+    "app_version": "0.1.0",
+    "build_id": "20261013T060945Z-577f0cc805f2",
+    "dirty": false,
+    "frontend_sha256": "577f0cc805f2f7727add28c1e0d4714c0c15040fa7c094fce7e6234c65239fc6",
+    "dependencies_sha256": "2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f"
+  },
+  "ui_status": "DEVELOPER_UI_PASS: actual NSOpenPanel cancel, synthetic TXT/MD selection with pending state and byte SHA checks, Fake organize/approve/index/query; independent QA pending",
+  "tests": {
+    "pytest": 0,
+    "web": 0,
+    "swift_test": 0,
+    "swift_release_build": 0,
+    "ruff_check": 0,
+    "ruff_format": 0,
+    "mypy": 0,
+    "uv_lock_check": 0,
+    "release_build": 0,
+    "codesign_verify": 0,
+    "dmg_verify": 0,
+    "packaged_backend_smoke": 0,
+    "native_startup_rerun2": 0,
+    "manifest_tamper_rerun": 0,
+    "delayed_readiness": 0,
+    "missing_backend_fail_closed": 0,
+    "sse_and_secret_regressions": 0,
+    "github_actions_remote": "NOT_RUN",
+    "native_file_panel_actual_ui": "DEVELOPER_PASS_INDEPENDENT_QA_PENDING",
+    "native_ui_cancel_and_pending": 0,
+    "native_ui_fake_organize_approve_index_query": 0,
+    "native_ui_menu_quit_cleanup": 0,
+    "native_ui_cmd_q": "NOT_CONFIRMED_SHORTCUT_DID_NOT_EXIT"
+  }
+}

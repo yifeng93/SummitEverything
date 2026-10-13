@@ -1,0 +1,21 @@
+Building source distribution...
+Traceback (most recent call last):
+  File "<string>", line 11, in <module>
+  File "/Users/yifengstudio/.cache/uv/builds-v0/.tmpoFcC4t/lib/python3.12/site-packages/hatchling/build.py", line 34, in build_sdist
+    return os.path.basename(next(builder.build(directory=sdist_directory, versions=["standard"])))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.cache/uv/builds-v0/.tmpoFcC4t/lib/python3.12/site-packages/hatchling/builders/plugin/interface.py", line 166, in build
+    artifact = version_api[version](directory, **build_data)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.cache/uv/builds-v0/.tmpoFcC4t/lib/python3.12/site-packages/hatchling/builders/sdist.py", line 188, in build_standard
+    archive.addfile(tar_info, f)
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/tarfile.py", line 2261, in addfile
+    copyfileobj(fileobj, self.fileobj, tarinfo.size, bufsize=bufsize)
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/tarfile.py", line 253, in copyfileobj
+    raise exception("unexpected end of data")
+OSError: unexpected end of data
+error: Failed to build `/Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything`
+  Caused by: The build backend returned an error
+  Caused by: Call to `hatchling.build.build_sdist` failed (exit status: 1)
+
+hint: Build failures usually indicate a problem with the package or the build environment

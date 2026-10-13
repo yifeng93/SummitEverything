@@ -1,0 +1,85 @@
+name: M4.1 internal macOS app
+
+on:
+  push:
+    branches:
+      - codex/m41-internal-app-*
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "web/**"
+      - "native/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/m41-internal-app.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "web/**"
+      - "native/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/m41-internal-app.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-arm64:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install locked Python and Web dependencies
+        run: |
+          uv sync --locked --group dev --group build
+          npm --prefix web ci
+
+      - name: Guarded Python checks
+        run: |
+          PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --locked pytest -q
+          uv run --locked ruff check src tests
+          uv run --locked ruff format --check src tests
+          uv run --locked mypy src
+          uv lock --check
+          uv build
+
+      - name: Web checks and API types
+        run: |
+          npm --prefix web run api:types
+          git diff --exit-code -- web/src/api/generated.ts
+          npm --prefix web test
+          npm --prefix web run typecheck
+          npm --prefix web run lint
+          npm --prefix web run build
+
+      - name: Native upload policy tests
+        run: swift test --package-path native
+
+      - name: Build and verify internal App and DMG
+        run: |
+          output="$RUNNER_TEMP/summit-m41"
+          mkdir -p "$output"
+          scripts/release-macos.sh "$output/SummitEverything Internal.app" "$output/SummitEverything-Internal.dmg"
+          codesign --verify --deep --strict "$output/SummitEverything Internal.app"
+          hdiutil verify "$output/SummitEverything-Internal.dmg"
+          SUMMIT_APP="$output/SummitEverything Internal.app" uv run --locked python scripts/smoke_packaged_app.py

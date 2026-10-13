@@ -1,0 +1,16 @@
+5fce9f59dca1304507f44ad164f71dd58750fb75604cf57e46d11e0c18b8cc78  docs/quality/reports/evidence/2026-10-13-m41-dev/README.md
+5b9cb7cce8dbd02315623e8b432399477b8d1b7721774b1d1bc81a100a529a0d  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/build-final-b9321d6.log
+d1f5343e0d5f37f3c92c538badf325fa4d627ced0c65e5a03381c0a4acc95874  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/dev-runner-ctrl-c-baseline.log
+e77f4f3ece22553c223956ad097446c4d5a26d823c92b790f5e2f4a4ac16c269  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/dev-runner-ctrl-c-green.log
+f86ba6f3210eba2b7f33c4d381fd9bbd0605889622703da954edcd83a8575b6c  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/final-artifact-verification.log
+219683ccf55df62722466f894c02f5f8ae6aaec3e8b57f0deb70b901d08eef9f  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/final-static.log
+d98ff935f426c9820488c0d6dff08b6bd93205ec311945c92bb0956531f975b9  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/gates-full.log
+a1c919f5bb24a0d94fb158ac192c098b156b2c9cdfb2f2999ec0034353792b59  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/guarded-pytest-final.log
+aba688236a6bf60311aa0ccce064da323c3b6b65216f59097df7e839babecc55  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/native-ui-final-observations.txt
+e95b84766bb48737b42748873585a1aad889342eca87997103c6b299043372d9  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/packaged-backend-smoke-final.log
+7aeb4e892b3e870a7d6884c79f8b5e7e040d57c70e5dbb21dea2f84ebf33e6b5  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/sse-real-query-exception-green.log
+eb7365c81571a6d85f7ca490b631e18a4c0f72d247db8706f20e629491832218  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/sse-real-query-exception-red.log
+b27b0ce3b95d7c2087190af3842acc14bb4b2a3a3750ce53ec93bcf743ee65ed  docs/quality/reports/evidence/2026-10-13-m41-dev/logs/swift-build-final.log
+2805b56b67ac356be37393b9fca47ce460a27b49c83e7c56d72e6188ae50f5b1  docs/quality/reports/evidence/2026-10-13-m41-dev/manifests/build-info.json
+2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f  docs/quality/reports/evidence/2026-10-13-m41-dev/manifests/dependencies.json
+b1b0162fbb410d9f4ca0722e4e795ee7422c92d978852854a9317b8bb798e09b  docs/quality/reports/evidence/2026-10-13-m41-dev/manifests/evidence-manifest.json

@@ -1,0 +1,260 @@
+{
+  "tested_source_sha": "3f6eaa408a8860ff5a438be8a874a2c3904733e4",
+  "candidate_tree_sha256": "1e58574ea68174ffa20f77b7838796d1c180c35cab7e43b66c274a3587b2f4eb",
+  "dmg_sha256": "554b7ab3d2bc22728ec6484d1109d9bee8b149814aac556571e45a1d1d7f59d8",
+  "results": [
+    {
+      "command": "PYTHONPATH=\"$PWD/scripts/offline_guard:$PWD/src\" uv run --locked pytest -q",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "499 passed, 1 Starlette deprecation warning in 75.33s",
+      "log": "logs/pytest.log"
+    },
+    {
+      "command": "PYTHONPATH=\"$PWD/scripts/offline_guard:$PWD/src\" uv run --locked pytest -q tests/integration/test_provider_settings_api.py tests/integration/test_release_app.py tests/integration/test_http_sse_lifecycle.py",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "16 passed, 1 Starlette deprecation warning in 1.67s; exercises synthetic bearer, auth/error paths, release identity/tamper and real-loopback SSE",
+      "log": "logs/m4-api-release-sse-tests.log"
+    },
+    {
+      "command": "uv run --locked ruff check src tests",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "All checks passed",
+      "log": "logs/ruff-check.log"
+    },
+    {
+      "command": "uv run --locked ruff format --check src tests",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "82 files already formatted",
+      "log": "logs/ruff-format.log"
+    },
+    {
+      "command": "uv run --locked mypy src",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Success: no issues found in 44 source files",
+      "log": "logs/mypy.log"
+    },
+    {
+      "command": "uv lock --check",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Resolved 48 packages",
+      "log": "logs/uv-lock.log"
+    },
+    {
+      "command": "npm ci --prefix web",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "126 packages added; 0 vulnerabilities",
+      "log": "logs/npm-ci.log"
+    },
+    {
+      "command": "npm --prefix web test",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "12 files and 56 tests passed",
+      "log": "logs/web-test.log"
+    },
+    {
+      "command": "npm --prefix web run typecheck",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Typecheck passed",
+      "log": "logs/web-typecheck.log"
+    },
+    {
+      "command": "npm --prefix web run lint",
+      "exit_code": 0,
+      "attempt_status": "PASS_WITH_WARNINGS",
+      "result": "Two react(set-state-in-effect) warnings in TodayView.tsx and ProjectsView.tsx",
+      "log": "logs/web-lint.log"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Vite build succeeded",
+      "log": "logs/web-build.log"
+    },
+    {
+      "command": "swift test --package-path native",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "XCTest executed 3 tests, 0 failures; supplementary Swift Testing runner had 0 tests",
+      "log": "logs/swift-test.log"
+    },
+    {
+      "command": "uv build",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Built sdist and wheel",
+      "log": "logs/uv-build.log"
+    },
+    {
+      "command": "uv sync --locked --group dev --group build",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Resolved 48 packages; checked 45 packages",
+      "log": "logs/uv-sync.log"
+    },
+    {
+      "command": "SUMMIT_SOURCE_APP='/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything Internal fix1 3f6eaa4.app' DARWIN_USER_TEMP_DIR='/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/' .venv/bin/python '.local/qa/2026-10-13-m41-repair1/test_delayed_native_readiness_qa.py' > '.local/qa/2026-10-13-m41-repair1/delayed-readiness.log' 2>&1; rc=$?; cat '.local/qa/2026-10-13-m41-repair1/delayed-readiness.log'; echo exit_code=$rc; exit $rc",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "4-second synthetic delay; health observed before root; process exit -15 was intentional harness cleanup",
+      "log": "logs/delayed-readiness.log"
+    },
+    {
+      "command": "SUMMIT_SOURCE_APP='/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything Internal fix1 3f6eaa4.app' DARWIN_USER_TEMP_DIR='/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/' .venv/bin/python '.local/qa/2026-10-13-m41-repair1/test_sigkill_cleanup_qa.py' > '.local/qa/2026-10-13-m41-repair1/sigkill-cleanup.log' 2>&1; rc=$?; cat '.local/qa/2026-10-13-m41-repair1/sigkill-cleanup.log'; echo exit_code=$rc; exit $rc",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "App PID 90389 exited -9; backend child 90391 and port 18793 cleaned after pipe EOF",
+      "log": "logs/sigkill-cleanup.log"
+    },
+    {
+      "command": "QA-owned verify_bundle_tamper.py harness against a temporary bundle copy; exact CLI arguments were not retained",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Tampered embedded backend exited 1 and exposed no readiness listener",
+      "log": "logs/bundle-tamper.log",
+      "command_exact": false
+    },
+    {
+      "command": "PYTHONPATH=\"$PWD/src\" uv run --locked python .local/qa/2026-10-13-m41-repair1/typegen/scripts/export_openapi.py",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "OpenAPI exported only under QA typegen directory",
+      "log": "logs/openapi-types-isolated.log"
+    },
+    {
+      "command": "web/node_modules/.bin/openapi-typescript .local/qa/2026-10-13-m41-repair1/typegen/web/openapi.json -o .local/qa/2026-10-13-m41-repair1/typegen/generated.ts",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Generated TypeScript under QA typegen directory",
+      "log": "logs/openapi-types-isolated.log"
+    },
+    {
+      "command": "diff -u web/src/api/generated.ts .local/qa/2026-10-13-m41-repair1/typegen/generated.ts",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "No generated type diff",
+      "log": "logs/openapi-types-isolated.log"
+    },
+    {
+      "command": "shasum -a 256 '/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything-Internal-fix1-3f6eaa4.dmg'",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "DMG SHA-256 matched 554b7ab3d2bc22728ec6484d1109d9bee8b149814aac556571e45a1d1d7f59d8",
+      "log": "logs/dmg-sha256.log"
+    },
+    {
+      "command": "hdiutil attach -readonly -nobrowse -noautoopen '/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything-Internal-fix1-3f6eaa4.dmg'",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Mounted read-only at /Volumes/SummitEverything Internal",
+      "log": "logs/dmg-attach.log"
+    },
+    {
+      "command": "codesign --verify --deep --strict --verbose=2 '/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything Internal fix1 3f6eaa4.app' and '/Volumes/SummitEverything Internal/SummitEverything Internal fix1 3f6eaa4.app'",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Both signatures valid on disk; signature details are ad hoc",
+      "log": "logs/candidate-codesign-verify.log; logs/dmg-codesign.log"
+    },
+    {
+      "command": "/usr/bin/python3 .local/qa/2026-10-13-m41-repair1/verify_tree_digest.py '/Volumes/SummitEverything Internal/SummitEverything Internal fix1 3f6eaa4.app'",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "156 files; tree digest 1e58574ea68174ffa20f77b7838796d1c180c35cab7e43b66c274a3587b2f4eb",
+      "log": "logs/dmg-app-tree.log"
+    },
+    {
+      "command": "/usr/bin/python3 .local/qa/2026-10-13-m41-repair1/verify_tree_digest.py \"$APP\" (APP was set to the exact candidate path in the shell)",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "156 files; tree digest 1e58574ea68174ffa20f77b7838796d1c180c35cab7e43b66c274a3587b2f4eb",
+      "log": "logs/app-tree.log",
+      "command_exact": false
+    },
+    {
+      "command": "spctl --assess --type execute --verbose=4 '/Volumes/SummitEverything Internal/SummitEverything Internal fix1 3f6eaa4.app'",
+      "exit_code": 3,
+      "attempt_status": "OBSERVED_REJECTED; GATE_ACCEPTANCE_NOT_RUN",
+      "result": "spctl rejected the ad-hoc-signed app. Developer ID, notarization and Gatekeeper acceptance remain NOT_RUN; no bypass was attempted.",
+      "log": "logs/dmg-spctl.log",
+      "gate_status": "NOT_RUN"
+    },
+    {
+      "command": "hdiutil detach /dev/disk6",
+      "exit_code": 0,
+      "attempt_status": "PASS",
+      "result": "Mounted image ejected",
+      "log": "logs/dmg-detach.log"
+    },
+    {
+      "command": "npm ci (repository root; no root package workspace)",
+      "exit_code": 1,
+      "attempt_status": "INVALID_SETUP_ATTEMPT",
+      "result": "Root npm setup failed; corrected web-scoped npm ci passed. The original npm debug output was not retained.",
+      "log": "logs/attempts-and-tool-errors.log",
+      "command_exact": true
+    },
+    {
+      "command": "SUMMIT_SOURCE_APP='/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/artifacts/SummitEverything Internal fix1 3f6eaa4.app' DARWIN_USER_TEMP_DIR='/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/' .venv/bin/python '.local/qa/2026-10-13-m41-repair1/test_delayed_native_readiness_qa.py' > '.local/qa/2026-10-13-m41-repair1/delayed-readiness.log' 2>&1; status=$?; cat '.local/qa/2026-10-13-m41-repair1/delayed-readiness.log'; echo exit_code=$status; exit $status",
+      "exit_code": 1,
+      "attempt_status": "INVALID_WRAPPER_ATTEMPT",
+      "result": "Harness was rerun with rc and exited 0; the invalid wrapper output was not retained separately.",
+      "log": "logs/attempts-and-tool-errors.log",
+      "command_exact": false
+    }
+  ],
+  "ui_observations": [
+    {
+      "scenario": "upload and closed loop",
+      "attempt_status": "PASS",
+      "app_pids": [89086],
+      "temp_root": "/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m41-qa-repair1.1intRJ",
+      "port": "127.0.0.1:18793",
+      "evidence": "../README.md"
+    },
+    {
+      "scenario": "restart persistence",
+      "attempt_status": "PASS",
+      "app_pids": [89313],
+      "temp_root": "/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m41-qa-repair1.1intRJ",
+      "evidence": "../README.md"
+    },
+    {
+      "scenario": "wrong identity and occupied port",
+      "attempt_status": "PASS_FAIL_CLOSED; CUA_ACK_ERROR",
+      "app_pids": [89940],
+      "synthetic_listener_pids": [89802],
+      "port": "127.0.0.1:18793",
+      "profile_lock": "/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m41-qa-repair1.1intRJ/wrong-identity/profile-root/instance.lock",
+      "evidence": "../README.md; logs/wrong-identity-listener-requests.log; logs/attempts-and-tool-errors.log"
+    },
+    {
+      "scenario": "missing backend alert",
+      "attempt_status": "PASS",
+      "app_pids": [89589],
+      "port": "127.0.0.1:18793",
+      "evidence": "../README.md; logs/missing-backend-native-app.log"
+    },
+    {
+      "scenario": "final cleanup",
+      "attempt_status": "PASS",
+      "result": "No listed QA-owned App PID, backend listener on 18793, or mounted SummitEverything Internal volume remained.",
+      "log": "logs/final-cleanup.log"
+    }
+  ],
+  "unverified": [
+    "Developer ID signing/notarization and Gatekeeper acceptance",
+    "Intel/macOS 13, multi-machine, five-day soak",
+    "real models/providers/credentials, Keychain, Feishu or business data",
+    "runtime model and reasoning-effort metadata (UNVERIFIED)"
+  ]
+}

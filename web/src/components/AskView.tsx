@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { api, type Citation, type IndexPlan, type IndexResult } from '../api/client'
+import { api, sessionHeaders, type Citation, type IndexPlan, type IndexResult } from '../api/client'
 import type { components } from '../api/generated'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
@@ -272,7 +272,7 @@ export function AskView({ onError, onOpenPage }: Props) {
       const settings = await api.get<Settings>('/settings')
       const response = await fetch('/api/v1/queries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: sessionHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           question,
           ...(targetConversation ? { conversation_id: targetConversation } : {}),

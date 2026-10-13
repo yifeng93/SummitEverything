@@ -32,6 +32,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.staticfiles import StaticFiles
 
 from summit_everything.api.routes.actions import register_actions
 from summit_everything.domain.content import RetrievalPurpose, StorageArea, retrieval_eligibility
@@ -115,6 +116,11 @@ from summit_everything.local.conversations import (
     QueryStart,
 )
 from summit_everything.local.event_log import profile_event
+from summit_everything.release import (
+    fingerprint_web_dist,
+    load_build_identity,
+    verify_dependency_manifest,
+)
 from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -392,6 +398,17 @@ def create_app(
     feishu_config: FeishuConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
+    build_info_path = os.environ.get("SUMMIT_BUILD_INFO")
+    build_identity = load_build_identity(build_info_path)
+    web_dist = os.environ.get("SUMMIT_WEB_DIST")
+    if build_info_path is not None:
+        verify_dependency_manifest(build_info_path, build_identity["dependencies_sha256"])
+    if web_dist is not None and not (
+        Path(web_dist).is_dir() and (Path(web_dist) / "index.html").is_file()
+    ):
+        raise ValueError("Built WebUI directory is unavailable")
+    if web_dist is not None and fingerprint_web_dist(web_dist) != build_identity["frontend_sha256"]:
+        raise ValueError("Built WebUI frontend identity does not match build manifest")
     access_logger = logging.getLogger("uvicorn.access")
     if not any(isinstance(item, CallbackAccessLogFilter) for item in access_logger.filters):
         access_logger.addFilter(CallbackAccessLogFilter())
@@ -972,12 +989,21 @@ def create_app(
 
     @app.exception_handler(WorkspaceError)
     async def workspace_error_handler(_request: Request, exc: WorkspaceError) -> JSONResponse:
+        safe_messages = {
+            "这条主线下仍有项目，请先移动项目，再删除空主线。",
+            "这条主线目录仍有内容，请先移动内容，再删除空主线。",
+            "这个项目仍有内容，无法删除；如需收起，请归档项目。",
+            "Workspace contains duplicate page IDs",
+            "Markdown page symlink is not allowed",
+        }
         return JSONResponse(
             status_code=exc.status_code,
             content={
                 "error": {
                     "code": "workspace_error",
-                    "message": str(exc),
+                    "message": exc.args[0]
+                    if exc.args and exc.args[0] in safe_messages
+                    else "工作库请求未能完成。",
                     "request_id": _request.state.request_id,
                 }
             },
@@ -985,12 +1011,23 @@ def create_app(
 
     @app.exception_handler(WorkspaceWriteConflict)
     async def conflict_error_handler(request: Request, exc: WorkspaceWriteConflict) -> JSONResponse:
+        message = (
+            "页面已变化，请重新查看后确认。"
+            if exc.args
+            and exc.args[0]
+            in {
+                "Page changed since it was reviewed",
+                "Draft changed since it was reviewed",
+                "目标页面已变化，请检查当前版本后再继续审核。",
+            }
+            else "工作库内容已发生变化，请刷新后重试。"
+        )
         return JSONResponse(
             status_code=409,
             content={
                 "error": {
                     "code": "version_conflict",
-                    "message": str(exc),
+                    "message": message,
                     "request_id": request.state.request_id,
                 }
             },
@@ -1003,7 +1040,7 @@ def create_app(
             content={
                 "error": {
                     "code": "provider_error",
-                    "message": str(exc),
+                    "message": "模型服务暂时不可用，请检查本地设置后重试。",
                     "request_id": request.state.request_id,
                 }
             },
@@ -1042,6 +1079,12 @@ def create_app(
             "workspace_open": workspace is not None,
             "version": "1.0.0",
             "run_id": os.environ.get("SUMMIT_RUN_ID", "unmanaged"),
+            "source_sha": build_identity["source_sha"],
+            "dirty": build_identity["dirty"],
+            "build_id": build_identity["build_id"],
+            "app_version": build_identity["app_version"],
+            "frontend_sha256": build_identity["frontend_sha256"],
+            "dependencies_sha256": build_identity["dependencies_sha256"],
         }
 
     @app.post("/api/v1/workspaces", status_code=201, dependencies=[Depends(authenticated)])
@@ -2017,14 +2060,14 @@ def create_app(
                 else:
                     store.finish(workspace.workspace_id, stable_request_id, "interrupted")
                 raise
-            except Exception as exc:
+            except Exception:
                 terminal = store.terminate(
                     workspace.workspace_id,
                     stable_request_id,
                     "error",
-                    {"code": "query_error", "message": str(exc)},
+                    {"code": "query_error", "message": "查询未能完成，请稍后重试。"},
                     "error",
-                    error=str(exc),
+                    error="查询未能完成，请稍后重试。",
                 )
                 if terminal is not None:
                     yield event(terminal.seq, terminal.type, terminal.data)
@@ -2032,11 +2075,22 @@ def create_app(
                 cancellations.pop(cancel_key, None)
                 cancellation_requests.discard(cancel_key)
                 ACTIVE_QUERIES.discard(active_query_key)
-                if operation is not None:
-                    if query_task is None or query_task.done():
+
+                def settle_query(task: asyncio.Task[Any]) -> None:
+                    try:
+                        task.exception()
+                    except asyncio.CancelledError:
+                        pass
+                    if operation is not None:
                         operation.close()
-                    else:
-                        query_task.add_done_callback(lambda _task: operation.close())
+
+                if query_task is None:
+                    if operation is not None:
+                        operation.close()
+                elif query_task.done():
+                    settle_query(query_task)
+                else:
+                    query_task.add_done_callback(settle_query)
 
         return StreamingResponse(
             generate(),
@@ -2150,6 +2204,8 @@ def create_app(
                 422, detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"}
             ) from None
 
+    if web_dist is not None:
+        app.mount("/", StaticFiles(directory=web_dist, html=True), name="webui")
     return app
 
 

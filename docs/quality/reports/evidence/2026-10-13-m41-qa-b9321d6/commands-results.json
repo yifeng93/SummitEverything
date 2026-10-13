@@ -1,0 +1,137 @@
+{
+  "tested_sha": "b9321d64c5404feadffebc05964793e9402a07aa",
+  "checkout": "/Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything",
+  "platform": "macOS 27.0.1 arm64",
+  "commands": [
+    {
+      "command": "env PYTHONPATH=\"$PWD/scripts/offline_guard:$PWD/src\" uv run --locked pytest -q",
+      "exit_code": 1,
+      "result": "Initial fresh-checkout attempt: 496 passed, 3 failed in dev-runner integration because web dependencies were absent; environment setup failure, not accepted as product defect.",
+      "log": "guarded-pytest.log"
+    },
+    {
+      "command": "npm --prefix web ci",
+      "exit_code": 0,
+      "result": "Installed locked frontend dependencies; zero vulnerabilities.",
+      "log": "npm-ci.log"
+    },
+    {
+      "command": "env PYTHONPATH=\"$PWD/scripts/offline_guard:$PWD/src\" uv run --locked pytest -q",
+      "exit_code": 0,
+      "result": "499 passed, 1 warning.",
+      "log": "guarded-pytest-after-npm-ci.log"
+    },
+    {
+      "command": "uv run --locked ruff check src tests",
+      "exit_code": 0,
+      "result": "All checks passed.",
+      "log": "ruff-check.log"
+    },
+    {
+      "command": "uv run --locked ruff format --check src tests",
+      "exit_code": 0,
+      "result": "82 files already formatted.",
+      "log": "ruff-format.log"
+    },
+    {
+      "command": "uv run --locked mypy src",
+      "exit_code": 0,
+      "result": "No issues found in 44 source files.",
+      "log": "mypy.log"
+    },
+    {
+      "command": "uv lock --check",
+      "exit_code": 0,
+      "result": "Lockfile resolves.",
+      "log": "uv-lock-check.log"
+    },
+    {
+      "command": "npm --prefix web test",
+      "exit_code": 0,
+      "result": "56 tests passed across 12 suites.",
+      "log": "web-test.log"
+    },
+    {
+      "command": "npm --prefix web run typecheck",
+      "exit_code": 0,
+      "result": "TypeScript check passed.",
+      "log": "web-typecheck.log"
+    },
+    {
+      "command": "npm --prefix web run lint",
+      "exit_code": 0,
+      "result": "Passed with 2 react(set-state-in-effect) warnings.",
+      "log": "web-lint.log"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "exit_code": 0,
+      "result": "Frontend production build passed.",
+      "log": "web-build.log"
+    },
+    {
+      "command": "MACOSX_DEPLOYMENT_TARGET=13.0 swift build -c release --package-path native",
+      "exit_code": 0,
+      "result": "Native release build passed.",
+      "log": "swift-build.log"
+    },
+    {
+      "command": "uv build (started concurrently with frontend build)",
+      "exit_code": 2,
+      "result": "Initial sdist failed with unexpected end of data; exact cause not established.",
+      "log": "uv-build.log"
+    },
+    {
+      "command": "uv build (rerun sequentially after concurrent builds completed)",
+      "exit_code": 0,
+      "result": "sdist and wheel built successfully.",
+      "log": "uv-build-sequential.log"
+    },
+    {
+      "command": "SUMMIT_APP='<candidate.app>' uv run python scripts/smoke_packaged_app.py while port 18793 was occupied by the controlled UI app",
+      "exit_code": 1,
+      "result": "Harness correctly refused an already-occupied port; setup conflict, not product failure.",
+      "log": "packaged-backend-smoke.log"
+    },
+    {
+      "command": "SUMMIT_SMOKE_PORT=18793 SUMMIT_APP='<candidate.app>' uv run --locked python scripts/smoke_packaged_app.py (after app exit)",
+      "exit_code": 0,
+      "result": "Packaged backend smoke passed: bundled runtime, identity, static UI, unauthorized requests, port conflict and parent-pipe cleanup.",
+      "log": "packaged-backend-smoke-after-exit.log"
+    },
+    {
+      "command": "hdiutil verify '<candidate.dmg>'",
+      "exit_code": 0,
+      "result": "DMG verification passed.",
+      "log": "dmg-verification.log"
+    },
+    {
+      "command": "hdiutil attach -readonly -nobrowse -mountpoint '<DARWIN_USER_TEMP_DIR>/m41-qa-b9321d6/dmg-mount' '<candidate.dmg>'",
+      "exit_code": 0,
+      "result": "Read-only mount passed.",
+      "log": "dmg-mount.log"
+    },
+    {
+      "command": "codesign --verify --deep --strict '<mounted app>'",
+      "exit_code": 0,
+      "result": "Embedded app signature integrity verification passed; no signing identity/notarization claim.",
+      "log": "dmg-candidate-codesign.log"
+    },
+    {
+      "command": "hdiutil detach '<mounted device>'",
+      "exit_code": 0,
+      "result": "Read-only mount detached.",
+      "log": "dmg-detach.log"
+    }
+  ],
+  "candidate_dmg_sha256": "1822e655836d591dcc612f6de4dfeda095dc16bd8e194e87e33cf5b5894c72fd",
+  "candidate_identity": {
+    "source_sha": "b9321d6",
+    "dirty": false,
+    "build_id": "20261013T052105Z-577f0cc805f2",
+    "frontend_sha256": "577f0cc805f2f7727add28c1e0d4714c0c15040fa7c094fce7e6234c65239fc6",
+    "dependencies_sha256": "2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f"
+  },
+  "runtime_metadata": "UNVERIFIED",
+  "final_isolation": "No QA app/backend process and no TCP listener on 18793 after last-window close; no read-only DMG mount remains."
+}

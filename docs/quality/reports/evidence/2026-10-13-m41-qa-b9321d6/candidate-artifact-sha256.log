@@ -1,0 +1,4 @@
+$ shasum -a 256 /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg
+1822e655836d591dcc612f6de4dfeda095dc16bd8e194e87e33cf5b5894c72fd  /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg
+
+EXIT=0

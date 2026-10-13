@@ -1,0 +1,40 @@
+M4.1 independent native UI observation record
+Tested product SHA: b9321d64c5404feadffebc05964793e9402a07aa
+App: copied candidate under $DARWIN_USER_TEMP_DIR/m41-qa-b9321d6/SummitEverything Internal QA.app
+Profile: explicit SUMMIT_INTERNAL_TEST_PROFILE_ROOT under the same real DARWIN_USER_TEMP_DIR
+Workspace and all content were synthetic. The copied app was launched directly with a restricted
+PATH containing only /usr/bin:/bin:/usr/sbin:/sbin before binding CUA to the already-running app.
+
+PASS: welcome screen appeared; create/select synthetic workspace; create project/page; paste
+synthetic Markdown including literal <script> and command-looking content; produce a simulated
+draft; explicitly confirm content and index plan; index and ask synthetic question. Query returned
+a citation to the expected page. The literal script was displayed as text; synthetic command marker
+file was absent.
+
+PASS: quit with Cmd+Q. Shell process/listener inspection showed the exact app and owned backend
+were gone and TCP 18793 had no listener. Relaunch with the same explicit profile, reopen the
+workspace, and confirm the page, index and conversation/citation history were restored.
+
+PASS: native folder chooser opened from “选择文件夹…”. In the macOS Open panel, Cmd+Shift+G and
+the QA-created synthetic workspace path navigated to that directory; selecting it enabled the
+existing-workspace flow, which opened the workspace.
+
+FAIL: the HTML file-upload entry was invoked via accessibility click, coordinate click, Space and
+Return. It focused the entry but never presented a native Open panel or selected-file state. Current
+native source lacks WKUIDelegate.runOpenPanelWith. Apple documents that uploads are disabled on
+macOS by default without this delegate method:
+https://developer.apple.com/documentation/webkit/wkuidelegate/webview(_:runopenpanelwith:initiatedbyframe:completionhandler:)
+
+PASS: separate explicit-profile app instance: close web content then close the last native window.
+The UI handle reported procNotFound (process gone); shell confirmed no QA SummitEverything process,
+no owned backend and no TCP 18793 listener. No subsequent CUA app lookup/rebind was made.
+
+PASS: forced termination of the exact QA app parent PID caused its backend to exit through pipe EOF;
+port 18793 was released. PASS: synthetic independent service held port 18793; app displayed
+“本地应用服务未就绪”, made readiness probes only, did not take over/kill the service, and its
+listener remained alive after the readiness failure.
+
+Boundary note: one earlier CUA acknowledgment action after the readiness alert may have triggered
+an app launch without the explicit profile environment (PID 84158). That exact process was stopped.
+No default profile was inspected, read, or deleted. This does not affect the later controlled
+explicit-profile UI runs; this deviation is disclosed for independent review.

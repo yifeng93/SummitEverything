@@ -1,0 +1,20 @@
+M4.1 修复轮 1 原生 UI 观察（2026-10-13）
+
+候选源 SHA：3f6eaa408a8860ff5a438be8a874a2c3904733e4
+隔离 bundle：/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/SummitEverything Internal fix1 3f6eaa4.app
+隔离 profile：/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/profile
+工作库：/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/workspace
+合成输入：/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-native-ui-2745730b/synthetic-inputs
+App PID 87031，backend PID 87034；health run_id 98A1850A-078F-42D9-B24B-272BD16FE6BE。启动前确认 PID、profile 目录和 127.0.0.1:18793 readiness；health source_sha 与包 manifest 匹配，dirty=false。环境 PATH 为空，设置显式 SUMMIT_INTERNAL_TEST_PROFILE_ROOT。
+
+真实 NSOpenPanel 验证：
+1. 初次点击“导入 TXT / Markdown”后系统 Open 面板真实出现；在面板点击 Cancel 后回到今日页，AX 显示收件箱为 0、空收件箱文字，证实取消不导入。
+2. 再次打开面板，选择本轮 synthetic-inputs/synthetic-upload.txt，AX 预览实际显示 67 bytes；选后收件箱显示 1、来源为“待整理”。
+3. 另一次打开面板选择 synthetic-upload.md，AX 预览实际显示 124 bytes；选后收件箱显示 2，TXT 与 MD 均为“待整理”。预览中的 Markdown `rm -rf /` 显示为源文本，无命令执行迹象。
+4. 输入与工作库原件逐字节 SHA 对比：TXT 输入及 `原件/2026-10/98619148-b7b9-56c8-995e-c0d5e5cf777e-synthetic-upload.txt` 都为 3b812250b73e5d04eb19f02d5add415c952257901f9943157c37be551801e0c3（67 bytes）；MD 输入及 `原件/2026-10/824a6f27-cbf0-5167-967f-132ef56de281-synthetic-upload.md` 都为 0011ca9fcc813fb79657035006baa3562339cb7ed60f8e95e27d225a536fc01c（124 bytes）。
+5. 创建合成研究线 / 合成资料整理项目。选择两个待整理来源后显式点击“整理所选”，产生 2 份审核稿。分别打开并点击“确认并写入知识库”，两条来源状态变成“已完成”，审核稿计数归零。
+6. 进入知识问答，首次索引计划显示 2 个页面、约 52 tokens、Fake embedding ¥0。显式点击“按计划创建索引”后本机索引显示 2 页 / 2 个分块 / summit-fake-embedding-v1。
+7. 以 alpha-742 查询，UI 显示“来源摘要：Line two: alpha-742.”，引用版本仍可用。以 bravo-915 查询，UI 显示“ Synthetic Markdown：Fixture marker: bravo-915.”及仍可用来源引用。两条均通过本机已确认知识回答。没有触发真实模型 / 飞书 / Keychain。
+
+工作库文件清单中只有 Markdown 知识、JSON workspace/intake/transaction 状态与 lock；未见 SQLite、凭据或诊断日志。
+8. 曾尝试 Cmd+Q，但 App 未退出；不推断快捷键失效原因。随后从 App 菜单“Quit SummitEverything Internal”正常退出。只用 shell 检查已知 PID 与端口，没有重新绑定/启动 App：父 PID 87031、backend PID 87034 均不再存在，127.0.0.1:18793 无监听。fresh QA 应独立复验 Cmd+Q 与菜单退出。

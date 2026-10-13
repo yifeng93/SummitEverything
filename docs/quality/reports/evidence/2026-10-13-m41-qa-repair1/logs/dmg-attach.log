@@ -1,0 +1,6 @@
+预计CRC32 $B7583EDD
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse ...' instead.
+/dev/disk5          	GUID_partition_scheme          	
+/dev/disk5s1        	Apple_APFS                     	
+/dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Volumes/SummitEverything Internal

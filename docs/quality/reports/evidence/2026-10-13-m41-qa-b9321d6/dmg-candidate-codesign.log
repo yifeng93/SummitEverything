@@ -1,0 +1,3 @@
+$ codesign --verify --deep --strict /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything Internal M4.1 b9321d6.app
+
+EXIT=0
