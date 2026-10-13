@@ -4,9 +4,9 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 三个离线功能包及用户批准的离线模拟验收已完成；产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`，合并后独立 QA 通过。本轮维护起点是清理前 main `879c82464903a7aed91b30955d7355064fa85088`，不是当前 main HEAD。清理维护产品源码 `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA，并由 PR #15 合入，合并点 `2238f1b47d4c7ee073e1d420dc86b23d7e75ffb6`；该合并点产品树与 QA 固定源码一致。QA-only 证据提交为 `da76f56b765308a365eafd0927c84e88caec492e`，其 37 项 manifest 经 Sol 核验。报告见[清理维护 QA](docs/quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)和[DEV 记录](docs/quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)。M3 固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的历史 QA 和正式范围见[验收记录](docs/quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)与[合并后报告](docs/quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)。
+M3 三个离线功能包、用户批准的离线模拟验收及 2026-10-13 清理维护均是已完成的历史固定 SHA 结论，详见[报告索引](docs/quality/reports/README.md)。当前分支 `codex/m41-internal-app-20261013` 正在执行用户授权的 M4.1 内部 macOS App/DMG 集成开发；本轮 DEV 证据和精确受测 SHA 见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[M4.1 DEV 报告](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。当前仅有开发者自测，不代表独立 QA 或 M4 阶段通过。
 
-真实模型质量与服务、真实飞书账户/任务、真实业务材料、OS Keychain、DMG、五日试用、双机和发布验收仍为 NOT_RUN；runtime 元数据为 UNVERIFIED。已知开发脚本 Ctrl+C 清理可能报告 PermissionError 并以 exit 1 退出，后验没有残留服务或监听。本轮维护的离线技术 QA 已 PASS；见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)与[验收报告索引](docs/quality/reports/README.md)。M3 历史周期见[历史状态索引](docs/handoff/history/2026-10-13-m3-offline-closeout.md)。
+本轮实现了内置 Python onedir 后端、强制重建静态前端、独立 Internal bundle/profile、每次运行新 token、健康身份与资源指纹校验、loopback Bearer API 和原生生命周期。构建目标为 arm64、最低系统版本声明 macOS 13；本机实测环境为 arm64 macOS 27.0.1，其他架构与系统版本未测。内部候选未公证，实际用户安装、签名证书/公证、真实模型与飞书、真实材料、OS Keychain、M4.2、五日试用、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 
 ## 文档入口
 
@@ -37,7 +37,19 @@ uv build
 
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
-这些是检查命令，不单独构成阶段通过。M1 / M2 阶段 A 的独立报告、原生开发壳 UI 和后续修复范围见报告索引；真实飞书、真实模型质量、Keychain、DMG、五日及双机仍未通过相应门。
+这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.1 Developer 自测和 QA handoff 见最新交接。
+
+### 构建 M4.1 Internal 候选
+
+只在 arm64 macOS 构建机器上运行。输出路径必须是全新路径；脚本先强制构建 WebUI、检查锁定依赖、构建内置 Python onedir 与 Swift 壳、校验 bundle，再创建并验证只读可挂载的未公证 DMG。它不会安装或覆盖应用：
+
+~~~sh
+uv sync --locked --group dev --group build
+npm --prefix web ci
+scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
+~~~
+
+该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 
@@ -49,15 +61,11 @@ cd ..
 uv run python scripts/run_dev.py
 ~~~
 
-打开 `http://127.0.0.1:5173`，新建工作库时选一个空的隔离目录。隔离并发复演可通过 `SUMMIT_API_PORT`、`SUMMIT_WEB_PORT` 和 `SUMMIT_PROFILE_ROOT` 指定独立端口与 profile。也可运行薄 macOS 壳：
-
-~~~sh
-cd native && swift run
-~~~
+打开 `http://127.0.0.1:5173`，新建工作库时选一个空的隔离目录。隔离并发复演可通过 `SUMMIT_API_PORT`、`SUMMIT_WEB_PORT` 和 `SUMMIT_PROFILE_ROOT` 指定独立端口与 profile。原生内部候选通过 `scripts/release-macos.sh` 构建；该 `.app` 从自身 bundle Resources 启动后端，不使用 `swift run` 的开发启动方式。实际开发预览继续使用上方的 Web runner。
 
 WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式模型整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；Fake 模式已有索引时，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新。真实 embedding 下审批只提示用户另行查看并确认索引计划。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
 
-开发壳在 readiness 后显示同一 WebUI，工作库可通过原生目录选择器指定。此壳依赖本机 `uv`、Node.js 和已安装的前端依赖；它不是可安装 DMG。默认仍为 Fake/offline；设置读取和保存不会联网。普通整理、索引和问答的真实模型请求仍由服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter 已有离线实现；真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
+内部 `.app` readiness 校验通过后显示同一 WebUI，工作库可通过原生目录选择器指定。打包后的 App 内置后端与静态前端；开发预览仍依赖本机 Python / Node 工具。默认仍为 Fake/offline；设置读取和保存不会联网。普通整理、索引和问答的真实模型请求仍由服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter 已有离线实现；真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
 
 ## 与原项目的关系
 

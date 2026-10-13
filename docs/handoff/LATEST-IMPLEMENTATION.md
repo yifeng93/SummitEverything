@@ -1,5 +1,13 @@
 # 最新实现交接
 
+## 当前 M4.1 Developer 交接
+
+用户 2026-10-13 授权本分支 `codex/m41-internal-app-20261013` 连续实现和自测离线 M4.1 Internal App/DMG。当前固定源码 SHA：`PENDING_FINAL_COMMIT`（分支 `HEAD` 不是历史 M3 或 cleanup SHA）。唯一 FastAPI + React 由同服务提供发布静态资源；Swift App 内启动 PyInstaller onedir Python 后端，loopback API 继续强制 Bearer。内部包使用独立名称/bundle/profile，每次启动生成新 token，包内包含源码、dirty、App 版本、build、实际前端指纹及 Python/前端锁和依赖清单身份。
+
+待最终 clean-SHA 构建后补全此节：App 与 DMG 的绝对路径、SHA-256、manifest/build identity、完整命令和实际 exit code。M4.1 DEV 自测及 raw evidence 索引见[M4.1 DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。backend smoke 不等于原生 UI；原生窗口复演单独记录。Sol 尚未启动独立 QA，本轮没有 QA verdict。
+
+架构构建声明 arm64 / macOS 13 minimum；本次实测宿主仅 arm64 macOS 27.0.1，因此 Intel 与较低系统版本均 NOT_RUN。内部候选为未公证构建，不安装到 `/Applications`，不覆盖旧 App。M4.2 真实材料/服务、Keychain、正式用户安装、Developer ID/公证、五日、双机和发布均 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
+
 ## 已合入并验收的产品基线
 
 - 本轮清理前 main 基线：`879c82464903a7aed91b30955d7355064fa85088`。这是本轮维护的起点，不代表本轮维护代码 SHA 或后续合并后的 main HEAD。
@@ -7,13 +15,13 @@
 - 三个 M3 离线功能包通过；M3 离线模拟正式验收获用户批准并合入 main。全新 QA 在固定合并点复跑 guarded 后端 491、Web 56 与适用检查通过，49 项合并证据匹配。
 - 详情：[M3 验收记录](../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)、[合并后 QA](../quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)、[完整报告索引](../quality/reports/README.md)。
 
-## 本轮维护交接
+## 清理维护交接（历史固定 SHA）
 
 Developer 已在 `codex/maintenance-cleanup-20261013` 基于清理前 main `879c824` 完成入口文档整理、旧工作树和冗余本地分支清理，并移除经调用关系审计确认未使用的私有薄封装 `_load_items` 及其变为未用的 import。产品行为、tracked tests 和验收条款保持不变。受测产品源码 SHA `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA，并由 PR #15 合入，合并点为 `2238f1b47d4c7ee073e1d420dc86b23d7e75ffb6`；该合并点产品树与固定 QA SHA 一致。QA-only 报告 / evidence commit 为 `da76f56b765308a365eafd0927c84e88caec492e`，37 项 manifest SHA-256 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3` 已由 Sol 核验。详见[DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)和[QA 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。Git 与远端最终状态以工作结束时实际查询及本机私有回执为准。
 
-## 已知问题与未测门
+## 清理维护时记录的问题（仅该历史 SHA）
 
-`scripts/run_dev.py` Ctrl+C 清理可能报告 `PermissionError` 并 exit 1；后验没有残留服务或监听，本轮不修其行为。真实 provider、Feishu、真实业务材料、OS Keychain、native/DMG、五日试用、双机、发布均 NOT_RUN；runtime 元数据 UNVERIFIED。Stage C 与 M4/M5 未由本轮启动。
+当时记录的 `scripts/run_dev.py` Ctrl+C / `PermissionError` 只对应该维护 SHA；M4.1 分支本轮另行复现后修正，具体结果见 M4.1 DEV 报告。历史报告及证据不改写。
 
 ## 后续工作规则
 

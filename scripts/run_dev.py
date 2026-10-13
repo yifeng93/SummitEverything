@@ -31,8 +31,11 @@ def main() -> int:
     api_url = f"http://127.0.0.1:{api_port}/api/v1/health"
     web_url = f"http://127.0.0.1:{web_port}/"
     children: list[subprocess.Popen[bytes]] = []
+    interrupted = False
 
     def stop_children(*_: object) -> None:
+        nonlocal interrupted
+        interrupted = True
         for child in children:
             if child.poll() is None:
                 try:
@@ -81,6 +84,8 @@ def main() -> int:
 
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
+            if interrupted:
+                return 0
             if any(child.poll() is not None for child in children):
                 return next(child.returncode or 1 for child in children if child.poll() is not None)
             try:
@@ -105,6 +110,8 @@ def main() -> int:
         print("Press Ctrl+C to stop both services.", flush=True)
         while all(child.poll() is None for child in children):
             time.sleep(0.25)
+        if interrupted:
+            return 0
         return next(child.returncode or 0 for child in children if child.poll() is not None)
     finally:
         stop_children()

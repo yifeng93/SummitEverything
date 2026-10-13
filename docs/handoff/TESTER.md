@@ -21,6 +21,15 @@
 5. 前端必须真实浏览器测试，包必须实际启动。截图或源码关键词不能单独证明业务行为。
 6. 所有真实 API 调用 / task 创建 / 样板写入遵循明确授权范围；没授权用模拟并标真实门未测。
 
+### M4.1 Internal App / DMG 固定 SHA 验收
+
+- 对照最新 DEV 报告中的完整 SHA、产物路径和摘要；以隔离复制的 `.app` 与只读挂载 DMG 为受测对象。记录构建架构与最低系统声明；只在本机实测过的架构 / macOS 版本标 PASS。
+- 将 App 置于 `DARWIN_USER_TEMP_DIR` 下独立目录，用显式临时 profile override 启动原生 bundle；先确认 profile 根目录、App/backend PID 和本机 readiness，再操作 UI。不要只通过 `HOME` 推断隔离成功。若出现早期错误 profile，只读检查并如实记录，不清理或迁移。
+- 分开验证真实 Swift 窗口生命周期与仅运行内置 backend 的 smoke：首启、首次开库、导入/确认/索引/问答、正常退出、关最后窗口、重开及状态恢复；端口占用、失败/延迟 readiness、自有服务退出、父进程中断也逐项记录。只有实际发生的操作可记 PASS。
+- C14 SSE 验证必须通过真实 TCP、真实 FastAPI route / QueryService / writer-reader / SQLite 与合成可取消 AnswerProvider，覆盖取消、客户端断流、终态与 reopen。整体替换 QueryService 的 unit 回归只能作局部异常处理证据。
+- C24 复演 loopback 绑定、匿名写拒绝、恶意 Markdown 安全输出、资料命令不执行、合成敏感哨兵在 API/服务输出中不回显；日志与证据不得打印 token。临时库必须与 profile 分离，检查库内没有 SQLite、凭据或诊断日志。
+- C25 复演本机无 Python/Node/Docker 的 App / DMG 使用、来源和前端指纹身份匹配、实例隔离与旧 App/其他服务不受影响。未实际触发的场景标 NOT_RUN；M4.2、签名/公证、用户正式安装仍单独 NOT_RUN。
+
 ## 报告与缺陷
 
 按 REPORT-TEMPLATE 写自己的报告，使用案例 ID 和 PASS / FAIL / NOT_RUN / BLOCKED。记录完整命令、退出码、最小复现和证据；报告不能泄漏原件、密钥或 token。

@@ -4,7 +4,7 @@
 
 **Goal:** 交付不依赖目标机 Python、Node 或 Docker 的内部 App/DMG 候选，验证 C24/C25 与离线生命周期。
 
-**Architecture:** 继续使用唯一 FastAPI 和已有 React WebUI；发布模式由同一 loopback 服务提供最新构建的静态资源。薄 Swift 壳仅管理自有后端进程、窗口、目录选择和安全会话交接。后端采用完整内置 Python 运行环境或冻结的单目录分发，选择依据记录官方资料和实际可搬迁验证。
+**Architecture:** 继续使用唯一 FastAPI 和已有 React WebUI；发布模式由同一 loopback 服务提供最新构建的静态资源。薄 Swift 壳仅管理自有后端进程、窗口、目录选择和安全会话交接。后端采用 PyInstaller `--onedir`，其应用目录包含 Python interpreter 和依赖；官方操作模式说明 onedir 可作为应用目录分发（https://pyinstaller.org/en/stable/operating-mode.html），本轮以无开发 PATH 的搬迁复演验证。
 
 **Spec:** PRODUCT-SPEC、全 v1 计划 M4.1、ACCEPTANCE C24/C25、WORKSPACE-v1、API-v1，加本次用户授权。
 
@@ -24,25 +24,25 @@
 
 责任文件：src/summit_everything 下发布启动模块、API 静态挂载/身份接口；web/src/api 与 SSE 调用的会话头处理；tests 中对应集成反例。
 
-- [ ] 先用最小集成用例证明：无 Bearer 写入拒绝、恶意 Origin 拒绝、静态文件无 token、非法资源路径拒绝、health 身份匹配。
-- [ ] 实现发布入口：只绑定 127.0.0.1、提供静态 WebUI、使用限定 allowlist；Swift 在受信页面加载前交接临时 Bearer，所有 API/SSE 请求统一带头。
-- [ ] 对 Markdown/资料命令、合成凭据故障和错误脱敏运行既有反例；新增边界先 red 再 green。
+- [x] 用受保护 API / manifest / 资源测试证明：无 Bearer 写入拒绝、非法资源路径拒绝、health 身份匹配、静态资源与实际指纹一致；既有 Origin 限制回归仍须由 QA 对固定包黑盒复验。
+- [x] 实现发布入口：只绑定 127.0.0.1、同服务提供静态 WebUI；Swift 校验健康身份和资源后才向受信主 frame 注入每次新 token，Ask 的 fetch SSE 与其它 API 共用 session headers。
+- [x] 跑全量 Markdown / 资料处理 / 错误脱敏既有回归，并新增合成敏感哨兵、真实 HTTP SSE 任务异常捕获 red/green 测试；外部服务只替换为合成 provider。
 
 ### 2. 原生生命周期与打包
 
 责任文件：native/Sources/SummitEverythingApp/ 生命周期和 WebView；scripts/build-macos-app.sh、release-macos.sh 及必要打包模块；pyproject/uv.lock 仅必要构建依赖；CI；tests 打包/退出反例。
 
-- [ ] 构建独立 SummitEverything Internal.app，内置运行依赖和最新 WebUI，失败不留下成功标记，禁止覆盖已有产物/安装。
-- [ ] 原生启动只运行 bundle 后端；校验 readiness 的 run/build/frontend 身份，拒绝错误服务；稳定本机 profile，保留工作库身份隔离。
+- [x] 构建独立 SummitEverything Internal.app，内置 PyInstaller onedir 和强制重建 WebUI；staging 完成签名验证及可选 DMG 校验后才发布新输出，并拒绝覆盖。
+- [x] 原生启动只运行 bundle 后端；校验 readiness 的 run/build/frontend/dependency 身份、响应类型和直达 URL；每 profile 加实例锁，自有 pipe EOF 清理后端。
 - [ ] 测试首启、正常退出、关最后窗口、重开、自有服务清理、其他服务存活、端口占用、启动失败、延迟 readiness、SSE 取消/断流、中断恢复。
-- [ ] 复现 run_dev Ctrl+C PermissionError，评估并修复相关根因；正式 App 必须单独实测。
-- [ ] 将 App 复制到隔离临时目录并清空开发 PATH 实际启动，制作/挂载/只读验证内部 DMG；不修改旧应用。
+- [x] 以基线 `2c4e479` 实测启动中 Ctrl+C 返回 shell exit 241；本轮没有复现历史 PermissionError。增加启动期间与服务 ready 后 Ctrl+C 子进程回归，runner 改为正确等待自有子进程退出；另单独复演正式 App 窗口退出。
+- [ ] 将最终 clean-SHA App 复制到隔离临时目录并以空开发 PATH 启动原生 UI；制作 / 挂载 / 只读验证内部 DMG。Dev 版 backend smoke 已独立跑通；最终包结果在 clean-SHA 产物和 QA handoff 补录。
 
 ### 3. 集成自测与交接
 
 责任文件：README、PROGRESS、LATEST-IMPLEMENTATION、TESTER、新 DEV 报告、安装说明、证据 manifest。旧 QA 原件不改。
 
-- [ ] 跑 README guarded pytest、ruff、mypy、lock/build、Web tests/typecheck/lint/build、API types 一致性、Swift build 及本轮实际 App/DMG harness，记录退出码。
+- [ ] 在最终 commit 后跑 README guarded pytest、ruff、mypy、lock/build、Web tests/typecheck/lint/build、API types 一致性、Swift build 与最终 App/DMG harness，记录退出码。
 - [ ] 用实际 UI 在临时库完成目录选择、粘贴/文件导入、确认、索引、问答；重启复核知识与本地历史状态，工作库不得有 SQLite/凭据/日志。
 - [ ] 实现和自测完成后固定源码 SHA；从 clean SHA 重建最终候选；证据提交与受测源码 SHA 分开说明。
 - [ ] QA handoff 必须含固定 SHA、实际产物路径/摘要、精确命令、场景覆盖、退出码与 NOT_RUN；不得宣称 DEV 等于独立 PASS。

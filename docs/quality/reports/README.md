@@ -6,8 +6,11 @@ M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码
 
 本轮仓库 / 文档清理的受测产品源码 `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA，并由 PR #15 合入，合并点为 `2238f1b47d4c7ee073e1d420dc86b23d7e75ffb6`；该合并点产品树与固定 QA 源码一致。QA-only 提交 `da76f56b765308a365eafd0927c84e88caec492e` 的 37 项 manifest SHA-256 为 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3`，已由 Sol 核验。清理后文档收口未改变产品源码；Git 与远端最终状态以工作结束时实际查询及本机私有回执为准。
 
+用户已授权 M4.1 离线 Developer 集成与自测；该活动报告只表明具体 DEV 证据，不代表独立 QA 或 M4.1/M4 阶段通过。
+
 | 报告 | 范围 |
 |---|---|
+| [M4.1 Internal App/DMG DEV](2026-10-13-M41-INTERNAL-APP-DEV.md) | 固定源码 SHA 的实现者自测、候选身份、实际 UI / lifecycle、命令 exit code 与 NOT_RUN；独立 QA 待办 |
 | [本轮清理 DEV](2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md) | 文档收拢、私有 helper 审计、DEV 自测与恢复记录；验收结果见独立 QA |
 | [本轮清理独立 QA](2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md) | 固定源码 `6a33259` 的离线清理验收 PASS；真实 / 人工门仍按报告标记未测 |
 | [C19 固定源码 QA](2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md) | C19 新回归、API/SSE、浏览器与离线自动检查 |

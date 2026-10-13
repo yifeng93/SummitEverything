@@ -27,7 +27,7 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 | native/ | 薄 macOS 壳与生命周期测试 |
 | tests/ | 单元、契约、集成和去标识材料 |
 
-当前 M1/M2 Fake 工作流与 M3 三包离线实现已完成；三个 M3 包及离线模拟正式验收均 PASS，产品已合入 main。真实 provider / Feishu、业务材料、OS Keychain、native/DMG、五日试用、双机和发布仍未验收，runtime 元数据 UNVERIFIED。不要创建无实际用途的空服务。
+当前 M1/M2 Fake 工作流、M3 三包离线实现与离线模拟验收是各自固定 SHA 的历史结论。2026-10-13 用户授权在独立分支实现 M4.1 内部 macOS App/DMG 候选；本轮 Developer 报告与独立 QA 状态见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)和[DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。App 候选采用 arm64 + macOS 13 minimum build setting；本次只在 arm64 macOS 27.0.1 主机自测，Intel 与 macOS 13–26 未实测。M4.2 真实业务、正式安装、Developer ID/公证、五日、双机与发布仍 NOT_RUN；runtime 元数据 UNVERIFIED。不要创建无实际用途的空服务。
 
 工作库 context 至少携带 workspace_id、root、local_profile_dir。API 的活动工作库绑定到服务 context，请求不能提交任意绝对路径跳过 root 边界。
 

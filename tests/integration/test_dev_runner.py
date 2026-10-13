@@ -119,3 +119,106 @@ def test_runner_leaves_an_existing_port_owner_untouched(tmp_path: Path) -> None:
             if process.poll() is None:
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait(timeout=5)
+
+
+def test_runner_ctrl_c_exits_cleanly_and_closes_owned_services(tmp_path: Path) -> None:
+    api_port = _free_port()
+    web_port = _free_port()
+    env = os.environ.copy()
+    run_id = "interrupt-" + secrets.token_hex(8)
+    env.update(
+        {
+            "SUMMIT_API_PORT": str(api_port),
+            "SUMMIT_WEB_PORT": str(web_port),
+            "SUMMIT_API_TARGET": f"http://127.0.0.1:{api_port}",
+            "SUMMIT_PROFILE_ROOT": str(tmp_path / "profile"),
+            "SUMMIT_RUN_ID": run_id,
+        }
+    )
+    process = subprocess.Popen(
+        [sys.executable, "scripts/run_dev.py"],
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            if process.poll() is not None:
+                raise AssertionError(f"runner exited before readiness: {process.returncode}")
+            try:
+                with urlopen(f"http://127.0.0.1:{api_port}/api/v1/health", timeout=0.5) as response:
+                    health = json.loads(response.read())
+                if health.get("run_id") == run_id and _is_listening(web_port):
+                    break
+            except OSError:
+                time.sleep(0.1)
+        else:
+            raise AssertionError("runner did not become ready")
+        process.send_signal(signal.SIGINT)
+        output, _ = process.communicate(timeout=10)
+        assert process.returncode == 0, output.decode(errors="replace")
+        assert not _is_listening(api_port)
+        assert not _is_listening(web_port)
+    finally:
+        if process.poll() is None:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=5)
+
+
+def test_runner_ctrl_c_during_readiness_exits_cleanly(tmp_path: Path) -> None:
+    api_port = _free_port()
+    web_port = _free_port()
+    run_id = "startup-interrupt-" + secrets.token_hex(8)
+    shim_dir = tmp_path / "bin"
+    shim_dir.mkdir()
+    npm_shim = shim_dir / "npm"
+    npm_shim.write_text(
+        f"#!{sys.executable}\nimport time\nwhile True: time.sleep(1)\n", encoding="utf-8"
+    )
+    npm_shim.chmod(0o755)
+    env = os.environ.copy()
+    env.update(
+        {
+            "PATH": str(shim_dir),
+            "SUMMIT_API_PORT": str(api_port),
+            "SUMMIT_WEB_PORT": str(web_port),
+            "SUMMIT_API_TARGET": f"http://127.0.0.1:{api_port}",
+            "SUMMIT_PROFILE_ROOT": str(tmp_path / "profile"),
+            "SUMMIT_RUN_ID": run_id,
+        }
+    )
+    process = subprocess.Popen(
+        [sys.executable, "scripts/run_dev.py"],
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            if process.poll() is not None:
+                raise AssertionError(f"runner exited before API readiness: {process.returncode}")
+            try:
+                with urlopen(f"http://127.0.0.1:{api_port}/api/v1/health", timeout=0.5) as response:
+                    health = json.loads(response.read())
+                if health.get("run_id") == run_id:
+                    break
+            except OSError:
+                time.sleep(0.1)
+        else:
+            raise AssertionError("API did not become ready while the WebUI child was held")
+        assert not _is_listening(web_port)
+        process.send_signal(signal.SIGINT)
+        output, _ = process.communicate(timeout=10)
+        assert process.returncode == 0, output.decode(errors="replace")
+        assert not _is_listening(api_port)
+        assert not _is_listening(web_port)
+    finally:
+        if process.poll() is None:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=5)

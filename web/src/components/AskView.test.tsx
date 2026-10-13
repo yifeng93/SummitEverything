@@ -19,6 +19,7 @@ it('creates a first conversation on the server, adopts its ID, then continues it
     .mockReturnValueOnce('first-request')
     .mockReturnValueOnce('second-request') })
   const bodies: Record<string, unknown>[] = []
+  const queryAuthorization: string[] = []
   const reopened: string[] = []
   const serverConversation = 'server-created-conversation'
   const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -27,6 +28,7 @@ it('creates a first conversation on the server, adopts its ID, then continues it
     if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
     if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
     if (url === '/api/v1/queries') {
+      queryAuthorization.push(new Headers(init?.headers).get('Authorization') ?? '')
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>
       bodies.push(body)
       if (body.conversation_id !== undefined && body.conversation_id !== serverConversation) {
@@ -57,6 +59,7 @@ it('creates a first conversation on the server, adopts its ID, then continues it
     }
     throw new Error(`Unexpected fetch ${url}`)
   })
+  ;(window as Window & { __SUMMIT_SESSION_TOKEN__?: string }).__SUMMIT_SESSION_TOKEN__ = 'test-session'
   vi.stubGlobal('fetch', rawFetch)
   render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
 
@@ -65,6 +68,7 @@ it('creates a first conversation on the server, adopts its ID, then continues it
   expect(await screen.findByText('回答 1')).toBeTruthy()
   await waitFor(() => expect(reopened).toHaveLength(1))
   expect(bodies[0]).not.toHaveProperty('conversation_id')
+  expect(queryAuthorization[0]).toBe('Bearer test-session')
 
   fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '接着追问' } })
   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))

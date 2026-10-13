@@ -23,6 +23,10 @@ export function indexUpdateMessage(status: MutationResult['index_update']): stri
 
 type ErrorEnvelope = { error?: { code?: string; message?: string } }
 
+declare global {
+  interface Window { __SUMMIT_SESSION_TOKEN__?: string }
+}
+
 export class ApiError extends Error {
   readonly code?: string
   readonly status: number
@@ -61,12 +65,19 @@ async function oauthCallback<T>(destination: string): Promise<T> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers)
+  const headers = sessionHeaders(init?.headers)
   if (init?.body && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
   const response = await fetch('/api/v1' + path, { ...init, headers })
   return readResponse<T>(response)
+}
+
+export function sessionHeaders(initial?: HeadersInit): Headers {
+  const headers = new Headers(initial)
+  const token = typeof window === 'undefined' ? undefined : window.__SUMMIT_SESSION_TOKEN__
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+  return headers
 }
 
 export const api = {
