@@ -1,0 +1,21 @@
+phase	command	result
+setup	uv sync --locked --group dev	PASS exit=0
+setup	npm --prefix web ci	PASS exit=0
+RED information	PYTHONPATH="$PWD/.local/dev/c19-dsh-r1/harness:$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q -s .local/dev/c19-dsh-r1/harness/test_c19_information_qualifier.py	FAIL exit=1; 5 failed, 1 passed
+RED citation-cap	PYTHONPATH="$PWD/.local/dev/c19-dsh-r1/harness:$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q -s .local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py	FAIL exit=1; 3 failed, 1 passed
+tracked C19 + QA holdouts	PYTHONPATH="$PWD/.local/dev/c19-dsh-r1/harness:$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q -s tests/integration/test_c19_topic_scope_normalization.py .local/dev/c19-dsh-r1/harness/test_c19_previous_holdout.py .local/dev/c19-dsh-r1/harness/test_c19_r2_expanded_matrix.py .local/dev/c19-dsh-r1/harness/test_c19_fresh_holdout_corrected.py .local/dev/c19-dsh-r1/harness/test_c19_information_qualifier.py .local/dev/c19-dsh-r1/harness/test_c19_d3_limit_true_absence.py	PASS exit=0; 107 passed
+full backend	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	PASS exit=0; 491 passed, 1 existing Starlette deprecation warning
+ruff	uv run ruff check src tests	PASS exit=0
+format	uv run ruff format --check src tests	PASS exit=0; 79 files
+mypy	uv run mypy src	PASS exit=0; 43 files
+lock	uv lock --check	PASS exit=0
+package build	uv build	PASS exit=0; sdist and wheel
+OpenAPI / TS	 npm --prefix web run api:types	PASS exit=0; generated artifacts unchanged
+Web tests	npm --prefix web test	PASS exit=0; 56 tests / 12 files
+Web typecheck	npm --prefix web run typecheck	PASS exit=0
+Web lint	npm --prefix web run lint	PASS exit=0; 2 pre-existing react(set-state-in-effect) warnings
+Web build	npm --prefix web run build	PASS exit=0
+loopback fake API/SSE	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run python .local/dev/c19-dsh-r1/loopback_smoke.py	PASS exit=0; complete / partial / zero and history reopen
+whitespace
+git diff --check	PASS exit=0
+collection count	uv run pytest --collect-only -q <the same six suite paths>	PASS exit=0; 107 collected executions, 85 distinct test IDs after removing byte-identical matrix-copy path

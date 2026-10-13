@@ -1,0 +1,4 @@
+Source commit: 0a1b8dc94a5d8f797161c38430dccfcb211a9e07
+Tested branch: codex/c19-dsh-sol-gate
+Tested product file tree digest (Git tree entries under src, web, native, tests, scripts, pyproject.toml, uv.lock):
+bf6054dca6de8f5d61adfea8a19ee40a166759354c161cc7e3d0d56d31d0910b

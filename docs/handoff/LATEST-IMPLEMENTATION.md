@@ -1,6 +1,6 @@
 # 最新实现交接
 
-2026-10-13 当前：DSH 固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac` 经全新独立 QA / Sol 判 FAIL，复合主题“信息”全局剥除 P1 与默认limit掩盖真缺失 P2尚未关闭。原设备与53个不同回归通过，D1有限元数据/正文对照符合现有契约。进入本次候选初验后的统一自动返工1/2；Developer在 `codex/c19-dsh-sol-gate` 连续实施，固定新SHA后全新QA集中复验。main / M3冻结基线 / DSH原交接不改，包1/3保留既有离线PASS，正式包2/M3验收及合并未通过。见 [Sol门与统一修复契约](../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [固定源码独立QA](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。下方DSH自测及旧周期均为历史记录，不覆盖本行当前状态。
+2026-10-13 当前：C19 DSH 候选统一返工1/2由 Developer 完成并固定产品源码 **`0a1b8dc94a5d8f797161c38430dccfcb211a9e07`**，DEV 自测 PASS，等待 Sol 调度全新独立 QA。guarded 后端 491 passed；C19/初验 holdout 执行 107 次、去掉字节相同矩阵副本后 85 个不同测试 ID；Web 56/12 与适用静态、类型、构建门 PASS。Fake loopback complete / partial / zero SSE 与 history reopen PASS。工作树 `/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-sol-gate/SummitEverything`，分支 `codex/c19-dsh-sol-gate`。代码 SHA 与文档 HEAD 分开列于 [DEV 报告与 evidence](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-DEV.md)；main、M3 冻结基线、DSH 交接目录未改。独立 QA 未运行，包2 / M3 未判通过，未合并。真实 provider / 服务、材料、凭据 / Keychain、native / DMG、五日 / 双机与发布 NOT_RUN；runtime UNVERIFIED。此前 `be4e72f` 的 QA FAIL 仍是历史固定 SHA 结论，当前状态以本行及后续 Sol QA 为准。
 
 2026-10-12 DSH C19 repair 3 交接（**DEV PASS；独立 QA NOT_RUN**）。分支 `codex/dsh-c19-20261012`，工作树 `/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012`，起点 `b3d0dff587c94ee295dfe5379bd67916c98184ec`，受测固定源码 **`be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac`**（修复 `18fe80a`+`0107d58`+`be4e72f`；起点产品源码等同 `f79f613`）。修复请求外壳与主题内容的共享边界：信息性限定词（设备/年度/专项/工作）不再被 `_TOPIC_FILLER` 全局删除，`专项` 不再充当对象名后缀，伪对象 `的专项` 被拒绝，对象跨度与主题跨度分离。RED 12+22 矩阵 7 failed/27 passed → GREEN 34 passed；新增 tracked 回归 19 项；全量后端 469 passed、Web 56/12 与全部静态/构建检查 exit 0；隔离 loopback API/SSE 13/13 观测 PASS（含 partial/zero 与 history reopen）；DSH 子代理对抗性预验证发现的三项反例已在本轮修复，1 项标题/别名归属契约待 QA 判定。详见 [repair 3 DEV 报告](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-3-DEV.md) 与 [evidence](../quality/reports/evidence/2026-10-12-m3-package-2-c19-unified-repair-3-dsh-be4e72f/README.md)。下一步由 Sol 在另一个 checkout 对该 SHA 调度全新独立 QA；包 2 门、M3 正式验收与合并 main 仍待用户批准，历史 FAIL 不改写。真实服务/材料/凭据/Keychain、native/DMG、五日/双机、发布均 NOT_RUN；runtime UNVERIFIED；有限 smoke 0/1 未消费。
 2026-10-12 DSH C19 repair 3 三轮预验收口：DSH 子代理在独立 checkout 对 `80cabed`、`9836365`、`7e772ea` 做了三轮对抗性黑盒预验证（**非官方独立 QA**）。第 3 轮（产品源 `be4e72f`）判定：产品树一致；冻结 34、tracked 19、全量 469、子代理 harness 27 项与 loopback 全 PASS；D2/D3/D4/D5 均已修复（D5 的 65 名矩阵相对基线 `f79f613` 0/65 行为改变）；唯一遗留 FAIL 为 D1「标题/别名元数据是否可把页面绑定到另一对象名」，已按计划「项目/页元数据可确定归属」声明为产品契约待定项，交 QA/Sol 判定。子代理 harness 与矩阵原始日志已存入 evidence 的 `subagent-preqa/`。
@@ -9,7 +9,11 @@
 
 2026-10-12 最近受测结果（收尾前）：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、原周期已停止；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
 
-## 当前接续入口（2026-10-12 收尾）
+## 当前接续入口（2026-10-13 C19 候选返工）
+
+C19 最新开发状态、固定产品 SHA、退出码和 evidence 清单见 [repair 1/2 DEV 报告](../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-DEV.md)。下一步由 Sol 对固定产品 SHA `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 安排全新独立 QA；QA 应在另一 checkout 验收该 SHA，不在本工作树并行修改产品源码。QA 结论待出。
+
+## 历史接续入口（2026-10-12 DSH 准备）
 
 [DSH 完整交接](DSH-C19.md) 与 [环境清理记录](2026-10-12-M3-CLEANUP.md) 已准备。main 仍为 `5fd91c78930c80b2365957197b8a605757694a91`；M3 产品源码为 `f79f613a902758da3173a5b27219fa568a912f5e`。文档整理后的固定引用 `handoff/c19-dsh-2026-10-12` 只增加交接文档，未经产品修复、独立复验或正式合并。历史 `.local` 路径可能已归档，重新复演应使用 tracked evidence 的 harness 副本。
 

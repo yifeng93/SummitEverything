@@ -1,0 +1,14 @@
+36d6a332a6ca6281c6b6ff3aaf8343d73144122da4dc8766acfd78ad3c963278  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/README.md
+102f94aeffe2c6a00ec2e2547d3cf16b7eb8baae607175672bdfa4622ce0438a  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/commands.tsv
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/c19-holdouts-final.exit
+b3336eeff44fb5f93a82259696e917bc5f9534855a1d79079ee90ca4989b6116  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/c19-holdouts-final.log
+e175cf2590e04aad038aa23ad0830a270bcb7e38890c5531d0778fc976da8f69  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/collect-final.log
+a746bf0252f683ffdfd88e8af950817d576eb3e295bb4565732c44a858e09ace  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/d3-red.log
+768264610a5c610f95c7b95bc0a842abf714bac5b9b1d273f120da577123c0eb  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/final-static-web.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/full-pytest-final.exit
+422076987eb41b7bcdcb68e02b9e897624d099b0fdddadb0a4c0e0e09b4172a0  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/full-pytest-final.log
+7f8b83e90d3f1bfadfc475a138bb9feb8c557b2046c52cb14732b702bb8ce09a  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/information-red.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/loopback-final.exit
+5a630ea95b37f1257fcc1f467e9700a8a3cdedfb2f3dcfe612135a6102a532ad  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/loopback-final.log
+5efe594c4a185bfe009ee3e3110f60a33778d035127cda31d9ecdbb76bddb3f1  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/raw/loopback_smoke.py
+deca4c7a7bbad8069c8c7a3e5058a3447de93849affbc616ec37b1f82a83baea  docs/quality/reports/evidence/2026-10-13-m3-package-2-c19-dsh-repair-1-0a1b8dc/source-tree.txt
