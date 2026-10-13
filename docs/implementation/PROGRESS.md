@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-本轮维护起点是清理前 main `879c82464903a7aed91b30955d7355064fa85088`；产品 M3 合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。C19 / 包 2 的固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 经全新独立 QA 通过；包 1、包 3保留各自已验收的离线 PASS。合并后的固定 main QA 通过。当前清理任务须由新的固定 SHA 独立验收；目标是不改变业务行为。
+本轮维护起点是清理前 main `879c82464903a7aed91b30955d7355064fa85088`；它不是当前 main HEAD。产品 M3 合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。C19 / 包 2 的固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 经全新独立 QA 通过；包 1、包 3保留各自已验收的离线 PASS。合并后的固定 main QA 通过。本轮清理受测产品源码 `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA；QA-only 提交 `da76f56b765308a365eafd0927c84e88caec492e` 的 37 项 manifest 经 Sol 核验，结果和边界见[QA 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。QA 后的收口只改当前文档与报告索引，未改受测产品代码。
 
 | 范围 | 当前结果 | 证据 |
 |---|---|---|
@@ -20,7 +20,7 @@
 
 ## 当前开发交接
 
-本轮清理分支为 `codex/maintenance-cleanup-20261013`，从清理前 main `879c824` 开始。Developer 已完成文档和环境整理，guarded 后端 491、Web 56、静态 / 类型 / 锁 / build 与隔离 OpenAPI types 比较见[DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)。QA 状态为 NOT_RUN，等待 Sol 对完整固定提交建立新 checkout 验收。不要据本页启动真实连接、M4/M5 或发布工作。
+本轮清理分支为 `codex/maintenance-cleanup-20261013`。DEV guarded 后端 491、Web 56、静态 / 类型 / 锁 / build 与隔离 OpenAPI types 比较见[DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)；独立 QA 对固定源码 `6a33259224097167cfdde689da93258fe925964e` 判 PASS，QA-only 证据见[QA 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)。清理提交与QA证据已完成，收口文档提交待 Sol 整合。不要据本页启动真实连接、M4/M5 或发布工作。
 
 ## 历史索引
 

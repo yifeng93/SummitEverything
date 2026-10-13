@@ -4,9 +4,9 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 三个离线功能包及用户批准的离线模拟验收已完成；产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`，合并后独立 QA 通过。本轮维护起点是清理前 main `879c82464903a7aed91b30955d7355064fa85088`；本轮维护须按新的固定源码 SHA 独立验收。M3 固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的历史 QA 和正式范围见[验收记录](docs/quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)与[合并后报告](docs/quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)。
+M3 三个离线功能包及用户批准的离线模拟验收已完成；产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`，合并后独立 QA 通过。本轮维护起点是清理前 main `879c82464903a7aed91b30955d7355064fa85088`，不是当前 main HEAD。本轮清理固定源码 `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA；QA-only 证据提交为 `da76f56b765308a365eafd0927c84e88caec492e`，其 37 项 manifest 经 Sol 核验。QA 报告见[清理维护 QA](docs/quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-QA-6a33259.md)，DEV 记录见[清理维护 DEV](docs/quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)。当前产品代码与受测 `6a33259` 完全一致；QA 后文档收口已完成，等待 Sol 整合。M3 固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的历史 QA 和正式范围见[验收记录](docs/quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)与[合并后报告](docs/quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)。
 
-真实模型质量与服务、真实飞书账户/任务、真实业务材料、OS Keychain、DMG、五日试用、双机和发布验收仍为 NOT_RUN；runtime 元数据为 UNVERIFIED。已知开发脚本 Ctrl+C 清理可能报告 PermissionError 并以 exit 1 退出，后验没有残留服务或监听。本轮维护已完成 DEV 自测与本地清理，独立 QA 尚待 Sol 对固定提交安排；见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)和[DEV 报告](docs/quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)。M3 历史周期见[历史状态索引](docs/handoff/history/2026-10-13-m3-offline-closeout.md)。
+真实模型质量与服务、真实飞书账户/任务、真实业务材料、OS Keychain、DMG、五日试用、双机和发布验收仍为 NOT_RUN；runtime 元数据为 UNVERIFIED。已知开发脚本 Ctrl+C 清理可能报告 PermissionError 并以 exit 1 退出，后验没有残留服务或监听。本轮维护的离线技术 QA 已 PASS；见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)与[验收报告索引](docs/quality/reports/README.md)。M3 历史周期见[历史状态索引](docs/handoff/history/2026-10-13-m3-offline-closeout.md)。
 
 ## 文档入口
 
