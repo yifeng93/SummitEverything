@@ -1,6 +1,18 @@
 # 最新实现交接
 
-## 当前 M4.1 固定候选与技术门
+## 当前 M4.2 工作包 A：固定 Developer 源码与候选，Fresh QA 待运行
+
+受测产品 SHA：`fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b`，分支 `codex/m42-readiness-20261013`，基线 `f35d4b9`。Developer 已完成真实 organize/index/query 与 Feishu 只读/导入的 one-shot plan 服务端门、有限请求/usage 账本、UI 预览/取消及 API 契约；真实 Feishu task write 仍禁用。产品源码已固定，fresh QA 尚未开始。自测命令、退出码、原始日志、候选身份和差距见 [M4.2 Package A DEV](../quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)与[权威执行计划](../superpowers/plans/2026-10-13-m42-integrated-packages.md)。本机工作树的 `.superpowers/sdd/2026-10-13-m42-integrated-packages/task-1-report.md` 是本地辅助长报告，不保证存在于新 checkout；审核以提交的 DEV 报告和 evidence 为准。
+
+新候选：`/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything Internal fe47339.app`；DMG：`/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything-Internal-fe47339.dmg`；DMG SHA-256 `0b1404971711b0823c2a236882bb619fe891612704bf9d02de32050c03c16f5f`。`build-info.json`: `source_sha=fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b`, `dirty=false`, version `0.1.0`, build `20261013T233919Z-2aab5e81a62d`, frontend SHA `2aab5e81a62dbabd517c132014df2cf86f7e157718ed1f2c8f8981ba41f66627`, dependencies SHA `2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f`。没有安装候选、覆盖已有应用或绕过 Gatekeeper。
+
+候选 UI 正确启动必须在 macOS 使用新的 `DARWIN_USER_TEMP_DIR` 子目录和 `open -n` 传入 `SUMMIT_OFFLINE_GUARD_ACTIVE=1`、`SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。正确运行经逐进程布尔检查确认 native 与 backend 的 guard 为 `1` 且实际 profile root 与 fresh temp directory 一致；设置页显示“钥匙串不可用”，保存/删除密钥入口禁用。Fake UI 已做模拟授权、材料列表和单份“模拟会议”导入到本机合成工作库；**本机 UI 只到 Fake 导入，organize/review/index/query UI 流程未复演**。
+
+第一次直接执行 `.app/Contents/MacOS/SummitEverything` 的 UI 运行显示“钥匙串可用”；此后发现实际 LaunchServices 窗口/backend 进程可与初始 shell 分离。首轮实际是否查询了系统 Keychain，以及 profile override 是否丢失、是否落到默认 `~/Library/Application Support/SummitEverything Internal` 都 UNVERIFIED。只读查看过默认目录 mtime；没有读/改/删除其中文件，mtime 不足以证明未被触碰。首轮不作为 offline guard PASS。DevTools 网络面板和 console 未测，UI CUA screenshot 未以文件归档。测试日志根目录：[最终 raw evidence](../quality/reports/evidence/2026-10-13-m42-package-a-dev/final-20261014/)。
+
+Fresh QA 必须独立 checkout 验证固定 SHA，不移动产品目标或改产品源码/测试；首先用新的临时 profile、正确 `open -n` 启动，并先确认钥匙串不可用。若未满足，立即停止 UI 并报离线安全 FAIL，不填入任何凭据。自动修复轮数目前 0。真实 provider/Feishu/材料/账单与质量/Keychain 生命周期/用户安装/五日/双机/公证/发布仍 NOT_RUN；first shell launch 的 Keychain query 次数 UNVERIFIED，runtime model metadata UNVERIFIED。单文件选择仍未达到已确认批量/文件夹导入要求；真实 journal assist 未纳入本次 plan；真实 task write 仍禁用。
+
+## M4.1 固定候选与技术门（历史 SHA）
 
 用户 2026-10-13 授权本分支 `codex/m41-internal-app-20261013` 连续实现和自测离线 M4.1 Internal App/DMG。初始产品 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 的独立 QA 发现 M41-QA-001：WKWebView HTML 文件导入没有原生面板；该 SHA 的 FAIL 记录保留在[初次 QA 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-b9321d6.md)。修复轮 1 固定产品源码 SHA：`3f6eaa408a8860ff5a438be8a874a2c3904733e4`（后续只提交 docs/evidence）。
 

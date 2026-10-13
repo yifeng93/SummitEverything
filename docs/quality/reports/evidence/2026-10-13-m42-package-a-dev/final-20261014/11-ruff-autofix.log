@@ -1,0 +1,4 @@
+COMMAND: uv run ruff check --fix src tests
+Found 2 errors (2 fixed, 0 remaining).
+
+EXIT_CODE: 0

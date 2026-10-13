@@ -1,0 +1,4 @@
+COMMAND: uv run ruff check src tests
+All checks passed!
+
+EXIT_CODE: 0

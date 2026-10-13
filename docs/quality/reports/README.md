@@ -8,8 +8,11 @@ M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码
 
 M4.1 固定产品 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 经 fresh QA 与 Sol 核验，适用离线技术门 PASS；用户已批准离线正式收口，PR #17 已合入 main。旧候选 `b9321d6` 的文件面板 FAIL 原件保留，修复使用 1/2 轮；真实安装、签名公证、M4.2、五日、双机和发布未通过。
 
+M4.2 Package A Developer 已在固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 完成本地自测、clean候选与有限 Fake 原生 UI；fresh QA pending。首轮错误 native launch 的 Keychain 查询/profile 路径 UNVERIFIED，不能称为 0 次。真服务和人工范围继续 NOT_RUN。
+
 | 报告 | 范围 |
 |---|---|
+| [M4.2 Package A DEV](2026-10-13-M42-PACKAGE-A-DEV.md) | 固定产品 SHA `fe47339`、命令 exit/raw evidence、clean候选和正确/错误隔离 UI 启动边界；fresh QA pending |
 | [M4.1 修复轮 1 fresh QA](2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md) | 固定 `3f6eaa4` 适用离线验收 PASS，文件面板 P1 实际关闭；真实门 NOT_RUN |
 | [M4.1 Sol 门](2026-10-13-M41-SOL-GATE.md) | 固定候选 / 证据 / 代码审查，离线技术 PASS；用户批准离线收口并合入 PR #17 |
 | [M4.1 初始 DEV](2026-10-13-M41-INTERNAL-APP-DEV.md) | 初始候选与首次 QA 前自测，产品源码 SHA `b9321d6` |

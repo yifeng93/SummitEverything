@@ -1,0 +1,10 @@
+open_exit=0
+darwin_temp_profile_child=true
+workspace_is_synthetic=true
+workspace_manifest_present=true
+native_process_present=true
+native_offline_guard_exact_1=True
+native_profile_root_matches_temp=True
+backend_process_present=true
+backend_offline_guard_exact_1=True
+backend_profile_root_matches_temp=True

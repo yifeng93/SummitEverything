@@ -1,0 +1,17 @@
+COMMAND: npm --prefix web run build
+
+> web@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 28 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.62 kB │ gzip:  0.39 kB
+dist/assets/index-B3KNOB32.css   28.63 kB │ gzip:  6.26 kB
+dist/assets/index-DhW6CuQ6.js   332.79 kB │ gzip: 97.97 kB
+
+✓ built in 68ms
+
+EXIT_CODE: 0

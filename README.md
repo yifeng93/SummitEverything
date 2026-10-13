@@ -4,9 +4,11 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
+M4.2 工作包 A Developer 已完成，产品源码固定于 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b`，新 clean Internal `.app`/DMG 候选已构建。原生 UI 复演到带离线 guard 的 Settings 和 Fake 合成材料导入；真实 organize/review/index/query UI 闭环尚未复演，独立 QA 待开始。DEV 逐命令日志、候选 manifest、错误启动限制和 QA handoff 见 [M4.2 DEV 报告](docs/quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
 
-本轮实现了内置 Python onedir 后端、强制重建静态前端、独立 Internal bundle/profile、每次运行新 token、健康身份与资源指纹校验、loopback Bearer API 和原生生命周期。构建目标为 arm64、最低系统版本声明 macOS 13；本机实测环境为 arm64 macOS 27.0.1，CI 在 macOS 14.8.9 arm64 完成自动构建和 backend smoke；该系统完整 GUI / 安装、其他架构和 macOS 13 未测。内部候选未公证，实际用户安装、签名证书/公证、真实模型与飞书、真实材料、OS Keychain、M4.2、五日试用、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
+M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；该历史结论不适用于 M4.2，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
+
+M4.2 固定候选 manifest 为 `dirty=false`，开发检查与候选摘要见 DEV 报告。第一次通过 shell 直接启动的 UI 运行丢失 offline guard，设置显示钥匙串可用；其 Keychain 查询次数与 profile 回退均 UNVERIFIED。最终候选由 `open -n` + 新 temporary profile 运行，native/backend 进程均确认 guard 为 `1`、profile-root 匹配；设置明确显示钥匙串不可用。真实账户、材料、模型/Feishu、费用/质量、Keychain 生命周期、实际用户安装、公证、五日、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 
 ## 文档入口
 
@@ -39,9 +41,9 @@ swift test --package-path native
 
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
-这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.1 修复轮 1 Developer 自测与 QA handoff 见最新交接。
+这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Developer 自测与 fresh QA handoff 见最新交接。
 
-### 构建 M4.1 Internal 候选
+### 构建 Internal 候选
 
 只在 arm64 macOS 构建机器上运行。输出路径必须是全新路径；脚本先强制构建 WebUI、检查锁定依赖、构建内置 Python onedir 与 Swift 壳、校验 bundle，再创建并验证只读可挂载的未公证 DMG。它不会安装或覆盖应用：
 
@@ -51,7 +53,7 @@ npm --prefix web ci
 scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
 ~~~
 
-该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。
+该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。M4.2 QA 使用 fresh temporary profile；macOS LaunchServices 启动时必须显式传递 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。按 [M4.2 DEV 报告](docs/quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)中的候选路径执行，不使用直接运行 `.app/Contents/MacOS/...` 的 shell 启动方式。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 
