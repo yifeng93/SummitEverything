@@ -1,0 +1,11 @@
+Checkout: /Users/yifengstudio/.codex/worktrees/m3-postmerge-qa/SummitEverything
+Tested merge SHA: 47a3971ea3dccf6ffbc7107b2d5995043b4e25a2
+origin/main: 47a3971ea3dccf6ffbc7107b2d5995043b4e25a2
+Merge parents (ordered): 5fd91c78930c80b2365957197b8a605757694a91 696d1dacaba92b090f742b9c9ba5e2d0a0b64ad8
+Approved product candidate: 0a1b8dc94a5d8f797161c38430dccfcb211a9e07
+Approved integrated documentation HEAD: 303cf472cb94f238e4dad99442a385b7d05f7fa9
+Candidate ancestor of merge: yes (git merge-base --is-ancestor exit 0)
+Candidate product-path diff to merge (src web native tests scripts pyproject.toml uv.lock): empty (git diff --quiet exit 0)
+At merge SHA, candidate QA evidence was identical to second parent 696d1da. After adding this new report, all earlier evidence paths still compare clean to that parent when excluding this new postmerge evidence directory (command and exit recorded under raw/).
+Candidate C19 QA manifest: 71 entries; all checksum rows verify; manifest SHA-256 1b2330156cad44a06cbd535fb8f5363586b6068e41b56be05595097b6e5d018b
+Qualification source and locked dependency/configuration paths are unchanged from the approved candidate by the product-path comparison above.
