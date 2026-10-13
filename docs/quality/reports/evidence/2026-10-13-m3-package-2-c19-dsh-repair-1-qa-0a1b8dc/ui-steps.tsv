@@ -1,0 +1,10 @@
+step	visible observation	result
+open synthetic workspace	index not ready; prepare index plan; create index; 9 pages / 9 chunks saved	PASS
+complete info query	confirmed statement; page citation; citation version still available	PASS
+partial comparison	one supported citation; 汀屿计划 missing schedule; insufficient two groups	PASS
+zero query	no citation; 彩色牙刷 missing storage rule	PASS
+near-info negative	no citation; 白萤近似 missing visitor-registration basis	PASS
+mixed cap and missing	5 citations; 汀屿计划 missing basis plus explicit cap-not-support wording	PASS
+pure cap	5 budget citations; cap notice only, no missing-basis claim	PASS
+history reopen after service restart	original complete query/answer/citation; version still available	PASS
+DevTools console/network and PNG export	CUA surface offered no such capture/export action	NOT_RUN

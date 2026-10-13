@@ -1,0 +1,23 @@
+group	command	result	exit
+dependencies	uv sync --locked --group dev	PASS; raw/uv-sync.log	0
+dependencies	cd web && npm ci	PASS; raw/npm-ci.log	0
+c19	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src:$PWD/.local/qa/c19-repair-1/harness" uv run pytest -q -s tests/integration/test_c19_topic_scope_normalization.py .local/qa/c19-repair-1/harness/test_c19_previous_holdout.py .local/qa/c19-repair-1/harness/test_c19_r2_expanded_matrix.py .local/qa/c19-repair-1/harness/test_c19_information_qualifier.py .local/qa/c19-repair-1/harness/test_c19_d3_limit_true_absence.py	85 passed	0
+backend	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q	491 passed	0
+web	cd web && npm test -- --run	56 tests / 12 files	0
+web	cd web && npm run typecheck	PASS	0
+web	cd web && npm run lint	PASS (2 existing React effect warnings)	0
+web	cd web && npm run build	PASS	0
+python	uv run ruff check .	PASS	0
+python	uv run ruff format --check .	79 files formatted	0
+python	uv run mypy src	43 source files PASS	0
+python	uv lock --check	PASS	0
+python	uv build	PASS	0
+openapi	PYTHONPATH="$PWD/src" uv run python .local/qa/c19-repair-1/export_openapi_local.py; ./web/node_modules/.bin/openapi-typescript .local/qa/c19-repair-1/openapi.json -o .local/qa/c19-repair-1/generated-final.ts; diff -u web/src/api/generated.ts .local/qa/c19-repair-1/generated-final.ts	empty diff	0
+probe	uv run python .local/qa/c19-repair-1/harness/probe_d1_d3.py	finite D1/D3 probes PASS	0
+loopback	uv run python .local/qa/c19-repair-1/loopback_setup.py	synthetic workspace/index ready	0
+loopback	uv run python .local/qa/c19-repair-1/http_sse.py	HTTP/SSE and history controls PASS	0
+repo	git diff --check	PASS	0
+service start/stop	SUMMIT_API_PORT=18874 SUMMIT_WEB_PORT=15180 SUMMIT_PROFILE_ROOT="$PWD/.local/qa/c19-repair-1/profile" SUMMIT_SESSION_TOKEN=qa-c19-repair-1-local-only SUMMIT_RUN_ID=qa-c19-repair-1 uv run python scripts/run_dev.py (Ctrl+C)	server test ran; wrapper cleanup PermissionError; see raw/run-dev-final.log	1
+service stop	python3 .local/qa/c19-repair-1/check_stopped.py	wrapper exit 0; raw JSON shows each lsof rc=1 / empty stdout (no listener), no matching QA service process	0
+repo	git diff --quiet 0a1b8dc94a5d8f797161c38430dccfcb211a9e07 -- src web native tests scripts pyproject.toml uv.lock	no product source diff	0
+repo	git diff --check	PASS	0

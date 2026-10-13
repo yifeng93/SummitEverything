@@ -1,0 +1,68 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.4  ready in 78 ms
+
+  ➜  Local:   http://127.0.0.1:15180/
+INFO:     Started server process [61134]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18874 (Press CTRL+C to quit)
+INFO:     127.0.0.1:63307 - "GET /api/v1/health HTTP/1.1" 200 OK
+Local API: http://127.0.0.1:18874/api/v1/health
+WebUI: http://127.0.0.1:15180/
+Press Ctrl+C to stop both services.
+INFO:     127.0.0.1:63320 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:63321 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:63342 - "POST /api/v1/workspaces HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63351 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63352 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63349 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63353 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63354 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63359 - "GET /api/v1/drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63360 - "GET /api/v1/integrations/feishu/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63363 - "GET /api/v1/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63364 - "GET /api/v1/lines HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63366 - "GET /api/v1/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63350 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63356 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63368 - "GET /api/v1/intake/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63370 - "GET /api/v1/pages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63388 - "GET /api/v1/memory HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63387 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63389 - "GET /api/v1/memory/candidates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63386 - "GET /api/v1/conversations?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63385 - "GET /api/v1/index/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63406 - "POST /api/v1/conversations/80cb648c-cf95-4168-8256-021456617c0e/reopen HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61134]
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything/scripts/run_dev.py", line 107, in main
+    time.sleep(0.25)
+  File "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything/scripts/run_dev.py", line 44, in stop_children
+    child.wait(timeout=5)
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/subprocess.py", line 2047, in _wait
+    time.sleep(delay)
+  File "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything/scripts/run_dev.py", line 39, in stop_children
+    os.killpg(child.pid, signal.SIGTERM)
+PermissionError: [Errno 1] Operation not permitted
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything/scripts/run_dev.py", line 114, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything/scripts/run_dev.py", line 110, in main
+    stop_children()
+  File "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything/scripts/run_dev.py", line 39, in stop_children
+    os.killpg(child.pid, signal.SIGTERM)
+PermissionError: [Errno 1] Operation not permitted

@@ -1,0 +1,15 @@
+{
+  "lsof_18874": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "",
+    "interpretation": "no listener"
+  },
+  "lsof_15180": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "",
+    "interpretation": "no listener"
+  },
+  "qa_checkout_process_lines": []
+}
