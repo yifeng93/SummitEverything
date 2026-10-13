@@ -1,0 +1,27 @@
+{
+  "count": 3,
+  "locations": [
+    {
+      "source": "docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md",
+      "line": 9,
+      "target": "/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/web/src/components/AskView.tsx:148",
+      "line_contains_target": true,
+      "source_commit_preserved_by_byte_audit": true
+    },
+    {
+      "source": "docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md",
+      "line": 9,
+      "target": "/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/src/summit_everything/local/conversations.py:209",
+      "line_contains_target": true,
+      "source_commit_preserved_by_byte_audit": true
+    },
+    {
+      "source": "docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md",
+      "line": 13,
+      "target": "/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/web/src/components/AskView.tsx:243",
+      "line_contains_target": true,
+      "source_commit_preserved_by_byte_audit": true
+    }
+  ],
+  "historical_report_bytes_match_baseline": true
+}

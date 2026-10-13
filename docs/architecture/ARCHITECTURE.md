@@ -1,9 +1,5 @@
 # 运行架构与模块责任
 
-2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
-
-2026-10-12 当前：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、等待用户决定；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](../quality/reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
-
 状态：v1 工程基准；产品语义以产品规格和工作库契约为准。
 
 ## 运行方式
@@ -31,7 +27,7 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 | native/ | 薄 macOS 壳与生命周期测试 |
 | tests/ | 单元、契约、集成和去标识材料 |
 
-当前已实现 M1 本地闭环、M2.1–M2.3 Fake-only 工作流及 M3 三包源码；包 1和包 3离线集成 PASS，包 2 C19 最后统一repair2/2独立QA仍FAIL，停止自动修改并待用户决定。M3 正式验收、Stage C 真实 provider / Keychain、M4 和 M5 仍未完成。不要创建无实际用途的空服务。
+当前 M1/M2 Fake 工作流与 M3 三包离线实现已完成；三个 M3 包及离线模拟正式验收均 PASS，产品已合入 main。真实 provider / Feishu、业务材料、OS Keychain、native/DMG、五日试用、双机和发布仍未验收，runtime 元数据 UNVERIFIED。不要创建无实际用途的空服务。
 
 工作库 context 至少携带 workspace_id、root、local_profile_dir。API 的活动工作库绑定到服务 context，请求不能提交任意绝对路径跳过 root 边界。
 
@@ -94,7 +90,7 @@ OAuth state 只在本进程内保存，绑定本次服务会话 token 的身份�
 
 材料导入以规范化 ID 集合 hash 认领 journal；独立导入文件锁串行化同库批次，原件写入仍使用 SourceStore 的库身份锁和原子恢复。已保存 source/item 在恢复时按稳定 ID 复用，不再次拉取正文；每项完成结果随后保存，完成 receipt 重放不依赖授权或网络。工作库保留此业务来源 / 意图证据；token 与 OAuth state 均不同步。
 
-M2.1 审查修正：应用秘密与 user token 分开储存在 CredentialStore 的 get_app/put_app 与 get/put 接口；AppCredentials 使用 SecretStr 并校验配置 app_id，provider exchange 接收此后端接口对象，默认 Fake 不读取真实秘密。仅有 synthetic-memory 实现；无真实 Feishu HTTP adapter、账户配置或 OS Keychain adapter / 权限流。前端保留注册 callback 绝对目的地，直接以无凭据、禁止重定向请求本机固定 callback；API 只为 allowlist Origin 的 callback 提供读取 header（含错误），不为其余业务降低 Bearer 门。
+M2.1 初始审查记录（后续实现已扩展）：应用秘密与 user token 分开储存在 CredentialStore 接口；AppCredentials 使用 SecretStr 并校验配置 app_id，默认 Fake 不读取真实秘密。此后已实现 Feishu HTTP adapter、账户配置与 fail-closed macOS Keychain 边界；真实账户请求及 OS Keychain 拒绝 / 锁定 / 重启生命周期仍未验收。前端保留注册 callback 绝对目的地，直接以无凭据、禁止重定向请求本机固定 callback；API 只为 allowlist Origin 的 callback 提供读取 header（含错误），不为其余业务降低 Bearer 门。
 
 ## M2.3 日志、思考与项目概览
 

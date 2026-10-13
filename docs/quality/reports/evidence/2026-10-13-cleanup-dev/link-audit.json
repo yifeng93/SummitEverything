@@ -1,0 +1,26 @@
+{
+  "markdown_files": 187,
+  "links_checked": 517,
+  "missing_repo_relative_links": [],
+  "unavailable_absolute_temp_checkout_links": [
+    {
+      "source": "docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md",
+      "line": 9,
+      "target": "/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/web/src/components/AskView.tsx:148",
+      "preserved_source_sha": "faf1563d406cf0cf092550f9845626efb9b09c72"
+    },
+    {
+      "source": "docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md",
+      "line": 9,
+      "target": "/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/src/summit_everything/local/conversations.py:209",
+      "preserved_source_sha": "faf1563d406cf0cf092550f9845626efb9b09c72"
+    },
+    {
+      "source": "docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md",
+      "line": 13,
+      "target": "/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/web/src/components/AskView.tsx:243",
+      "preserved_source_sha": "faf1563d406cf0cf092550f9845626efb9b09c72"
+    }
+  ],
+  "result": "PASS"
+}

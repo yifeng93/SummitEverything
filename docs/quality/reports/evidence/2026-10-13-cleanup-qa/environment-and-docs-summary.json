@@ -1,0 +1,385 @@
+{
+  "tested_sha": "6a33259224097167cfdde689da93258fe925964e",
+  "main_head": "879c82464903a7aed91b30955d7355064fa85088",
+  "main_status": "## main...origin/main",
+  "main_local_branches": [
+    "codex/maintenance-cleanup-20261013",
+    "main"
+  ],
+  "main_worktree_roots": [
+    "/Users/yifengstudio/Documents/GitHub/SummitEverything",
+    "/Users/yifengstudio/.codex/worktrees/maintenance-cleanup-20261013/SummitEverything",
+    "/Users/yifengstudio/.codex/worktrees/maintenance-cleanup-qa-20261013/SummitEverything"
+  ],
+  "remote_heads": [
+    "refs/heads/codex/maintenance-cleanup-20261013",
+    "refs/heads/main"
+  ],
+  "remote_c03_branch_absent": true,
+  "old_local_branches_absent": {
+    "codex/c03-delete-copy-pilot": true,
+    "codex/c03-delete-copy-qa": true,
+    "codex/dsh-c19-20261012": true,
+    "codex/m3-integrated-packages": true,
+    "codex/m3-postmerge-closeout": true
+  },
+  "old_worktree_paths": [
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/c03-delete-copy-pilot/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/c03-delete-copy-qa/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/c03-integration-qa/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-independent-qa/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-sol-gate/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-integrated-packages/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-postmerge-qa/SummitEverything",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA2",
+      "exists": false
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA3",
+      "exists": false
+    }
+  ],
+  "old_worktree_count_absent": 12,
+  "dsh_directories_count_absent": 4,
+  "all_snapshot_tags_match": true,
+  "snapshot_tags": [
+    {
+      "tag": "archive/cleanup-2026-10-13/c03-delete-copy-pilot",
+      "expected_oid": "2251ec8e32c1ada3d79cbe4f9feae5169b540bfd",
+      "actual_oid": "2251ec8e32c1ada3d79cbe4f9feae5169b540bfd",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/c03-delete-copy-qa",
+      "expected_oid": "f381d28d077d3d668cc65ae5eb4fe13b4ad94761",
+      "actual_oid": "f381d28d077d3d668cc65ae5eb4fe13b4ad94761",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/c03-integration-qa",
+      "expected_oid": "2835ffba1f98ef17fcdeb38f53b0b5e860ed0353",
+      "actual_oid": "2835ffba1f98ef17fcdeb38f53b0b5e860ed0353",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-c19-dsh-independent-qa",
+      "expected_oid": "b365e79cde324332d87f1997be6169934d261574",
+      "actual_oid": "b365e79cde324332d87f1997be6169934d261574",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-c19-dsh-repair-1-qa",
+      "expected_oid": "93bbf45e296abb7d2b234059138cf9f8cad84351",
+      "actual_oid": "93bbf45e296abb7d2b234059138cf9f8cad84351",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-c19-dsh-sol-gate",
+      "expected_oid": "844911c74b6a29bb1a47b1a37055565a0b5f808d",
+      "actual_oid": "844911c74b6a29bb1a47b1a37055565a0b5f808d",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-integrated-packages",
+      "expected_oid": "b3d0dff587c94ee295dfe5379bd67916c98184ec",
+      "actual_oid": "b3d0dff587c94ee295dfe5379bd67916c98184ec",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-postmerge-qa",
+      "expected_oid": "c5db4c935b623f1021f34ddf632d6b121b49e358",
+      "actual_oid": "c5db4c935b623f1021f34ddf632d6b121b49e358",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-20261012",
+      "expected_oid": "04a504f7e2716366fa9335da099b967554db256c",
+      "actual_oid": "04a504f7e2716366fa9335da099b967554db256c",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-PREQA",
+      "expected_oid": "80cabedd99cbe05c25566ecfa855da1dc3fa1b94",
+      "actual_oid": "80cabedd99cbe05c25566ecfa855da1dc3fa1b94",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-PREQA2",
+      "expected_oid": "983636577e3a461b3e234e9923738088183b2f77",
+      "actual_oid": "983636577e3a461b3e234e9923738088183b2f77",
+      "match": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-PREQA3",
+      "expected_oid": "7e772eac938771d1942bb0fcc2458c32ae6470e4",
+      "actual_oid": "7e772eac938771d1942bb0fcc2458c32ae6470e4",
+      "match": true
+    }
+  ],
+  "bundle_sha256": "8efc21cfb4065766a91ec34791ecf9a18c3a36359b3841c03b8dcececf3bf6e3",
+  "bundle_sha256_expected": "8efc21cfb4065766a91ec34791ecf9a18c3a36359b3841c03b8dcececf3bf6e3",
+  "bundle_verify_exit": 0,
+  "backup_tars": [
+    {
+      "file": "c03-delete-copy-pilot-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "3a56c4b492d954b4b5b702970db674870381fc882a67f060b21b0e925c512639",
+      "expected_sha256": "3a56c4b492d954b4b5b702970db674870381fc882a67f060b21b0e925c512639",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "c03-delete-copy-qa-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "e207accd7ca207ed76db880530ae35b1774af02927e3b493ef16498ce71d5d4b",
+      "expected_sha256": "e207accd7ca207ed76db880530ae35b1774af02927e3b493ef16498ce71d5d4b",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "c03-integration-qa-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "736550a7cdb87556da28b06688c9202bce3a9b26c3f57b9bbd538674cf8b7a41",
+      "expected_sha256": "736550a7cdb87556da28b06688c9202bce3a9b26c3f57b9bbd538674cf8b7a41",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "m3-c19-dsh-independent-qa-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "3c201a2c84294564ac9ff8a3d101c9f876b2359cba90e58a074eac7cc9f14ba4",
+      "expected_sha256": "3c201a2c84294564ac9ff8a3d101c9f876b2359cba90e58a074eac7cc9f14ba4",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "m3-c19-dsh-repair-1-qa-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "e265cb0b6b542bf6d65d110d85c8db3357135ca0998cecc4d0e62640197c2c82",
+      "expected_sha256": "e265cb0b6b542bf6d65d110d85c8db3357135ca0998cecc4d0e62640197c2c82",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "m3-c19-dsh-sol-gate-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "dceb78cc2730c1e62a41245c85f9345447d4f8a22114d4e587d3f632a59f43cc",
+      "expected_sha256": "dceb78cc2730c1e62a41245c85f9345447d4f8a22114d4e587d3f632a59f43cc",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "m3-postmerge-qa-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "84d318b1464e318869620b8deba4ea71d9c16516ff3fcec6967687a65ea26639",
+      "expected_sha256": "84d318b1464e318869620b8deba4ea71d9c16516ff3fcec6967687a65ea26639",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "SummitEverything-DSH-C19-20261012-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "1c11572889a4bee7d03e2c4833a216a406f410828f188b7c70fbb5c38352e6bc",
+      "expected_sha256": "1c11572889a4bee7d03e2c4833a216a406f410828f188b7c70fbb5c38352e6bc",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "SummitEverything-DSH-C19-PREQA-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "5879f8e67fa53cd085798508bcbc490563971ea81e041e406d65708dbbcadd7f",
+      "expected_sha256": "5879f8e67fa53cd085798508bcbc490563971ea81e041e406d65708dbbcadd7f",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "SummitEverything-DSH-C19-PREQA2-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "4ba9e2b57b17f954f90668ba44a4438436cc67c7a758ad37720e88145a73d228",
+      "expected_sha256": "4ba9e2b57b17f954f90668ba44a4438436cc67c7a758ad37720e88145a73d228",
+      "tar_exit": 0,
+      "mode": "0o600"
+    },
+    {
+      "file": "SummitEverything-DSH-C19-PREQA3-local.tar.gz",
+      "exists": true,
+      "actual_sha256": "f4472a7d4d6e35113382f22985cb3c210aa8db3b8abab51c591fd156f8516bcf",
+      "expected_sha256": "f4472a7d4d6e35113382f22985cb3c210aa8db3b8abab51c591fd156f8516bcf",
+      "tar_exit": 0,
+      "mode": "0o600"
+    }
+  ],
+  "backup_tar_count": 11,
+  "all_backup_tars_match": true,
+  "sha256sums_exit": 0,
+  "archive_modes": {
+    "archive_dir": "0o700",
+    "all_files_0600": false
+  },
+  "receipt_files_present": {
+    "inventory.json": true,
+    "cleanup-backups.json": true,
+    "worktree-removal.json": true,
+    "local-branch-removal.json": true,
+    "sol-remote-delete.json": true,
+    "SHA256SUMS": true
+  },
+  "duplicate_backup_absent": true,
+  "preserved_refs": {
+    "refs/tags/archive/cleanup-2026-10-13/SummitEverything": {
+      "exit": 0,
+      "value": "2251ec8e32c1ada3d79cbe4f9feae5169b540bfd"
+    },
+    "refs/tags/handoff/c19-dsh-2026-10-12": {
+      "exit": 0,
+      "value": "b3d0dff587c94ee295dfe5379bd67916c98184ec"
+    },
+    "refs/stash": {
+      "exit": 0,
+      "value": "02c4801bc623ac2304bee18cceee64f4795602d8"
+    }
+  },
+  "stash_list": "stash@{0}: On main: Preserve pre-integration Sol/Luna installation overlay 2026-10-11",
+  "report_byte_compare": {
+    "baseline_count": 1762,
+    "compared_excluding_index": 1761,
+    "mismatch_count": 0,
+    "mismatches": [],
+    "base_archive_exit": 0
+  },
+  "markdown_relative_link_missing_count": 0,
+  "acceptance_ids": {
+    "old_count": 42,
+    "new_count": 42,
+    "missing": [],
+    "old": [
+      "B01",
+      "B02",
+      "B03",
+      "B04",
+      "B05",
+      "B06",
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C13",
+      "C14",
+      "C15",
+      "C16",
+      "C17",
+      "C18",
+      "C19",
+      "C20",
+      "C21",
+      "C22",
+      "C23",
+      "C24",
+      "C25",
+      "C26",
+      "C27",
+      "C28",
+      "C29",
+      "C30",
+      "C31",
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05"
+    ],
+    "new": [
+      "B01",
+      "B02",
+      "B03",
+      "B04",
+      "B05",
+      "B06",
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C13",
+      "C14",
+      "C15",
+      "C16",
+      "C17",
+      "C18",
+      "C19",
+      "C20",
+      "C21",
+      "C22",
+      "C23",
+      "C24",
+      "C25",
+      "C26",
+      "C27",
+      "C28",
+      "C29",
+      "C30",
+      "C31",
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05"
+    ]
+  },
+  "docs_checks": {
+    "domain_models_file_exists": true,
+    "dsh_redirect_mentions_history": true,
+    "readme_mentions_m3_merge": true,
+    "readme_marks_real_dmgs_not_run": true,
+    "cleanup_handoff_exists": true
+  }
+}

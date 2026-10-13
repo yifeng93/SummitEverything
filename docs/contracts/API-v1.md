@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：v1 完整实施基准；截至 2026-10-12，M3 包 1由 Sol 判离线集成 PASS，包 2 C19 P1 FAIL；包 3 repair 1/2 源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f` 已由全新 QA 复验并由 Sol 判离线集成 PASS，初验 FAIL 保留；不代表 M3 正式通过。Stage B 离线实现与真实业务模型/Feishu disabled 状态见[报告索引](../quality/reports/README.md)。Settings 读写不联系 provider；审批后真实 embedding 索引须用户另行确认计划。下表同时包含已实现和计划路由；不得据契约条目声称真实 provider 已验证。前缀 /api/v1；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 API 契约与实现边界。M3 离线实现与正式模拟验收已通过并合入 main；当前验收证据见 [PROGRESS](../implementation/PROGRESS.md) 和 [报告索引](../quality/reports/README.md)。本表包含已实现与计划路由；契约定义不表示真实 provider 已验收。Settings 读写不联系 provider；真实 embedding 索引须用户另行确认计划。前缀 `/api/v1`；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -78,8 +78,8 @@
 | GET /memory/candidates；POST /memory/candidates | 用户必须明确勾选 `user_expression=true`，`message_id` 必须是当前 profile/workspace 历史中的真实用户问题，`text` 必须与问题原文相符且表达本人偏好 / 习惯 / 事实；引用、来源、转述、粘贴及来源 canary 文本拒绝；服务端核验消息来源，不信任 UI 标签；响应是本机 pending 候选，不能直接进入上下文 |
 | POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑后的正文 → 活跃本机记忆；保留来源 message_id 与确认意图，重放同意图幂等，改内容冲突 |
 | GET /memory；PATCH /memory/{id}；DELETE /memory/{id} | 查看、编辑、删除活跃本机记忆；按 profile 与 workspace 隔离，不写工作库 |
-| GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置；Stage B 候选已实现原子本地保存；设置读取 / 保存不联网 |
-| PUT /credentials/{provider}；DELETE /credentials/{provider} | Stage B 候选已实现显式 macOS Keychain 和测试注入边界；响应只返回 configured 状态 |
+| GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置；已实现原子本地保存；设置读取 / 保存不联网 |
+| PUT /credentials/{provider}；DELETE /credentials/{provider} | 已实现显式 macOS Keychain adapter 与测试注入边界；响应只返回 configured 状态。真实 OS Keychain 拒绝 / 锁定 / 重启生命周期仍 NOT_RUN |
 | POST /settings/connections/{provider} | 计划路由；尚未实现。连接检查进入 Stage C 授权门，不能由刷新设置触发 |
 | GET /provider-smoke；POST /provider-smoke/deepseek-chat；POST /provider-smoke/model-studio-embedding；POST /provider-smoke/model-studio-rerank | 单独限额的合成连接 smoke；provider 在本机已保存并启用 Real 配置时可调用，固定合成输入、每个 app profile 每 provider 最多一次。尝试在出网前原子记账，失败/超时也占额，无自动重试；普通业务模型路径仍被服务端拒绝。真实 smoke 尚未执行；Feishu OAuth 没有对应 smoke 路由 |
 

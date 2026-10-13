@@ -1,0 +1,2 @@
+Integrity-audit first attempt: Python SyntaxError in tag rev-parse f-string construction; failed before reading report or writing audit JSON. Corrected to concatenate the literal ^{commit} expression; no repository state was changed by the failed attempt.
+Dead-code audit first attempt: system python3 (Xcode Python 3.9) could not parse repository PEP 695 type-parameter syntax in integrations/feishu/service.py; no audit output was produced. Re-ran the same AST scanner with the locked project interpreter via `uv run python`.

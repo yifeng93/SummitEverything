@@ -1,0 +1,39 @@
+{
+  "uname": {
+    "command": "uname -a",
+    "exit": 0,
+    "stdout": "Darwin Mac-Studio.local 27.0.0 Darwin Kernel Version 27.0.0: Tue Aug 11 21:05:42 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6031 arm64",
+    "stderr": ""
+  },
+  "macos_version": {
+    "command": "sw_vers -productVersion",
+    "exit": 0,
+    "stdout": "27.0.1",
+    "stderr": ""
+  },
+  "python": {
+    "command": "uv run python --version",
+    "exit": 0,
+    "stdout": "Python 3.12.13",
+    "stderr": ""
+  },
+  "node": {
+    "command": "node --version",
+    "exit": 0,
+    "stdout": "v24.15.0",
+    "stderr": ""
+  },
+  "npm": {
+    "command": "npm --version",
+    "exit": 0,
+    "stdout": "11.12.1",
+    "stderr": ""
+  },
+  "uv": {
+    "command": "uv --version",
+    "exit": 0,
+    "stdout": "uv 0.12.3 (507230998 2026-08-07 aarch64-apple-darwin)",
+    "stderr": ""
+  },
+  "browser": "NOT_RUN"
+}

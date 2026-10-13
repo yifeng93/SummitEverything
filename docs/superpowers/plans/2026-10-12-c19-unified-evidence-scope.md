@@ -1,10 +1,7 @@
 # C19 统一证据范围修复：Sol 研究与 Developer 执行契约
 
-2026-10-13 状态更新：本文以下为历史任务/冻结基线。C19已在 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 通过全新独立QA，用户已批准M3离线模拟正式验收及合并。参见[最新Sol门](../../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)与[M3批准记录](../../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)；不据旧FAIL或旧提示词重新开发已完成内容。
 
-2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
-
-2026-10-12。用户重新授权继续 C19，并明确要求 Sol 先研究、给 Luna 更准确的统一执行，减少重复修复。起点 `b4463c5bb9802adb622dfabe60e469eaf577a6d3`，产品树等同包 3 已验源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`。包 1、包 3离线集成 PASS；包 2 C19 P1 FAIL。此前失败、追加轮次与用户暂停记录不改写。本次为重新获授权的统一修复候选；整包固定 SHA 后首次新 QA，再按现有协议最多两轮自动返工。不是重新批准真实服务或重要里程碑合并。
+> 历史修复契约与研究记录：C19 已通过固定 SHA 的全新独立 QA，M3 离线模拟正式验收已合入 main。本文仅供追溯，不是当前任务入口；见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)与[M3验收](../../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。
 
 ## Sol 实际研究
 
@@ -104,6 +101,6 @@ repair 1 固定源码 `df1aac288a002e86a24132a9954fbe0b18d41d1f`、QA HEAD `04a0
 
 候选尚未经过 fresh QA。repair 1/2 C19 P1 FAIL仍有效；包 2及整体 M3未通过正式验收或合并。真实 provider/服务/材料/凭据、Keychain、native/DMG、五日/双机/发布仍NOT_RUN，runtime UNVERIFIED。
 
-## 当前结论：最后自动返工结束
+## 最终 repair 2/2 结论（历史固定 SHA）
 
 最终source `f79f613a902758da3173a5b27219fa568a912f5e` / QA `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 仍有主题词剥除P1，原12+纠正9项通过，新15 PASS/7 FAIL同根因。自动repair2/2已结束，不因额度中断再开始第三轮。证据与具体待批提议见[Sol最终门](../../quality/reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)；源码冻结，正式M3未通过。

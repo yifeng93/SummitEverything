@@ -1,0 +1,139 @@
+{
+  "inventory_roots": 12,
+  "obsolete_root_absence_all": true,
+  "roots": [
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/c03-delete-copy-pilot/SummitEverything",
+      "head": "2251ec8e32c1ada3d79cbe4f9feae5169b540bfd",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/c03-delete-copy-qa/SummitEverything",
+      "head": "f381d28d077d3d668cc65ae5eb4fe13b4ad94761",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/c03-integration-qa/SummitEverything",
+      "head": "2835ffba1f98ef17fcdeb38f53b0b5e860ed0353",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-independent-qa/SummitEverything",
+      "head": "b365e79cde324332d87f1997be6169934d261574",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-repair-1-qa/SummitEverything",
+      "head": "93bbf45e296abb7d2b234059138cf9f8cad84351",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-c19-dsh-sol-gate/SummitEverything",
+      "head": "844911c74b6a29bb1a47b1a37055565a0b5f808d",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-integrated-packages/SummitEverything",
+      "head": "b3d0dff587c94ee295dfe5379bd67916c98184ec",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/m3-postmerge-qa/SummitEverything",
+      "head": "c5db4c935b623f1021f34ddf632d6b121b49e358",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-20261012",
+      "head": "04a504f7e2716366fa9335da099b967554db256c",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA",
+      "head": "80cabedd99cbe05c25566ecfa855da1dc3fa1b94",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA2",
+      "head": "983636577e3a461b3e234e9923738088183b2f77",
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything-DSH-C19-PREQA3",
+      "head": "7e772eac938771d1942bb0fcc2458c32ae6470e4",
+      "absent": true
+    }
+  ],
+  "local_backups": 11,
+  "local_backup_hashes_all_match": true,
+  "backup_file_modes": [
+    "0o600"
+  ],
+  "archive_dir_mode": "0o700",
+  "bundle_sha256": "8efc21cfb4065766a91ec34791ecf9a18c3a36359b3841c03b8dcececf3bf6e3",
+  "bundle_declared_sha256": "8efc21cfb4065766a91ec34791ecf9a18c3a36359b3841c03b8dcececf3bf6e3",
+  "bundle_verified_recorded": true,
+  "cleanup_tags": 12,
+  "cleanup_tag_heads_all_match": true,
+  "tags": [
+    {
+      "tag": "archive/cleanup-2026-10-13/c03-delete-copy-pilot",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/c03-delete-copy-qa",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/c03-integration-qa",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-c19-dsh-independent-qa",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-c19-dsh-repair-1-qa",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-c19-dsh-sol-gate",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-integrated-packages",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/m3-postmerge-qa",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-20261012",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-PREQA",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-PREQA2",
+      "head_matches": true
+    },
+    {
+      "tag": "archive/cleanup-2026-10-13/SummitEverything-DSH-C19-PREQA3",
+      "head_matches": true
+    }
+  ],
+  "local_branches": [
+    "codex/maintenance-cleanup-20261013",
+    "main"
+  ],
+  "git_worktrees": [
+    "worktree /Users/yifengstudio/Documents/GitHub/SummitEverything\nHEAD 879c82464903a7aed91b30955d7355064fa85088\nbranch refs/heads/main",
+    "worktree /Users/yifengstudio/.codex/worktrees/maintenance-cleanup-20261013/SummitEverything\nHEAD 879c82464903a7aed91b30955d7355064fa85088\nbranch refs/heads/codex/maintenance-cleanup-20261013"
+  ],
+  "main_checkout_dirty_entries": [],
+  "extra_preexisting_archive_ref": "archive/cleanup-2026-10-13/SummitEverything",
+  "extra_ref_target": "2251ec8e32c1ada3d79cbe4f9feae5169b540bfd",
+  "duplicate_tar_absent": true
+}

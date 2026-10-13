@@ -1,46 +1,14 @@
 # 独立验收矩阵
 
-合并后独立QA在固定 47a3971ea3dccf6ffbc7107b2d5995043b4e25a2 上复跑491后端、56Web及适用检查通过；Sol校验49项证据全部匹配，见[合并后QA](reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md)。后续文档整合不改变受测产品树。
+本文件定义验收标准，不用旧报告状态改写门槛。M3离线模拟正式验收已获用户批准并合入main；C19与三个M3离线包均有固定SHA的独立PASS。当前范围和证据见[报告索引](reports/README.md)及[M3正式验收记录](reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。
 
-2026-10-13 最新技术状态：**C19 / 包2离线集成PASS，包1/3保持既有离线PASS；用户已批准M3离线模拟正式验收，并经[PR #13](https://github.com/yifeng93/SummitEverything/pull/13)合入main，merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`；离线正式门PASS，固定merge的全新独立QA已PASS。** 固定产品源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07`，全新QA报告提交 `93bbf45e296abb7d2b234059138cf9f8cad84351`；85个不同C19回归、guarded后端491、Web56及适用静态/类型/构建与隔离生成检查通过，实际合成HTTP/SSE、Chrome UI完整/部分/零证据与history重开/重启通过。71项QA证据由Sol实际核对全匹配。见[独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol最终技术门](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。批准范围及合并证据见[M3离线验收记录](reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)。整合分支 `codex/c19-dsh-sol-gate`；PR #13产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`；当前main HEAD以实际Git为准，后续文档整合保持受测产品树；M3冻结与DSH交接不变。本轮1/2返工收口，第2轮未使用。
-
-未关闭风险：开发脚本Ctrl+C清理PermissionError/exit1，后验无残留服务或监听；不冒称清理全绿。真实服务/材料/凭据/Keychain、native/DMG、五日/双机/发布NOT_RUN，runtime UNVERIFIED、smoke未消费；本结论不能替代完整v1验收。下方日期状态为各SHA历史，不能覆盖本段。
-
-2026-10-13 DEV/初验历史：DSH 固定源码 `be4e72f80127b9c14e0e69a21fdd6f2dabb1ddac` 经全新独立 QA / Sol 判 FAIL，复合主题“信息”全局剥除 P1 与默认limit掩盖真缺失 P2尚未关闭。原设备与53个不同回归通过，D1有限元数据/正文对照符合现有契约。进入本次候选初验后的统一自动返工1/2；Developer在 `codex/c19-dsh-sol-gate` 连续实施，固定新SHA后全新QA集中复验。main / M3冻结基线 / DSH原交接不改，包1/3保留既有离线PASS，正式包2/M3验收及合并未通过。见 [Sol门与统一修复契约](reports/2026-10-13-M3-C19-DSH-SOL-GATE.md) 和 [固定源码独立QA](reports/2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md)。下方DSH自测及旧周期均为历史记录，不覆盖本行当前状态。
-
-2026-10-12 收尾交接：用户要求更新文档、清理临时环境，并准备由 Deepseek Harness V4.1 flash 在独立分支尝试 C19。此次只做收尾，产品源码仍为 `f79f613a902758da3173a5b27219fa568a912f5e`，C19 独立 QA / Sol 仍为 FAIL；包 1 / 包 3保持既有离线 PASS，M3 正式门及合并未通过。交接固定引用为 `handoff/c19-dsh-2026-10-12`；下一位先读 `docs/handoff/DSH-C19.md` 和 `docs/handoff/2026-10-12-M3-CLEANUP.md`，不可从缺少 M3 的 main 开始修复，也不可在基线目录写源码。原 Sol / Luna 周期已停止；本轮未启动额外修复或 QA。
-
-依据：产品规格、工作库 v1、API v1、完整实施计划。执行者自测不能替代本矩阵的独立结果。
-
-结果只用 PASS / FAIL / NOT_RUN / BLOCKED，并附版本和证据。BLOCKED 是具体测试环境条件，不是产品通过；尚未开发场景用 NOT_RUN。
-
-2026-10-12 最近受测结果（收尾前）：包 1、包 3保持各自离线集成 PASS；包 2 C19 统一修复 repair 2/2 在源码 `f79f613a902758da3173a5b27219fa568a912f5e`、QA 固定 `262f4eaa418d70f983f3b0b260d3635cd2e28c92` 上由独立 QA / Sol 判 FAIL（P1）。旧12项与纠正后9项holdout通过，新增矩阵15 PASS/7 FAIL同根因：信息性主题词被剥除，现有资料被错误判为缺失。450后端/Web56与静态/构建检查通过不能抵销产品失败。两轮自动返工已用完，停止自动源码修改、原周期已停止；M3正式验收和合并未通过。真实/发布门 NOT_RUN，runtime UNVERIFIED，smoke未消费。 见[Sol最终门](reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)和[最终独立QA](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。
-
-## 当前结论与范围（2026-10-11）
-
-固定源码 `576895f6983ca41cacbbad45a9075b97b9986189` 的独立离线QA已通过，并以PR #10 / merge `41207e5bfb81b535c0254fd4ac242df11da40d67` 合入main。后端388项、25项独立失败路径与实际合成浏览器/原生开发壳复验通过；合并后13项检查通过（Web45）。历史7f/8b/fd FAIL保留，缺陷只在新SHA复验后关闭。真实接入、OS Keychain、模型R03质量与安装包等门仍NOT_RUN；完整Stage B/v1未验收。证据发布范围与合并后初次瞬时失败见[收口记录](reports/2026-10-11-STAGE-B-POSTMERGE.md)。
-
-### C19统一周期状态（2026-10-12）
-
-最终repair2/2独立QA与Sol判FAIL，剩余信息性主题词剥除P1；已用完两轮自动返工，待用户决定追加范围。固定版本/原始证据见[Sol门](reports/2026-10-12-M3-C19-UNIFIED-SOL-GATE.md)及[最终QA](reports/2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md)。下方C19及全部产品验收要求不变；不以自动检查或旧反例通过替代本次实际失败。
-
-### 阶段 A 历史结论
-
-阶段 A Fake-only 已收口，最终修复代码 `30903c4cdf73855af71a201e3edea6c535ee8199`，收口 main `117086eb2075726730cd7aa62ea0b61498e96f0c`。第四轮截图的部分 UI 证明已撤回，不能只读旧 PASS 摘要；按[报告索引](reports/README.md)组合纠正、补验与修复复验结果。C18 的 409b FAIL 保留，在 309 修复行为上关闭。最新交接中的全量检查、前端补充检查和独立 UI 验证分别记录；未运行的检查保持 NOT_RUN。
-
-B/C 追加门见本文末尾；完整 C01–C31 和原 MUST 不变。
-
-### 历史 DEV 记录（以下未提交/NOT_RUN均指各轮报告时点）
-
-**2026-10-10 R4 补充：** Sol 对 R3 的最终只读复核实际复现 3 个问题（旧 callback 在 logout 后恢复授权、响应头未完成时整体 deadline 失效且返回后后台请求仍继续、退役 provider 借用其他租约接受无关新操作），R4 已全部整改并有 before/after 贯穿证据（对 R3 起点源码快照回放，逐文件 5/5 校验）。后端 374 passed（含 guard）、Web 42 tests。**改动未提交，无新固定源码 SHA；所有独立 QA 项仍为 NOT_RUN。** R03 标准未变。
-
-**2026-10-10 R3 补充：** R2 自测通过后经 Sol 复核发现 5 个 P1 反例，R3 已全部整改（授权代次/refresh 协调、严格 OAuth 响应、完整操作生命周期租约、应用身份与 user 槽隔离、可取消整体 deadline），每项有 before/after 贯穿集成证据，后端 351 passed（含 guard）、Web 42 tests。**改动未提交，无新固定源码 SHA；所有独立 QA 项仍为 NOT_RUN。** R03 标准未变。B 是适配实现与离线验收，C 是用户授权下的真实 provider 场景，均不能替代 M3 完整业务、M4 安装包 / 五日或 M5 双机。
-
-**历史记录（当时版本）：2026-10-10 DeepSeek Stage B trial 补充：** 本轮在独立试验工作区（分支 `codex/deepseek-stage-b-trial`，起点固定文档提交 `0a1db5d72e6ac11184d28e65dea3ba008762ba43`）补齐真实 Feishu HTTP adapter、统一 Keychain 槽、服务端数据门以及模型 deadline / 业务错误 / client 释放；随后 R2 整改 Sol 复核发现的 5 个 P1 与 1 个 P2（真实任务写独立门、应用身份贯通服务层、官方主日历形状、设置变更到达执行路径、日历截断如实上报、整体 deadline 完整生命周期）并修正状态与来源归属。**改动未提交**，因此没有新的固定源码 SHA；B01–B05 的「本轮整改完成待 Sol 复核」只描述 DEV 状态，**所有独立 QA 项仍为 NOT_RUN**，不得据此宣告 B 通过。R03 的质量与独立 QA 标准保持原文不变。
+完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。真实模型质量、Feishu、业务材料、OS Keychain、native/DMG、五日试用、双机与发布仍为 NOT_RUN；runtime 元数据 UNVERIFIED。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
 
 ## 验收准备
 
 读取 LATEST-IMPLEMENTATION 的完整代码 SHA，使用独立 checkout。先运行当前可用检查，再运行交接里真实存在的后端 / 前端 / 打包命令。环境与 fixture 都在隔离目录，禁止请求旧运行 App 或使用旧真实 _vault。
+
+执行者自测不能替代本矩阵的独立验收结果。结果只使用 PASS / FAIL / NOT_RUN / BLOCKED，并附固定版本及证据；BLOCKED 必须说明具体环境条件，不代表产品通过；尚未开发或未实际运行的场景记为 NOT_RUN。
 
 Fake provider 只替代外部网络。使用真实 writer、reader、路由、SQLite 和 UI。真实 provider 质量与真实权限另记，必须有用户明确的范围和动作。
 
@@ -125,7 +93,7 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 ## M2.2 Fake 复验（C16–C18）
 
-此节列 Fake 复演期望；开发时尚未执行独立 QA，当前报告链和恢复路径补验见下方。命令：`uv run pytest -q tests/integration/test_actions.py`；`npm --prefix web test -- TasksPanel.test.tsx`；M1 / M2.1 回归沿用 README 全量命令。
+此节列 M2.2 Fake 复演期望。阶段 A 当前独立 QA 与合并后复验见[报告索引](reports/README.md)，该历史通过不替代本次新维护 SHA 的验收。命令：`uv run pytest -q tests/integration/test_actions.py`；`npm --prefix web test -- TasksPanel.test.tsx`；M1 / M2.1 回归沿用 README 全量命令。
 
 1. 未确认、模型建议或知识批准均零任务写 / 零进度变化。手动标题、显式无日期 / 全天 / 带偏移时间后审阅 exact 值，确认仍不执行，另点执行才调用 Fake。确认后编辑使原确认失效，必须新 ID 重新确认。
 2. 同 ID/hash 多次执行、双击和并发只一次副作用；进行中202 + Location。改变 hash409，两个有效 action 可同标题。已完成任务再完成直接成功，无第二次 PATCH；只选 due 时标题 / 描述不变。
@@ -137,53 +105,9 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 实际账号权限、真实 GET/POST/PATCH、真实全天日期提取 / 时间 normalization、真实 token 查询能力、凭据 / OS Keychain、DMG、真实材料和模型质量均 NOT_RUN。全天 Fake 午夜约定不是真实协议验收。2026-10-10 最终 UI 树复演：独立临时 workspace/profile，创建（显式无日期）→确认→执行→refresh，完成→确认→执行→refresh 已完成；控制台warn/error为0。异常 / 并发 / 子进程路径由真实服务和文件测试覆盖，未声称浏览器全部复演。
 
-## M2 固定候选执行者复演（代码 SHA `09398fcae597b2478001d40aedf580ea91322c11`）
+> 以下阶段记录中的历史通过/失败只适用于其注明的受测版本；当前M3离线结论见本页开头。真实质量、M4/M5要求仍有效。
 
-执行者完整命令、UI 场景、隔离目录、run identity 和边界见 [M2 DEV 报告](reports/2026-10-10-M2-DEV.md)。此节记录执行者证据，不能代替独立 QA：
-
-- C15：实际 WebUI 进行了模拟授权、材料选择/取消/单条导入、待整理状态，以及日历日期范围、空态和反向区间验证。root 复演未覆盖授权拒绝/过期、provider 错误源的日历态或真实 UI 分页；相应 API / 组件 Fake 用例存在。
-- C16–C17：实际 WebUI 完成无日期任务创建、字段编辑与全天日期修改、独立审阅 / 确认 / 执行、完成态重复操作。Fake 注入分别在写入后与写入前抛 timeout；前者只读核实后成功，后者保持 unknown；刷新与重启后没有再次写入。M2.2 P2“空白核实依据”已独立修复并复核。
-- C18：知识批准、task action 与 project_progress action 分离；项目进度单独确认后变化，日志/思考/概览写入不会隐式改变进度。C09 日志 / 思考关联组合、显式 Fake AI 建议取消和项目概览链接 / 版本更新亦在 WebUI 实际操作。
-- 最后一次 `invalidated_confirmation` UI 描述误标已由回归测试修复；当前提示要求修改后重新独立确认。
-- 原生壳 UI NOT_RUN：运行的开发服务端口就绪，但 CUA 同名选择命中另一个 M1 QA checkout 的窗口，且显示 readiness error；执行者未操作那个 QA 实例。当前固定候选需在独立 QA checkout 用能确认归属的原生窗口补验。
-- 本次 CUA 浏览器 console 日志未导出，不作零 warning/error 声明。真实 Feishu、真实材料 / 任务 / 模型、Keychain、DMG、五日及双机全部 NOT_RUN。
-
-2026-10-10 用户更新：真实飞书 App ID / secret / 回调地址、LLM / embedding / rerank、材料和 Keychain 均已准备，用户可配合提供配置并参与测试。上述真实门仍是 NOT_RUN，因为固定候选仅 Fake provider；“条件可用”不代表已实现、已操作或已通过。该轮待评估项现已由 Stage A 独立 QA 收口，当前先做 B 的真实 adapter / 配置路径与隔离；任何真实登录、材料发送、付费模型调用或飞书 task 写入都应列出具体数据、目标、范围与成本，再由用户逐项确认。
-
-自动检查在固定候选全量复跑通过：后端 135 passed；前端 8 个文件 / 31 项通过；ruff / format / mypy / lock / uv build / Swift build / typecheck / Web build 通过。保留 1 条 Starlette/httpx 弃用提示与 3 条既有 React effect lint warning。以上均为 DEV 证据，待独立验收者在固定代码 SHA 上复核。
-
-## M2.1–M2.3 原第四轮独立 Fake-only QA（历史结论，须结合后续纠正）
-
-- **最终受测源码 SHA：** `32da67e9c0280e3dae18fd374e30c925565b0b82`。
-- **最终独立 QA 报告：** [第四轮最终复验](reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)，报告提交 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`，结论为 **PASS（Fake-only M2.1–M2.3）**。最终 QA checkout 与执行环境独立于实现 checkout；未修改产品 `src`、`web` 或测试实现。
-- **报告链：** 原候选初验 `f64c565b7c5105867e0c19e7e1e716dc726f8ff7`（固定 `09398fcae597b2478001d40aedf580ea91322c11`）→ 第一轮最终候选报告 `bb5231d5d31a64f57605bf8443f5f57752aac50d` → 第二轮补充 `91b0a93c615b3a16f5cf428b7f131a443d3ff59e` → 第三轮补充 `7f785c033bb96a43ae50ad6cf55b9c20474db85b` → 第四轮最终报告 `0531e0d1b95eb8dbb56af9237e39e21fcdf1d6f8`。各轮旧报告原样保留，第四轮 PASS 不覆盖历史失败或未测观察。
-- **缺陷结论：** A-01 至 A-04 原候选反例均已由实现修复，并在最终候选行为回归和独立复验中通过；A-05 的 journal 审批展示、外部编辑重新确认和文档状态已复验。最终 Fake QA 未关闭 P0/P1/P2=0。初验和整改细节分别见原候选报告及 [修复 DEV 报告](reports/2026-10-10-M2-stage-a-fix-dev.md)。
-- **场景结论：** C09、C15、C16、C17、C18、C23 为 PASS（按报告跨轮聚合）；关联 C04/C10/C11/C12/C13 与知识保存 / 索引资格门按最终报告及第三轮证据核对。C16 覆盖一次性副作用、重启、异 payload 拒绝和 unknown 不重发；C17 覆盖字段核验、合法规范化、明确清空、完成幂等和无效响应；C18 覆盖知识与进度分离、版本冲突和回执恢复；C23 覆盖真实文件写中断、归档中断、冲突副本与损坏回执。具体逐步证据、API / 磁盘断言、截图、CDP 摘要及复演步骤均在报告的 evidence 子目录和 `replay.md`。
-- **UI 限制：** 当前没有 OAuth cancel UI 控件，因此该 UI 变体 **NOT_RUN**；Fake API denial/state rejection 通过。此项不是当前 Fake gate 的产品缺陷。
-- **浏览器与原生壳：** 最终浏览器使用隔离 Chrome profile 和本地 Fake 服务；最终限定捕获窗中 41 个本地响应、0 个失败请求、0 console warning/error/runtime exception。原生开发壳窗口、目录选择、候选身份、Quit / 最后窗口清理与启动失败反馈在第二轮 follow-up 有独立候选证据。各自证据和观察范围见相应报告；final fourth round 没有重跑原生壳。
-- **自动检查：** 固定源码完整自动矩阵见第一轮报告；后端 142 passed、前端 8 个测试文件 / 32 项通过，ruff check / format、mypy、lock、uv build、OpenAPI 类型生成、typecheck、lint、web build、Swift build 与 `git diff --check` 均退出 0。第四轮新增指定后端集成测试 43 passed，保留 1 条既有 Starlette/httpx TestClient deprecation；原有 3 条 React effect lint warning 保留。无依赖或 lock 变更。
-- **真实门：** 真实 Feishu 登录 / scope / task 读写、真实材料、真实 LLM / embedding / rerank、Keychain、DMG、五日试用、双机继续 **NOT_RUN**；用户准备的资源没有被读取或消费。本结论只覆盖 Fake 模拟范围。
-- **整合状态：** PR #4 以 `0789f9ebfee4a0352e2818510055a252ba374daf` 合入 main；受测代码树与 merge tree 的 `src/tests/web/native` 完全一致。独立 main checkout 全量复跑与关键路径冒烟结果见[合并后核验记录](reports/2026-10-10-M2-stage-a-postmerge.md)。
-
-### Stage A 恢复路径 UI 补验（固定基线 409b → 修复 SHA 30903c4）
-
-本补验仅追加执行结果，不修改本手册前述验收期望。固定 `409b90704046c623184846c09c873cec053e946d` 的初验报告保留 C18 P2 UI FAIL；执行者修复后的完整候选 SHA 为 `30903c4cdf73855af71a201e3edea6c535ee8199`。初验报告及证据在 [recovery UI supplement](reports/2026-10-10-M2-stage-a-recovery-ui-supplement.md)，其修复 SHA 独立复验见 [C18 recovery UI retest](reports/2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md)。
-
-| 案例与固定 SHA | UI | API | 磁盘 / Fake | 自动测试 | 结果 |
-|---|---|---|---|---|---|
-| C16 子进程退出，重启 unknown→只读核实 succeeded（409b） | PASS | PASS | PASS | NOT_RUN | 同一 action_id 的 proposed/confirmed、进程退出、重启 unknown、只读核实成功均有独立状态证据；核实期间 Fake 远端计数不变。 |
-| C16 确认状态及双击/并发过渡（409b） | PASS | PASS | PASS | NOT_RUN | proposed→confirmed 有独立截图；UI 双击与两个实际重叠的同 action 请求分开记录，后者返回 running/succeeded，Fake 计数净增一次。 |
-| C18 回执丢失、重启与只读核实（409b） | **FAIL（P2）** | PASS | PASS | NOT_RUN | 同一动作最终 API/disk 为 succeeded，但 UI 同时显示“仍为未知”。初报保持失败事实。 |
-| C18 修复 SHA 30903c4 回执恢复复验 | PASS | PASS | PASS | NOT_RUN | 独立新库复演同 action：receipt write 失败后运行中；重启 unknown；只读核实后 API/UI succeeded 且显示 local_writer_receipt；同 ID replay 不改变 manifest / progress_version。旧 FAIL 只在新 SHA 的行为上关闭。 |
-| C23 atomic replace 前中断，无写入证明（409b）；309 no-proof 负向对照 | PASS | PASS | PASS | NOT_RUN | 保留具体 UI unknown/no-resend；只读核实仍 unknown；manifest / progress_version 不变且没有写入证明。 |
-
-QA 提交链：409b 初验 `6eaf71d6c4e0ddf74b8c532d652296cb6a35b8d0` → 脱敏 `eae0f22dce4c7f15d97bd7d5cc1e17f7d7b148f4` → 生成字节码清理 / 补记 `1d62e24` / `1f0639a` → 修复 SHA 复验 `2d6254c4c2717857fda8ccaa97c210b41e0c695e`；串接后的 QA 分支树提交为 `998b4d2fa1165cecb71c9baf8ff6610a516d3df0`。初验与修复复验 manifest 分别为 `64f77d13a0bcc0f9b1a4089641df056937647e5b375c3ab3925dab49349f8c10`（47 项）和 `599190944efaf82861b5d571b2364524ec1a06829d5055b1cadd0f0b6453e66f`（26 项），均逐项校验。撤回的重复截图、空项目选择 proposal 画面及 `__pycache__` 不作为证据；历史报告未改写。
-
-两轮均为隔离 Fake-only 工作库 / 浏览器；没有有意调用真实飞书、模型、材料、凭据或业务操作。最终 309 复演只观察到 loopback sockets；409b 初次候选曾连本机代理，是否转发不可判定，详见报告。此结果仅补足恢复路径 UI 证据，不代表重新执行整体 Stage A 或真实门；真实环境继续 NOT_RUN。
-
-PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main。独立 checkout 对该 SHA 核验：修复源码 `30903c4cdf73855af71a201e3edea6c535ee8199` 是祖先；`src/tests/web/native` 与修复源码树一致；初验和修复复验报告、测试 harness、screenshots 及 evidence manifest 均已进入 main，manifest 全条目重算匹配。此合并后核验未重跑整体自动矩阵；固定候选 UI 修复的组件测试、typecheck 和 Web build 在 PR 前均退出 0。
-
-## 阶段 B / C 追加门（离线收口与真实剩余门）
+## 阶段 B / C 追加门（历史复演范围与仍适用的真实验收标准）
 
 本节细化真实适配与受控真实验收，不替换 C01–C31、不降低原 MUST。DEV 代码修复、自测与独立 QA 状态分开记录；固定576895f的独立离线QA PASS；真实/OS/交付门仍NOT_RUN。不能凭DEV检查或离线PASS覆盖这些门。精确 SHA、独立 checkout 与证据见最新交接。
 
@@ -194,7 +118,7 @@ PR #7 已以 merge commit `c655eb48f5ce7448edac77c0250f9ed9d2ac8e33` 合入 main
 | B03 | 离线QA PASS；真实证据 NOT_RUN；真实请求 0 | 真实 `FeishuHttpProvider` 已实现并接线：应用身份优先，仅妙记搜索与任务列表要求 user token；authorize/exchange/refresh、妙记 metadata 分页、选中逐字稿下载（artifacts 回退）、日历显式区间、task 读/建/改均有 `httpx.MockTransport` 反例。真实数据路由由 `feishu.real_data_enabled` 服务端门控（默认 409 `stage_c_authorization_required`）。task 写线映射已确证，但因无独立结果证明保持 disabled，unknown 不重发、不猜成功。真实 OAuth 与实际读取仍 NOT_RUN |
 | B04 | 离线QA PASS；真实证据 NOT_RUN | stub-tested LLM / embedding / rerank adapters 接入明确动作，真实业务调用仍服务端禁用；另有各一次固定合成 payload 的单独 smoke 路由与 profile 级原子限次账本，计数 0。新增整体 deadline、HTTP 200 业务错误拒绝与 `QueryService.close()` 操作级 client 释放。SB-01/02 外发资格与发布前复核、SB-03 取消、SB-04 有界候选、SB-10 状态一致、SB-11 有界读取均有产品回归。真实维度、服务质量、账单和 R03 用户评定 NOT_RUN |
 | B05 | 独立离线QA PASS | 最终受测源码576895f；独立388+25/Web45，实际合成浏览器/原生冷启动/重启/5秒延迟启动和退出清理PASS；见最终独立复验报告。历史R1–R4证据原样保留；OS Keychain和DMG未运行 |
-| B06 | 精确SHA离线QA PASS / 已合入main | Luna High独立checkout固定576895f；与执行者环境分离，离线完整检查、新增失败路径和实际UI复验。PR #10已合并，main产品树与受测SHA一致，合并后核验通过；真实门仍NOT_RUN |
+| B06 | 固定SHA离线QA PASS / 已合入main（历史合并点） | Luna High独立checkout固定576895f；与执行者环境分离，离线完整检查、新增失败路径和实际UI复验。PR #10当时已合并，merge `41207e5` 的产品树与受测SHA一致并通过合并后核验；后续 main 已继续演进，当前范围见本文开头；真实门仍NOT_RUN |
 | R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
 | R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
 | R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |

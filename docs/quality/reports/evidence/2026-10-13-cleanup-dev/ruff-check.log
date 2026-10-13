@@ -1,0 +1,19 @@
+F401 [*] `summit_everything.domain.models.IntakeItem` imported but unused
+  --> src/summit_everything/intake/review.py:18:5
+   |
+16 |     ActionCandidate,
+17 |     Draft,
+18 |     IntakeItem,
+   |     ^^^^^^^^^^
+19 |     IntakeJob,
+20 |     MutationResult,
+   |
+help: Remove unused import: `summit_everything.domain.models.IntakeItem`
+   |
+17 |     Draft,
+   -     IntakeItem,
+18 |     IntakeJob,
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
