@@ -67,7 +67,7 @@ uv run python scripts/run_dev.py
 
 WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式模型整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；Fake 模式已有索引时，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新。真实 embedding 下审批只提示用户另行查看并确认索引计划。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
 
-内部 `.app` readiness 校验通过后显示同一 WebUI，工作库可通过原生目录选择器指定。打包后的 App 内置后端与静态前端；开发预览仍依赖本机 Python / Node 工具。默认仍为 Fake/offline；设置读取和保存不会联网。普通整理、索引和问答的真实模型请求仍由服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter 已有离线实现；真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
+内部 `.app` readiness 校验通过后显示同一 WebUI，工作库可通过原生目录选择器指定。打包后的 App 内置后端与静态前端；开发预览仍依赖本机 Python / Node 工具。默认仍为 Fake/offline；设置读取和保存不会联网。当前 M4.2 工作包 A 增加真实整理、索引、问答与飞书只读操作的一次性范围预览/独立确认；计划绑定当前来源/页面版本和配置，有界预留调用并在失败或进程中断后禁止重发。真实调用只在用户明确选择 Real 配置、填写凭据并对单次预览确认后发生；本轮开发和验收均只使用 synthetic fixtures、Mock HTTP 和隔离 workspace。账本记录 provider 返回的 token 用量（provider 不回报时保持未知），不表示实际账单。真实账户、真实业务材料、真实 provider、OS Keychain 与安装验收仍未完成。Feishu 真实任务写因缺少可独立核实写结果的协议能力继续禁用；Fake 仍使用进程内凭据存储。
 
 ## 与原项目的关系
 
@@ -90,7 +90,7 @@ uv run mypy src
 cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
 ~~~
 
-这些检查只覆盖合成材料、Fake Feishu 与内存凭据。真实 scope、材料和 OS 钥匙串验收仍 NOT_RUN；设置入口与 adapter 已实现，真实任务写入保持禁用。
+本轮适用离线检查和候选状态见 [M4.2 工作包 A DEV 报告](docs/quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。
 
 M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；已有真实 adapter、凭据设置 UI 与 fail-closed Keychain 接口；此段 Fake 复演不能证明真实账户或 OS Keychain 通过。
 

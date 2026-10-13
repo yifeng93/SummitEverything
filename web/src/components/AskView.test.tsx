@@ -78,6 +78,62 @@ it('creates a first conversation on the server, adopts its ID, then continues it
   expect(reopened).toHaveLength(2)
 })
 
+it('previews real question context and cancels without posting a query', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'stable-query' })
+  const calls: { url: string; method: string }[] = []
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input); const method = init?.method ?? 'GET'; calls.push({ url, method })
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: 'real-fp', pages: 1, chunks: 2, state: 'ready', current_pages: 1, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/settings') return Response.json({ mode: 'real', embedding_fingerprint: 'real-fp' })
+    if (url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+    if (url.endsWith('/acceptance-plans') && method === 'POST') return Response.json({
+      plan: { plan_id: 'query-plan', scope_sha256: 'scope-hash', request_limit: 3 },
+      scope: { question: '合成问题', context: { role_instructions: '合成角色', user_memories: ['合成记忆'], previous_user_questions: ['前问'] }, source_versions: { 'page-1': 'a'.repeat(64) }, max_output_tokens: 2048 },
+    })
+    if (url.endsWith('/acceptance-plans/query-plan') && method === 'DELETE') return new Response(null, { status: 204 })
+    throw new Error(`Unexpected fetch ${method} ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '合成问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  expect(await screen.findByText('请确认本次问答发送范围')).toBeTruthy()
+  expect(screen.getByText(/最多 3 次 HTTP 请求/)).toBeTruthy()
+  expect(screen.getAllByText('合成问题')).toHaveLength(2)
+  expect(calls.filter((item) => item.url === '/api/v1/queries')).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '取消，不发送' }))
+  await waitFor(() => expect(calls.some((item) => item.url.endsWith('/acceptance-plans/query-plan') && item.method === 'DELETE')).toBe(true))
+  expect(calls.filter((item) => item.url === '/api/v1/queries')).toHaveLength(0)
+})
+
+it('revokes a real embedding plan when cancelling its scope preview', async () => {
+  const calls: { url: string; method: string }[] = []
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input); const method = init?.method ?? 'GET'; calls.push({ url, method })
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 1, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/settings') return Response.json({ mode: 'real', embedding_fingerprint: 'real-fp' })
+    if (url === '/api/v1/pages') return Response.json([{ page_id: 'page-1', metadata: { title: '合成页面' } }])
+    if (url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+    if (url === '/api/v1/index/plans') return Response.json({ mode: 'initial', fingerprint: 'real-fp', page_ids: ['page-1'], page_versions: { 'page-1': 'a'.repeat(64) }, estimated_tokens: 1000, estimated_cost: null })
+    if (url === '/api/v1/acceptance-plans') return Response.json({
+      plan: { plan_id: 'index-plan', scope_sha256: 'b'.repeat(64), request_limit: 1 },
+      scope: { mode: 'initial', fingerprint: 'real-fp', page_ids: ['page-1'], page_versions: { 'page-1': 'a'.repeat(64) } },
+    })
+    if (url === '/api/v1/acceptance-plans/index-plan' && method === 'DELETE') return new Response(null, { status: 200 })
+    throw new Error(`Unexpected fetch ${method} ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '准备索引计划' }))
+  expect(await screen.findByText('真实索引范围待独立确认')).toBeTruthy()
+  expect(screen.getByText('合成页面')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '取消计划' }))
+  await waitFor(() => expect(calls.some((item) => item.url.endsWith('/acceptance-plans/index-plan') && item.method === 'DELETE')).toBe(true))
+  expect(calls.some((item) => item.url === '/api/v1/index/jobs')).toBe(false)
+})
+
 it('reopens local history, continues the same conversation, and labels an updated citation', async () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'next-request' })
   const original: Record<string, unknown> = {

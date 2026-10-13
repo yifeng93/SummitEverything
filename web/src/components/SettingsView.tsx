@@ -33,6 +33,7 @@ const disabledReasons: Record<string, string> = {
   date_and_result_proof_unverified: '任务日期语义和写入结果核实方式尚未确认。',
   offline_default: '当前使用离线 Fake；此路径不会访问真实 provider。',
   provider_not_configured: '已选 provider；真实模式与本机密钥尚未完成配置。',
+  acceptance_plan_required: '每次使用前需预览并确认本次范围。',
   limited_synthetic_smoke_only: '已配置；仅开放一次合成连接检查，真实业务调用仍关闭。',
 }
 
@@ -160,6 +161,7 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
         <label className="settings-field"><span>运行模式</span><select value={settings.mode} onChange={(event) => setSettings({ ...settings, mode: event.target.value as Settings['mode'] })}><option value="fake">Fake · 离线</option><option value="real">Real · 显式启用</option></select></label>
         <label className="settings-field"><span>整理模型</span><select value={settings.llm.provider} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, provider: event.target.value as LLMProvider, model: event.target.value === 'fake' ? null : 'deepseek-flash', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="deepseek">DeepSeek · deepseek-flash</option></select></label>
         <label className="settings-field"><span>DeepSeek 账户标识</span><input value={settings.llm.account_id} maxLength={200} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, account_id: event.target.value } })} /></label>
+        <details className="settings-help"><summary>问答输出预算</summary><label className="settings-field"><span>回答长度上限（生成 token）</span><input type="number" min={256} max={16384} step={256} value={settings.llm.max_output_tokens} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, max_output_tokens: Number(event.target.value) } })} /></label><label className="settings-field"><span>回答推理预算</span><select value={settings.llm.reasoning_effort} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, reasoning_effort: event.target.value as Settings['llm']['reasoning_effort'] } })}><option value="low">低 · 默认</option><option value="high">高</option></select></label><p>整理固定关闭思考；此设置只影响问答。上限会进入真实操作预览与配置绑定。</p></details>
         <label className="settings-field"><span>Embedding</span><select value={settings.embedding.provider} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-embedding', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-embedding</option></select></label>
         <label className="settings-field"><span>Embedding Base URL</span><input type="url" value={settings.embedding.base_url} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, base_url: event.target.value } })} /></label>
         <label className="settings-field"><span>Rerank</span><select value={settings.rerank.provider} onChange={(event) => setSettings({ ...settings, rerank: { ...settings.rerank, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-rerank', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-rerank</option></select></label>
@@ -187,7 +189,7 @@ export function SettingsView({ workspaceName, onSwitchWorkspace }: { workspaceNa
 
       <section className="provider-settings capability-list" aria-labelledby="capability-heading">
         <div className="settings-section-heading"><h2 id="capability-heading">能力状态</h2><span>当前不可对外请求</span></div>
-        {Object.entries(settings.capabilities).map(([id, capability]) => <div className="capability-row" key={id}><strong>{capabilityLabels[id] ?? id}</strong><span>{capability.available ? '可用' : capability.configured ? '已配置，未启用' : '未启用'}</span><small>{disabledReasons[capability.disabled_reason ?? ''] ?? '需要单独验证。'}</small></div>)}
+        {Object.entries(settings.capabilities).map(([id, capability]) => <div className="capability-row" key={id}><strong>{capabilityLabels[id] ?? id}</strong><span>{capability.available ? '可用' : capability.disabled_reason === 'acceptance_plan_required' ? '已配置，待本次确认' : capability.configured ? '已配置，未启用' : '未启用'}</span><small>{disabledReasons[capability.disabled_reason ?? ''] ?? '需要单独验证。'}</small></div>)}
       </section>
 
       <section className="provider-settings capability-list" aria-labelledby="smoke-heading">

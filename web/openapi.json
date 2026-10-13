@@ -634,6 +634,23 @@
             }
           },
           {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Id"
+            }
+          },
+          {
             "name": "authorization",
             "in": "header",
             "required": false,
@@ -686,6 +703,23 @@
             "schema": {
               "type": "string",
               "title": "Task Guid"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Id"
             }
           },
           {
@@ -941,6 +975,240 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/acceptance-plans": {
+      "post": {
+        "summary": "Acceptance Plan Create",
+        "operationId": "acceptance_plan_create_api_v1_acceptance_plans_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptancePlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Acceptance Plan Create Api V1 Acceptance Plans Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/acceptance-plans/{plan_id}/confirm": {
+      "post": {
+        "summary": "Acceptance Plan Confirm",
+        "operationId": "acceptance_plan_confirm_api_v1_acceptance_plans__plan_id__confirm_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptancePlanConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptancePlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/acceptance-plans/{plan_id}": {
+      "get": {
+        "summary": "Acceptance Plan Get",
+        "operationId": "acceptance_plan_get_api_v1_acceptance_plans__plan_id__get",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptancePlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Acceptance Plan Cancel",
+        "operationId": "acceptance_plan_cancel_api_v1_acceptance_plans__plan_id__delete",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptancePlan"
+                }
               }
             }
           },
@@ -4261,6 +4529,23 @@
             }
           },
           {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Id"
+            }
+          },
+          {
             "name": "authorization",
             "in": "header",
             "required": false,
@@ -4306,6 +4591,23 @@
         "summary": "Feishu Imports",
         "operationId": "feishu_imports_api_v1_integrations_feishu_imports_post",
         "parameters": [
+          {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Id"
+            }
+          },
           {
             "name": "authorization",
             "in": "header",
@@ -4418,6 +4720,23 @@
             }
           },
           {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Id"
+            }
+          },
+          {
             "name": "authorization",
             "in": "header",
             "required": false,
@@ -4461,6 +4780,177 @@
   },
   "components": {
     "schemas": {
+      "AcceptancePlan": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Plan Id"
+          },
+          "operation": {
+            "type": "string",
+            "title": "Operation"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "profile_id": {
+            "type": "string",
+            "title": "Profile Id"
+          },
+          "config_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Config Sha256"
+          },
+          "scope_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Scope Sha256"
+          },
+          "request_limit": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Request Limit"
+          },
+          "requests_reserved": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Requests Reserved",
+            "default": 0
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "preview",
+              "confirmed",
+              "executing",
+              "succeeded",
+              "failed",
+              "unknown",
+              "cancelled"
+            ],
+            "title": "State",
+            "default": "preview"
+          },
+          "execution_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Run Id"
+          },
+          "provider_usage": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderUsage"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Provider Usage"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_id",
+          "operation",
+          "workspace_id",
+          "profile_id",
+          "config_sha256",
+          "scope_sha256",
+          "request_limit",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "AcceptancePlan"
+      },
+      "AcceptancePlanConfirmRequest": {
+        "properties": {
+          "scope_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Scope Sha256"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope_sha256"
+        ],
+        "title": "AcceptancePlanConfirmRequest"
+      },
+      "AcceptancePlanRequest": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "feishu.materials.read",
+              "feishu.materials.import",
+              "feishu.calendar.read",
+              "feishu.tasks.read",
+              "feishu.task.read",
+              "model.index",
+              "model.query",
+              "model.organize"
+            ],
+            "title": "Operation"
+          },
+          "scope": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scope"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "scope"
+        ],
+        "title": "AcceptancePlanRequest"
+      },
       "Action": {
         "properties": {
           "action_id": {
@@ -6037,6 +6527,28 @@
             ],
             "title": "Estimated Cost",
             "default": 0
+          },
+          "acceptance_plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Plan Id"
+          },
+          "page_preview": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Page Preview"
           }
         },
         "type": "object",
@@ -6381,6 +6893,18 @@
             "type": "boolean",
             "title": "Reprocess",
             "default": false
+          },
+          "acceptance_plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Plan Id"
           }
         },
         "additionalProperties": false,
@@ -6544,6 +7068,22 @@
             "type": "boolean",
             "title": "Enabled",
             "default": false
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "maximum": 16384.0,
+            "minimum": 256.0,
+            "title": "Max Output Tokens",
+            "default": 2048
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "low",
+              "high"
+            ],
+            "title": "Reasoning Effort",
+            "default": "low"
           }
         },
         "additionalProperties": false,
@@ -6602,6 +7142,34 @@
               }
             ],
             "title": "Enabled"
+          },
+          "max_output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 16384.0,
+                "minimum": 256.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Output Tokens"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort"
           }
         },
         "additionalProperties": false,
@@ -7429,6 +7997,78 @@
         "type": "object",
         "title": "ProviderSettingsPatch"
       },
+      "ProviderUsage": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "deepseek",
+              "qwen3.7-text-embedding",
+              "qwen3.7-text-rerank"
+            ],
+            "title": "Provider"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "usage_reported": {
+            "type": "boolean",
+            "title": "Usage Reported"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "total_tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Tokens"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "usage_reported"
+        ],
+        "title": "ProviderUsage"
+      },
       "QueryEvent": {
         "properties": {
           "request_id": {
@@ -7534,6 +8174,18 @@
               }
             ],
             "title": "Conversation Id"
+          },
+          "acceptance_plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Plan Id"
           }
         },
         "additionalProperties": false,

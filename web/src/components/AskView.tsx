@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { api, sessionHeaders, type Citation, type IndexPlan, type IndexResult } from '../api/client'
+import { api, sessionHeaders, type Citation, type IndexPlan, type IndexResult, type Page } from '../api/client'
 import type { components } from '../api/generated'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
@@ -11,6 +11,8 @@ type StreamEvent = {
   data: Record<string, unknown>
 }
 type Settings = components['schemas']['SettingsSummary']
+type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: number }
+type PendingQuery = { plan: AcceptancePlan; scope: Record<string, unknown>; body: Record<string, unknown> }
 type Conversation = components['schemas']['ConversationDetail']
 type Summary = Omit<Conversation, 'messages'>
 type QueryState = 'idle' | 'running' | 'completed' | 'error' | 'cancelled' | 'interrupted'
@@ -35,6 +37,10 @@ const stateLabel: Record<QueryState, string> = {
 export function AskView({ onError, onOpenPage }: Props) {
   const [status, setStatus] = useState<IndexStatus | null>(null)
   const [plan, setPlan] = useState<IndexPlan | null>(null)
+  const [acceptancePlan, setAcceptancePlan] = useState<AcceptancePlan | null>(null)
+  const [acceptanceScope, setAcceptanceScope] = useState<Record<string, unknown> | null>(null)
+  const [eligiblePages, setEligiblePages] = useState<Page[]>([])
+  const [pendingQuery, setPendingQuery] = useState<PendingQuery | null>(null)
   const [result, setResult] = useState<IndexResult | null>(null)
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
@@ -63,6 +69,8 @@ export function AskView({ onError, onOpenPage }: Props) {
   const abortController = useRef<AbortController | null>(null)
   const historyCursorRef = useRef<string | null>(null)
   const confirmationIds = useRef<Record<string, string>>({})
+  const approvedQuery = useRef<{ planId: string; body: Record<string, unknown> } | null>(null)
+  const queryForm = useRef<HTMLFormElement | null>(null)
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -104,6 +112,7 @@ export function AskView({ onError, onOpenPage }: Props) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void refreshStatus()
+      void api.get<Page[]>('/pages').then(setEligiblePages).catch(() => undefined)
       void refreshHistory()
       void refreshPersonalization()
     }, 0)
@@ -118,6 +127,17 @@ export function AskView({ onError, onOpenPage }: Props) {
       const mode = !status?.fingerprint ? 'initial' : status.fingerprint === fingerprint ? 'incremental' : 'model_change'
       const next = await api.post<IndexPlan>('/index/plans', { mode, fingerprint })
       setPlan(next)
+      if (settings.mode === 'real') {
+        const reviewed = await api.post<{ plan: AcceptancePlan; scope: Record<string, unknown> }>('/acceptance-plans', {
+          operation: 'model.index',
+          scope: { mode: next.mode, fingerprint: next.fingerprint, page_ids: next.page_ids, page_versions: next.page_versions },
+        })
+        setAcceptancePlan(reviewed.plan)
+        setAcceptanceScope(reviewed.scope)
+      } else {
+        setAcceptancePlan(null)
+        setAcceptanceScope(null)
+      }
       onError('')
     } catch (cause) {
       onError(cause instanceof Error ? cause.message : '无法生成索引计划')
@@ -127,12 +147,30 @@ export function AskView({ onError, onOpenPage }: Props) {
   async function executePlan() {
     if (!plan) return
     try {
-      const next = await api.post<IndexResult>('/index/jobs', plan)
+      let executable = plan
+      if (acceptancePlan) {
+        await api.post('/acceptance-plans/' + acceptancePlan.plan_id + '/confirm', { scope_sha256: acceptancePlan.scope_sha256, scope: acceptanceScope })
+        executable = { ...plan, acceptance_plan_id: acceptancePlan.plan_id }
+      }
+      const next = await api.post<IndexResult>('/index/jobs', executable)
       setResult(next)
       setPlan(null)
+      setAcceptancePlan(null)
       await refreshStatus()
     } catch (cause) {
       onError(cause instanceof Error ? cause.message : '索引没有完成')
+    }
+  }
+
+  async function cancelIndexPlan() {
+    try {
+      if (acceptancePlan) await api.delete('/acceptance-plans/' + acceptancePlan.plan_id)
+      setPlan(null)
+      setAcceptancePlan(null)
+      setAcceptanceScope(null)
+      onError('')
+    } catch (cause) {
+      onError(cause instanceof Error ? cause.message : '无法撤销本次索引计划')
     }
   }
 
@@ -256,8 +294,9 @@ export function AskView({ onError, onOpenPage }: Props) {
     event.preventDefault()
     if (!question.trim() || streaming) return
     const controller = new AbortController()
-    const queryId = crypto.randomUUID()
-    let targetConversation = conversationId
+    const approved = approvedQuery.current
+    const queryId = typeof approved?.body.request_id === 'string' ? approved.body.request_id : crypto.randomUUID()
+    let targetConversation = typeof approved?.body.conversation_id === 'string' ? approved.body.conversation_id : conversationId
     abortController.current = controller
     setStreaming(true)
     setQueryState('running')
@@ -270,18 +309,30 @@ export function AskView({ onError, onOpenPage }: Props) {
     onError('')
     try {
       const settings = await api.get<Settings>('/settings')
+      const body: Record<string, unknown> = approved?.body ?? {
+        question,
+        ...(targetConversation ? { conversation_id: targetConversation } : {}),
+        fingerprint: settings.embedding_fingerprint,
+        purpose: retrievalPurpose,
+        answer_mode: answerMode,
+        ...(selectedRoleId ? { role_id: selectedRoleId } : {}),
+        request_id: queryId,
+      }
+      if (settings.mode === 'real' && !approved) {
+        const preview = await api.post<{ plan: AcceptancePlan; scope: Record<string, unknown> }>('/acceptance-plans', {
+          operation: 'model.query', scope: body,
+        })
+        setPendingQuery({ ...preview, body })
+        setQueryState('idle')
+        setNotice('请先检查将发送的问题、历史、角色/记忆上下文和页面版本，再独立确认。')
+        return
+      }
+      if (approved) body.acceptance_plan_id = approved.planId
+      approvedQuery.current = null
       const response = await fetch('/api/v1/queries', {
         method: 'POST',
         headers: sessionHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({
-          question,
-          ...(targetConversation ? { conversation_id: targetConversation } : {}),
-          fingerprint: settings.embedding_fingerprint,
-          purpose: retrievalPurpose,
-          answer_mode: answerMode,
-          ...(selectedRoleId ? { role_id: selectedRoleId } : {}),
-          request_id: queryId,
-        }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       })
       if (!response.ok) {
@@ -373,6 +424,30 @@ export function AskView({ onError, onOpenPage }: Props) {
     }
   }
 
+  async function confirmQueryPlan() {
+    if (!pendingQuery) return
+    try {
+      await api.post('/acceptance-plans/' + pendingQuery.plan.plan_id + '/confirm', { scope_sha256: pendingQuery.plan.scope_sha256, scope: pendingQuery.scope })
+      approvedQuery.current = { planId: pendingQuery.plan.plan_id, body: pendingQuery.body }
+      setPendingQuery(null)
+      setNotice('已确认；现在只运行刚才审阅的查询快照。')
+      queryForm.current?.requestSubmit()
+    } catch (cause) {
+      setNotice(cause instanceof Error ? cause.message : '确认失败；尚未发送查询。')
+    }
+  }
+
+  async function cancelQueryPlan() {
+    if (!pendingQuery) return
+    try {
+      await api.delete('/acceptance-plans/' + pendingQuery.plan.plan_id)
+      setPendingQuery(null)
+      setNotice('本次查询计划已取消，没有发送问题或上下文。')
+    } catch (cause) {
+      setNotice(cause instanceof Error ? cause.message : '无法撤销本次查询计划。')
+    }
+  }
+
   async function cancel() {
     if (requestId) await api.delete('/queries/' + requestId).catch(() => undefined)
     abortController.current?.abort()
@@ -416,9 +491,9 @@ export function AskView({ onError, onOpenPage }: Props) {
           <span className={status?.state === 'ready' ? 'index-state ready' : 'index-state'}>{status?.state === 'stale' ? '本机索引有待更新' : status?.fingerprint ? '本机索引已就绪' : '还没有本机索引'}</span>
           <p>{status?.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。可确认增量计划更新。` : status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块 · ' + status.fingerprint : '创建计划会展示本次范围与估算，再由你确认运行。'}</p>
         </div>
-        <div className="index-actions">{!plan ? <button className="button secondary" onClick={createPlan}>准备索引计划</button> : <button className="button primary" onClick={executePlan}>按计划创建索引</button>}</div>
+        <div className="index-actions">{!plan ? <button className="button secondary" onClick={createPlan}>准备索引计划</button> : <button className="button primary" onClick={executePlan}>{acceptancePlan ? '确认范围并开始索引' : '按计划创建索引'}</button>}</div>
       </section>
-      {plan && <section className="plan-card" aria-live="polite"><div><strong>索引计划待确认</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个页面</span></div><p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{plan.estimated_cost === null ? '当前无法估算 provider 费用，请先在控制台确认预算。' : '本机 Fake embedding 费用为 ¥0。'}</p><button className="text-button" onClick={() => setPlan(null)}>取消计划</button></section>}
+      {plan && <section className="plan-card" aria-live="polite"><div><strong>{acceptancePlan ? '真实索引范围待独立确认' : '索引计划待确认'}</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个合格页面</span></div><p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{acceptancePlan ? `最多 ${acceptancePlan.request_limit} 次 embedding HTTP 请求，每批最多 20 段（这是调用次数上限，不是金额上限）。按 2026-10-13 核对价估算约 ¥${(plan.estimated_tokens * 0.5 / 1_000_000).toFixed(4)}，实际账单未知。` : plan.estimated_cost === null ? '当前无法估算 provider 费用。' : '本机 Fake embedding 费用为 ¥0。'}</p>{acceptancePlan && <><p>将发送给阿里云百炼 embedding 的页面：</p><ul>{plan.page_ids.map((id) => <li key={id}>{String(eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面')}</li>)}</ul><details><summary>页面内部编号与版本</summary><pre>{JSON.stringify({ page_ids: plan.page_ids, page_versions: plan.page_versions }, null, 2)}</pre></details></>}<button className="text-button" onClick={() => void cancelIndexPlan()}>取消计划</button></section>}
       {result && <p role="status" className="success-note">已保存到本机：{result.indexed_pages} 页，{result.embedded_chunks} 个新分块，复用 {result.reused_chunks} 个。</p>}
 
       <section className="conversation-history" aria-label="本机问答偏好与记忆">
@@ -462,7 +537,21 @@ export function AskView({ onError, onOpenPage }: Props) {
         </article>)}
       </section>}
 
-      <form className="query-form" onSubmit={ask}>
+      {pendingQuery && <section className="plan-card approval-preview" aria-label="真实问答发送预览">
+        <div><strong>请确认本次问答发送范围</strong><span>最多 3 次 HTTP 请求：embedding、rerank、回答各一次；这是调用次数上限，不是金额上限。生成上限 {String(pendingQuery.scope.max_output_tokens)} token，思考预算 {String(pendingQuery.scope.reasoning_effort)}。</span></div>
+        <p><strong>问题</strong><br />{String(pendingQuery.scope.question ?? '')}</p>
+        <p><strong>资料范围</strong><br />{pendingQuery.scope.purpose === 'history' ? '包含历史版本（仅供历史参考）' : '当前有效资料'}</p>
+        <p><strong>将检索的合格页面</strong></p>
+        <ul>{Object.keys((pendingQuery.scope.source_versions ?? {}) as Record<string, unknown>).map((id) => <li key={id}>{String(eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面')}</li>)}</ul>
+        {(() => { const context = (pendingQuery.scope.context ?? {}) as Record<string, unknown>; const prior = context.previous_user_questions as string[] | undefined; const memories = context.user_memories as string[] | undefined; return <>
+          <p><strong>角色</strong><br />{String(context.role_name || '不使用角色')}{context.role_instructions ? `：${String(context.role_instructions)}` : ''}</p>
+          <p><strong>已确认记忆</strong></p>{memories?.length ? <ul>{memories.map((memory, index) => <li key={index}>{memory}</li>)}</ul> : <p>无</p>}
+          <p><strong>历史问题</strong></p>{prior?.length ? <ul>{prior.map((item, index) => <li key={index}>{item}</li>)}</ul> : <p>无</p>}
+        </> })()}
+        <details><summary>内部编号与页面版本</summary><pre>{JSON.stringify({ request_id: pendingQuery.scope.request_id, source_versions: pendingQuery.scope.source_versions }, null, 2)}</pre></details>
+        <div className="button-row"><button className="button primary" onClick={() => void confirmQueryPlan()}>确认并发送本次问题</button><button className="button secondary" onClick={() => void cancelQueryPlan()}>取消，不发送</button></div>
+      </section>}
+      <form ref={queryForm} className="query-form" onSubmit={ask}>
         <label htmlFor="retrieval-purpose">资料范围</label>
         <select id="retrieval-purpose" value={retrievalPurpose} onChange={(event) => setRetrievalPurpose(event.target.value as RetrievalPurpose)}>
           <option value="current">当前有效资料</option><option value="history">包含历史版本</option>

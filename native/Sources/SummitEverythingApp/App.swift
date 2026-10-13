@@ -126,6 +126,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             "SUMMIT_WEB_DIST": resources.appendingPathComponent("web").path,
         ]
         if let temp = ProcessInfo.processInfo.environment["TMPDIR"] { environment["TMPDIR"] = temp }
+        // Candidate verification may disable Keychain access explicitly. Forward
+        // only this opt-in deny flag; never inherit the caller's general environment.
+        if ProcessInfo.processInfo.environment["SUMMIT_OFFLINE_GUARD_ACTIVE"] == "1" {
+            environment["SUMMIT_OFFLINE_GUARD_ACTIVE"] = "1"
+        }
         process.environment = environment
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice

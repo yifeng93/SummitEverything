@@ -34,8 +34,8 @@ class FeishuSettings(_SettingsModel):
     identity: Literal["app", "user"] = "app"
     calendar_id: str = Field(default="", max_length=200)
     material_content: Literal["transcript", "artifacts"] = "transcript"
-    # Real business reads stay server-disabled until the user authorizes an
-    # itemized Stage C scope; the adapter itself is implemented and offline-tested.
+    # Kept for settings-file compatibility. This flag never authorizes a real read;
+    # one-shot acceptance plans are required by the server routes.
     real_data_enabled: bool = False
 
     @field_validator("redirect_uri")
@@ -63,6 +63,8 @@ class LLMSettings(_SettingsModel):
     model: Literal["deepseek-flash"] | None = None
     account_id: str = Field(default="default", min_length=1, max_length=200)
     enabled: bool = False
+    max_output_tokens: int = Field(default=2048, ge=256, le=16384)
+    reasoning_effort: Literal["low", "high"] = "low"
 
     @field_validator("model")
     @classmethod
@@ -185,6 +187,8 @@ class LLMSettingsPatch(_SettingsModel):
     model: Literal["deepseek-flash"] | None = None
     account_id: str | None = Field(default=None, min_length=1, max_length=200)
     enabled: bool | None = None
+    max_output_tokens: int | None = Field(default=None, ge=256, le=16384)
+    reasoning_effort: Literal["low", "high"] | None = None
 
 
 class ModelStudioSettingsPatch(_SettingsModel):
@@ -432,21 +436,21 @@ def provider_settings_payload(
             "feishu_task_read": feishu_reason,
             "feishu_task_write": feishu_reason,
             "llm": (
-                "limited_synthetic_smoke_only"
+                "acceptance_plan_required"
                 if llm_configured and settings.mode == "real"
                 else "offline_default"
                 if settings.llm.provider == "fake"
                 else "provider_not_configured"
             ),
             "embedding": (
-                "limited_synthetic_smoke_only"
+                "acceptance_plan_required"
                 if embedding_configured and settings.mode == "real"
                 else "offline_default"
                 if settings.embedding.provider == "fake"
                 else "provider_not_configured"
             ),
             "rerank": (
-                "limited_synthetic_smoke_only"
+                "acceptance_plan_required"
                 if rerank_configured and settings.mode == "real"
                 else "offline_default"
                 if settings.rerank.provider == "fake"
@@ -469,14 +473,14 @@ def provider_settings_payload(
         configured=rerank_configured,
         disabled_reason=capabilities["rerank"].disabled_reason,
     )
-    # Real Feishu data capabilities mirror the server-side execution gate: the
-    # adapter exists, but reads stay disabled until Stage C authorization.
-    feishu_executable = feishu_ready and settings.feishu.real_data_enabled
+    # A saved settings flag cannot authorize business data reads. Each real read
+    # requires a matching confirmed one-shot acceptance plan.
+    feishu_executable = False
     for name in ("feishu_material_read", "feishu_calendar_read", "feishu_task_read"):
         capabilities[name] = CapabilityState(
             available=feishu_executable,
             configured=feishu_ready,
-            disabled_reason=None if feishu_executable else feishu_reason,
+            disabled_reason=(None if feishu_executable else "acceptance_plan_required"),
         )
     # Task writes additionally require an independently verifiable result, which
     # no documented endpoint provides, so they stay unavailable.

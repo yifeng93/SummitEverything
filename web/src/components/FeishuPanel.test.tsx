@@ -108,8 +108,11 @@ it('cancels selection without importing and displays calendar empty and error st
 })
 
 it('shows a truncation notice and offers no unusable next page for an explicit range', async () => {
+  const calls: string[] = []
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
     const path = String(input)
+    calls.push(path)
+    if (path.endsWith('/acceptance-plans')) return { ok: true, status: 201, json: async () => ({ plan: { plan_id: 'synthetic-plan', scope_sha256: 'scope', request_limit: 2, state: 'preview' }, scope: { start: '2026-10-09', end: '2026-10-10', timezone: 'Asia/Shanghai' } }) }
     let data: unknown = []
     if (path.endsWith('/status')) data = { mode: 'real', authorized: true, scopes: [], token_type: 'user' }
     if (path.includes('/materials?')) data = { items: [], next_cursor: null }
@@ -126,8 +129,31 @@ it('shows a truncation notice and offers no unusable next page for an explicit r
   render(<TodayView onError={vi.fn()} />)
   await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
+  expect(await screen.findByRole('button', { name: '确认并执行本次读取' })).toBeTruthy()
+  expect(calls.filter((path) => path.includes('/calendar?'))).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '确认并执行本次读取' }))
   expect(await screen.findByText('仅显示部分日程，请缩小时间范围。')).toBeTruthy()
   expect(screen.queryByRole('button', { name: '下一页日程' })).toBeNull()
+})
+
+it('cancels a real calendar preview without sending the calendar request', async () => {
+  const calls: string[] = []
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input); calls.push(path)
+    const data = path.endsWith('/status')
+      ? { mode: 'real', authorized: false, app_configured: true, identity: 'app', scopes: [], token_type: 'tenant' }
+      : path.endsWith('/acceptance-plans') && init?.method === 'POST'
+        ? { plan: { plan_id: 'cancel-plan', scope_sha256: 'scope', request_limit: 2, state: 'preview' }, scope: { start: '2026-10-09', end: '2026-10-10', timezone: 'Asia/Shanghai' } }
+        : []
+    return { ok: true, status: path.endsWith('/acceptance-plans') ? 201 : 200, json: async () => data }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '刷新日历' }))
+  await screen.findByRole('button', { name: '取消计划' })
+  expect(calls.some((path) => path.includes('/calendar?'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '取消计划' }))
+  await waitFor(() => expect(calls.some((path) => path.includes('/acceptance-plans/cancel-plan'))).toBe(true))
+  expect(calls.some((path) => path.includes('/calendar?'))).toBe(false)
 })
 
 it('shows the next-page control only when the provider actually returned a cursor', async () => {
@@ -243,6 +269,7 @@ it('permits an app-identity calendar without user OAuth but not user-only search
   const calls: string[] = []
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
     const path = String(input); calls.push(path)
+    if (path.endsWith('/acceptance-plans')) return { ok: true, status: 201, json: async () => ({ plan: { plan_id: 'calendar-plan', scope_sha256: 'scope', request_limit: 2, state: 'preview' }, scope: { start: '2026-10-09', end: '2026-10-10', timezone: 'Asia/Shanghai' } }) }
     const data = path.endsWith('/status')
       ? { mode: 'real', authorized: false, app_configured: true, identity: 'app', scopes: [], token_type: 'tenant' }
       : path.includes('/calendar?') ? { items: [], next_cursor: null, timezone: 'Asia/Shanghai' } : []
@@ -252,6 +279,9 @@ it('permits an app-identity calendar without user OAuth but not user-only search
   await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
   expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
+  await screen.findByRole('button', { name: '确认并执行本次读取' })
+  expect(calls.filter((path) => path.includes('/calendar?'))).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '确认并执行本次读取' }))
   await screen.findByText('所选时间内没有日程。')
   expect(calls.filter((path) => path.includes('/calendar?'))).toHaveLength(1)
   expect(calls.filter((path) => path.endsWith('/authorizations'))).toHaveLength(0)

@@ -13,7 +13,7 @@ from typing import Any
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
+from authorized_feishu_client import AuthorizedFeishuReadClient
 from pydantic import SecretStr
 
 from summit_everything.api.app import create_app
@@ -338,7 +338,7 @@ def _api_client(tmp_path, monkeypatch, backend, remote: ApiRemote):
         profile_root=tmp_path / "profile",
         secret_backend=backend,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",

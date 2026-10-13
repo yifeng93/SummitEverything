@@ -24,6 +24,7 @@ it('shows source lifecycle states and requires an explicit reprocess action', as
     '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '模拟项目', directory: '模拟主线/模拟项目', overview_id: 'overview-id', archived: false }],
     '/api/v1/pages': [],
     '/api/v1/intake/jobs': { job_id: 'job-id' },
+    '/api/v1/settings': { mode: 'fake' },
   }
   const jobBodies: Record<string, unknown>[] = []
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -92,6 +93,7 @@ it('keeps unknown attempts visible and warns before an explicit new operation', 
     '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '模拟项目', directory: '模拟主线/模拟项目', overview_id: 'overview-id', archived: false }],
     '/api/v1/pages': [],
     '/api/v1/intake/jobs': { job_id: 'new-job', state: 'completed' },
+    '/api/v1/settings': { mode: 'fake' },
   }
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => ({
     ok: true, status: 200, json: async () => responses[String(input)],
@@ -103,5 +105,39 @@ it('keeps unknown attempts visible and warns before an explicit new operation', 
   fireEvent.click(within(row as HTMLElement).getByRole('checkbox'))
   expect(screen.getByText(/不会自动重发.*可能再次调用模型/)).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '重新整理所选 · 1' }))
-  await waitFor(() => expect(String(vi.mocked(fetch).mock.calls.at(-1)?.[0])).toContain('/intake/jobs'))
+  await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).endsWith('/intake/jobs'))).toBe(true))
+})
+
+it('requires readable plan confirmation for real organize and sends nothing on cancel', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'organize-operation' })
+  const item = { item_id: 'source-id', source_id: 'parent-id', title: '合成会议纪要', filename: 'meeting.txt', original_relative_path: '收件箱/meeting.txt', created_at: '2026-10-09T00:00:00Z', state: 'pending' }
+  const plan = { plan_id: 'plan-id', scope_sha256: 'a'.repeat(64), request_limit: 1 }
+  const scope = { item_ids: ['source-id'], operation_id: 'organize-operation', line_id: 'line-id', project_id: 'project-id', reprocess: false, max_output_tokens: 2048, outgoing_inputs: [{ item_id: 'source-id', source_id: 'parent-id', text: '合成材料全文：报价尚未批准。' }] }
+  const paths: string[] = []
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input)
+    paths.push(path)
+    const method = init?.method ?? 'GET'
+    if (path.endsWith('/acceptance-plans') && method === 'POST') return { ok: true, status: 201, json: async () => ({ plan, scope }) }
+    if (path.endsWith('/intake/jobs')) return { ok: true, status: 201, json: async () => ({ job_id: 'job-id', state: 'completed' }) }
+    if (path.endsWith('/acceptance-plans/plan-id/confirm')) return { ok: true, status: 200, json: async () => ({}) }
+    if (path.endsWith('/acceptance-plans/plan-id')) return { ok: true, status: 204, json: async () => ({}) }
+    const data: Record<string, unknown> = {
+      '/api/v1/intake/items': [item], '/api/v1/drafts': [], '/api/v1/actions': [],
+      '/api/v1/lines': [{ id: 'line-id', name: '合成主线', directory: '合成主线' }],
+      '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '合成项目', directory: '合成主线/合成项目', overview_id: 'overview-id', archived: false }],
+      '/api/v1/pages': [], '/api/v1/settings': { mode: 'real' },
+    }
+    return { ok: true, status: 200, json: async () => data[path] }
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<TodayView onError={vi.fn()} />)
+  const row = (await screen.findByText('合成会议纪要')).closest('li')
+  fireEvent.click(within(row as HTMLElement).getByRole('checkbox'))
+  fireEvent.click(screen.getByRole('button', { name: '整理所选 · 1' }))
+  expect(await screen.findByText('合成材料全文：报价尚未批准。')).toBeTruthy()
+  expect(paths.some((path) => path.endsWith('/intake/jobs'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '取消，不发送' }))
+  await waitFor(() => expect(paths.some((path) => path.endsWith('/acceptance-plans/plan-id'))).toBe(true))
+  expect(paths.some((path) => path.endsWith('/intake/jobs'))).toBe(false)
 })

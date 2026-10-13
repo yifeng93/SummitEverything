@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
+from authorized_feishu_client import AuthorizedFeishuReadClient
 
 import summit_everything.api.app as app_module
 from summit_everything.integrations.feishu.http import FeishuHttpProvider
@@ -85,7 +85,7 @@ def api(tmp_path, monkeypatch, backend, remote, *, create=True):
         profile_root=tmp_path / "profile",
         secret_backend=backend,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     response = client.post(
         "/api/v1/workspaces",
         headers=HEADERS,

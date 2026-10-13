@@ -14,6 +14,7 @@ function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgre
     requests.push({ path, method, body })
     let data: unknown = []
     if (path.endsWith('/status')) data = { mode, authorized: true, scopes: [], token_type: 'user' }
+    if (path.endsWith('/acceptance-plans')) data = { plan: { plan_id: 'task-read-plan', scope_sha256: 'scope', request_limit: 2, state: 'preview' }, scope: { cursor: null, limit: 20 } }
     if (path.includes('/action-intents?')) data = { items: action ? [action] : [], next_cursor: null }
     if (path.includes('/tasks?')) data = { items: [{ guid: 'remote-task', summary: '远端任务', description: '保留描述', due: null, completed_at: 0 }], next_cursor: null }
     if (path.endsWith('/projects')) data = [{ id: 'project', name: '模拟项目', progress: '准备中', progress_version: 2 }, { id: 'other-project', name: '另一个模拟项目', progress: '', progress_version: 7 }]
@@ -224,6 +225,9 @@ it('real mode labels task facts correctly and disables remote writes while keepi
   expect(screen.getByRole('button', { name: '拟定项目进度变化' }).hasAttribute('disabled')).toBe(false)
   expect(screen.queryByText(/Fake 模拟远端/)).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '刷新飞书任务' }))
+  await screen.findByRole('button', { name: '确认并读取任务' })
+  expect(requests.filter((item) => item.path.includes('/tasks?'))).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '确认并读取任务' }))
   await screen.findByText('远端任务')
   expect(screen.getByRole('button', { name: '编辑远端任务' }).hasAttribute('disabled')).toBe(true)
   expect(screen.getByRole('button', { name: '完成远端任务' }).hasAttribute('disabled')).toBe(true)

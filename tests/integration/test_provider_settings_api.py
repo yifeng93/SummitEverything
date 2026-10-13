@@ -366,7 +366,7 @@ def test_disabled_real_model_status_cannot_reach_business_call_path(tmp_path):
     configured = client.get("/api/v1/settings", headers=headers)
     capability = configured.json()["capabilities"]["llm"]
     assert capability["available"] is False
-    assert capability["disabled_reason"] == "limited_synthetic_smoke_only"
+    assert capability["disabled_reason"] == "acceptance_plan_required"
 
     attempted = client.post(
         "/api/v1/journal/assist",
@@ -374,7 +374,7 @@ def test_disabled_real_model_status_cannot_reach_business_call_path(tmp_path):
         json={"text": "不得发送的普通业务正文"},
     )
     assert attempted.status_code == 409
-    assert attempted.json()["error"]["code"] == "provider_disabled"
+    assert attempted.json()["error"]["code"] == "acceptance_plan_required"
     assert "不得发送的普通业务正文" not in attempted.text
 
 

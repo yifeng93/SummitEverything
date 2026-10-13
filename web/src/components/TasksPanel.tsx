@@ -7,6 +7,8 @@ type ActionPage = components['schemas']['ActionPage']
 type Tasks = components['schemas']['TaskPage']
 type Task = components['schemas']['FeishuTask']
 type Kind = Action['kind']
+type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: number }
+type PendingPlan = { plan: AcceptancePlan; scope: Record<string, unknown>; execute: (planId: string) => Promise<void> }
 
 const labels: Record<Kind, string> = { feishu_task_create: '创建飞书任务', feishu_task_update: '编辑飞书任务', feishu_task_complete: '完成飞书任务', project_progress: '改变项目进度' }
 const states: Record<Action['state'], string> = { proposed: '待独立确认', confirmed: '已确认，尚未执行', running: '动作正在执行，请刷新结果', succeeded: '动作已成功', failed: '动作未成功，查看核实结果', unknown: '结果未知，请核实；此动作不会重发。' }
@@ -40,6 +42,7 @@ export function TasksPanel({ projects, candidates, mode }: { projects: Project[]
   const [error, setError] = useState('')
   const [outcome, setOutcome] = useState<'succeeded' | 'failed'>('succeeded')
   const [evidence, setEvidence] = useState('')
+  const [pendingPlan, setPendingPlan] = useState<PendingPlan | null>(null)
   const intentId = useRef<string | null>(null)
   const confirmationId = useRef<string | null>(null)
   const outcomeId = useRef<string | null>(null)
@@ -64,7 +67,38 @@ export function TasksPanel({ projects, candidates, mode }: { projects: Project[]
   async function loadTasks(cursor?: string) {
     await run(async () => {
       const params = new URLSearchParams({ limit: '20' }); if (cursor) params.set('cursor', cursor)
-      setTasks(await api.get<Tasks>('/integrations/feishu/tasks?' + params))
+      const execute = async (planId?: string) => {
+        const requestParams = new URLSearchParams(params); if (planId) requestParams.set('plan_id', planId)
+        setTasks(await api.get<Tasks>('/integrations/feishu/tasks?' + requestParams))
+      }
+      if (mode === 'real') {
+        const scope = { cursor: cursor ?? null, limit: 20 }
+        const result = await api.post<{ plan: AcceptancePlan; scope: Record<string, unknown> }>('/acceptance-plans', { operation: 'feishu.tasks.read', scope })
+        setPendingPlan({ ...result, execute: async (planId) => {
+          try { await execute(planId) }
+          catch (cause) { setError(cause instanceof Error ? cause.message : '读取结果未知；不会自动重发') }
+        } })
+        return
+      }
+      await execute()
+    })
+  }
+
+  async function confirmReadPlan() {
+    if (!pendingPlan) return
+    const current = pendingPlan
+    await run(async () => {
+      await api.post('/acceptance-plans/' + current.plan.plan_id + '/confirm', { scope_sha256: current.plan.scope_sha256 })
+      setPendingPlan(null)
+      await current.execute(current.plan.plan_id)
+    })
+  }
+
+  async function cancelReadPlan() {
+    if (!pendingPlan) return
+    await run(async () => {
+      await api.delete('/acceptance-plans/' + pendingPlan.plan.plan_id)
+      setPendingPlan(null)
     })
   }
 
@@ -170,6 +204,7 @@ export function TasksPanel({ projects, candidates, mode }: { projects: Project[]
       <button className="button secondary" disabled={busy} onClick={() => void loadRecords()}>查看动作记录</button>
     </div>
     {error && <p role="alert" className="error-banner">{error}</p>}
+    {pendingPlan && <section className="provider-settings" aria-label="飞书任务读取确认"><h3>本次任务读取范围</h3><p>只读取飞书未完成任务，最多 {String(pendingPlan.scope.limit)} 条；本次最多 {pendingPlan.plan.request_limit} 次 HTTP 请求（含必要的授权刷新）。这是调用次数上限，不是金额上限；失败或未知结果不会自动重发。</p><details><summary>查看内部分页标记</summary><pre>{JSON.stringify(pendingPlan.scope, null, 2)}</pre></details><div className="button-row"><button className="button primary" disabled={busy} onClick={() => void confirmReadPlan()}>确认并读取任务</button><button className="button secondary" disabled={busy} onClick={() => void cancelReadPlan()}>取消</button></div></section>}
     {tasks && <><ul className="source-list">{tasks.items.map((task) => <li className="task-row" key={task.guid}><div><strong>{task.summary}</strong><small>{task.completed_at ? '飞书已完成' : '飞书未完成'}{task.due ? ' · 截止 ' + new Date(task.due.timestamp).toLocaleString('zh-CN') + (task.due.is_all_day ? '（全天）' : '') : ' · 不设截止日期'}</small></div><div className="button-row"><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => open('feishu_task_update', task)}>编辑{task.summary}</button><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => void prepareCompletion(task)}>完成{task.summary}</button></div></li>)}</ul>{tasks.items.length === 0 && <p className="muted">飞书暂无任务。</p>}{tasks.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadTasks(tasks.next_cursor!)}>下一页任务</button>}</>}
     {candidates.length > 0 && <div className="action-candidates"><h3>审阅行动建议</h3>{candidates.map((suggestion) => <div key={suggestion.action_id}><p>{suggestion.description}</p><button className="button secondary" disabled={busy || suggestion.kind === 'todo' && !remoteWritesEnabled} onClick={() => open(suggestion.kind === 'todo' ? 'feishu_task_create' : 'project_progress', undefined, suggestion)}>将建议填写为待确认动作</button></div>)}</div>}
     {records && <div><h3>动作记录</h3><ul className="candidate-list">{records.items.map((item) => <li key={item.action_id}><button className="button secondary" disabled={busy} onClick={() => { setAction(item); setForm(null); intentId.current = item.action_id }}>{labels[item.kind]} · {states[item.state]}</button></li>)}</ul>{records.items.length === 0 && <p>没有已保存的动作。</p>}{records.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadRecords(records.next_cursor!)}>下一页动作</button>}</div>}

@@ -180,6 +180,8 @@ class IndexPlan(BaseModel):
     page_versions: dict[str, str] = Field(default_factory=dict)
     estimated_tokens: int
     estimated_cost: float | None = 0
+    acceptance_plan_id: UUID | None = None
+    page_preview: list[dict[str, str]] = Field(default_factory=list)
 
 
 class IndexResult(BaseModel):

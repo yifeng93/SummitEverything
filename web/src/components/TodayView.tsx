@@ -14,8 +14,10 @@ import {
   indexUpdateMessage,
 } from '../api/client'
 import { DraftReview } from './DraftReview'
+import type { components } from '../api/generated'
 
 type Props = { onError: (message: string) => void }
+type PendingOrganize = { plan: { plan_id: string; scope_sha256: string; request_limit: number }; scope: Record<string, unknown>; body: Record<string, unknown>; key: string }
 
 export function TodayView({ onError }: Props) {
   const [feishuMode, setFeishuMode] = useState<'fake' | 'real' | null>(null)
@@ -32,6 +34,7 @@ export function TodayView({ onError }: Props) {
   const [activeDraft, setActiveDraft] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [indexNotice, setIndexNotice] = useState('')
+  const [pendingOrganize, setPendingOrganize] = useState<PendingOrganize | null>(null)
   const [today] = useState(() => new Date())
   const operations = useRef<Record<string, string>>({})
 
@@ -137,13 +140,22 @@ export function TodayView({ onError }: Props) {
     const reprocess = items.some((item) => selected.includes(item.item_id) && item.state !== 'pending')
     setBusy(true)
     try {
-      await api.post('/intake/jobs', {
+      const body: Record<string, unknown> = {
         item_ids: selected,
         line_id: selectedLineId,
         project_id: selectedProjectId,
         operation_id: operation(key),
         reprocess,
-      })
+      }
+      const settings = await api.get<components['schemas']['SettingsSummary']>('/settings')
+      if (settings.mode === 'real') {
+        const preview = await api.post<{ plan: PendingOrganize['plan']; scope: Record<string, unknown> }>('/acceptance-plans', {
+          operation: 'model.organize', scope: body,
+        })
+        setPendingOrganize({ ...preview, body, key })
+        return
+      }
+      await api.post('/intake/jobs', body)
       finish(key)
       setSelected([])
       await refresh()
@@ -153,6 +165,38 @@ export function TodayView({ onError }: Props) {
       onError(cause instanceof Error ? cause.message : '无法整理所选来源')
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function confirmOrganize() {
+    if (!pendingOrganize) return
+    const pending = pendingOrganize
+    setBusy(true)
+    try {
+      await api.post(`/acceptance-plans/${pending.plan.plan_id}/confirm`, {
+        scope_sha256: pending.plan.scope_sha256, scope: pending.scope,
+      })
+      await api.post('/intake/jobs', { ...pending.body, acceptance_plan_id: pending.plan.plan_id })
+      finish(pending.key)
+      setPendingOrganize(null)
+      setSelected([])
+      await refresh()
+    } catch (cause) {
+      onError(cause instanceof Error ? cause.message : '本次整理未能完成；请检查计划状态后再决定是否重试')
+      await refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function cancelOrganize() {
+    if (!pendingOrganize) return
+    try {
+      await api.delete(`/acceptance-plans/${pendingOrganize.plan.plan_id}`)
+      setPendingOrganize(null)
+      onError('已取消本次整理预览，没有发送所选材料。')
+    } catch (cause) {
+      onError(cause instanceof Error ? cause.message : '无法取消本次整理计划')
     }
   }
 
@@ -169,6 +213,14 @@ export function TodayView({ onError }: Props) {
         <div><div className="eyebrow">工作节奏</div><h1>今日</h1><p className="lede">先记下来，再决定哪些内容值得整理成知识。</p></div>
         <div className="date-label">{new Intl.DateTimeFormat('zh-CN', { dateStyle: 'full' }).format(today)}</div>
       </div>
+
+      {pendingOrganize && <section className="plan-card approval-preview" aria-label="真实材料整理发送预览">
+        <div><strong>请确认发送所选材料进行整理</strong><span>发送给已配置的 DeepSeek 整理模型 · 最多 {pendingOrganize.plan.request_limit} 次 HTTP 请求（这是调用次数上限，不是金额上限）· 输出上限 {String(pendingOrganize.scope.max_output_tokens)} token；按 2026-10-13 核对价，输出 token 估算不超过 ¥{(Number(pendingOrganize.scope.max_output_tokens) * 8 / 1_000_000).toFixed(4)}，输入 token 与实际账单未知；整理会关闭思考模式。</span></div>
+        <p>目标归属：{lines.find((line) => line.id === pendingOrganize.body.line_id)?.name ?? '所选主线'} / {projects.find((project) => project.id === pendingOrganize.body.project_id)?.name ?? '所选项目'}。整理仅生成待审核稿，不会直接写入正式知识。</p>
+        {(pendingOrganize.scope.outgoing_inputs as Array<{ item_id: string; text: string }>).map((entry) => <article className="approval-source" key={entry.item_id}><h3>{items.find((item) => item.item_id === entry.item_id)?.title ?? '所选材料'}</h3><pre>{entry.text}</pre></article>)}
+        <details><summary>内部操作编号</summary><pre>{String(pendingOrganize.body.operation_id)}</pre></details>
+        <div className="button-row"><button className="button primary" disabled={busy} onClick={() => void confirmOrganize()}>确认并整理所选材料</button><button className="button secondary" disabled={busy} onClick={() => void cancelOrganize()}>取消，不发送</button></div>
+      </section>}
 
       <div className="today-grid">
         <div className="today-main">
