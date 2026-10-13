@@ -12,11 +12,11 @@
 
 M3 三个离线功能包与离线模拟正式验收均已通过；用户批准的产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。`879c82464903a7aed91b30955d7355064fa85088` 是本轮清理前 main 基线，不是本轮维护验收 SHA。固定 C19 源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的独立 QA 与合并后复验见[报告索引](../../quality/reports/README.md)。本计划中的验收要求保持有效；各轮旧状态只描述其固定 SHA。
 
-2026-10-13 用户新增授权离线 M4.1 Internal App/DMG 的连续开发、自测、最终 clean SHA 重建及交独立 QA；此授权不包含 M4.2 真实验收或用户安装、Developer ID/公证、五日试用、M5 双机与发布。M4.1 DEV 状态见[DEV 报告](../../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)，Sol 的独立 QA 与阶段门仍待执行。真实模型质量、Feishu / 业务材料、OS Keychain 均 NOT_RUN；runtime 元数据 UNVERIFIED。
+2026-10-13 用户新增授权离线 M4.1 Internal App/DMG 的连续开发、自测、最终 clean SHA 重建及交独立 QA；此授权不包含 M4.2 真实验收或用户安装、Developer ID/公证、五日试用、M5 双机与发布。M4.1 固定源码 `3f6eaa4` 的 fresh QA 和 Sol 适用离线技术门 PASS，正式收口 / 合并待用户批准；见[QA](../../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)与[Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。真实模型质量、Feishu / 业务材料、OS Keychain 均 NOT_RUN；runtime 元数据 UNVERIFIED。
 
 ## 全局执行规则与验收门
 
-B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B adapter 已实现，模拟 HTTP / 合成凭据范围经离线 QA；真实账户 / 协议、OS Keychain 与 R03 质量仍未验收。Stage C 的真实连接和质量验收尚未启动，必须逐项取得真实操作授权并验证具体协议和模型质量。M4.1 的用户授权仅覆盖离线 Internal App/DMG 工程实现与开发者自测；不能提前标记 M4.2、真实样板、五日或双机完成。下方 M3.1 / M3.2 功能清单现均完成并由 M3 离线正式验收及固定 merge QA 收口；历史逐项 DEV / QA 记录仍只适用于各自 SHA。当前状态见本文顶部与 [M3 验收索引](../../quality/reports/README.md)。
+B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B adapter 已实现，模拟 HTTP / 合成凭据范围经离线 QA；真实账户 / 协议、OS Keychain 与 R03 质量仍未验收。Stage C 的真实连接和质量验收尚未启动，必须逐项取得真实操作授权并验证具体协议和模型质量。M4.1 的用户授权仅覆盖离线 Internal App/DMG 工程实现、自测及独立离线 QA；不能提前标记 M4.2、真实样板、五日或双机完成。下方 M3.1 / M3.2 功能清单现均完成并由 M3 离线正式验收及固定 merge QA 收口；历史逐项 DEV / QA 记录仍只适用于各自 SHA。当前状态见本文顶部与 [M3 验收索引](../../quality/reports/README.md)。
 
 当前 Sol / Luna 开发与验收分工见 [ADR 0008](../../decisions/0008-sol-luna-development-workflow.md)；这里不重复工作流全文。
 
@@ -176,8 +176,8 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 文件：scripts/build_macos_app.py、scripts/release-macos.sh、native Swift 生命周期模块、CI 配置。
 
 - [x] 实现依赖锁定、强制 WebUI 构建、内部 bundle/DMG 构建和 manifest 身份 / 指纹检查脚本；开发者命令及对应退出码见本轮 DEV 报告。
-- [ ] 由独立 QA 固定 SHA 实测无需系统 Python / Node / Docker、完整窗口生命周期、失败 / 延迟 readiness、SSE 与钥匙串故障反馈；Developer 的有限实际 UI / 生命周期与 SSE 证据仅作交接，不代替验收。
-- [ ] 由独立 QA 对固定包复验 loopback、Bearer、Markdown、资料命令与旧 App 隔离；Developer 测试项见 DEV 报告，真实安装、Developer ID 签名和公证保持 NOT_RUN。
+- [x] fresh QA 在固定 `3f6eaa4` 实测自包含运行、原生生命周期、启动失败 / 延迟 readiness、真实 TCP SSE 和合成凭据故障反馈；真实 OS Keychain 仍 NOT_RUN。
+- [x] fresh QA 对固定内部候选复验 loopback、合成 Bearer、安全文本与独立包 / profile 的离线边界；真实旧安装比较、用户安装、Developer ID 和公证保持 NOT_RUN。
 
 ### M4.2：真实验收门
 

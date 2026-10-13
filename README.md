@@ -4,7 +4,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 三个离线功能包、用户批准的离线模拟验收及 2026-10-13 清理维护均是已完成的历史固定 SHA 结论，详见[报告索引](docs/quality/reports/README.md)。当前分支 `codex/m41-internal-app-20261013` 的原始 M4.1 候选 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 经初次独立 QA 发现文件选择面板缺失（历史 FAIL）；修复轮 1 固定产品源码 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4`，从该 clean SHA 重建 App/DMG，并完成开发者侧真实原生文件面板与 Fake 导入闭环自测。当前等待 fresh QA 独立验收。产物身份和逐项证据见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[修复轮 1 DEV 报告](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-DEV-REPAIR1.md)。这不代表 M4.1 或 M4 阶段通过。
+M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。正式里程碑收口和合并 main 待用户批准，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
 
 本轮实现了内置 Python onedir 后端、强制重建静态前端、独立 Internal bundle/profile、每次运行新 token、健康身份与资源指纹校验、loopback Bearer API 和原生生命周期。构建目标为 arm64、最低系统版本声明 macOS 13；本机实测环境为 arm64 macOS 27.0.1，其他架构与系统版本未测。内部候选未公证，实际用户安装、签名证书/公证、真实模型与飞书、真实材料、OS Keychain、M4.2、五日试用、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 

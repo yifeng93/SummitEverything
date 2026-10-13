@@ -34,16 +34,16 @@
 
 - [x] 构建独立 SummitEverything Internal.app，内置 PyInstaller onedir 和强制重建 WebUI；staging 完成签名验证及可选 DMG 校验后才发布新输出，并拒绝覆盖。
 - [x] 原生启动只运行 bundle 后端；校验 readiness 的 run/build/frontend/dependency 身份、响应类型和直达 URL；每 profile 加实例锁，自有 pipe EOF 清理后端。
-- [ ] 测试首启、正常退出、关最后窗口、重开、自有服务清理、其他服务存活、端口占用、启动失败、延迟 readiness、SSE 取消/断流、中断恢复。
+- [x] 测试首启、正常退出、关最后窗口、重开、自有服务清理、其他服务存活、端口占用、启动失败、延迟 readiness、SSE 取消/断流、中断恢复。
 - [x] 以基线 `2c4e479` 实测启动中 Ctrl+C 返回 shell exit 241；本轮没有复现历史 PermissionError。增加启动期间与服务 ready 后 Ctrl+C 子进程回归，runner 改为正确等待自有子进程退出；另单独复演正式 App 窗口退出。
-- [ ] 将最终 clean-SHA App 复制到隔离临时目录并以空开发 PATH 启动原生 UI；制作 / 挂载 / 只读验证内部 DMG。Dev 版 backend smoke 已独立跑通；最终包结果在 clean-SHA 产物和 QA handoff 补录。
+- [x] 将最终 clean-SHA App 复制到隔离临时目录并以空开发 PATH 启动原生 UI；制作 / 挂载 / 只读验证内部 DMG。Dev 版 backend smoke 已独立跑通；最终包结果在 clean-SHA 产物和 QA handoff 补录。
 
 ### 3. 集成自测与交接
 
 责任文件：README、PROGRESS、LATEST-IMPLEMENTATION、TESTER、新 DEV 报告、安装说明、证据 manifest。旧 QA 原件不改。
 
 - [x] 在固定源码 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 跑 guarded pytest、ruff、mypy、lock/build、Web tests/typecheck/lint/build、API types 一致性、Swift build 与最终 App/DMG harness，记录退出码；完整命令和 NOT_RUN 见 DEV 报告。
-- [ ] 用实际 UI 在临时库完成目录选择、粘贴/文件导入、确认、索引、问答；重启复核知识与本地历史状态，工作库不得有 SQLite/凭据/日志。
+- [x] 用实际 UI 在临时库完成目录选择、粘贴/文件导入、确认、索引、问答；重启复核知识与本地历史状态，工作库不得有 SQLite/凭据/日志。
 - [x] 实现和自测后固定源码 SHA；从 clean SHA 重建最终候选；证据提交与受测源码 SHA 分开说明。
 - [x] QA handoff 含固定 SHA、实际产物路径/摘要、精确命令、场景覆盖、退出码与 NOT_RUN；独立 QA 尚未运行，不宣称 DEV 等于独立 PASS。
 
@@ -52,3 +52,8 @@
 ## 独立 QA 和 Sol 门
 
 全新 custom qa 在固定 SHA 的独立 checkout：复跑回归，独立重建或核对身份并启动可搬迁 App/DMG；实际 UI 与 C24/C25 黑盒反例记录 PASS/FAIL/BLOCKED/NOT_RUN，不修改实现或 tracked tests。首次 FAIL 后最多两轮 Developer 修复+新 SHA+fresh QA。Sol 核验日志、退出码、manifest、diff 和身份，维护当前入口。M4.1 重要里程碑合并与正式收口需用户批准；整个 M4 不得提前 PASS。
+
+
+## 当前执行结果
+
+固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 和 Sol 适用离线技术门 PASS；初验文件面板 P1 经自动修复 1/2 轮关闭。原始 FAIL 与全部证据保留。正式里程碑收口 / 合并等待用户批准；真实安装、签名公证、OS Keychain、M4.2、五日、双机和发布未测。见 [Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。

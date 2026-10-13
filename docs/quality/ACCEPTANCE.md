@@ -1,6 +1,6 @@
 # 独立验收矩阵
 
-本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。用户现已明确授权离线 M4.1 Internal App/DMG Developer 整包实现和自测；本轮 DEV 证据见[M4.1 DEV 报告](reports/2026-10-13-M41-INTERNAL-APP-DEV.md)，Sol 尚未启动独立 QA，也未判定阶段通过。
+本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 当前固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，正式里程碑收口 / 合并待用户批准。范围与证据见[QA](reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)和[Sol 门](reports/2026-10-13-M41-SOL-GATE.md)。C01–C31 及真实门要求不变，不能由内部包结果宣称整个 M4 通过。
 
 完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。Developer 自测可说明本轮针对 C24/C25/C14 的具体观察，不等同独立 QA PASS 或整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
 

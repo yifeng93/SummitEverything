@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-已验收 M3 与清理维护的历史 SHA 继续由对应报告约束，不作为当前 M4.1 结论。当前工作分支 `codex/m41-internal-app-20261013` 执行 2026-10-13 用户明确授权的离线 M4.1：唯一 FastAPI + React 前端、内置 PyInstaller onedir Python、Swift 薄壳和独立未公证 Internal DMG 候选。初始候选 `b9321d6` 的独立 QA 报告记录了文件选择面板缺失；修复轮 1 将产品源码固定为 `3f6eaa408a8860ff5a438be8a874a2c3904733e4`，已重建候选并完成开发者侧实际原生面板与 Fake 导入 UI 自测。fresh QA 待启动，阶段判断尚未作出。详见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
+已验收 M3 与清理维护的历史结论仍只对应原固定 SHA。M4.1 当前产品源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经 fresh QA 集中验收及 Sol 证据核验，适用离线技术门 PASS。M41-QA-001 在新候选实际复验关闭，自动修复 1/2 轮。正式里程碑验收收口和 main 合并待用户批准；整个 M4、M4.2 与真实门未通过。见[Sol 门判断](../quality/reports/2026-10-13-M41-SOL-GATE.md)和[最新交接](../handoff/LATEST-IMPLEMENTATION.md)。
 
 | 范围 | 当前结果 | 证据 |
 |---|---|---|
@@ -13,7 +13,7 @@
 | M3 包 3：连续工作与归档 | 离线集成 PASS | [QA 报告](../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md) |
 | M3 离线模拟正式验收 | 用户批准并合入 | [验收记录](../quality/reports/2026-10-13-M3-OFFLINE-ACCEPTANCE.md)、[合并后 QA](../quality/reports/2026-10-13-M3-POSTMERGE-QA-47a3971.md) |
 | M4.1 初始候选 | 源码 `b9321d6` 的独立 QA 发现原生 HTML 文件面板缺失（历史 FAIL） | [初始 DEV](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)、[QA 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-b9321d6.md) |
-| M4.1 修复轮 1 | 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4`；候选重建，开发者实际 UI 复演 PASS；fresh QA 待验 | [修复轮 1 DEV](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV-REPAIR1.md)；不表示 M4.1 / M4 通过 |
+| M4.1 修复轮 1 | 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4`；独立离线 QA 与 Sol 技术门 PASS；正式收口 / 合并待用户批准 | [fresh QA](../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门](../quality/reports/2026-10-13-M41-SOL-GATE.md) |
 | 真实 provider / Feishu / 业务材料 / OS Keychain | NOT_RUN | 需要独立真实环境与用户选择的材料、范围和动作 |
 | M4.2真实验收、用户安装、Developer ID/公证、五日试用、双机与发布 | NOT_RUN | 内部未公证候选不代表实际安装或发布门通过 |
 | Runtime 配置元数据 | UNVERIFIED | 没有实际观测值 |
@@ -22,7 +22,7 @@
 
 ## 当前开发交接
 
-修复轮 1 Developer 已在产品源码 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 完成全门回归、clean-SHA App/DMG 重建与实际原生 UI 自测；fresh QA 将在独立 checkout 对此固定 SHA 验收。初始 SHA `b9321d6` 的文件面板缺陷仍按历史 QA 报告记录；未收到本轮独立 QA 前，不将 M4.1 记录标为验收通过；未获用户授权的真实连接、M4.2 和发布动作仍不执行。原清理维护的逐命令证据仍见[历史 DEV 报告](../quality/reports/2026-10-13-PRE-NEXT-STAGE-CLEANUP-DEV.md)及其独立 QA 报告。
+产品源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 与交付候选完全固定；后续仅添加文档 / 证据，不能把报告提交误作新受测产品代码。QA-only 原提交 `2437f9c771ff7da3aaf2b39a387903654fde5b9d` 已整合，47 项 evidence 摘要与 29 条命令记录由 Sol 核验。源码完整检查、实际文件选择及批准 / 索引 / 引用闭环、重启与生命周期故障都见新 QA；真实连接、用户安装、公证、M4.2 和发布不在该 PASS 内。候选路径、身份及下一步见 [LATEST](../handoff/LATEST-IMPLEMENTATION.md)。
 
 ## 历史索引
 
