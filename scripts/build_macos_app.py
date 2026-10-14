@@ -206,10 +206,15 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
             )
         swift_env = dict(os.environ)
         swift_env["MACOSX_DEPLOYMENT_TARGET"] = "13.0"
-        run(
-            ["swift", "build", "-c", "release", "--package-path", str(ROOT / "native")],
-            env=swift_env,
-        )
+        swift_command = ["swift", "build", "-c", "release", "--package-path", str(ROOT / "native")]
+        # SwiftPM compiles Package.swift inside its own sandbox. A build already
+        # running under a sandbox (local harnesses, some CI wrappers) cannot nest
+        # that and fails with "sandbox_apply: Operation not permitted". The escape
+        # hatch is explicit so default and CI behaviour stay unchanged; it only
+        # affects this repository's own manifest.
+        if os.environ.get("SUMMIT_SWIFT_DISABLE_SANDBOX") == "1":
+            swift_command.append("--disable-sandbox")
+        run(swift_command, env=swift_env)
         binary = ROOT / "native" / ".build" / "release" / "SummitEverything"
         shutil.copy2(binary, contents / "MacOS" / "SummitEverything")
         with (contents / "Info.plist").open("wb") as stream:
