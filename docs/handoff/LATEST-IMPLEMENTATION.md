@@ -11,7 +11,7 @@
 
 自动检查（Sol 本机执行）：guarded Python **591 passed**（`SUMMIT_FIRST_USE_DEFAULTS` 导出与未导出两种 shell 结果一致）、Web **90 passed**、ruff/format/mypy/lock exit 0、OpenAPI 与 tracked 文件逐字节一致、`npm run build` 成功。打包 `scripts/release-macos.sh` exit 0（DMG CRC VALID），`smoke_packaged_app.py` PASS，包内注入端到端验证 **27/27**（注入生效、保存不固化、换默认值跟随、secret 形态键启动失败、section 级与字段级损坏都不被静默接受）。候选位于 `.local/internal-builds/settings-ux-8c4f81c/`，DMG SHA-256 `966cf3ae278db6ab0d2c6f60629e63d4cc7b3f2bae9f977333e6682e753eaeab`，`dirty=false`。完整证据与未验证边界见 [DEV 报告](../quality/reports/2026-10-14-SETTINGS-UX-DEV.md)。
 
-三轮全新独立 QA 分别在独立 worktree 对固定 SHA 验收，逐字报告归档在 [QA 证据目录](../quality/reports/evidence/2026-10-14-settings-ux-qa/README.md)：第一轮（`e4f15cd`）全项 PASS 但查出 **D1**（section 级损坏被注入掩盖）；第二轮（`6d41d35`）确认 D1 修复并查出 **F1**（字段级同类）与既存 **F2**；第三轮（`8c4f81c`）确认 F1 修复（旧树对照 72 项失败）、其余全项 PASS，并查出 **F3**（测试不固定注入源）。D1/F1 已修复并由后续 QA 复核，F3 由仅测试提交修复（第四轮聚焦复核中）。
+三轮全新独立 QA 分别在独立 worktree 对固定 SHA 验收，逐字报告归档在 [QA 证据目录](../quality/reports/evidence/2026-10-14-settings-ux-qa/README.md)：第一轮（`e4f15cd`）全项 PASS 但查出 **D1**（section 级损坏被注入掩盖）；第二轮（`6d41d35`）确认 D1 修复并查出 **F1**（字段级同类）与既存 **F2**；第三轮（`8c4f81c`）确认 F1 修复（旧树对照 72 项失败）、其余全项 PASS，并查出 **F3**（测试不固定注入源）。D1/F1 已修复并由后续 QA 复核，F3 由仅测试提交修复（第四轮聚焦复核：导出与未导出两种 shell 下均 591 passed，且修复前对照复现 33 failed / 558 passed）。
 
 **F2 仍开放**：`origin_guard` 中间件读取损坏 profile 时抛错，返回裸 500 而非设计中的 JSON 503，导致 profile 损坏后连用于修复的 PATCH 也 500；该行为在功能前提交 `a6faf7e` 上同样存在，与本功能无关，未在本分支修复。
 
