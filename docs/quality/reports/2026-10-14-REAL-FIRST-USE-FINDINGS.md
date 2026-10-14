@@ -66,3 +66,26 @@ Sol 复核时补充的一处：实现者原本让「未知异常」的详情**�
 | 独立 QA | 已派出（固定 SHA `a301b1b`），结论待补 |
 
 实现者与 Sol 的自测均未调用真实 provider；真实调用的证据见第 4、5 节。
+
+## 8. 第二轮：把同类的「吞错」在相邻路径收口（`19078de`）
+
+独立 QA 对 `a301b1b` 判 9 项全 PASS，但指出同一缺陷类在其它路径仍有残留。第二轮修复（固定产品 SHA `19078de`）：
+
+| 项 | 问题 | 处理 |
+|---|---|---|
+| F1 | embedding/rerank 出现「200 但内容不可用」（缺 `data`、空、非 JSON、类型错）时抛裸 `ValueError` → 仍是裸 500 | 这类**provider 响应内容**失败改为类型化 provider 错误（`reason=schema`、可读原因）→ API 502；**本地参数校验仍保持裸 `ValueError`**，不得被误报成 provider 故障 |
+| F2 | `/api/v1/journal/assist` 一律换成固定文案 | 类型化失败给具体原因，未知异常保留安全文案，并在本地留证 |
+| F3 | rerank 的 provider 详情经 API 不可见 | 三种 provider-smoke 失败响应统一附 `provider{code,message,request_id}` |
+| F4 | 非 2xx 丢弃传输层 `x-request-id` | 错误响应也读取（body 内 id 优先） |
+| F5 | 增量索引失败原因只在打包包里写不了的日志 | 新增 `index_update_failed` 诊断事件（含状态与受控原因），`index_update` 字段语义不变 |
+| F6 | `GroundedAnswer.text` 接受纯空白 | strip 后必须非空 |
+| 一致性 | LLM 503 vs embedding/rerank 502 | provider 侧失败统一 **502**；本地校验保持 422 |
+| 卫生 | 失败记录直写 `str(exc)` | 写入点统一走 `sanitize_provider_text`（纵深防御） |
+
+**两处分层原则（实现者提出、Sol 认可）**：`queries.error`（本地 DB）保存脱敏后的 `<异常类型>: <message>`；服务端日志与 `diagnostics.log` 只写**受控**原因（类型化 provider 失败写结构化 code/message，其它仅写类型名，因为既有测试断言 sentinel 不得进入日志、且 `event_log` 的契约是只写状态元数据）；客户端响应只显示受控文案。
+
+验证：**649 passed / exit 0**（第二轮新增 26 项），ruff/format/mypy/lock 全 0；打包 exit 0、smoke PASS、包内端到端 29/29。独立 QA 对 `19078de` 的复核结论待补。
+
+**候选身份（第二轮）**：App `.local/internal-builds/internal-19078de/SummitEverything Internal.app`；DMG `SummitEverything-Internal-19078de.dmg`，SHA-256 `cb6af3781bcf948eab496ca208fdb8321368b89f9ae6b5ad89f8bf9a457118d1`；`source_sha=19078dedb62655c4090051ee5e2159068ef5f607`、`dirty=false`、`build_id=20261014T154135Z-0d21a90f194c`。
+
+构建说明：构建时主工作树因**另一并行工作流的未提交文档**（`AGENTS.md`、`README.md`、`docs/decisions/0011`、两份前端规格）而是 dirty，而构建脚本拒绝 dirty 树。为保持候选身份干净（`dirty=false`），本轮改在**该提交的独立干净 worktree** 中构建（`web/node_modules` 以 symlink 复用，`.local/first-use/defaults.json` 复制进该 worktree），未触碰那份在制品。
