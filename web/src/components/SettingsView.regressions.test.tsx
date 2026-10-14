@@ -28,7 +28,7 @@ it('persists a changed Model Studio account id through the settings form', async
   expect(patch).toHaveProperty('model_studio_account_id', 'new-account')
 })
 
-it('waits for the saved account id before storing its API key', async () => {
+it('saves the account id and the matching API key in one card submit', async () => {
   const state = {
     mode: 'fake',
     model_studio_account_id: 'original-account',
@@ -41,11 +41,14 @@ it('waits for the saved account id before storing its API key', async () => {
     keychain_available: true,
   }
   let accountId: string | null = null
+  const methods: string[] = []
   vi.stubGlobal('fetch', vi.fn(async (_url: unknown, init?: RequestInit) => {
-    if (init?.method === 'PATCH') {
+    const method = init?.method ?? 'GET'
+    methods.push(method)
+    if (method === 'PATCH') {
       Object.assign(state, JSON.parse(String(init.body)))
     }
-    if (init?.method === 'PUT') {
+    if (method === 'PUT') {
       accountId = JSON.parse(String(init.body)).account_id
       state.credential_status.dashscope = true
     }
@@ -53,27 +56,27 @@ it('waits for the saved account id before storing its API key', async () => {
   }))
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
   fireEvent.change(await screen.findByLabelText('Model Studio 账户标识'), { target: { value: 'new-account' } })
-  fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'dashscope' } })
-  fireEvent.change(screen.getByLabelText('密钥'), { target: { value: 'synthetic-key' } })
-  const saveKey = screen.getByRole('button', { name: '保存到钥匙串' })
-  expect((saveKey as HTMLButtonElement).disabled).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: '保存 provider 设置' }))
-  await waitFor(() => expect((saveKey as HTMLButtonElement).disabled).toBe(false))
-  fireEvent.click(saveKey)
+  fireEvent.change(screen.getByLabelText(/阿里云 Model Studio API Key/), { target: { value: 'synthetic-key' } })
+  // 录入密钥不再需要先单独保存账户标识。
+  expect(methods).not.toContain('PUT')
+  fireEvent.click(screen.getByRole('button', { name: '保存 AI 模型设置' }))
   await waitFor(() => expect(accountId).toBe('new-account'))
+  expect(methods.indexOf('PATCH')).toBeGreaterThanOrEqual(0)
+  expect(methods.indexOf('PATCH')).toBeLessThan(methods.indexOf('PUT'))
 })
 
-it('calls only the fixed DeepSeek smoke route when one attempt remains', async () => {
+it('asks for an explicit range confirmation before calling the fixed DeepSeek smoke route', async () => {
   const state = {
     mode: 'real', model_studio_account_id: 'synthetic-account',
     feishu: { app_id: '', redirect_uri: '' },
-    llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'default', enabled: true },
+    llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'default', enabled: true, max_output_tokens: 2048, reasoning_effort: 'low' },
     embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', enabled: false },
     rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/api/v1', enabled: false },
     credential_status: { feishu_app: false, deepseek: true, dashscope: false },
     capabilities: {}, keychain_available: true,
   }
   const smoke = { counts: { deepseek_chat: 0, model_studio_embedding: 0, model_studio_rerank: 0 }, limits: { deepseek_chat: 1, model_studio_embedding: 1, model_studio_rerank: 1 }, remaining: { deepseek_chat: 1, model_studio_embedding: 1, model_studio_rerank: 1 } }
+  const smokePosts = () => fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/provider-smoke/deepseek-chat'))
   const fetchMock = vi.fn(async (url: unknown, init?: RequestInit) => {
     void init
     if (String(url).endsWith('/provider-smoke/deepseek-chat')) return { ok: true, status: 200, json: async () => ({ state: 'succeeded' }) }
@@ -85,5 +88,14 @@ it('calls only the fixed DeepSeek smoke route when one attempt remains', async (
   const button = await screen.findByRole('button', { name: 'DeepSeek Chat（剩余 1）' })
   expect((button as HTMLButtonElement).disabled).toBe(false)
   fireEvent.click(button)
+  const dialog = await screen.findByRole('dialog', { name: '确认本次连接检查' })
+  expect(dialog.textContent).toContain('累计已用 0/1')
+  expect(dialog.textContent).toContain('不会自动重发')
+  expect(smokePosts()).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(smokePosts()).toHaveLength(0)
+  fireEvent.click(button)
+  fireEvent.click(await screen.findByRole('button', { name: '确认发送本次检查' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/provider-smoke/deepseek-chat', expect.objectContaining({ method: 'POST' })))
 })

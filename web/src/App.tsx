@@ -107,7 +107,11 @@ export default function App() {
           <JournalView onError={setError} onOpenPage={openPage} />
         ) : section === 'ask' ? (
           <AskView onError={setError} onOpenPage={openPage} />
-        ) : <SettingsView workspaceName={workspace.name} onSwitchWorkspace={() => setWorkspace(null)} />}
+        ) : <SettingsView
+          workspaceName={workspace.name}
+          onSwitchWorkspace={() => setWorkspace(null)}
+          onOpenFeishuDaily={() => { setPage(null); setSection('today') }}
+        />}
       </main>
     </div>
   )
