@@ -7,8 +7,15 @@ public struct DirectoryUploadSelection {
     public let failure: String?
 }
 
+public enum FileSelectionError: Error {
+    case invalidSelection
+}
+
 public enum NativeUploadPolicy {
     private static let supportedExtensions: Set<String> = ["txt", "md"]
+
+    public static let fileSelectionErrorMessage =
+        "所选文件未导入。请确认文件为非空 TXT / Markdown 且符合大小和数量限制后重新选择。"
 
     public static var allowedContentTypes: [UTType] {
         ["txt", "md"].compactMap { UTType(filenameExtension: $0, conformingTo: .plainText) }
@@ -31,7 +38,10 @@ public enum NativeUploadPolicy {
         return true
     }
 
-    public static func acceptedFiles(_ urls: [URL], allowsMultipleSelection: Bool) -> [URL]? {
+    public static func validateFileSelection(
+        _ urls: [URL],
+        allowsMultipleSelection: Bool
+    ) -> Result<[URL], FileSelectionError> {
         guard !urls.isEmpty,
               urls.count <= 100,
               allowsMultipleSelection || urls.count == 1,
@@ -44,8 +54,14 @@ public enum NativeUploadPolicy {
                         let size = values.fileSize else { return false }
                   return size > 0 && size <= 20 * 1024 * 1024
               }),
-              urls.compactMap({ try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize }).reduce(0, +) <= 100 * 1024 * 1024 else { return nil }
-        return urls
+              urls.compactMap({ try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize }).reduce(0, +) <= 100 * 1024 * 1024 else {
+            return .failure(.invalidSelection)
+        }
+        return .success(urls)
+    }
+
+    public static func acceptedFiles(_ urls: [URL], allowsMultipleSelection: Bool) -> [URL]? {
+        try? validateFileSelection(urls, allowsMultipleSelection: allowsMultipleSelection).get()
     }
 
     public static func collectDirectoryFiles(at roots: [URL]) -> DirectoryUploadSelection {

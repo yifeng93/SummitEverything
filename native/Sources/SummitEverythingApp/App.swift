@@ -303,10 +303,18 @@ private struct LocalWebView: NSViewRepresentable {
                             }
                         }
                     } else {
-                        selectedFiles = NativeUploadPolicy.acceptedFiles(
+                        switch NativeUploadPolicy.validateFileSelection(
                             panel.urls,
                             allowsMultipleSelection: parameters.allowsMultipleSelection
-                        )
+                        ) {
+                        case .success(let files):
+                            selectedFiles = files
+                        case .failure:
+                            let alert = NSAlert()
+                            alert.messageText = "文件未导入"
+                            alert.informativeText = NativeUploadPolicy.fileSelectionErrorMessage
+                            alert.runModal()
+                        }
                     }
                 }
             }

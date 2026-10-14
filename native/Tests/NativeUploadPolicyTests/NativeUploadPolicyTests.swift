@@ -173,6 +173,26 @@ final class NativeUploadPolicyTests: XCTestCase {
         XCTAssertNil(NativeUploadPolicy.acceptedFiles([text, executable], allowsMultipleSelection: true))
     }
 
+    func testZeroByteInNativeSelectionRejectsBatchWithActionableFeedback() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let valid = root.appendingPathComponent("valid.txt")
+        let empty = root.appendingPathComponent("empty.txt")
+        try Data("valid".utf8).write(to: valid)
+        try Data().write(to: empty)
+
+        switch NativeUploadPolicy.validateFileSelection([valid, empty], allowsMultipleSelection: true) {
+        case .success:
+            XCTFail("a mixed valid/empty selection must reject the full batch")
+        case .failure(.invalidSelection):
+            XCTAssertEqual(
+                NativeUploadPolicy.fileSelectionErrorMessage,
+                "所选文件未导入。请确认文件为非空 TXT / Markdown 且符合大小和数量限制后重新选择。"
+            )
+        }
+    }
+
     func testOpenPanelTypesAreLimitedToTxtAndMarkdown() {
         XCTAssertEqual(
             Set(NativeUploadPolicy.allowedContentTypes.compactMap(\.preferredFilenameExtension)),
