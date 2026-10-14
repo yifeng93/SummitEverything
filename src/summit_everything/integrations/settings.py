@@ -10,10 +10,13 @@ import platform
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
-from typing import ClassVar, Literal, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, ClassVar, Literal, Protocol, TypeVar, cast
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+if TYPE_CHECKING:
+    from .first_use_defaults import FirstUseDefaults
 
 
 class SettingsError(RuntimeError):
@@ -210,16 +213,33 @@ class ProviderSettingsPatch(_SettingsModel):
 
 
 class SettingsStore:
-    """Atomic local profile settings store. It never performs network I/O."""
+    """Atomic local profile settings store. It never performs network I/O.
 
-    def __init__(self, path: Path) -> None:
+    ``defaults`` optionally supplies injected non-secret first-use values. They
+    fill fields that the stored profile leaves absent or empty, and the profile
+    stores only explicit user overrides: a value equal to the current injected
+    default is dropped on save, so an untouched profile keeps following later
+    default changes while an explicit override stays fixed.
+    """
+
+    def __init__(self, path: Path, *, defaults: FirstUseDefaults | None = None) -> None:
         self.path = path
+        self._defaults = defaults
 
     def read(self) -> ProviderSettings:
+        raw = self._read_raw()
+        if self._defaults is not None:
+            raw = self._defaults.apply(raw)
+        try:
+            return ProviderSettings.model_validate(raw)
+        except (OSError, ValueError) as exc:
+            raise SettingsError("settings_unavailable") from exc
+
+    def _read_raw(self) -> object:
         try:
             if not self.path.exists():
-                return ProviderSettings()
-            return ProviderSettings.model_validate_json(self.path.read_bytes())
+                return {}
+            return json.loads(self.path.read_bytes())
         except (OSError, ValueError) as exc:
             raise SettingsError("settings_unavailable") from exc
 
@@ -234,14 +254,27 @@ class SettingsStore:
                 fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
     def _update_locked(self, patch: dict[str, object]) -> ProviderSettings:
-        current = self.read().model_dump(mode="json")
-        merged = _merge(current, patch)
+        # Imported here because first_use_defaults imports this module.
+        from .first_use_defaults import stored_document
+
+        # read() keeps its stored+injected semantics and also preserves the
+        # existing error behaviour for a corrupted profile.
+        effective = self.read().model_dump(mode="json")
+        merged = _merge(effective, patch)
+        if self._defaults is not None:
+            # Submitting "" for an injectable field means "not set": fall back to
+            # the injected default before validation, exactly like a read would.
+            merged = cast(dict[str, object], self._defaults.apply(merged))
         settings = ProviderSettings.model_validate(merged)
+        # The profile stores only explicit user overrides: injected-equal and
+        # empty injectable fields are dropped, never written as "".
+        persisted = stored_document(settings.model_dump(mode="json"), defaults=self._defaults)
+        ProviderSettings.model_validate(persisted)
         fd, temp_name = tempfile.mkstemp(prefix=".settings-", dir=self.path.parent)
         temp_path = Path(temp_name)
         try:
             with os.fdopen(fd, "wb") as stream:
-                stream.write(settings.model_dump_json(indent=2).encode())
+                stream.write(json.dumps(persisted, ensure_ascii=False, indent=2).encode())
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temp_path, self.path)

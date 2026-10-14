@@ -82,6 +82,10 @@ from summit_everything.integrations.feishu.service import (
     callback_boundary,
 )
 from summit_everything.integrations.feishu.tasks import FeishuTasks
+from summit_everything.integrations.first_use_defaults import (
+    FirstUseDefaults,
+    load_first_use_defaults,
+)
 from summit_everything.integrations.llm import DeepSeekLLM, FakeLLM, LLMProviderError
 from summit_everything.integrations.provider_smoke import (
     SMOKE_LIMITS,
@@ -431,9 +435,16 @@ def create_app(
     credential_store: CredentialStore | None = None,
     secret_backend: SecretBackend | None = None,
     feishu_config: FeishuConfig | None = None,
+    first_use_defaults: FirstUseDefaults | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.state.acceptance_run_id = uuid4()
+    # Non-secret setup values (App ID, callback, base URLs) may be injected by an
+    # explicit environment path or by the packaged bundle resource; the runtime
+    # reads no repository file. A rejected source fails closed at startup.
+    app.state.first_use_defaults = (
+        first_use_defaults if first_use_defaults is not None else load_first_use_defaults()
+    )
     build_info_path = os.environ.get("SUMMIT_BUILD_INFO")
     build_identity = load_build_identity(build_info_path)
     web_dist = os.environ.get("SUMMIT_WEB_DIST")
@@ -496,7 +507,8 @@ def create_app(
         allowed_origins = config.allowed_origins
         if workspace is not None:
             settings = SettingsStore(
-                Path(workspace.local_profile_dir) / "provider-settings.json"
+                Path(workspace.local_profile_dir) / "provider-settings.json",
+                defaults=app.state.first_use_defaults,
             ).read()
             callback = settings.feishu.redirect_uri or config.redirect_uri
             parts = urlsplit(callback)
@@ -561,7 +573,10 @@ def create_app(
         return workspace
 
     def settings_store(workspace: WorkspaceContext) -> SettingsStore:
-        return SettingsStore(Path(workspace.local_profile_dir) / "provider-settings.json")
+        return SettingsStore(
+            Path(workspace.local_profile_dir) / "provider-settings.json",
+            defaults=app.state.first_use_defaults,
+        )
 
     def acceptance_ledger(workspace: WorkspaceContext) -> AcceptancePlanLedger:
         return AcceptancePlanLedger(Path(workspace.local_profile_dir))

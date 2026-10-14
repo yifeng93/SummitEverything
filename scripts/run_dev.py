@@ -13,7 +13,26 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.request import urlopen
 
+from summit_everything.integrations.first_use_defaults import (
+    DEFAULTS_ENV_VAR as FIRST_USE_DEFAULTS_ENV_VAR,
+    REPO_DEFAULTS_RELATIVE_PATH,
+)
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def first_use_defaults_environment(env: dict[str, str]) -> dict[str, str]:
+    """Point the dev API at the Git-ignored local defaults file when it exists.
+
+    The runtime never reads the repository file implicitly, so the development
+    preview opts in explicitly here. An already configured environment variable
+    wins, and a missing file changes nothing.
+    """
+    configured = dict(env)
+    path = ROOT / REPO_DEFAULTS_RELATIVE_PATH
+    if path.is_file():
+        configured.setdefault(FIRST_USE_DEFAULTS_ENV_VAR, str(path))
+    return configured
 
 
 def main() -> int:
@@ -22,7 +41,7 @@ def main() -> int:
         print("Web dependencies missing. Run: cd web && npm ci", file=sys.stderr)
         return 2
 
-    env = os.environ.copy()
+    env = first_use_defaults_environment(os.environ)
     api_port = int(env.get("SUMMIT_API_PORT", "8793"))
     web_port = int(env.get("SUMMIT_WEB_PORT", "5173"))
     run_id = env.setdefault("SUMMIT_RUN_ID", secrets.token_hex(16))
