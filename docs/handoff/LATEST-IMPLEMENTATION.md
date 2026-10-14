@@ -1,6 +1,6 @@
 # 最新实现交接
 
-## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `e4f15cd`）
+## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `8c4f81c`）
 
 用户在 2026-10-14 要求按 SummitWorkbench 的配置方式重做首次配置，并明确「Base URL、callback、Feishu App ID 这些非秘密值不要再让我填，只输入密钥」。决议与边界见 [ADR 0010](../decisions/0010-first-use-configuration-ux.md)。
 
@@ -9,9 +9,13 @@
 - 非秘密接入值由 Git 忽略的 `.local/first-use/defaults.json` 在构建时注入包内 `Resources/first-use-defaults.json`；运行时只认 `SUMMIT_FIRST_USE_DEFAULTS` 与包内资源，无仓库隐式回退；secret 形态键名或未知键一律 fail closed。百炼地址改用官方推荐的业务空间专属域名。
 - 保存只记录用户显式覆盖：与注入默认值相同的值不落盘，因此未覆盖过的 profile 会跟随后续构建的默认值；显式改过的值保持固定。
 
-自动检查（Sol 本机执行）：guarded Python **558 passed**、Web **90 passed**、ruff/format/mypy/lock exit 0、OpenAPI 与 tracked 文件逐字节一致、`npm run build` 成功。打包 `scripts/release-macos.sh` exit 0（DMG CRC VALID），`smoke_packaged_app.py` PASS，另写的包内注入端到端验证 **23/23**（注入生效、保存不固化、换默认值跟随、secret 形态键启动失败）。候选位于 `.local/internal-builds/settings-ux-e4f15cd/`，DMG SHA-256 `ce79a8c355c89e420606e3882b918b6dd9c993009b3df633bc25c52df5a0d68c`，`dirty=false`。完整证据与未验证边界见 [DEV 报告](../quality/reports/2026-10-14-SETTINGS-UX-DEV.md)。
+自动检查（Sol 本机执行）：guarded Python **591 passed**（`SUMMIT_FIRST_USE_DEFAULTS` 导出与未导出两种 shell 结果一致）、Web **90 passed**、ruff/format/mypy/lock exit 0、OpenAPI 与 tracked 文件逐字节一致、`npm run build` 成功。打包 `scripts/release-macos.sh` exit 0（DMG CRC VALID），`smoke_packaged_app.py` PASS，包内注入端到端验证 **27/27**（注入生效、保存不固化、换默认值跟随、secret 形态键启动失败、section 级与字段级损坏都不被静默接受）。候选位于 `.local/internal-builds/settings-ux-8c4f81c/`，DMG SHA-256 `966cf3ae278db6ab0d2c6f60629e63d4cc7b3f2bae9f977333e6682e753eaeab`，`dirty=false`。完整证据与未验证边界见 [DEV 报告](../quality/reports/2026-10-14-SETTINGS-UX-DEV.md)。
 
-未测边界：真实 provider/飞书/OAuth/Keychain 生命周期/真实材料/账单与质量/正式安装/公证/Gatekeeper/五日/双机/发布全部 **NOT_RUN**；runtime 模型元数据 **UNVERIFIED**；新界面未做浏览器或真机视觉复核。另有一处已知残留：在本功能之前保存过的旧 profile 里，注入字段可能已被固化为当时的公共端点，需要用户在高级设置清空该字段一次才会跟随新默认值。独立 QA 尚未对 `e4f15cd` 出结论。
+三轮全新独立 QA 分别在独立 worktree 对固定 SHA 验收，逐字报告归档在 [QA 证据目录](../quality/reports/evidence/2026-10-14-settings-ux-qa/README.md)：第一轮（`e4f15cd`）全项 PASS 但查出 **D1**（section 级损坏被注入掩盖）；第二轮（`6d41d35`）确认 D1 修复并查出 **F1**（字段级同类）与既存 **F2**；第三轮（`8c4f81c`）确认 F1 修复（旧树对照 72 项失败）、其余全项 PASS，并查出 **F3**（测试不固定注入源）。D1/F1 已修复并由后续 QA 复核，F3 由仅测试提交修复（第四轮聚焦复核中）。
+
+**F2 仍开放**：`origin_guard` 中间件读取损坏 profile 时抛错，返回裸 500 而非设计中的 JSON 503，导致 profile 损坏后连用于修复的 PATCH 也 500；该行为在功能前提交 `a6faf7e` 上同样存在，与本功能无关，未在本分支修复。
+
+未测边界：真实 provider/飞书/OAuth/Keychain 生命周期/真实材料/账单与质量/正式安装/公证/Gatekeeper/五日/双机/发布全部 **NOT_RUN**；runtime 模型元数据 **UNVERIFIED**；新界面未做浏览器或真机视觉复核。另有一处已知残留：在本功能之前保存过的旧 profile 里，注入字段可能已被固化为当时的公共端点，需要用户在高级设置清空该字段一次才会跟随新默认值。
 
 ## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，已获离线收口/合入批准
 
