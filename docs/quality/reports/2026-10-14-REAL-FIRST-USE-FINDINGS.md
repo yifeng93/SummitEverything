@@ -114,3 +114,26 @@ Sol 复核时补充的一处：实现者原本让「未知异常」的详情**�
 | `f40bc39` | 第三轮：诊断事件不再因清洗被丢弃 | `a856a2eb…70ce` |
 
 三轮都基于同一分支依次叠加；**最新最全的是 `f40bc39`**。三者对「用户提问能否得到回答」这条主路径等价（第一轮已修好），差别在相邻路径与留证完整度。
+
+## 11. 第三轮独立 QA 结论（`f40bc39`）：9 项全 PASS
+
+| 项 | 判定 | 关键证据 |
+|---|---|---|
+| 1 身份与范围 | PASS | 起止 `git status --porcelain` 均空；`19078de..f40bc39` 改 5 文件，`web/**` 0 |
+| 2 D1 触发 A | PASS | assist 与索引**两条真实端点路径**：`Your api key: sk-*** is invalid` → 事件确实写入，reason 含 `sk-***`，无未掩码凭据 |
+| 3 D1 触发 B | PASS | 258/278 字符 message → 两条路径事件均写出、`0 < len(reason) <= 200` |
+| 4 安全未放松 | PASS | 未掩码 `sk-abcdefghijklmnop` 落盘后无原串；掩码先于截断；换行折叠；空/非字符串经回退仍记事件 |
+| 5 无静默丢弃 | PASS | 全 src 仅剩 5 处 `except: pass`（异常类体、state 清理、CancelledError），无 `contextlib.suppress` |
+| 6 契约未回归 | PASS | lifecycle sentinel + 白名单/轮转 + 凭据不落盘等 53 passed |
+| 7 全量与静态 | PASS | guarded **656 passed**；ruff/format/mypy/lock 全 exit 0 |
+| 8 打包候选 | PASS | DMG 哈希逐位一致；DMG 挂载后 `diff -r` 与磁盘 .app 完全一致；**包内 PYZ 的 `event_log`/`api.app` code object 与源码 `compile()` 结果 `marshal.dumps` 逐字节相同** → 包内确含本轮修复 |
+| 9 残留（如实记录，非「整体通过」） | — | 见下 |
+
+### 第 9 项列出的残留边界
+
+- **控制字符（低，本轮唯一防御纵深下降点）**：旧校验器拒绝一切 `ord<32`；新 `clean_reason` 只折叠 `str.split()` 认定的空白，故 `\x00`/`\x07`/`\x1b`(ANSI)/`\x7f` 会原样落盘。JSON 仍是合法单行，危害限于终端转义注入，**不是凭据泄漏**。属可在一行内收紧的后续小改。
+- **logging 层吞异常（既有，非本轮引入）**：handler 流损坏时 `logging.Handler.handleError` 会吞掉写错、`profile_event` 正常返回，事件静默丢失（实测 stderr 出现 `--- Logging error ---`）。本轮未修、也未声称修。
+- **掩码形状边界（既有）**：大写 `SK-`、7 字符 `sk-abcdefg`、零宽/双向控制符切断形状不被掩码——但与既有 `http_boundary` 的输出**逐个一致**，本轮既未引入也未加重。
+- **文档小错**：tracked test 里 `# 258 characters` 的字符串实测 278 字符（非产品缺陷）。
+
+未测：打包应用内**行为级** D1 复现需要真实凭据或对外网络（两者被禁止），故以「PYZ 字节码逐字节等价 + 常量存在性」替代——强于单次行为观测，但确非端到端行为证据。
