@@ -47,7 +47,7 @@ def test_settings_reads_and_updates_are_local_and_redact_secret(tmp_path):
     saved = client.put(
         "/api/v1/credentials/deepseek",
         headers=headers,
-        json={"account_id": "team-account", "secret": "synthetic-secret"},
+        json={"account_id": "team-account", "secret": "sk-synthetic-secret-00000000"},
     )
     assert saved.status_code == 200
     assert saved.json() == {"provider": "deepseek", "configured": True}
@@ -144,13 +144,13 @@ def test_secret_must_match_saved_model_studio_account(tmp_path):
     mismatched = client.put(
         "/api/v1/credentials/dashscope",
         headers=headers,
-        json={"account_id": "unsaved-account", "secret": "synthetic-key"},
+        json={"account_id": "unsaved-account", "secret": "sk-synthetic-key-0000000000"},
     )
     assert mismatched.status_code == 422
     saved = client.put(
         "/api/v1/credentials/dashscope",
         headers=headers,
-        json={"account_id": "saved-account", "secret": "synthetic-key"},
+        json={"account_id": "saved-account", "secret": "sk-synthetic-key-0000000000"},
     )
     assert saved.status_code == 200
     assert client.get("/api/v1/settings", headers=headers).json()["credential_status"]["dashscope"]
@@ -179,7 +179,7 @@ def test_unavailable_keychain_fails_closed_without_file_fallback(tmp_path):
     response = client.put(
         "/api/v1/credentials/deepseek",
         headers=headers,
-        json={"account_id": "default", "secret": "synthetic-secret"},
+        json={"account_id": "default", "secret": "sk-synthetic-secret-00000000"},
     )
 
     assert response.status_code == 503
@@ -360,7 +360,7 @@ def test_disabled_real_model_status_cannot_reach_business_call_path(tmp_path):
     credential = client.put(
         "/api/v1/credentials/deepseek",
         headers=headers,
-        json={"account_id": "default", "secret": "synthetic-api-key"},
+        json={"account_id": "default", "secret": "sk-synthetic-api-key-0000000"},
     )
     assert credential.status_code == 200
     configured = client.get("/api/v1/settings", headers=headers)
@@ -439,7 +439,7 @@ def test_limited_deepseek_smoke_is_synthetic_and_one_shot(tmp_path, monkeypatch)
         client.put(
             "/api/v1/credentials/deepseek",
             headers=headers,
-            json={"account_id": "default", "secret": "synthetic-key"},
+            json={"account_id": "default", "secret": "sk-synthetic-key-0000000000"},
         ).status_code
         == 200
     )
@@ -544,7 +544,7 @@ def test_limited_model_studio_smokes_use_fixed_candidates_and_one_shot(tmp_path,
         client.put(
             "/api/v1/credentials/dashscope",
             headers=headers,
-            json={"account_id": "default", "secret": "synthetic-model-studio-key"},
+            json={"account_id": "default", "secret": "sk-synthetic-model-studio-key-0000"},
         ).status_code
         == 200
     )
@@ -628,7 +628,7 @@ def test_failed_smoke_attempt_consumes_its_authorized_slot(tmp_path, monkeypatch
         client.put(
             "/api/v1/credentials/deepseek",
             headers=headers,
-            json={"account_id": "default", "secret": "synthetic-key"},
+            json={"account_id": "default", "secret": "sk-synthetic-key-0000000000"},
         ).status_code
         == 200
     )

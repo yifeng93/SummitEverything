@@ -8,11 +8,16 @@ import httpx
 
 from summit_everything.integrations.embedding import tokenize
 from summit_everything.integrations.http_boundary import (
+    ProviderError,
     bounded_json_post,
     provider_usage_record,
     reject_business_error,
 )
 from summit_everything.integrations.transport import create_http_client
+
+
+class RerankProviderError(ProviderError):
+    """The rerank service failed; carries its sanitized code/message/id."""
 
 
 class FakeReranker:
@@ -109,5 +114,17 @@ class ModelStudioReranker:
                 raise ValueError("provider returned incomplete rerank results")
             ranked = sorted(indexed.items(), key=lambda item: item[1], reverse=True)
             return ranked
-        except (httpx.HTTPError, KeyError, TypeError, ValueError, IndexError) as exc:
+        except ProviderError as exc:
+            raise RerankProviderError(
+                f"排序服务返回错误：{exc.describe()}",
+                provider_code=exc.provider_code,
+                provider_message=exc.provider_message,
+                request_id=exc.request_id,
+                reason=exc.reason or "provider",
+            ) from exc
+        except httpx.HTTPError as exc:
+            raise RerankProviderError(
+                "排序服务连接失败：请检查网络、代理或证书设置。", reason="transport"
+            ) from exc
+        except (KeyError, TypeError, ValueError, IndexError) as exc:
             raise ValueError("rerank provider failed validation") from exc
