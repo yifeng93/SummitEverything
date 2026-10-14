@@ -1,6 +1,6 @@
 # M4.2 真实验收准备卡
 
-本页用于 Developer / 独立 QA 与后续 opt-in 真实验收交接。准备就绪不表示真实业务调用已发生，也不替代用户对材料、发送范围、服务、次数与费用的单独确认。
+本页用于 Developer / 独立 QA 与后续 opt-in 真实验收交接。工作包 A fixed `419bb86` 已经 fresh QA 并合入 main；PR #18 的离线 CI run 38550700081 全步骤成功。内部候选交付于 `/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/m42-419bb86/`：`SummitEverything Internal 419bb86.app` 与 `SummitEverything-Internal-419bb86.dmg`，DMG SHA-256 `2e176a2d27f13821f2f82768966719408780c0ed963ee9d9e4413b75ff16f14a`。候选仅供已授权的内部验证，不表示用户安装、公证或全产品验收通过。合并/CI范围与保留状态见[离线收口记录](../quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。准备就绪不表示真实业务调用已发生，也不替代用户对材料、发送范围、服务、次数与费用的单独确认。
 
 ## 离线开发的已知范围
 

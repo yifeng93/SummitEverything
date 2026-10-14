@@ -21,13 +21,13 @@
 
 工作包 A 的固定产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已由 fresh QA 验收；Sol 判定报告明确列出的离线/API/Mock/packaged UI 技术场景 PASS，不等于整个工作包 B/C、M4.2、C25 或产品最终 PASS。逐项范围与限制见 [Sol gate](../../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[QA report](../../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) 和 [证据 archive](../../quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)。原初始 QA FAIL 与其原报告/evidence 保留。
 
-用户已于 2026-10-14 批准工作包 A 离线正式收口与合入 main；本轮 PR、远端 CI、merge 尚未发生，后续由 Sol 按仓库 PR 检查与保护规则办理。此批准不扩大真实资料、模型付费调用、Feishu、Keychain 或用户安装授权。
+用户已于 2026-10-14 批准工作包 A 离线正式收口与合入 main。PR #18 已于 2026-10-14T10:42:19Z 合并（head `0e8fc4633d4b1409fb7da0354d4474a4faeef430`）；对应远端 run 38550700081 全步骤成功，工作流显示名沿用 M4.1 但适用于本 PR。main 产品/tests/lock 树与 fixed `419bb86` 一致。该批准不扩大真实资料、模型付费调用、Feishu、Keychain 或用户安装授权。
 
 以下 Task 1 勾选项是原执行清单，不应把所有未勾选项解释为 fixed `419bb86` 仍待开发，也不据此把证据缺失说成已完成。采用上方固定 SHA 的 gate 结果和报告逐项状态：失败项保留原 operation ID 的真实 UI retry、Real JournalAssist packaged UI、真实 provider/Feishu/tasks、材料质量/账单、Keychain 生命周期、正式用户安装/公证、五日、双机及发布仍 NOT_RUN；runtime model metadata、误启动期间 Keychain/profile 访问及影响仍 UNVERIFIED。QA 一条失败 assertion 的完整 raw 保留，另一临时失败 assertion raw 被覆盖；不得勾称缺失输出已恢复。早期 baseline capture 的记录按 DEV/QA 证据所能证明的范围表述，不推断未留存的 exit code。
 
 ## 收口维护保留范围
 
-Sol 后续 inventory/清理时拟保留固定 `419bb86` 的最终 App 与 DMG、全部 tracked QA/DEV 失败与通过证据及对应源码 checkpoint、当前仍在运行的旧 App、用户数据与工作库。先核对备份和实际引用关系；只有确认是未被使用的临时生成物且所需证据已保全后，Sol 才清理相应临时文件。此文档更新不删除文件、产物、分支或 worktree。
+收口时保留 fixed `419bb86` 的最终 App/DMG、tracked QA/DEV 失败与通过证据及源码 checkpoint、仍在运行的旧 App、用户数据与工作库。三个 M42 managed worktree 已归档并保留可恢复 Git snapshot；其 ignored `.local/.superpowers` 已在主仓库 `.local/acceptance-archives/2026-10-14-m42/` 分别打包为 readiness、qa、qa-repair1 三个 tar，逐文件核验。M42/M41 已合入的本地与远端 codex 分支已删除；M41 旧 workspace clean detached 保留，两个历史 QA worktree 仍保留。三个本轮合成且无使用进程的 DARWIN 临时目录已删除。此为所列对象的收口记录，不表示全机所有临时目录均已清理；本次文档编辑不执行任何删除。
 
 ## 覆盖关系
 

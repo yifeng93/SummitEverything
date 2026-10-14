@@ -1,8 +1,8 @@
 # 独立验收矩阵
 
-本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。M4.2 Package A fixed `419bb865b334389d1efd0f4a1a855cd0d5324d28` 经 fresh QA 与 Sol 判定**适用工作包 A 离线技术场景 PASS**；用户已于 2026-10-14 批准离线正式收口与合入 main，PR、远端 CI、merge 尚未发生。范围和证据见 [M4.2 QA](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。这些均不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。C01–C31 及真实门要求不变。
+本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。M4.2 Package A fixed `419bb865b334389d1efd0f4a1a855cd0d5324d28` 经 fresh QA 与 Sol 判定**适用工作包 A 离线技术场景 PASS**；用户已于 2026-10-14 批准离线正式收口与合入 main；PR #18 于 2026-10-14 合并，run 38550700081 全步骤成功（该 workflow 显示名沿用 M4.1，但适用于本 PR）。当前 main 产品/tests/lock 树与 fixed `419bb86` 一致。范围和证据见 [M4.2 QA](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。这些均不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。C01–C31 及真实门要求不变。
 
-完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。本次 QA 结论仅覆盖 QA 报告中实际执行的离线/API/Mock/packaged UI 场景，不代表整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain 生命周期、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。M4.2 未 push，未运行远端 CI；PROGRESS 中远端离线 CI success 只属于 M4.1 历史。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
+完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。本次 QA 结论仅覆盖 QA 报告中实际执行的离线/API/Mock/packaged UI 场景，不代表整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain 生命周期、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。M4.2 PR #18 已合入且远端离线 CI 通过；M4.1 的远端 CI success 是独立历史。完整合并/CI 身份与证据见 [M4.2 closeout](reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
 
 ## 验收准备
 

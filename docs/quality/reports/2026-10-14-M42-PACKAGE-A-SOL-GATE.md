@@ -16,7 +16,7 @@ Sol 对固定产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 的独�
 | shared planner C19 反例及自动检查 | PASS | C19 topic 41 与检索 4 个定向用例；Python 513、Web 65、Swift 5；lint/type/static/schema/lock/build exits 0，2 条既有 React lint warnings 保留 |
 | 最终候选包身份 | PASS（包校验） | source SHA 匹配、dirty=false；156-file App manifest SHA `9bb4d2c6e511e47812db8cca6e1af56d4dd248e1ca177a92525e1f7271c8c7f0`；DMG SHA `2e176a2d27f13821f2f82768966719408780c0ed963ee9d9e4413b75ff16f14a`；复制/只读挂载 hash、codesign strict 和 `hdiutil verify` exit 0 |
 | Gatekeeper assessment | 观察到拒绝 | `spctl --assess --type execute --verbose=2` exit 3 / ad-hoc rejected；没有绕过安全设置。Corrected-run LaunchServices 可交互不等于正式签名、公证或用户安装 |
-| M4.2 远端离线 CI | NOT_RUN | M4.2 未 push、未执行远端 CI；PROGRESS 所列两次 success 仅为 M4.1 历史 |
+| M4.2 远端离线 CI | PASS（CI run） | PR #18 head `0e8fc4633d4b1409fb7da0354d4474a4faeef430` 对应 run [38550700081](https://github.com/yifeng93/SummitEverything/actions/runs/38550700081)，所有步骤 success；workflow 显示名沿用 M4.1，但该 run 针对本 PR。main 产品/tests/lock 树与 fixed `419bb86` 相同。
 
 ## 证据限定
 
@@ -28,11 +28,11 @@ P1 一个错误 assertion 的完整 raw 留存；另一个临时 assertion 失�
 
 ## 当前决议和下一步授权边界
 
-用户已于 2026-10-14 明确批准 M4.2 Package A 离线正式收口与合入 main。该授权不代表 PR、远端 CI 或 merge 已发生；Sol 将先按仓库流程核验固定产品 SHA、文档状态、PR 检查与分支保护规则，再完成整合。当前尚无本轮 PR、push、远端 CI 或 merge，main 基线未改变。
+用户已于 2026-10-14 明确批准 M4.2 Package A 离线正式收口与合入 main。PR #18 已于 2026-10-14T10:42:19Z 合并，PR head `0e8fc4633d4b1409fb7da0354d4474a4faeef430`；远端 CI run 38550700081 全步骤成功。工作流显示名沿用 M4.1，但该运行针对 PR #18。main 的产品/tests/lock 树与 fixed `419bb86` 一致。该合入不扩大真实材料、服务、Keychain、安装或发布授权；详见 [M4.2 offline closeout](2026-10-14-M42-OFFLINE-CLOSEOUT.md)。
 
 后续工作包 B 先等待用户逐一指定四份 Markdown 的**完整路径**，并单独明确授权只读事实核对/grillme；读取不等于批准、入库或对外发送。只有四份材料整体得到用户明确批准后，才可初始化正式材料工作库。
 
-模型选择仍待用户确认。DeepSeek Flash 与 Qwen 3.7 embedding/rerank 只是候选；实际模型动作前要由用户选定模型、实际材料/问题、请求次数上限与费用上限；先核对既有有限 smoke 次数累计，不因新 profile/workspace 清零；执行当日再次核实官方单价、usage 和费用范围。API key 只可通过应用 Settings 本机安全密钥入口录入，绝不在聊天中提供。真实 Keychain 生命周期需另行明确授权新的命名空间；不得迁移或读取旧钥匙串项。
+用户已指定首次 Real 配置目标为 DeepSeek Flash 与 Qwen 3.7 embedding/rerank（DeepSeek 与 DashScope 两把 key，DashScope key 共用于 embedding/rerank）；真实账户可用性仍 UNVERIFIED。任何实际模型动作前，用户仍须确认本次材料/问题、请求次数上限与费用上限；先核对既有有限 smoke 次数累计，不因新 profile/workspace 清零；执行当日再次核实官方单价、usage 和费用范围。API key 只可通过应用 Settings 本机安全密钥入口录入，绝不在聊天中提供。真实 Keychain 生命周期需另行明确授权新的命名空间；不得迁移或读取旧钥匙串项。
 
 Feishu 只读准备必须先由用户确认搜索词、选中结果、日期区间和时区，以及只查看任务第一页的范围；真实任务写仍保持 disabled，任何未来动作都需单独批准。用户尚需完成产品规定的 12 步并明确批准五个实际工作日验收之后，才能开始该现场阶段。
 
