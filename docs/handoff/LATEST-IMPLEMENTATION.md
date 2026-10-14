@@ -1,5 +1,18 @@
 # 最新实现交接
 
+## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `e4f15cd`）
+
+用户在 2026-10-14 要求按 SummitWorkbench 的配置方式重做首次配置，并明确「Base URL、callback、Feishu App ID 这些非秘密值不要再让我填，只输入密钥」。决议与边界见 [ADR 0010](../decisions/0010-first-use-configuration-ux.md)。
+
+- 设置页改为三张卡 + 状态徽章 + 「高级与自定义」；飞书徽章来自真实本地状态接口，只有凭据确实读不出来才显示「需重新授权」。
+- 新增 5 步首次配置向导（模型与地址 → 密钥 → 检查连接 → 飞书 → 完成），每步可跳过；密钥只在组件内存，不写任何持久化；向导导航零 provider 请求；连接检查保持「显式点击 + 本次范围确认」，沿用每项 1 次、跨运行累计的合成检查。
+- 非秘密接入值由 Git 忽略的 `.local/first-use/defaults.json` 在构建时注入包内 `Resources/first-use-defaults.json`；运行时只认 `SUMMIT_FIRST_USE_DEFAULTS` 与包内资源，无仓库隐式回退；secret 形态键名或未知键一律 fail closed。百炼地址改用官方推荐的业务空间专属域名。
+- 保存只记录用户显式覆盖：与注入默认值相同的值不落盘，因此未覆盖过的 profile 会跟随后续构建的默认值；显式改过的值保持固定。
+
+自动检查（Sol 本机执行）：guarded Python **558 passed**、Web **90 passed**、ruff/format/mypy/lock exit 0、OpenAPI 与 tracked 文件逐字节一致、`npm run build` 成功。打包 `scripts/release-macos.sh` exit 0（DMG CRC VALID），`smoke_packaged_app.py` PASS，另写的包内注入端到端验证 **23/23**（注入生效、保存不固化、换默认值跟随、secret 形态键启动失败）。候选位于 `.local/internal-builds/settings-ux-e4f15cd/`，DMG SHA-256 `ce79a8c355c89e420606e3882b918b6dd9c993009b3df633bc25c52df5a0d68c`，`dirty=false`。完整证据与未验证边界见 [DEV 报告](../quality/reports/2026-10-14-SETTINGS-UX-DEV.md)。
+
+未测边界：真实 provider/飞书/OAuth/Keychain 生命周期/真实材料/账单与质量/正式安装/公证/Gatekeeper/五日/双机/发布全部 **NOT_RUN**；runtime 模型元数据 **UNVERIFIED**；新界面未做浏览器或真机视觉复核。另有一处已知残留：在本功能之前保存过的旧 profile 里，注入字段可能已被固化为当时的公共端点，需要用户在高级设置清空该字段一次才会跟随新默认值。独立 QA 尚未对 `e4f15cd` 出结论。
+
 ## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，已获离线收口/合入批准
 
 初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`；独立 fresh QA 完成，Sol 判适用工作包 A 离线技术场景 **PASS**，未发现新产品缺陷。它不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。用户于 2026-10-14 批准工作包 A 离线正式收口与合入 main。PR #18 已于 2026-10-14T10:42:19Z 合并，head `0e8fc4633d4b1409fb7da0354d4474a4faeef430`；远端 run [38550700081](https://github.com/yifeng93/SummitEverything/actions/runs/38550700081) 全步骤成功。该 workflow 显示名沿用 M4.1，但本次运行针对 PR #18。当前 main 产品/tests/lock 树与 fixed `419bb86` 相同；本次 closeout 文档提交不改变受测 SHA。完整关系见 [closeout](../quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。
