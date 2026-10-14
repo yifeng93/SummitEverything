@@ -1,6 +1,6 @@
 # 独立验收矩阵
 
-本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。M4.2 Package A fixed `419bb865b334389d1efd0f4a1a855cd0d5324d28` 经 fresh QA 与 Sol 判定**适用工作包 A 离线技术场景 PASS**；离线正式收口/合并仍待用户批准。范围和证据见 [M4.2 QA](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。这些均不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。C01–C31 及真实门要求不变。
+本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。M4.2 Package A fixed `419bb865b334389d1efd0f4a1a855cd0d5324d28` 经 fresh QA 与 Sol 判定**适用工作包 A 离线技术场景 PASS**；用户已于 2026-10-14 批准离线正式收口与合入 main，PR、远端 CI、merge 尚未发生。范围和证据见 [M4.2 QA](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。这些均不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。C01–C31 及真实门要求不变。
 
 完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。本次 QA 结论仅覆盖 QA 报告中实际执行的离线/API/Mock/packaged UI 场景，不代表整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain 生命周期、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。M4.2 未 push，未运行远端 CI；PROGRESS 中远端离线 CI success 只属于 M4.1 历史。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
 
@@ -109,7 +109,7 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 ## 阶段 B / C 追加门（历史复演范围与仍适用的真实验收标准）
 
-本节是 Stage B 旧固定源码的历史复验记录，不替换 C01–C31、不降低原 MUST。以下 B03/B04 的服务端门控描述仅适用于对应历史固定 SHA，不能作为当前 HEAD 的行为说明。当前 M4.2 包 A 一次性计划、固定 `419bb86` 自测候选与独立 QA 交接见 [DEV 报告](reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)；fresh QA 正待 Sol 执行，真实/OS/交付门仍 NOT_RUN。DEV 检查不能覆盖这些门。
+本节是 Stage B 旧固定源码的历史复验记录，不替换 C01–C31、不降低原 MUST。以下 B03/B04 的服务端门控描述仅适用于对应历史固定 SHA，不能作为当前 HEAD 的行为说明。当前 M4.2 工作包 A 固定 `419bb86` 的独立 fresh QA 已完成，其适用离线/API/Mock/packaged UI 列项及 NOT_RUN/UNVERIFIED 限制见 [QA 报告](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) 与 [Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。真实/OS/交付门仍 NOT_RUN；DEV 检查不能覆盖这些门。
 
 | ID | 阶段 / 当前结果 | 可观察、可复验的退出标准 |
 |---|---|---|

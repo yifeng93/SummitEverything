@@ -1,8 +1,8 @@
 # 最新实现交接
 
-## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，正式收口待用户批准
+## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，已获离线收口/合入批准
 
-初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`；独立 fresh QA 完成，Sol 判适用工作包 A 离线技术场景 **PASS**，未发现新产品缺陷。它不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。重要离线正式收口和 main 合并仍需用户批准；当前没有 PR、push、merge，main 基线保持不变。
+初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`；独立 fresh QA 完成，Sol 判适用工作包 A 离线技术场景 **PASS**，未发现新产品缺陷。它不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。用户已于 2026-10-14 批准工作包 A 离线正式收口和合入 main；PR、远端 CI、merge 尚未发生，Sol 将先依仓库检查与保护规则办理，当前 main 基线保持不变。
 
 `4c6b0bd` 修复 P1 unknown plan GET 与 P2 planner 完整问句证据，并实现规格已确认的批量文件/文件夹输入及 Journal Assist；`419bb86` 最小修复有效文件与零字节混选静默无反馈，保留严格整批拒绝、为可信 NSOpenPanel 确认选择显示通用说明、主动 Cancel 无提示。自动检查：guarded Python 513、Web 65、Swift 5；静态/type/lock/build/schema检查 exit 0；React lint 仍有 2 条 warnings。`spctl` 对 ad-hoc 包实际 exit 3/rejected，未绕过 Gatekeeper。候选、摘要、Developer 观察见 [DEV 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
 

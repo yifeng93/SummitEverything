@@ -4,7 +4,9 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M4.2 工作包 A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已通过独立 fresh QA，Sol 判定适用 Package A 离线技术场景 PASS；不代表全 M4.2/C25/Stage C/产品最终 PASS。重要离线正式收口与 main 合并仍待用户批准，本轮没有创建 PR、push 或 merge。真实用户材料、provider/Feishu、Keychain、正式安装/公证、五日/双机与 release 继续 NOT_RUN。见[QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[QA evidence archive](docs/quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)与[修复轮 1 DEV handoff](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
+M4.2 工作包 A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已通过独立 fresh QA，Sol 判定适用 Package A 离线技术场景 PASS；不代表全 M4.2/C25/Stage C/产品最终 PASS。用户已于 2026-10-14 批准工作包 A 离线正式收口与合入 main；PR、远端 CI、merge 尚未发生，后续由 Sol 按仓库检查与保护规则办理。真实用户材料、provider/Feishu、Keychain、正式安装/公证、五日/双机与 release 继续 NOT_RUN。见[QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[QA evidence archive](docs/quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)与[修复轮 1 DEV handoff](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
+
+首次日常使用预期由用户在本机配置所选模型 API key 并点击飞书授权；实际必填字段、可选模型与账户 scope 尚待 Explorer 只读核对设置及授权流程。此预期不是 OAuth、Keychain 或真实服务通过的证据；密钥不进入仓库、安装包或聊天。四份真实业务材料、入库、付费调用和 Feishu 实际数据操作仍需各自明确授权。
 
 M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；该历史结论不适用于 M4.2，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
 
@@ -41,7 +43,7 @@ swift test --package-path native
 
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
-这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Package A 固定 SHA 的独立 QA 和 Sol 适用离线技术门结论见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。正式收口待用户批准；M4.2 未 push、未运行远端 CI。
+这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Package A 固定 SHA 的独立 QA 和 Sol 适用离线技术门结论见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。用户已批准工作包 A 离线正式收口与合入；PR、远端 CI 和 merge 仍待 Sol 依仓库规则办理。
 
 ### 构建 Internal 候选
 
@@ -92,7 +94,7 @@ uv run mypy src
 cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
 ~~~
 
-本轮适用离线技术门状态、固定 `419bb86` 候选和限制见 [Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md) 与 [M4.2 readiness 授权卡](docs/handoff/M42-PACKAGE-A-READINESS.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain 生命周期、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。M4.2 未 push、未运行远端 CI；远端 success 仅为 M4.1 历史，不构成本 SHA 的 CI 结果。
+本轮适用离线技术门状态、固定 `419bb86` 候选和限制见 [Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md) 与 [M4.2 readiness 授权卡](docs/handoff/M42-PACKAGE-A-READINESS.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain 生命周期、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。M4.2 尚未 push、未运行远端 CI、未 merge；远端 success 仅为 M4.1 历史，不构成本 SHA 的 CI 结果。
 
 M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；已有真实 adapter、凭据设置 UI 与 fail-closed Keychain 接口；此段 Fake 复演不能证明真实账户或 OS Keychain 通过。
 
