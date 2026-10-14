@@ -89,3 +89,28 @@ Sol 复核时补充的一处：实现者原本让「未知异常」的详情**�
 **候选身份（第二轮）**：App `.local/internal-builds/internal-19078de/SummitEverything Internal.app`；DMG `SummitEverything-Internal-19078de.dmg`，SHA-256 `cb6af3781bcf948eab496ca208fdb8321368b89f9ae6b5ad89f8bf9a457118d1`；`source_sha=19078dedb62655c4090051ee5e2159068ef5f607`、`dirty=false`、`build_id=20261014T154135Z-0d21a90f194c`。
 
 构建说明：构建时主工作树因**另一并行工作流的未提交文档**（`AGENTS.md`、`README.md`、`docs/decisions/0011`、两份前端规格）而是 dirty，而构建脚本拒绝 dirty 树。为保持候选身份干净（`dirty=false`），本轮改在**该提交的独立干净 worktree** 中构建（`web/node_modules` 以 symlink 复用，`.local/first-use/defaults.json` 复制进该 worktree），未触碰那份在制品。
+
+## 9. 第三轮：诊断事件不再因清洗而被丢弃（`f40bc39`）
+
+独立 QA 对 `19078de` 判 1–10 项全 PASS，但发现同类残留 **D1**：`local/event_log.py` 的 reason 校验器拒绝任何含字面 `sk-` 或超过 200 字符的文本，而调用方 `except (ValueError, OSError): pass` → **整条诊断事件被静默丢弃**（`assistant_failed` / `index_update_failed` 连文件都不生成）。触发条件都是常态：脱敏产物 `sk-***` 仍含 `sk-`；拼出的 reason 常 >200（300 字符 message + code + request_id 上限）。
+
+修复：
+
+- 判据换成「是否仍是**未掩码**凭据形状 `sk-[A-Za-z0-9_-]{8,}`」——已掩码的 `sk-***` 不再被拒；
+- `clean_reason()` 由「拒绝」改为「清洗」：折叠单行 → 掩码残存凭据 → **截断到 200**；仅非字符串/清洗后为空被拒；
+- 调用方新增 `record_diagnostic()`：reason 构造失败时**回退为最小安全值仍记录事件**，`except ValueError: pass` 彻底移除（仅磁盘 `OSError` 继续容忍）；
+- 实现者按 Sol 要求**替换了那条「期望丢弃」的旧测试**（原断言换行/含 `sk-`/超长都必须抛错，其期望本身就是 D1 的成因），新期望是「清洗后仍必须写出事件」，并且新增专门断言「未掩码凭据绝不出现在文件里」，安全约束未放宽。
+
+验证：**656 passed / exit 0**（第三轮净增 7 项），ruff/format/mypy/lock 全 0；打包 exit 0、smoke PASS、包内端到端 29/29。独立 QA 对 `f40bc39` 的复核结论待补。
+
+**候选身份（第三轮）**：App `.local/internal-builds/internal-f40bc39/SummitEverything Internal.app`；DMG `SummitEverything-Internal-f40bc39.dmg`，SHA-256 `a856a2eb70607f30078197946f4aba67c9a7ad367d639c187c101230172370ce`；`source_sha=f40bc39445258d954166143e094156c788be36e1`、`dirty=false`、`build_id=20261014T155526Z-0d21a90f194c`。
+
+## 10. 三个候选的关系（供选择安装）
+
+| SHA | 内容 | DMG SHA-256 |
+|---|---|---|
+| `a301b1b` | 首轮：payload 容错、provider 错误浮现（embedding/rerank 502）、问答原因可见、密钥形状校验 | `1a03d997…4803` |
+| `19078de` | 第二轮：内容层 200-不可用 → 502、assist/索引失败可见、request-id、空白答案、状态码统一 | `cb6af378…18d1` |
+| `f40bc39` | 第三轮：诊断事件不再因清洗被丢弃 | `a856a2eb…70ce` |
+
+三轮都基于同一分支依次叠加；**最新最全的是 `f40bc39`**。三者对「用户提问能否得到回答」这条主路径等价（第一轮已修好），差别在相邻路径与留证完整度。
