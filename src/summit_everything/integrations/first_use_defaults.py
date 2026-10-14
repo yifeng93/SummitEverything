@@ -132,9 +132,17 @@ class FirstUseDefaults:
             else:
                 section_value = {}
                 merged[section] = section_value
-            current = section_value.get(field_name)
-            if isinstance(current, str) and current.strip():
-                continue
+            if field_name in section_value:
+                current = section_value[field_name]
+                if isinstance(current, str):
+                    if current.strip():
+                        # An explicit non-empty value always wins.
+                        continue
+                else:
+                    # Present but not a string: a corrupted field. Injection must
+                    # never repair it, otherwise a profile that fails closed
+                    # without injection would be silently accepted with it.
+                    continue
             section_value[field_name] = value
         return merged
 

@@ -278,6 +278,42 @@ def test_a_corrupted_section_still_fails_closed(tmp_path, with_defaults):
         SettingsStore(settings_path, defaults=defaults).read()
 
 
+CORRUPTED_FIELD_VALUES = [5, 1.5, True, None, [EMBEDDING_BASE_URL], {"value": EMBEDDING_BASE_URL}]
+
+
+@pytest.mark.parametrize("section,field", [("feishu", "app_id"), ("embedding", "base_url")])
+@pytest.mark.parametrize("corrupted", CORRUPTED_FIELD_VALUES)
+@pytest.mark.parametrize("with_defaults", [False, True])
+def test_a_corrupted_field_still_fails_closed(tmp_path, section, field, corrupted, with_defaults):
+    """Field-level corruption must not be repaired by injection either.
+
+    Independent QA found this gap after the section-level fix: a present but
+    non-string field used to be overwritten by the injected default, so the same
+    profile failed closed without injection and was silently accepted with it.
+    """
+    settings_path = tmp_path / "settings.json"
+    settings_path.write_text(json.dumps({section: {field: corrupted}}), encoding="utf-8")
+    defaults = (
+        FirstUseDefaults(
+            values={"feishu_app_id": APP_ID, "embedding_base_url": EMBEDDING_BASE_URL},
+            source=tmp_path / "d.json",
+        )
+        if with_defaults
+        else None
+    )
+    with pytest.raises(SettingsError):
+        SettingsStore(settings_path, defaults=defaults).read()
+
+
+@pytest.mark.parametrize("corrupted", CORRUPTED_FIELD_VALUES)
+def test_a_corrupted_field_survives_injection_unchanged(tmp_path, corrupted):
+    defaults = FirstUseDefaults(
+        values={"embedding_base_url": EMBEDDING_BASE_URL}, source=tmp_path / "defaults.json"
+    )
+    applied = defaults.apply({"embedding": {"base_url": corrupted}})
+    assert applied["embedding"]["base_url"] == corrupted
+
+
 # --- fail closed on key policy --------------------------------------------
 
 
