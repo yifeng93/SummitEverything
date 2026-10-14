@@ -40,7 +40,7 @@
 
 `POST /acceptance-plans` 只在本机生成 10 分钟有效的单次计划，不调用 provider。输入 `operation` 和具体 `scope`；响应同时返回可读范围与 `plan`（范围/配置 SHA-256、有限 `request_limit`、状态和时间）。客户端必须展示该范围并由用户显式调用 `POST /acceptance-plans/{plan_id}/confirm`，提交预览时返回的 `scope_sha256` 和 `scope`。设置、模型内容和页面数据不能自行确认。
 
-真实整理、索引、问答、飞书只读与导入执行路由要求相应已确认 `acceptance_plan_id`，并在外发前重核同一内容/页面版本、profile/workspace、配置与飞书授权代次。执行预留有限 HTTP request 数；索引上界按最多 20 条输入一批，问答最多 embedding/rerank/answer 各一次，整理最多一次，飞书导入按保守最坏上界计算。超时或进程中断的预留不可释放、不可重发；状态 `unknown` 表示结果未知而非明确失败。相同 Feishu operation_id 与 query request_id 的本地 replay 不重复 provider 调用或消耗新的计划。
+真实整理、索引、问答、日志 AI 辅助、飞书只读与导入执行路由要求相应已确认 `acceptance_plan_id`，并在外发前重核同一内容/页面版本、profile/workspace、配置与飞书授权代次。执行预留有限 HTTP request 数；索引上界按最多 20 条输入一批，问答最多 embedding/rerank/answer 各一次，整理和日志 AI 辅助最多一次，飞书导入按保守最坏上界计算。超时或进程中断的预留不可释放、不可重发；状态 `unknown` 表示结果未知而非明确失败。相同 Feishu operation_id 与 query request_id 的本地 replay 不重复 provider 调用或消耗新的计划。
 
 `GET /acceptance-plans/{plan_id}` 仅返回本地状态；成功后 `provider_usage` 只包含 provider 明确回报的 request id 与 token 计数，未回报的字段为 null / `usage_reported=false`。字段缺失不当作 0，亦不表示实际账单；真实账单需另在 provider 侧核对。损坏/容量用尽时本地拒绝继续授权。`DELETE /acceptance-plans/{plan_id}` 撤销尚未执行计划，不影响已经预留的调用。全程只接受本机 Bearer / allowlisted Origin。
 
@@ -58,10 +58,10 @@
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
 | POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |
 | POST /journal/{kind} | kind:log/thought，正文、可选关联、confirmation_id、operation_id；页面 ID 稳定派生于工作库与操作意图，复用 PageWriter，重试同结果、异正文 409 |
-| POST /journal/assist | 用户明确请求后返回分离的可编辑建议；不保存、不批准；失败不影响已保存页面 |
+| POST /journal/assist | Fake 模式直接返回分离的可编辑建议；Real 模式须先预览并确认 `model.journal_assist`，提交预览绑定的正文与 `acceptance_plan_id` 后最多调用一次；不保存、不批准；失败或未知不自动重发 |
 | POST /projects/{id}/overview/confirmations | 显式确认新建或更新稳定 overview_id 页面；更新必须提交当前 expected_content_sha256，过期版本 409；独立于项目进度 Action |
 | POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型（已实现） |
-| POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节（已实现，20 MB 上限） |
+| POST /intake/files | multipart 单个 txt/md 文件及 operation_id → 来源与 item；保存原字节，单文件上限 20 MB。UI 可多选文件或明确选择文件夹后顺序调用本路由；每批最多 100 项 / 100 MB，单项状态可见，仅失败项以原 operation_id 重试，不触发模型 |
 | GET /intake/items | 从 active 与完成摘要读取状态；无活跃 lease 且无可恢复 checkpoint 的旧 running attempt 标 unknown，不触发 provider 重发。 |
 | POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目、可选 reprocess=true → IntakeJob；FakeLLM 生成稿与 action 候选（已实现）。处理中/待审拒绝新作业；completed/failed/cancelled/unknown 均要求用户明确 reprocess，且用新的 operation_id。相同 operation_id / 相同请求体返回现有 job，不重复调用 provider；进行中的同一意图返回 HTTP 202 和指向该 job 的 Location。unknown 的显式 reprocess 是新意图，可能再次调用模型。 |
 | GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消。成功 checkpoint 只恢复本地稿件/候选，CAS 防止迟到输出覆盖 cancelled/unknown/终态；同步 provider 调用不能被本地强制中断。 |

@@ -7,6 +7,8 @@
 - 真实模型整理、索引、问答和 Feishu 只读/导入使用本机一次性计划：先展示当前发送范围，由用户独立确认，再执行一次。计划过期、被取消或与配置/来源/页面版本/授权代次不一致时拒绝外发。
 - 请求数是有限 HTTP 请求上限，不是金额上限或“模型操作”数量。一次问答上限为 embedding、rerank、answer 各一次；索引上限按每批最多 20 个文本段计算；整理最多一次；飞书导入按保守失败回退上限计算。预留后遇到超时或进程中断保留为 unknown，不能自动重发。
 - Provider usage 仅记录响应实际给出的安全 request id 与 token 计数。缺失字段为未知/null；不从调用数推算 token 或用户账单。账单需在 provider 控制台核对。
+- 批量导入已实现为单文件接口的顺序复用：选择多个文件或明确选择一个/多个文件夹，最多 100 项 / 100 MB、单个不超过 20 MB，仅 TXT/Markdown；取消选择不写入。失败项单独显示并保留同一 operation_id 重试。隐藏路径、package 内容和 symlink 不作为来源；native 目录遍历上限 2,000 项，无法完整读取时整批拒绝。候选 WKWebView 实际目录选择复演仍待完成，QA 也须独立验证。
+- Real 模式日志 AI 辅助已接入一次性 plan：正文及输出上限在预览中可读，确认后只组织一次，正文/设置变化、取消、超时和 ledger 状态阻止重发。建议仍为编辑态；写入正式日志仍由独立保存确认触发。Fake 流程保持直接建议。
 - 本轮实现及测试仅使用合成文本、隔离 profile/workspace、Fake/Mock HTTP。不得把离线 adapter 成功写成真实服务验证。
 
 ## 真实使用前需逐项独立准备
@@ -37,9 +39,8 @@ Model Studio workspace endpoint 应由用户显式配置。Qwen embedding 使用
 
 ## 当前已知产品差距
 
-- Today 原生选择器一次只选一个文件；已确认的批量文件/文件夹导入需求仍待实现，不得宣称包 A 支持。
-- 真实模式 journal assist 尚无一次性计划及相应发送/费用回执闭环；本轮不把它描述为已受控的真实模型动作。
-- 真实 Feishu OAuth / 账号 scope、provider 质量与账单、系统 Keychain 生命周期、实际用户安装、五日体验、双机、公证与发布均 NOT_RUN。Runtime 实际模型元数据 UNVERIFIED。
+- 真实 WKWebView 文件面板是否按选择返回目录内嵌套文件的最终 UI 复演尚待候选包完成；当前仅 Native 目录筛选单元测试与 React 合成测试通过，不能用它们替代实际面板证据。
+- Provider 真实内容质量、端到端账单，Feishu OAuth / 账号 scope、系统 Keychain 生命周期、真实用户安装、五日体验、双机、公证与发布仍 NOT_RUN。Runtime 实际模型元数据 UNVERIFIED。
 
 ## 五个实际工作日记录
 

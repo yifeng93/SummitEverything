@@ -1,0 +1,47 @@
+app=/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything Internal fe47339.app
+dmg=/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything-Internal-fe47339.dmg
+0b1404971711b0823c2a236882bb619fe891612704bf9d02de32050c03c16f5f  /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything-Internal-fe47339.dmg
+{
+  "app_version" => "0.1.0"
+  "build_id" => "20261013T233919Z-2aab5e81a62d"
+  "dependencies_sha256" => "2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f"
+  "dirty" => false
+  "frontend_sha256" => "2aab5e81a62dbabd517c132014df2cf86f7e157718ed1f2c8f8981ba41f66627"
+  "source_sha" => "fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b"
+}
+/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything Internal fe47339.app: valid on disk
+/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything Internal fe47339.app: satisfies its Designated Requirement
+codesign_exit=0
+/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything Internal fe47339.app: rejected
+spctl_exit=3
+正在检查“Protective Master Boot Record（MBR：0）”的校验和…
+Protective Master Boot Record（MBR：0）：已验证CRC32 $C4578667
+正在检查“GPT Header（Primary GPT Header：1）”的校验和…
+    GPT Header（Primary GPT Header：1）：已验证CRC32 $03D1ED79
+正在检查“GPT Partition Data（Primary GPT Table：2）”的校验和…
+GPT Partition Data（Primary GPT Table：已验证CRC32 $5A0CE5BE
+正在检查“（Apple_Free：3）”的校验和…
+                      （Apple_Free：3）：已验证CRC32 $00000000
+正在检查“disk image（Apple_APFS：4）”的校验和…
+            disk image（Apple_APFS：4）：已验证CRC32 $5C5FE670
+正在检查“（Apple_Free：5）”的校验和…
+                      （Apple_Free：5）：已验证CRC32 $00000000
+正在检查“GPT Partition Data（Backup GPT Table：6）”的校验和…
+GPT Partition Data（Backup GPT Table：：已验证CRC32 $5A0CE5BE
+正在检查“GPT Header（Backup GPT Header：7）”的校验和…
+     GPT Header（Backup GPT Header：7）：已验证CRC32 $104F3F58
+已验证CRC32 $ACBE142E
+hdiutil: verify: checksum of "/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything-Internal-fe47339.dmg" is VALID
+hdiutil_verify_exit=0
+预计CRC32 $ACBE142E
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
+/dev/disk7          	GUID_partition_scheme          	
+/dev/disk7s1        	Apple_APFS                     	
+/dev/disk8          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk8s1        	41504653-0000-11AA-AA11-0030654	/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/se-m42-package-a-qa.20261014080102/mnt
+attach_exit=0
+app_files=156 dmg_app_files=156 app_tree_equals_dmg=True
+tree_compare_exit=0
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+"disk7" ejected.
+detach_exit=0

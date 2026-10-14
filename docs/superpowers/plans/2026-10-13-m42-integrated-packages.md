@@ -55,6 +55,16 @@
 - [ ] DEV 交接：固定 SHA、差距清单与已补项、逐命令退出码、实际 UI/候选摘要、已知限制、所有真实 NOT_RUN。更新 README/PROGRESS/LATEST 的正文，历史证据原样保留。
 - [ ] Sol 检查 diff 与交接，fresh QA 独立固定 SHA checkout 集中验收（不改产品或 tracked tests）；Sol 核日志/manifest/退出码与 QA 观察并判门。包不自动合并 main。
 
+### 修复轮 1 的已确认 v1 完整范围补充
+
+初始 QA 固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL 后，Sol 在固定新产品 SHA 前追加了产品规格中已确认但此前漏实现的批量导入与真实日志 AI 辅助。这是工作包 A 原范围补齐，需与 P1/P2 一起由一次 fresh QA 验收。
+
+- [ ] 批量文件选择及目录选择复用单文件 `/intake/files` writer；顺序处理，最多 100 个 / 100 MB、20 MB 每文件，TXT/Markdown；显示路径、跳过项、逐项结果。部分失败不阻断其余项，只有失败项可用原 operation_id 重试；新选择重新生成意图，不能按同名同大小静默重放旧成功项。取消选择不写库、不调用模型。
+- [ ] Native picker 只接受可信本机主 frame/origin；文件夹只从用户显式选择的根收集，排除隐藏和 package 内容、不跟随 symlink，限制遍历 2,000 项、100 文件 / 100 MB；读取不完整或超界时整批拒绝。浏览器 FileList 的相对路径过滤隐藏 / package 路径。需实际 WKWebView 复演多文件与目录选择，不能仅以单元测试替代。
+- [ ] 日志 AI 辅助复用一次性 plan ledger，预览实际编辑正文、服务与输出上限；确认后最多一次真实 LLM organize，正文/配置变化、未确认、取消、重复和过期不可外发。失败/unknown 消耗预留且不自动重发；usage 只记安全计数与 request id，账本失败也关闭 client。建议只返回编辑态，不保存；保存仍需独立用户动作，Fake 浏览与保存行为保持原样。
+- [ ] UI 在日志计划待确认时禁用保存、再次辅助、采用/清除旧建议或正文编辑；取消调用服务端 DELETE。状态枚举转为简体中文业务提示。
+- [ ] 在 API-v1、当前 README、计划/进展与 DEV 证据说明以上契约、合成用例与真实 NOT_RUN；不改变 `domain/content.py`、真实 task 写仍禁用，真实密钥/provider/飞书/材料仍需单独 opt-in。
+
 ## Task 2: 工作包 B（真实授权后执行）
 
 - [ ] 集中请用户授权四份样板材料的定位/读取，材料内容批次选择题 grillme；黄金依据与未决事项用户确认。最终整体批准后才初始化。

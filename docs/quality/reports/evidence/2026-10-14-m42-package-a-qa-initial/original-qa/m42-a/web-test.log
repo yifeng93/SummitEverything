@@ -1,0 +1,15 @@
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m42-package-a-qa/SummitEverything/web
+
+
+ Test Files  12 passed (12)
+      Tests  61 passed (61)
+   Start at  08:00:21
+   Duration  1.71s (environment 46%, tests 35%, import 11%, transform 8%)
+
+
+exit_code=0

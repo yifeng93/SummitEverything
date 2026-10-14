@@ -4,11 +4,11 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M4.2 工作包 A Developer 已完成，产品源码固定于 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b`，新 clean Internal `.app`/DMG 候选已构建。原生 UI 复演到带离线 guard 的 Settings 和 Fake 合成材料导入；真实 organize/review/index/query UI 闭环尚未复演，独立 QA 待开始。DEV 逐命令日志、候选 manifest、错误启动限制和 QA handoff 见 [M4.2 DEV 报告](docs/quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
+M4.2 工作包 A 初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL；修复轮 1 已提交代码与回归测试（实现提交 `4c6b0bd`），修复包括重启后 unknown 计划查询、共享 planner 的完整问句依据、规格已确认的批量/文件夹导入与 Real 日志 AI 辅助。Developer 完整离线自动检查和 schema 生成检查均 exit 0；clean 修复候选和真实 WKWebView 文件夹/多选 UI 复演仍待完成，fresh QA 尚未开始。以上均不是独立 QA 通过。见[初始 QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-INITIAL.md)、[修复计划](docs/superpowers/plans/2026-10-13-m42-integrated-packages.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
 
 M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；该历史结论不适用于 M4.2，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
 
-M4.2 固定候选 manifest 为 `dirty=false`，开发检查与候选摘要见 DEV 报告。第一次通过 shell 直接启动的 UI 运行丢失 offline guard，设置显示钥匙串可用；其 Keychain 查询次数与 profile 回退均 UNVERIFIED。最终候选由 `open -n` + 新 temporary profile 运行，native/backend 进程均确认 guard 为 `1`、profile-root 匹配；设置明确显示钥匙串不可用。真实账户、材料、模型/Feishu、费用/质量、Keychain 生命周期、实际用户安装、公证、五日、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
+初始 FAIL SHA 对应的候选仅为历史追溯，不能用于新 QA。首次通过 shell 直接启动的 UI 运行丢失 offline guard，设置显示钥匙串可用；其 Keychain 查询次数与 profile 回退均 UNVERIFIED。该 SHA 的后续正确 `open -n` + 临时 profile 复演已确认 native/backend guard 为 `1`、profile-root 匹配，设置明确显示钥匙串不可用。真实账户、材料、模型/Feishu、费用/质量、Keychain 生命周期、实际用户安装、公证、五日、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 
 ## 文档入口
 
@@ -113,7 +113,7 @@ Task v2 的毫秒 timestamp 与全天日期含义见协议矩阵；账号侧规�
 
 ### M2.3 日志、思考与项目概览
 
-侧栏“日志与思考”提供独立日志 / 思考入口；可不关联、仅关联主线或关联主线与项目。保存按钮明确确认并仅写入本机正式页。浏览列表不会调用模型；“AI 辅助建议”只请求 FakeLLM，将可编辑建议留在编辑区，用户可取消或采用，仍需另行点击保存。页面以稳定操作标识防止重试重复写入。
+侧栏“日志与思考”提供独立日志 / 思考入口；可不关联、仅关联主线或关联主线与项目。保存按钮明确确认并仅写入本机正式页。浏览列表不会调用模型；Fake 模式的“AI 辅助建议”使用 FakeLLM，将建议留在编辑区，用户可取消或采用；Real 模式必须先审阅本次完整正文预览并显式确认一次性计划，返回建议仍不保存，写入正式页仍需另行点击保存。页面以稳定操作标识防止重试重复写入。
 
 项目详情可显式创建项目概览并从目录重开；修改要求当前页面版本，冲突保留现有正文。概览保存、日志 / 思考保存与项目进度动作分别处理；保存知识不更改进度。验证命令：
 
