@@ -1,0 +1,15 @@
+Late copied-candidate relaunch after context recovery — transcripted tool outputs
+
+This file is a faithful transcription of the short sanitized outputs returned by the shell tools in this QA conversation. The checker intentionally printed only PID, requested env-key name and Boolean results; it did not print process environments, tokens, or secrets. It was not redirected to a raw logfile at the time, so this is not claimed to be the original command stdout file.
+
+Sanitized checker output:
+pid=66827 key=SUMMIT_INTERNAL_TEST_PROFILE_ROOT offline_guard_1=False profile_root_match=False
+pid=66829 key=SUMMIT_PROFILE_ROOT offline_guard_1=False profile_root_match=False
+
+Path-only association output from lsof and cleanup command:
+pid=66829 exact_candidate_image_match=True
+pid=66829 SIGTERM_sent=true
+pid=66827 exact_candidate_image_match=True
+pid=66827 SIGTERM_sent=true
+
+These PIDs were started by the late CUA app rebind. No product UI input occurred after the failed guard/profile check. The binary paths matched the copied 419bb86 candidate at the QA temp app-parent path; only these two owned processes were signalled. The prior guarded corrected-run PIDs 52780/52782 are separately recorded and are not replaced by this result. Keychain query count and profile fallback remain UNVERIFIED.

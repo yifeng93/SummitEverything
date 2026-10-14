@@ -1,8 +1,8 @@
 # 独立验收矩阵
 
-本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 当前固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。范围与证据见[QA](reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)和[Sol 门](reports/2026-10-13-M41-SOL-GATE.md)。C01–C31 及真实门要求不变，不能由内部包结果宣称整个 M4 通过。
+本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。M4.2 Package A fixed `419bb865b334389d1efd0f4a1a855cd0d5324d28` 经 fresh QA 与 Sol 判定**适用工作包 A 离线技术场景 PASS**；离线正式收口/合并仍待用户批准。范围和证据见 [M4.2 QA](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。这些均不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。C01–C31 及真实门要求不变。
 
-完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。Developer 自测可说明本轮针对 C24/C25/C14 的具体观察，不等同独立 QA PASS 或整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
+完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。本次 QA 结论仅覆盖 QA 报告中实际执行的离线/API/Mock/packaged UI 场景，不代表整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain 生命周期、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。M4.2 未 push，未运行远端 CI；PROGRESS 中远端离线 CI success 只属于 M4.1 历史。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
 
 ## 验收准备
 
@@ -127,7 +127,7 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 ### M4.2 工作包 A 现行实现说明
 
-当前实现提供本机一次性 approval plan：真实模型 organize/index/query 和 Feishu read/import 要先预览确切内容范围、显式确认，再在原业务路由提交 plan id。取消、过期、配置/来源/页面/Feishu 授权代次变化、异 workspace/profile 或未确认均不得外发。每次请求先有限预留；中断状态保留为 unknown 且不能释放/重放。provider usage 只保存响应报告的 request id/token 数；缺字段保持未知，真实账单需在服务商侧人工核对。当前代码仍需对固定 SHA 完成独立 QA，因此本段不是 PASS 结论；旧 B03/B04 描述仅适用于其历史固定 SHA。
+当前实现提供本机一次性 approval plan：真实模型 organize/index/query 和 Feishu read/import 要先预览确切内容范围、显式确认，再在原业务路由提交 plan id。取消、过期、配置/来源/页面/Feishu 授权代次变化、异 workspace/profile 或未确认均不得外发。每次请求先有限预留；中断状态保留为 unknown 且不能释放/重放。provider usage 只保存响应报告的 request id/token 数；缺字段保持未知，真实账单需在服务商侧人工核对。fixed `419bb86` 已通过 fresh QA 与 Sol 适用离线技术门判断；真实范围、Keychain、账单质量和交付门仍按本文件标记 NOT_RUN/UNVERIFIED。本段不替代整行 MUST 验收；旧 B03/B04 描述仅适用于其历史固定 SHA。
 
 ### C28 五个实际工作日记录模板
 

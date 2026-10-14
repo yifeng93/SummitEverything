@@ -9,12 +9,20 @@
 - Provider usage 仅记录响应实际给出的安全 request id 与 token 计数。缺失字段为未知/null；不从调用数推算 token 或用户账单。账单需在 provider 控制台核对。
 - 批量导入已实现为单文件接口的顺序复用：选择多个文件或明确选择一个/多个文件夹，最多 100 项 / 100 MB、单个不超过 20 MB，仅 TXT/Markdown；取消选择不写入。失败项单独显示并保留同一 operation_id 重试。隐藏路径、package 内容和 symlink 不作为来源；native 目录遍历上限 2,000 项，无法完整读取时整批拒绝。Developer 在旧 `bc5018d` 候选实际观察过 WKWebView 目录 FileList；固定 `419bb86` 候选新增验证了混选有效/零字节文件时的提示、取消和有效多选导入。最终验收仍由 fresh QA 在 fixed `419bb86` 独立复验，失败项同 operation_id 的真实 UI retry 仍 NOT_RUN。
 - Real 模式日志 AI 辅助已接入一次性 plan：正文及输出上限在预览中可读，确认后只组织一次，正文/设置变化、取消、超时和 ledger 状态阻止重发。建议仍为编辑态；写入正式日志仍由独立保存确认触发。Fake 流程保持直接建议。
-- 本轮实现及测试仅使用合成文本、隔离 profile/workspace、Fake/Mock HTTP。不得把离线 adapter 成功写成真实服务验证。
+- 本轮受测的自动/API/Mock 与 corrected packaged UI 场景使用合成文本和隔离 profile/workspace；Real provider 只连 MockHTTP。启动隔离限制见 [Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)：较早 UI run 未前置检查，late CUA 启动在输入前被发现 guard/profile 不符并终止。相关 Keychain 查询次数及 profile 回退 **UNVERIFIED**，不能说整个本轮零查询或全程隔离。不得把离线 adapter 成功写成真实服务验证。
+
+## B 阶段授权准备卡
+
+下一步只在用户明确指定 **4 份 Markdown 的完整路径**，并单独授权对这些指定文件做只读事实核对 / grillme 后开始。读取不等于用户批准，不等于初始化正式工作库，也不授权入库或对外发送；只有整组材料得到用户明确批准后，才可初始化正式材料工作库。本轮未读真实材料、真实 profile 或 Keychain。
+
+模型候选为 DeepSeek Flash 与 Qwen 3.7 embedding/rerank，仍需用户选择。任何真实模型动作前，用户需指定模型、实际材料与问题、请求次数上限及费用上限。先核对历史有限 smoke 累计，不随新 profile/workspace 重置；实际执行日重新查官方价格与 usage/账单边界。API key 只能从应用 Settings 的本机安全密钥入口录入，不在聊天中提供。真实 Keychain 生命周期须另行明确授权新命名空间，不读取或迁移旧钥匙串。
+
+Feishu 只读前须由用户确认精确搜索词、选中结果、日期范围及时区，并将读取范围限定为任务第一页。任务写继续 disabled，任何未来启用或写操作都需独立批准。完成产品规定的 12 步，并由用户明确确认开始五个实际工作日验收后，才能启动现场阶段。当前均未获授权。
 
 ## 真实使用前需逐项独立准备
 
 1. 确认选定资料已由用户批准，并在专用、隔离的工作库中是当前正式版本。待审稿、原件、收件箱状态不进入索引依据。
-2. 设置当前服务端 Real 配置及用户明确选择的模型，然后保存 secret 到系统 Keychain。打开设置页和状态页本身不发出 provider 请求。M4.2 候选的 offline guard 会禁用 Keychain；不得用合成凭据或 DEV 参数替代真实用户授权。
+2. 仅在上述单独授权后，使用当前服务端 Real 配置和用户选定模型；secret 通过应用 Settings 本机安全入口保存。打开设置页和状态页本身不发出 provider 请求。offline guard 下 Keychain 被禁用；不得用合成凭据或 DEV 参数替代真实用户授权。
 3. 每次动作预览中检查：实际问题与完整上下文（历史用户问题、角色、已确认记忆）、合格页面标题/版本、待整理来源全文、或 Feishu 精确筛选与选中项。只确认本次范围；发生修改须创建新计划。
 4. 确认后查看本地状态和 provider 账单；unknown 不重试。Feishu 任务创建/编辑/完成因缺少独立结果证明能力仍禁用。
 5. 质量验收必须由用户对实际资料与答案评定。以下是合成 golden 场景模板，不是正式事实或真实样例；用户应按实际页面填写事实依据并裁定答案：
@@ -39,8 +47,8 @@ Model Studio workspace endpoint 应由用户显式配置。Qwen embedding 使用
 
 ## 当前已知产品差距
 
-- 真实 WKWebView 文件面板是否按选择返回目录内嵌套文件的最终 UI 复演尚待候选包完成；当前仅 Native 目录筛选单元测试与 React 合成测试通过，不能用它们替代实际面板证据。
-- Provider 真实内容质量、端到端账单，Feishu OAuth / 账号 scope、系统 Keychain 生命周期、真实用户安装、五日体验、双机、公证与发布仍 NOT_RUN。Runtime 实际模型元数据 UNVERIFIED。
+- fixed `419bb86` corrected packaged UI 与独立 QA 已实际验证多选、混选拒绝提示、取消、目录 FileList 和 Fake Journal 生命周期。部分成功后失败项的真实 UI 同 operation ID retry，以及 Real JournalAssist packaged UI 仍 NOT_RUN；Runtime + MockHTTP 的 API 集成已验，不代表真实 provider。
+- Provider 真实内容质量、端到端账单，Feishu OAuth / 账号 scope、OS Keychain 生命周期、正式用户安装/覆盖、五日体验、双机、公证与发布仍 NOT_RUN。Runtime 实际模型元数据 UNVERIFIED；启动隔离与 Keychain 查询次数限制见上文及 Sol gate。
 
 ## 五个实际工作日记录
 

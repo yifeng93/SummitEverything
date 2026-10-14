@@ -1,0 +1,53 @@
+Building for debugging...
+[Planning deferred tasks]
+[32 / 62]
+[33 / 63] NativeUploadPolicy
+[43 / 100]
+[48 / 100]
+[51 / 100]
+[52 / 100]
+[56 / 100]
+[59 / 100]
+[64 / 100]
+[65 / 100]
+[66 / 100]
+[67 / 100]
+[70 / 100] NativeUploadPolicy
+[81 / 101] SummitEverything-product
+[100 / 138]
+[107 / 138]
+[111 / 138]
+[114 / 138]
+[119 / 139]
+[121 / 139]
+[123 / 139] NativeUploadPolicyTests-product
+[128 / 147]
+[129 / 147]
+[137 / 147] NativeUploadPolicyTests-product
+[139 / 147] NativeUploadPolicyTests-product
+[143 / 147] SummitEverything-product
+[145 / 147] SummitEverything-product
+Build complete! (7.35秒)
+Test Suite 'All tests' started at 2026-10-14 13:26:48.574.
+Test Suite 'NativeUploadPolicyTests.xctest' started at 2026-10-14 13:26:48.575.
+Test Suite 'NativeUploadPolicyTests' started at 2026-10-14 13:26:48.575.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testDirectoryCollectionKeepsOnlyBoundedVisibleTxtAndMarkdownFilesWithoutFollowingLinks]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testDirectoryCollectionKeepsOnlyBoundedVisibleTxtAndMarkdownFilesWithoutFollowingLinks]' passed (0.006 seconds).
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testOpenPanelTypesAreLimitedToTxtAndMarkdown]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testOpenPanelTypesAreLimitedToTxtAndMarkdown]' passed (0.000 seconds).
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testSelectedFilesMatchTxtAndMarkdownAndSelectionCount]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testSelectedFilesMatchTxtAndMarkdownAndSelectionCount]' passed (0.001 seconds).
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testUploadRequiresTrustedMainFrameAndAllowsTrustedDirectoryPickerRequests]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testUploadRequiresTrustedMainFrameAndAllowsTrustedDirectoryPickerRequests]' passed (0.000 seconds).
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testZeroByteInNativeSelectionRejectsBatchWithActionableFeedback]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testZeroByteInNativeSelectionRejectsBatchWithActionableFeedback]' passed (0.001 seconds).
+Test Suite 'NativeUploadPolicyTests' passed at 2026-10-14 13:26:48.583.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+Test Suite 'NativeUploadPolicyTests.xctest' passed at 2026-10-14 13:26:48.583.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+Test Suite 'All tests' passed at 2026-10-14 13:26:48.583.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.008 (0.010) seconds
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

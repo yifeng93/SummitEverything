@@ -1,14 +1,16 @@
 # 最新实现交接
 
-## 当前 M4.2 工作包 A：修复轮 1 Developer handoff，固定候选待 fresh QA
+## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，正式收口待用户批准
 
-初始 QA 固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL；原报告与原始字节副本保持不变。修复轮 1 当前产品源码 SHA 为 `419bb865b334389d1efd0f4a1a855cd0d5324d28`（实现提交 `4c6b0bd` 后追加最小 Native 修复提交 `419bb86`）。P1 修复重启后 unknown 计划 GET 缺少 `finished_at` 的 500，保留 reservation/run/ledger 不写与活跃 owner 行为。P2 修复 planner 问句只取得半句证据，保留复合主题和保守 fallback。原规格范围内的批量文件/文件夹导入与 Journal Assist 也在实现提交中。新发现的混合有效/零字节选择静默失败已改为可信原生选择后的通用可操作提示，仍严格整批拒绝；主动取消保持无提示。
+初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`；独立 fresh QA 完成，Sol 判适用工作包 A 离线技术场景 **PASS**，未发现新产品缺陷。它不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。重要离线正式收口和 main 合并仍需用户批准；当前没有 PR、push、merge，main 基线保持不变。
 
-Developer 最新候选由 fixed SHA clean build：App source `419bb865b334389d1efd0f4a1a855cd0d5324d28`、`dirty=false`；Swift 全量 5 tests、App codesign verify、DMG verify、guard checker 均 exit 0。最终 App/DMG 路径、摘要、原始日志、previous candidate 与新 Native UI 记录见 [修复轮 1 DEV handoff](../quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md) 和其 [evidence](../quality/reports/evidence/2026-10-14-m42-package-a-repair1/README.md)。此前完整检查是在 Python/frontend/lock 相同的 `4c6b0bd` 产品树完成：Python 513、Web 实际 65、Swift 当时 4；lint 有 2 条 React set-state-in-effect warnings，日志已保留。OpenAPI 类型生成和 diff 检查均 exit 0。
+`4c6b0bd` 修复 P1 unknown plan GET 与 P2 planner 完整问句证据，并实现规格已确认的批量文件/文件夹输入及 Journal Assist；`419bb86` 最小修复有效文件与零字节混选静默无反馈，保留严格整批拒绝、为可信 NSOpenPanel 确认选择显示通用说明、主动 Cancel 无提示。自动检查：guarded Python 513、Web 65、Swift 5；静态/type/lock/build/schema检查 exit 0；React lint 仍有 2 条 warnings。`spctl` 对 ad-hoc 包实际 exit 3/rejected，未绕过 Gatekeeper。候选、摘要、Developer 观察见 [DEV 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
 
-`419bb86` 新候选以 LaunchServices + offline guard + 独立 temp profile 启动；实际进程 checker 观察 native/backend guard 均为 1 且 profile root canonical 匹配。真实 WK 文件面板实测 valid+zero-byte mixed selection 有明确提示且收件箱不变；主动 Cancel 无提示；仅有效 alpha/beta 实际导入成功。之前 `bc5018d` 候选上完成的 exact QA body/question UI 与 JournalAssist cancel/adopt/save/reopen 原始记录清楚归属于旧候选，不能替代对 `419bb86` 的 fresh QA。Developer 最新 UI 记录未保存新截图，详见报告的证据披露。
+QA 独立覆盖 P1/P2，Native 多文件/混合失败提示/取消/目录 FileList，Fake JournalAssist 生命周期，Real ProviderRuntime + MockHTTP API 集成，planner C19、候选身份与包校验。逐项结果见 [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)；Sol 范围和限制见 [Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)；61 个原始 QA 文件的可提交副本与路径映射见 [QA evidence archive](../quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)。Developer、QA 与 Sol 的 docs/evidence commits 均不能被误称为受测产品 SHA。
 
-fresh QA 正待 Sol 在全新独立 checkout 对 fixed source SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 全量复核。Developer 停止产品源码修改。部分失败后的原 operation ID 失败项重试与 Real JournalAssist 的实际 provider/network UI 仍 NOT_RUN。真实模型/Feishu/任务、材料、OS Keychain、生产安装/覆盖或绕 Gatekeeper、Developer ID/公证、五日/双机/发布均 NOT_RUN；模型 runtime metadata UNVERIFIED。首轮错误启动时 Keychain 查询次数与默认 profile 回退仍 UNVERIFIED。
+安全观察需按真实时序理解：corrected UI run 开始前已核 native/backend guard 与 profile 并通过；更早的一段 UI 运行没有前置核验，恢复上下文后误启动的 late CUA copied app 在任何 UI 输入之前被观察到 guard=false/profile 不匹配并停止。Keychain 查询次数与默认 profile 回退均 **UNVERIFIED**；不能称本轮零查询/全程隔离。P1一条初始错误 assertion raw 完整保留，另一条失败 raw 被成功运行覆盖并在 QA 报告披露。CUA 是观察转录，不是 AX dump 或 screenshot。
+
+当前剩余的授权边界：部分成功后失败项同 operation ID 的真实 UI retry、Real JournalAssist packaged UI、真实 provider/Feishu/Tasks、四份真实材料、Keychain 生命周期、账单/答案质量、正式用户安装/覆盖、公证、五日、双机、M5与发布均 **NOT_RUN**；runtime model metadata **UNVERIFIED**。下一步的具体授权准备见 [M42 readiness](M42-PACKAGE-A-READINESS.md)。用户未指定四份材料的完整路径，也未授权只读核对；本轮没有读取真实四份 Markdown、真实 profile 或 Keychain。
 
 ## M4.1 固定候选与技术门（历史 SHA）
 
@@ -20,7 +22,7 @@ fresh QA 已在独立 checkout 验收上述固定 SHA；[QA 报告](../quality/r
 
 主机仅 arm64 macOS 27.0.1；macOS 13 是构建声明，Intel 和其他系统未测。包为 ad-hoc 本地签名，`spctl` 观察为拒绝，Developer ID / 公证及 Gatekeeper 接受仍 NOT_RUN，未绕过系统安全设置。用户测试见[简短说明](M41-INTERNAL-INSTALL.md)；它不会授权覆盖安装或真实业务初始化。
 
-真实 provider / Feishu、真实业务材料、OS Keychain、正式用户安装、Developer ID / 公证、M4.2、五日、双机与发布仍 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
+真实 provider / Feishu、真实业务材料、OS Keychain、正式用户安装、Developer ID / 公证、M4.2 真实业务与最终产品验收、五日、双机与发布仍 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
 
 交付副本：`/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/3f6eaa4/SummitEverything-Internal.dmg`，摘要与候选相同。用户明确回复“批准，并合入”；[PR #17](https://github.com/yifeng93/SummitEverything/pull/17) 已于 2026-10-13 合并，合并点 `c995034f2a7c8acbb8f7ffaa2e0094382af0e3a5`。本机 main 已 fast-forward，产品树与固定受测 SHA 一致；分支、原候选和 QA 工作树保留。远端两个离线 CI 运行在分支 `f7ad5e4` 均 success；该产品树与固定 QA SHA 一致，详见 [CI 原始证据](../quality/reports/evidence/2026-10-13-m41-ci/README.md)。最终 PR HEAD `52d0f3419bf10ad9cb719efed0580256bd059022` 的 [CI run 38364423576](https://github.com/yifeng93/SummitEverything/actions/runs/38364423576) 也已 success。后续仅文档变化不能被写成新的安装包验收。
 
