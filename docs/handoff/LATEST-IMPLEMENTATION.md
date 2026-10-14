@@ -10,7 +10,7 @@ QA 独立覆盖 P1/P2，Native 多文件/混合失败提示/取消/目录 FileLi
 
 安全观察需按真实时序理解：corrected UI run 开始前已核 native/backend guard 与 profile 并通过；更早的一段 UI 运行没有前置核验，恢复上下文后误启动的 late CUA copied app 在任何 UI 输入之前被观察到 guard=false/profile 不匹配并停止。Keychain 查询次数与默认 profile 回退均 **UNVERIFIED**；不能称本轮零查询/全程隔离。P1一条初始错误 assertion raw 完整保留，另一条失败 raw 被成功运行覆盖并在 QA 报告披露。CUA 是观察转录，不是 AX dump 或 screenshot。
 
-当前剩余的授权边界：部分成功后失败项同 operation ID 的真实 UI retry、Real JournalAssist packaged UI、真实 provider/Feishu/Tasks、四份真实材料、Keychain 生命周期、账单/答案质量、正式用户安装/覆盖、公证、五日、双机、M5与发布均 **NOT_RUN**；runtime model metadata **UNVERIFIED**。下一步的具体授权准备见 [M42 readiness](M42-PACKAGE-A-READINESS.md)。用户未指定四份材料的完整路径，也未授权只读核对；本轮没有读取真实四份 Markdown、真实 profile 或 Keychain。
+当前剩余的授权边界：部分成功后失败项同 operation ID 的真实 UI retry、Real JournalAssist packaged UI、真实 provider/Feishu/Tasks、四份真实材料、Keychain 生命周期、账单/答案质量、正式用户安装/覆盖、公证、五日、双机、M5与发布均 **NOT_RUN**；runtime model metadata **UNVERIFIED**。下一步的具体授权准备见 [M42 readiness](M42-PACKAGE-A-READINESS.md)。用户未指定四份材料的完整路径，也未授权只读核对；本轮未读取四份真实业务 Markdown，未主动进行真实 profile 或 Keychain 验收，误启动期间是否访问及影响仍 **UNVERIFIED**。
 
 ## M4.1 固定候选与技术门（历史 SHA）
 

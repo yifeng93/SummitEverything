@@ -20,7 +20,7 @@ M4.2 工作包 A 初始固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` �
 | M4.2 工作包 A 初始 QA | 固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b`：FAIL；初始报告和原始 QA evidence 保持不变 | [QA 初始报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-INITIAL.md)、[evidence](../quality/reports/evidence/2026-10-14-m42-package-a-qa-initial/) |
 | M4.2 Package A repair1 fresh QA | 固定 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`：适用离线技术场景 PASS | [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[原始 QA archive](../quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md) |
 | M4.2 离线正式收口 / main 合并 | 等待用户批准；当前没有 PR、push 或 merge | 先审阅 Sol gate 与固定源文件 / 文档 SHA；批准前 main 保持原基线 |
-| Stage B/C 真实模型、Feishu、资料、Keychain、账单/答案质量 | NOT_RUN；runtime model metadata UNVERIFIED | 依据[具体授权准备卡](../handoff/M42-PACKAGE-A-READINESS.md)，先取得精确资料路径、动作与范围授权 |
+| 工作包 B/C 真实模型、Feishu、资料、Keychain、账单/答案质量 | NOT_RUN；runtime model metadata UNVERIFIED | 依据[具体授权准备卡](../handoff/M42-PACKAGE-A-READINESS.md)，先取得精确资料路径、动作与范围授权 |
 | Stage B 用户单机真实验收 / install / 公证 / 五日 / 双机 / M5 / release | NOT_RUN | Internal App/DMG 技术包验证不等于正式用户安装或完整产品验收 |
 | Gatekeeper assessment | 本机 `spctl` exit 3 / ad-hoc rejected；未绕过 | 详见固定 SHA [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) |
 | 远端离线 CI | 仅 M4.1 历史分支两次 success（f7ad 产品树与当时固定 QA 产品树一致）；M4.2/419bb86 未 push、未运行远端 CI | [M4.1 CI 历史证据](../quality/reports/evidence/2026-10-13-m41-ci/README.md) |

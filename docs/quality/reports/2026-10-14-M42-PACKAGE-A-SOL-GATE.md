@@ -24,16 +24,16 @@ Corrected packaged UI run 开始前，native/backend guard 与 canonical profile
 
 P1 一个错误 assertion 的完整 raw 留存；另一个临时 assertion 失败输出被之后成功运行覆盖，QA 只留 tool-output 摘录并显式披露。QA CUA UI 为观察转录，没有保存 AX raw dump 或截图。详情见原样 [QA 报告](2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) 与 evidence README，不推断缺失 raw。
 
-以下项目仍 **NOT_RUN**：多文件部分成功后的失败项原 operation ID 真实 UI retry；Real JournalAssist packaged UI；真实 provider/Feishu/OAuth/tasks、真实材料、账单与答案质量、真实 Keychain 生命周期、正式用户安装/覆盖、公证与发布、五日/双机和 M5。Runtime model metadata **UNVERIFIED**。Stage B 工作只能在用户指定确切资料、动作和授权后开始；本次没有读取真实四份 MD、真实 profile 或 Keychain。
+以下项目仍 **NOT_RUN**：多文件部分成功后的失败项原 operation ID 真实 UI retry；Real JournalAssist packaged UI；真实 provider/Feishu/OAuth/tasks、真实材料、账单与答案质量、真实 Keychain 生命周期、正式用户安装/覆盖、公证与发布、五日/双机和 M5。Runtime model metadata **UNVERIFIED**。工作包 B 只能在用户指定确切资料、动作和授权后开始；本次未读取四份真实业务 Markdown，未主动进行真实 profile 或 Keychain 验收；误启动期间是否访问及影响仍 **UNVERIFIED**。
 
 ## 当前决议和下一步授权边界
 
 当前用户尚未批准 M4.2 Package A 重要离线正式收口/合并，因此此分支不创建 PR、不 push、不 merge，main 基线保持原样。Sol 可在用户批准后再完成该重要里程碑的整合。
 
-后续 B 阶段先等待用户逐一指定四份 Markdown 的**完整路径**，并单独明确授权只读事实核对/grillme；读取不等于批准、入库或对外发送。只有四份材料整体得到用户明确批准后，才可初始化正式材料工作库。
+后续工作包 B 先等待用户逐一指定四份 Markdown 的**完整路径**，并单独明确授权只读事实核对/grillme；读取不等于批准、入库或对外发送。只有四份材料整体得到用户明确批准后，才可初始化正式材料工作库。
 
 模型选择仍待用户确认。DeepSeek Flash 与 Qwen 3.7 embedding/rerank 只是候选；实际模型动作前要由用户选定模型、实际材料/问题、请求次数上限与费用上限；先核对既有有限 smoke 次数累计，不因新 profile/workspace 清零；执行当日再次核实官方单价、usage 和费用范围。API key 只可通过应用 Settings 本机安全密钥入口录入，绝不在聊天中提供。真实 Keychain 生命周期需另行明确授权新的命名空间；不得迁移或读取旧钥匙串项。
 
 Feishu 只读准备必须先由用户确认搜索词、选中结果、日期区间和时区，以及只查看任务第一页的范围；真实任务写仍保持 disabled，任何未来动作都需单独批准。用户尚需完成产品规定的 12 步并明确批准五个实际工作日验收之后，才能开始该现场阶段。
 
-这些是下一步授权边界说明，不代表当前已获相关材料、模型、Keychain、Feishu、费用或正式收口授权。本次执行未读取真实四份材料、真实 profile 或 Keychain。
+这些是下一步授权边界说明，不代表当前已获相关材料、模型、Keychain、Feishu、费用或正式收口授权。本次未读取四份真实业务 Markdown；未主动进行真实 profile 或 Keychain 验收，误启动期间是否访问及影响仍 **UNVERIFIED**。

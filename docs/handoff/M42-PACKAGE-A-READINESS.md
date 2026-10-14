@@ -7,13 +7,13 @@
 - 真实模型整理、索引、问答和 Feishu 只读/导入使用本机一次性计划：先展示当前发送范围，由用户独立确认，再执行一次。计划过期、被取消或与配置/来源/页面版本/授权代次不一致时拒绝外发。
 - 请求数是有限 HTTP 请求上限，不是金额上限或“模型操作”数量。一次问答上限为 embedding、rerank、answer 各一次；索引上限按每批最多 20 个文本段计算；整理最多一次；飞书导入按保守失败回退上限计算。预留后遇到超时或进程中断保留为 unknown，不能自动重发。
 - Provider usage 仅记录响应实际给出的安全 request id 与 token 计数。缺失字段为未知/null；不从调用数推算 token 或用户账单。账单需在 provider 控制台核对。
-- 批量导入已实现为单文件接口的顺序复用：选择多个文件或明确选择一个/多个文件夹，最多 100 项 / 100 MB、单个不超过 20 MB，仅 TXT/Markdown；取消选择不写入。失败项单独显示并保留同一 operation_id 重试。隐藏路径、package 内容和 symlink 不作为来源；native 目录遍历上限 2,000 项，无法完整读取时整批拒绝。Developer 在旧 `bc5018d` 候选实际观察过 WKWebView 目录 FileList；固定 `419bb86` 候选新增验证了混选有效/零字节文件时的提示、取消和有效多选导入。最终验收仍由 fresh QA 在 fixed `419bb86` 独立复验，失败项同 operation_id 的真实 UI retry 仍 NOT_RUN。
+- 批量导入已实现为单文件接口的顺序复用：选择多个文件或明确选择一个/多个文件夹，最多 100 项 / 100 MB、单个不超过 20 MB，仅 TXT/Markdown；取消选择不写入。失败项单独显示并保留同一 operation_id 重试。隐藏路径、package 内容和 symlink 不作为来源；native 目录遍历上限 2,000 项，无法完整读取时整批拒绝。Developer 在旧 `bc5018d` 候选实际观察过 WKWebView 目录 FileList；固定 `419bb86` 候选新增验证了混选有效/零字节文件时的提示、取消和有效多选导入。Fixed `419bb86` 已由 fresh QA 独立复验本项所列场景；失败项同 operation_id 的真实 UI retry 仍 NOT_RUN。
 - Real 模式日志 AI 辅助已接入一次性 plan：正文及输出上限在预览中可读，确认后只组织一次，正文/设置变化、取消、超时和 ledger 状态阻止重发。建议仍为编辑态；写入正式日志仍由独立保存确认触发。Fake 流程保持直接建议。
 - 本轮受测的自动/API/Mock 与 corrected packaged UI 场景使用合成文本和隔离 profile/workspace；Real provider 只连 MockHTTP。启动隔离限制见 [Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)：较早 UI run 未前置检查，late CUA 启动在输入前被发现 guard/profile 不符并终止。相关 Keychain 查询次数及 profile 回退 **UNVERIFIED**，不能说整个本轮零查询或全程隔离。不得把离线 adapter 成功写成真实服务验证。
 
-## B 阶段授权准备卡
+## 工作包 B 授权准备卡
 
-下一步只在用户明确指定 **4 份 Markdown 的完整路径**，并单独授权对这些指定文件做只读事实核对 / grillme 后开始。读取不等于用户批准，不等于初始化正式工作库，也不授权入库或对外发送；只有整组材料得到用户明确批准后，才可初始化正式材料工作库。本轮未读真实材料、真实 profile 或 Keychain。
+下一步只在用户明确指定 **4 份 Markdown 的完整路径**，并单独授权对这些指定文件做只读事实核对 / grillme 后开始。读取不等于用户批准，不等于初始化正式工作库，也不授权入库或对外发送；只有整组材料得到用户明确批准后，才可初始化正式材料工作库。本轮未读取四份真实业务 Markdown；未主动进行真实 profile 或 Keychain 验收，误启动期间是否访问及影响仍 **UNVERIFIED**。
 
 模型候选为 DeepSeek Flash 与 Qwen 3.7 embedding/rerank，仍需用户选择。任何真实模型动作前，用户需指定模型、实际材料与问题、请求次数上限及费用上限。先核对历史有限 smoke 累计，不随新 profile/workspace 重置；实际执行日重新查官方价格与 usage/账单边界。API key 只能从应用 Settings 的本机安全密钥入口录入，不在聊天中提供。真实 Keychain 生命周期须另行明确授权新命名空间，不读取或迁移旧钥匙串。
 
