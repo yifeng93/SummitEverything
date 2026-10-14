@@ -17,7 +17,11 @@
 
 模型候选为 DeepSeek Flash 与 Qwen 3.7 embedding/rerank，仍需用户选择。任何真实模型动作前，用户需指定模型、实际材料与问题、请求次数上限及费用上限。先核对历史有限 smoke 累计，不随新 profile/workspace 重置；实际执行日重新查官方价格与 usage/账单边界。API key 只能从应用 Settings 的本机安全密钥入口录入，不在聊天中提供。真实 Keychain 生命周期须另行明确授权新命名空间，不读取或迁移旧钥匙串。
 
-首次日常使用的产品预期是：用户在本机首次配置时录入所选模型所需的 API key，并点击飞书授权。具体哪些 key 必填、可选模型组合、Feishu 账号 scope 与首次配置字段仍待 Explorer 只读核对实际设置 UI、验证器和授权流程后记录；在核对与真实账户授权前不推断缺省项。此预期不表示真实 OAuth、Feishu scope 或 OS Keychain 已通过。密钥只通过本机设置首次录入，不打包、不贴入聊天。
+首次日常使用的产品预期是：在本机首次配置模型 API key 并点击飞书授权；普通使用不应每次重新填写。2026-10-14 Explorer 对当前设置 UI、验证器和授权实现作了只读审计：启动 mode/provider 默认为 Fake；Real 模型选择为 DeepSeek Flash + Qwen 3.7 embedding/rerank，共两个 key（DeepSeek key 与 DashScope key，后者供 Qwen embedding/rerank 共用）。Embedding 维度 1024、地区 cn 固定，不需要用户填写。现有通用 DashScope endpoints 是否适配该真实账户/Workspace **UNVERIFIED**；应提供本人的 WorkspaceId 或完整 endpoint URLs。UI 中 account label `default` 仅为凭据槽标记，不表示 Workspace。
+
+Feishu 初次配置需要 App ID 与 AppSecret；只在本机安全设置录入 secret。应在飞书应用注册原生有效回调 `http://127.0.0.1:18793/api/v1/integrations/feishu/callback`；界面文案中 `http://127.0.0.1:5173` 只是开发示例，不可用于用户应用注册。点击 OAuth 会发起授权并打开网页登录同意相应 scope。已实现的设计是 token 按同一 profile / app_id 存入本地 vault 并复用；refresh 先持久化 consumed 状态，再发送 HTTP。此描述来自只读代码审计，不是实际 OAuth、账户 scope、OS Keychain 或 refresh 生命周期的验收结果；这些仍 **NOT_RUN**，此前启动隔离观察仍按上文标记 **UNVERIFIED**。
+
+同一工作库的本机 JSON 配置与 Keychain secret 槽旨在避免日常重复配置，但不能保证 Real 模式已经通过，也不能假设所有 workspace 共用 keys。Sol 已单独向用户询问非秘密的 WorkspaceId 或完整 endpoint URLs 与 Feishu AppID；secret 绝不通过聊天收集或打进安装包。当前没有真实授权 scope、连接账户或读取/迁移旧凭据。
 
 Feishu 只读前须由用户确认精确搜索词、选中结果、日期范围及时区，并将读取范围限定为任务第一页。任务写继续 disabled，任何未来启用或写操作都需独立批准。完成产品规定的 12 步，并由用户明确确认开始五个实际工作日验收后，才能启动现场阶段。当前均未获授权。
 
@@ -45,7 +49,7 @@ Feishu 只读前须由用户确认精确搜索词、选中结果、日期范围�
 - [阿里云百炼模型价格](https://help.aliyun.com/zh/model-studio/model-pricing)
 - [阿里云百炼文本 embedding API](https://help.aliyun.com/zh/model-studio/text-embedding-synchronous-api)
 
-Model Studio workspace endpoint 应由用户显式配置。Qwen embedding 使用 `https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`；rerank 使用 `https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank`。不从账户名自动猜测或覆盖 workspace endpoint。
+Model Studio workspace endpoint 应由用户显式配置。用户可以给出自己的 WorkspaceId，或直接确认完整 endpoint URLs：Qwen embedding 使用 `https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`；rerank 使用 `https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank`。不得把 account label `default` 当 WorkspaceId，也不得推断其真实账户可用；不从账户名自动猜测或覆盖 workspace endpoint。
 
 ## 当前已知产品差距
 

@@ -8,6 +8,8 @@
 
 QA 独立覆盖 P1/P2，Native 多文件/混合失败提示/取消/目录 FileList，Fake JournalAssist 生命周期，Real ProviderRuntime + MockHTTP API 集成，planner C19、候选身份与包校验。逐项结果见 [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)；Sol 范围和限制见 [Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)；61 个原始 QA 文件的可提交副本与路径映射见 [QA evidence archive](../quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)。Developer、QA 与 Sol 的 docs/evidence commits 均不能被误称为受测产品 SHA。
 
+首次配置偏好与 Explorer 只读代码审计见 [M42 readiness](M42-PACKAGE-A-READINESS.md)：初始为 Fake；用户期望首次在本机配置 DeepSeek Flash API key、DashScope key（Qwen 3.7 embedding/rerank 共用），再点击 Feishu 授权，之后同机同工作库日常免重复输入。1024 embedding dimensions 与 cn region 固定；DashScope endpoint 要使用用户自己的 WorkspaceId 或其提供的完整 URLs，界面 `default` 是凭据槽标签，不是 Workspace。Feishu 需要 AppID/AppSecret、注册 native callback `http://127.0.0.1:18793/api/v1/integrations/feishu/callback` 并经用户点击启动浏览器授权；`5173` 仅是 dev 示例。密钥仅本机设置，不进聊天或包。此为配置审计/目标说明；真实 Workspace 可用性、OAuth/scope、token/vault 与 Keychain 生命周期均 **NOT_RUN/UNVERIFIED**，不代表真实 Real 配置已通过，也不假设各 workspace 共享 keys。
+
 安全观察需按真实时序理解：corrected UI run 开始前已核 native/backend guard 与 profile 并通过；更早的一段 UI 运行没有前置核验，恢复上下文后误启动的 late CUA copied app 在任何 UI 输入之前被观察到 guard=false/profile 不匹配并停止。Keychain 查询次数与默认 profile 回退均 **UNVERIFIED**；不能称本轮零查询/全程隔离。P1一条初始错误 assertion raw 完整保留，另一条失败 raw 被成功运行覆盖并在 QA 报告披露。CUA 是观察转录，不是 AX dump 或 screenshot。
 
 当前剩余的授权边界：部分成功后失败项同 operation ID 的真实 UI retry、Real JournalAssist packaged UI、真实 provider/Feishu/Tasks、四份真实材料、Keychain 生命周期、账单/答案质量、正式用户安装/覆盖、公证、五日、双机、M5与发布均 **NOT_RUN**；runtime model metadata **UNVERIFIED**。下一步的具体授权准备见 [M42 readiness](M42-PACKAGE-A-READINESS.md)。用户未指定四份材料的完整路径，也未授权只读核对；本轮未读取四份真实业务 Markdown，未主动进行真实 profile 或 Keychain 验收，误启动期间是否访问及影响仍 **UNVERIFIED**。
