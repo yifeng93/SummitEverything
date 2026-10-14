@@ -53,17 +53,58 @@ def test_a_sanitized_failure_reason_is_recorded(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    "reason",
+    ("reason", "expected"),
     [
-        "line one\nline two",
-        "leaked sk-abcdefghijklmnop",
-        "x" * 201,
-        "",
+        ("line one\nline two", "line one line two"),
+        # An already-masked credential contains the literal "sk-" and must be
+        # accepted: rejecting it used to drop the whole event.
+        (
+            "Authentication Fails, Your api key: sk-*** is invalid",
+            "Authentication Fails, Your api key: sk-*** is invalid",
+        ),
+        ("leaked sk-abcdefghijklmnop now", "leaked sk-*** now"),
+        ("y" * 258, "y" * 200),
     ],
 )
-def test_unsafe_failure_reasons_are_rejected(tmp_path: Path, reason: str) -> None:
-    with pytest.raises(ValueError):
-        event_log.profile_event(tmp_path, "index_update_failed", state="failed", reason=reason)
+def test_reasons_are_cleaned_rather_than_dropped(
+    tmp_path: Path, reason: str, expected: str
+) -> None:
+    event_log.profile_event(tmp_path, "index_update_failed", state="failed", reason=reason)
+    events = read_events(tmp_path)
+    assert events[-1]["event"] == "index_update_failed"
+    assert events[-1]["reason"] == expected
+    assert len(str(events[-1]["reason"])) <= 200
+
+
+def test_an_empty_or_non_string_reason_is_still_refused(tmp_path: Path) -> None:
+    for reason in ("", "   ", 5):
+        with pytest.raises(ValueError):
+            event_log.profile_event(
+                tmp_path,
+                "index_update_failed",
+                state="failed",
+                reason=reason,  # type: ignore[arg-type]
+            )
+
+
+def test_an_absent_reason_is_allowed(tmp_path: Path) -> None:
+    # ``None`` means "no reason", which is an allowed optional field; a non-string
+    # value is refused so the payload keeps its declared type.
+    event_log.profile_event(tmp_path, "assistant_failed", state="failed")
+    assert "reason" not in read_events(tmp_path)[-1]
+
+
+def test_an_unmasked_credential_never_reaches_the_file(tmp_path: Path) -> None:
+    secret = "sk-abcdefghijklmnop"
+    event_log.profile_event(
+        tmp_path,
+        "assistant_failed",
+        state="failed",
+        reason=f"Authentication Fails, Your api key: {secret} is invalid",
+    )
+    text = (tmp_path / "diagnostics.log").read_text(encoding="utf-8")
+    assert secret not in text
+    assert "sk-***" in text
 
 
 def test_the_reason_is_optional(tmp_path: Path) -> None:

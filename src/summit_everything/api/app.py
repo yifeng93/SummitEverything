@@ -131,7 +131,7 @@ from summit_everything.local.conversations import (
     QueryConflict,
     QueryStart,
 )
-from summit_everything.local.event_log import profile_event
+from summit_everything.local.event_log import FALLBACK_REASON, profile_event
 from summit_everything.release import (
     fingerprint_web_dist,
     load_build_identity,
@@ -523,19 +523,33 @@ def assistant_failure(exc: BaseException, *, suffix: str) -> HTTPException:
     )
 
 
+def record_diagnostic(profile: Path, event: str, *, state: str, reason: object) -> None:
+    """Record a profile diagnostic without silently dropping the event.
+
+    The event log cleans the reason (mask, one line, truncate); when cleaning
+    still refuses it the minimal safe value is used instead, so an over-long or
+    already-masked reason can never cost us the whole record. Only a disk failure
+    (OSError) can still stop it.
+    """
+    candidates = [reason if isinstance(reason, str) else "", FALLBACK_REASON]
+    for candidate in candidates:
+        try:
+            profile_event(profile, event, state=state, reason=candidate)
+            return
+        except ValueError:
+            continue
+        except OSError:
+            return
+
+
 def record_assistant_failure(workspace: object, exc: BaseException) -> None:
     """Keep a sanitized, bounded reason in the profile diagnostics log."""
-    reason = safe_failure_reason(exc, service="模型服务")
-    try:
-        profile_event(
-            Path(workspace.local_profile_dir),  # type: ignore[attr-defined]
-            "assistant_failed",
-            state="failed",
-            reason=reason,
-        )
-    except (ValueError, OSError):
-        # Diagnostics must never turn a request failure into a different one.
-        pass
+    record_diagnostic(
+        Path(workspace.local_profile_dir),  # type: ignore[attr-defined]
+        "assistant_failed",
+        state="failed",
+        reason=safe_failure_reason(exc, service="模型服务"),
+    )
 
 
 def smoke_failure_message(exc: BaseException, *, service: str) -> str:
@@ -1824,16 +1838,12 @@ def create_app(
                 workspace.workspace_id,
                 reason,
             )
-            try:
-                profile_event(
-                    Path(workspace.local_profile_dir),
-                    "index_update_failed",
-                    state="failed",
-                    reason=reason,
-                )
-            except (ValueError, OSError):
-                # A diagnostics failure must not change the mutation result.
-                pass
+            record_diagnostic(
+                Path(workspace.local_profile_dir),
+                "index_update_failed",
+                state="failed",
+                reason=reason,
+            )
             return mutation.model_copy(update={"index_update": "update_failed"})
         return mutation.model_copy(update={"index_update": "updated"})
 

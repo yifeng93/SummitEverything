@@ -23,7 +23,11 @@ _EVENTS = {
 _MAX_BYTES = 256 * 1024
 _BACKUPS = 3
 _REASON_MAX = 200
-_REASON_FORBIDDEN = "sk-"
+# Same shape the HTTP boundary masks: a credential that is still readable. An
+# already-masked ``sk-***`` does not match and must be accepted as-is.
+_CREDENTIAL_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
+_MASKED_CREDENTIAL = "sk-***"
+FALLBACK_REASON = "unrecorded"
 _STATES = {
     "pending",
     "running",
@@ -63,19 +67,22 @@ def _logger(profile: Path) -> logging.Logger:
         return logger
 
 
-def _validated_reason(value: str) -> str:
-    """A bounded, single-line, credential-free failure reason.
+def clean_reason(value: object, *, limit: int = _REASON_MAX) -> str:
+    """Mask, flatten and truncate a failure reason; never reject readable text.
 
-    Callers pass an already-sanitized sentence; this is the last line of defence
-    so a diagnostic file can never gain a raw credential or a multi-line dump.
+    Cleaning replaces the old "reject anything suspicious" rule, which silently
+    dropped whole events: an already-masked ``sk-***`` contains the literal
+    ``sk-`` and a provider message can exceed the limit, so both used to lose the
+    ``assistant_failed`` / ``index_update_failed`` event entirely. Only a
+    non-string or an empty result is refused, and callers then fall back to a
+    minimal safe value so the event itself still lands.
     """
-    if not 1 <= len(value) <= _REASON_MAX:
-        raise ValueError("invalid diagnostic reason")
-    if any(ord(character) < 32 for character in value):
-        raise ValueError("invalid diagnostic reason")
-    if _REASON_FORBIDDEN in value:
-        raise ValueError("invalid diagnostic reason")
-    return value
+    if not isinstance(value, str):
+        return ""
+    collapsed = " ".join(value.split())
+    if not collapsed:
+        return ""
+    return _CREDENTIAL_SHAPE.sub(_MASKED_CREDENTIAL, collapsed)[:limit]
 
 
 def profile_event(
@@ -87,10 +94,11 @@ def profile_event(
     count: int | None = None,
     reason: str | None = None,
 ) -> None:
-    """Write allowlisted status metadata and an optional sanitized reason.
+    """Write allowlisted status metadata and an optional cleaned reason.
 
-    Free-form provider or exception text is never accepted: reasons are bounded,
-    single-line and rejected outright if they still look like a credential.
+    A reason is masked, flattened and truncated rather than rejected, so an event
+    is never lost to an over-long message or an already-masked credential. Only a
+    non-string or empty reason raises; callers fall back to a safe value.
     """
     if event not in _EVENTS:
         raise ValueError("unsupported profile event")
@@ -111,7 +119,10 @@ def profile_event(
             raise ValueError("invalid diagnostic count")
         payload["count"] = count
     if reason is not None:
-        payload["reason"] = _validated_reason(reason)
+        cleaned = clean_reason(reason)
+        if not cleaned:
+            raise ValueError("invalid diagnostic reason")
+        payload["reason"] = cleaned
     logger = _logger(profile)
     record = logging.LogRecord(logger.name, logging.INFO, "", 0, "", (), None)
     record.event = payload

@@ -14,9 +14,9 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app
+from summit_everything.api.app import create_app, record_diagnostic
 from summit_everything.intake.review import IntakeReviewService
-from summit_everything.integrations.embedding import FakeEmbedding
+from summit_everything.integrations.embedding import EmbeddingProviderError, FakeEmbedding
 from summit_everything.integrations.llm import LLMProviderError
 from summit_everything.integrations.settings import MemorySecretBackend
 from summit_everything.retrieval.query import QueryService
@@ -182,3 +182,130 @@ def test_failed_incremental_index_records_a_searchable_reason(tmp_path: Path) ->
     # Only the exception type is recorded: the sentinel text never reaches a file.
     assert events[-1]["reason"] == "RuntimeError"
     assert "synthetic-private-probe" not in diagnostics_text(profile)
+
+
+def test_assist_failure_with_a_masked_key_is_still_recorded(tmp_path: Path) -> None:
+    """Trigger A: an already-masked credential must not cost us the event."""
+    error = LLMProviderError(
+        "模型服务返回错误：invalid_api_key — masked",
+        provider_code="invalid_api_key",
+        provider_message="Authentication Fails, Your api key: sk-*** is invalid",
+        reason="provider",
+    )
+    client = assist_client(tmp_path, error)
+    open_workspace(client, tmp_path / "workspace")
+    response = client.post("/api/v1/journal/assist", headers=HEADERS, json={"text": "合成日志正文"})
+    assert response.status_code == 502, response.text
+    events = diagnostics_events(tmp_path / "profile")
+    assert events and events[-1]["event"] == "assistant_failed"
+    assert "sk-***" in str(events[-1]["reason"])
+
+
+def test_assist_failure_with_a_long_message_is_recorded_and_truncated(tmp_path: Path) -> None:
+    """Trigger B: a long provider message must not cost us the event."""
+    long_message = "Invalid API-key provided. " + "detail " * 36  # 258 characters
+    assert len(long_message) > 200
+    error = LLMProviderError(
+        "模型服务返回错误：invalid_api_key — long",
+        provider_code="invalid_api_key",
+        provider_message=long_message,
+        reason="provider",
+    )
+    client = assist_client(tmp_path, error)
+    open_workspace(client, tmp_path / "workspace")
+    response = client.post("/api/v1/journal/assist", headers=HEADERS, json={"text": "合成日志正文"})
+    assert response.status_code == 502, response.text
+    events = diagnostics_events(tmp_path / "profile")
+    assert events and events[-1]["event"] == "assistant_failed"
+    assert 0 < len(str(events[-1]["reason"])) <= 200
+
+
+def test_record_diagnostic_falls_back_instead_of_dropping(tmp_path: Path) -> None:
+    profile = tmp_path / "profile"
+    record_diagnostic(profile, "assistant_failed", state="failed", reason="   ")
+    record_diagnostic(profile, "assistant_failed", state="failed", reason=None)
+    events = diagnostics_events(profile)
+    assert [event["event"] for event in events] == ["assistant_failed", "assistant_failed"]
+    assert {event["reason"] for event in events} == {"unrecorded"}
+
+
+def test_index_failure_with_a_long_provider_message_is_recorded(tmp_path: Path) -> None:
+    class LongFailingEmbedding(FakeEmbedding):
+        fail = False
+
+        def embed(self, text: str, *, fingerprint: str) -> list[float]:
+            if self.fail:
+                raise EmbeddingProviderError(
+                    "向量服务返回错误：invalid_api_key — long",
+                    provider_code="invalid_api_key",
+                    provider_message="Invalid API-key provided. " + "detail " * 36,
+                    reason="provider",
+                )
+            return super().embed(text, fingerprint=fingerprint)
+
+    profile = tmp_path / "profile"
+    embedding = LongFailingEmbedding()
+    service = QueryService(IndexStore(profile / "index.sqlite3"), embedding=embedding)
+    client = TestClient(
+        create_app(
+            session_token=TOKEN,
+            profile_root=profile,
+            query_service=service,
+            secret_backend=MemorySecretBackend(),
+        )
+    )
+    open_workspace(client, tmp_path / "workspace")
+    line = client.post(
+        "/api/v1/lines", headers=HEADERS, json={"name": "合成线", "operation_id": "line"}
+    ).json()
+    project = client.post(
+        "/api/v1/projects",
+        headers=HEADERS,
+        json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+    ).json()
+    metadata = {
+        "id": str(uuid4()),
+        "title": "基线知识",
+        "role": "knowledge",
+        "kind": "topic",
+        "line_id": line["id"],
+        "project_id": project["id"],
+    }
+    assert (
+        client.post(
+            "/api/v1/pages",
+            headers=HEADERS,
+            json={
+                "metadata": metadata,
+                "body": "稳定内容琥珀四二。",
+                "confirmation_id": "base-confirmation",
+                "operation_id": "base-write",
+            },
+        ).status_code
+        == 201
+    )
+    plan = client.post(
+        "/api/v1/index/plans",
+        headers=HEADERS,
+        json={"mode": "initial", "fingerprint": "fake-failure-v1"},
+    ).json()
+    assert client.post("/api/v1/index/jobs", headers=HEADERS, json=plan).status_code == 200
+
+    embedding.fail = True
+    failed = client.post(
+        "/api/v1/pages",
+        headers=HEADERS,
+        json={
+            "metadata": {**metadata, "id": str(uuid4()), "title": "中断知识"},
+            "body": "新内容不应从旧索引引用独特词海蓝八六。",
+            "confirmation_id": "new-confirmation",
+            "operation_id": "new-write",
+        },
+    )
+    assert failed.status_code == 201, failed.text
+    assert failed.json()["index_update"] == "update_failed"
+
+    events = diagnostics_events(profile)
+    assert events and events[-1]["event"] == "index_update_failed"
+    assert 0 < len(str(events[-1]["reason"])) <= 200
+    assert "invalid_api_key" in str(events[-1]["reason"])
