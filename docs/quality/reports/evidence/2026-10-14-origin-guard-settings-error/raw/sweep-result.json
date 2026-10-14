@@ -1,0 +1,501 @@
+{
+  "summary": {
+    "total_probes": 45,
+    "status_histogram": {
+      "503": 45
+    },
+    "any_allowed_2xx": [],
+    "not_envelope": [],
+    "leaks": [],
+    "callback_and_static_statuses": [
+      {
+        "method": "GET",
+        "path": "/api/v1/integrations/feishu/callback",
+        "origin": null,
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/integrations/feishu/callback",
+        "origin": "http://127.0.0.1:18793",
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/integrations/feishu/callback",
+        "origin": "http://evil.invalid",
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "POST",
+        "path": "/callback",
+        "origin": null,
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "POST",
+        "path": "/callback",
+        "origin": "http://127.0.0.1:18793",
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "POST",
+        "path": "/callback",
+        "origin": "http://evil.invalid",
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "GET",
+        "path": "/",
+        "origin": null,
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "GET",
+        "path": "/",
+        "origin": "http://127.0.0.1:18793",
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      },
+      {
+        "method": "GET",
+        "path": "/",
+        "origin": "http://evil.invalid",
+        "status": 503,
+        "ctype": "application/json",
+        "envelope_ok": true,
+        "echoes_corrupt": false
+      }
+    ]
+  },
+  "findings": [
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/settings",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/settings",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/settings",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/jobs",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/jobs",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/jobs",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/credentials/deepseek",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/credentials/deepseek",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/credentials/deepseek",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/credentials/deepseek",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/credentials/deepseek",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/credentials/deepseek",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/callback",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/callback",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/callback",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/openapi.json",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/openapi.json",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/openapi.json",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/does-not-exist",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/does-not-exist",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/does-not-exist",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    }
+  ]
+}

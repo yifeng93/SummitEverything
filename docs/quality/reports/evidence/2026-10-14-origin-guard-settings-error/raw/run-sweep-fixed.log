@@ -1,0 +1,94 @@
+/Users/yifengstudio/.codex/worktrees/origin-guard-qa-c9b3f7c/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+{
+  "total_probes": 45,
+  "status_histogram": {
+    "503": 45
+  },
+  "any_allowed_2xx": [],
+  "not_envelope": [],
+  "leaks": [],
+  "callback_and_static_statuses": [
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/callback",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/callback",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/callback",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "POST",
+      "path": "/callback",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "origin": null,
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "origin": "http://127.0.0.1:18793",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "origin": "http://evil.invalid",
+      "status": 503,
+      "ctype": "application/json",
+      "envelope_ok": true,
+      "echoes_corrupt": false
+    }
+  ]
+}

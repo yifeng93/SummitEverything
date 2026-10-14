@@ -425,6 +425,33 @@ class CallbackAccessLogFilter(logging.Filter):
         return True
 
 
+def settings_error_response(request: Request, exc: SettingsError) -> JSONResponse:
+    """The single shape for an unusable settings/credential store.
+
+    Shared by the exception handler and the origin guard. The guard runs before
+    the middleware that allocates the request id, so it allocates one itself
+    instead of leaving the envelope without a correlation id.
+    """
+    request_id = getattr(request.state, "request_id", None)
+    if request_id is None:
+        request_id = secrets.token_hex(8)
+        request.state.request_id = request_id
+    status = 422 if exc.code == "validation_error" else 503
+    message = "设置或凭据无法使用，请检查本机配置和钥匙串状态。"
+    if exc.code == "validation_error":
+        message = "设置字段或凭据无效。"
+    return JSONResponse(
+        status_code=status,
+        content={
+            "error": {
+                "code": exc.code,
+                "message": message,
+                "request_id": request_id,
+            }
+        },
+    )
+
+
 def create_app(
     *,
     session_token: str | None = None,
@@ -506,10 +533,17 @@ def create_app(
         workspace = cast(WorkspaceContext | None, app.state.workspace)
         allowed_origins = config.allowed_origins
         if workspace is not None:
-            settings = SettingsStore(
-                Path(workspace.local_profile_dir) / "provider-settings.json",
-                defaults=app.state.first_use_defaults,
-            ).read()
+            try:
+                settings = SettingsStore(
+                    Path(workspace.local_profile_dir) / "provider-settings.json",
+                    defaults=app.state.first_use_defaults,
+                ).read()
+            except SettingsError as exc:
+                # A corrupt profile must fail closed with the designed envelope.
+                # This middleware sits outside the application's exception
+                # handlers, so an unhandled SettingsError here would escape as a
+                # bare 500 and the client could not even tell what happened.
+                return settings_error_response(request, exc)
             callback = settings.feishu.redirect_uri or config.redirect_uri
             parts = urlsplit(callback)
             callback_origin = f"{parts.scheme}://{parts.netloc}"
@@ -1159,20 +1193,7 @@ def create_app(
 
     @app.exception_handler(SettingsError)
     async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
-        status = 422 if exc.code == "validation_error" else 503
-        message = "设置或凭据无法使用，请检查本机配置和钥匙串状态。"
-        if exc.code == "validation_error":
-            message = "设置字段或凭据无效。"
-        return JSONResponse(
-            status_code=status,
-            content={
-                "error": {
-                    "code": exc.code,
-                    "message": message,
-                    "request_id": request.state.request_id,
-                }
-            },
-        )
+        return settings_error_response(request, exc)
 
     @app.exception_handler(ValidationError)
     async def payload_validation_error(_request: Request, exc: ValidationError) -> JSONResponse:
