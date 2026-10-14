@@ -64,6 +64,11 @@ def test_a_sanitized_failure_reason_is_recorded(tmp_path: Path) -> None:
         ),
         ("leaked sk-abcdefghijklmnop now", "leaked sk-*** now"),
         ("y" * 258, "y" * 200),
+        # Control bytes are dropped instead of carried into the file; the rule
+        # this replaces refused them outright, which lost the event.
+        ("escape \x1b[31mred\x1b[0m and \x07bell", "escape [31mred [0m and bell"),
+        ("nul\x00byte", "nul byte"),
+        ("delete\x7fchar", "delete char"),
     ],
 )
 def test_reasons_are_cleaned_rather_than_dropped(

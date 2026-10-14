@@ -27,6 +27,10 @@ _REASON_MAX = 200
 # already-masked ``sk-***`` does not match and must be accepted as-is.
 _CREDENTIAL_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
 _MASKED_CREDENTIAL = "sk-***"
+# C0/C1 controls and DEL. The rule this replaces refused them outright; dropping
+# them keeps the event while making sure an escape byte cannot repaint a
+# terminal that tails the file.
+_CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f-\x9f]")
 FALLBACK_REASON = "unrecorded"
 _STATES = {
     "pending",
@@ -76,10 +80,16 @@ def clean_reason(value: object, *, limit: int = _REASON_MAX) -> str:
     ``assistant_failed`` / ``index_update_failed`` event entirely. Only a
     non-string or an empty result is refused, and callers then fall back to a
     minimal safe value so the event itself still lands.
+
+    Control characters are replaced by spaces rather than carried into the file:
+    the rule this replaces refused them outright, and an escape byte would let a
+    provider message repaint a terminal that tails the log. Masking happens
+    before truncation so a cut can never expose a readable credential.
     """
     if not isinstance(value, str):
         return ""
-    collapsed = " ".join(value.split())
+    without_controls = _CONTROL_CHARACTERS.sub(" ", value)
+    collapsed = " ".join(without_controls.split())
     if not collapsed:
         return ""
     return _CREDENTIAL_SHAPE.sub(_MASKED_CREDENTIAL, collapsed)[:limit]
