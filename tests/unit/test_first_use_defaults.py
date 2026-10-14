@@ -251,6 +251,33 @@ def test_injected_values_still_fail_stored_settings_validation(tmp_path):
         SettingsStore(settings_path, defaults=defaults).read()
 
 
+def test_a_corrupted_section_survives_injection_unchanged(tmp_path):
+    """Injection must never repair a corrupted section into something valid."""
+    defaults = FirstUseDefaults(
+        values={"embedding_base_url": EMBEDDING_BASE_URL, "feishu_app_id": APP_ID},
+        source=tmp_path / "defaults.json",
+    )
+    applied = defaults.apply({"embedding": "not-an-object", "feishu": None})
+    assert applied["embedding"] == "not-an-object"
+    assert applied["feishu"] is None
+
+
+@pytest.mark.parametrize("with_defaults", [False, True])
+def test_a_corrupted_section_still_fails_closed(tmp_path, with_defaults):
+    """A corrupt profile section must raise with and without injection present."""
+    settings_path = tmp_path / "settings.json"
+    settings_path.write_text(json.dumps({"embedding": "not-an-object"}), encoding="utf-8")
+    defaults = (
+        FirstUseDefaults(
+            values={"embedding_base_url": EMBEDDING_BASE_URL}, source=tmp_path / "d.json"
+        )
+        if with_defaults
+        else None
+    )
+    with pytest.raises(SettingsError):
+        SettingsStore(settings_path, defaults=defaults).read()
+
+
 # --- fail closed on key policy --------------------------------------------
 
 

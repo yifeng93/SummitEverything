@@ -109,7 +109,13 @@ class FirstUseDefaults:
         return cls()
 
     def apply(self, raw: object) -> object:
-        """Fill absent or empty string fields of a raw settings mapping."""
+        """Fill absent or empty string fields of a raw settings mapping.
+
+        A section that is present but not a mapping is left exactly as it is so
+        the ordinary validation still rejects the corrupted profile. Injecting an
+        empty mapping over it would mask that failure and turn a corrupt profile
+        into a silently accepted one.
+        """
         if not isinstance(raw, dict):
             return raw
         merged: dict[str, object] = {
@@ -117,8 +123,13 @@ class FirstUseDefaults:
         }
         for key, value in self.values.items():
             section, field_name = DEFAULTS_FIELD_MAP[key]
-            section_value = merged.get(section)
-            if not isinstance(section_value, dict):
+            if section in merged:
+                section_value = merged[section]
+                if not isinstance(section_value, dict):
+                    # Corrupted section: never repaired by injection, and never
+                    # silently repaired into something valid.
+                    continue
+            else:
                 section_value = {}
                 merged[section] = section_value
             current = section_value.get(field_name)
