@@ -6,9 +6,10 @@
 
 1. README.md 和 docs/implementation/PROGRESS.md：确认实际完成情况。
 2. docs/product/PRODUCT-SPEC.md：用户已经决定什么。
-3. docs/architecture/ARCHITECTURE.md、docs/contracts/WORKSPACE-v1.md、docs/contracts/API-v1.md：实现边界。
-4. 执行者读 docs/handoff/IMPLEMENTER.md 和全 v1 计划；测试者读 docs/handoff/TESTER.md 和 docs/quality/ACCEPTANCE.md。
-5. 需要旧代码时，按 docs/architecture/REUSE-MAP.md 的提交和模块查证。
+3. docs/product/FRONTEND-GUIDE.md 和 docs/product/FRONTEND-PAGE-SPECS.md：界面口径。用户已于 2026-10-14 以三轮选择题确认导航结构（5 栏）、信息分级、白话文案、Markdown 流式渲染、深色、字号尺度、首次配置合并与 10 条 UI 契约守卫；逐页区块顺序是规格，改了要同步文件。决策记录见 docs/decisions/0011-frontend-ux-baseline.md。
+4. docs/architecture/ARCHITECTURE.md、docs/contracts/WORKSPACE-v1.md、docs/contracts/API-v1.md：实现边界。
+5. 执行者读 docs/handoff/IMPLEMENTER.md 和全 v1 计划；测试者读 docs/handoff/TESTER.md 和 docs/quality/ACCEPTANCE.md。
+6. 需要旧代码时，按 docs/architecture/REUSE-MAP.md 的提交和模块查证。
 
 ## 不可静默改变的产品决议
 
@@ -37,7 +38,7 @@
 - 目录、凭据、生命周期通过小范围适配隔离；业务不依赖 Swift、绝对本机路径或旧仓库 import。
 - FastAPI 是唯一后端；不并行保留 SK Flask 服务或第二套原生聊天 UI。
 - Python / TypeScript 类型及 OpenAPI 是 API 真源；界面不复制可信资格算法。
-- UI 展示业务语言。ID、hash、事务和索引细节放详情中，不作为日常审批正文。
+- UI 展示业务语言。ID、hash、事务和索引细节放详情中，不作为日常审批正文；主界面（含列表与审批正文）不得出现英文项目 ID、文件路径或原始 JSON，字号不得低于 12px，加载态不得被画成空态。改界面前先读 [前端优化指南](docs/product/FRONTEND-GUIDE.md) 与 [逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)：区块顺序、文案口径与 10 条守卫不得静默改动。
 - 变化多文件或有副作用的行为先验证契约与故障，再扩大范围；失败不得靠删测试、降低验收门收口。
 
 ## 实现者与验收者分工

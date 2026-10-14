@@ -1,0 +1,15 @@
+{
+  "user_middleware_order": [
+    "BaseHTTPMiddleware",
+    "LoopbackOnly"
+  ],
+  "open_status": 201,
+  "corrupt_status": 500,
+  "token_hex_calls": 0,
+  "returned_request_id": null,
+  "request_id_matches_sole_allocation": false,
+  "request_id_shape_ok": false,
+  "escaping_exception": "summit_everything.integrations.settings.SettingsError: settings_unavailable",
+  "noauth_status": 500,
+  "noauth_body": "Internal Server Error"
+}

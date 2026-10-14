@@ -4,6 +4,8 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
+分支 `codex/settings-ux-20261014` 正在重做首次配置体验（**固定产品 SHA `8c4f81c51aac4fe2030b33fb354a5f4f19dfaf1b`**，尚未合入 main）：设置页改为三张卡 + 状态徽章 + 高级折叠区，新增 5 步首次配置向导；Base URL、飞书 callback、Feishu App ID 这些**非秘密**接入值不再要求用户手填，改由 Git 忽略的本机文件在构建时注入包内 `Resources/first-use-defaults.json`，用户只需录入三把密钥一次（存本机钥匙串，不打入包或仓库）。百炼地址采用官方推荐的业务空间专属域名。连接检查仍是「显式点击 + 本次范围确认」，沿用每项一次、跨运行累计的合成检查；默认 Fake、真实调用需独立确认、飞书任务写禁用均未改变。自动检查（guarded Python **591**、Web **90**、ruff/format/mypy/lock、OpenAPI 未变）、完整打包（DMG CRC VALID）、打包 smoke 与包内注入端到端验证 **27/27** 均通过；候选位于 `.local/internal-builds/settings-ux-8c4f81c/`（DMG SHA-256 `966cf3ae…eaab`）。三轮全新独立 QA 均 PASS，并各查出真实缺陷：D1（section 级损坏被注入掩盖）与 F1（字段级同类）已修复并复核，F3（测试不固定注入源）已由仅测试提交修复；**F2 仍开放**（损坏 profile 经 `origin_guard` 返回裸 500 而非设计的 JSON 503，功能前提交即存在、与本功能无关，见 DEV 报告）。真实 provider/飞书/OAuth/Keychain/材料/账单/安装/公证/五日/双机仍 **NOT_RUN**，新界面未做浏览器视觉复核。决议见 [ADR 0010](docs/decisions/0010-first-use-configuration-ux.md)，证据见 [DEV 报告](docs/quality/reports/2026-10-14-SETTINGS-UX-DEV.md)与 [QA 证据归档](docs/quality/reports/evidence/2026-10-14-settings-ux-qa/README.md)。
+
 M4.2 工作包 A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已通过独立 fresh QA，Sol 判定适用 Package A 离线技术场景 PASS；不代表全 M4.2/C25/Stage C/产品最终 PASS。用户已于 2026-10-14 批准工作包 A 离线正式收口与合入 main；PR #18 已于 2026-10-14 合并，PR head 为 `0e8fc4633d4b1409fb7da0354d4474a4faeef430`，当前 main 产品/tests/lock 树与固定受测 SHA 一致。远端 run 38550700081 全部步骤成功；工作流显示名沿用 M4.1，但该运行针对本 PR。真实用户材料、provider/Feishu、Keychain、正式安装/公证、五日/双机与 release 继续 NOT_RUN。见[离线收口记录](docs/quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)、[QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[QA evidence archive](docs/quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)与[修复轮 1 DEV handoff](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
 
 首次配置字段的只读代码审计已完成，具体字段、回调和限制见 [M42 readiness](docs/handoff/M42-PACKAGE-A-READINESS.md) 与 [ADR 0009](docs/decisions/0009-first-use-provider-configuration.md)。审计不代表 OAuth、Keychain 或真实服务通过；密钥仅本机安全输入，不进入仓库、安装包或聊天。四份真实业务材料、入库、付费调用和 Feishu 实际数据操作仍需各自明确授权。
@@ -17,6 +19,7 @@ M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固�
 - 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 - 验收者：[AGENTS.md](AGENTS.md) → [独立验收手册](docs/handoff/TESTER.md) → [验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 当前进展：[进展账本](docs/implementation/PROGRESS.md)；[报告索引](docs/quality/reports/README.md)；[全部文档](docs/README.md)。
+- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 用户三轮选择题确认）。
 - 内部测试：[安装与启动说明](docs/handoff/M41-INTERNAL-INSTALL.md)；已合入 [PR #17](https://github.com/yifeng93/SummitEverything/pull/17)。
 - 新聊天提示词：[实现者](docs/handoff/PROMPT-IMPLEMENTER.md)、[验收者](docs/handoff/PROMPT-TESTER.md)。
 
@@ -56,6 +59,8 @@ scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Interna
 ~~~
 
 该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。M4.2 QA 使用 fresh temporary profile；macOS LaunchServices 启动时必须显式传递 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。本轮固定候选、启动信息和边界见 [M4.2 修复轮 1 DEV 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)，不使用直接运行 `.app/Contents/MacOS/...` 的 shell 启动方式。
+
+若本机存在 Git 忽略的 `.local/first-use/defaults.json`，构建会校验其中的非秘密接入值并复制进包内 `Resources/first-use-defaults.json`（日志只打印来源路径与字段名）；文件不存在时构建照常成功。在已经处于沙箱内的环境构建时，SwiftPM 无法嵌套自己的 manifest 沙箱，可显式设置 `SUMMIT_SWIFT_DISABLE_SANDBOX=1` 追加 `--disable-sandbox`（默认与 CI 行为不变）。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 

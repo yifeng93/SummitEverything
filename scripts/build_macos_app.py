@@ -17,11 +17,34 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+from summit_everything.integrations.first_use_defaults import (  # noqa: E402
+    BUNDLE_RESOURCE_NAME,
+    REPO_DEFAULTS_RELATIVE_PATH,
+    FirstUseDefaults,
+    read_first_use_defaults_file,
+)
 from summit_everything.release import fingerprint_web_dist  # noqa: E402
 
 
 def run(args: list[str], *, env: dict[str, str] | None = None) -> None:
     subprocess.run(args, cwd=ROOT, env=env, check=True)
+
+
+def embed_first_use_defaults(
+    resources: Path, *, source: Path | None = None
+) -> FirstUseDefaults | None:
+    """Validate and copy the optional local non-secret defaults into Resources.
+
+    Returns the loaded defaults, or ``None`` when the local file is absent so a
+    build never depends on it. Secret-shaped keys fail closed through
+    :func:`read_first_use_defaults_file`; nothing is copied in that case.
+    """
+    path = source if source is not None else ROOT / REPO_DEFAULTS_RELATIVE_PATH
+    if not path.is_file():
+        return None
+    defaults = read_first_use_defaults_file(path)
+    shutil.copy2(path, resources / BUNDLE_RESOURCE_NAME)
+    return defaults
 
 
 def packages_inventory() -> list[dict[str, str]]:
@@ -169,12 +192,29 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
             json.dumps(manifest, sort_keys=True), encoding="utf-8"
         )
         (resources / "dependencies.json").write_bytes(dependency_bytes)
+        # Optional non-secret first-use defaults from the Git-ignored local file.
+        # They are validated (secret-shaped keys fail closed) and copied before
+        # signing; a missing file leaves the bundle unchanged.
+        embedded_defaults = embed_first_use_defaults(resources)
+        if embedded_defaults is None:
+            print("No local first-use defaults file; building without injected defaults")
+        else:
+            field_names = ",".join(sorted(embedded_defaults.values)) or "none"
+            print(
+                "Embedded non-secret first-use defaults "
+                f"from {embedded_defaults.source} fields={field_names}"
+            )
         swift_env = dict(os.environ)
         swift_env["MACOSX_DEPLOYMENT_TARGET"] = "13.0"
-        run(
-            ["swift", "build", "-c", "release", "--package-path", str(ROOT / "native")],
-            env=swift_env,
-        )
+        swift_command = ["swift", "build", "-c", "release", "--package-path", str(ROOT / "native")]
+        # SwiftPM compiles Package.swift inside its own sandbox. A build already
+        # running under a sandbox (local harnesses, some CI wrappers) cannot nest
+        # that and fails with "sandbox_apply: Operation not permitted". The escape
+        # hatch is explicit so default and CI behaviour stay unchanged; it only
+        # affects this repository's own manifest.
+        if os.environ.get("SUMMIT_SWIFT_DISABLE_SANDBOX") == "1":
+            swift_command.append("--disable-sandbox")
+        run(swift_command, env=swift_env)
         binary = ROOT / "native" / ".build" / "release" / "SummitEverything"
         shutil.copy2(binary, contents / "MacOS" / "SummitEverything")
         with (contents / "Info.plist").open("wb") as stream:

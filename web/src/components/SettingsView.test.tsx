@@ -13,7 +13,7 @@ function settings(credentialStatus = { feishu_app: false, deepseek: false, dashs
     embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, enabled: false },
     rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, enabled: false },
     capabilities: {
-      llm: { available: false, configured: mode === 'real', disabled_reason: mode === 'real' ? 'acceptance_plan_required' : 'adapter_not_wired' },
+      llm: { available: false, configured: mode === 'real', disabled_reason: mode === 'real' ? 'acceptance_plan_required' : 'offline_default' },
     },
     credential_status: credentialStatus,
     keychain_available: true,
@@ -35,8 +35,9 @@ it('explains the one-time real-operation confirmation gate', async () => {
   expect(screen.getByText('每次使用前需预览并确认本次范围。')).toBeTruthy()
 })
 
-it('sends the selected account id with the secret and clears the password field', async () => {
+it('sends the saved account id with the secret and clears the password field', async () => {
   const saved = settings()
+  const setItem = vi.spyOn(Storage.prototype, 'setItem')
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     if (url.endsWith('/settings') && (!init?.method || init.method === 'GET')) {
@@ -58,10 +59,15 @@ it('sends the selected account id with the secret and clears the password field'
   vi.stubGlobal('fetch', fetchMock)
 
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  const password = await screen.findByLabelText('密钥') as HTMLInputElement
+  const password = await screen.findByLabelText(/DeepSeek API Key/) as HTMLInputElement
   fireEvent.change(password, { target: { value: 'synthetic-secret' } })
-  fireEvent.click(screen.getByRole('button', { name: '保存到钥匙串' }))
+  fireEvent.click(screen.getByRole('button', { name: '保存 AI 模型设置' }))
 
   await waitFor(() => expect(password.value).toBe(''))
-  expect(await screen.findByText('密钥已保存到本机钥匙串。页面不会再次显示密钥。')).toBeTruthy()
+  expect(await screen.findByText(/已保存到本机钥匙串/)).toBeTruthy()
+  // 密钥既不在页面上回显，也不进入任何浏览器持久存储。
+  expect(document.body.textContent ?? '').not.toContain('synthetic-secret')
+  expect(setItem).not.toHaveBeenCalled()
+  expect(localStorage.length).toBe(0)
+  expect(sessionStorage.length).toBe(0)
 })

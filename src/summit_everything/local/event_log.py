@@ -13,9 +13,25 @@ from threading import Lock
 _lock = Lock()
 _loggers: dict[Path, logging.Logger] = {}
 _ID = re.compile(r"^[A-Za-z0-9_-]{1,80}$")
-_EVENTS = {"intake_saved", "intake_job", "draft_confirmed"}
+_EVENTS = {
+    "intake_saved",
+    "intake_job",
+    "draft_confirmed",
+    "index_update_failed",
+    "assistant_failed",
+}
 _MAX_BYTES = 256 * 1024
 _BACKUPS = 3
+_REASON_MAX = 200
+# Same shape the HTTP boundary masks: a credential that is still readable. An
+# already-masked ``sk-***`` does not match and must be accepted as-is.
+_CREDENTIAL_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
+_MASKED_CREDENTIAL = "sk-***"
+# C0/C1 controls and DEL. The rule this replaces refused them outright; dropping
+# them keeps the event while making sure an escape byte cannot repaint a
+# terminal that tails the file.
+_CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+FALLBACK_REASON = "unrecorded"
 _STATES = {
     "pending",
     "running",
@@ -55,6 +71,30 @@ def _logger(profile: Path) -> logging.Logger:
         return logger
 
 
+def clean_reason(value: object, *, limit: int = _REASON_MAX) -> str:
+    """Mask, flatten and truncate a failure reason; never reject readable text.
+
+    Cleaning replaces the old "reject anything suspicious" rule, which silently
+    dropped whole events: an already-masked ``sk-***`` contains the literal
+    ``sk-`` and a provider message can exceed the limit, so both used to lose the
+    ``assistant_failed`` / ``index_update_failed`` event entirely. Only a
+    non-string or an empty result is refused, and callers then fall back to a
+    minimal safe value so the event itself still lands.
+
+    Control characters are replaced by spaces rather than carried into the file:
+    the rule this replaces refused them outright, and an escape byte would let a
+    provider message repaint a terminal that tails the log. Masking happens
+    before truncation so a cut can never expose a readable credential.
+    """
+    if not isinstance(value, str):
+        return ""
+    without_controls = _CONTROL_CHARACTERS.sub(" ", value)
+    collapsed = " ".join(without_controls.split())
+    if not collapsed:
+        return ""
+    return _CREDENTIAL_SHAPE.sub(_MASKED_CREDENTIAL, collapsed)[:limit]
+
+
 def profile_event(
     profile: Path,
     event: str,
@@ -62,8 +102,14 @@ def profile_event(
     record_id: str | None = None,
     state: str | None = None,
     count: int | None = None,
+    reason: str | None = None,
 ) -> None:
-    """Write allowlisted status metadata; never accept messages or source text."""
+    """Write allowlisted status metadata and an optional cleaned reason.
+
+    A reason is masked, flattened and truncated rather than rejected, so an event
+    is never lost to an over-long message or an already-masked credential. Only a
+    non-string or empty reason raises; callers fall back to a safe value.
+    """
     if event not in _EVENTS:
         raise ValueError("unsupported profile event")
     payload: dict[str, str | int] = {
@@ -82,6 +128,11 @@ def profile_event(
         if count < 0:
             raise ValueError("invalid diagnostic count")
         payload["count"] = count
+    if reason is not None:
+        cleaned = clean_reason(reason)
+        if not cleaned:
+            raise ValueError("invalid diagnostic reason")
+        payload["reason"] = cleaned
     logger = _logger(profile)
     record = logging.LogRecord(logger.name, logging.INFO, "", 0, "", (), None)
     record.event = payload

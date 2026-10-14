@@ -11,11 +11,16 @@ from typing import Any
 import httpx
 
 from summit_everything.integrations.http_boundary import (
+    ProviderError,
     bounded_json_post,
     provider_usage_record,
     reject_business_error,
 )
 from summit_everything.integrations.transport import create_http_client
+
+
+class EmbeddingProviderError(ProviderError):
+    """The embedding service failed; carries its sanitized code/message/id."""
 
 
 def tokenize(text: str) -> list[str]:
@@ -137,8 +142,29 @@ class ModelStudioEmbedding:
             if any(vector is None for vector in vectors):
                 raise ValueError("provider omitted an embedding vector")
             return [vector for vector in vectors if vector is not None]
-        except (httpx.HTTPError, KeyError, TypeError, ValueError, IndexError) as exc:
-            raise ValueError("embedding provider failed validation") from exc
+        except ProviderError as exc:
+            # Keep the service's own wording: an opaque 500 hid a bad key, a
+            # missing model permission and a malformed key during first use.
+            raise EmbeddingProviderError(
+                f"向量服务返回错误：{exc.describe()}",
+                provider_code=exc.provider_code,
+                provider_message=exc.provider_message,
+                request_id=exc.request_id,
+                reason=exc.reason or "provider",
+            ) from exc
+        except httpx.HTTPError as exc:
+            raise EmbeddingProviderError(
+                "向量服务连接失败：请检查网络、代理或证书设置。", reason="transport"
+            ) from exc
+        except (KeyError, TypeError, ValueError, IndexError) as exc:
+            # A 200 response whose content is unusable (missing or empty ``data``,
+            # non-JSON body, wrong vector shape) is still a provider failure, not
+            # a local one: it must surface as a typed 502 instead of a bare 500.
+            # Local parameter checks run before this block and stay unchanged.
+            raise EmbeddingProviderError(
+                "向量服务返回了无法解析的响应：请检查所选模型与接口是否匹配。",
+                reason="schema",
+            ) from exc
 
 
 def cosine_similarity(left: list[float], right: list[float]) -> float:

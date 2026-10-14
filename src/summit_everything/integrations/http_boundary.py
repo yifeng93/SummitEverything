@@ -2,7 +2,11 @@
 
 Every helper reads incrementally, enforces a byte ceiling, honours an overall
 deadline, never follows redirects and never retries. Failures raise ValueError
-with a message that contains no request body, header or provider payload.
+subclasses whose message contains no request body, header or credential.
+
+Provider-side failures raise :class:`ProviderError`, which keeps the provider's
+own error code, message and request id in bounded, single-line, credential-free
+form so callers can surface a reason instead of a generic failure.
 """
 
 from __future__ import annotations
@@ -19,6 +23,189 @@ from summit_everything.integrations.transport import DeadlineTransport
 from summit_everything.integrations.transport import live_transfer_workers as live_transfer_workers
 
 DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
+
+# A provider message is shown to the user, so it is bounded and stripped of
+# anything that looks like a credential before it leaves this module.
+PROVIDER_TEXT_LIMIT = 300
+PROVIDER_CODE_LIMIT = 100
+_SECRET_LIKE = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
+_IDENTIFIER_SHAPE = re.compile(r"[A-Za-z0-9._:-]{1,200}")
+
+
+def sanitize_provider_text(value: object, *, limit: int = PROVIDER_TEXT_LIMIT) -> str | None:
+    """Collapse provider text to one bounded line without credential shapes."""
+    if not isinstance(value, str):
+        return None
+    collapsed = " ".join(value.split())
+    if not collapsed:
+        return None
+    return _SECRET_LIKE.sub("sk-***", collapsed)[:limit]
+
+
+def _identifier(value: object) -> str | None:
+    if isinstance(value, str) and _IDENTIFIER_SHAPE.fullmatch(value):
+        return value
+    return None
+
+
+def provider_error_fields(payload: object) -> tuple[str | None, str | None, str | None]:
+    """Read ``(code, message, request_id)`` from either provider error shape.
+
+    DashScope-style bodies carry ``code``/``message``/``request_id`` at the top
+    level; OpenAI-compatible bodies nest them under ``error``. Both are accepted
+    and sanitized; anything unreadable stays ``None`` rather than being guessed.
+    """
+    if not isinstance(payload, dict):
+        return None, None, None
+    request_id = _identifier(getattr(payload, "request_id", None)) or _identifier(
+        payload.get("request_id")
+    )
+    if request_id is None:
+        request_id = _identifier(payload.get("id"))
+    error = payload.get("error")
+    if isinstance(error, dict):
+        raw_code = error.get("code") or error.get("type")
+        return (
+            sanitize_provider_text(raw_code, limit=PROVIDER_CODE_LIMIT),
+            sanitize_provider_text(error.get("message")),
+            request_id,
+        )
+    code = payload.get("code")
+    if isinstance(code, bool) or code in (None, "", 0, "0"):
+        code_value = None
+    elif isinstance(code, str):
+        code_value = sanitize_provider_text(code, limit=PROVIDER_CODE_LIMIT)
+    else:
+        code_value = sanitize_provider_text(str(code), limit=PROVIDER_CODE_LIMIT)
+    return code_value, sanitize_provider_text(payload.get("message")), request_id
+
+
+class ProviderError(ValueError):
+    """A provider-side failure carrying sanitized, bounded provider details.
+
+    It subclasses ``ValueError`` so adapters and their callers keep working with
+    the existing ``except ValueError`` handling, including the M4.2 acceptance
+    paths that assert a bare ``ValueError``.
+
+    User-facing text is rendered from the structured fields (``describe`` /
+    ``reason``); the free-form ``str(exc)`` is never echoed to a client, because
+    arbitrary exception text can carry credentials or local paths.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        provider_code: str | None = None,
+        provider_message: str | None = None,
+        request_id: str | None = None,
+        reason: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.message = message
+        self.provider_code = provider_code
+        self.provider_message = provider_message
+        self.request_id = request_id
+        self.reason = reason
+
+    def describe(self) -> str:
+        return describe_provider_failure(
+            provider_code=self.provider_code,
+            provider_message=self.provider_message,
+            request_id=self.request_id,
+        )
+
+    def details(self) -> dict[str, str]:
+        return provider_details(
+            provider_code=self.provider_code,
+            provider_message=self.provider_message,
+            request_id=self.request_id,
+        )
+
+
+REASON_TEXT = {
+    "transport": "连接失败（请检查网络、代理或证书）",
+    "deadline": "请求超时",
+    "provider": "服务返回错误",
+    "schema": "返回内容不符合应用要求的字段",
+}
+
+
+def describe_provider_failure(
+    *,
+    provider_code: str | None = None,
+    provider_message: str | None = None,
+    request_id: str | None = None,
+) -> str:
+    parts = [part for part in (provider_code, provider_message) if part]
+    detail = " — ".join(parts) if parts else "provider did not describe the failure"
+    if request_id:
+        detail += f"（request {request_id}）"
+    return detail
+
+
+def provider_details(
+    *,
+    provider_code: str | None = None,
+    provider_message: str | None = None,
+    request_id: str | None = None,
+) -> dict[str, str]:
+    details: dict[str, str] = {}
+    if provider_code:
+        details["code"] = provider_code
+    if provider_message:
+        details["message"] = provider_message
+    if request_id:
+        details["request_id"] = request_id
+    return details
+
+
+def describe_failure(service: str, exc: object) -> str:
+    """A controlled, credential-free sentence for a typed provider failure.
+
+    Only structured, already-sanitized fields are rendered; when the failure
+    carries none (transport, deadline, unclassified) a fixed reason is used.
+    Free-form exception text is never included.
+    """
+    details = getattr(exc, "details", None)
+    describe = getattr(exc, "describe", None)
+    if callable(details) and callable(describe) and details():
+        return f"{service}返回错误：{describe()}"
+    reason = getattr(exc, "reason", None)
+    return f"{service}不可用：{REASON_TEXT.get(reason or '', '原因未说明')}。"
+
+
+def _header_request_id(response: httpx.Response | None) -> str | None:
+    """A sanitized transport request id, read for successes and failures alike."""
+    if response is None:
+        return None
+    candidate = next(
+        (
+            response.headers.get(name)
+            for name in ("x-request-id", "request-id", "x-dashscope-request-id")
+            if response.headers.get(name)
+        ),
+        None,
+    )
+    return _identifier(candidate)
+
+
+def provider_failure(
+    status: int, body: bytes, *, fallback_request_id: str | None = None
+) -> ProviderError:
+    """A typed failure for a non-2xx provider response with a bounded body."""
+    try:
+        payload: object = json.loads(body)
+    except (ValueError, TypeError):
+        payload = None
+    code, message, request_id = provider_error_fields(payload)
+    return ProviderError(
+        f"provider returned an unsuccessful response (HTTP {status})",
+        provider_code=code,
+        provider_message=message,
+        request_id=request_id or fallback_request_id,
+        reason="provider",
+    )
 
 
 class ProviderResponse(dict[str, Any]):
@@ -166,26 +353,21 @@ def bounded_json_post(
             response_box=response_box,
         )
     except TimeoutError:
-        raise ValueError("provider request exceeded the deadline") from None
+        raise ProviderError("provider request exceeded the deadline", reason="deadline") from None
     if not 200 <= status < 300:
-        raise ValueError("provider returned an unsuccessful response")
+        # The body was read under the byte ceiling above, so the provider's own
+        # code/message can be preserved without unbounded reads. The transport
+        # request id is read here too: error replies often carry it only as a
+        # header, and it is the value support asks for.
+        raise provider_failure(
+            status,
+            body,
+            fallback_request_id=_header_request_id(response_box.get("response")),
+        )
     parsed = _parse_json(body)
     if not isinstance(parsed, dict):
         return parsed
-    response = response_box.get("response")
-    request_id = None
-    if response is not None:
-        candidate = next(
-            (
-                response.headers.get(name)
-                for name in ("x-request-id", "request-id", "x-dashscope-request-id")
-                if response.headers.get(name)
-            ),
-            None,
-        )
-        if candidate and re.fullmatch(r"[A-Za-z0-9._:-]{1,200}", candidate):
-            request_id = candidate
-    return ProviderResponse(parsed, request_id)
+    return ProviderResponse(parsed, _header_request_id(response_box.get("response")))
 
 
 def provider_usage_record(provider: str, response: Any) -> dict[str, Any]:
@@ -233,12 +415,23 @@ def reject_business_error(wire: Any) -> None:
     if isinstance(code, bool):
         raise ValueError("provider returned an invalid response")
     if isinstance(code, (int, float)) and code != 0:
-        raise ValueError("provider reported an error response")
+        raise _business_error(wire)
     if isinstance(code, str) and code.strip() not in {"", "0"}:
-        raise ValueError("provider reported an error response")
+        raise _business_error(wire)
     error = wire.get("error")
     if error not in (None, "", False):
-        raise ValueError("provider reported an error response")
+        raise _business_error(wire)
+
+
+def _business_error(wire: Any) -> ProviderError:
+    code, message, request_id = provider_error_fields(wire)
+    return ProviderError(
+        "provider reported an error response",
+        provider_code=code,
+        provider_message=message,
+        request_id=request_id,
+        reason="provider",
+    )
 
 
 def _parse_json(body: bytes) -> Any:

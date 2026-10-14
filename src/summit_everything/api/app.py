@@ -59,7 +59,7 @@ from summit_everything.integrations.acceptance_plans import (
     PlanConflict,
     ProviderUsage,
 )
-from summit_everything.integrations.embedding import ModelStudioEmbedding
+from summit_everything.integrations.embedding import EmbeddingProviderError, ModelStudioEmbedding
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.feishu.http import FeishuHttpProvider
 from summit_everything.integrations.feishu.provider import (
@@ -82,6 +82,16 @@ from summit_everything.integrations.feishu.service import (
     callback_boundary,
 )
 from summit_everything.integrations.feishu.tasks import FeishuTasks
+from summit_everything.integrations.first_use_defaults import (
+    FirstUseDefaults,
+    load_first_use_defaults,
+)
+from summit_everything.integrations.http_boundary import (
+    REASON_TEXT,
+    ProviderError,
+    describe_failure,
+    sanitize_provider_text,
+)
 from summit_everything.integrations.llm import DeepSeekLLM, FakeLLM, LLMProviderError
 from summit_everything.integrations.provider_smoke import (
     SMOKE_LIMITS,
@@ -89,7 +99,7 @@ from summit_everything.integrations.provider_smoke import (
     reserve_smoke_call,
     smoke_counts,
 )
-from summit_everything.integrations.rerank import ModelStudioReranker
+from summit_everything.integrations.rerank import ModelStudioReranker, RerankProviderError
 from summit_everything.integrations.runtime import ModelRuntime
 from summit_everything.integrations.settings import (
     CredentialVault,
@@ -121,7 +131,7 @@ from summit_everything.local.conversations import (
     QueryConflict,
     QueryStart,
 )
-from summit_everything.local.event_log import profile_event
+from summit_everything.local.event_log import FALLBACK_REASON, profile_event
 from summit_everything.release import (
     fingerprint_web_dist,
     load_build_identity,
@@ -421,6 +431,172 @@ class CallbackAccessLogFilter(logging.Filter):
         return True
 
 
+_LOGGER = logging.getLogger("summit_everything.api")
+
+
+def error_envelope(
+    request: Request,
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    extra: dict[str, object] | None = None,
+) -> JSONResponse:
+    """The one error body shape: ``{"error": {code, message, request_id, ...}}``.
+
+    Shared by the exception handlers and the origin guard. Handlers that can run
+    before the request-id middleware allocate an id here so the envelope always
+    carries a correlation id.
+    """
+    request_id = getattr(request.state, "request_id", None)
+    if request_id is None:
+        request_id = secrets.token_hex(8)
+        request.state.request_id = request_id
+    body: dict[str, object] = {"code": code, "message": message, "request_id": request_id}
+    if extra:
+        body.update(extra)
+    return JSONResponse(status_code=status_code, content={"error": body})
+
+
+def settings_error_response(request: Request, exc: SettingsError) -> JSONResponse:
+    """The single shape for an unusable settings/credential store."""
+    if exc.code == "validation_error":
+        message = "设置字段或凭据无效。"
+        return error_envelope(request, status_code=422, code=exc.code, message=message)
+    message = "设置或凭据无法使用，请检查本机配置和钥匙串状态。"
+    return error_envelope(request, status_code=503, code=exc.code, message=message)
+
+
+def query_failure_message(exc: BaseException) -> str:
+    """A single-line, bounded, credential-free reason for a failed query.
+
+    Only typed, structured failures are described in detail. An unknown
+    exception keeps the generic sentence: arbitrary exception text can carry
+    credentials or local paths, and the release tests pin that it is never
+    echoed to a client. The sanitized cause still reaches the local log.
+    """
+    if isinstance(exc, EmbeddingProviderError):
+        return sanitize_provider_text(describe_failure("向量服务", exc)) or "向量服务不可用。"
+    if isinstance(exc, RerankProviderError):
+        return sanitize_provider_text(describe_failure("排序服务", exc)) or "排序服务不可用。"
+    if isinstance(exc, (ProviderError, LLMProviderError)):
+        return sanitize_provider_text(describe_failure("模型服务", exc)) or "模型服务不可用。"
+    return "查询未能完成，请稍后重试。"
+
+
+_API_KEY_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{16,}")
+_CREDENTIAL_MAX_LENGTH = 512
+
+
+def safe_failure_reason(exc: BaseException, *, service: str = "provider") -> str:
+    """A searchable cause that never carries free-form exception text.
+
+    Typed provider failures render their sanitized structured fields; anything
+    else is reduced to the exception type name, because arbitrary exception text
+    can carry credentials, local paths or user content, and the release tests
+    pin that it never reaches a log or a client.
+    """
+    if isinstance(exc, (ProviderError, LLMProviderError)):
+        if exc.details():
+            return describe_failure(service, exc)
+        return f"{service}不可用：{REASON_TEXT.get(exc.reason or '', '原因未说明')}。"
+    return type(exc).__name__
+
+
+def assistant_failure(exc: BaseException, *, suffix: str) -> HTTPException:
+    """The assist failure envelope: a typed reason, or a safe generic sentence.
+
+    Free-form exception text never reaches the client; a typed provider failure
+    renders its sanitized provider fields so the user learns what actually
+    failed (the assist path used to answer every failure identically).
+    """
+    if isinstance(exc, (ProviderError, LLMProviderError)):
+        reason = sanitize_provider_text(describe_failure("模型服务", exc))
+        if reason:
+            return HTTPException(
+                status_code=502,
+                detail={"code": "assistant_unavailable", "message": f"{reason} {suffix}"},
+            )
+    return HTTPException(
+        status_code=502,
+        detail={"code": "assistant_unavailable", "message": f"AI 辅助暂时不可用；{suffix}"},
+    )
+
+
+def record_diagnostic(profile: Path, event: str, *, state: str, reason: object) -> None:
+    """Record a profile diagnostic without silently dropping the event.
+
+    The event log cleans the reason (mask, one line, truncate); when cleaning
+    still refuses it the minimal safe value is used instead, so an over-long or
+    already-masked reason can never cost us the whole record. Only a disk failure
+    (OSError) can still stop it.
+    """
+    candidates = [reason if isinstance(reason, str) else "", FALLBACK_REASON]
+    for candidate in candidates:
+        try:
+            profile_event(profile, event, state=state, reason=candidate)
+            return
+        except ValueError:
+            continue
+        except OSError:
+            return
+
+
+def record_assistant_failure(workspace: object, exc: BaseException) -> None:
+    """Keep a sanitized, bounded reason in the profile diagnostics log."""
+    record_diagnostic(
+        Path(workspace.local_profile_dir),  # type: ignore[attr-defined]
+        "assistant_failed",
+        state="failed",
+        reason=safe_failure_reason(exc, service="模型服务"),
+    )
+
+
+def smoke_failure_message(exc: BaseException, *, service: str) -> str:
+    """The one-shot warning, prefixed with the reason when it is a typed failure.
+
+    The smoke checks are where the first real failures appeared, so the provider
+    reason belongs in the message the WebUI shows; unknown exception text stays
+    out of it.
+    """
+    warning = "请求已计入一次尝试；结果未知，不会自动重发。"
+    if isinstance(exc, (ProviderError, LLMProviderError)):
+        detail = sanitize_provider_text(describe_failure(service, exc))
+        if detail:
+            return f"{detail} {warning}"
+    return warning
+
+
+def validate_credential_shape(provider: str, secret: str) -> None:
+    """Reject a value that cannot be the credential it claims to be.
+
+    A pasted multi-line blob or a stray table row used to be stored silently and
+    only failed later as an opaque provider error. Shape is checked before the
+    keychain write; the submitted value is never echoed back.
+    """
+    if provider in {"deepseek", "dashscope"}:
+        if len(secret) > _CREDENTIAL_MAX_LENGTH or not _API_KEY_SHAPE.fullmatch(secret):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "credential_shape_invalid",
+                    "message": ("这不像一把 API key：请确认它以 sk- 开头，且不含空格或换行。"),
+                },
+            )
+        return
+    if provider == "feishu_app":
+        if not 8 <= len(secret) <= _CREDENTIAL_MAX_LENGTH or any(
+            character.isspace() or ord(character) < 32 for character in secret
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "credential_shape_invalid",
+                    "message": "飞书应用密钥不能包含空白或控制字符，长度需在 8 到 512 之间。",
+                },
+            )
+
+
 def create_app(
     *,
     session_token: str | None = None,
@@ -431,9 +607,16 @@ def create_app(
     credential_store: CredentialStore | None = None,
     secret_backend: SecretBackend | None = None,
     feishu_config: FeishuConfig | None = None,
+    first_use_defaults: FirstUseDefaults | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.state.acceptance_run_id = uuid4()
+    # Non-secret setup values (App ID, callback, base URLs) may be injected by an
+    # explicit environment path or by the packaged bundle resource; the runtime
+    # reads no repository file. A rejected source fails closed at startup.
+    app.state.first_use_defaults = (
+        first_use_defaults if first_use_defaults is not None else load_first_use_defaults()
+    )
     build_info_path = os.environ.get("SUMMIT_BUILD_INFO")
     build_identity = load_build_identity(build_info_path)
     web_dist = os.environ.get("SUMMIT_WEB_DIST")
@@ -495,9 +678,17 @@ def create_app(
         workspace = cast(WorkspaceContext | None, app.state.workspace)
         allowed_origins = config.allowed_origins
         if workspace is not None:
-            settings = SettingsStore(
-                Path(workspace.local_profile_dir) / "provider-settings.json"
-            ).read()
+            try:
+                settings = SettingsStore(
+                    Path(workspace.local_profile_dir) / "provider-settings.json",
+                    defaults=app.state.first_use_defaults,
+                ).read()
+            except SettingsError as exc:
+                # A corrupt profile must fail closed with the designed envelope.
+                # This middleware sits outside the application's exception
+                # handlers, so an unhandled SettingsError here would escape as a
+                # bare 500 and the client could not even tell what happened.
+                return settings_error_response(request, exc)
             callback = settings.feishu.redirect_uri or config.redirect_uri
             parts = urlsplit(callback)
             callback_origin = f"{parts.scheme}://{parts.netloc}"
@@ -561,7 +752,10 @@ def create_app(
         return workspace
 
     def settings_store(workspace: WorkspaceContext) -> SettingsStore:
-        return SettingsStore(Path(workspace.local_profile_dir) / "provider-settings.json")
+        return SettingsStore(
+            Path(workspace.local_profile_dir) / "provider-settings.json",
+            defaults=app.state.first_use_defaults,
+        )
 
     def acceptance_ledger(workspace: WorkspaceContext) -> AcceptancePlanLedger:
         return AcceptancePlanLedger(Path(workspace.local_profile_dir))
@@ -1144,20 +1338,7 @@ def create_app(
 
     @app.exception_handler(SettingsError)
     async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
-        status = 422 if exc.code == "validation_error" else 503
-        message = "设置或凭据无法使用，请检查本机配置和钥匙串状态。"
-        if exc.code == "validation_error":
-            message = "设置字段或凭据无效。"
-        return JSONResponse(
-            status_code=status,
-            content={
-                "error": {
-                    "code": exc.code,
-                    "message": message,
-                    "request_id": request.state.request_id,
-                }
-            },
-        )
+        return settings_error_response(request, exc)
 
     @app.exception_handler(ValidationError)
     async def payload_validation_error(_request: Request, exc: ValidationError) -> JSONResponse:
@@ -1295,9 +1476,9 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, object]:
         validate_credential_account(workspace, provider, payload.account_id)
-        credential_vault(workspace).put(
-            provider, payload.secret.get_secret_value(), account_id=payload.account_id
-        )
+        secret = payload.secret.get_secret_value()
+        validate_credential_shape(provider, secret)
+        credential_vault(workspace).put(provider, secret, account_id=payload.account_id)
         return {"provider": provider, "configured": True}
 
     @app.delete("/api/v1/credentials/{provider}", dependencies=[Depends(authenticated)])
@@ -1562,14 +1743,14 @@ def create_app(
             return {"state": "succeeded", "operation": "deepseek_chat", "attempt": attempt}
         except HTTPException:
             raise
-        except Exception:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "provider_smoke_failed",
-                    "message": "请求已计入一次尝试；结果未知，不会自动重发。",
-                },
-            ) from None
+        except Exception as exc:
+            detail: dict[str, object] = {
+                "code": "provider_smoke_failed",
+                "message": smoke_failure_message(exc, service="模型服务"),
+            }
+            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
+                detail["provider"] = exc.details()
+            raise HTTPException(status_code=502, detail=detail) from None
         finally:
             provider.close()
 
@@ -1593,14 +1774,14 @@ def create_app(
             }
         except HTTPException:
             raise
-        except Exception:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "provider_smoke_failed",
-                    "message": "请求已计入一次尝试；结果未知，不会自动重发。",
-                },
-            ) from None
+        except Exception as exc:
+            detail: dict[str, object] = {
+                "code": "provider_smoke_failed",
+                "message": smoke_failure_message(exc, service="向量服务"),
+            }
+            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
+                detail["provider"] = exc.details()
+            raise HTTPException(status_code=502, detail=detail) from None
         finally:
             provider.close()
 
@@ -1625,14 +1806,14 @@ def create_app(
             }
         except HTTPException:
             raise
-        except Exception:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "provider_smoke_failed",
-                    "message": "请求已计入一次尝试；结果未知，不会自动重发。",
-                },
-            ) from None
+        except Exception as exc:
+            detail: dict[str, object] = {
+                "code": "provider_smoke_failed",
+                "message": smoke_failure_message(exc, service="排序服务"),
+            }
+            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
+                detail["provider"] = exc.details()
+            raise HTTPException(status_code=502, detail=detail) from None
         finally:
             provider.close()
 
@@ -1651,10 +1832,17 @@ def create_app(
             plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
             service.execute_plan(root, plan)
         except Exception as exc:
+            reason = safe_failure_reason(exc, service="索引服务")
             logging.getLogger(__name__).error(
                 "Incremental index update failed for workspace %s (%s)",
                 workspace.workspace_id,
-                type(exc).__name__,
+                reason,
+            )
+            record_diagnostic(
+                Path(workspace.local_profile_dir),
+                "index_update_failed",
+                state="failed",
+                reason=reason,
             )
             return mutation.model_copy(update={"index_update": "update_failed"})
         return mutation.model_copy(update={"index_update": "updated"})
@@ -1707,15 +1895,55 @@ def create_app(
 
     @app.exception_handler(LLMProviderError)
     async def provider_error_handler(request: Request, exc: LLMProviderError) -> JSONResponse:
-        return JSONResponse(
-            status_code=503,
-            content={
-                "error": {
-                    "code": "provider_error",
-                    "message": "模型服务暂时不可用，请检查本地设置后重试。",
-                    "request_id": request.state.request_id,
-                }
-            },
+        return error_envelope(
+            request,
+            status_code=502,
+            code="provider_error",
+            message=sanitize_provider_text(describe_failure("模型服务", exc))
+            or "模型服务暂时不可用，请检查本地设置后重试。",
+            extra={"provider": exc.details()} if exc.details() else None,
+        )
+
+    @app.exception_handler(ProviderError)
+    async def typed_provider_error_handler(request: Request, exc: ProviderError) -> JSONResponse:
+        """Typed provider failures keep the provider's own explanation.
+
+        Only the structured, sanitized fields are rendered: free-form exception
+        text is never echoed, because it can carry credentials or local paths.
+        """
+        return error_envelope(
+            request,
+            status_code=502,
+            code="provider_error",
+            message=sanitize_provider_text(describe_failure("模型服务", exc))
+            or "模型服务返回错误。",
+            extra={"provider": exc.details()} if exc.details() else None,
+        )
+
+    @app.exception_handler(EmbeddingProviderError)
+    async def embedding_provider_error_handler(
+        request: Request, exc: EmbeddingProviderError
+    ) -> JSONResponse:
+        return error_envelope(
+            request,
+            status_code=502,
+            code="provider_error",
+            message=sanitize_provider_text(describe_failure("向量服务", exc))
+            or "向量服务返回错误。",
+            extra={"provider": exc.details()} if exc.details() else None,
+        )
+
+    @app.exception_handler(RerankProviderError)
+    async def rerank_provider_error_handler(
+        request: Request, exc: RerankProviderError
+    ) -> JSONResponse:
+        return error_envelope(
+            request,
+            status_code=502,
+            code="provider_error",
+            message=sanitize_provider_text(describe_failure("排序服务", exc))
+            or "排序服务返回错误。",
+            extra={"provider": exc.details()} if exc.details() else None,
         )
 
     @app.exception_handler(HTTPException)
@@ -1990,21 +2218,20 @@ def create_app(
                     409,
                     detail={"code": "acceptance_plan_conflict", "message": str(exc)},
                 ) from None
-            except LLMProviderError as exc:
+            except (ProviderError, LLMProviderError) as exc:
                 if ledger.get(payload.acceptance_plan_id).state == "executing":
                     ledger.finish(
                         payload.acceptance_plan_id, state="unknown" if reserved else "failed"
                     )
-                raise HTTPException(
-                    status_code=502,
-                    detail="AI 辅助暂时不可用；记录仍留在编辑区，未保存。",
-                ) from exc
-            except Exception:
+                record_assistant_failure(workspace, exc)
+                raise assistant_failure(exc, suffix="记录仍留在编辑区，未保存。") from exc
+            except Exception as exc:
                 if ledger.get(payload.acceptance_plan_id).state == "executing":
                     ledger.finish(
                         payload.acceptance_plan_id, state="unknown" if reserved else "failed"
                     )
-                raise
+                record_assistant_failure(workspace, exc)
+                raise assistant_failure(exc, suffix="记录仍留在编辑区，未保存。") from exc
             finally:
                 try:
                     if provider_review is not None:
@@ -2020,10 +2247,11 @@ def create_app(
                             close_provider()
         try:
             proposals = review_for(workspace).provider.organize([(uuid4(), uuid4(), payload.text)])
-        except LLMProviderError as exc:
-            raise HTTPException(
-                status_code=502, detail="AI 辅助暂时不可用；已保存内容未更改。"
-            ) from exc
+        except Exception as exc:
+            # Every failure answers with a safe sentence and leaves a searchable
+            # local cause; a typed provider failure also names the reason.
+            record_assistant_failure(workspace, exc)
+            raise assistant_failure(exc, suffix="已保存内容未更改。") from exc
         if not proposals:
             raise HTTPException(status_code=502, detail="AI 辅助没有返回建议；已保存内容未更改。")
         return JournalAssistResponse(title=proposals[0].title, body=proposals[0].body)
@@ -3084,14 +3312,32 @@ def create_app(
                 else:
                     store.finish(workspace.workspace_id, stable_request_id, "interrupted")
                 raise
-            except Exception:
+            except Exception as exc:
+                # The WebUI shows the SSE message verbatim, so it keeps the safe
+                # sentence for untyped exceptions. The query record is a different
+                # surface: it must stay diagnosable, because in a packaged app
+                # Python logging has no handler and its stderr is discarded, which
+                # leaves this record as the only survival surface. It therefore
+                # always carries the sanitized, single-line, bounded cause.
+                reason = query_failure_message(exc)
+                # The local record is the surface that survives packaging, so it
+                # keeps the sanitized <type>: <message>; the client response and
+                # the service log stay on the controlled text only.
+                diagnostic = sanitize_provider_text(f"{type(exc).__name__}: {exc}") or reason
+                _LOGGER.warning(
+                    "query failed request_id=%s error=%s cause=%s logged=%s",
+                    stable_request_id,
+                    type(exc).__name__,
+                    reason,
+                    safe_failure_reason(exc, service="模型服务"),
+                )
                 terminal = store.terminate(
                     workspace.workspace_id,
                     stable_request_id,
                     "error",
-                    {"code": "query_error", "message": "查询未能完成，请稍后重试。"},
+                    {"code": "query_error", "message": reason, "detail": reason},
                     "error",
-                    error="查询未能完成，请稍后重试。",
+                    error=diagnostic,
                 )
                 if terminal is not None:
                     yield event(terminal.seq, terminal.type, terminal.data)

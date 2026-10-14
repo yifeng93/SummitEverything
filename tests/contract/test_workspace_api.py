@@ -3,11 +3,23 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from summit_everything.api.app import create_app
 
 TOKEN = "test-session-token"
+
+
+@pytest.fixture(autouse=True)
+def isolated_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep the default profile root inside tmp_path instead of the real HOME.
+
+    create_app() derives its default profile root from Path.home(); without this
+    fixture these contract tests would create application state in the user's
+    Library directory and fail under a sandboxed or read-only home.
+    """
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
 
 
 def client() -> TestClient:

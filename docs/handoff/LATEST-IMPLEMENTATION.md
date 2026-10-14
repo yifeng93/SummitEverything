@@ -1,5 +1,22 @@
 # 最新实现交接
 
+## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `8c4f81c`）
+
+用户在 2026-10-14 要求按 SummitWorkbench 的配置方式重做首次配置，并明确「Base URL、callback、Feishu App ID 这些非秘密值不要再让我填，只输入密钥」。决议与边界见 [ADR 0010](../decisions/0010-first-use-configuration-ux.md)。
+
+- 设置页改为三张卡 + 状态徽章 + 「高级与自定义」；飞书徽章来自真实本地状态接口，只有凭据确实读不出来才显示「需重新授权」。
+- 新增 5 步首次配置向导（模型与地址 → 密钥 → 检查连接 → 飞书 → 完成），每步可跳过；密钥只在组件内存，不写任何持久化；向导导航零 provider 请求；连接检查保持「显式点击 + 本次范围确认」，沿用每项 1 次、跨运行累计的合成检查。
+- 非秘密接入值由 Git 忽略的 `.local/first-use/defaults.json` 在构建时注入包内 `Resources/first-use-defaults.json`；运行时只认 `SUMMIT_FIRST_USE_DEFAULTS` 与包内资源，无仓库隐式回退；secret 形态键名或未知键一律 fail closed。百炼地址改用官方推荐的业务空间专属域名。
+- 保存只记录用户显式覆盖：与注入默认值相同的值不落盘，因此未覆盖过的 profile 会跟随后续构建的默认值；显式改过的值保持固定。
+
+自动检查（Sol 本机执行）：guarded Python **591 passed**（`SUMMIT_FIRST_USE_DEFAULTS` 导出与未导出两种 shell 结果一致）、Web **90 passed**、ruff/format/mypy/lock exit 0、OpenAPI 与 tracked 文件逐字节一致、`npm run build` 成功。打包 `scripts/release-macos.sh` exit 0（DMG CRC VALID），`smoke_packaged_app.py` PASS，包内注入端到端验证 **27/27**（注入生效、保存不固化、换默认值跟随、secret 形态键启动失败、section 级与字段级损坏都不被静默接受）。候选位于 `.local/internal-builds/settings-ux-8c4f81c/`，DMG SHA-256 `966cf3ae278db6ab0d2c6f60629e63d4cc7b3f2bae9f977333e6682e753eaeab`，`dirty=false`。完整证据与未验证边界见 [DEV 报告](../quality/reports/2026-10-14-SETTINGS-UX-DEV.md)。
+
+三轮全新独立 QA 分别在独立 worktree 对固定 SHA 验收，逐字报告归档在 [QA 证据目录](../quality/reports/evidence/2026-10-14-settings-ux-qa/README.md)：第一轮（`e4f15cd`）全项 PASS 但查出 **D1**（section 级损坏被注入掩盖）；第二轮（`6d41d35`）确认 D1 修复并查出 **F1**（字段级同类）与既存 **F2**；第三轮（`8c4f81c`）确认 F1 修复（旧树对照 72 项失败）、其余全项 PASS，并查出 **F3**（测试不固定注入源）。D1/F1 已修复并由后续 QA 复核，F3 由仅测试提交修复（第四轮聚焦复核：导出与未导出两种 shell 下均 591 passed，且修复前对照复现 33 failed / 558 passed）。
+
+**F2 仍开放**：`origin_guard` 中间件读取损坏 profile 时抛错，返回裸 500 而非设计中的 JSON 503，导致 profile 损坏后连用于修复的 PATCH 也 500；该行为在功能前提交 `a6faf7e` 上同样存在，与本功能无关，未在本分支修复。
+
+未测边界：真实 provider/飞书/OAuth/Keychain 生命周期/真实材料/账单与质量/正式安装/公证/Gatekeeper/五日/双机/发布全部 **NOT_RUN**；runtime 模型元数据 **UNVERIFIED**；新界面未做浏览器或真机视觉复核。另有一处已知残留：在本功能之前保存过的旧 profile 里，注入字段可能已被固化为当时的公共端点，需要用户在高级设置清空该字段一次才会跟随新默认值。
+
 ## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，已获离线收口/合入批准
 
 初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`；独立 fresh QA 完成，Sol 判适用工作包 A 离线技术场景 **PASS**，未发现新产品缺陷。它不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。用户于 2026-10-14 批准工作包 A 离线正式收口与合入 main。PR #18 已于 2026-10-14T10:42:19Z 合并，head `0e8fc4633d4b1409fb7da0354d4474a4faeef430`；远端 run [38550700081](https://github.com/yifeng93/SummitEverything/actions/runs/38550700081) 全步骤成功。该 workflow 显示名沿用 M4.1，但本次运行针对 PR #18。当前 main 产品/tests/lock 树与 fixed `419bb86` 相同；本次 closeout 文档提交不改变受测 SHA。完整关系见 [closeout](../quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。
@@ -8,7 +25,7 @@
 
 QA 独立覆盖 P1/P2，Native 多文件/混合失败提示/取消/目录 FileList，Fake JournalAssist 生命周期，Real ProviderRuntime + MockHTTP API 集成，planner C19、候选身份与包校验。逐项结果见 [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)；Sol 范围和限制见 [Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)；61 个原始 QA 文件的可提交副本与路径映射见 [QA evidence archive](../quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)。Developer、QA 与 Sol 的 docs/evidence commits 均不能被误称为受测产品 SHA。固定候选交付副本位于主仓库 `.local/internal-builds/m42-419bb86/`：App `/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/m42-419bb86/SummitEverything Internal 419bb86.app`；DMG `/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/m42-419bb86/SummitEverything-Internal-419bb86.dmg`，SHA-256 `2e176a2d27f13821f2f82768966719408780c0ed963ee9d9e4413b75ff16f14a`。它是未公证的内部候选，不表示正式用户安装通过。
 
-首次配置偏好与已完成的只读代码审计见 [M42 readiness](M42-PACKAGE-A-READINESS.md)：初始为 Fake；用户期望首次在本机配置 DeepSeek Flash API key、DashScope key（Qwen 3.7 embedding/rerank 共用），再点击 Feishu 授权，之后同机同工作库日常免重复输入。1024 embedding dimensions 与 cn region 固定；DashScope endpoint 要使用用户自己的 WorkspaceId 或其提供的完整 URLs，界面 `default` 是凭据槽标签，不是 Workspace。Feishu 需要 AppID/AppSecret、注册 native callback `http://127.0.0.1:18793/api/v1/integrations/feishu/callback` 并经用户点击启动浏览器授权；`5173` 仅是 dev 示例。密钥仅本机设置，不进聊天或包。此为配置审计/目标说明；真实 Workspace 可用性、OAuth/scope、token/vault 与 Keychain 生命周期均 **NOT_RUN/UNVERIFIED**，不代表真实 Real 配置已通过，也不假设各 workspace 共享 keys。
+首次配置偏好与只读代码审计见 [M42 readiness](M42-PACKAGE-A-READINESS.md)：初始为 Fake；用户已选择 DeepSeek Flash、Qwen 3.7 embedding 与 Qwen 3.7 rerank，并提供非秘密 WorkspaceId、两个百炼 Base URL 与 Feishu AppID（具体值不写入 tracked 文档）。offline_guard 配置模型验证中，Embedding `/compatible-mode/v1` 与 Rerank `/api/v1` 设置值通过，完整 rerank target 作为 Base URL 被拒绝；adapter 会追加 rerank 服务路径。DeepSeek adapter 固定走 OpenAI-compatible `/chat/completions`，无需 Anthropic URL。1024 embedding dimensions 与 cn region 固定；`default` 只是凭据槽标签。Feishu 保留已登记的旧 callback；native callback `http://127.0.0.1:18793/api/v1/integrations/feishu/callback` 需用户在后台手工新增，本轮未操作后台或保存设置。`5173` 仍是开发示例。聊天中的 `***` 是遮罩，不是真凭据。代码请求 scope 与用户报告后台列表的差异见 readiness；未做 live 权限核验。真实账户可用性、OAuth/scope、token/vault 与 Keychain 生命周期均 **NOT_RUN/UNVERIFIED**；不代表真实 Real 配置已通过，也不假设各 workspace 共享 keys。
 
 安全观察需按真实时序理解：corrected UI run 开始前已核 native/backend guard 与 profile 并通过；更早的一段 UI 运行没有前置核验，恢复上下文后误启动的 late CUA copied app 在任何 UI 输入之前被观察到 guard=false/profile 不匹配并停止。Keychain 查询次数与默认 profile 回退均 **UNVERIFIED**；不能称本轮零查询/全程隔离。P1一条初始错误 assertion raw 完整保留，另一条失败 raw 被成功运行覆盖并在 QA 报告披露。CUA 是观察转录，不是 AX dump 或 screenshot。
 
