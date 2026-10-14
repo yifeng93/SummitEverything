@@ -56,10 +56,12 @@ D1、F1、F3 均已修复并经后续独立 QA 复核。**F2 未修复**，见�
 
 ## 已知开放问题
 
-- **F2（既有，未修）**：`origin_guard` 中间件直接读取 profile 设置且无异常处理（[app.py:508-516](../../../src/summit_everything/api/app.py#L508-L516)），profile 损坏时抛出裸 500，绕过已注册的 `SettingsError` 处理器（本应返回 JSON 503）。实际影响是 profile 一旦损坏，**连用于修复的 PATCH 也返回 500**，只能手改文件。该形态在功能前提交 `a6faf7e` 上同样存在，与本功能无关；现有测试没有任何一条断言该 500，因此修复面小，但属于中间件行为、应作为独立切片实施与验证。
+- **F2（既有；已由 `codex/origin-guard-error-20261014` 修复并经独立 QA，整合候选 `6fe1aa8` 已包含）**：`origin_guard` 中间件读取 profile 设置时未捕获 `SettingsError`，损坏 profile 会以裸 500 逃逸、绕过已注册的处理器（本应返回 JSON 503），连修复用的 `PATCH` 也 500。修复与证据见 [F2 报告](2026-10-14-ORIGIN-GUARD-SETTINGS-ERROR.md)。
 - **O1（既有，低危）**：手写 `{"llm":{"provider":"deepseek"}}`（缺 `model` 键）被接受为 `model=None`；`embedding`/`rerank` 因使用 after-validator 而拒绝。经 PATCH 不可达。
 - **O2（设计取舍）**：显式注入文件整体替换包内文件，不做按字段合并；只给部分键时其余字段退回内置默认值。
 - **O3（已知呈现）**：启动期失败关闭表现为 PyInstaller 原始 traceback（exit 1，不泄露值）。
+- **O4（2026-10-14 真实使用中观察到，UI/UX）**：飞书 OAuth 成功后，浏览器回调页的响应体是 `FeishuStatus` 的**原始 JSON**（`GET /api/v1/integrations/feishu/callback` 直接返回该模型），用户在浏览器里看到一坨 JSON，无法一眼判断授权是否完成、下一步做什么。功能正确（授权已完成、token 已入库），但缺一句人话确认与「可关闭此页回到应用」的指引。属后续独立小改动（改为 HTML 或重定向回应用界面），本分支未处理。
+- **O5（旧 profile 残留，已在真实配置中发生并被修复）**：在注入功能之前保存过的 workspace 会把 `base_url` 固化为当时的公共端点（`dashscope.aliyuncs.com/...`），此后不再跟随注入的业务空间地址；在高级设置里清空该字段一次即恢复跟随（ADR 0010 记录的取舍，本轮确认会实际发生，恢复方式有效）。
 
 ## 候选身份
 
