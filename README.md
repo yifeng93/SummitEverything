@@ -19,6 +19,7 @@ M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固�
 - 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 - 验收者：[AGENTS.md](AGENTS.md) → [独立验收手册](docs/handoff/TESTER.md) → [验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 当前进展：[进展账本](docs/implementation/PROGRESS.md)；[报告索引](docs/quality/reports/README.md)；[全部文档](docs/README.md)。
+- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 用户三轮选择题确认）。
 - 内部测试：[安装与启动说明](docs/handoff/M41-INTERNAL-INSTALL.md)；已合入 [PR #17](https://github.com/yifeng93/SummitEverything/pull/17)。
 - 新聊天提示词：[实现者](docs/handoff/PROMPT-IMPLEMENTER.md)、[验收者](docs/handoff/PROMPT-TESTER.md)。
 
