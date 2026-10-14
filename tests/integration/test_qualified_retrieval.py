@@ -1825,3 +1825,158 @@ def test_stale_plan_and_failed_model_change_keep_previous_index_active(tmp_path:
     from summit_everything.workspace.manifest import load_manifest
 
     assert store.active_fingerprint(load_manifest(root).workspace_id) == "fake-v1"
+
+
+def test_open_action_questions_keep_context_and_result_clause_as_one_evidence_unit(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="访客登记与离场记录流程",
+        body=("前台接待访客时，应先核验姓名，再记录来访时间。访客离开时，前台补记离开时间。"),
+    )
+    calls: list[tuple[str, list[str]]] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            excerpts = [str(passage["excerpt"]) for passage in passages]
+            calls.append((question, excerpts))
+            return GroundedAnswer(text="已提交所选依据。", source_statements=excerpts)
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    for question in (
+        "访客离开时，前台应记录什么？",
+        "访客离场后要补充记录哪些信息？",
+    ):
+        retrieval.query(root, question, fingerprint="fake-v1")
+        assert calls and calls[-1][0] == question
+        assert any("访客离开时，前台补记离开时间。" in excerpt for excerpt in calls[-1][1]), (
+            question,
+            calls[-1][1] if calls else [],
+        )
+
+    call_count = len(calls)
+    unknown_object = "紫藤工程访客离场后要补充记录哪些信息？"
+    unknown_answer = retrieval.query(root, unknown_object, fingerprint="fake-v1")
+    assert unknown_answer.citations == []
+    assert len(calls) == call_count
+
+    unframed_topic = "访客离场后的记录流程如何？"
+    unframed_answer = retrieval.query(root, unframed_topic, fingerprint="fake-v1")
+    assert unframed_answer.citations == []
+    assert len(calls) == call_count
+
+    unknown_topic = "模拟项目的设备领用流程需要核对哪些信息？"
+    unknown_topic_answer = retrieval.query(root, unknown_topic, fingerprint="fake-v1")
+    assert unknown_topic_answer.citations == []
+    assert len(calls) == call_count
+
+    missing_detail = "访客离开时，前台应记录联系电话吗？"
+    answer = retrieval.query(root, missing_detail, fingerprint="fake-v1")
+    assert calls and calls[-1][0] == missing_detail
+    assert all("联系电话" not in excerpt for excerpt in calls[-1][1])
+    assert "当前资料只覆盖了部分所问范围" in answer.text
+    assert "联系电话" in "；".join(answer.missing_information)
+    assert "已提交所选依据" not in answer.text
+
+
+def test_comma_clause_for_another_known_object_is_not_sent_as_evidence(
+    tmp_path: Path,
+) -> None:
+    root, line_id, _project_id = create_test_workspace(tmp_path / "workspace")
+    qinglan = create_project(root, UUID(line_id), "青岚项目", "qinglan")
+    create_project(root, UUID(line_id), "朱雀项目", "zhuque")
+    approve_page(
+        root,
+        line_id,
+        str(qinglan.id),
+        title="青岚与朱雀的预算和排期",
+        body="青岚项目预算上限为十二万元，朱雀项目排期在十一月。",
+    )
+    calls: list[list[str]] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            excerpts = [str(passage["excerpt"]) for passage in passages]
+            calls.append(excerpts)
+            return GroundedAnswer(text="依据所选范围。", source_statements=excerpts)
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    retrieval.query(root, "青岚项目预算上限是多少？", fingerprint="fake-v1")
+
+    assert calls
+    assert any("青岚项目预算上限为十二万元" in excerpt for excerpt in calls[-1])
+    assert all("朱雀项目" not in excerpt for excerpt in calls[-1])
+
+
+def test_open_action_question_keeps_existing_topic_dimension_filter(
+    tmp_path: Path,
+) -> None:
+    root, line_id, _project_id = create_test_workspace(tmp_path / "workspace")
+    project = create_project(root, UUID(line_id), "青岚项目", "qinglan")
+    approve_page(
+        root, line_id, str(project.id), title="青岚项目预算", body="青岚项目预算上限为十二万元。"
+    )
+    approve_page(
+        root, line_id, str(project.id), title="青岚项目排期", body="青岚项目预计于十一月启动。"
+    )
+    approve_page(
+        root, line_id, str(project.id), title="青岚项目档案", body="青岚项目的档案由专人保管。"
+    )
+    calls: list[list[str]] = []
+
+    class Answerer:
+        def answer(self, question, passages, context=None):
+            excerpts = [str(passage["excerpt"]) for passage in passages]
+            calls.append(excerpts)
+            return GroundedAnswer(text="依据所选范围。", source_statements=excerpts)
+
+    retrieval = QueryService(
+        IndexStore(tmp_path / "profile" / "index.sqlite3"),
+        FakeEmbedding(),
+        answer_provider=Answerer(),
+    )
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    retrieval.query(root, "青岚项目预算需要核对哪些信息？", fingerprint="fake-v1")
+
+    assert calls
+    joined = "\n".join(calls[-1])
+    assert "预算上限为十二万元" in joined
+    assert "十一月启动" not in joined
+    assert "专人保管" not in joined
+
+    retrieval.query(root, "预算与排期核对时，工作人员需要补哪些信息？", fingerprint="fake-v1")
+    joined = "\n".join(calls[-1])
+    assert "预算上限为十二万元" in joined
+    assert "十一月启动" in joined
+    assert "专人保管" not in joined
+
+    retrieval.query(root, "青岚项目需要核对预算哪些信息？", fingerprint="fake-v1")
+    joined = "\n".join(calls[-1])
+    assert "预算上限为十二万元" in joined
+    assert "十一月启动" not in joined
+    assert "专人保管" not in joined
+
+    multi_clause = plan_retrieval(
+        "青岚项目预算核对时，工作人员核对库存后，需要补哪些信息？",
+        [],
+        ("青岚项目",),
+        object_aliases={"青岚项目"},
+    )
+    assert any("budget" in dimension.split("&") for dimension in multi_clause.dimensions)

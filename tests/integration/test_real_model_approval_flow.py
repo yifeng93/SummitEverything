@@ -27,6 +27,7 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
 ):
     calls: list[tuple[str, dict[str, Any]]] = []
     closed_clients: list[bool] = []
+    fail_next_chat = [False]
 
     class TrackedClient(httpx.Client):
         def __init__(self) -> None:
@@ -74,6 +75,9 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
                 headers={"x-request-id": f"synthetic-{len(calls):02d}"},
             )
         if request.url.path.endswith("/chat/completions"):
+            if fail_next_chat[0]:
+                fail_next_chat[0] = False
+                raise httpx.ReadTimeout("synthetic provider timeout")
             system = payload["messages"][0]["content"]
             if "Faithfully reorganize" in system:
                 content = json.dumps(
@@ -377,3 +381,182 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     assert len([path for path, _ in calls if path.endswith("/embeddings")]) == 2
     assert len([path for path, _ in calls if path.endswith("/text-rerank")]) == 1
     assert len(closed_clients) == 5
+
+    journal_text = "合成日志：周三完成访客流程演练，遗留事项待确认。"
+    before_journal = len(calls)
+    unapproved = client.post("/api/v1/journal/assist", headers=HEADERS, json={"text": journal_text})
+    assert unapproved.status_code == 409
+    assert unapproved.json()["error"]["code"] == "acceptance_plan_required"
+    assert len(calls) == before_journal
+
+    journal_preview_response = client.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "model.journal_assist", "scope": {"text": journal_text}},
+    )
+    assert journal_preview_response.status_code == 201, journal_preview_response.text
+    journal_preview = journal_preview_response.json()
+    assert journal_preview["scope"]["text"] == journal_text
+    assert journal_preview["scope"]["max_output_tokens"] == 2048
+    journal_confirm = client.post(
+        f"/api/v1/acceptance-plans/{journal_preview['plan']['plan_id']}/confirm",
+        headers=HEADERS,
+        json={
+            "scope_sha256": journal_preview["plan"]["scope_sha256"],
+            "scope": journal_preview["scope"],
+        },
+    )
+    assert journal_confirm.status_code == 200, journal_confirm.text
+
+    changed_text = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={
+            "text": journal_text + " 越界附加内容。",
+            "acceptance_plan_id": journal_preview["plan"]["plan_id"],
+        },
+    )
+    assert changed_text.status_code == 409
+    assert len(calls) == before_journal
+
+    journal_response = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={"text": journal_text, "acceptance_plan_id": journal_preview["plan"]["plan_id"]},
+    )
+    assert journal_response.status_code == 200, journal_response.text
+    assert journal_response.json()["title"] == "访客登记办法"
+    assert journal_response.json()["body"]
+    journal_state = client.get(
+        f"/api/v1/acceptance-plans/{journal_preview['plan']['plan_id']}", headers=HEADERS
+    ).json()
+    assert journal_state["state"] == "succeeded"
+    assert journal_state["requests_reserved"] == 1
+    assert journal_state["provider_usage"][0]["request_id"].startswith("synthetic-")
+    assert len(calls) == before_journal + 1
+    journal_wire = calls[-1][1]
+    assert journal_wire["max_tokens"] == 2048
+    assert journal_wire["thinking"] == {"type": "disabled"}
+
+    repeated = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={"text": journal_text, "acceptance_plan_id": journal_preview["plan"]["plan_id"]},
+    )
+    assert repeated.status_code == 409
+    assert len(calls) == before_journal + 1
+    assert len(closed_clients) == 6
+
+    def confirmed_journal_plan(text: str) -> dict[str, Any]:
+        preview_response = client.post(
+            "/api/v1/acceptance-plans",
+            headers=HEADERS,
+            json={"operation": "model.journal_assist", "scope": {"text": text}},
+        )
+        assert preview_response.status_code == 201, preview_response.text
+        preview = preview_response.json()
+        confirm_response = client.post(
+            f"/api/v1/acceptance-plans/{preview['plan']['plan_id']}/confirm",
+            headers=HEADERS,
+            json={"scope_sha256": preview["plan"]["scope_sha256"], "scope": preview["scope"]},
+        )
+        assert confirm_response.status_code == 200, confirm_response.text
+        return preview
+
+    # Cancellation and a changed provider configuration both stop before the MockHTTP boundary.
+    cancelled = confirmed_journal_plan("取消用合成日志正文")
+    cancelled_delete = client.delete(
+        f"/api/v1/acceptance-plans/{cancelled['plan']['plan_id']}", headers=HEADERS
+    )
+    assert cancelled_delete.status_code == 200
+    assert cancelled_delete.json()["state"] == "cancelled"
+    cancelled_execute = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={"text": "取消用合成日志正文", "acceptance_plan_id": cancelled["plan"]["plan_id"]},
+    )
+    assert cancelled_execute.status_code == 409
+    assert len(calls) == before_journal + 1
+    changed_config_plan = confirmed_journal_plan("配置变化用合成日志正文")
+    changed_config = client.patch(
+        "/api/v1/settings",
+        headers=HEADERS,
+        json={
+            "llm": {
+                "provider": "deepseek",
+                "model": "deepseek-flash",
+                "enabled": True,
+                "reasoning_effort": "high",
+                "max_output_tokens": 2048,
+            }
+        },
+    )
+    assert changed_config.status_code == 200, changed_config.text
+    config_rejected = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={
+            "text": "配置变化用合成日志正文",
+            "acceptance_plan_id": changed_config_plan["plan"]["plan_id"],
+        },
+    )
+    assert config_rejected.status_code == 409
+    assert len(calls) == before_journal + 1
+    restored_config = client.patch(
+        "/api/v1/settings",
+        headers=HEADERS,
+        json={
+            "llm": {
+                "provider": "deepseek",
+                "model": "deepseek-flash",
+                "enabled": True,
+                "reasoning_effort": "low",
+                "max_output_tokens": 2048,
+            }
+        },
+    )
+    assert restored_config.status_code == 200
+
+    # A transport timeout consumes its reservation, closes the runtime client, and cannot replay.
+    timeout_plan = confirmed_journal_plan("超时用合成日志正文")
+    fail_next_chat[0] = True
+    timeout_result = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={"text": "超时用合成日志正文", "acceptance_plan_id": timeout_plan["plan"]["plan_id"]},
+    )
+    assert timeout_result.status_code == 502
+    assert len(calls) == before_journal + 2
+    timeout_state = client.get(
+        f"/api/v1/acceptance-plans/{timeout_plan['plan']['plan_id']}", headers=HEADERS
+    ).json()
+    assert timeout_state["state"] == "unknown"
+    assert timeout_state["requests_reserved"] == 1
+    closed_after_timeout = len(closed_clients)
+    timeout_replay = client.post(
+        "/api/v1/journal/assist",
+        headers=HEADERS,
+        json={"text": "超时用合成日志正文", "acceptance_plan_id": timeout_plan["plan"]["plan_id"]},
+    )
+    assert timeout_replay.status_code == 409
+    assert len(calls) == before_journal + 2
+    assert len(closed_clients) == closed_after_timeout
+
+    # Even a failed usage-ledger write must not leak the provider client.
+    usage_failure_plan = confirmed_journal_plan("账本写入故障用合成日志正文")
+
+    def fail_journal_usage(_ledger: AcceptancePlanLedger, _plan_id: Any, _usage: Any) -> None:
+        raise RuntimeError("synthetic journal usage ledger failure")
+
+    monkeypatch.setattr(AcceptancePlanLedger, "record_usage", fail_journal_usage)
+    closed_before_usage_failure = len(closed_clients)
+    with pytest.raises(RuntimeError, match="synthetic journal usage ledger failure"):
+        client.post(
+            "/api/v1/journal/assist",
+            headers=HEADERS,
+            json={
+                "text": "账本写入故障用合成日志正文",
+                "acceptance_plan_id": usage_failure_plan["plan"]["plan_id"],
+            },
+        )
+    assert len(closed_clients) == closed_before_usage_failure + 1

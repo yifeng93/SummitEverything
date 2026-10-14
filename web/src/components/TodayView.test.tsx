@@ -141,3 +141,104 @@ it('requires readable plan confirmation for real organize and sends nothing on c
   await waitFor(() => expect(paths.some((path) => path.endsWith('/acceptance-plans/plan-id'))).toBe(true))
   expect(paths.some((path) => path.endsWith('/intake/jobs'))).toBe(false)
 })
+
+it('stages multi-file intake, shows skipped and per-file results, then retries only the failed item', async () => {
+  let operationAttempt = 0
+  const uploaded: string[] = []
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input)
+    if (path.endsWith('/intake/files')) {
+      const form = init?.body as FormData
+      const operation = String(form.get('operation_id'))
+      uploaded.push(operation)
+      operationAttempt += 1
+      if (operationAttempt === 1) return { ok: false, status: 503, json: async () => ({ error: { message: '合成上传故障' } }) }
+      return { ok: true, status: 201, json: async () => ({ item_id: `item-${operation}` }) }
+    }
+    const data: Record<string, unknown> = {
+      '/api/v1/intake/items': [], '/api/v1/drafts': [], '/api/v1/actions': [],
+      '/api/v1/lines': [], '/api/v1/projects': [], '/api/v1/pages': [],
+      '/api/v1/settings': { mode: 'fake' },
+    }
+    return { ok: true, status: 200, json: async () => data[path] }
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<TodayView onError={vi.fn()} />)
+  const good = new File(['合成正文'], 'notes.md', { type: 'text/markdown' })
+  const fail = new File(['合成正文'], 'minutes.txt', { type: 'text/plain' })
+  const unsupported = new File(['x'], 'image.pdf', { type: 'application/pdf' })
+  Object.defineProperty(unsupported, 'webkitRelativePath', { value: 'sample/image.pdf' })
+  const hidden = new File(['x'], '.secrets/hidden.txt', { type: 'text/plain' })
+  Object.defineProperty(hidden, 'webkitRelativePath', { value: 'sample/.secrets/hidden.txt' })
+  const picker = screen.getByLabelText('选择多个文件') as HTMLInputElement
+  fireEvent.change(picker, { target: { files: [good, fail, unsupported, hidden] } })
+  expect(await screen.findByText('notes.md')).toBeTruthy()
+  expect(screen.getByText(/仅支持 TXT \/ Markdown/)).toBeTruthy()
+  expect(screen.getByText(/隐藏内容或应用包内容已跳过/)).toBeTruthy()
+  expect(uploaded).toEqual([])
+
+  fireEvent.click(screen.getByRole('button', { name: '导入可用文件' }))
+  await waitFor(() => expect(screen.getByText(/导入失败/)).toBeTruthy())
+  expect(screen.getByText(/已导入/)).toBeTruthy()
+  expect(uploaded).toHaveLength(2)
+  const failedOperation = uploaded[0]
+  fireEvent.click(screen.getByRole('button', { name: '只重试此文件' }))
+  await waitFor(() => expect(uploaded).toHaveLength(3))
+  expect(uploaded[2]).toBe(failedOperation)
+  expect(uploaded[1]).not.toBe(failedOperation)
+})
+
+it('locks the staged batch while an upload is active so selected rows cannot be replaced', async () => {
+  let releaseUpload: (() => void) | undefined
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    if (path.endsWith('/intake/files')) {
+      await new Promise<void>((resolve) => { releaseUpload = resolve })
+      return { ok: true, status: 201, json: async () => ({ item_id: 'item-1' }) }
+    }
+    const data: Record<string, unknown> = {
+      '/api/v1/intake/items': [], '/api/v1/drafts': [], '/api/v1/actions': [],
+      '/api/v1/lines': [], '/api/v1/projects': [], '/api/v1/pages': [],
+    }
+    return { ok: true, status: 200, json: async () => data[path] }
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<TodayView onError={vi.fn()} />)
+  const picker = await screen.findByLabelText('选择多个文件') as HTMLInputElement
+  fireEvent.change(picker, { target: { files: [new File(['first'], 'first.txt', { type: 'text/plain' })] } })
+  fireEvent.click(await screen.findByRole('button', { name: '导入可用文件' }))
+  await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/intake/files'))).toBe(true))
+  expect((screen.getByLabelText('选择多个文件') as HTMLInputElement).disabled).toBe(true)
+  expect((screen.getByRole('button', { name: '清空列表' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.change(screen.getByLabelText('选择多个文件'), { target: { files: [new File(['second'], 'second.txt', { type: 'text/plain' })] } })
+  expect(screen.getByText('first.txt')).toBeTruthy()
+  expect(screen.queryByText('second.txt')).toBeNull()
+  releaseUpload?.()
+  await waitFor(() => expect(screen.getByText(/已导入/)).toBeTruthy())
+})
+
+it('blocks batches above the item and per-file limits before any write', async () => {
+  let id = 0
+  vi.stubGlobal('crypto', { randomUUID: () => `operation-${++id}` })
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    const data: Record<string, unknown> = {
+      '/api/v1/intake/items': [], '/api/v1/drafts': [], '/api/v1/actions': [],
+      '/api/v1/lines': [], '/api/v1/projects': [], '/api/v1/pages': [],
+    }
+    return { ok: true, status: 200, json: async () => data[path] }
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<TodayView onError={vi.fn()} />)
+  const picker = await screen.findByLabelText('选择多个文件') as HTMLInputElement
+  const oversized = new File(['x'], 'large.txt', { type: 'text/plain' })
+  Object.defineProperty(oversized, 'size', { value: 20 * 1024 * 1024 + 1 })
+  fireEvent.change(picker, { target: { files: [oversized] } })
+  expect(await screen.findByText(/单个文件超过 20 MB/)).toBeTruthy()
+  expect((screen.getByRole('button', { name: '导入可用文件' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.change(screen.getByLabelText('选择多个文件'), {
+    target: { files: Array.from({ length: 101 }, (_, index) => new File(['x'], `file-${index}.txt`)) },
+  })
+  expect(await screen.findAllByText(/超过 100 个文件或 100 MB/)).toHaveLength(101)
+  expect(fetchMock.mock.calls.some(([input]) => String(input).endsWith('/intake/files'))).toBe(false)
+})

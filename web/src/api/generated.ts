@@ -1126,7 +1126,7 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "feishu.materials.read" | "feishu.materials.import" | "feishu.calendar.read" | "feishu.tasks.read" | "feishu.task.read" | "model.index" | "model.query" | "model.organize";
+            operation: "feishu.materials.read" | "feishu.materials.import" | "feishu.calendar.read" | "feishu.tasks.read" | "feishu.task.read" | "model.index" | "model.query" | "model.organize" | "model.journal_assist";
             /** Scope */
             scope: {
                 [key: string]: unknown;
@@ -1963,6 +1963,8 @@ export interface components {
         JournalAssistRequest: {
             /** Text */
             text: string;
+            /** Acceptance Plan Id */
+            acceptance_plan_id?: string | null;
         };
         /** JournalAssistResponse */
         JournalAssistResponse: {

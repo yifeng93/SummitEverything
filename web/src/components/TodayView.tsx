@@ -18,6 +18,10 @@ import type { components } from '../api/generated'
 
 type Props = { onError: (message: string) => void }
 type PendingOrganize = { plan: { plan_id: string; scope_sha256: string; request_limit: number }; scope: Record<string, unknown>; body: Record<string, unknown>; key: string }
+type BatchUpload = { key: string; file: File; path: string; state: 'queued' | 'uploading' | 'succeeded' | 'failed' | 'skipped' | 'blocked'; message?: string }
+const MAX_BATCH_FILES = 100
+const MAX_BATCH_BYTES = 100 * 1024 * 1024
+const MAX_FILE_BYTES = 20 * 1024 * 1024
 
 export function TodayView({ onError }: Props) {
   const [feishuMode, setFeishuMode] = useState<'fake' | 'real' | null>(null)
@@ -35,6 +39,9 @@ export function TodayView({ onError }: Props) {
   const [busy, setBusy] = useState(false)
   const [indexNotice, setIndexNotice] = useState('')
   const [pendingOrganize, setPendingOrganize] = useState<PendingOrganize | null>(null)
+  const [batchUploads, setBatchUploads] = useState<BatchUpload[]>([])
+  const [uploadingBatch, setUploadingBatch] = useState(false)
+  const uploadingBatchRef = useRef(false)
   const [today] = useState(() => new Date())
   const operations = useRef<Record<string, string>>({})
 
@@ -116,22 +123,55 @@ export function TodayView({ onError }: Props) {
     }
   }
 
-  async function importFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-    const key = 'file:' + file.name + ':' + file.size
-    const form = new FormData()
-    form.append('operation_id', operation(key))
-    form.append('file', file)
+  function stageFiles(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    if (uploadingBatchRef.current) return
+    if (selectedFiles.length === 0) return
+    const batchTooLarge = selectedFiles.length > MAX_BATCH_FILES
+      || selectedFiles.reduce((total, file) => total + file.size, 0) > MAX_BATCH_BYTES
+    setBatchUploads(selectedFiles.map((file) => {
+      const path = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name
+      if (batchTooLarge) return { key: newOperationId(), file, path, state: 'blocked', message: '所选批次超过 100 个文件或 100 MB；未上传。' }
+      const components = path.split('/').filter(Boolean)
+      if (components.some((part) => part.startsWith('.') || /\.(app|bundle|framework|pkg)$/i.test(part))) return { key: newOperationId(), file, path, state: 'skipped', message: '隐藏内容或应用包内容已跳过。' }
+      if (!/\.(txt|md)$/i.test(file.name)) return { key: newOperationId(), file, path, state: 'skipped', message: '仅支持 TXT / Markdown。' }
+      if (file.size > MAX_FILE_BYTES) return { key: newOperationId(), file, path, state: 'blocked', message: '单个文件超过 20 MB；未上传。' }
+      if (file.size === 0) return { key: newOperationId(), file, path, state: 'blocked', message: '空文件未上传。' }
+      return { key: newOperationId(), file, path, state: 'queued' }
+    }))
+  }
+
+  async function uploadBatch(rows: BatchUpload[]) {
+    const queued = rows.filter((row) => row.state === 'queued' || row.state === 'failed')
+    if (queued.length === 0 || uploadingBatchRef.current) return
+    uploadingBatchRef.current = true
+    setUploadingBatch(true)
+    let uploadedAny = false
     try {
-      await api.upload<IntakeItem>('/intake/files', form)
-      finish(key)
-      await refresh()
-    } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '无法导入文件')
+      for (const row of queued) {
+        setBatchUploads((current) => current.map((item) => item.key === row.key ? { ...item, state: 'uploading', message: undefined } : item))
+        const form = new FormData()
+        form.append('operation_id', row.key)
+        form.append('file', row.file)
+        try {
+          await api.upload<IntakeItem>('/intake/files', form)
+          uploadedAny = true
+          setBatchUploads((current) => current.map((item) => item.key === row.key ? { ...item, state: 'succeeded', message: '已保存到待整理' } : item))
+        } catch (cause) {
+          setBatchUploads((current) => current.map((item) => item.key === row.key ? { ...item, state: 'failed', message: cause instanceof Error ? cause.message : '导入失败；可单独重试此项。' } : item))
+        }
+      }
+      if (uploadedAny) await refresh()
     } finally {
-      event.target.value = ''
+      uploadingBatchRef.current = false
+      setUploadingBatch(false)
     }
+  }
+
+  function retryUpload(key: string) {
+    const row = batchUploads.find((item) => item.key === key)
+    if (row) void uploadBatch([row])
   }
 
   async function organize() {
@@ -232,16 +272,27 @@ export function TodayView({ onError }: Props) {
               <label className="sr-only" htmlFor="quick-capture">写下刚想到或刚收到的内容</label>
               <textarea id="quick-capture" value={text} onChange={(event) => setText(event.target.value)} placeholder="写下刚想到或刚收到的内容…" rows={5} />
               <div className="capture-actions">
-                <label className="button secondary file-button">
-                  导入 TXT / Markdown
-                  <input type="file" accept=".txt,.md,text/plain,text/markdown" onChange={importFile} />
-                </label>
+                <div className="batch-import-controls">
+                  <label className="button secondary file-button">
+                    选择多个文件
+                    <input type="file" multiple disabled={uploadingBatch} accept=".txt,.md,text/plain,text/markdown" onChange={stageFiles} />
+                  </label>
+                  <label className="button secondary file-button">
+                    选择文件夹
+                    <input type="file" multiple webkitdirectory="" disabled={uploadingBatch} accept=".txt,.md,text/plain,text/markdown" onChange={stageFiles} />
+                  </label>
+                </div>
                 <div className="button-row">
                   <button type="button" className="button secondary" disabled={!text.trim() || busy} onClick={saveJournal}>记入工作日志</button>
                   <button className="button primary" disabled={!text.trim() || busy}>{busy ? '保存中…' : '存入待整理'}</button>
                 </div>
               </div>
             </form>
+            {batchUploads.length > 0 && <section className="batch-upload-review" aria-label="导入批次">
+              <div className="panel-heading"><div><h3>待导入文件</h3><p>最多 100 个 / 100 MB；每个文件不超过 20 MB。隐藏内容和应用包会跳过。只保存原件到待整理区，不会调用模型。</p></div><button type="button" className="text-button" onClick={() => setBatchUploads([])} disabled={uploadingBatch}>清空列表</button></div>
+              <ul className="source-list">{batchUploads.map((row) => <li key={row.key}><div className="source-row"><span className="source-title"><strong>{row.path}</strong><small>{(row.file.size / 1024).toFixed(1)} KB · {{ queued: '待导入', uploading: '正在导入', succeeded: '已导入', failed: '导入失败', skipped: '已跳过', blocked: '未导入' }[row.state]}{row.message ? ` · ${row.message}` : ''}</small></span>{row.state === 'failed' && <button type="button" className="text-button" disabled={uploadingBatch} onClick={() => retryUpload(row.key)}>只重试此文件</button>}</div></li>)}</ul>
+              <div className="journal-actions"><button type="button" className="button primary" disabled={uploadingBatch || !batchUploads.some((row) => row.state === 'queued')} onClick={() => void uploadBatch(batchUploads)}>{uploadingBatch ? '正在逐项导入…' : '导入可用文件'}</button></div>
+            </section>}
             {indexNotice && <p role="status" className={indexNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{indexNotice}</p>}
           </section>
 

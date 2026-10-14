@@ -4933,7 +4933,8 @@
               "feishu.task.read",
               "model.index",
               "model.query",
-              "model.organize"
+              "model.organize",
+              "model.journal_assist"
             ],
             "title": "Operation"
           },
@@ -6948,8 +6949,21 @@
         "properties": {
           "text": {
             "type": "string",
+            "maxLength": 100000,
             "minLength": 1,
             "title": "Text"
+          },
+          "acceptance_plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acceptance Plan Id"
           }
         },
         "additionalProperties": false,

@@ -7,11 +7,12 @@ credential or Keychain item exists in this test.
 from __future__ import annotations
 
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 
 from summit_everything.api.app import create_app
+from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.settings import MemorySecretBackend
 
@@ -176,6 +177,115 @@ def test_real_feishu_read_plan_binds_configuration_scope_and_is_one_shot(tmp_pat
         headers=HEADERS,
     )
     assert retry.status_code == 409
+
+
+def test_live_acceptance_plan_owner_remains_executing(tmp_path):
+    client = _client(tmp_path)
+    _open(client, tmp_path)
+    _configure_real(client)
+    plan = client.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "feishu.tasks.read", "scope": {"cursor": None, "limit": 20}},
+    ).json()["plan"]
+    confirmed = client.post(
+        f"/api/v1/acceptance-plans/{plan['plan_id']}/confirm",
+        headers=HEADERS,
+        json={"scope_sha256": plan["scope_sha256"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    ledger_path = next((tmp_path / "profile").rglob("acceptance-plans.json"))
+    ledger = AcceptancePlanLedger(ledger_path.parent)
+    executing = ledger.begin_execution(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        config_sha256=plan["config_sha256"],
+        scope_sha256=plan["scope_sha256"],
+        run_id=client.app.state.acceptance_run_id,
+    )
+    reserved = ledger.reserve_requests(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        count=2,
+    )
+
+    status = client.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS)
+
+    assert status.status_code == 200, status.text
+    assert status.json()["state"] == "executing"
+    assert status.json()["execution_run_id"] == str(executing.execution_run_id)
+    assert status.json()["requests_reserved"] == 2
+    assert reserved.state == "executing"
+
+
+def test_interrupted_acceptance_plan_is_reported_unknown_without_replay(tmp_path):
+    profile = tmp_path / "profile"
+    workspace = tmp_path / "workspace"
+    first = _client(tmp_path)
+    _open(first, tmp_path)
+    _configure_real(first)
+    plan = first.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "feishu.tasks.read", "scope": {"cursor": None, "limit": 20}},
+    ).json()["plan"]
+    confirmed = first.post(
+        f"/api/v1/acceptance-plans/{plan['plan_id']}/confirm",
+        headers=HEADERS,
+        json={"scope_sha256": plan["scope_sha256"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    ledger_path = next(profile.rglob("acceptance-plans.json"))
+    ledger = AcceptancePlanLedger(ledger_path.parent)
+    original_run_id = uuid4()
+    ledger.begin_execution(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        config_sha256=plan["config_sha256"],
+        scope_sha256=plan["scope_sha256"],
+        run_id=original_run_id,
+    )
+    ledger.reserve_requests(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        count=2,
+    )
+
+    restarted = _client(tmp_path)
+    opened = restarted.post(
+        "/api/v1/workspaces",
+        headers=HEADERS,
+        json={
+            "root": str(workspace),
+            "mode": "open",
+            "name": "Synthetic Gate",
+            "operation_id": "reopen-after-restart",
+        },
+    )
+    assert opened.status_code == 201, opened.text
+    operation_retry = restarted.get(
+        f"/api/v1/integrations/feishu/tasks?limit=20&plan_id={plan['plan_id']}",
+        headers=HEADERS,
+    )
+    assert operation_retry.status_code == 409, operation_retry.text
+
+    first_status = restarted.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS)
+    second_status = restarted.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS)
+
+    assert first_status.status_code == 200, first_status.text
+    assert second_status.status_code == 200, second_status.text
+    assert first_status.json()["state"] == second_status.json()["state"] == "unknown"
+    assert (
+        first_status.json()["requests_reserved"] == second_status.json()["requests_reserved"] == 2
+    )
+    assert first_status.json()["execution_run_id"] == str(original_run_id)
+    assert second_status.json()["execution_run_id"] == str(original_run_id)
+    assert first_status.json()["finished_at"] is not None
+    assert ledger.get(UUID(plan["plan_id"])).requests_reserved == 2
 
 
 def test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt(tmp_path):

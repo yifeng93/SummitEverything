@@ -9,7 +9,7 @@ import re
 import secrets
 import tempfile
 from collections.abc import AsyncIterator
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Event, Lock
 from typing import Annotated, Any, Literal, cast
@@ -334,6 +334,7 @@ class AcceptancePlanRequest(RequestModel):
         "model.index",
         "model.query",
         "model.organize",
+        "model.journal_assist",
     ]
     scope: dict[str, Any]
 
@@ -376,7 +377,8 @@ class ProjectOverviewConfirmation(RequestModel):
 
 
 class JournalAssistRequest(RequestModel):
-    text: str = Field(min_length=1)
+    text: str = Field(min_length=1, max_length=100_000)
+    acceptance_plan_id: UUID | None = None
 
 
 class JournalAssistResponse(BaseModel):
@@ -824,6 +826,30 @@ def create_app(
                 for item_id, source_id, text in inputs
             ],
         }
+
+    def normalize_journal_assist_scope(
+        workspace: WorkspaceContext, values: dict[str, Any]
+    ) -> dict[str, Any]:
+        if set(values) - {"text", "max_output_tokens"}:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "日志辅助范围字段无效。"}
+            )
+        text = values.get("text")
+        if not isinstance(text, str) or not text.strip() or len(text) > 100_000:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "请提供有效的日志正文。"}
+            )
+        max_output_tokens = settings_store(workspace).read().llm.max_output_tokens
+        supplied_budget = values.get("max_output_tokens", max_output_tokens)
+        if type(supplied_budget) is not int or supplied_budget != max_output_tokens:
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "acceptance_plan_stale",
+                    "message": "模型输出预算已变化，请重新预览。",
+                },
+            )
+        return {"text": text, "max_output_tokens": max_output_tokens}
 
     def normalize_query_scope(
         workspace: WorkspaceContext, values: dict[str, Any]
@@ -1306,6 +1332,8 @@ def create_app(
             ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
         elif payload.operation == "model.organize":
             ensure_remote_calls_allowed(workspace, ("llm",))
+        elif payload.operation == "model.journal_assist":
+            ensure_remote_calls_allowed(workspace, ("llm",))
         if payload.operation == "model.index":
             scope = normalize_index_scope(workspace, payload.scope)
             request_limit = index_embedding_call_bound(workspace, scope)
@@ -1314,6 +1342,9 @@ def create_app(
             request_limit = 3  # one embedding, one rerank, and one answer call at most
         elif payload.operation == "model.organize":
             scope = normalize_organize_scope(workspace, payload.scope)
+            request_limit = 1
+        elif payload.operation == "model.journal_assist":
+            scope = normalize_journal_assist_scope(workspace, payload.scope)
             request_limit = 1
         else:
             scope = normalize_feishu_scope(payload.operation, payload.scope)
@@ -1390,6 +1421,8 @@ def create_app(
                     if key in payload.scope
                 }
                 scope = normalize_organize_scope(workspace, organize_intent)
+            elif current.operation == "model.journal_assist":
+                scope = normalize_journal_assist_scope(workspace, payload.scope or {})
             else:
                 scope = normalize_feishu_scope(current.operation, payload.scope)
             expected_sha = payload.scope_sha256
@@ -1434,7 +1467,15 @@ def create_app(
         # A process interruption after request reservation is observable as unknown;
         # the plan remains consumed and has no resume or resend endpoint.
         if plan.state == "executing" and plan.execution_run_id != app.state.acceptance_run_id:
-            return plan.model_copy(update={"state": "unknown"})
+            # This timestamp records when this process observed the interrupted run,
+            # not when the provider operation finished. Keep the ledger unchanged.
+            return AcceptancePlan.model_validate(
+                {
+                    **plan.model_dump(),
+                    "state": "unknown",
+                    "finished_at": datetime.now(UTC),
+                }
+            )
         return plan
 
     @app.delete("/api/v1/acceptance-plans/{plan_id}", dependencies=[Depends(authenticated)])
@@ -1886,13 +1927,97 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> JournalAssistResponse:
         if settings_store(workspace).read().mode == "real":
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "code": "acceptance_plan_required",
-                    "message": "真实整理需先通过来源选择和一次性授权计划。",
-                },
-            )
+            ensure_remote_calls_allowed(workspace, ("llm",))
+            if payload.acceptance_plan_id is None:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": "acceptance_plan_required",
+                        "message": "发送日志正文前请预览并确认本次 AI 辅助范围。",
+                    },
+                )
+            try:
+                scope = normalize_journal_assist_scope(workspace, {"text": payload.text})
+                scope_sha = json_binding({"operation": "model.journal_assist", "scope": scope})
+                ledger = acceptance_ledger(workspace)
+                approved = ledger.get(payload.acceptance_plan_id)
+                if approved.operation != "model.journal_assist":
+                    raise PlanConflict("acceptance plan operation does not match")
+                ledger.begin_execution(
+                    payload.acceptance_plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                    config_sha256=settings_binding(workspace),
+                    scope_sha256=scope_sha,
+                    run_id=app.state.acceptance_run_id,
+                )
+            except PlanConflict as exc:
+                raise HTTPException(
+                    409,
+                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                ) from None
+
+            reserved = False
+            provider_review: IntakeReviewService | None = None
+            try:
+                # Use the configured runtime directly. Test-only injected review services
+                # cannot turn a real-mode action into a Fake or bypass its credential gate.
+                provider_review = IntakeReviewService(runtime_for(workspace).llm())
+                current_scope = normalize_journal_assist_scope(workspace, {"text": payload.text})
+                if (
+                    settings_binding(workspace) != approved.config_sha256
+                    or json_binding({"operation": "model.journal_assist", "scope": current_scope})
+                    != approved.scope_sha256
+                ):
+                    raise PlanConflict("journal text or provider settings changed")
+                ledger.reserve_request(
+                    payload.acceptance_plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                )
+                reserved = True
+                proposals = provider_review.provider.organize([(uuid4(), uuid4(), payload.text)])
+                if not proposals:
+                    raise LLMProviderError("provider returned no journal-assist proposal")
+                ledger.finish(payload.acceptance_plan_id, state="succeeded")
+                return JournalAssistResponse(title=proposals[0].title, body=proposals[0].body)
+            except PlanConflict as exc:
+                if ledger.get(payload.acceptance_plan_id).state == "executing":
+                    ledger.finish(
+                        payload.acceptance_plan_id, state="unknown" if reserved else "failed"
+                    )
+                raise HTTPException(
+                    409,
+                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                ) from None
+            except LLMProviderError as exc:
+                if ledger.get(payload.acceptance_plan_id).state == "executing":
+                    ledger.finish(
+                        payload.acceptance_plan_id, state="unknown" if reserved else "failed"
+                    )
+                raise HTTPException(
+                    status_code=502,
+                    detail="AI 辅助暂时不可用；记录仍留在编辑区，未保存。",
+                ) from exc
+            except Exception:
+                if ledger.get(payload.acceptance_plan_id).state == "executing":
+                    ledger.finish(
+                        payload.acceptance_plan_id, state="unknown" if reserved else "failed"
+                    )
+                raise
+            finally:
+                try:
+                    if provider_review is not None:
+                        persist_provider_usage(
+                            workspace,
+                            payload.acceptance_plan_id,
+                            (provider_review.provider,),
+                        )
+                finally:
+                    if provider_review is not None:
+                        close_provider = getattr(provider_review.provider, "close", None)
+                        if callable(close_provider):
+                            close_provider()
         try:
             proposals = review_for(workspace).provider.organize([(uuid4(), uuid4(), payload.text)])
         except LLMProviderError as exc:
