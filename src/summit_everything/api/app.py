@@ -87,6 +87,7 @@ from summit_everything.integrations.first_use_defaults import (
     load_first_use_defaults,
 )
 from summit_everything.integrations.http_boundary import (
+    REASON_TEXT,
     ProviderError,
     describe_failure,
     sanitize_provider_text,
@@ -485,6 +486,56 @@ def query_failure_message(exc: BaseException) -> str:
 
 _API_KEY_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{16,}")
 _CREDENTIAL_MAX_LENGTH = 512
+
+
+def safe_failure_reason(exc: BaseException, *, service: str = "provider") -> str:
+    """A searchable cause that never carries free-form exception text.
+
+    Typed provider failures render their sanitized structured fields; anything
+    else is reduced to the exception type name, because arbitrary exception text
+    can carry credentials, local paths or user content, and the release tests
+    pin that it never reaches a log or a client.
+    """
+    if isinstance(exc, (ProviderError, LLMProviderError)):
+        if exc.details():
+            return describe_failure(service, exc)
+        return f"{service}不可用：{REASON_TEXT.get(exc.reason or '', '原因未说明')}。"
+    return type(exc).__name__
+
+
+def assistant_failure(exc: BaseException, *, suffix: str) -> HTTPException:
+    """The assist failure envelope: a typed reason, or a safe generic sentence.
+
+    Free-form exception text never reaches the client; a typed provider failure
+    renders its sanitized provider fields so the user learns what actually
+    failed (the assist path used to answer every failure identically).
+    """
+    if isinstance(exc, (ProviderError, LLMProviderError)):
+        reason = sanitize_provider_text(describe_failure("模型服务", exc))
+        if reason:
+            return HTTPException(
+                status_code=502,
+                detail={"code": "assistant_unavailable", "message": f"{reason} {suffix}"},
+            )
+    return HTTPException(
+        status_code=502,
+        detail={"code": "assistant_unavailable", "message": f"AI 辅助暂时不可用；{suffix}"},
+    )
+
+
+def record_assistant_failure(workspace: object, exc: BaseException) -> None:
+    """Keep a sanitized, bounded reason in the profile diagnostics log."""
+    reason = safe_failure_reason(exc, service="模型服务")
+    try:
+        profile_event(
+            Path(workspace.local_profile_dir),  # type: ignore[attr-defined]
+            "assistant_failed",
+            state="failed",
+            reason=reason,
+        )
+    except (ValueError, OSError):
+        # Diagnostics must never turn a request failure into a different one.
+        pass
 
 
 def smoke_failure_message(exc: BaseException, *, service: str) -> str:
@@ -1679,13 +1730,13 @@ def create_app(
         except HTTPException:
             raise
         except Exception as exc:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "provider_smoke_failed",
-                    "message": smoke_failure_message(exc, service="模型服务"),
-                },
-            ) from None
+            detail: dict[str, object] = {
+                "code": "provider_smoke_failed",
+                "message": smoke_failure_message(exc, service="模型服务"),
+            }
+            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
+                detail["provider"] = exc.details()
+            raise HTTPException(status_code=502, detail=detail) from None
         finally:
             provider.close()
 
@@ -1710,13 +1761,13 @@ def create_app(
         except HTTPException:
             raise
         except Exception as exc:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "provider_smoke_failed",
-                    "message": smoke_failure_message(exc, service="向量服务"),
-                },
-            ) from None
+            detail: dict[str, object] = {
+                "code": "provider_smoke_failed",
+                "message": smoke_failure_message(exc, service="向量服务"),
+            }
+            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
+                detail["provider"] = exc.details()
+            raise HTTPException(status_code=502, detail=detail) from None
         finally:
             provider.close()
 
@@ -1742,13 +1793,13 @@ def create_app(
         except HTTPException:
             raise
         except Exception as exc:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "provider_smoke_failed",
-                    "message": smoke_failure_message(exc, service="排序服务"),
-                },
-            ) from None
+            detail: dict[str, object] = {
+                "code": "provider_smoke_failed",
+                "message": smoke_failure_message(exc, service="排序服务"),
+            }
+            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
+                detail["provider"] = exc.details()
+            raise HTTPException(status_code=502, detail=detail) from None
         finally:
             provider.close()
 
@@ -1767,11 +1818,22 @@ def create_app(
             plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
             service.execute_plan(root, plan)
         except Exception as exc:
+            reason = safe_failure_reason(exc, service="索引服务")
             logging.getLogger(__name__).error(
                 "Incremental index update failed for workspace %s (%s)",
                 workspace.workspace_id,
-                type(exc).__name__,
+                reason,
             )
+            try:
+                profile_event(
+                    Path(workspace.local_profile_dir),
+                    "index_update_failed",
+                    state="failed",
+                    reason=reason,
+                )
+            except (ValueError, OSError):
+                # A diagnostics failure must not change the mutation result.
+                pass
             return mutation.model_copy(update={"index_update": "update_failed"})
         return mutation.model_copy(update={"index_update": "updated"})
 
@@ -1825,10 +1887,11 @@ def create_app(
     async def provider_error_handler(request: Request, exc: LLMProviderError) -> JSONResponse:
         return error_envelope(
             request,
-            status_code=503,
+            status_code=502,
             code="provider_error",
             message=sanitize_provider_text(describe_failure("模型服务", exc))
             or "模型服务暂时不可用，请检查本地设置后重试。",
+            extra={"provider": exc.details()} if exc.details() else None,
         )
 
     @app.exception_handler(ProviderError)
@@ -2145,21 +2208,20 @@ def create_app(
                     409,
                     detail={"code": "acceptance_plan_conflict", "message": str(exc)},
                 ) from None
-            except LLMProviderError as exc:
+            except (ProviderError, LLMProviderError) as exc:
                 if ledger.get(payload.acceptance_plan_id).state == "executing":
                     ledger.finish(
                         payload.acceptance_plan_id, state="unknown" if reserved else "failed"
                     )
-                raise HTTPException(
-                    status_code=502,
-                    detail="AI 辅助暂时不可用；记录仍留在编辑区，未保存。",
-                ) from exc
-            except Exception:
+                record_assistant_failure(workspace, exc)
+                raise assistant_failure(exc, suffix="记录仍留在编辑区，未保存。") from exc
+            except Exception as exc:
                 if ledger.get(payload.acceptance_plan_id).state == "executing":
                     ledger.finish(
                         payload.acceptance_plan_id, state="unknown" if reserved else "failed"
                     )
-                raise
+                record_assistant_failure(workspace, exc)
+                raise assistant_failure(exc, suffix="记录仍留在编辑区，未保存。") from exc
             finally:
                 try:
                     if provider_review is not None:
@@ -2175,10 +2237,11 @@ def create_app(
                             close_provider()
         try:
             proposals = review_for(workspace).provider.organize([(uuid4(), uuid4(), payload.text)])
-        except LLMProviderError as exc:
-            raise HTTPException(
-                status_code=502, detail="AI 辅助暂时不可用；已保存内容未更改。"
-            ) from exc
+        except Exception as exc:
+            # Every failure answers with a safe sentence and leaves a searchable
+            # local cause; a typed provider failure also names the reason.
+            record_assistant_failure(workspace, exc)
+            raise assistant_failure(exc, suffix="已保存内容未更改。") from exc
         if not proposals:
             raise HTTPException(status_code=502, detail="AI 辅助没有返回建议；已保存内容未更改。")
         return JournalAssistResponse(title=proposals[0].title, body=proposals[0].body)
@@ -3247,13 +3310,16 @@ def create_app(
                 # leaves this record as the only survival surface. It therefore
                 # always carries the sanitized, single-line, bounded cause.
                 reason = query_failure_message(exc)
+                # The local record is the surface that survives packaging, so it
+                # keeps the sanitized <type>: <message>; the client response and
+                # the service log stay on the controlled text only.
                 diagnostic = sanitize_provider_text(f"{type(exc).__name__}: {exc}") or reason
                 _LOGGER.warning(
-                    "query failed request_id=%s error=%s cause=%s message=%s",
+                    "query failed request_id=%s error=%s cause=%s logged=%s",
                     stable_request_id,
                     type(exc).__name__,
                     reason,
-                    diagnostic,
+                    safe_failure_reason(exc, service="模型服务"),
                 )
                 terminal = store.terminate(
                     workspace.workspace_id,

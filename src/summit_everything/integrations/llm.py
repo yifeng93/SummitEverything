@@ -108,6 +108,15 @@ class GroundedAnswer(BaseModel):
     advice: list[str] = Field(default_factory=list)
     missing_information: list[str] = Field(default_factory=list)
 
+    @field_validator("text")
+    @classmethod
+    def non_blank_text(cls, value: str) -> str:
+        """A whitespace-only answer is not an answer."""
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("answer text must not be blank")
+        return stripped
+
     @field_validator(
         "source_statements", "inferences", "advice", "missing_information", mode="before"
     )

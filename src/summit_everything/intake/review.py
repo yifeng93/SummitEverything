@@ -19,6 +19,7 @@ from summit_everything.domain.models import (
     MutationResult,
 )
 from summit_everything.intake.sources import SourceStore
+from summit_everything.integrations.http_boundary import sanitize_provider_text
 from summit_everything.integrations.llm import DraftProposal, FakeLLM, LLMProviderError
 from summit_everything.workspace.archives import (
     archive_completed_transactions,
@@ -408,7 +409,8 @@ class IntakeReviewService:
                         failed = current.model_copy(
                             update={
                                 "state": "failed",
-                                "error": str(exc)[:500],
+                                "error": sanitize_provider_text(str(exc), limit=500)
+                                or type(exc).__name__,
                                 "finished_at": datetime.now(UTC),
                                 "revision": current.revision + 1,
                             }

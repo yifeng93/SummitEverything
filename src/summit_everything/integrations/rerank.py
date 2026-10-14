@@ -127,4 +127,9 @@ class ModelStudioReranker:
                 "排序服务连接失败：请检查网络、代理或证书设置。", reason="transport"
             ) from exc
         except (KeyError, TypeError, ValueError, IndexError) as exc:
-            raise ValueError("rerank provider failed validation") from exc
+            # Unusable 200 content is a provider failure too; local candidate and
+            # size checks above stay plain ValueError.
+            raise RerankProviderError(
+                "排序服务返回了无法解析的响应：请检查所选模型与接口是否匹配。",
+                reason="schema",
+            ) from exc

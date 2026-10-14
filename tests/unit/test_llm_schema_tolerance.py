@@ -169,3 +169,22 @@ def test_provider_error_details_survive_into_the_llm_error():
         "message": "Invalid API-key provided.",
         "request_id": "request-9",
     }
+
+
+@pytest.mark.parametrize("blank", ["   ", "\n\t ", "　"])
+def test_blank_answer_text_is_rejected(blank):
+    with pytest.raises(ValidationError):
+        GroundedAnswer.model_validate({"text": blank, "source_statements": []})
+
+
+def test_answer_text_is_stripped_but_preserved():
+    answer = GroundedAnswer.model_validate({"text": "  有内容的回答  ", "source_statements": []})
+    assert answer.text == "有内容的回答"
+
+
+def test_deepseek_blank_content_is_a_schema_failure():
+    content = json.dumps({"text": "   ", "source_statements": []}, ensure_ascii=False)
+    llm = DeepSeekLLM(KEY, client=client_for(content))
+    with pytest.raises(LLMProviderError) as caught:
+        llm.answer("问题", [{"heading": "h", "excerpt": "e"}])
+    assert caught.value.reason == "schema"

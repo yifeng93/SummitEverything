@@ -7,15 +7,19 @@ travel in ``message``. Free-form exception text stays out of the client response
 
 from __future__ import annotations
 
+import asyncio
 import json
 import sqlite3
 from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from summit_everything.api.app import create_app
 from summit_everything.integrations.embedding import EmbeddingProviderError, ModelStudioEmbedding
+from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
+from summit_everything.integrations.rerank import ModelStudioReranker, RerankProviderError
 from summit_everything.integrations.settings import MacOSKeychainBackend, MemorySecretBackend
 
 TOKEN = "synthetic-visibility-session"
@@ -222,3 +226,128 @@ def test_embedding_smoke_failure_returns_502_with_provider_details(tmp_path, mon
     assert "invalid_api_key" in error["message"]
     assert "请求已计入一次尝试；结果未知，不会自动重发。" in error["message"]
     assert json.dumps(error, ensure_ascii=False)  # the envelope stays JSON-serializable
+
+
+def _configure_real(client: TestClient, *, llm: bool = False) -> None:
+    body: dict[str, object] = {"mode": "real"}
+    if llm:
+        body["llm"] = {"provider": "deepseek", "model": "deepseek-flash", "enabled": True}
+    else:
+        body["embedding"] = {
+            "provider": "dashscope",
+            "model": "qwen3.7-text-embedding",
+            "enabled": True,
+        }
+        body["rerank"] = {
+            "provider": "dashscope",
+            "model": "qwen3.7-text-rerank",
+            "enabled": True,
+        }
+    response = client.patch("/api/v1/settings", headers=HEADERS, json=body)
+    assert response.status_code == 200, response.text
+
+
+def _store_credential(client: TestClient, provider: str) -> None:
+    response = client.put(
+        f"/api/v1/credentials/{provider}",
+        headers=HEADERS,
+        json={"account_id": "default", "secret": "sk-synthetic-provider-key-0001"},
+    )
+    assert response.status_code == 200, response.text
+
+
+def test_rerank_smoke_failure_returns_502_with_provider_details(tmp_path, monkeypatch):
+    def failing_rank(self, query, texts):  # noqa: ANN001, ANN002, ANN003
+        raise RerankProviderError(
+            "排序服务返回错误：access_denied — Model access denied",
+            provider_code="access_denied",
+            provider_message="Model access denied",
+            request_id="request-99",
+            reason="provider",
+        )
+
+    monkeypatch.setattr(ModelStudioReranker, "rank", failing_rank)
+    client = TestClient(
+        create_app(
+            session_token=TOKEN,
+            profile_root=tmp_path / "profile",
+            secret_backend=SyntheticKeychain(),
+        )
+    )
+    open_workspace(client, tmp_path / "workspace")
+    _configure_real(client)
+    _store_credential(client, "dashscope")
+
+    response = client.post("/api/v1/provider-smoke/model-studio-rerank", headers=HEADERS)
+    assert response.status_code == 502, response.text
+    error = response.json()["error"]
+    assert error["code"] == "provider_smoke_failed"
+    assert "access_denied" in error["message"]
+    assert error["provider"] == {
+        "code": "access_denied",
+        "message": "Model access denied",
+        "request_id": "request-99",
+    }
+
+
+def test_deepseek_smoke_failure_is_502_with_provider_details(tmp_path, monkeypatch):
+    def failing_answer(self, question, passages, context=None):  # noqa: ANN001, ANN002, ANN003
+        raise LLMProviderError(
+            "模型服务返回错误：InsufficientBalance — Insufficient Balance",
+            provider_code="InsufficientBalance",
+            provider_message="Insufficient Balance",
+            request_id="request-100",
+            reason="provider",
+        )
+
+    monkeypatch.setattr(DeepSeekLLM, "answer", failing_answer)
+    client = TestClient(
+        create_app(
+            session_token=TOKEN,
+            profile_root=tmp_path / "profile",
+            secret_backend=SyntheticKeychain(),
+        )
+    )
+    open_workspace(client, tmp_path / "workspace")
+    _configure_real(client, llm=True)
+    _store_credential(client, "deepseek")
+
+    response = client.post("/api/v1/provider-smoke/deepseek-chat", headers=HEADERS)
+    assert response.status_code == 502, response.text
+    error = response.json()["error"]
+    assert error["code"] == "provider_smoke_failed"
+    assert error["provider"]["code"] == "InsufficientBalance"
+    assert error["provider"]["request_id"] == "request-100"
+
+
+def test_llm_provider_error_handler_is_502_and_keeps_details():
+    """Provider-side failures are uniformly 502, with the provider's own words."""
+    app = create_app(session_token="synthetic-status-token", secret_backend=MemorySecretBackend())
+    request = Request(
+        {
+            "type": "http",
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/api/v1/journal/assist",
+            "raw_path": b"/api/v1/journal/assist",
+            "query_string": b"",
+            "headers": [],
+            "server": ("127.0.0.1", 1),
+            "client": ("127.0.0.1", 2),
+        }
+    )
+    request.state.request_id = "status-check"
+    error = LLMProviderError(
+        "模型服务返回错误：invalid_api_key — Invalid API-key provided.",
+        provider_code="invalid_api_key",
+        provider_message="Invalid API-key provided.",
+        request_id="request-101",
+        reason="provider",
+    )
+    handler = app.exception_handlers[LLMProviderError]
+    response = asyncio.run(handler(request, error))
+    assert response.status_code == 502
+    body = json.loads(response.body)
+    assert body["error"]["code"] == "provider_error"
+    assert body["error"]["provider"]["code"] == "invalid_api_key"

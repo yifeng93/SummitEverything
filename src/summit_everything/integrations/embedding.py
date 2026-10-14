@@ -157,7 +157,14 @@ class ModelStudioEmbedding:
                 "向量服务连接失败：请检查网络、代理或证书设置。", reason="transport"
             ) from exc
         except (KeyError, TypeError, ValueError, IndexError) as exc:
-            raise ValueError("embedding provider failed validation") from exc
+            # A 200 response whose content is unusable (missing or empty ``data``,
+            # non-JSON body, wrong vector shape) is still a provider failure, not
+            # a local one: it must surface as a typed 502 instead of a bare 500.
+            # Local parameter checks run before this block and stay unchanged.
+            raise EmbeddingProviderError(
+                "向量服务返回了无法解析的响应：请检查所选模型与接口是否匹配。",
+                reason="schema",
+            ) from exc
 
 
 def cosine_similarity(left: list[float], right: list[float]) -> float:

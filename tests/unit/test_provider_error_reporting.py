@@ -173,3 +173,103 @@ def test_local_parameter_validation_stays_a_plain_value_error():
     with pytest.raises(ValueError) as caught:
         adapter.embed_many([])
     assert not isinstance(caught.value, ProviderError)
+
+
+def _unusable(status: int, **kwargs: object) -> httpx.Response:  # noqa: ANN003
+    return httpx.Response(status, **kwargs)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        httpx.Response(200, json={"model": "qwen3.7-text-embedding"}),  # data missing
+        httpx.Response(200, json={"model": "qwen3.7-text-embedding", "data": []}),  # data empty
+        httpx.Response(200, content=b"not json at all"),  # non-JSON body
+        httpx.Response(200, json={"model": "qwen3.7-text-embedding", "data": "wrong"}),  # data type
+    ],
+)
+def test_unusable_success_content_is_a_typed_provider_failure(response):
+    """A 200 whose content cannot be used must not become a bare 500."""
+    adapter = ModelStudioEmbedding(KEY, client=mock_client(lambda _request: response))
+    with pytest.raises(EmbeddingProviderError) as caught:
+        adapter.embed_many(["合成文本"])
+    error = caught.value
+    assert isinstance(error, ValueError)
+    assert error.reason == "schema"
+    assert "无法解析" in str(error)
+    assert KEY not in str(error)
+
+
+def test_unusable_rerank_content_is_a_typed_provider_failure():
+    adapter = ModelStudioReranker(
+        KEY,
+        client=mock_client(lambda _request: httpx.Response(200, json={"output": {}})),
+    )
+    with pytest.raises(RerankProviderError) as caught:
+        adapter.rank("问题", ["候选一", "候选二"])
+    assert caught.value.reason == "schema"
+    assert "无法解析" in str(caught.value)
+
+
+def test_local_rerank_parameter_validation_stays_a_plain_value_error():
+    adapter = ModelStudioReranker(
+        KEY, client=mock_client(lambda _r: httpx.Response(200, json={"output": {"results": []}}))
+    )
+    with pytest.raises(ValueError) as caught:
+        adapter.rank("问题", [])
+    assert not isinstance(caught.value, ProviderError)
+
+
+def test_error_response_header_request_id_is_used_when_the_body_has_none():
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            500,
+            headers={"x-request-id": "header-request-9"},
+            json={"error": {"code": "internal_error", "message": "boom"}},
+        )
+
+    with pytest.raises(ProviderError) as caught:
+        bounded_json_post(
+            mock_client(handler),
+            "https://example.invalid/embeddings",
+            headers={},
+            payload={"input": ["x"]},
+            max_response_bytes=4096,
+        )
+    assert caught.value.request_id == "header-request-9"
+    assert caught.value.provider_code == "internal_error"
+
+
+def test_body_request_id_wins_over_the_transport_header():
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            403,
+            headers={"x-request-id": "header-request-9"},
+            json={"code": "access_denied", "message": "denied", "request_id": "body-request-1"},
+        )
+
+    with pytest.raises(ProviderError) as caught:
+        bounded_json_post(
+            mock_client(handler),
+            "https://example.invalid/embeddings",
+            headers={},
+            payload={"input": ["x"]},
+            max_response_bytes=4096,
+        )
+    assert caught.value.request_id == "body-request-1"
+
+
+def test_success_response_header_request_id_still_works():
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, headers={"x-request-id": "ok-request-1"}, json={"data": [{"index": 0}]}
+        )
+
+    wire = bounded_json_post(
+        mock_client(handler),
+        "https://example.invalid/embeddings",
+        headers={},
+        payload={"input": ["x"]},
+        max_response_bytes=4096,
+    )
+    assert wire.request_id == "ok-request-1"

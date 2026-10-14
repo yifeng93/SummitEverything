@@ -175,7 +175,24 @@ def describe_failure(service: str, exc: object) -> str:
     return f"{service}不可用：{REASON_TEXT.get(reason or '', '原因未说明')}。"
 
 
-def provider_failure(status: int, body: bytes) -> ProviderError:
+def _header_request_id(response: httpx.Response | None) -> str | None:
+    """A sanitized transport request id, read for successes and failures alike."""
+    if response is None:
+        return None
+    candidate = next(
+        (
+            response.headers.get(name)
+            for name in ("x-request-id", "request-id", "x-dashscope-request-id")
+            if response.headers.get(name)
+        ),
+        None,
+    )
+    return _identifier(candidate)
+
+
+def provider_failure(
+    status: int, body: bytes, *, fallback_request_id: str | None = None
+) -> ProviderError:
     """A typed failure for a non-2xx provider response with a bounded body."""
     try:
         payload: object = json.loads(body)
@@ -186,7 +203,7 @@ def provider_failure(status: int, body: bytes) -> ProviderError:
         f"provider returned an unsuccessful response (HTTP {status})",
         provider_code=code,
         provider_message=message,
-        request_id=request_id,
+        request_id=request_id or fallback_request_id,
         reason="provider",
     )
 
@@ -339,25 +356,18 @@ def bounded_json_post(
         raise ProviderError("provider request exceeded the deadline", reason="deadline") from None
     if not 200 <= status < 300:
         # The body was read under the byte ceiling above, so the provider's own
-        # code/message can be preserved without unbounded reads.
-        raise provider_failure(status, body)
+        # code/message can be preserved without unbounded reads. The transport
+        # request id is read here too: error replies often carry it only as a
+        # header, and it is the value support asks for.
+        raise provider_failure(
+            status,
+            body,
+            fallback_request_id=_header_request_id(response_box.get("response")),
+        )
     parsed = _parse_json(body)
     if not isinstance(parsed, dict):
         return parsed
-    response = response_box.get("response")
-    request_id = None
-    if response is not None:
-        candidate = next(
-            (
-                response.headers.get(name)
-                for name in ("x-request-id", "request-id", "x-dashscope-request-id")
-                if response.headers.get(name)
-            ),
-            None,
-        )
-        if candidate and re.fullmatch(r"[A-Za-z0-9._:-]{1,200}", candidate):
-            request_id = candidate
-    return ProviderResponse(parsed, request_id)
+    return ProviderResponse(parsed, _header_request_id(response_box.get("response")))
 
 
 def provider_usage_record(provider: str, response: Any) -> dict[str, Any]:
