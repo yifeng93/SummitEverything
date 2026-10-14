@@ -81,6 +81,26 @@ def test_first_query_without_conversation_id_creates_and_reopens_server_conversa
     assert detail.json()["messages"][0]["state"] == "completed"
     assert not list(workspace.rglob("conversations.sqlite3"))
 
+    assert (
+        api.patch(
+            "/api/v1/settings",
+            json={
+                "mode": "real",
+                "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+                "rerank": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-rerank",
+                    "enabled": True,
+                },
+            },
+        ).status_code
+        == 200
+    )
     replay = api.post("/api/v1/queries", json=payload)
     assert _events(replay) == first_events
     assert service.calls == 1

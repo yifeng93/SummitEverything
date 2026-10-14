@@ -1,0 +1,36 @@
+01-pytest-full	0	env PYTHONPATH=scripts/offline_guard:src uv run pytest -q
+02-ruff-check	0	uv run ruff check src tests
+03-ruff-format-check	0	uv run ruff format --check src tests
+04-mypy	0	uv run mypy src
+05-uv-lock-check	0	uv lock --check
+06-ruff-format	0	uv run ruff format src tests
+07-failure-boundary-tests	0	env PYTHONPATH=scripts/offline_guard:src uv run pytest -q tests/unit/test_acceptance_plan_ledger.py tests/integration/test_real_model_approval_flow.py
+08-ruff-check	1	uv run ruff check src tests
+09-ruff-format-check	0	uv run ruff format --check src tests
+10-mypy	0	uv run mypy src
+11-ruff-autofix	0	uv run ruff check --fix src tests
+12-pytest-full	0	env PYTHONPATH=scripts/offline_guard:src uv run pytest -q
+13-ruff-check	0	uv run ruff check src tests
+14-ruff-format-check	0	uv run ruff format --check src tests
+15-mypy	0	uv run mypy src
+16-uv-lock-check	0	uv lock --check
+17-askview-test	1	npm --prefix web test -- --run AskView
+18-web-typecheck	0	npm --prefix web run typecheck
+19-web-lint	0	npm --prefix web run lint
+20-web-build	0	npm --prefix web run build
+21-askview-test-rerun	1	npm --prefix web test -- --run AskView
+22-askview-test-rerun	1	npm --prefix web test -- --run AskView
+23-askview-test-green	0	npm --prefix web test -- --run AskView
+24-api-types	0	npm --prefix web run api:types
+25-web-test	0	npm --prefix web test
+26-web-typecheck	0	npm --prefix web run typecheck
+27-web-lint	0	npm --prefix web run lint
+28-web-build	0	npm --prefix web run build
+29-swift-test	0	swift test --package-path native
+30-uv-build	0	uv build
+31-web-test-final	0	npm --prefix web test
+32-web-typecheck-final	0	npm --prefix web run typecheck
+33-web-lint-final	0	npm --prefix web run lint
+34-web-build-final	0	npm --prefix web run build
+35-native-candidate-build	0	scripts/release-macos.sh "$PWD/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything Internal fe47339.app" "$PWD/.local/dev/m42-package-a/final-20261014/artifacts/SummitEverything-Internal-fe47339.dmg"
+36-native-offline-launch-verified	0	open -n candidate with offline guard and temporary profile; verify native/backend guards and profile roots

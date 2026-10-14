@@ -1,0 +1,27 @@
+
+> web@0.0.0 typecheck
+> tsc -b --pretty
+
+[96msrc/components/AskView.tsx[0m:[93m484[0m:[93m631[0m - [91merror[0m[90m TS2322: [0mType 'unknown' is not assignable to type 'ReactNode'.
+
+[7m484[0m       {plan && <section className="plan-card" aria-live="polite"><div><strong>{acceptancePlan ? '真实索引范围待独立确认' : '索引计划待确认'}</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个合格页面</span></div><p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{acceptancePlan ? `最多 ${acceptancePlan.request_limit} 次 embedding 批次，每批最多 20 段。按 2026-10-13 核对价估算约 ¥${(plan.estimated_tokens * 0.5 / 1_000_000).toFixed(4)}，实际账单未知。` : plan.estimated_cost === null ? '当前无法估算 provider 费用。' : '本机 Fake embedding 费用为 ¥0。'}</p>{acceptancePlan && <><p>将发送给阿里云百炼 embedding 的页面：</p><ul>{plan.page_ids.map((id) => <li key={id}>{eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面'}</li>)}</ul><details><summary>页面内部编号与版本</summary><pre>{JSON.stringify({ page_ids: plan.page_ids, page_versions: plan.page_versions }, null, 2)}</pre></details></>}<button className="text-button" onClick={() => { setPlan(null); setAcceptancePlan(null); setAcceptanceScope(null) }}>取消计划</button></section>}
+[7m   [0m [91m                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  [96mnode_modules/@types/react/index.d.ts[0m:[93m2361[0m:[93m9[0m
+    [7m2361[0m         children?: ReactNode | undefined;
+    [7m    [0m [96m        ~~~~~~~~[0m
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>'
+
+[96msrc/components/AskView.tsx[0m:[93m534[0m:[93m122[0m - [91merror[0m[90m TS2322: [0mType 'unknown' is not assignable to type 'ReactNode'.
+
+[7m534[0m         <ul>{Object.keys((pendingQuery.scope.source_versions ?? {}) as Record<string, unknown>).map((id) => <li key={id}>{eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面'}</li>)}</ul>
+[7m   [0m [91m                                                                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  [96mnode_modules/@types/react/index.d.ts[0m:[93m2361[0m:[93m9[0m
+    [7m2361[0m         children?: ReactNode | undefined;
+    [7m    [0m [96m        ~~~~~~~~[0m
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>'
+
+
+Found 2 errors.
+

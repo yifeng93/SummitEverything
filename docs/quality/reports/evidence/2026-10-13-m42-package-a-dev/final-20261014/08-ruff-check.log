@@ -1,0 +1,63 @@
+COMMAND: uv run ruff check src tests
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_real_model_approval_flow.py:3:1
+   |
+ 1 |   """End-to-end real-adapter path over a synthetic HTTP boundary only."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import json
+ 6 | | from typing import Any
+ 7 | |
+ 8 | | import httpx
+ 9 | | import pytest
+10 | | from fastapi.testclient import TestClient
+11 | |
+12 | | import summit_everything.api.app as app_module
+13 | | import summit_everything.integrations.embedding as embedding_module
+14 | | import summit_everything.integrations.llm as llm_module
+15 | | import summit_everything.integrations.rerank as rerank_module
+16 | | from summit_everything.integrations.runtime import ModelRuntime
+17 | | from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
+18 | | from summit_everything.integrations.settings import MemorySecretBackend
+   | |_______________________________________________________________________^
+19 |
+20 |   HEADERS = {"Authorization": "Bearer synthetic-real-adapter-session"}
+   |
+help: Organize imports
+   |
+15 | import summit_everything.integrations.rerank as rerank_module
+16 + from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
+17 | from summit_everything.integrations.runtime import ModelRuntime
+   - from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
+18 | from summit_everything.integrations.settings import MemorySecretBackend
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/test_acceptance_plan_ledger.py:1:1
+   |
+ 1 | / from concurrent.futures import ThreadPoolExecutor
+ 2 | | import fcntl
+ 3 | | from pathlib import Path
+ 4 | | from uuid import uuid4
+ 5 | |
+ 6 | | import pytest
+ 7 | |
+ 8 | | from summit_everything.integrations.acceptance_plans import (
+ 9 | |     AcceptancePlanLedger,
+10 | |     PlanConflict,
+11 | |     ProviderUsage,
+12 | | )
+   | |_^
+help: Organize imports
+  |
+1 + import fcntl
+2 | from concurrent.futures import ThreadPoolExecutor
+  - import fcntl
+3 | from pathlib import Path
+  |
+
+Found 2 errors.
+[*] 2 fixable with the `--fix` option.
+
+EXIT_CODE: 1

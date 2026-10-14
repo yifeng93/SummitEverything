@@ -1,0 +1,1 @@
+$ codesign --verify --deep --strict /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1-empty-feedback/artifacts/SummitEverything Internal 419bb86.app

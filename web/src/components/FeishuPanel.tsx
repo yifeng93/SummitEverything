@@ -7,6 +7,8 @@ type Materials = components['schemas']['MaterialPage']
 type Calendar = components['schemas']['CalendarPage']
 type Imports = components['schemas']['ImportResult']
 type Authorization = components['schemas']['AuthorizationStart']
+type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: number; state: string }
+type PendingApproval = { plan: AcceptancePlan; operation: string; scope: Record<string, unknown>; execute: (planId: string) => Promise<void> }
 const prefix = '/integrations/feishu'
 
 export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<void>; onMode?: (mode: "fake" | "real" | null) => void }) {
@@ -26,6 +28,7 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
   const [end, setEnd] = useState(() => new Date(Date.now() + 86400000).toLocaleDateString('en-CA'))
   const [timezone, setTimezone] = useState('Asia/Shanghai')
   const [titles, setTitles] = useState<Record<string, string>>({})
+  const [approval, setApproval] = useState<PendingApproval | null>(null)
   const operation = useRef<{ key: string; id: string } | null>(null)
 
   useEffect(() => {
@@ -47,6 +50,36 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
 
   function recordFailure(cause: unknown) {
     if (cause instanceof ApiError) recordAuthProblem(cause.code)
+  }
+
+  async function preparePlan(operation: string, scope: Record<string, unknown>, execute: (planId: string) => Promise<void>) {
+    setBusy(true); setError('')
+    try {
+      const result = await api.post<{ plan: AcceptancePlan; scope: Record<string, unknown> }>('/acceptance-plans', { operation, scope })
+      setApproval({ ...result, operation, execute })
+    } catch (cause) { setError(cause instanceof Error ? cause.message : '无法生成本次授权预览') }
+    finally { setBusy(false) }
+  }
+
+  async function confirmPlan() {
+    if (!approval) return
+    const current = approval
+    setBusy(true); setError('')
+    try {
+      await api.post('/acceptance-plans/' + current.plan.plan_id + '/confirm', { scope_sha256: current.plan.scope_sha256 })
+      setApproval(null)
+      await current.execute(current.plan.plan_id)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : '执行结果未知；计划不会重发') }
+    finally { setBusy(false) }
+  }
+
+  async function cancelPlan() {
+    if (!approval) return
+    const current = approval
+    setBusy(true)
+    try { await api.delete('/acceptance-plans/' + current.plan.plan_id); setApproval(null) }
+    catch (cause) { setError(cause instanceof Error ? cause.message : '无法撤销本次计划') }
+    finally { setBusy(false) }
   }
 
   async function authorize() {
@@ -96,9 +129,20 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
       const params = new URLSearchParams({ query, limit: '20' })
       if (visibility) params.set('visibility', visibility)
       if (cursor) params.set('cursor', cursor)
-      const value = await api.get<Materials>(prefix + '/materials?' + params)
-      setTitles((current) => ({ ...current, ...Object.fromEntries(value.items.map((item) => [item.material_id, item.title])) }))
-      setMaterials(value)
+      const execute = async (planId?: string) => {
+        const plannedParams = new URLSearchParams(params)
+        if (planId) plannedParams.set('plan_id', planId)
+        const value = await api.get<Materials>(prefix + '/materials?' + plannedParams)
+        setTitles((current) => ({ ...current, ...Object.fromEntries(value.items.map((item) => [item.material_id, item.title])) }))
+        setMaterials(value)
+      }
+      if (status?.mode === 'real') {
+        await preparePlan('feishu.materials.read', { query, visibility: visibility || null, cursor: cursor ?? null, limit: 20 }, async (planId) => {
+          try { await execute(planId) } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '无法读取材料'); setMaterials(null) }
+        })
+        return
+      }
+      await execute()
     } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '无法读取材料'); setMaterials(null) }
     finally { setBusy(false) }
   }
@@ -108,10 +152,19 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
     if (!operation.current || operation.current.key !== key) operation.current = { key, id: newOperationId() }
     setBusy(true); setError('')
     try {
-      const result = await api.post<Imports>(prefix + '/imports', { material_ids: selected, operation_id: operation.current.id })
-      setImports(result); setSelected([]); operation.current = null
-      for (const outcome of result.outcomes) recordAuthProblem(outcome.error_code ?? undefined)
-      await onImported()
+      const execute = async (planId?: string) => {
+        const result = await api.post<Imports>(prefix + '/imports' + (planId ? '?plan_id=' + planId : ''), { material_ids: selected, operation_id: operation.current!.id })
+        setImports(result); setSelected([]); operation.current = null
+        for (const outcome of result.outcomes) recordAuthProblem(outcome.error_code ?? undefined)
+        await onImported()
+      }
+      if (status?.mode === 'real') {
+        await preparePlan('feishu.materials.import', { material_ids: [...selected], operation_id: operation.current.id }, async (planId) => {
+          try { await execute(planId) } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '导入结果未知；不要新建重试计划') }
+        })
+        return
+      }
+      await execute()
     } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '导入失败，请重试同一选择') }
     finally { setBusy(false) }
   }
@@ -121,7 +174,20 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
     try {
       const params = new URLSearchParams({ start: start + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00'), end: end + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00'), timezone, limit: '20' })
       if (cursor) params.set('cursor', cursor)
-      setCalendar(await api.get<Calendar>(prefix + '/calendar?' + params))
+      const execute = async (planId?: string) => {
+        const plannedParams = new URLSearchParams(params)
+        if (planId) plannedParams.set('plan_id', planId)
+        setCalendar(await api.get<Calendar>(prefix + '/calendar?' + plannedParams))
+      }
+      if (status?.mode === 'real') {
+        const startAt = start + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00')
+        const endAt = end + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00')
+        await preparePlan('feishu.calendar.read', { start: startAt, end: endAt, timezone, cursor: cursor ?? null, limit: 20 }, async (planId) => {
+          try { await execute(planId) } catch (cause) { recordFailure(cause); setCalendar(null); setCalendarError(cause instanceof Error ? cause.message : '日历请求结果未知') }
+        })
+        return
+      }
+      await execute()
     } catch (cause) { recordFailure(cause); setCalendar(null); setCalendarError(cause instanceof Error ? cause.message : '无法读取日历') }
     finally { setBusy(false) }
   }
@@ -138,6 +204,14 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
       <button className="button secondary" disabled={busy} onClick={refreshAuthorization}>刷新用户授权状态</button>
     </div>}
     {error && <p role="alert" className="helper-line">{error}</p>}
+    {approval && <section className="provider-settings" aria-label="本次真实飞书操作确认"><h3>本次范围预览</h3><p>确认后只执行以下范围。最多 {approval.plan.request_limit} 次 HTTP 请求（包含必要的授权刷新或备用读取）；这是调用次数上限，不是金额上限。失败和未知结果都计入本次额度，不会自动重发。</p>
+      {approval.operation === 'feishu.materials.read' && <p>搜索飞书材料：“{String(approval.scope.query || '全部材料')}”；可见范围：{approval.scope.visibility === 'owner' ? '我拥有的' : approval.scope.visibility === 'shared' ? '共享给我的' : '全部可见'}；最多一页、{String(approval.scope.limit)} 条。</p>}
+      {approval.operation === 'feishu.materials.import' && <><p>读取并保存以下所选材料正文，仍需之后单独整理和审核：</p><ul>{(approval.scope.material_ids as string[]).map((id) => <li key={id}>{titles[id] ?? '所选材料'}</li>)}</ul></>}
+      {approval.operation === 'feishu.calendar.read' && <p>读取日历：{String(approval.scope.start)} 至 {String(approval.scope.end)}（{String(approval.scope.timezone)}），最多一页。</p>}
+      {approval.operation === 'feishu.tasks.read' && <p>读取飞书未完成任务，最多 {String(approval.scope.limit)} 条。</p>}
+      {approval.operation === 'feishu.task.read' && <p>读取指定任务详情。</p>}
+      <details><summary>查看内部材料编号与分页标记</summary><pre>{JSON.stringify(approval.scope, null, 2)}</pre></details>
+      <div className="button-row"><button className="button primary" disabled={busy} onClick={() => void confirmPlan()}>确认并执行本次读取</button><button className="button secondary" disabled={busy} onClick={() => void cancelPlan()}>取消计划</button></div></section>}
     <h3>材料</h3>
     <form className="organize-row" onSubmit={(event) => { event.preventDefault(); setSelected([]); void loadMaterials() }}>
       <label className="compact-field"><span>搜索材料</span><input value={query} onChange={(event) => setQuery(event.target.value)} /></label>

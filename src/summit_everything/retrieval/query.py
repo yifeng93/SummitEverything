@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
 from threading import Event
 from typing import Any, Literal, Protocol
@@ -105,11 +106,13 @@ class QueryService:
         embedding: EmbeddingProvider | None = None,
         reranker: RerankerProvider | None = None,
         answer_provider: AnswerProvider | None = None,
+        provider_guard: Callable[[], None] | None = None,
     ) -> None:
         self.store = store
         self.embedding = embedding or FakeEmbedding()
         self.reranker = reranker or FakeReranker()
         self.answer_provider = answer_provider
+        self.provider_guard = provider_guard
         self._closed = False
 
     def close(self) -> None:
@@ -213,6 +216,8 @@ class QueryService:
         batch_size = getattr(self.embedding, "max_batch_size", 20)
         for offset in range(0, len(missing), batch_size):
             batch = missing[offset : offset + batch_size]
+            if self.provider_guard is not None:
+                self.provider_guard()
             newly_embedded.extend(
                 self.embedding.embed_many(
                     [chunk.text for chunk in batch], fingerprint=plan.fingerprint
@@ -293,6 +298,8 @@ class QueryService:
                 "没有足够线索确定本次查询对象；请补充对象或完整问题。",
                 answer_mode=answer_mode,
             )
+        if self.provider_guard is not None:
+            self.provider_guard()
         query_vector = self.embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
         self._check_cancelled(cancelled)
         dense = sorted(
@@ -453,6 +460,8 @@ class QueryService:
                 answer_mode=answer_mode,
             )
         self._check_cancelled(cancelled)
+        if self.provider_guard is not None:
+            self.provider_guard()
         reranked = self.reranker.rank(
             retrieval_plan.search_question, [str(item["text"]) for item in candidates]
         )
@@ -558,6 +567,8 @@ class QueryService:
         if context_bytes > 90_000:
             raise ValueError("问答上下文超过本机 90 KB 预算；请缩短问题或编辑角色、记忆后重试。")
         self._check_cancelled(cancelled)
+        if self.answer_provider is not None and self.provider_guard is not None:
+            self.provider_guard()
         answer = (
             self.answer_provider.answer(question, passages, context)
             if self.answer_provider
@@ -710,8 +721,8 @@ class QueryService:
             index_status="ready",
         )
 
+    @staticmethod
     def _eligible_pages(
-        self,
         pages: list[PageSnapshot],
         *,
         purpose: RetrievalPurpose = RetrievalPurpose.CURRENT,

@@ -1,0 +1,2 @@
+src/summit_everything/api/app.py:2126: error: Argument 1 to "reserve_request" of "AcceptancePlanLedger" has incompatible type "UUID | None"; expected "UUID"  [arg-type]
+Found 1 error in 1 file (checked 45 source files)

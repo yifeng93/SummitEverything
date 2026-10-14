@@ -7,10 +7,12 @@ credential or Keychain item exists in this test.
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 
 from summit_everything.api.app import create_app
+from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.settings import MemorySecretBackend
 
@@ -74,7 +76,7 @@ def test_real_data_routes_are_disabled_until_explicitly_authorized(tmp_path):
     assert capabilities["feishu_material_read"]["available"] is False
     assert capabilities["feishu_material_read"]["configured"] is True
     reason = capabilities["feishu_material_read"]["disabled_reason"]
-    assert reason == "stage_c_authorization_required"
+    assert reason == "acceptance_plan_required"
 
     for path in (
         "/api/v1/integrations/feishu/materials",
@@ -84,7 +86,7 @@ def test_real_data_routes_are_disabled_until_explicitly_authorized(tmp_path):
     ):
         response = client.get(path, headers=HEADERS)
         assert response.status_code == 409, (path, response.text)
-        assert response.json()["error"]["code"] == "stage_c_authorization_required"
+        assert response.json()["error"]["code"] == "acceptance_plan_required"
 
 
 def test_real_mode_without_an_app_id_is_reported_as_unconfigured(tmp_path):
@@ -98,7 +100,7 @@ def test_real_mode_without_an_app_id_is_reported_as_unconfigured(tmp_path):
     assert response.json()["error"]["code"] == "provider_not_configured"
 
 
-def test_enabling_real_data_opens_the_adapter_path(tmp_path):
+def test_settings_flag_does_not_report_capability_as_enabled(tmp_path):
     client = _client(tmp_path)
     _open(client, tmp_path)
     _configure_real(client)
@@ -110,13 +112,13 @@ def test_enabling_real_data_opens_the_adapter_path(tmp_path):
     )
 
     capabilities = client.get("/api/v1/settings", headers=HEADERS).json()["capabilities"]
-    assert capabilities["feishu_material_read"]["available"] is True
+    assert capabilities["feishu_material_read"]["available"] is False
 
-    # The gate is open; the stub provider is reached and reports the missing
-    # user authorization instead of the Stage C gate.
+    # Provider injection does not grant a read. Every real-mode attempt still
+    # needs its own itemized acceptance plan.
     response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
-    assert response.status_code == 401
-    assert response.json()["error"]["code"] == "not_authorized"
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "acceptance_plan_required"
 
 
 def test_fake_mode_keeps_working_offline(tmp_path):
@@ -125,3 +127,234 @@ def test_fake_mode_keeps_working_offline(tmp_path):
     response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "not_authorized"
+
+
+def test_real_feishu_read_plan_binds_configuration_scope_and_is_one_shot(tmp_path):
+    client = _client(tmp_path)
+    _open(client, tmp_path)
+    _configure_real(client)
+    scope = {"query": "指定合成关键词", "visibility": "owner", "cursor": None, "limit": 20}
+    created = client.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "feishu.materials.read", "scope": scope},
+    )
+    assert created.status_code == 201, created.text
+    plan = created.json()["plan"]
+    assert plan["request_limit"] == 2  # one list request + one possible token refresh
+    assert "query" not in created.text or "指定合成关键词" in created.text
+
+    unplanned = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
+    assert unplanned.status_code == 409
+    assert unplanned.json()["error"]["code"] == "acceptance_plan_required"
+
+    confirmed = client.post(
+        f"/api/v1/acceptance-plans/{plan['plan_id']}/confirm",
+        headers=HEADERS,
+        json={"scope_sha256": plan["scope_sha256"]},
+    )
+    assert confirmed.status_code == 200
+    changed = client.get(
+        "/api/v1/integrations/feishu/materials?query=another&visibility=owner&plan_id="
+        + plan["plan_id"],
+        headers=HEADERS,
+    )
+    assert changed.status_code == 409
+
+    attempted = client.get(
+        "/api/v1/integrations/feishu/materials?query=%E6%8C%87%E5%AE%9A%E5%90%88%E6%88%90%E5%85%B3%E9%94%AE%E8%AF%8D"
+        "&visibility=owner&limit=20&plan_id=" + plan["plan_id"],
+        headers=HEADERS,
+    )
+    assert attempted.status_code == 401  # synthetic FakeFeishu refuses real identity
+    status = client.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS).json()
+    assert status["state"] == "unknown"
+    assert status["requests_reserved"] == 2
+
+    retry = client.get(
+        "/api/v1/integrations/feishu/materials?query=%E6%8C%87%E5%AE%9A%E5%90%88%E6%88%90%E5%85%B3%E9%94%AE%E8%AF%8D"
+        "&visibility=owner&limit=20&plan_id=" + plan["plan_id"],
+        headers=HEADERS,
+    )
+    assert retry.status_code == 409
+
+
+def test_live_acceptance_plan_owner_remains_executing(tmp_path):
+    client = _client(tmp_path)
+    _open(client, tmp_path)
+    _configure_real(client)
+    plan = client.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "feishu.tasks.read", "scope": {"cursor": None, "limit": 20}},
+    ).json()["plan"]
+    confirmed = client.post(
+        f"/api/v1/acceptance-plans/{plan['plan_id']}/confirm",
+        headers=HEADERS,
+        json={"scope_sha256": plan["scope_sha256"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    ledger_path = next((tmp_path / "profile").rglob("acceptance-plans.json"))
+    ledger = AcceptancePlanLedger(ledger_path.parent)
+    executing = ledger.begin_execution(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        config_sha256=plan["config_sha256"],
+        scope_sha256=plan["scope_sha256"],
+        run_id=client.app.state.acceptance_run_id,
+    )
+    reserved = ledger.reserve_requests(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        count=2,
+    )
+
+    status = client.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS)
+
+    assert status.status_code == 200, status.text
+    assert status.json()["state"] == "executing"
+    assert status.json()["execution_run_id"] == str(executing.execution_run_id)
+    assert status.json()["requests_reserved"] == 2
+    assert reserved.state == "executing"
+
+
+def test_interrupted_acceptance_plan_is_reported_unknown_without_replay(tmp_path):
+    profile = tmp_path / "profile"
+    workspace = tmp_path / "workspace"
+    first = _client(tmp_path)
+    _open(first, tmp_path)
+    _configure_real(first)
+    plan = first.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "feishu.tasks.read", "scope": {"cursor": None, "limit": 20}},
+    ).json()["plan"]
+    confirmed = first.post(
+        f"/api/v1/acceptance-plans/{plan['plan_id']}/confirm",
+        headers=HEADERS,
+        json={"scope_sha256": plan["scope_sha256"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    ledger_path = next(profile.rglob("acceptance-plans.json"))
+    ledger = AcceptancePlanLedger(ledger_path.parent)
+    original_run_id = uuid4()
+    ledger.begin_execution(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        config_sha256=plan["config_sha256"],
+        scope_sha256=plan["scope_sha256"],
+        run_id=original_run_id,
+    )
+    ledger.reserve_requests(
+        UUID(plan["plan_id"]),
+        workspace_id=plan["workspace_id"],
+        profile_id=plan["profile_id"],
+        count=2,
+    )
+
+    restarted = _client(tmp_path)
+    opened = restarted.post(
+        "/api/v1/workspaces",
+        headers=HEADERS,
+        json={
+            "root": str(workspace),
+            "mode": "open",
+            "name": "Synthetic Gate",
+            "operation_id": "reopen-after-restart",
+        },
+    )
+    assert opened.status_code == 201, opened.text
+    operation_retry = restarted.get(
+        f"/api/v1/integrations/feishu/tasks?limit=20&plan_id={plan['plan_id']}",
+        headers=HEADERS,
+    )
+    assert operation_retry.status_code == 409, operation_retry.text
+
+    first_status = restarted.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS)
+    second_status = restarted.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS)
+
+    assert first_status.status_code == 200, first_status.text
+    assert second_status.status_code == 200, second_status.text
+    assert first_status.json()["state"] == second_status.json()["state"] == "unknown"
+    assert (
+        first_status.json()["requests_reserved"] == second_status.json()["requests_reserved"] == 2
+    )
+    assert first_status.json()["execution_run_id"] == str(original_run_id)
+    assert second_status.json()["execution_run_id"] == str(original_run_id)
+    assert first_status.json()["finished_at"] is not None
+    assert ledger.get(UUID(plan["plan_id"])).requests_reserved == 2
+
+
+def test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt(tmp_path):
+    client = _client(tmp_path)
+    _open(client, tmp_path)
+    assert (
+        client.patch(
+            "/api/v1/settings",
+            headers=HEADERS,
+            json={
+                "mode": "real",
+                "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+                "rerank": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-rerank",
+                    "enabled": True,
+                },
+            },
+        ).status_code
+        == 200
+    )
+    fingerprint = client.get("/api/v1/settings", headers=HEADERS).json()["embedding_fingerprint"]
+    query_id = str(uuid4())
+    scope = {
+        "question": "合成问题不得存入账本",
+        "fingerprint": fingerprint,
+        "purpose": "current",
+        "answer_mode": "fact",
+        "role_id": None,
+        "request_id": query_id,
+        "conversation_id": None,
+    }
+    created = client.post(
+        "/api/v1/acceptance-plans",
+        headers=HEADERS,
+        json={"operation": "model.query", "scope": scope},
+    )
+    assert created.status_code == 201, created.text
+    plan = created.json()["plan"]
+    assert plan["request_limit"] == 3
+    assert created.json()["scope"]["question"] == scope["question"]
+    ledger = next((tmp_path / "profile").rglob("acceptance-plans.json"))
+    assert scope["question"] not in ledger.read_text()
+    assert (
+        client.post(
+            f"/api/v1/acceptance-plans/{plan['plan_id']}/confirm",
+            headers=HEADERS,
+            json={"scope_sha256": plan["scope_sha256"], "scope": created.json()["scope"]},
+        ).status_code
+        == 200
+    )
+
+    changed = client.patch(
+        "/api/v1/settings", headers=HEADERS, json={"llm": {"max_output_tokens": 4096}}
+    )
+    assert changed.status_code == 200
+    execution = client.post(
+        "/api/v1/queries",
+        headers=HEADERS,
+        json={**scope, "acceptance_plan_id": plan["plan_id"]},
+    )
+    assert execution.status_code == 409
+    assert execution.json()["error"]["code"] == "acceptance_plan_conflict"
+    assert (
+        client.get(f"/api/v1/acceptance-plans/{plan['plan_id']}", headers=HEADERS).json()["state"]
+        == "confirmed"
+    )

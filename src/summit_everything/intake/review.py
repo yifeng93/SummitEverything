@@ -5,7 +5,7 @@ from __future__ import annotations
 import fcntl
 import hashlib
 import json
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
@@ -87,6 +87,87 @@ class IntakeReviewService:
         self.provider = provider or FakeLLM()
         self.page_writer = page_writer or PageWriter()
 
+    def preview_inputs(
+        self,
+        root: Path,
+        item_ids: list[UUID],
+        *,
+        line_id: UUID,
+        project_id: UUID,
+        reprocess: bool = False,
+    ) -> list[tuple[UUID, UUID, str]]:
+        """Read the exact UTF-8 bodies that organize() would send, without mutation."""
+        root = root.resolve()
+        if not item_ids or len(set(item_ids)) != len(item_ids):
+            raise WorkspaceError("Choose one or more distinct intake items")
+        manifest = load_manifest(root)
+        project = next((record for record in manifest.projects if record.id == project_id), None)
+        if project is None or project.line_id != line_id or project.archived:
+            raise WorkspaceError("Choose an active project in the selected line")
+        with workspace_lock(root):
+            items = {item.item_id: item for item in read_items(root, archive=False)}
+            selected = [items.get(item_id) for item_id in item_ids]
+            if any(item is None for item in selected):
+                raise WorkspaceError("Every selected intake item must exist")
+            result: list[tuple[UUID, UUID, str]] = []
+            source_store = SourceStore()
+            for item in selected:
+                assert item is not None
+                state = source_store.derived_state(root, item)
+                if state in {"processing", "reviewing"}:
+                    raise WorkspaceError(
+                        "This source already has an active job or drafts awaiting review"
+                    )
+                if (state != "pending" or item.latest_job_id is not None) and not reprocess:
+                    raise WorkspaceError(
+                        "This source was already processed; explicitly choose reprocess"
+                    )
+                source_path = (root / item.original_relative_path).resolve()
+                if not source_path.is_relative_to(root) or not source_path.is_file():
+                    raise WorkspaceError("An intake original is missing or outside the workspace")
+                source_bytes = source_path.read_bytes()
+                source_id, source_digest = self._source_identity(root, item.source_id)
+                if (
+                    source_id != item.source_id
+                    or hashlib.sha256(source_bytes).hexdigest() != source_digest
+                ):
+                    raise WorkspaceError("An intake original no longer matches its source record")
+                try:
+                    text = source_bytes.decode("utf-8")
+                except UnicodeDecodeError as exc:
+                    raise WorkspaceError("Only UTF-8 text sources can be organized") from exc
+                result.append((item.item_id, item.source_id, text))
+            return result
+
+    def replay_job(
+        self,
+        root: Path,
+        *,
+        item_ids: list[UUID],
+        operation_id: str,
+        line_id: UUID,
+        project_id: UUID,
+        reprocess: bool = False,
+    ) -> IntakeJob | None:
+        manifest = load_manifest(root)
+        job_id = uuid5(manifest.workspace_id, f"intake-job:{operation_id}")
+        existing = read_job(root, job_id)
+        if existing is None:
+            return None
+        request: dict[str, object] = {
+            "item_ids": [str(item_id) for item_id in item_ids],
+            "line_id": str(line_id),
+            "project_id": str(project_id),
+        }
+        if reprocess:
+            request["reprocess"] = True
+        request_hash = hashlib.sha256(
+            json.dumps(request, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        if existing.request_hash != request_hash:
+            raise WorkspaceWriteConflict("Job operation ID was reused for different inputs")
+        return existing
+
     def create_job(
         self,
         root: Path,
@@ -96,6 +177,7 @@ class IntakeReviewService:
         line_id: UUID,
         project_id: UUID,
         reprocess: bool = False,
+        before_provider_call: Callable[[list[tuple[UUID, UUID, str]]], None] | None = None,
     ) -> IntakeJob:
         root = root.resolve()
         if not operation_id.strip() or not item_ids or len(set(item_ids)) != len(item_ids):
@@ -221,7 +303,9 @@ class IntakeReviewService:
             except BaseException:
                 lease.__exit__(None, None, None)
                 raise
-        return self._run_attempt(root, job, inputs, line_id, project_id, lease)
+        return self._run_attempt(
+            root, job, inputs, line_id, project_id, lease, before_provider_call
+        )
 
     def _run_attempt(
         self,
@@ -231,6 +315,7 @@ class IntakeReviewService:
         line_id: UUID,
         project_id: UUID,
         lease: AttemptLease,
+        before_provider_call: Callable[[list[tuple[UUID, UUID, str]]], None] | None = None,
     ) -> IntakeJob:
         assert job.attempt_id is not None
         checkpoint_path = _state_root(root) / "intake" / "checkpoints" / f"{job.job_id}.json"
@@ -253,6 +338,8 @@ class IntakeReviewService:
                     calling.model_dump_json(indent=2).encode(),
                 )
             try:
+                if before_provider_call is not None:
+                    before_provider_call(inputs)
                 proposals = self.provider.organize(inputs)
                 covered_inputs: set[int] = set()
                 for proposal in proposals:

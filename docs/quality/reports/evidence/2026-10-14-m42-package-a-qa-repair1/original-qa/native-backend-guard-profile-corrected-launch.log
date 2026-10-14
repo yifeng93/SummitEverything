@@ -1,0 +1,3 @@
+pid=52780 ppid=1 process=SummitEverything offline_guard_1=True profile_root_match=True
+pid=52782 ppid=52780 process=summit-backend offline_guard_1=True profile_root_match=True
+aggregate_native_guard_profile_pass=True aggregate_backend_guard_profile_pass=True

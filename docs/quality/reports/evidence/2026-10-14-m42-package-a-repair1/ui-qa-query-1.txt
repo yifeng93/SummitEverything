@@ -1,0 +1,99 @@
+Window: "SummitEverything Internal", App: SummitEverything Internal.
+0 standard window SummitEverything Internal, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.(unknown context at $100ce6d88).InternalWindow, SwiftUI._FlexFrameLayout>>-1-AppWindow-1
+	1 scroll area
+		2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/
+			3 container
+				4 text SummitEverything 个人知识工作台
+				5 container 主导航
+					6 button 今日
+					7 button 日志与思考
+					8 button 项目与知识
+					9 button 知识问答
+					10 button 设置
+				11 text 仅本机运行
+				12 button M M42 Repair 1 synthetic 已连接工作库
+			13 container
+				14 text 知识问答 本机已保存
+				15 button 打开设置
+				16 text 仅使用已确认知识
+				17 heading 知识问答, Value: 1
+					18 text 知识问答
+				19 text 每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。
+				20 button 新建对话
+				21 container 本机问答历史
+					22 heading 本机历史, Value: 2
+						23 text 本机历史
+					24 text 只保存在此 profile 和工作库
+					25 container
+						26 button 访客离开时，前台应记录什么？ 2026/10/14 12:54:33 · 1 个问题 · 已完成
+						27 button 删除 访客离开时，前台应记录什么？
+				28 text 本机索引已就绪 1 个页面 · 1 个分块 · summit-fake-embedding-v1
+				29 button 准备索引计划
+				30 text 已保存到本机：1 页，1 个新分块，复用 0 个。
+				31 container 本机问答偏好与记忆
+					32 heading 问答角色与记忆, Value: 2
+						33 text 问答角色与记忆
+					34 text 只调整表达与指代理解，不改变证据或权限 使用角色
+					35 pop up button (collapsed) 使用角色, Value: 不使用角色, Secondary Actions: Expand
+					36 text 角色名称
+					37 text field (settable) 角色名称, Placeholder: 例如：简明分析
+					38 text 表达偏好
+					39 text entry area (settable) 表达偏好, Value: [text entry area], Placeholder: 只调整表达方式；不能改变证据标准或执行权限。
+						40 text 只调整表达方式；不能改变证据标准或执行权限。
+					41 text 角色说明预算（字节）
+					42 number field (settable) 角色说明预算（字节）, Value: 2000
+						43 stepper 0
+							44 unknown
+							45 unknown
+					46 button (disabled) 保存角色
+					47 heading 待确认记忆, Value: 3
+						48 text 待确认记忆
+					49 text 没有待确认记忆。
+					50 heading 已确认记忆, Value: 3
+						51 text 已确认记忆
+					52 text 目前没有已确认记忆。
+				53 container 对话内容
+					54 heading 访客离开时，前台应记录什么？, Value: 2
+						55 text 访客离开时，前台应记录什么？
+					56 container 引用依据
+						57 text 你
+						58 text 访客离开时，前台应记录什么？
+						59 text 回答 · 事实问答 · 已完成
+						60 text 来源摘要：访客离开时，前台应记录到访时间、离场时间与反馈。访客离场后要补充记录哪些信息？到访时段、反馈以及未完成事项。
+						61 text 已确认资料中的陈述
+						62 content list
+							63 container 来源摘要：访客离开时，前台应记录到访时间、离场时间与反馈。访客离场后要补充记录哪些信息？到访时段、反馈以及未完成事项。
+								64 list marker •
+								65 text 来源摘要：访客离开时，前台应记录到访时间、离场时间与反馈。访客离场后要补充记录哪些信息？到访时段、反馈以及未完成事项。
+						66 container
+							67 checkbox 这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用, Value: 0
+							68 text 这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用
+						69 button (disabled) 创建待确认记忆候选
+						70 heading 引用依据, Value: 3
+							71 text 引用依据
+						72 button 1 来源摘要 访客离开时，前台应记录到访时间、离场时间与反馈。访客离场后要补充记录哪些信息？到访时段、反馈以及未完成事项。 引用版本仍可用
+				73 text 资料范围
+				74 pop up button (collapsed) 资料范围, Value: 当前有效资料, Secondary Actions: Expand
+				75 text 回答方式
+				76 pop up button (collapsed) 回答方式, Value: 查找事实, Secondary Actions: Expand
+				77 text 本次使用角色
+				78 pop up button (collapsed) 本次使用角色, Value: 不使用角色, Secondary Actions: Expand
+				79 text 你的问题
+				80 text entry area (settable) 你的问题, Value: [text entry area], Placeholder: 例如：这个项目已经确认的地点和联系人有哪些？
+					81 text (settable) 访客离开时，前台应记录什么？
+				82 button 开始检索
+				83 text 回答与历史仅保存在本机；不会自动写入知识页。
+		84 scroll bar (settable, float) 0.5767524
+	85 close button
+	86 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	87 minimize button
+	88 text SummitEverything Internal
+89 menu bar
+	90 SummitEverything Internal
+	91 File
+	92 Edit
+	93 View
+	94 Window
+	95 Help
+
+The focused UI element is 82 button 开始检索

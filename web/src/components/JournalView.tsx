@@ -1,13 +1,30 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, indexUpdateMessage, newOperationId, type Line, type MutationResult, type Page, type Project } from '../api/client'
+import type { components } from '../api/generated'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string) => void }
+type JournalAssistPlan = {
+  plan: { plan_id: string; scope_sha256: string; request_limit: number }
+  scope: { text: string; max_output_tokens: number }
+  model: string
+}
 
 function pageStatus(page: Page): string {
   if (page.approval_state !== 'confirmed') return '需要重新确认'
   if (page.validity === 'superseded') return '已被替代'
   if (page.validity === 'invalid') return '已失效'
   return '已确认'
+}
+
+function assistStateLabel(state: string): string {
+  return ({
+    preview: '待本次确认',
+    executing: '正在执行',
+    succeeded: '建议已返回，尚未保存',
+    failed: '本次请求失败，未自动重发',
+    unknown: '执行结果未知；不会自动重发',
+    cancelled: '已取消，未发送',
+  } as Record<string, string>)[state] ?? '状态暂不可识别'
 }
 
 export function JournalView({ onError, onOpenPage }: Props) {
@@ -22,6 +39,9 @@ export function JournalView({ onError, onOpenPage }: Props) {
   const [suggestion, setSuggestion] = useState<{ title: string; body: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
+  const [assistPlan, setAssistPlan] = useState<JournalAssistPlan | null>(null)
+  const [assistStatus, setAssistStatus] = useState<{ planId: string; state: string } | null>(null)
+  const [assistBusy, setAssistBusy] = useState(false)
   const pendingSave = useRef<{ signature: string; operation: string } | null>(null)
 
   const refresh = useCallback(async () => {
@@ -61,10 +81,59 @@ export function JournalView({ onError, onOpenPage }: Props) {
 
   async function assist() {
     if (!body.trim()) return
-    setBusy(true)
-    try { setSuggestion(await api.post<{ title: string; body: string }>('/journal/assist', { text: body })) }
-    catch (cause) { onError(cause instanceof Error ? cause.message : 'AI 辅助暂时不可用；已保存内容未更改。') }
-    finally { setBusy(false) }
+    setAssistBusy(true)
+    try {
+      const settings = await api.get<components['schemas']['SettingsSummary']>('/settings')
+      if (settings.mode === 'real') {
+        const preview = await api.post<Omit<JournalAssistPlan, 'model'>>('/acceptance-plans', {
+          operation: 'model.journal_assist', scope: { text: body },
+        })
+        setAssistPlan({ ...preview, model: settings.llm.model ?? settings.llm.provider })
+        setAssistStatus(null)
+      } else {
+        setSuggestion(await api.post<{ title: string; body: string }>('/journal/assist', { text: body }))
+      }
+    } catch (cause) { onError(cause instanceof Error ? cause.message : 'AI 辅助暂时不可用；已保存内容未更改。') }
+    finally { setAssistBusy(false) }
+  }
+
+  async function cancelAssistPlan() {
+    if (!assistPlan) return
+    setAssistBusy(true)
+    try {
+      await api.delete(`/acceptance-plans/${assistPlan.plan.plan_id}`)
+      setAssistPlan(null)
+    } catch (cause) { onError(cause instanceof Error ? cause.message : '无法撤销本次 AI 辅助预览。') }
+    finally { setAssistBusy(false) }
+  }
+
+  async function confirmAssistPlan() {
+    if (!assistPlan) return
+    const { plan, scope } = assistPlan
+    setAssistBusy(true)
+    setAssistPlan(null)
+    setAssistStatus({ planId: plan.plan_id, state: '执行结果待确认' })
+    try {
+      await api.post(`/acceptance-plans/${plan.plan_id}/confirm`, {
+        scope_sha256: plan.scope_sha256, scope,
+      })
+      const suggestion = await api.post<{ title: string; body: string }>('/journal/assist', {
+        text: scope.text, acceptance_plan_id: plan.plan_id,
+      })
+      setSuggestion(suggestion)
+      setAssistStatus({ planId: plan.plan_id, state: '建议已返回，尚未保存' })
+    } catch (cause) {
+      setAssistStatus({ planId: plan.plan_id, state: '执行结果未知；不会自动重发' })
+      onError(cause instanceof Error ? cause.message : 'AI 辅助结果未知；内容仍未保存。')
+    } finally { setAssistBusy(false) }
+  }
+
+  async function refreshAssistStatus() {
+    if (!assistStatus) return
+    try {
+      const result = await api.get<{ state: string }>(`/acceptance-plans/${assistStatus.planId}`)
+      setAssistStatus({ ...assistStatus, state: assistStateLabel(result.state) })
+    } catch (cause) { onError(cause instanceof Error ? cause.message : '无法读取本次执行状态。') }
   }
 
   return <section className="content-wrap journal-view">
@@ -76,14 +145,16 @@ export function JournalView({ onError, onOpenPage }: Props) {
       </div>
       <form onSubmit={(event) => void save(event)}>
         <label className="field"><span>标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} required /></label>
-        <label className="field"><span>正文</span><textarea rows={8} value={body} onChange={(event) => setBody(event.target.value)} placeholder="自由记录 Markdown 内容" required /></label>
+        <label className="field"><span>正文</span><textarea rows={8} value={body} onChange={(event) => setBody(event.target.value)} placeholder="自由记录 Markdown 内容" required disabled={Boolean(assistPlan)} /></label>
         <div className="journal-association">
           <label className="field"><span>主线（可选）</span><select value={lineId} onChange={(event) => { setLineId(event.target.value); setProjectId('') }}><option value="">不关联</option>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label>
           {lineId && <label className="field"><span>项目（可选）</span><select value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="">仅关联主线</option>{availableProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>}
         </div>
-        <div className="journal-actions"><button className="button secondary" type="button" disabled={busy || !body.trim()} onClick={() => void assist()}>AI 辅助建议</button><button className="button primary" disabled={busy || !title.trim() || !body.trim()}>确认并保存在本机</button></div>
+        <div className="journal-actions"><button className="button secondary" type="button" disabled={busy || assistBusy || Boolean(assistPlan) || !body.trim()} onClick={() => void assist()}>AI 辅助建议</button><button className="button primary" disabled={busy || assistBusy || Boolean(assistPlan) || !title.trim() || !body.trim()}>确认并保存在本机</button></div>
       </form>
-      {suggestion && <section className="journal-suggestion"><h2>可编辑建议 · 尚未保存</h2><button className="text-button" onClick={() => setSuggestion(null)}>取消建议</button><label className="field"><span>建议标题</span><input value={suggestion.title} onChange={(event) => setSuggestion({ ...suggestion, title: event.target.value })} /></label><label className="field"><span>建议正文</span><textarea rows={6} value={suggestion.body} onChange={(event) => setSuggestion({ ...suggestion, body: event.target.value })} /></label><button className="button secondary" onClick={() => { setTitle(suggestion.title); setBody(suggestion.body); setSuggestion(null) }}>采用到编辑区</button></section>}
+      {assistPlan && <section className="journal-suggestion" aria-label="AI 辅助预览"><h2>本次建议预览</h2><p>将把下面这段编辑区正文发送给 {assistPlan.model}，最多生成 {assistPlan.scope.max_output_tokens} 个 token；这是一次模型请求，不会保存记录。</p><pre className="journal-assist-source">{assistPlan.scope.text}</pre><div className="journal-actions"><button type="button" className="button secondary" disabled={assistBusy} onClick={() => void cancelAssistPlan()}>取消，不发送</button><button type="button" className="button primary" disabled={assistBusy} onClick={() => void confirmAssistPlan()}>确认并生成建议 · 1 次请求</button></div></section>}
+      {assistStatus && <p role="status" className="helper-line">AI 辅助状态：{assistStatus.state} <button type="button" className="text-button" onClick={() => void refreshAssistStatus()}>刷新状态</button></p>}
+      {suggestion && <section className="journal-suggestion"><h2>可编辑建议 · 尚未保存</h2><button className="text-button" disabled={Boolean(assistPlan)} onClick={() => setSuggestion(null)}>取消建议</button><label className="field"><span>建议标题</span><input value={suggestion.title} onChange={(event) => setSuggestion({ ...suggestion, title: event.target.value })} /></label><label className="field"><span>建议正文</span><textarea rows={6} value={suggestion.body} onChange={(event) => setSuggestion({ ...suggestion, body: event.target.value })} /></label><button className="button secondary" disabled={Boolean(assistPlan)} onClick={() => { setTitle(suggestion.title); setBody(suggestion.body); setSuggestion(null) }}>采用到编辑区</button></section>}
     </div>
     {notice && <p role="status" className={notice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{notice}</p>}
     <section className="journal-history"><h2>已保存的记录</h2>{pages.length === 0 ? <p className="muted">暂无日志或思考。</p> : <ul className="knowledge-page-list">{pages.map((page) => <li key={page.page_id}><button onClick={() => onOpenPage(page.page_id)}><span className="page-type-mark">{page.metadata.kind === 'log' ? '记' : '想'}</span><span><strong>{String(page.metadata.title ?? '未命名记录')}</strong><small>{pageStatus(page)} · 本机保存</small></span><span aria-hidden="true">›</span></button></li>)}</ul>}</section>

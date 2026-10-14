@@ -1,0 +1,37 @@
+M4.2 Package A QA repair1 — corrected-run UI observation note
+Fixed source SHA: 419bb865b334389d1efd0f4a1a855cd0d5324d28
+Target bundle copied to: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m42-a-qa-repair1.K9flIK/app-parent/SummitEverything Internal 419bb86.app
+Isolated profile root: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m42-a-qa-repair1.K9flIK/profile
+Workspace root: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m42-a-qa-repair1.K9flIK/workspace
+
+Source/limitations: this is a QA-written transcript of accessibility-tree (AX) state observations returned by the documented CUA tool in this conversation. It is not a verbatim raw Sky/AX export and no screenshot was saved. It supplements the tool outputs; it must not be cited as an original screenshot or as an independent machine-captured transcript file.
+
+Precondition verified before the corrected-run interactions: native PID 52780 and its child backend PID 52782 each had SUMMIT_OFFLINE_GUARD_ACTIVE=1 and canonical profile-root match=true. The candidate executable image paths were matched to the copied app; backend PID 52782 was listening on TCP 18793, matching the observed CUA WebView URL 127.0.0.1:18793. See native-backend-guard-profile-corrected-launch.log, corrected-process-image-paths.log and cua-window-port-match.log.
+
+Exact visitor body approved in the isolated synthetic workspace:
+# 访客登记与离场记录
+
+前台接待访客时，应先核验姓名，再记录来访时间。访客离开时，前台补记离开时间。
+
+以上规则用于合成 QA 流程验证。
+
+On the corrected run, the packaged UI submitted these exact questions:
+1. 访客离开时，前台应记录什么？
+2. 访客离场后要补充记录哪些信息？
+AX result for each showed an answer and a citation back to the approved visitor page containing the complete sentence “访客离开时，前台补记离开时间。” No result was inferred from merely seeing a citation button. Local index status was “本机索引已就绪”; no live provider or external connection was used.
+
+File picker corrected-run:
+- Native NSOpenPanel selected a synthetic root folder containing root-corrected.txt and nested/nested-corrected.md. The rendered “待导入文件” WebKit list visibly contained both root-corrected.txt and nested-corrected.md as pending, confirming a non-empty FileList with root and nested files. Explicit import changed both rows to “已导入 · 已保存到待整理”; inbox count changed from 5 to 7.
+- A native multi-selection of corrected-alpha.txt plus corrected-empty.txt showed alert “文件未导入” and “所选文件未导入。请确认文件为非空 TXT / Markdown 且符合大小和数量限制后重新选择。” Inbox remained at 5 after dismissal.
+- Pressing native Cancel returned to the Today view without an alert; inbox remained 5.
+- A separate valid corrected multi-selection of corrected-alpha.txt and corrected-beta.md showed two pending rows; explicit import marked each “已导入 · 已保存到待整理” and incremented the inbox.
+
+Fake JournalAssist corrected-run:
+- UI generated an editable simulated suggestion and showed it as unsaved; Cancel was used once.
+- A second simulated suggestion was adopted into the editor, then separately saved using “确认并保存在本机”. The UI showed “本机索引已更新”. Reopening the workspace in the verified corrected run showed the saved Markdown body again.
+- This does not claim a Real-mode UI provider call. Real Runtime/MockHTTP behavior was tested in integration tests only; Real UI is NOT_RUN.
+
+Sequence caveats:
+- An earlier interaction sequence before a process precheck exists only as an unverified observation; it is excluded from corrected-run proof.
+- After context recovery, one later CUA getApp rebinding launched the copied candidate as fresh PIDs 66827/66829. Before any further product input, a safe checker found guard=false and profile-root mismatch for both. Their executable paths were matched to this copied candidate and only those two PIDs were sent SIGTERM. This later launch is UNVERIFIED and excluded from all PASS claims. No further CUA calls were made. Keychain query count and default-profile fallback remain UNVERIFIED.
+- Old PID 51339 was confirmed by executable path to belong to /Users/yifengstudio/.codex/worktrees/m41-internal-app/... and was left untouched; it is not the QA copy.

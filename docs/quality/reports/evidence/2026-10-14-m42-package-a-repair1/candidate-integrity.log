@@ -1,0 +1,10 @@
+app=/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/SummitEverything Internal bc5018d.app
+dmg=/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/SummitEverything-Internal-bc5018d.dmg
+source_sha=bc5018ddc1c781bcb2b016a176d4d17623d7311b
+dirty=False
+build_id=20261014T044644Z-788b29e2f3bb
+frontend_sha256=788b29e2f3bb8b95736179ed07af6fa0d02eea17b3e881f92a8d79f2e70cb2ec
+dependencies_sha256=2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f
+app_files=156
+app_manifest_sha256=db1da25ef7c18e7f0ab115a7c40d5813a071363714e7ea071cbaecd5b8067bf3
+dmg_sha256=1880daef112f13be11453c63b69303fa25297b953bbde764e13222029f731961

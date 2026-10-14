@@ -4,22 +4,36 @@ import { SettingsView } from './SettingsView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
-function settings(credentialStatus = { feishu_app: false, deepseek: false, dashscope: false }) {
+function settings(credentialStatus = { feishu_app: false, deepseek: false, dashscope: false }, mode = 'fake') {
   return {
-    mode: 'fake',
+    mode,
     model_studio_account_id: 'studio-default',
     feishu: { app_id: 'synthetic-app', redirect_uri: '' },
     llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'team-account', enabled: false },
     embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, enabled: false },
     rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, enabled: false },
     capabilities: {
-      llm: { available: false, configured: false, disabled_reason: 'adapter_not_wired' },
+      llm: { available: false, configured: mode === 'real', disabled_reason: mode === 'real' ? 'acceptance_plan_required' : 'adapter_not_wired' },
     },
     credential_status: credentialStatus,
     keychain_available: true,
     embedding_fingerprint: 'fingerprint',
   }
 }
+
+it('explains the one-time real-operation confirmation gate', async () => {
+  const saved = settings(undefined, 'real')
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/settings')) return Response.json(saved)
+    if (url.endsWith('/provider-smoke')) return Response.json({ counts: {}, limits: {}, remaining: {} })
+    throw new Error(`Unexpected request ${url}`)
+  }))
+
+  render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  expect(await screen.findByText('已配置，待本次确认')).toBeTruthy()
+  expect(screen.getByText('每次使用前需预览并确认本次范围。')).toBeTruthy()
+})
 
 it('sends the selected account id with the secret and clears the password field', async () => {
   const saved = settings()

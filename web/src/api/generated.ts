@@ -195,6 +195,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/acceptance-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acceptance Plan Create */
+        post: operations["acceptance_plan_create_api_v1_acceptance_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/acceptance-plans/{plan_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acceptance Plan Confirm */
+        post: operations["acceptance_plan_confirm_api_v1_acceptance_plans__plan_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/acceptance-plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Acceptance Plan Get */
+        get: operations["acceptance_plan_get_api_v1_acceptance_plans__plan_id__get"];
+        put?: never;
+        post?: never;
+        /** Acceptance Plan Cancel */
+        delete: operations["acceptance_plan_cancel_api_v1_acceptance_plans__plan_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/provider-smoke": {
         parameters: {
             query?: never;
@@ -1012,6 +1064,74 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptancePlan */
+        AcceptancePlan: {
+            /**
+             * Plan Id
+             * Format: uuid
+             */
+            plan_id: string;
+            /** Operation */
+            operation: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /** Profile Id */
+            profile_id: string;
+            /** Config Sha256 */
+            config_sha256: string;
+            /** Scope Sha256 */
+            scope_sha256: string;
+            /** Request Limit */
+            request_limit: number;
+            /**
+             * Requests Reserved
+             * @default 0
+             */
+            requests_reserved: number;
+            /**
+             * State
+             * @default preview
+             * @enum {string}
+             */
+            state: "preview" | "confirmed" | "executing" | "succeeded" | "failed" | "unknown" | "cancelled";
+            /** Execution Run Id */
+            execution_run_id?: string | null;
+            /** Provider Usage */
+            provider_usage?: components["schemas"]["ProviderUsage"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Finished At */
+            finished_at?: string | null;
+        };
+        /** AcceptancePlanConfirmRequest */
+        AcceptancePlanConfirmRequest: {
+            /** Scope Sha256 */
+            scope_sha256: string;
+            /** Scope */
+            scope?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** AcceptancePlanRequest */
+        AcceptancePlanRequest: {
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "feishu.materials.read" | "feishu.materials.import" | "feishu.calendar.read" | "feishu.tasks.read" | "feishu.task.read" | "model.index" | "model.query" | "model.organize" | "model.journal_assist";
+            /** Scope */
+            scope: {
+                [key: string]: unknown;
+            };
+        };
         /** Action */
         Action: {
             /**
@@ -1676,6 +1796,12 @@ export interface components {
              * @default 0
              */
             estimated_cost: number | null;
+            /** Acceptance Plan Id */
+            acceptance_plan_id?: string | null;
+            /** Page Preview */
+            page_preview?: {
+                [key: string]: string;
+            }[];
         };
         /** IndexPlanRequest */
         IndexPlanRequest: {
@@ -1818,6 +1944,8 @@ export interface components {
              * @default false
              */
             reprocess: boolean;
+            /** Acceptance Plan Id */
+            acceptance_plan_id?: string | null;
         };
         /** IntakeTextRequest */
         IntakeTextRequest: {
@@ -1835,6 +1963,8 @@ export interface components {
         JournalAssistRequest: {
             /** Text */
             text: string;
+            /** Acceptance Plan Id */
+            acceptance_plan_id?: string | null;
         };
         /** JournalAssistResponse */
         JournalAssistResponse: {
@@ -1878,6 +2008,17 @@ export interface components {
              * @default false
              */
             enabled: boolean;
+            /**
+             * Max Output Tokens
+             * @default 2048
+             */
+            max_output_tokens: number;
+            /**
+             * Reasoning Effort
+             * @default low
+             * @enum {string}
+             */
+            reasoning_effort: "low" | "high";
         };
         /** LLMSettingsPatch */
         LLMSettingsPatch: {
@@ -1889,6 +2030,10 @@ export interface components {
             account_id?: string | null;
             /** Enabled */
             enabled?: boolean | null;
+            /** Max Output Tokens */
+            max_output_tokens?: number | null;
+            /** Reasoning Effort */
+            reasoning_effort?: ("low" | "high") | null;
         };
         /** LineCreate */
         LineCreate: {
@@ -2196,6 +2341,24 @@ export interface components {
             embedding?: components["schemas"]["ModelStudioSettingsPatch"] | null;
             rerank?: components["schemas"]["ModelStudioSettingsPatch"] | null;
         };
+        /** ProviderUsage */
+        ProviderUsage: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "deepseek" | "qwen3.7-text-embedding" | "qwen3.7-text-rerank";
+            /** Request Id */
+            request_id?: string | null;
+            /** Usage Reported */
+            usage_reported: boolean;
+            /** Input Tokens */
+            input_tokens?: number | null;
+            /** Output Tokens */
+            output_tokens?: number | null;
+            /** Total Tokens */
+            total_tokens?: number | null;
+        };
         /** QueryEvent */
         QueryEvent: {
             /**
@@ -2239,6 +2402,8 @@ export interface components {
             request_id?: string | null;
             /** Conversation Id */
             conversation_id?: string | null;
+            /** Acceptance Plan Id */
+            acceptance_plan_id?: string | null;
         };
         /** RerankSettings */
         RerankSettings: {
@@ -2811,6 +2976,7 @@ export interface operations {
             query?: {
                 cursor?: string | null;
                 limit?: number;
+                plan_id?: string | null;
             };
             header?: {
                 authorization?: string | null;
@@ -2842,7 +3008,9 @@ export interface operations {
     };
     task_get_api_v1_integrations_feishu_tasks__task_guid__get: {
         parameters: {
-            query?: never;
+            query?: {
+                plan_id?: string | null;
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -3002,6 +3170,146 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acceptance_plan_create_api_v1_acceptance_plans_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptancePlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acceptance_plan_confirm_api_v1_acceptance_plans__plan_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptancePlanConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptancePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acceptance_plan_get_api_v1_acceptance_plans__plan_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptancePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acceptance_plan_cancel_api_v1_acceptance_plans__plan_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptancePlan"];
                 };
             };
             /** @description Validation Error */
@@ -4977,6 +5285,7 @@ export interface operations {
                 visibility?: ("owner" | "shared") | null;
                 cursor?: string | null;
                 limit?: number;
+                plan_id?: string | null;
             };
             header?: {
                 authorization?: string | null;
@@ -5008,7 +5317,9 @@ export interface operations {
     };
     feishu_imports_api_v1_integrations_feishu_imports_post: {
         parameters: {
-            query?: never;
+            query?: {
+                plan_id?: string | null;
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -5049,6 +5360,7 @@ export interface operations {
                 timezone: string;
                 cursor?: string | null;
                 limit?: number;
+                plan_id?: string | null;
             };
             header?: {
                 authorization?: string | null;

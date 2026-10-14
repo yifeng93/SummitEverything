@@ -8,8 +8,15 @@ M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码
 
 M4.1 固定产品 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 经 fresh QA 与 Sol 核验，适用离线技术门 PASS；用户已批准离线正式收口，PR #17 已合入 main。旧候选 `b9321d6` 的文件面板 FAIL 原件保留，修复使用 1/2 轮；真实安装、签名公证、M4.2、五日、双机和发布未通过。
 
+M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已由独立 fresh QA 验收；Sol 判**适用工作包 A 离线技术场景 PASS**，不是整个 M4.2/C25/Stage C/产品 PASS。`4c6b0bd` 包含 P1/P2 与规格范围实现，`419bb86` 的 Native 修复为有效/零字节混选给出通用拒绝提示并保留 Cancel 无提示。QA 指定 UI/API/自动检查结果和限制见 [QA 报告](2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)及 [Sol gate](2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。真实服务、材料、Keychain 与人工交付门仍 NOT_RUN 或 UNVERIFIED；用户已批准离线正式收口与合入 main，但 PR、远端 CI 与 merge 尚未发生。
+
 | 报告 | 范围 |
 |---|---|
+| [M4.2 Package A 初始 QA](2026-10-14-M42-PACKAGE-A-QA-INITIAL.md) | 固定 `fe473399` 初始 FAIL；原始 34 项证据及 hash 副本在对应 evidence 目录 |
+| [M4.2 Package A 修复轮 1 DEV handoff](2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md) | 固定产品 SHA `419bb86`；最终候选、UI 自测、未测边界与 fresh QA handoff |
+| [M4.2 Package A 修复轮 1 fresh QA](2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) | 固定 `419bb86`；仅报告实际验收的离线/API/Mock/packaged UI 场景及 NOT_RUN / UNVERIFIED 限制 |
+| [M4.2 Package A Sol gate](2026-10-14-M42-PACKAGE-A-SOL-GATE.md) | Sol 判适用离线技术场景 PASS；用户已批准离线正式收口/合入，后续 PR/CI/merge 按仓库规则办理；工作包 B 须按准备卡单独授权 |
+| [M4.2 Package A DEV](2026-10-13-M42-PACKAGE-A-DEV.md) | 固定产品 SHA `fe47339`、命令 exit/raw evidence、clean候选和正确/错误隔离 UI 启动边界；fresh QA pending |
 | [M4.1 修复轮 1 fresh QA](2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md) | 固定 `3f6eaa4` 适用离线验收 PASS，文件面板 P1 实际关闭；真实门 NOT_RUN |
 | [M4.1 Sol 门](2026-10-13-M41-SOL-GATE.md) | 固定候选 / 证据 / 代码审查，离线技术 PASS；用户批准离线收口并合入 PR #17 |
 | [M4.1 初始 DEV](2026-10-13-M41-INTERNAL-APP-DEV.md) | 初始候选与首次 QA 前自测，产品源码 SHA `b9321d6` |
@@ -25,4 +32,4 @@ M4.1 固定产品 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 经 fresh QA �
 
 ## 保留的独立验收边界
 
-真实 provider / Feishu、真实业务材料、OS Keychain、runtime 元数据、native/DMG、五日试用、双机与发布不因离线 QA 通过而变为 PASS。完整验收要求见[验收矩阵](../ACCEPTANCE.md)。原始报告、manifest、SHA256SUMS、命令输出和截图不在本索引中重写。
+真实 provider / Feishu、真实业务材料、OS Keychain 生命周期、runtime 元数据、正式用户安装/公证、五日试用、双机与发布不因离线 QA 通过而变为 PASS。M4.2 远端 CI 未运行；PROGRESS 中远端 CI success 只指 M4.1 历史。完整验收要求见[验收矩阵](../ACCEPTANCE.md)。原始报告、manifest、SHA256SUMS、命令输出和截图不在本索引中重写。

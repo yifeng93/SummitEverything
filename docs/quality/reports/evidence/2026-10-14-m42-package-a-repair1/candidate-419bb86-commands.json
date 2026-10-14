@@ -1,0 +1,13 @@
+{
+  "source_sha": "419bb865b334389d1efd0f4a1a855cd0d5324d28",
+  "commands": [
+    {"command": "scripts/release-macos.sh <new App path> <new DMG path>", "exit": 0, "raw": "candidate-419bb86-build.log"},
+    {"command": "codesign --verify --deep --strict <419bb86.app>", "exit": 0, "raw": "candidate-419bb86-codesign.log"},
+    {"command": "hdiutil verify <419bb86.dmg>", "exit": 0, "raw": "candidate-419bb86-dmg-verify.log"},
+    {"command": "python3 check_guarded_processes.py <copied candidate.app> <fresh profile root>", "exit": 0, "raw": "ui-419bb86-guarded-processes.log"},
+    {"command": "swift test --package-path native", "exit": 0, "raw": "swift-tests-419bb86.log"},
+    {"command": "git diff --quiet 4c6b0bdd453db63f7f59599592c6c725303a6e1e 419bb865b334389d1efd0f4a1a855cd0d5324d28 -- src web uv.lock", "exit": 0, "raw": "source-tree-comparison-419bb86.txt"}
+  ],
+  "ui_observation": "ui-419bb86-native-selection-feedback.txt",
+  "ui_actions_have_no_shell_exit_code": true
+}

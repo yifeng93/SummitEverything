@@ -1,0 +1,40 @@
+Window: "SummitEverything Internal", App: SummitEverything Internal.
+0 standard window SummitEverything Internal, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.(unknown context at $102b32d88).InternalWindow, SwiftUI._FlexFrameLayout>>-1-AppWindow-1
+	1 scroll area
+		2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/
+			3 container
+				4 text SummitEverything 本地知识工作台 先连接一个工作库
+				5 heading Value: 1, 让工作资料成为
+自己的知识。
+					6 text 让工作资料成为 自己的知识。
+				7 text 工作库保存在你选择的本机文件夹。试用时请使用隔离的模拟资料。
+				8 container 工作库操作
+					9 text 工作库操作
+					10 container
+						11 radio button 新建, Value: 1
+						12 text 新建
+					13 container
+						14 radio button 打开已有, Value: 0
+						15 text 打开已有
+				16 text 工作库名称
+				17 text field (settable) 工作库名称, Placeholder: 例如：个人模拟库
+				18 text 文件夹路径
+				19 text field (settable) 文件夹路径, Placeholder: /Users/you/Documents/MyKnowledge
+				20 text 在开发预览中输入完整本机路径。
+				21 button 选择文件夹…
+				22 button 创建本地工作库
+				23 text 内容仅写入本机；导入材料不会自动成为正式知识。
+		24 scroll bar (settable, float) 0
+	25 close button
+	26 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	27 minimize button
+	28 text SummitEverything Internal
+29 menu bar
+	30 SummitEverything Internal
+	31 File
+	32 Edit
+	33 View
+	34 Window
+	35 Help
+
+The focused UI element is 0 standard window SummitEverything Internal, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.(unknown context at $102b32d88).InternalWindow, SwiftUI._FlexFrameLayout>>-1-AppWindow-1

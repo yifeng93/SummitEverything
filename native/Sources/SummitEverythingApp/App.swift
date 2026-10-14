@@ -126,6 +126,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             "SUMMIT_WEB_DIST": resources.appendingPathComponent("web").path,
         ]
         if let temp = ProcessInfo.processInfo.environment["TMPDIR"] { environment["TMPDIR"] = temp }
+        // Candidate verification may disable Keychain access explicitly. Forward
+        // only this opt-in deny flag; never inherit the caller's general environment.
+        if ProcessInfo.processInfo.environment["SUMMIT_OFFLINE_GUARD_ACTIVE"] == "1" {
+            environment["SUMMIT_OFFLINE_GUARD_ACTIVE"] = "1"
+        }
         process.environment = environment
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice
@@ -251,11 +256,12 @@ private struct LocalWebView: NSViewRepresentable {
             completionHandler(nil)
         }
 
-        private func trustedMainFrame(_ candidate: WKWebView, _ frame: WKFrameInfo) -> Bool {
+        private func trustedMainFrame(_ candidate: WKWebView, _ frame: WKFrameInfo,
+                                     allowsDirectories: Bool) -> Bool {
             guard let trustedWebView = webView, trustedWebView === candidate else { return false }
             return NativeUploadPolicy.permitsUpload(
                 isMainFrame: frame.isMainFrame,
-                allowsDirectories: false,
+                allowsDirectories: allowsDirectories,
                 originScheme: frame.securityOrigin.protocol,
                 originHost: frame.securityOrigin.host,
                 originPort: frame.securityOrigin.port,
@@ -272,18 +278,44 @@ private struct LocalWebView: NSViewRepresentable {
                      initiatedByFrame frame: WKFrameInfo,
                      completionHandler: @escaping ([URL]?) -> Void) {
             var selectedFiles: [URL]?
-            if trustedMainFrame(webView, frame), !parameters.allowsDirectories {
+            if trustedMainFrame(webView, frame, allowsDirectories: parameters.allowsDirectories) {
                 let panel = NSOpenPanel()
-                panel.canChooseFiles = true
-                panel.canChooseDirectories = false
+                panel.canChooseFiles = !parameters.allowsDirectories
+                panel.canChooseDirectories = parameters.allowsDirectories
                 panel.allowsMultipleSelection = parameters.allowsMultipleSelection
-                panel.allowedContentTypes = NativeUploadPolicy.allowedContentTypes
-                panel.prompt = "选择文件"
+                if !parameters.allowsDirectories { panel.allowedContentTypes = NativeUploadPolicy.allowedContentTypes }
+                panel.prompt = parameters.allowsDirectories ? "选择文件夹" : "选择文件"
                 if panel.runModal() == .OK {
-                    selectedFiles = NativeUploadPolicy.acceptedFiles(
-                        panel.urls,
-                        allowsMultipleSelection: parameters.allowsMultipleSelection
-                    )
+                    if parameters.allowsDirectories {
+                        let result = NativeUploadPolicy.collectDirectoryFiles(at: panel.urls)
+                        if let failure = result.failure {
+                            let alert = NSAlert()
+                            alert.messageText = "目录未导入"
+                            alert.informativeText = failure
+                            alert.runModal()
+                        } else {
+                            selectedFiles = result.files
+                            if result.skippedCount > 0 {
+                                let alert = NSAlert()
+                                alert.messageText = "部分目录内容已跳过"
+                                alert.informativeText = "导入列表仅包含支持的 TXT / Markdown 文件；已跳过 \(result.skippedCount) 项链接、不支持或超出单文件限制的内容。隐藏文件与应用包内容默认排除。"
+                                alert.runModal()
+                            }
+                        }
+                    } else {
+                        switch NativeUploadPolicy.validateFileSelection(
+                            panel.urls,
+                            allowsMultipleSelection: parameters.allowsMultipleSelection
+                        ) {
+                        case .success(let files):
+                            selectedFiles = files
+                        case .failure:
+                            let alert = NSAlert()
+                            alert.messageText = "文件未导入"
+                            alert.informativeText = NativeUploadPolicy.fileSelectionErrorMessage
+                            alert.runModal()
+                        }
+                    }
                 }
             }
             completionHandler(selectedFiles)
@@ -321,7 +353,7 @@ private struct LocalWebView: NSViewRepresentable {
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard message.name == "selectWorkspaceFolder", let webView,
-                  trustedMainFrame(webView, message.frameInfo) else { return }
+                  trustedMainFrame(webView, message.frameInfo, allowsDirectories: true) else { return }
             let panel = NSOpenPanel()
             panel.canChooseFiles = false
             panel.canChooseDirectories = true

@@ -1,0 +1,57 @@
+Window: "SummitEverything Internal", App: SummitEverything Internal.
+0 standard window SummitEverything Internal, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.(unknown context at $100ce6d88).InternalWindow, SwiftUI._FlexFrameLayout>>-1-AppWindow-1
+	1 scroll area
+		2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/
+			3 container
+				4 text SummitEverything 个人知识工作台
+				5 container 主导航
+					6 button 今日
+					7 button 日志与思考
+					8 button 项目与知识
+					9 button 知识问答
+					10 button 设置
+				11 text 仅本机运行
+				12 button M M42 Repair 1 synthetic 已连接工作库
+			13 container
+				14 text 日志与思考 本机已保存
+				15 button 打开设置
+				16 text 本机知识
+				17 heading 日志与思考, Value: 1
+					18 text 日志与思考
+				19 text 明确保存后写入正式页面；普通浏览不会请求模型。
+				20 container 记录类型
+					21 toggle button 工作日志, Value: on
+					22 toggle button 工作思考, Value: off
+				23 container
+					24 text 标题
+					25 text field (settable) 标题, Value: 模拟整理稿 1
+				26 container
+					27 text 正文
+					28 text entry area (settable) 正文, Value: [text entry area], Placeholder: 自由记录 Markdown 内容
+						29 text (settable) ## 来源摘要
+
+访客离开时，前台应记录到访时间、离场时间与反馈。访客离场后要补充记录哪些信息？到访时段、反馈以及未完成事项。
+
+				30 container
+					31 text 主线（可选）
+					32 pop up button (collapsed) 主线（可选）, Value: 不关联, Secondary Actions: Expand
+				33 container
+					34 button AI 辅助建议
+					35 button 确认并保存在本机
+				36 heading 已保存的记录, Value: 2
+					37 text 已保存的记录
+				38 text 暂无日志或思考。
+		39 scroll bar (settable, float) 1
+	40 close button
+	41 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	42 minimize button
+	43 text SummitEverything Internal
+44 menu bar
+	45 SummitEverything Internal
+	46 File
+	47 Edit
+	48 View
+	49 Window
+	50 Help
+
+The focused UI element is 2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/

@@ -22,6 +22,7 @@ from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
+from authorized_feishu_client import AuthorizedFeishuReadClient
 from fastapi.testclient import TestClient
 
 from summit_everything.api.app import create_app
@@ -179,7 +180,7 @@ def _api(
         profile_root=tmp_path / "profile",
         secret_backend=backend,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",

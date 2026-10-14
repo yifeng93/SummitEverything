@@ -58,7 +58,11 @@ def test_deepseek_sends_untrusted_text_as_data_and_validates_output():
     assert seen[0].url == "https://api.deepseek.com/chat/completions"
     assert seen[0].headers["authorization"] == "Bearer synthetic-api-key"
     assert "untrusted_source_text" in seen[0].content.decode()
-    assert json.loads(seen[0].content)["max_tokens"] == 2048
+    sent = json.loads(seen[0].content)
+    assert sent["max_tokens"] == 2048
+    assert sent["thinking"] == {"type": "disabled"}
+    assert "Faithfully reorganize" in sent["messages"][0]["content"]
+    assert "do not add analysis" in sent["messages"][0]["content"]
 
 
 def test_deepseek_grounded_answer_parses_only_answer_fields():
@@ -105,12 +109,17 @@ def test_deepseek_answer_payload_carries_mode_role_memory_and_user_only_followup
         previous_user_questions=["上一轮问题"],
     )
     answer = DeepSeekLLM(
-        "synthetic-api-key", client=httpx.Client(transport=httpx.MockTransport(handler))
+        "synthetic-api-key",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+        reasoning_effort="high",
     ).answer(
         "下一步？", [{"source_id": "page-1", "heading": "预算", "excerpt": "已确认预算"}], context
     )
 
     sent = json.loads(seen[0].content)
+    assert sent["thinking"] == {"type": "enabled"}
+    assert sent["reasoning_effort"] == "high"
+    assert sent["max_tokens"] == 2048
     assert sent["messages"][1]["content"]
     content = json.loads(sent["messages"][1]["content"])
     assert content["mode"] == "plan"

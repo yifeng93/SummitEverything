@@ -1,0 +1,16 @@
+COMMAND: npm --prefix web test -- --run AskView
+
+> web@0.0.0 test
+> vitest run --run AskView
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  07:32:42
+   Duration  652ms (tests 50%, environment 36%, import 7%, transform 6%)
+
+
+EXIT_CODE: 0

@@ -27,7 +27,7 @@ _REQUEST_CLAUSE = re.compile(
 # first so “查一下” is consumed before “查”.
 _POLITE_SHELL = (
     r"麻烦(?:帮我)?|请问|请|我希望|我想(?:知道|问|了解)?|你能告诉我|您能告诉我|帮我|"
-    r"先核对|核对|确认|查询|了解|能否|可否"
+    r"需要(?:核对|补充|补)|先核对|核对|确认|查询|了解|能否|可否"
 )
 _LOOKUP_VERBS = r"看看|看一下|看下|瞧瞧|瞅瞅|查一查|查一下|查看"
 _TOPIC_SHELL_ONLY = (
@@ -107,7 +107,7 @@ _TOPIC_REQUEST_SUFFIX = re.compile(r"(?:提出|制定|给出|说明|告诉|并�
 _TOPIC_PREFIX = re.compile(rf"^(?:(?:{_POLITE_SHELL}|{_LOOKUP_VERBS}|{_TOPIC_SHELL_ONLY})+)+")
 _TOPIC_SUFFIX = re.compile(
     r"(?:(?:分别|是什么|是谁|有什么|怎么(?:安排|处理|办|做)?|如何|安排|办理|办法|方式|流程|手续|"
-    r"规则|情况|建议|方案|上限|多少|哪些|哪一个|哪项|目前|当前|现行|最新|是|吗|呢|吧|啊|一下|下一步需要补什么|"
+    r"规则|情况|建议|方案|上限|多少|哪些(?:信息|内容|事项|项目)?|哪一个|哪项|目前|当前|现行|最新|是|吗|呢|吧|啊|一下|下一步需要补什么|"
     r"再给简短结论|并汇总现有资料|并汇总|现有资料|简短结论|。|！|!|？|\?)+)$"
 )
 # Object nouns that can close a corpus name. 专项 is deliberately excluded: it is
@@ -117,6 +117,12 @@ _TOPIC_SUFFIX = re.compile(
 _ENTITY_SUFFIXES = ("项目", "计划", "工程", "工作坊", "课题", "产品")
 _EXPLICIT_TOPIC_FORM = re.compile(r"(?:规则|办法|流程|手续|安排|方案|程序|制度|规范|要求|指南)")
 _OPEN_FACT_QUESTION = re.compile(r"(?:哪里|哪儿|在哪|多少|什么时候|何时|几号|几点)")
+_OPEN_ACTION_CLAUSE = re.compile(
+    r"[^，,。！？?]{0,16}(?:需要|应|要|须)[^，,。！？?]{1,12}"
+    r"(?:什么|哪些(?:信息|内容|事项|项目)?|哪几项)[吗呢吧啊]?$"
+)
+_CONTEXT_CLAUSE_END = re.compile(r"(?:时|后|前|期间|之际|的时候|情况下|条件下)$")
+_CONTEXT_TOPIC_ACTION_END = re.compile(r"(?:核对|检查|讨论|确认)(?:时|期间)$")
 _DATE_VALUE = re.compile(
     r"(?:[0-9一二三四五六七八九十]+年)?[0-9一二三四五六七八九十]+月"
     r"[0-9一二三四五六七八九十]+日"
@@ -417,6 +423,24 @@ def query_scope(
     question: str, subjects: tuple[str, ...]
 ) -> tuple[tuple[str, ...], tuple[tuple[str, str], ...]]:
     """Resolve local subject/topic pairs first; dimensions are their union."""
+    action_context = _open_action_context(question)
+    if action_context is not None:
+        if subjects:
+            local = _local_subject_topics(action_context, subjects)
+            local_dimensions = tuple(dimension for topics in local.values() for dimension in topics)
+            if _context_is_open(action_context, local_dimensions):
+                local = {subject: () for subject in subjects}
+            pairs = tuple(
+                (subject, dimension)
+                for subject in subjects
+                for dimension in (local[subject] or ("",))
+            )
+            return tuple(dict.fromkeys(d for _, d in pairs if d)), pairs
+        dimensions = _topic_dimensions(action_context) or query_dimensions(action_context)
+        if _context_is_open(action_context, dimensions):
+            dimensions = ()
+        return dimensions, tuple(("", dimension) for dimension in dimensions)
+
     if not subjects:
         dimensions = _topic_dimensions(question)
         if not dimensions:
@@ -475,6 +499,7 @@ def _local_subject_topics(question: str, subjects: tuple[str, ...]) -> dict[str,
 
 def _topic_dimensions(span: str) -> tuple[str, ...]:
     normalized_span = span.strip(" \t\r\n的和与及、,，:：")
+    normalized_span = _CONTEXT_TOPIC_ACTION_END.sub("", normalized_span)
     if not normalized_span:
         return ()
 
@@ -488,6 +513,52 @@ def _topic_dimensions(span: str) -> tuple[str, ...]:
                 dict.fromkeys(dimension for values in fragment_dimensions for dimension in values)
             )
     return _single_topic_dimension(normalized_span)
+
+
+def _open_action_context(question: str) -> str | None:
+    """Return a temporal/conditional prefix before a generic open action question."""
+    text = question.strip().rstrip(" \t\r\n？?。！!")
+    if not text:
+        return None
+    if "，" in text or "," in text:
+        clauses = re.split(r"[，,]", text)
+        if len(clauses) != 2:
+            return None
+        context, action = clauses
+        action = action.strip()
+        if (
+            _OPEN_ACTION_CLAUSE.fullmatch(action)
+            and not _EXPLICIT_TOPIC_FORM.search(action)
+            and not _has_topic_family(_topic_dimensions(action))
+        ):
+            return context.strip()
+        return None
+    match = _OPEN_ACTION_CLAUSE.fullmatch(text)
+    if not match:
+        return None
+    modal = re.search(r"需要|应|要|须", text)
+    if modal is None:
+        return None
+    action = text[modal.start() :]
+    if _EXPLICIT_TOPIC_FORM.search(action) or _has_topic_family(_topic_dimensions(action)):
+        return None
+    return text[: modal.start()].strip()
+
+
+def _has_topic_family(dimensions: tuple[str, ...]) -> bool:
+    return any(
+        family in _TOPIC_CLASSES
+        for dimension in dimensions
+        for family in re.split(r"[+&]", dimension)
+    )
+
+
+def _context_is_open(context: str, dimensions: tuple[str, ...]) -> bool:
+    if not _CONTEXT_CLAUSE_END.search(context):
+        return False
+    if _EXPLICIT_TOPIC_FORM.search(context):
+        return False
+    return not _has_topic_family(dimensions)
 
 
 def _single_topic_dimension(span: str) -> tuple[str, ...]:

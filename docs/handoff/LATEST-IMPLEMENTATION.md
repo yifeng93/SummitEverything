@@ -1,6 +1,20 @@
 # 最新实现交接
 
-## 当前 M4.1 固定候选与技术门
+## 当前 M4.2 Package A repair1：固定源码适用离线技术场景 PASS，已获离线收口/合入批准
+
+初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品源码 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`；独立 fresh QA 完成，Sol 判适用工作包 A 离线技术场景 **PASS**，未发现新产品缺陷。它不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。用户已于 2026-10-14 批准工作包 A 离线正式收口和合入 main；PR、远端 CI、merge 尚未发生，Sol 将先依仓库检查与保护规则办理，当前 main 基线保持不变。
+
+`4c6b0bd` 修复 P1 unknown plan GET 与 P2 planner 完整问句证据，并实现规格已确认的批量文件/文件夹输入及 Journal Assist；`419bb86` 最小修复有效文件与零字节混选静默无反馈，保留严格整批拒绝、为可信 NSOpenPanel 确认选择显示通用说明、主动 Cancel 无提示。自动检查：guarded Python 513、Web 65、Swift 5；静态/type/lock/build/schema检查 exit 0；React lint 仍有 2 条 warnings。`spctl` 对 ad-hoc 包实际 exit 3/rejected，未绕过 Gatekeeper。候选、摘要、Developer 观察见 [DEV 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
+
+QA 独立覆盖 P1/P2，Native 多文件/混合失败提示/取消/目录 FileList，Fake JournalAssist 生命周期，Real ProviderRuntime + MockHTTP API 集成，planner C19、候选身份与包校验。逐项结果见 [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)；Sol 范围和限制见 [Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)；61 个原始 QA 文件的可提交副本与路径映射见 [QA evidence archive](../quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)。Developer、QA 与 Sol 的 docs/evidence commits 均不能被误称为受测产品 SHA。
+
+首次配置偏好与 Explorer 只读代码审计见 [M42 readiness](M42-PACKAGE-A-READINESS.md)：初始为 Fake；用户期望首次在本机配置 DeepSeek Flash API key、DashScope key（Qwen 3.7 embedding/rerank 共用），再点击 Feishu 授权，之后同机同工作库日常免重复输入。1024 embedding dimensions 与 cn region 固定；DashScope endpoint 要使用用户自己的 WorkspaceId 或其提供的完整 URLs，界面 `default` 是凭据槽标签，不是 Workspace。Feishu 需要 AppID/AppSecret、注册 native callback `http://127.0.0.1:18793/api/v1/integrations/feishu/callback` 并经用户点击启动浏览器授权；`5173` 仅是 dev 示例。密钥仅本机设置，不进聊天或包。此为配置审计/目标说明；真实 Workspace 可用性、OAuth/scope、token/vault 与 Keychain 生命周期均 **NOT_RUN/UNVERIFIED**，不代表真实 Real 配置已通过，也不假设各 workspace 共享 keys。
+
+安全观察需按真实时序理解：corrected UI run 开始前已核 native/backend guard 与 profile 并通过；更早的一段 UI 运行没有前置核验，恢复上下文后误启动的 late CUA copied app 在任何 UI 输入之前被观察到 guard=false/profile 不匹配并停止。Keychain 查询次数与默认 profile 回退均 **UNVERIFIED**；不能称本轮零查询/全程隔离。P1一条初始错误 assertion raw 完整保留，另一条失败 raw 被成功运行覆盖并在 QA 报告披露。CUA 是观察转录，不是 AX dump 或 screenshot。
+
+当前剩余的授权边界：部分成功后失败项同 operation ID 的真实 UI retry、Real JournalAssist packaged UI、真实 provider/Feishu/Tasks、四份真实材料、Keychain 生命周期、账单/答案质量、正式用户安装/覆盖、公证、五日、双机、M5与发布均 **NOT_RUN**；runtime model metadata **UNVERIFIED**。下一步的具体授权准备见 [M42 readiness](M42-PACKAGE-A-READINESS.md)。用户未指定四份材料的完整路径，也未授权只读核对；本轮未读取四份真实业务 Markdown，未主动进行真实 profile 或 Keychain 验收，误启动期间是否访问及影响仍 **UNVERIFIED**。
+
+## M4.1 固定候选与技术门（历史 SHA）
 
 用户 2026-10-13 授权本分支 `codex/m41-internal-app-20261013` 连续实现和自测离线 M4.1 Internal App/DMG。初始产品 SHA `b9321d64c5404feadffebc05964793e9402a07aa` 的独立 QA 发现 M41-QA-001：WKWebView HTML 文件导入没有原生面板；该 SHA 的 FAIL 记录保留在[初次 QA 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-b9321d6.md)。修复轮 1 固定产品源码 SHA：`3f6eaa408a8860ff5a438be8a874a2c3904733e4`（后续只提交 docs/evidence）。
 
@@ -10,7 +24,7 @@ fresh QA 已在独立 checkout 验收上述固定 SHA；[QA 报告](../quality/r
 
 主机仅 arm64 macOS 27.0.1；macOS 13 是构建声明，Intel 和其他系统未测。包为 ad-hoc 本地签名，`spctl` 观察为拒绝，Developer ID / 公证及 Gatekeeper 接受仍 NOT_RUN，未绕过系统安全设置。用户测试见[简短说明](M41-INTERNAL-INSTALL.md)；它不会授权覆盖安装或真实业务初始化。
 
-真实 provider / Feishu、真实业务材料、OS Keychain、正式用户安装、Developer ID / 公证、M4.2、五日、双机与发布仍 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
+真实 provider / Feishu、真实业务材料、OS Keychain、正式用户安装、Developer ID / 公证、M4.2 真实业务与最终产品验收、五日、双机与发布仍 NOT_RUN；runtime 模型配置元数据 UNVERIFIED。
 
 交付副本：`/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/internal-builds/3f6eaa4/SummitEverything-Internal.dmg`，摘要与候选相同。用户明确回复“批准，并合入”；[PR #17](https://github.com/yifeng93/SummitEverything/pull/17) 已于 2026-10-13 合并，合并点 `c995034f2a7c8acbb8f7ffaa2e0094382af0e3a5`。本机 main 已 fast-forward，产品树与固定受测 SHA 一致；分支、原候选和 QA 工作树保留。远端两个离线 CI 运行在分支 `f7ad5e4` 均 success；该产品树与固定 QA SHA 一致，详见 [CI 原始证据](../quality/reports/evidence/2026-10-13-m41-ci/README.md)。最终 PR HEAD `52d0f3419bf10ad9cb719efed0580256bd059022` 的 [CI run 38364423576](https://github.com/yifeng93/SummitEverything/actions/runs/38364423576) 也已 success。后续仅文档变化不能被写成新的安装包验收。
 

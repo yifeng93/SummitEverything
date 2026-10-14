@@ -1,0 +1,6 @@
+预计CRC32 $A7FE1A21
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
+/dev/disk5          	GUID_partition_scheme          	
+/dev/disk5s1        	Apple_APFS                     	
+/dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/m42-a-qa-repair1.K9flIK/dmg-mount

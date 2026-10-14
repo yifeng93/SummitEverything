@@ -36,6 +36,14 @@
 
 ## 路由与主要输入 / 输出
 
+### 一次性真实验收计划（M4.2 包 A 实现）
+
+`POST /acceptance-plans` 只在本机生成 10 分钟有效的单次计划，不调用 provider。输入 `operation` 和具体 `scope`；响应同时返回可读范围与 `plan`（范围/配置 SHA-256、有限 `request_limit`、状态和时间）。客户端必须展示该范围并由用户显式调用 `POST /acceptance-plans/{plan_id}/confirm`，提交预览时返回的 `scope_sha256` 和 `scope`。设置、模型内容和页面数据不能自行确认。
+
+真实整理、索引、问答、日志 AI 辅助、飞书只读与导入执行路由要求相应已确认 `acceptance_plan_id`，并在外发前重核同一内容/页面版本、profile/workspace、配置与飞书授权代次。执行预留有限 HTTP request 数；索引上界按最多 20 条输入一批，问答最多 embedding/rerank/answer 各一次，整理和日志 AI 辅助最多一次，飞书导入按保守最坏上界计算。超时或进程中断的预留不可释放、不可重发；状态 `unknown` 表示结果未知而非明确失败。相同 Feishu operation_id 与 query request_id 的本地 replay 不重复 provider 调用或消耗新的计划。
+
+`GET /acceptance-plans/{plan_id}` 仅返回本地状态；成功后 `provider_usage` 只包含 provider 明确回报的 request id 与 token 计数，未回报的字段为 null / `usage_reported=false`。字段缺失不当作 0，亦不表示实际账单；真实账单需另在 provider 侧核对。损坏/容量用尽时本地拒绝继续授权。`DELETE /acceptance-plans/{plan_id}` 撤销尚未执行计划，不影响已经预留的调用。全程只接受本机 Bearer / allowlisted Origin。
+
 下表是 v1 完整能力面，按阶段实现。尚未实现的路由不能返回空成功伪装功能存在。
 
 | 路由 | 主要契约 |
@@ -50,10 +58,10 @@
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
 | POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |
 | POST /journal/{kind} | kind:log/thought，正文、可选关联、confirmation_id、operation_id；页面 ID 稳定派生于工作库与操作意图，复用 PageWriter，重试同结果、异正文 409 |
-| POST /journal/assist | 用户明确请求后返回分离的可编辑建议；不保存、不批准；失败不影响已保存页面 |
+| POST /journal/assist | Fake 模式直接返回分离的可编辑建议；Real 模式须先预览并确认 `model.journal_assist`，提交预览绑定的正文与 `acceptance_plan_id` 后最多调用一次；不保存、不批准；失败或未知不自动重发 |
 | POST /projects/{id}/overview/confirmations | 显式确认新建或更新稳定 overview_id 页面；更新必须提交当前 expected_content_sha256，过期版本 409；独立于项目进度 Action |
 | POST /intake/items | 粘贴内容 / 随手记录、operation_id → item；纯本地，不调用模型（已实现） |
-| POST /intake/files | multipart txt/md 文件及同批次标识 → 来源与 item；保存原字节（已实现，20 MB 上限） |
+| POST /intake/files | multipart 单个 txt/md 文件及 operation_id → 来源与 item；保存原字节，单文件上限 20 MB。UI 可多选文件或明确选择文件夹后顺序调用本路由；每批最多 100 项 / 100 MB，单项状态可见，仅失败项以原 operation_id 重试，不触发模型 |
 | GET /intake/items | 从 active 与完成摘要读取状态；无活跃 lease 且无可恢复 checkpoint 的旧 running attempt 标 unknown，不触发 provider 重发。 |
 | POST /intake/jobs | 明确选择的 item_ids、operation_id、线 / 项目、可选 reprocess=true → IntakeJob；FakeLLM 生成稿与 action 候选（已实现）。处理中/待审拒绝新作业；completed/failed/cancelled/unknown 均要求用户明确 reprocess，且用新的 operation_id。相同 operation_id / 相同请求体返回现有 job，不重复调用 provider；进行中的同一意图返回 HTTP 202 和指向该 job 的 Location。unknown 的显式 reprocess 是新意图，可能再次调用模型。 |
 | GET /jobs/{id}；DELETE /jobs/{id} | 查询 / 请求取消。成功 checkpoint 只恢复本地稿件/候选，CAS 防止迟到输出覆盖 cancelled/unknown/终态；同步 provider 调用不能被本地强制中断。 |
@@ -70,6 +78,7 @@
 | GET /integrations/feishu/materials | 搜索 / 分页的可见材料 metadata；不调模型 |
 | POST /integrations/feishu/imports | 用户选择的材料 ID、operation_id → 来源与 item；不隐式整理 |
 | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
+| POST /acceptance-plans；POST /acceptance-plans/{id}/confirm；GET /acceptance-plans/{id}；DELETE /acceptance-plans/{id} | 真实模型/Feishu 单次动作的本机预览、独立确认、状态/安全用量读取和未执行计划取消；计划绑定 profile、workspace、执行配置与确切 scope digest，有 10 分钟 TTL 和有限 HTTP request 上限。详情不保存 prompt/正文；unknown 消耗额度且无重发接口 |
 | POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
 | POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有索引时，批准 mutation 自动执行同 fingerprint 的 incremental。状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
 | POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
@@ -130,7 +139,7 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 - 生命周期与 deadline：一个完整业务操作（主日历→events、refresh→读取、正文回退、多项导入）持有**按调用线程归属**的租约；配置变更后新操作立即使用新配置，已开始的操作（含嵌套步骤与后续 HTTP）按旧配置快照完成，退役 provider 拒绝无关新操作与无租约的直接 adapter 调用，只在最后一个租约结束后关闭自有 client 一次。HTTP 边界使用可取消的整体 deadline：到期关闭底层传输连接并等待 worker 收敛后才返回，覆盖连接/响应头/正文/结束（响应头未完成时同样生效），注入 client 也不能绕过无重定向与大小上限。
 - 授权代次：同一 profile/app 共享授权代次；logout、重新授权与凭据替换都会使在途 refresh 结果作废，不清除随后建立的新授权。
 - 错误映射：按 HTTP 状态与官方业务码映射到 `token_expired` / `missing_scope` / `not_found` / `provider_timeout` / `provider_unavailable` / `malformed_response`；响应体、header、token、prompt 不出现在错误文本。
-- 真实数据读取门：`mode=real` 时 materials / imports / calendar / tasks / 任务执行默认返回 409 `stage_c_authorization_required`（未配置 App ID 时为 `provider_not_configured`）；只有显式设置 `feishu.real_data_enabled` 后才进入 adapter。Stage B 不执行任何真实请求。
+- 历史服务端门：旧 Stage B 固定 SHA 曾使用 `feishu.real_data_enabled` 作为数据读取开关。当前真实读取 / 导入与模型 organize/index/query 必须有绑定当前范围的本机一次性计划和独立确认；该旧 bool 即使为 true 也不能单独授权。未配置 Real / provider 时返回具体配置错误；计划不会调用 provider。真实 task 写仍由独立门返回 `result_proof_unavailable`。
 
 - `GET /integrations/feishu/status` → `{mode, authorized, app_configured, identity, token_type: user, scopes, user_identity_verified, credential_error}`，不返回 token。`credential_error=credential_unreadable` 表示本机用户凭据无法解析（此时 `authorized=false`）。`mode` 反映实际配置（real 不会返回 fake）；`authorized` 只表示存在可用 **user** token；`app_configured` 只表示已保存应用密钥，不伪装成用户已授权；`user_identity_verified` 在本轮保持 false（未执行真实 user-info）。
 - `POST /integrations/feishu/authorizations` → `{authorization_url, expires_in_seconds}`。Fake URL 使用精确配置的 callback 加 OAuth `code/state`；state 由本机会话创建、300 秒到期、一次性并受运行身份限制。
@@ -149,7 +158,7 @@ M2.1 审查补充：前端 callback 使用返回的绝对本机地址，限定 h
 
 ## Stage B 设置与凭据扩展（候选实现与剩余门）
 
-Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都不联系 provider。连接测试是另一条显式调用，不通过 `GET/PATCH /settings` 触发。当前分支已实现 GET/PATCH、Keychain PUT/DELETE 和 settings UI；真实 Feishu adapter 已实现但真实数据读取由服务端门控关闭，模型业务调用同样保持 disabled。
+Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都不联系 provider。连接测试是另一条显式调用，不通过 `GET/PATCH /settings` 触发。当前分支已实现 GET/PATCH、Keychain PUT/DELETE 和 settings UI。M4.2 包 A 为真实 Feishu 只读/导入及模型 organize/index/query 增加单次授权计划；`real_data_enabled` 兼容字段本身不授权真实外发。真实 task 写仍保持独立禁用。
 
 ### `GET /settings`
 
@@ -158,7 +167,7 @@ Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都�
 - `mode`: `fake` 或 `real`，缺失配置时默认为 `fake`。
 - `feishu`: `app_id`、loopback `redirect_uri`、`identity`（app/user，默认 app）、`calendar_id`、`material_content`（transcript/artifacts）与 `real_data_enabled`（默认 false）。不返回 app secret 或 token；授权状态由 `GET /integrations/feishu/status` 单独返回。
 - `llm`, `embedding`, `rerank`: 当前只实现 provider、allowlisted model、能力开关和受限地区；LLM 有本机账户标识，Model Studio embedding / rerank 共用 `model_studio_account_id`；Model Studio `base_url` 是**逐账户受限可配置**（allowlist：阿里云 HTTPS host + `/api/v1` 或 `/compatible-mode/v1` 路径），不再是完全固定派生。embedding 另返回 dimension 与 fingerprint。真实业务调用状态仍 disabled。
-- `capabilities`: 按能力列出 `available/configured/disabled_reason`。Feishu 能力在 real+已配置时为 `stage_c_authorization_required`，只有 `real_data_enabled` 打开才 available；task create/edit/complete 因缺少可核实结果证明单独保持 unavailable（`result_proof_unavailable`）。不能因为读取可用而标成可写。
+- `capabilities`: 按能力列出 `available/configured/disabled_reason`。该静态摘要不签发动作计划或确认；Feishu 实际调用还需提交已确认的精确计划。task create/edit/complete 因缺少可核实结果证明单独保持 unavailable（`result_proof_unavailable`）。不能因为读取可用而标成可写。
 - `credential_status`: 各 provider 是否已设置、Keychain 是否可用。不得返回 Keychain item 名、secret 长度或 secret 值。
 
 ### `PATCH /settings`

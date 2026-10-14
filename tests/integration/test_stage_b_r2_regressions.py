@@ -11,6 +11,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from authorized_feishu_client import AuthorizedFeishuReadClient
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -127,7 +128,7 @@ def _client(
         feishu_provider=provider,
         credential_store=store,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     response = client.post(
         "/api/v1/workspaces",
         headers=HEADERS,
@@ -242,7 +243,8 @@ def test_r2_01_task_write_capability_summary_matches_the_route(tmp_path):
     capabilities = client.get("/api/v1/settings", headers=HEADERS).json()["capabilities"]
     assert capabilities["feishu_task_write"]["available"] is False
     assert capabilities["feishu_task_write"]["disabled_reason"] == "result_proof_unavailable"
-    assert capabilities["feishu_task_read"]["available"] is True
+    assert capabilities["feishu_task_read"]["available"] is False
+    assert capabilities["feishu_task_read"]["disabled_reason"] == "acceptance_plan_required"
 
 
 def test_r2_01_local_progress_action_is_not_blocked_by_the_read_gate(tmp_path):
@@ -351,7 +353,7 @@ def _real_client(
         profile_root=tmp_path / "profile",
         secret_backend=MemorySecretBackend(),
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",
@@ -625,7 +627,7 @@ def _config_client(tmp_path: Path, monkeypatch, store: StubCredentialStore):
         secret_backend=MemorySecretBackend(),
         credential_store=store,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",

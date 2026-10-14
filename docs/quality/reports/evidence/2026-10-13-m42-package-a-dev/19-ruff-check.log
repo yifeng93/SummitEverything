@@ -1,0 +1,572 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> src/summit_everything/api/app.py:3:1
+    |
+  1 |   """FastAPI application factory for the local-only service."""
+  2 |
+  3 | / import asyncio
+  4 | | import hashlib
+  5 | | import json
+  6 | | import logging
+  7 | | import os
+  8 | | import re
+  9 | | import secrets
+ 10 | | import tempfile
+ 11 | | from collections.abc import AsyncIterator
+ 12 | | from datetime import datetime
+ 13 | | from pathlib import Path
+ 14 | | from threading import Event, Lock
+ 15 | | from typing import Annotated, Any, Literal, cast
+ 16 | | from urllib.parse import urlsplit
+ 17 | | from uuid import UUID, uuid4, uuid5
+ 18 | |
+ 19 | | from fastapi import (
+ 20 | |     Depends,
+ 21 | |     FastAPI,
+ 22 | |     File,
+ 23 | |     Form,
+ 24 | |     Header,
+ 25 | |     HTTPException,
+ 26 | |     Query,
+ 27 | |     Request,
+ 28 | |     Response,
+ 29 | |     UploadFile,
+ 30 | | )
+ 31 | | from fastapi.exceptions import RequestValidationError
+ 32 | | from fastapi.responses import JSONResponse, StreamingResponse
+ 33 | | from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
+ 34 | | from starlette.middleware.base import BaseHTTPMiddleware
+ 35 | | from starlette.staticfiles import StaticFiles
+ 36 | |
+ 37 | | from summit_everything.api.routes.actions import register_actions
+ 38 | | from summit_everything.domain.content import RetrievalPurpose, StorageArea, retrieval_eligibility
+ 39 | | from summit_everything.domain.models import (
+ 40 | |     ActionCandidate,
+ 41 | |     Draft,
+ 42 | |     IndexPlan,
+ 43 | |     IndexResult,
+ 44 | |     IntakeItem,
+ 45 | |     IntakeJob,
+ 46 | |     LineRecord,
+ 47 | |     MutationResult,
+ 48 | |     PageSnapshot,
+ 49 | |     ProjectRecord,
+ 50 | |     SourceDetail,
+ 51 | |     WorkspaceContext,
+ 52 | | )
+ 53 | | from summit_everything.intake.actions import ActionService
+ 54 | | from summit_everything.intake.review import IntakeReviewService
+ 55 | | from summit_everything.intake.sources import IntakeConflict, IntakeService
+ 56 | | from summit_everything.integrations.embedding import ModelStudioEmbedding
+ 57 | | from summit_everything.integrations.acceptance_plans import (
+ 58 | |     AcceptancePlan,
+ 59 | |     AcceptancePlanLedger,
+ 60 | |     PlanConflict,
+ 61 | | )
+ 62 | | from summit_everything.integrations.feishu.fake import FakeFeishu
+ 63 | | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+ 64 | | from summit_everything.integrations.feishu.provider import (
+ 65 | |     CalendarPage,
+ 66 | |     CredentialStore,
+ 67 | |     FeishuConfig,
+ 68 | |     FeishuError,
+ 69 | |     FeishuProvider,
+ 70 | |     MaterialPage,
+ 71 | |     MemoryCredentialStore,
+ 72 | |     VaultCredentialStore,
+ 73 | | )
+ 74 | | from summit_everything.integrations.feishu.service import (
+ 75 | |     AuthorizationStart,
+ 76 | |     FeishuAuthCoordinator,
+ 77 | |     FeishuService,
+ 78 | |     FeishuStatus,
+ 79 | |     ImportRequest,
+ 80 | |     ImportResult,
+ 81 | |     callback_boundary,
+ 82 | | )
+ 83 | | from summit_everything.integrations.feishu.tasks import FeishuTasks
+ 84 | | from summit_everything.integrations.llm import DeepSeekLLM, FakeLLM, LLMProviderError
+ 85 | | from summit_everything.integrations.provider_smoke import (
+ 86 | |     SMOKE_LIMITS,
+ 87 | |     SmokeLimitReached,
+ 88 | |     reserve_smoke_call,
+ 89 | |     smoke_counts,
+ 90 | | )
+ 91 | | from summit_everything.integrations.rerank import ModelStudioReranker
+ 92 | | from summit_everything.integrations.runtime import ModelRuntime
+ 93 | | from summit_everything.integrations.settings import (
+ 94 | |     CredentialVault,
+ 95 | |     MacOSKeychainBackend,
+ 96 | |     ProviderSettingsPatch,
+ 97 | |     SecretBackend,
+ 98 | |     SettingsError,
+ 99 | |     SettingsStore,
+100 | |     SettingsSummary,
+101 | |     UnavailableSecretBackend,
+102 | |     embedding_fingerprint,
+103 | |     provider_settings_payload,
+104 | | )
+105 | | from summit_everything.local.answer_context import (
+106 | |     AnswerContext,
+107 | |     AnswerContextStore,
+108 | |     AnswerRole,
+109 | |     ContextConflict,
+110 | |     MemoryCandidate,
+111 | |     RoleInput,
+112 | |     UserMemory,
+113 | | )
+114 | | from summit_everything.local.conversations import (
+115 | |     ACTIVE_QUERIES,
+116 | |     ConversationDetail,
+117 | |     ConversationNotFound,
+118 | |     ConversationPage,
+119 | |     ConversationStore,
+120 | |     QueryConflict,
+121 | |     QueryStart,
+122 | | )
+123 | | from summit_everything.local.event_log import profile_event
+124 | | from summit_everything.release import (
+125 | |     fingerprint_web_dist,
+126 | |     load_build_identity,
+127 | |     verify_dependency_manifest,
+128 | | )
+129 | | from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
+130 | | from summit_everything.retrieval.chunking import chunk_markdown
+131 | | from summit_everything.retrieval.store import IndexStore
+132 | | from summit_everything.workspace.manifest import (
+133 | |     WorkspaceError,
+134 | |     create_line,
+135 | |     create_project,
+136 | |     create_workspace,
+137 | |     delete_line,
+138 | |     delete_project,
+139 | |     list_lines,
+140 | |     list_projects,
+141 | |     load_manifest,
+142 | |     open_workspace,
+143 | |     update_line,
+144 | |     update_project,
+145 | | )
+146 | | from summit_everything.workspace.reader import list_pages, read_page
+147 | | from summit_everything.workspace.writer import (
+148 | |     PageWriter,
+149 | |     WorkspaceWriteConflict,
+150 | |     WorkspaceWriter,
+151 | | )
+    | |_^
+152 |
+153 |   _SOURCE_ATTRIBUTION = re.compile(
+    |
+help: Organize imports
+    |
+55  | from summit_everything.intake.sources import IntakeConflict, IntakeService
+    - from summit_everything.integrations.embedding import ModelStudioEmbedding
+56  | from summit_everything.integrations.acceptance_plans import (
+--------------------------------------------------------------------------------
+60  | )
+61  + from summit_everything.integrations.embedding import ModelStudioEmbedding
+62  | from summit_everything.integrations.feishu.fake import FakeFeishu
+--------------------------------------------------------------------------------
+128 | )
+129 + from summit_everything.retrieval.chunking import chunk_markdown
+130 | from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
+    - from summit_everything.retrieval.chunking import chunk_markdown
+131 | from summit_everything.retrieval.store import IndexStore
+    |
+
+F841 Local variable `plan` is assigned to but never used
+   --> src/summit_everything/api/app.py:931:13
+    |
+929 |             if prior.operation != operation or request_count > prior.request_limit:
+930 |                 raise PlanConflict("operation does not match its approved request bound")
+931 |             plan = ledger.begin_execution(
+    |             ^^^^
+932 |                 plan_id,
+933 |                 workspace_id=str(workspace.workspace_id),
+    |
+help: Remove assignment to unused variable `plan`
+
+E501 Line too long (104 > 100)
+    --> src/summit_everything/api/app.py:1154:74
+     |
+1152 |                 detail={
+1153 |                     "code": "provider_disabled",
+1154 |                     "message": "真实业务调用需要已选择并启用对应 provider；Fake 不会冒充真实质量结果。",
+     |                                                                                                     ^^^^
+1155 |                 },
+1156 |             )
+     |
+
+F821 Undefined name `IndexPlanStale`
+    --> src/summit_everything/api/app.py:2338:23
+     |
+2336 |         def index_provider_guard() -> None:
+2337 |             if settings_binding(workspace) != expected_config_sha256:
+2338 |                 raise IndexPlanStale("Provider settings changed after confirmation")
+     |                       ^^^^^^^^^^^^^^
+2339 |             if expected_scope is not None:
+2340 |                 payload_scope = {
+     |
+
+F821 Undefined name `IndexPlanStale`
+    --> src/summit_everything/api/app.py:2347:27
+     |
+2345 |                 }
+2346 |                 if normalize_index_scope(workspace, payload_scope) != expected_scope:
+2347 |                     raise IndexPlanStale("Workspace pages changed after confirmation")
+     |                           ^^^^^^^^^^^^^^
+2348 |
+2349 |         service: QueryService | None = None
+     |
+
+F841 Local variable `answer_store` is assigned to but never used
+    --> src/summit_everything/api/app.py:2617:9
+     |
+2615 |         stable_request_id = UUID(request_id)
+2616 |         store = conversations_for(workspace)
+2617 |         answer_store = answer_context_for(workspace)
+     |         ^^^^^^^^^^^^
+2618 |         replay_existing = store.has_request(workspace.workspace_id, stable_request_id)
+2619 |         context = AnswerContext(answer_mode=payload.answer_mode)
+     |
+help: Remove assignment to unused variable `answer_store`
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/summit_everything/integrations/acceptance_plans.py:3:1
+   |
+ 1 |   """Small local ledger for explicit, one-shot real-operation approvals."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import fcntl
+ 6 | | import json
+ 7 | | from datetime import UTC, datetime, timedelta
+ 8 | | from pathlib import Path
+ 9 | | from typing import Literal
+10 | | from uuid import UUID, uuid4
+11 | |
+12 | | from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+13 | | from summit_everything.workspace.transactions import atomic_write
+   | |_________________________________________________________________^
+14 |
+15 |   PlanState = Literal[
+   |
+help: Organize imports
+   |
+12 | from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+13 +
+14 | from summit_everything.workspace.transactions import atomic_write
+   |
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+  --> src/summit_everything/retrieval/query.py:9:1
+   |
+ 7 | from pathlib import Path
+ 8 | from threading import Event
+ 9 | from typing import Any, Callable, Literal, Protocol
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10 | from uuid import UUID, uuid4
+   |
+help: Import from `collections.abc`
+   |
+8  | from threading import Event
+   - from typing import Any, Callable, Literal, Protocol
+9  + from typing import Any, Literal, Protocol
+10 + from collections.abc import Callable
+11 | from uuid import UUID, uuid4
+   |
+
+E501 Line too long (101 > 100)
+  --> tests/integration/authorized_feishu_client.py:18:101
+   |
+17 | class AuthorizedFeishuReadClient(TestClient):
+18 |     def _create_and_confirm(self, operation: str, scope: dict[str, Any], headers: Any) -> str | None:
+   |                                                                                                     ^
+19 |         created = super().post(
+20 |             "/api/v1/acceptance-plans",
+   |
+
+E501 Line too long (104 > 100)
+  --> tests/integration/authorized_feishu_client.py:40:101
+   |
+38 |         # URL query values arrive as singleton lists; TestClient params can be
+39 |         # mappings or sequences. Normalize both to the values FastAPI receives.
+40 |         params = {key: value[-1] if isinstance(value, list) else value for key, value in params.items()}
+   |                                                                                                     ^^^^
+41 |         if isinstance(request_params, Mapping):
+42 |             params.update(request_params)
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/integration/test_real_model_approval_flow.py:80:75
+   |
+78 | …                     "title": "访客登记办法",
+79 | …                     "kind": "topic",
+80 | …                     "body": "## 访客登记\n\n青榆的访客登记须由前台核验姓名并记录来访时间。\n",
+   |                                                                                           ^^^^^^
+81 | …                     "input_indexes": [0],
+82 | …                     "important_conflicts": [],
+   |
+
+E501 Line too long (102 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:208:101
+    |
+206 |         f"/api/v1/acceptance-plans/{organize_plan['plan']['plan_id']}/confirm",
+207 |         headers=HEADERS,
+208 |         json={"scope_sha256": organize_plan["plan"]["scope_sha256"], "scope": organize_plan["scope"]},
+    |                                                                                                     ^^
+209 |     )
+210 |     assert organize_confirm.status_code == 200, organize_confirm.text
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:258:101
+    |
+256 |         f"/api/v1/acceptance-plans/{index_preview['plan']['plan_id']}/confirm",
+257 |         headers=HEADERS,
+258 |         json={"scope_sha256": index_preview["plan"]["scope_sha256"], "scope": index_preview["scope"]},
+    |                                                                                                     ^^
+259 |     )
+260 |     assert index_confirm.status_code == 200, index_confirm.text
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:292:101
+    |
+290 |         f"/api/v1/acceptance-plans/{query_preview['plan']['plan_id']}/confirm",
+291 |         headers=HEADERS,
+292 |         json={"scope_sha256": query_preview["plan"]["scope_sha256"], "scope": query_preview["scope"]},
+    |                                                                                                     ^^
+293 |     )
+294 |     assert query_confirm.status_code == 200, query_confirm.text
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_stage_b_r2_regressions.py:8:1
+   |
+ 6 |   """
+ 7 |
+ 8 | / from __future__ import annotations
+ 9 | |
+10 | | from pathlib import Path
+11 | | from uuid import uuid4
+12 | |
+13 | | import pytest
+14 | | from fastapi.testclient import TestClient
+15 | | from pydantic import SecretStr
+16 | |
+17 | | from summit_everything.api.app import create_app
+18 | | from summit_everything.integrations.feishu.fake import FakeFeishu
+19 | | from authorized_feishu_client import AuthorizedFeishuReadClient
+20 | | from summit_everything.integrations.feishu.provider import (
+21 | |     AppCredentials,
+22 | |     FeishuConfig,
+23 | |     FeishuError,
+24 | |     UserCredentials,
+25 | | )
+26 | | from summit_everything.integrations.settings import MemorySecretBackend
+   | |_______________________________________________________________________^
+27 |
+28 |   HEADERS = {"Authorization": "Bearer synthetic-r2-session"}
+   |
+help: Organize imports
+   |
+13 | import pytest
+14 + from authorized_feishu_client import AuthorizedFeishuReadClient
+15 | from fastapi.testclient import TestClient
+--------------------------------------------------------------------------------
+19 | from summit_everything.integrations.feishu.fake import FakeFeishu
+   - from authorized_feishu_client import AuthorizedFeishuReadClient
+20 | from summit_everything.integrations.feishu.provider import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_stage_b_r3_regressions.py:9:1
+   |
+ 7 |   """
+ 8 |
+ 9 | / from __future__ import annotations
+10 | |
+11 | | import time
+12 | | from pathlib import Path
+13 | | from threading import Event, Thread
+14 | | from typing import Any
+15 | | from urllib.parse import parse_qs, urlsplit
+16 | |
+17 | | import httpx
+18 | | import pytest
+19 | | from fastapi.testclient import TestClient
+20 | | from pydantic import SecretStr
+21 | |
+22 | | from summit_everything.api.app import create_app
+23 | | from summit_everything.integrations.feishu.fake import FakeFeishu
+24 | | from authorized_feishu_client import AuthorizedFeishuReadClient
+25 | | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+26 | | from summit_everything.integrations.feishu.provider import (
+27 | |     AppCredentials,
+28 | |     FeishuError,
+29 | |     UserCredentials,
+30 | | )
+31 | | from summit_everything.integrations.settings import MemorySecretBackend
+   | |_______________________________________________________________________^
+32 |
+33 |   HEADERS = {"Authorization": "Bearer synthetic-r3-session"}
+   |
+help: Organize imports
+   |
+18 | import pytest
+19 + from authorized_feishu_client import AuthorizedFeishuReadClient
+20 | from fastapi.testclient import TestClient
+--------------------------------------------------------------------------------
+24 | from summit_everything.integrations.feishu.fake import FakeFeishu
+   - from authorized_feishu_client import AuthorizedFeishuReadClient
+25 | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_stage_b_r4_combinations.py:12:1
+   |
+10 |   """
+11 |
+12 | / from __future__ import annotations
+13 | |
+14 | | import select
+15 | | import socket
+16 | | import threading
+17 | | import time
+18 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+19 | | from pathlib import Path
+20 | | from threading import Event, Thread
+21 | | from typing import Any
+22 | | from urllib.parse import parse_qs, urlsplit
+23 | |
+24 | | import httpx
+25 | | from fastapi.testclient import TestClient
+26 | |
+27 | | from summit_everything.api.app import create_app
+28 | | from authorized_feishu_client import AuthorizedFeishuReadClient
+29 | | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+30 | | from summit_everything.integrations.settings import MemorySecretBackend
+31 | | from summit_everything.integrations.transport import DeadlineTransport
+   | |______________________________________________________________________^
+32 |
+33 |   HEADERS = {"Authorization": "Bearer synthetic-r4-session"}
+   |
+help: Organize imports
+   |
+24 | import httpx
+25 + from authorized_feishu_client import AuthorizedFeishuReadClient
+26 | from fastapi.testclient import TestClient
+27 |
+28 | from summit_everything.api.app import create_app
+   - from authorized_feishu_client import AuthorizedFeishuReadClient
+29 | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_stage_b_r4_lifecycle.py:8:1
+   |
+ 6 |   """
+ 7 |
+ 8 | / from __future__ import annotations
+ 9 | |
+10 | | import time
+11 | | from threading import Event, Thread
+12 | | from typing import Any
+13 | |
+14 | | import httpx
+15 | | import pytest
+16 | | from fastapi.testclient import TestClient
+17 | | from pydantic import SecretStr
+18 | |
+19 | | from summit_everything.api.app import create_app
+20 | | from authorized_feishu_client import AuthorizedFeishuReadClient
+21 | | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+22 | | from summit_everything.integrations.feishu.provider import (
+23 | |     AppCredentials,
+24 | |     FeishuConfig,
+25 | |     FeishuError,
+26 | |     UserCredentials,
+27 | | )
+28 | | from summit_everything.integrations.settings import MemorySecretBackend
+   | |_______________________________________________________________________^
+29 |
+30 |   HEADERS = {"Authorization": "Bearer synthetic-r4-session"}
+   |
+help: Organize imports
+   |
+15 | import pytest
+16 + from authorized_feishu_client import AuthorizedFeishuReadClient
+17 | from fastapi.testclient import TestClient
+18 | from pydantic import SecretStr
+19 |
+20 | from summit_everything.api.app import create_app
+   - from authorized_feishu_client import AuthorizedFeishuReadClient
+21 | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+   |
+
+F401 [*] `fastapi.testclient.TestClient` imported but unused
+  --> tests/integration/test_stage_b_r4_lifecycle.py:16:32
+   |
+14 | import httpx
+15 | import pytest
+16 | from fastapi.testclient import TestClient
+   |                                ^^^^^^^^^^
+17 | from pydantic import SecretStr
+   |
+help: Remove unused import: `fastapi.testclient.TestClient`
+   |
+15 | import pytest
+   - from fastapi.testclient import TestClient
+16 | from pydantic import SecretStr
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_stage_b_refresh_restart.py:3:1
+   |
+ 1 |   """Independent route/service/vault tests; only HTTP and SecretBackend replaced."""
+ 2 |
+ 3 | / import json
+ 4 | | from urllib.parse import parse_qs, urlsplit
+ 5 | |
+ 6 | | import httpx
+ 7 | | import pytest
+ 8 | | from fastapi.testclient import TestClient
+ 9 | |
+10 | | import summit_everything.api.app as app_module
+11 | | from summit_everything.integrations.feishu.http import FeishuHttpProvider
+12 | | from summit_everything.integrations.settings import MemorySecretBackend, SettingsError
+13 | | from authorized_feishu_client import AuthorizedFeishuReadClient
+   | |_______________________________________________________________^
+14 |
+15 |   HEADERS = {"Authorization": "Bearer independent-synthetic-session"}
+   |
+help: Organize imports
+   |
+7  | import pytest
+8  + from authorized_feishu_client import AuthorizedFeishuReadClient
+9  | from fastapi.testclient import TestClient
+--------------------------------------------------------------------------------
+13 | from summit_everything.integrations.settings import MemorySecretBackend, SettingsError
+   - from authorized_feishu_client import AuthorizedFeishuReadClient
+14 |
+   |
+
+F401 [*] `fastapi.testclient.TestClient` imported but unused
+  --> tests/integration/test_stage_b_refresh_restart.py:8:32
+   |
+ 6 | import httpx
+ 7 | import pytest
+ 8 | from fastapi.testclient import TestClient
+   |                                ^^^^^^^^^^
+ 9 |
+10 | import summit_everything.api.app as app_module
+   |
+help: Remove unused import: `fastapi.testclient.TestClient`
+  |
+7 | import pytest
+  - from fastapi.testclient import TestClient
+8 |
+  |
+
+Found 21 errors.
+[*] 10 fixable with the `--fix` option (2 hidden fixes can be enabled with the `--unsafe-fixes` option).

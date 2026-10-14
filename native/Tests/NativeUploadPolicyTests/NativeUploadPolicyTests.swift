@@ -3,7 +3,7 @@ import XCTest
 @testable import NativeUploadPolicy
 
 final class NativeUploadPolicyTests: XCTestCase {
-    func testUploadRequiresTrustedMainFrameAndRejectsDirectoryPickerRequests() {
+    func testUploadRequiresTrustedMainFrameAndAllowsTrustedDirectoryPickerRequests() {
         let trusted = URL(string: "http://127.0.0.1:18793/")!
         XCTAssertTrue(
             NativeUploadPolicy.permitsUpload(
@@ -101,7 +101,7 @@ final class NativeUploadPolicyTests: XCTestCase {
                 expectedPort: 18793
             )
         )
-        XCTAssertFalse(
+        XCTAssertTrue(
             NativeUploadPolicy.permitsUpload(
                 isMainFrame: true,
                 allowsDirectories: true,
@@ -115,10 +115,52 @@ final class NativeUploadPolicyTests: XCTestCase {
         )
     }
 
-    func testSelectedFilesMatchTxtAndMarkdownAndSelectionCount() {
-        let text = URL(fileURLWithPath: "/tmp/synthetic.txt")
-        let markdown = URL(fileURLWithPath: "/tmp/synthetic.MD")
-        let executable = URL(fileURLWithPath: "/tmp/synthetic.command")
+    func testDirectoryCollectionKeepsOnlyBoundedVisibleTxtAndMarkdownFilesWithoutFollowingLinks() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let nested = root.appendingPathComponent("nested", isDirectory: true)
+        let hidden = root.appendingPathComponent(".private", isDirectory: true)
+        let outside = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: hidden, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: root)
+            try? FileManager.default.removeItem(at: outside)
+        }
+        let markdown = nested.appendingPathComponent("notes.md")
+        let text = root.appendingPathComponent("readme.TXT")
+        try Data("合成内容".utf8).write(to: markdown)
+        try Data("合成内容".utf8).write(to: text)
+        try Data("hidden".utf8).write(to: hidden.appendingPathComponent("hidden.txt"))
+        try Data("unsupported".utf8).write(to: root.appendingPathComponent("image.pdf"))
+        try Data("outside".utf8).write(to: outside.appendingPathComponent("outside.txt"))
+        try FileManager.default.createSymbolicLink(
+            at: root.appendingPathComponent("linked"), withDestinationURL: outside
+        )
+
+        let result = NativeUploadPolicy.collectDirectoryFiles(at: [root, root])
+        XCTAssertNil(result.failure)
+        XCTAssertEqual(Set(result.files.map(\.lastPathComponent)), Set(["notes.md", "readme.TXT"]))
+        XCTAssertEqual(result.files.count, 2)
+        XCTAssertGreaterThanOrEqual(result.skippedCount, 1)
+
+        let hiddenRoot = root.deletingLastPathComponent().appendingPathComponent(".hidden-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: hiddenRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: hiddenRoot) }
+        XCTAssertNotNil(NativeUploadPolicy.collectDirectoryFiles(at: [hiddenRoot]).failure)
+        XCTAssertNotNil(NativeUploadPolicy.collectDirectoryFiles(at: [root.appendingPathComponent("linked")]).failure)
+    }
+
+    func testSelectedFilesMatchTxtAndMarkdownAndSelectionCount() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let text = root.appendingPathComponent("synthetic.txt")
+        let markdown = root.appendingPathComponent("synthetic.MD")
+        let executable = root.appendingPathComponent("synthetic.command")
+        try Data("text".utf8).write(to: text)
+        try Data("markdown".utf8).write(to: markdown)
+        try Data("command".utf8).write(to: executable)
 
         XCTAssertEqual(NativeUploadPolicy.acceptedFiles([text], allowsMultipleSelection: false), [text])
         XCTAssertEqual(NativeUploadPolicy.acceptedFiles([markdown], allowsMultipleSelection: false), [markdown])
@@ -129,6 +171,26 @@ final class NativeUploadPolicyTests: XCTestCase {
             [text, markdown]
         )
         XCTAssertNil(NativeUploadPolicy.acceptedFiles([text, executable], allowsMultipleSelection: true))
+    }
+
+    func testZeroByteInNativeSelectionRejectsBatchWithActionableFeedback() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let valid = root.appendingPathComponent("valid.txt")
+        let empty = root.appendingPathComponent("empty.txt")
+        try Data("valid".utf8).write(to: valid)
+        try Data().write(to: empty)
+
+        switch NativeUploadPolicy.validateFileSelection([valid, empty], allowsMultipleSelection: true) {
+        case .success:
+            XCTFail("a mixed valid/empty selection must reject the full batch")
+        case .failure(.invalidSelection):
+            XCTAssertEqual(
+                NativeUploadPolicy.fileSelectionErrorMessage,
+                "所选文件未导入。请确认文件为非空 TXT / Markdown 且符合大小和数量限制后重新选择。"
+            )
+        }
     }
 
     func testOpenPanelTypesAreLimitedToTxtAndMarkdown() {

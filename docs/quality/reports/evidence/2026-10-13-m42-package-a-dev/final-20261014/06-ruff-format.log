@@ -1,0 +1,4 @@
+COMMAND: uv run ruff format src tests
+1 file reformatted, 85 files left unchanged
+
+EXIT_CODE: 0

@@ -6,10 +6,15 @@ import hashlib
 import math
 import re
 from collections.abc import Sequence
+from typing import Any
 
 import httpx
 
-from summit_everything.integrations.http_boundary import bounded_json_post, reject_business_error
+from summit_everything.integrations.http_boundary import (
+    bounded_json_post,
+    provider_usage_record,
+    reject_business_error,
+)
 from summit_everything.integrations.transport import create_http_client
 
 
@@ -69,6 +74,7 @@ class ModelStudioEmbedding:
         self.endpoint = base_url.rstrip("/") + "/embeddings"
         self._owns_client = client is None
         self._client = client or create_http_client()
+        self.usage_records: list[dict[str, Any]] = []
 
     def close(self) -> None:
         if self._owns_client:
@@ -101,6 +107,7 @@ class ModelStudioEmbedding:
                 max_response_bytes=8_000_000,
                 deadline_seconds=30.0,
             )
+            self.usage_records.append(provider_usage_record(self.model, wire))
             reject_business_error(wire)
             data = wire["data"]
             if wire.get("model") != self.model or not isinstance(data, list):

@@ -4,9 +4,13 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
+M4.2 工作包 A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已通过独立 fresh QA，Sol 判定适用 Package A 离线技术场景 PASS；不代表全 M4.2/C25/Stage C/产品最终 PASS。用户已于 2026-10-14 批准工作包 A 离线正式收口与合入 main；PR、远端 CI、merge 尚未发生，后续由 Sol 按仓库检查与保护规则办理。真实用户材料、provider/Feishu、Keychain、正式安装/公证、五日/双机与 release 继续 NOT_RUN。见[QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[QA evidence archive](docs/quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)与[修复轮 1 DEV handoff](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
 
-本轮实现了内置 Python onedir 后端、强制重建静态前端、独立 Internal bundle/profile、每次运行新 token、健康身份与资源指纹校验、loopback Bearer API 和原生生命周期。构建目标为 arm64、最低系统版本声明 macOS 13；本机实测环境为 arm64 macOS 27.0.1，CI 在 macOS 14.8.9 arm64 完成自动构建和 backend smoke；该系统完整 GUI / 安装、其他架构和 macOS 13 未测。内部候选未公证，实际用户安装、签名证书/公证、真实模型与飞书、真实材料、OS Keychain、M4.2、五日试用、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
+首次日常使用预期由用户在本机配置所选模型 API key 并点击飞书授权；实际必填字段、可选模型与账户 scope 尚待 Explorer 只读核对设置及授权流程。此预期不是 OAuth、Keychain 或真实服务通过的证据；密钥不进入仓库、安装包或聊天。四份真实业务材料、入库、付费调用和 Feishu 实际数据操作仍需各自明确授权。
+
+M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；该历史结论不适用于 M4.2，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
+
+初始 FAIL SHA 对应的候选仅为历史追溯，不能用于新 QA。首次通过 shell 直接启动的 UI 运行丢失 offline guard，设置显示钥匙串可用；其 Keychain 查询次数与 profile 回退均 UNVERIFIED。该 SHA 的后续正确 `open -n` + 临时 profile 复演已确认 native/backend guard 为 `1`、profile-root 匹配，设置明确显示钥匙串不可用。真实账户、材料、模型/Feishu、费用/质量、Keychain 生命周期、实际用户安装、公证、五日、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
 
 ## 文档入口
 
@@ -39,9 +43,9 @@ swift test --package-path native
 
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
-这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.1 修复轮 1 Developer 自测与 QA handoff 见最新交接。
+这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Package A 固定 SHA 的独立 QA 和 Sol 适用离线技术门结论见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。用户已批准工作包 A 离线正式收口与合入；PR、远端 CI 和 merge 仍待 Sol 依仓库规则办理。
 
-### 构建 M4.1 Internal 候选
+### 构建 Internal 候选
 
 只在 arm64 macOS 构建机器上运行。输出路径必须是全新路径；脚本先强制构建 WebUI、检查锁定依赖、构建内置 Python onedir 与 Swift 壳、校验 bundle，再创建并验证只读可挂载的未公证 DMG。它不会安装或覆盖应用：
 
@@ -51,7 +55,7 @@ npm --prefix web ci
 scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
 ~~~
 
-该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。
+该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。M4.2 QA 使用 fresh temporary profile；macOS LaunchServices 启动时必须显式传递 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。本轮固定候选、启动信息和边界见 [M4.2 修复轮 1 DEV 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)，不使用直接运行 `.app/Contents/MacOS/...` 的 shell 启动方式。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 
@@ -67,7 +71,7 @@ uv run python scripts/run_dev.py
 
 WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式模型整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；Fake 模式已有索引时，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新。真实 embedding 下审批只提示用户另行查看并确认索引计划。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
 
-内部 `.app` readiness 校验通过后显示同一 WebUI，工作库可通过原生目录选择器指定。打包后的 App 内置后端与静态前端；开发预览仍依赖本机 Python / Node 工具。默认仍为 Fake/offline；设置读取和保存不会联网。普通整理、索引和问答的真实模型请求仍由服务端拒绝；仅三条独立 smoke 路由接受固定合成输入，每种 provider 每个 app profile 最多尝试一次，尚未调用。Feishu OAuth / 数据 adapter 已有离线实现；真实业务材料与真实账户验收仍未完成。Feishu Fake 仍使用进程内凭据存储。
+内部 `.app` readiness 校验通过后显示同一 WebUI，工作库可通过原生目录选择器指定。打包后的 App 内置后端与静态前端；开发预览仍依赖本机 Python / Node 工具。默认仍为 Fake/offline；设置读取和保存不会联网。当前 M4.2 工作包 A 增加真实整理、索引、问答与飞书只读操作的一次性范围预览/独立确认；计划绑定当前来源/页面版本和配置，有界预留调用并在失败或进程中断后禁止重发。真实调用只在用户明确选择 Real 配置、填写凭据并对单次预览确认后发生；本轮开发和验收均只使用 synthetic fixtures、Mock HTTP 和隔离 workspace。账本记录 provider 返回的 token 用量（provider 不回报时保持未知），不表示实际账单。真实账户、真实业务材料、真实 provider、OS Keychain 与安装验收仍未完成。Feishu 真实任务写因缺少可独立核实写结果的协议能力继续禁用；Fake 仍使用进程内凭据存储。
 
 ## 与原项目的关系
 
@@ -90,7 +94,7 @@ uv run mypy src
 cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
 ~~~
 
-这些检查只覆盖合成材料、Fake Feishu 与内存凭据。真实 scope、材料和 OS 钥匙串验收仍 NOT_RUN；设置入口与 adapter 已实现，真实任务写入保持禁用。
+本轮适用离线技术门状态、固定 `419bb86` 候选和限制见 [Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md) 与 [M4.2 readiness 授权卡](docs/handoff/M42-PACKAGE-A-READINESS.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain 生命周期、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。M4.2 尚未 push、未运行远端 CI、未 merge；远端 success 仅为 M4.1 历史，不构成本 SHA 的 CI 结果。
 
 M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；已有真实 adapter、凭据设置 UI 与 fail-closed Keychain 接口；此段 Fake 复演不能证明真实账户或 OS Keychain 通过。
 
@@ -111,7 +115,7 @@ Task v2 的毫秒 timestamp 与全天日期含义见协议矩阵；账号侧规�
 
 ### M2.3 日志、思考与项目概览
 
-侧栏“日志与思考”提供独立日志 / 思考入口；可不关联、仅关联主线或关联主线与项目。保存按钮明确确认并仅写入本机正式页。浏览列表不会调用模型；“AI 辅助建议”只请求 FakeLLM，将可编辑建议留在编辑区，用户可取消或采用，仍需另行点击保存。页面以稳定操作标识防止重试重复写入。
+侧栏“日志与思考”提供独立日志 / 思考入口；可不关联、仅关联主线或关联主线与项目。保存按钮明确确认并仅写入本机正式页。浏览列表不会调用模型；Fake 模式的“AI 辅助建议”使用 FakeLLM，将建议留在编辑区，用户可取消或采用；Real 模式必须先审阅本次完整正文预览并显式确认一次性计划，返回建议仍不保存，写入正式页仍需另行点击保存。页面以稳定操作标识防止重试重复写入。
 
 项目详情可显式创建项目概览并从目录重开；修改要求当前页面版本，冲突保留现有正文。概览保存、日志 / 思考保存与项目进度动作分别处理；保存知识不更改进度。验证命令：
 

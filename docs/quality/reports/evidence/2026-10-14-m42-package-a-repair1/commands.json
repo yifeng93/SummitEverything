@@ -1,0 +1,68 @@
+[
+  {
+    "name": "pytest",
+    "command": "uv run pytest -q",
+    "exit": 0,
+    "log": "pytest.log"
+  },
+  {
+    "name": "ruff-check",
+    "command": "uv run ruff check src tests",
+    "exit": 0,
+    "log": "ruff-check.log"
+  },
+  {
+    "name": "ruff-format",
+    "command": "uv run ruff format --check src tests",
+    "exit": 0,
+    "log": "ruff-format.log"
+  },
+  {
+    "name": "mypy",
+    "command": "uv run mypy src",
+    "exit": 0,
+    "log": "mypy.log"
+  },
+  {
+    "name": "uv-lock-check",
+    "command": "uv lock --check",
+    "exit": 0,
+    "log": "uv-lock-check.log"
+  },
+  {
+    "name": "uv-build",
+    "command": "uv build",
+    "exit": 0,
+    "log": "uv-build.log"
+  },
+  {
+    "name": "web-tests",
+    "command": "npm --prefix web test",
+    "exit": 0,
+    "log": "web-tests.log"
+  },
+  {
+    "name": "web-typecheck",
+    "command": "npm --prefix web run typecheck",
+    "exit": 0,
+    "log": "web-typecheck.log"
+  },
+  {
+    "name": "web-lint",
+    "command": "npm --prefix web run lint",
+    "exit": 0,
+    "log": "web-lint.log"
+  },
+  {
+    "name": "web-build",
+    "command": "npm --prefix web run build",
+    "exit": 0,
+    "log": "web-build.log"
+  },
+  {
+    "name": "swift-tests",
+    "command": "swift test --package-path native",
+    "exit": 0,
+    "log": "swift-tests.log"
+  }
+]

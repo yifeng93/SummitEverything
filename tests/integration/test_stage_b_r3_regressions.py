@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import httpx
 import pytest
+from authorized_feishu_client import AuthorizedFeishuReadClient
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -194,7 +195,7 @@ def _client(tmp_path: Path, store: InstrumentedStore, provider: Any) -> TestClie
         feishu_provider=provider,
         credential_store=store,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     response = client.post(
         "/api/v1/workspaces",
         headers=HEADERS,
@@ -496,7 +497,7 @@ def _http_client(tmp_path: Path, monkeypatch, store: InstrumentedStore, remote: 
         secret_backend=MemorySecretBackend(),
         credential_store=store,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",
@@ -742,7 +743,7 @@ def _lease_client(tmp_path: Path, monkeypatch, remote: PausingRemote):
         secret_backend=MemorySecretBackend(),
         credential_store=store,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",
@@ -984,7 +985,7 @@ def _http_lease_client(tmp_path: Path, monkeypatch, store: InstrumentedStore, re
         secret_backend=MemorySecretBackend(),
         credential_store=store,
     )
-    client = TestClient(app, base_url="http://127.0.0.1:5173")
+    client = AuthorizedFeishuReadClient(app, base_url="http://127.0.0.1:5173")
     assert (
         client.post(
             "/api/v1/workspaces",

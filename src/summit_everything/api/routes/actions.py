@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Query, Response
@@ -25,11 +25,26 @@ def register_actions(
     actions_for: Callable[[WorkspaceContext], ActionService],
     authenticated: Callable[..., None],
     active_workspace: Callable[..., WorkspaceContext],
-    feishu_data_gate: Callable[[WorkspaceContext], None] | None = None,
+    feishu_data_gate: Callable[
+        [WorkspaceContext, str, dict[str, Any], UUID | None, int], UUID | None
+    ]
+    | None = None,
+    finish_feishu_plan: Callable[[WorkspaceContext, UUID | None, str], None] | None = None,
 ) -> None:
-    def gate(workspace: WorkspaceContext) -> None:
+    def gate(
+        workspace: WorkspaceContext,
+        operation: str,
+        scope: dict[str, Any],
+        plan_id: UUID | None,
+        request_count: int = 1,
+    ) -> UUID | None:
         if feishu_data_gate is not None:
-            feishu_data_gate(workspace)
+            return feishu_data_gate(workspace, operation, scope, plan_id, request_count)
+        return None
+
+    def finish(workspace: WorkspaceContext, plan_id: UUID | None, state: str) -> None:
+        if finish_feishu_plan is not None:
+            finish_feishu_plan(workspace, plan_id, state)
 
     @app.post("/api/v1/actions", status_code=201, dependencies=[Depends(authenticated)])
     def propose(
@@ -101,13 +116,30 @@ def register_actions(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
         cursor: str | None = None,
         limit: int = Query(default=20, ge=1, le=100),
+        plan_id: UUID | None = None,
     ) -> TaskPage:
-        gate(workspace)
-        return actions_for(workspace).tasks.list(cursor, limit)
+        scope = {"cursor": cursor, "limit": limit}
+        plan = gate(workspace, "feishu.tasks.read", scope, plan_id, 2)
+        try:
+            result = actions_for(workspace).tasks.list(cursor, limit)
+        except Exception:
+            finish(workspace, plan, "unknown")
+            raise
+        finish(workspace, plan, "succeeded")
+        return result
 
     @app.get("/api/v1/integrations/feishu/tasks/{task_guid}", dependencies=[Depends(authenticated)])
     def task_get(
-        task_guid: str, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+        task_guid: str,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        plan_id: UUID | None = None,
     ) -> FeishuTask:
-        gate(workspace)
-        return actions_for(workspace).tasks.get(task_guid)
+        scope = {"task_guid": task_guid}
+        plan = gate(workspace, "feishu.task.read", scope, plan_id, 2)
+        try:
+            result = actions_for(workspace).tasks.get(task_guid)
+        except Exception:
+            finish(workspace, plan, "unknown")
+            raise
+        finish(workspace, plan, "succeeded")
+        return result

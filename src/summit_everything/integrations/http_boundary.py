@@ -8,6 +8,7 @@ with a message that contains no request body, header or provider payload.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from time import monotonic
 from typing import Any
@@ -18,6 +19,14 @@ from summit_everything.integrations.transport import DeadlineTransport
 from summit_everything.integrations.transport import live_transfer_workers as live_transfer_workers
 
 DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
+
+
+class ProviderResponse(dict[str, Any]):
+    """Parsed provider JSON with a sanitized transport request identifier."""
+
+    def __init__(self, value: dict[str, Any], request_id: str | None) -> None:
+        super().__init__(value)
+        self.request_id = request_id
 
 
 def _bounded_timeout(remaining: float) -> httpx.Timeout:
@@ -96,6 +105,7 @@ def _read_bounded(
     timeout: httpx.Timeout | None,
     deadline_seconds: float | None,
     clock: Callable[[], float] = monotonic,
+    response_box: dict[str, httpx.Response] | None = None,
 ) -> tuple[int, bytes]:
     # MockTransport is a synthetic external boundary. Live clients must use the
     # request-owned transport; never silently fall back to uncancellable HTTP.
@@ -119,7 +129,7 @@ def _read_bounded(
         timeout=effective,
         deadline_at=deadline_at,
         clock=clock,
-        response_box={},
+        response_box=response_box if response_box is not None else {},
     )
 
 
@@ -139,6 +149,7 @@ def bounded_json_post(
     # envelope overhead. Reject before entering any external transport.
     if len(httpx.Request("POST", endpoint, json=payload).content) > max_request_bytes:
         raise ValueError("provider request exceeded the size limit")
+    response_box: dict[str, httpx.Response] = {}
     try:
         status, body = _read_bounded(
             client,
@@ -152,12 +163,61 @@ def bounded_json_post(
             timeout=None,
             deadline_seconds=deadline_seconds,
             clock=clock,
+            response_box=response_box,
         )
     except TimeoutError:
         raise ValueError("provider request exceeded the deadline") from None
     if not 200 <= status < 300:
         raise ValueError("provider returned an unsuccessful response")
-    return _parse_json(body)
+    parsed = _parse_json(body)
+    if not isinstance(parsed, dict):
+        return parsed
+    response = response_box.get("response")
+    request_id = None
+    if response is not None:
+        candidate = next(
+            (
+                response.headers.get(name)
+                for name in ("x-request-id", "request-id", "x-dashscope-request-id")
+                if response.headers.get(name)
+            ),
+            None,
+        )
+        if candidate and re.fullmatch(r"[A-Za-z0-9._:-]{1,200}", candidate):
+            request_id = candidate
+    return ProviderResponse(parsed, request_id)
+
+
+def provider_usage_record(provider: str, response: Any) -> dict[str, Any]:
+    usage = response.get("usage") if isinstance(response, dict) else None
+
+    def token_count(*keys: str) -> int | None:
+        if not isinstance(usage, dict):
+            return None
+        for key in keys:
+            value = usage.get(key)
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                return value
+        return None
+
+    request_id = getattr(response, "request_id", None)
+    if request_id is None and isinstance(response, dict):
+        candidate = response.get("id")
+        if isinstance(candidate, str) and re.fullmatch(r"[A-Za-z0-9._:-]{1,200}", candidate):
+            request_id = candidate
+    input_tokens = token_count("prompt_tokens", "input_tokens")
+    output_tokens = token_count("completion_tokens", "output_tokens")
+    total_tokens = token_count("total_tokens")
+    return {
+        "provider": provider,
+        "request_id": request_id,
+        "usage_reported": input_tokens is not None
+        or output_tokens is not None
+        or total_tokens is not None,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": total_tokens,
+    }
 
 
 def reject_business_error(wire: Any) -> None:

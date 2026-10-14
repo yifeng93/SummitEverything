@@ -1,0 +1,25 @@
+COMMAND: swift test --package-path native
+Building for debugging...
+[1 / 5]
+Build complete! (0.39秒)
+Test Suite 'All tests' started at 2026-10-14 07:33:21.081.
+Test Suite 'NativeUploadPolicyTests.xctest' started at 2026-10-14 07:33:21.081.
+Test Suite 'NativeUploadPolicyTests' started at 2026-10-14 07:33:21.081.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testOpenPanelTypesAreLimitedToTxtAndMarkdown]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testOpenPanelTypesAreLimitedToTxtAndMarkdown]' passed (0.002 seconds).
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testSelectedFilesMatchTxtAndMarkdownAndSelectionCount]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testSelectedFilesMatchTxtAndMarkdownAndSelectionCount]' passed (0.000 seconds).
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testUploadRequiresTrustedMainFrameAndRejectsDirectoryPickerRequests]' started.
+Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testUploadRequiresTrustedMainFrameAndRejectsDirectoryPickerRequests]' passed (0.000 seconds).
+Test Suite 'NativeUploadPolicyTests' passed at 2026-10-14 07:33:21.084.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'NativeUploadPolicyTests.xctest' passed at 2026-10-14 07:33:21.084.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'All tests' passed at 2026-10-14 07:33:21.084.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.002 (0.004) seconds
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+
+EXIT_CODE: 0

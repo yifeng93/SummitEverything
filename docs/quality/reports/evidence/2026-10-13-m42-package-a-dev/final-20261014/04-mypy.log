@@ -1,0 +1,4 @@
+COMMAND: uv run mypy src
+Success: no issues found in 45 source files
+
+EXIT_CODE: 0

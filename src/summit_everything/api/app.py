@@ -9,7 +9,7 @@ import re
 import secrets
 import tempfile
 from collections.abc import AsyncIterator
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Event, Lock
 from typing import Annotated, Any, Literal, cast
@@ -53,6 +53,12 @@ from summit_everything.domain.models import (
 from summit_everything.intake.actions import ActionService
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeConflict, IntakeService
+from summit_everything.integrations.acceptance_plans import (
+    AcceptancePlan,
+    AcceptancePlanLedger,
+    PlanConflict,
+    ProviderUsage,
+)
 from summit_everything.integrations.embedding import ModelStudioEmbedding
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.feishu.http import FeishuHttpProvider
@@ -121,7 +127,13 @@ from summit_everything.release import (
     load_build_identity,
     verify_dependency_manifest,
 )
-from summit_everything.retrieval.query import AnswerProvider, QueryCancelled, QueryService
+from summit_everything.retrieval.chunking import chunk_markdown
+from summit_everything.retrieval.query import (
+    AnswerProvider,
+    IndexPlanStale,
+    QueryCancelled,
+    QueryService,
+)
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
     WorkspaceError,
@@ -278,6 +290,7 @@ class IntakeJobRequest(RequestModel):
     line_id: UUID
     project_id: UUID
     reprocess: bool = False
+    acceptance_plan_id: UUID | None = None
 
 
 class DraftPatchRequest(RequestModel):
@@ -308,6 +321,27 @@ class QueryRequest(RequestModel):
     role_id: UUID | None = None
     request_id: UUID | None = None
     conversation_id: UUID | None = None
+    acceptance_plan_id: UUID | None = None
+
+
+class AcceptancePlanRequest(RequestModel):
+    operation: Literal[
+        "feishu.materials.read",
+        "feishu.materials.import",
+        "feishu.calendar.read",
+        "feishu.tasks.read",
+        "feishu.task.read",
+        "model.index",
+        "model.query",
+        "model.organize",
+        "model.journal_assist",
+    ]
+    scope: dict[str, Any]
+
+
+class AcceptancePlanConfirmRequest(RequestModel):
+    scope_sha256: str = Field(pattern="^[0-9a-f]{64}$")
+    scope: dict[str, Any] | None = None
 
 
 class MemoryCandidateRequest(RequestModel):
@@ -343,7 +377,8 @@ class ProjectOverviewConfirmation(RequestModel):
 
 
 class JournalAssistRequest(RequestModel):
-    text: str = Field(min_length=1)
+    text: str = Field(min_length=1, max_length=100_000)
+    acceptance_plan_id: UUID | None = None
 
 
 class JournalAssistResponse(BaseModel):
@@ -398,6 +433,7 @@ def create_app(
     feishu_config: FeishuConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
+    app.state.acceptance_run_id = uuid4()
     build_info_path = os.environ.get("SUMMIT_BUILD_INFO")
     build_identity = load_build_identity(build_info_path)
     web_dist = os.environ.get("SUMMIT_WEB_DIST")
@@ -420,6 +456,8 @@ def create_app(
             str(Path.home() / "Library/Application Support/SummitEverything"),
         )
     )
+    if secret_backend is None and os.environ.get("SUMMIT_OFFLINE_GUARD_ACTIVE") == "1":
+        secret_backend = UnavailableSecretBackend()
     if secret_backend is None:
         try:
             secret_backend = MacOSKeychainBackend()
@@ -525,6 +563,442 @@ def create_app(
     def settings_store(workspace: WorkspaceContext) -> SettingsStore:
         return SettingsStore(Path(workspace.local_profile_dir) / "provider-settings.json")
 
+    def acceptance_ledger(workspace: WorkspaceContext) -> AcceptancePlanLedger:
+        return AcceptancePlanLedger(Path(workspace.local_profile_dir))
+
+    def persist_provider_usage(
+        workspace: WorkspaceContext, plan_id: UUID, providers: tuple[Any, ...]
+    ) -> None:
+        usage = [
+            ProviderUsage.model_validate(record)
+            for provider in providers
+            for record in getattr(provider, "usage_records", [])
+        ]
+        if usage:
+            acceptance_ledger(workspace).record_usage(plan_id, usage)
+
+    def profile_binding(workspace: WorkspaceContext) -> str:
+        resolved = str(Path(workspace.local_profile_dir).resolve())
+        return hashlib.sha256(resolved.encode()).hexdigest()
+
+    def settings_binding(workspace: WorkspaceContext) -> str:
+        settings = settings_store(workspace).read()
+        encoded = json.dumps(
+            settings.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
+        ).encode()
+        return hashlib.sha256(encoded).hexdigest()
+
+    def operation_config_binding(workspace: WorkspaceContext, operation: str) -> str:
+        settings_digest = settings_binding(workspace)
+        if not operation.startswith("feishu."):
+            return settings_digest
+        return json_binding(
+            {
+                "settings": settings_digest,
+                "authorization_generation": feishu_auth_generation(workspace),
+            }
+        )
+
+    def feishu_auth_generation(workspace: WorkspaceContext) -> int:
+        # This reads only the in-process coordinator counter; it does not inspect
+        # credentials or contact the provider. Logout/new OAuth changes the value.
+        return feishu_for(workspace).auth.version()
+
+    def json_binding(value: object) -> str:
+        encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()
+        return hashlib.sha256(encoded).hexdigest()
+
+    def normalize_feishu_scope(operation: str, values: dict[str, Any]) -> dict[str, Any]:
+        defaults: dict[str, dict[str, Any]] = {
+            "feishu.materials.read": {"query": "", "visibility": None, "cursor": None, "limit": 20},
+            "feishu.materials.import": {"material_ids": [], "operation_id": None},
+            "feishu.calendar.read": {
+                "start": None,
+                "end": None,
+                "timezone": None,
+                "cursor": None,
+                "limit": 20,
+            },
+            "feishu.tasks.read": {"cursor": None, "limit": 20},
+            "feishu.task.read": {"task_guid": ""},
+        }
+        expected = defaults.get(operation)
+        if expected is None or set(values) - set(expected):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "授权范围字段无效。"}
+            )
+        result = {**expected, **values}
+        if operation == "feishu.materials.read":
+            if (
+                not isinstance(result["query"], str)
+                or len(result["query"]) > 500
+                or result["visibility"] not in {None, "owner", "shared"}
+                or result["cursor"] is not None
+                and (not isinstance(result["cursor"], str) or len(result["cursor"]) > 500)
+                or type(result["limit"]) is not int
+                or not 1 <= result["limit"] <= 30
+            ):
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "材料授权范围无效。"}
+                )
+        elif operation == "feishu.calendar.read":
+            try:
+                start = datetime.fromisoformat(str(result["start"]))
+                end = datetime.fromisoformat(str(result["end"]))
+                if (
+                    start.tzinfo is None
+                    or end.tzinfo is None
+                    or not isinstance(result["timezone"], str)
+                ):
+                    raise ValueError
+            except (TypeError, ValueError):
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "日历授权范围无效。"}
+                ) from None
+            result["start"] = start.isoformat()
+            result["end"] = end.isoformat()
+            if result["cursor"] is not None and (
+                not isinstance(result["cursor"], str) or len(result["cursor"]) > 500
+            ):
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "日历授权范围无效。"}
+                )
+            if type(result["limit"]) is not int or not 1 <= result["limit"] <= 30:
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "日历授权范围无效。"}
+                )
+        elif operation == "feishu.tasks.read":
+            if result["cursor"] is not None and (
+                not isinstance(result["cursor"], str) or len(result["cursor"]) > 500
+            ):
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "任务授权范围无效。"}
+                )
+            if type(result["limit"]) is not int or not 1 <= result["limit"] <= 100:
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "任务授权范围无效。"}
+                )
+        elif operation == "feishu.materials.import":
+            material_ids = result["material_ids"]
+            if (
+                not isinstance(material_ids, list)
+                or not 1 <= len(material_ids) <= 20
+                or len(set(material_ids)) != len(material_ids)
+                or any(
+                    not isinstance(value, str) or not value or len(value) > 500
+                    for value in material_ids
+                )
+                or not isinstance(result["operation_id"], str)
+                or not result["operation_id"]
+                or len(result["operation_id"]) > 200
+            ):
+                raise HTTPException(
+                    422,
+                    detail={
+                        "code": "validation_error",
+                        "message": "材料导入范围无效；最多选择 20 份材料。",
+                    },
+                )
+        elif operation == "feishu.task.read":
+            if (
+                not isinstance(result["task_guid"], str)
+                or not result["task_guid"]
+                or len(result["task_guid"]) > 200
+            ):
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "任务授权范围无效。"}
+                )
+        else:
+            ids = result["material_ids"]
+            if (
+                not isinstance(ids, list)
+                or not 1 <= len(ids) <= 30
+                or any(not isinstance(item, str) or not item or len(item) > 200 for item in ids)
+                or len(set(ids)) != len(ids)
+                or not isinstance(result["operation_id"], str)
+                or not result["operation_id"]
+                or len(result["operation_id"]) > 200
+            ):
+                raise HTTPException(
+                    422, detail={"code": "validation_error", "message": "材料选择授权范围无效。"}
+                )
+        return result
+
+    def normalize_index_scope(
+        workspace: WorkspaceContext, values: dict[str, Any]
+    ) -> dict[str, Any]:
+        if set(values) != {"mode", "fingerprint", "page_ids", "page_versions"}:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "索引授权范围字段无效。"}
+            )
+        mode, fingerprint = values["mode"], values["fingerprint"]
+        if (
+            mode not in {"initial", "incremental", "full", "model_change"}
+            or not isinstance(fingerprint, str)
+            or not isinstance(values["page_ids"], list)
+            or not isinstance(values["page_versions"], dict)
+        ):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "索引授权范围无效。"}
+            )
+        try:
+            current = query_for(workspace).plan(
+                Path(workspace.root), fingerprint=fingerprint, mode=mode
+            )
+        except (ValueError, WorkspaceError):
+            raise HTTPException(
+                409,
+                detail={"code": "acceptance_plan_stale", "message": "索引计划已变化，请重新预览。"},
+            ) from None
+        page_ids = sorted(str(item) for item in current.page_ids)
+        page_versions = {key: current.page_versions[key] for key in sorted(current.page_versions)}
+        if sorted(values["page_ids"]) != page_ids or values["page_versions"] != page_versions:
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "acceptance_plan_stale",
+                    "message": "合格页面或版本已变化，请重新预览。",
+                },
+            )
+        return {
+            "mode": mode,
+            "fingerprint": fingerprint,
+            "page_ids": page_ids,
+            "page_versions": page_versions,
+        }
+
+    def index_embedding_call_bound(workspace: WorkspaceContext, scope: dict[str, Any]) -> int:
+        chunks = 0
+        for page_id in scope["page_ids"]:
+            page = read_page(Path(workspace.root), UUID(page_id))
+            expected = scope["page_versions"].get(page_id)
+            if page.content_sha256 != expected:
+                raise HTTPException(
+                    409,
+                    detail={
+                        "code": "acceptance_plan_stale",
+                        "message": "合格页面已变化，请重新预览。",
+                    },
+                )
+            chunks += len(chunk_markdown(page.page_id, page.content_sha256, page.body))
+        # Qwen embedding accepts up to 20 texts per provider operation.
+        return max(1, (chunks + 19) // 20)
+
+    def normalize_organize_scope(
+        workspace: WorkspaceContext, values: dict[str, Any]
+    ) -> dict[str, Any]:
+        allowed = {"item_ids", "operation_id", "line_id", "project_id", "reprocess"}
+        if set(values) != allowed:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "整理范围字段无效。"}
+            )
+        try:
+            item_ids = [UUID(value) for value in values["item_ids"]]
+            line_id = UUID(values["line_id"])
+            project_id = UUID(values["project_id"])
+            operation_id = str(values["operation_id"])
+            reprocess = bool(values["reprocess"])
+            inputs = review.preview_inputs(
+                Path(workspace.root),
+                item_ids,
+                line_id=line_id,
+                project_id=project_id,
+                reprocess=reprocess,
+            )
+        except (ValueError, TypeError, WorkspaceError) as exc:
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "acceptance_plan_stale",
+                    "message": "所选来源或目标已变化，请重新预览。",
+                },
+            ) from exc
+        return {
+            "item_ids": [str(item_id) for item_id in item_ids],
+            "operation_id": operation_id,
+            "line_id": str(line_id),
+            "project_id": str(project_id),
+            "reprocess": reprocess,
+            "max_output_tokens": settings_store(workspace).read().llm.max_output_tokens,
+            # Returned only to the local preview caller; the ledger persists the digest, never text.
+            "outgoing_inputs": [
+                {"item_id": str(item_id), "source_id": str(source_id), "text": text}
+                for item_id, source_id, text in inputs
+            ],
+        }
+
+    def normalize_journal_assist_scope(
+        workspace: WorkspaceContext, values: dict[str, Any]
+    ) -> dict[str, Any]:
+        if set(values) - {"text", "max_output_tokens"}:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "日志辅助范围字段无效。"}
+            )
+        text = values.get("text")
+        if not isinstance(text, str) or not text.strip() or len(text) > 100_000:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "请提供有效的日志正文。"}
+            )
+        max_output_tokens = settings_store(workspace).read().llm.max_output_tokens
+        supplied_budget = values.get("max_output_tokens", max_output_tokens)
+        if type(supplied_budget) is not int or supplied_budget != max_output_tokens:
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "acceptance_plan_stale",
+                    "message": "模型输出预算已变化，请重新预览。",
+                },
+            )
+        return {"text": text, "max_output_tokens": max_output_tokens}
+
+    def normalize_query_scope(
+        workspace: WorkspaceContext, values: dict[str, Any]
+    ) -> dict[str, Any]:
+        allowed = {
+            "question",
+            "fingerprint",
+            "purpose",
+            "answer_mode",
+            "role_id",
+            "request_id",
+            "conversation_id",
+        }
+        if set(values) - allowed or "request_id" not in values or "question" not in values:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "问答授权范围字段无效。"}
+            )
+        try:
+            query = QueryRequest.model_validate(values)
+        except ValueError:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "问答授权范围无效。"}
+            ) from None
+        if query.request_id is None:
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "问答计划需要固定请求标识。"}
+            )
+        store = conversations_for(workspace)
+        answer_store = answer_context_for(workspace)
+        selected_role = None
+        if query.role_id is not None:
+            selected_role = answer_store.role(workspace.workspace_id, query.role_id)
+            if selected_role is None:
+                raise HTTPException(
+                    404, detail={"code": "not_found", "message": "找不到这个问答角色。"}
+                )
+            if len(selected_role.instructions.encode("utf-8")) > selected_role.context_budget:
+                raise HTTPException(
+                    422,
+                    detail={
+                        "code": "context_budget_exceeded",
+                        "message": "角色说明超过设定预算；请编辑角色内容后重试。",
+                    },
+                )
+        try:
+            memories = answer_store.active_memory_text(workspace.workspace_id)
+        except ContextConflict as exc:
+            raise HTTPException(
+                422, detail={"code": "context_budget_exceeded", "message": str(exc)}
+            ) from None
+        previous_questions = store.previous_user_questions(
+            workspace.workspace_id, query.conversation_id, excluding=query.request_id
+        )
+        context = AnswerContext(
+            answer_mode=query.answer_mode,
+            role_name=selected_role.name if selected_role else "",
+            role_instructions=selected_role.instructions if selected_role else "",
+            user_memories=memories,
+            previous_user_questions=previous_questions,
+        )
+        purpose = RetrievalPurpose(query.purpose)
+        # Authorization scope comes from the canonical content eligibility
+        # rule, not from an optionally injected query executor. The latter may
+        # be a narrow adapter (for example, one that only exposes query()).
+        pages = QueryService._eligible_pages(list_pages(Path(workspace.root)), purpose=purpose)
+        versions = {
+            str(page.page_id): page.content_sha256
+            for page in sorted(pages, key=lambda item: str(item.page_id))
+        }
+        settings = settings_store(workspace).read()
+        return {
+            "request_id": str(query.request_id),
+            "conversation_id": str(query.conversation_id) if query.conversation_id else None,
+            "question": query.question,
+            "purpose": query.purpose,
+            "answer_mode": query.answer_mode,
+            "role_id": str(query.role_id) if query.role_id else None,
+            "context": context.model_dump(mode="json"),
+            "source_versions": versions,
+            "fingerprint": query.fingerprint,
+            "max_output_tokens": settings.llm.max_output_tokens,
+            "reasoning_effort": settings.llm.reasoning_effort,
+        }
+
+    def start_feishu_plan(
+        workspace: WorkspaceContext,
+        operation: str,
+        scope: dict[str, Any],
+        plan_id: UUID | None,
+        request_count: int = 1,
+    ) -> UUID | None:
+        settings = settings_store(workspace).read()
+        if settings.mode != "real":
+            return None
+        if not settings.feishu.app_id:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "provider_not_configured", "message": "请先配置飞书 App ID。"},
+            )
+        if plan_id is None:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "acceptance_plan_required",
+                    "message": "真实飞书读取需先预览并确认本次范围。",
+                },
+            )
+        scope_sha256 = json_binding(
+            {
+                "operation": operation,
+                "scope": scope,
+                "authorization_generation": feishu_auth_generation(workspace),
+            }
+        )
+        ledger = acceptance_ledger(workspace)
+        try:
+            prior = ledger.get(plan_id)
+            if prior.operation != operation or request_count > prior.request_limit:
+                raise PlanConflict("operation does not match its approved request bound")
+            ledger.begin_execution(
+                plan_id,
+                workspace_id=str(workspace.workspace_id),
+                profile_id=profile_binding(workspace),
+                config_sha256=operation_config_binding(workspace, operation),
+                scope_sha256=scope_sha256,
+                run_id=app.state.acceptance_run_id,
+            )
+            for _ in range(request_count):
+                ledger.reserve_request(
+                    plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                )
+            return plan_id
+        except PlanConflict as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+            ) from None
+
+    def finish_feishu_plan(workspace: WorkspaceContext, plan_id: UUID | None, state: str) -> None:
+        if plan_id is None:
+            return
+        ledger = acceptance_ledger(workspace)
+        try:
+            ledger.finish(plan_id, state=cast(Any, state))
+        except PlanConflict:
+            logging.getLogger(__name__).error("Acceptance plan state could not be finalized")
+
     def feishu_for(workspace: WorkspaceContext) -> FeishuService:
         settings = settings_store(workspace).read()
         app_id = settings.feishu.app_id or config.app_id
@@ -615,27 +1089,14 @@ def create_app(
         app.state.feishu_service = service
         return service
 
-    def require_feishu_data(workspace: WorkspaceContext) -> None:
-        """Stage B keeps real Feishu business reads server-disabled by default."""
-        settings = settings_store(workspace).read()
-        if settings.mode != "real":
-            return
-        if not settings.feishu.app_id:
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "code": "provider_not_configured",
-                    "message": "请先在本机设置中填写飞书 App ID 与密钥。",
-                },
-            )
-        if not settings.feishu.real_data_enabled:
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "code": "stage_c_authorization_required",
-                    "message": "真实飞书数据读取需要逐项授权后才会启用。",
-                },
-            )
+    def require_feishu_data(
+        workspace: WorkspaceContext,
+        operation: str,
+        scope: dict[str, Any],
+        plan_id: UUID | None,
+        request_count: int = 1,
+    ) -> UUID | None:
+        return start_feishu_plan(workspace, operation, scope, plan_id, request_count)
 
     def actions_for(workspace: WorkspaceContext) -> ActionService:
         service = feishu_for(workspace)
@@ -672,7 +1133,14 @@ def create_app(
         if expected is None or account_id != expected:
             raise SettingsError("validation_error")
 
-    register_actions(app, actions_for, authenticated, active_workspace, require_feishu_data)
+    register_actions(
+        app,
+        actions_for,
+        authenticated,
+        active_workspace,
+        require_feishu_data,
+        finish_feishu_plan,
+    )
 
     @app.exception_handler(SettingsError)
     async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
@@ -714,12 +1182,19 @@ def create_app(
             "embedding": settings.embedding,
             "rerank": settings.rerank,
         }
-        if any(selected[name].provider != "fake" and selected[name].enabled for name in providers):
+        missing = [
+            name
+            for name in providers
+            if selected[name].provider == "fake" or not selected[name].enabled
+        ]
+        if missing:
             raise HTTPException(
                 status_code=409,
                 detail={
                     "code": "provider_disabled",
-                    "message": "真实业务调用当前关闭；仅允许单次合成连接检查。",
+                    "message": (
+                        "真实业务调用需要已选择并启用对应 provider；Fake 不会冒充真实质量结果。"
+                    ),
                 },
             )
 
@@ -735,17 +1210,30 @@ def create_app(
             return True
         return fingerprint == embedding_fingerprint(settings.embedding, mode=settings.mode)
 
-    def query_for(workspace: WorkspaceContext, *, remote: bool = False) -> QueryService:
+    def query_for(
+        workspace: WorkspaceContext,
+        *,
+        remote: bool = False,
+        provider_guard: Any = None,
+        required_providers: tuple[str, ...] = ("embedding", "rerank", "llm"),
+    ) -> QueryService:
         if query_service is not None:
             return query_service
         if remote:
-            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
+            ensure_remote_calls_allowed(workspace, required_providers)
         providers = runtime_for(workspace) if remote else None
         return QueryService(
             IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"),
-            embedding=providers.embedding() if providers else None,
-            reranker=providers.reranker() if providers else None,
-            answer_provider=(cast(AnswerProvider, providers.llm()) if providers else None),
+            embedding=providers.embedding()
+            if providers and "embedding" in required_providers
+            else None,
+            reranker=providers.reranker() if providers and "rerank" in required_providers else None,
+            answer_provider=(
+                cast(AnswerProvider, providers.llm())
+                if providers and "llm" in required_providers
+                else None
+            ),
+            provider_guard=provider_guard,
         )
 
     def conversations_for(workspace: WorkspaceContext) -> ConversationStore:
@@ -821,6 +1309,190 @@ def create_app(
         validate_credential_account(workspace, provider, payload.account_id)
         credential_vault(workspace).delete(provider, account_id=payload.account_id)
         return Response(status_code=204)
+
+    @app.post("/api/v1/acceptance-plans", status_code=201, dependencies=[Depends(authenticated)])
+    def acceptance_plan_create(
+        payload: AcceptancePlanRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        settings = settings_store(workspace).read()
+        if settings.mode != "real" or (
+            payload.operation.startswith("feishu.") and not settings.feishu.app_id
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "provider_not_configured",
+                    "message": "请先配置 Real 模式，并为飞书操作配置 App ID。",
+                },
+            )
+        if payload.operation == "model.index":
+            ensure_remote_calls_allowed(workspace, ("embedding",))
+        elif payload.operation == "model.query":
+            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
+        elif payload.operation == "model.organize":
+            ensure_remote_calls_allowed(workspace, ("llm",))
+        elif payload.operation == "model.journal_assist":
+            ensure_remote_calls_allowed(workspace, ("llm",))
+        if payload.operation == "model.index":
+            scope = normalize_index_scope(workspace, payload.scope)
+            request_limit = index_embedding_call_bound(workspace, scope)
+        elif payload.operation == "model.query":
+            scope = normalize_query_scope(workspace, payload.scope)
+            request_limit = 3  # one embedding, one rerank, and one answer call at most
+        elif payload.operation == "model.organize":
+            scope = normalize_organize_scope(workspace, payload.scope)
+            request_limit = 1
+        elif payload.operation == "model.journal_assist":
+            scope = normalize_journal_assist_scope(workspace, payload.scope)
+            request_limit = 1
+        else:
+            scope = normalize_feishu_scope(payload.operation, payload.scope)
+            request_limit = (
+                3 * len(scope["material_ids"]) + 2
+                if payload.operation == "feishu.materials.import"
+                else 2
+            )
+        if request_limit > 100:
+            raise HTTPException(
+                status_code=422,
+                detail={"code": "validation_error", "message": "本次授权范围超过上限。"},
+            )
+        scope_binding: dict[str, object] = {"operation": payload.operation, "scope": scope}
+        if payload.operation.startswith("feishu."):
+            scope_binding["authorization_generation"] = feishu_auth_generation(workspace)
+        scope_sha256 = json_binding(scope_binding)
+        try:
+            plan = acceptance_ledger(workspace).create(
+                operation=payload.operation,
+                workspace_id=str(workspace.workspace_id),
+                profile_id=profile_binding(workspace),
+                config_sha256=operation_config_binding(workspace, payload.operation),
+                scope_sha256=scope_sha256,
+                scope=scope,
+                request_limit=max(1, request_limit),
+            )
+        except RuntimeError:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "acceptance_plan_ledger_unavailable",
+                    "message": "本机授权账本已满或不可用。",
+                },
+            ) from None
+        return {"plan": plan, "scope": scope}
+
+    @app.post(
+        "/api/v1/acceptance-plans/{plan_id}/confirm",
+        dependencies=[Depends(authenticated)],
+    )
+    def acceptance_plan_confirm(
+        plan_id: UUID,
+        payload: AcceptancePlanConfirmRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> AcceptancePlan:
+        try:
+            current = acceptance_ledger(workspace).get(plan_id)
+            if payload.scope is None:
+                if current.operation.startswith("model."):
+                    raise PlanConflict("model plan confirmation needs its displayed scope")
+                scope = None
+            elif current.operation == "model.index":
+                scope = normalize_index_scope(workspace, payload.scope)
+            elif current.operation == "model.query":
+                query_intent = {
+                    key: payload.scope[key]
+                    for key in (
+                        "question",
+                        "fingerprint",
+                        "purpose",
+                        "answer_mode",
+                        "role_id",
+                        "request_id",
+                        "conversation_id",
+                    )
+                    if key in payload.scope
+                }
+                scope = normalize_query_scope(workspace, query_intent)
+            elif current.operation == "model.organize":
+                organize_intent = {
+                    key: payload.scope[key]
+                    for key in ("item_ids", "operation_id", "line_id", "project_id", "reprocess")
+                    if key in payload.scope
+                }
+                scope = normalize_organize_scope(workspace, organize_intent)
+            elif current.operation == "model.journal_assist":
+                scope = normalize_journal_assist_scope(workspace, payload.scope or {})
+            else:
+                scope = normalize_feishu_scope(current.operation, payload.scope)
+            expected_sha = payload.scope_sha256
+            if scope is not None:
+                binding: dict[str, object] = {"operation": current.operation, "scope": scope}
+                if current.operation.startswith("feishu."):
+                    binding["authorization_generation"] = feishu_auth_generation(workspace)
+                expected_sha = json_binding(binding)
+                if expected_sha != payload.scope_sha256:
+                    raise PlanConflict("preview scope changed before confirmation")
+            return acceptance_ledger(workspace).confirm(
+                plan_id,
+                workspace_id=str(workspace.workspace_id),
+                profile_id=profile_binding(workspace),
+                config_sha256=operation_config_binding(workspace, current.operation),
+                scope_sha256=expected_sha,
+            )
+        except PlanConflict as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+            ) from None
+
+    @app.get("/api/v1/acceptance-plans/{plan_id}", dependencies=[Depends(authenticated)])
+    def acceptance_plan_get(
+        plan_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> AcceptancePlan:
+        try:
+            plan = acceptance_ledger(workspace).get(plan_id)
+        except PlanConflict as exc:
+            raise HTTPException(
+                status_code=404,
+                detail={"code": "acceptance_plan_not_found", "message": str(exc)},
+            ) from None
+        if plan.workspace_id != str(workspace.workspace_id) or plan.profile_id != profile_binding(
+            workspace
+        ):
+            raise HTTPException(
+                status_code=404,
+                detail={"code": "acceptance_plan_not_found", "message": "找不到本次计划。"},
+            )
+        # A process interruption after request reservation is observable as unknown;
+        # the plan remains consumed and has no resume or resend endpoint.
+        if plan.state == "executing" and plan.execution_run_id != app.state.acceptance_run_id:
+            # This timestamp records when this process observed the interrupted run,
+            # not when the provider operation finished. Keep the ledger unchanged.
+            return AcceptancePlan.model_validate(
+                {
+                    **plan.model_dump(),
+                    "state": "unknown",
+                    "finished_at": datetime.now(UTC),
+                }
+            )
+        return plan
+
+    @app.delete("/api/v1/acceptance-plans/{plan_id}", dependencies=[Depends(authenticated)])
+    def acceptance_plan_cancel(
+        plan_id: UUID, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+    ) -> AcceptancePlan:
+        try:
+            return acceptance_ledger(workspace).cancel(
+                plan_id,
+                workspace_id=str(workspace.workspace_id),
+                profile_id=profile_binding(workspace),
+            )
+        except PlanConflict as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+            ) from None
 
     @app.get("/api/v1/provider-smoke", dependencies=[Depends(authenticated)])
     def provider_smoke_status(
@@ -1254,6 +1926,98 @@ def create_app(
         payload: JournalAssistRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> JournalAssistResponse:
+        if settings_store(workspace).read().mode == "real":
+            ensure_remote_calls_allowed(workspace, ("llm",))
+            if payload.acceptance_plan_id is None:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": "acceptance_plan_required",
+                        "message": "发送日志正文前请预览并确认本次 AI 辅助范围。",
+                    },
+                )
+            try:
+                scope = normalize_journal_assist_scope(workspace, {"text": payload.text})
+                scope_sha = json_binding({"operation": "model.journal_assist", "scope": scope})
+                ledger = acceptance_ledger(workspace)
+                approved = ledger.get(payload.acceptance_plan_id)
+                if approved.operation != "model.journal_assist":
+                    raise PlanConflict("acceptance plan operation does not match")
+                ledger.begin_execution(
+                    payload.acceptance_plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                    config_sha256=settings_binding(workspace),
+                    scope_sha256=scope_sha,
+                    run_id=app.state.acceptance_run_id,
+                )
+            except PlanConflict as exc:
+                raise HTTPException(
+                    409,
+                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                ) from None
+
+            reserved = False
+            provider_review: IntakeReviewService | None = None
+            try:
+                # Use the configured runtime directly. Test-only injected review services
+                # cannot turn a real-mode action into a Fake or bypass its credential gate.
+                provider_review = IntakeReviewService(runtime_for(workspace).llm())
+                current_scope = normalize_journal_assist_scope(workspace, {"text": payload.text})
+                if (
+                    settings_binding(workspace) != approved.config_sha256
+                    or json_binding({"operation": "model.journal_assist", "scope": current_scope})
+                    != approved.scope_sha256
+                ):
+                    raise PlanConflict("journal text or provider settings changed")
+                ledger.reserve_request(
+                    payload.acceptance_plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                )
+                reserved = True
+                proposals = provider_review.provider.organize([(uuid4(), uuid4(), payload.text)])
+                if not proposals:
+                    raise LLMProviderError("provider returned no journal-assist proposal")
+                ledger.finish(payload.acceptance_plan_id, state="succeeded")
+                return JournalAssistResponse(title=proposals[0].title, body=proposals[0].body)
+            except PlanConflict as exc:
+                if ledger.get(payload.acceptance_plan_id).state == "executing":
+                    ledger.finish(
+                        payload.acceptance_plan_id, state="unknown" if reserved else "failed"
+                    )
+                raise HTTPException(
+                    409,
+                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                ) from None
+            except LLMProviderError as exc:
+                if ledger.get(payload.acceptance_plan_id).state == "executing":
+                    ledger.finish(
+                        payload.acceptance_plan_id, state="unknown" if reserved else "failed"
+                    )
+                raise HTTPException(
+                    status_code=502,
+                    detail="AI 辅助暂时不可用；记录仍留在编辑区，未保存。",
+                ) from exc
+            except Exception:
+                if ledger.get(payload.acceptance_plan_id).state == "executing":
+                    ledger.finish(
+                        payload.acceptance_plan_id, state="unknown" if reserved else "failed"
+                    )
+                raise
+            finally:
+                try:
+                    if provider_review is not None:
+                        persist_provider_usage(
+                            workspace,
+                            payload.acceptance_plan_id,
+                            (provider_review.provider,),
+                        )
+                finally:
+                    if provider_review is not None:
+                        close_provider = getattr(provider_review.provider, "close", None)
+                        if callable(close_provider):
+                            close_provider()
         try:
             proposals = review_for(workspace).provider.organize([(uuid4(), uuid4(), payload.text)])
         except LLMProviderError as exc:
@@ -1388,7 +2152,9 @@ def create_app(
     ) -> list[IntakeItem]:
         root = Path(workspace.root)
         items = intake_service.list_items(root)
-        active_review = review_for(workspace)
+        # Listing and crash-recovery replay are local reads only. Do not create
+        # a real provider just to inspect an existing job checkpoint.
+        active_review = review
         for item in items:
             if item.latest_job_id is not None and item.state in {"processing", "unknown"}:
                 # This only checks the local lease and replays a durable local
@@ -1416,14 +2182,130 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
         response: Response,
     ) -> IntakeJob:
-        job = review_for(workspace).create_job(
+        replay = review.replay_job(
             Path(workspace.root),
-            payload.item_ids,
+            item_ids=payload.item_ids,
             operation_id=payload.operation_id,
             line_id=payload.line_id,
             project_id=payload.project_id,
             reprocess=payload.reprocess,
         )
+        if replay is not None:
+            job = replay
+        elif settings_store(workspace).read().mode == "real" and review_service is None:
+            ensure_remote_calls_allowed(workspace, ("llm",))
+            if payload.acceptance_plan_id is None:
+                raise HTTPException(
+                    409,
+                    detail={
+                        "code": "acceptance_plan_required",
+                        "message": "真实整理前请预览并确认所选材料。",
+                    },
+                )
+            organize_plan_id = payload.acceptance_plan_id
+            intent = {
+                "item_ids": [str(item_id) for item_id in payload.item_ids],
+                "operation_id": payload.operation_id,
+                "line_id": str(payload.line_id),
+                "project_id": str(payload.project_id),
+                "reprocess": payload.reprocess,
+            }
+            current_scope = normalize_organize_scope(workspace, intent)
+            scope_sha = json_binding({"operation": "model.organize", "scope": current_scope})
+            ledger = acceptance_ledger(workspace)
+            try:
+                approved = ledger.get(payload.acceptance_plan_id)
+                if approved.operation != "model.organize":
+                    raise PlanConflict("acceptance plan operation does not match")
+                ledger.begin_execution(
+                    payload.acceptance_plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                    config_sha256=settings_binding(workspace),
+                    scope_sha256=scope_sha,
+                    run_id=app.state.acceptance_run_id,
+                )
+            except PlanConflict as exc:
+                raise HTTPException(
+                    409, detail={"code": "acceptance_plan_conflict", "message": str(exc)}
+                ) from None
+            reserved = False
+
+            def guard_organize_call(actual_inputs: list[tuple[UUID, UUID, str]]) -> None:
+                nonlocal reserved
+                actual_scope = {
+                    **intent,
+                    "max_output_tokens": settings_store(workspace).read().llm.max_output_tokens,
+                    "outgoing_inputs": [
+                        {"item_id": str(item_id), "source_id": str(source_id), "text": text}
+                        for item_id, source_id, text in actual_inputs
+                    ],
+                }
+                if (
+                    settings_binding(workspace) != approved.config_sha256
+                    or json_binding({"operation": "model.organize", "scope": actual_scope})
+                    != approved.scope_sha256
+                ):
+                    raise PlanConflict("approved source or provider settings changed")
+                ledger.reserve_request(
+                    organize_plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                )
+                reserved = True
+
+            operation_review: IntakeReviewService | None = None
+            try:
+                operation_review = review_for(workspace)
+                job = operation_review.create_job(
+                    Path(workspace.root),
+                    payload.item_ids,
+                    operation_id=payload.operation_id,
+                    line_id=payload.line_id,
+                    project_id=payload.project_id,
+                    reprocess=payload.reprocess,
+                    before_provider_call=guard_organize_call,
+                )
+                finish_feishu_plan(workspace, payload.acceptance_plan_id, "succeeded")
+            except Exception:
+                finish_feishu_plan(
+                    workspace, payload.acceptance_plan_id, "unknown" if reserved else "failed"
+                )
+                raise
+            finally:
+                try:
+                    if operation_review is not None:
+                        persist_provider_usage(
+                            workspace,
+                            organize_plan_id,
+                            (operation_review.provider,),
+                        )
+                finally:
+                    close_provider = (
+                        getattr(operation_review.provider, "close", None)
+                        if operation_review is not None
+                        else None
+                    )
+                    if callable(close_provider):
+                        close_provider()
+        elif settings_store(workspace).read().mode == "real" and review_service is not None:
+            # Injected providers are an offline test seam, never a user-facing bypass.
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "acceptance_plan_required",
+                    "message": "真实整理必须使用服务端授权计划。",
+                },
+            )
+        else:
+            job = review.create_job(
+                Path(workspace.root),
+                payload.item_ids,
+                operation_id=payload.operation_id,
+                line_id=payload.line_id,
+                project_id=payload.project_id,
+                reprocess=payload.reprocess,
+            )
         if job.state in {"running", "provider_calling"}:
             response.status_code = 202
             response.headers["Location"] = f"/api/v1/jobs/{job.job_id}"
@@ -1552,12 +2434,92 @@ def create_app(
         ensure_remote_calls_allowed(workspace, ("embedding",))
         if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
             raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
-        service = query_for(workspace, remote=True)
+        plan_id: UUID | None = None
+        expected_config_sha256 = settings_binding(workspace)
+        expected_scope: dict[str, Any] | None = None
+        if query_service is None and settings_store(workspace).read().mode == "real":
+            if payload.acceptance_plan_id is None:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": "acceptance_plan_required",
+                        "message": "真实索引需先预览并确认本次页面与版本。",
+                    },
+                )
+            scope = normalize_index_scope(
+                workspace,
+                {
+                    "mode": payload.mode,
+                    "fingerprint": payload.fingerprint,
+                    "page_ids": [str(item) for item in payload.page_ids],
+                    "page_versions": payload.page_versions,
+                },
+            )
+            expected_scope = scope
+            request_count = index_embedding_call_bound(workspace, scope)
+            scope_sha256 = json_binding({"operation": "model.index", "scope": scope})
+            ledger = acceptance_ledger(workspace)
+            try:
+                prior = ledger.get(payload.acceptance_plan_id)
+                if prior.operation != "model.index":
+                    raise PlanConflict("acceptance plan operation does not match")
+                plan_id = payload.acceptance_plan_id
+                ledger.begin_execution(
+                    plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                    config_sha256=settings_binding(workspace),
+                    scope_sha256=scope_sha256,
+                    run_id=app.state.acceptance_run_id,
+                )
+                ledger.reserve_requests(
+                    plan_id,
+                    workspace_id=str(workspace.workspace_id),
+                    profile_id=profile_binding(workspace),
+                    count=request_count,
+                )
+            except PlanConflict as exc:
+                raise HTTPException(
+                    status_code=409,
+                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                ) from None
+
+        def index_provider_guard() -> None:
+            if settings_binding(workspace) != expected_config_sha256:
+                raise IndexPlanStale("Provider settings changed after confirmation")
+            if expected_scope is not None:
+                payload_scope = {
+                    "mode": payload.mode,
+                    "fingerprint": payload.fingerprint,
+                    "page_ids": [str(item) for item in payload.page_ids],
+                    "page_versions": payload.page_versions,
+                }
+                if normalize_index_scope(workspace, payload_scope) != expected_scope:
+                    raise IndexPlanStale("Workspace pages changed after confirmation")
+
+        service: QueryService | None = None
         try:
-            return service.execute_plan(Path(workspace.root), payload)
+            service = query_for(
+                workspace,
+                remote=True,
+                provider_guard=index_provider_guard if plan_id else None,
+                required_providers=("embedding",),
+            )
+            result = service.execute_plan(Path(workspace.root), payload)
+            if plan_id is not None:
+                finish_feishu_plan(workspace, plan_id, "succeeded")
+            return result
+        except Exception:
+            if plan_id is not None:
+                finish_feishu_plan(workspace, plan_id, "unknown")
+            raise
         finally:
-            if query_service is None:
-                service.close()
+            if query_service is None and service is not None:
+                try:
+                    if plan_id is not None:
+                        persist_provider_usage(workspace, plan_id, (service.embedding,))
+                finally:
+                    service.close()
 
     @app.get("/api/v1/index/status", dependencies=[Depends(authenticated)])
     def index_status(
@@ -1804,52 +2766,75 @@ def create_app(
         payload: QueryRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> StreamingResponse:
-        ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
         request_id = str(payload.request_id or uuid4())
         stable_request_id = UUID(request_id)
         store = conversations_for(workspace)
-        answer_store = answer_context_for(workspace)
         replay_existing = store.has_request(workspace.workspace_id, stable_request_id)
         context = AnswerContext(answer_mode=payload.answer_mode)
         context_version = "replay-existing-request"
+        query_plan_id: UUID | None = None
+        query_scope: dict[str, Any] | None = None
+        query_scope_sha256: str | None = None
+        query_config_sha256: str | None = None
         if not replay_existing:
-            selected_role = None
-            if payload.role_id is not None:
-                selected_role = answer_store.role(workspace.workspace_id, payload.role_id)
-                if selected_role is None:
-                    raise HTTPException(
-                        status_code=404,
-                        detail={"code": "not_found", "message": "找不到这个问答角色。"},
-                    )
-                if len(selected_role.instructions.encode("utf-8")) > selected_role.context_budget:
-                    raise HTTPException(
-                        status_code=422,
-                        detail={
-                            "code": "context_budget_exceeded",
-                            "message": "角色说明超过设定预算；请编辑角色内容后重试。",
-                        },
-                    )
-            try:
-                memories = answer_store.active_memory_text(workspace.workspace_id)
-            except ContextConflict as exc:
-                raise HTTPException(
-                    status_code=422, detail={"code": "context_budget_exceeded", "message": str(exc)}
-                ) from exc
-            previous_questions = store.previous_user_questions(
-                workspace.workspace_id, payload.conversation_id, excluding=stable_request_id
+            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
+            query_scope = normalize_query_scope(
+                workspace,
+                {
+                    "question": payload.question,
+                    "fingerprint": payload.fingerprint,
+                    "purpose": payload.purpose,
+                    "answer_mode": payload.answer_mode,
+                    "role_id": str(payload.role_id) if payload.role_id else None,
+                    "request_id": request_id,
+                    "conversation_id": str(payload.conversation_id)
+                    if payload.conversation_id
+                    else None,
+                },
             )
-            context = AnswerContext(
-                answer_mode=payload.answer_mode,
-                role_name=selected_role.name if selected_role else "",
-                role_instructions=selected_role.instructions if selected_role else "",
-                user_memories=memories,
-                previous_user_questions=previous_questions,
-            )
+            context = AnswerContext.model_validate(query_scope["context"])
             context_version = hashlib.sha256(
                 json.dumps(
                     context.model_dump(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
                 ).encode("utf-8")
             ).hexdigest()
+            if query_service is None and settings_store(workspace).read().mode == "real":
+                if payload.acceptance_plan_id is None:
+                    raise HTTPException(
+                        status_code=409,
+                        detail={
+                            "code": "acceptance_plan_required",
+                            "message": "真实问答需先预览并确认发送范围。",
+                        },
+                    )
+                scope_sha256 = json_binding({"operation": "model.query", "scope": query_scope})
+                query_scope_sha256 = scope_sha256
+                query_config_sha256 = settings_binding(workspace)
+                ledger = acceptance_ledger(workspace)
+                try:
+                    prior = ledger.get(payload.acceptance_plan_id)
+                    if prior.operation != "model.query":
+                        raise PlanConflict("acceptance plan operation does not match")
+                    ledger.begin_execution(
+                        payload.acceptance_plan_id,
+                        workspace_id=str(workspace.workspace_id),
+                        profile_id=profile_binding(workspace),
+                        config_sha256=settings_binding(workspace),
+                        scope_sha256=scope_sha256,
+                        run_id=app.state.acceptance_run_id,
+                    )
+                    ledger.reserve_requests(
+                        payload.acceptance_plan_id,
+                        workspace_id=str(workspace.workspace_id),
+                        profile_id=profile_binding(workspace),
+                        count=prior.request_limit,
+                    )
+                    query_plan_id = payload.acceptance_plan_id
+                except PlanConflict as exc:
+                    raise HTTPException(
+                        status_code=409,
+                        detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                    ) from None
         active_query_key = (
             str(Path(workspace.local_profile_dir).resolve() / "conversations.sqlite3"),
             str(workspace.workspace_id),
@@ -1904,6 +2889,35 @@ def create_app(
         if created:
             cancellations[cancel_key] = cancelled
 
+        def query_provider_guard() -> None:
+            if (
+                query_config_sha256 is not None
+                and settings_binding(workspace) != query_config_sha256
+            ):
+                raise ValueError("Provider configuration changed after confirmation")
+            if query_scope_sha256 is not None:
+                current_scope = normalize_query_scope(
+                    workspace,
+                    {
+                        "question": payload.question,
+                        "fingerprint": payload.fingerprint,
+                        "purpose": payload.purpose,
+                        "answer_mode": payload.answer_mode,
+                        "role_id": str(payload.role_id) if payload.role_id else None,
+                        "request_id": request_id,
+                        "conversation_id": str(payload.conversation_id)
+                        if payload.conversation_id
+                        else None,
+                    },
+                )
+                if (
+                    json_binding({"operation": "model.query", "scope": current_scope})
+                    != query_scope_sha256
+                ):
+                    raise ValueError(
+                        "Question context or source versions changed after confirmation"
+                    )
+
         def event(seq: int, event_type: str, data: Any) -> str:
             value = {
                 "request_id": request_id,
@@ -1917,6 +2931,7 @@ def create_app(
             operation = None
             query_task: asyncio.Task[Any] | None = None
             client_disconnected = False
+            query_plan_state = "unknown"
             try:
                 if not created:
                     if replay is not None:
@@ -1927,7 +2942,15 @@ def create_app(
                                 saved_event.data,
                             )
                     return
-                operation = query_for(workspace, remote=True) if query_service is None else None
+                operation = (
+                    query_for(
+                        workspace,
+                        remote=True,
+                        provider_guard=query_provider_guard if query_plan_id else None,
+                    )
+                    if query_service is None
+                    else None
+                )
                 initial = store.append_event(
                     workspace.workspace_id,
                     stable_request_id,
@@ -1957,6 +2980,7 @@ def create_app(
                         cancelled.set()
                     await asyncio.sleep(0.05)
                 answer = await query_task
+                query_plan_state = "succeeded"
                 if client_disconnected or await request.is_disconnected():
                     cancelled.set()
                     store.finish(workspace.workspace_id, stable_request_id, "interrupted")
@@ -2072,6 +3096,8 @@ def create_app(
                 if terminal is not None:
                     yield event(terminal.seq, terminal.type, terminal.data)
             finally:
+                if query_plan_id is not None:
+                    finish_feishu_plan(workspace, query_plan_id, query_plan_state)
                 cancellations.pop(cancel_key, None)
                 cancellation_requests.discard(cancel_key)
                 ACTIVE_QUERIES.discard(active_query_key)
@@ -2082,7 +3108,19 @@ def create_app(
                     except asyncio.CancelledError:
                         pass
                     if operation is not None:
-                        operation.close()
+                        try:
+                            if query_plan_id is not None:
+                                persist_provider_usage(
+                                    workspace,
+                                    query_plan_id,
+                                    (
+                                        operation.embedding,
+                                        operation.reranker,
+                                        operation.answer_provider,
+                                    ),
+                                )
+                        finally:
+                            operation.close()
 
                 if query_task is None:
                     if operation is not None:
@@ -2161,27 +3199,52 @@ def create_app(
         visibility: Literal["owner", "shared"] | None = None,
         cursor: str | None = None,
         limit: int = 20,
+        plan_id: UUID | None = None,
     ) -> MaterialPage:
         if not 1 <= limit <= 30 or len(query) > 500 or (cursor and len(cursor) > 500):
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "材料筛选无效。"}
             )
-        require_feishu_data(workspace)
-        return feishu_for(workspace).materials(query, visibility, cursor, limit)
+        scope = normalize_feishu_scope(
+            "feishu.materials.read",
+            {"query": query, "visibility": visibility, "cursor": cursor, "limit": limit},
+        )
+        plan = require_feishu_data(workspace, "feishu.materials.read", scope, plan_id, 2)
+        try:
+            result = feishu_for(workspace).materials(query, visibility, cursor, limit)
+        except Exception:
+            finish_feishu_plan(workspace, plan, "unknown")
+            raise
+        finish_feishu_plan(workspace, plan, "succeeded")
+        return result
 
     @app.post(prefix + "/imports", dependencies=[Depends(authenticated)])
     def feishu_imports(
-        payload: ImportRequest, workspace: Annotated[WorkspaceContext, Depends(active_workspace)]
+        payload: ImportRequest,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        plan_id: UUID | None = None,
     ) -> ImportResult:
-        require_feishu_data(workspace)
+        scope = normalize_feishu_scope(
+            "feishu.materials.import",
+            {"material_ids": payload.material_ids, "operation_id": payload.operation_id},
+        )
+        plan = require_feishu_data(
+            workspace, "feishu.materials.import", scope, plan_id, 3 * len(payload.material_ids) + 2
+        )
         try:
-            return feishu_for(workspace).imports(Path(workspace.root), payload)
+            result = feishu_for(workspace).imports(Path(workspace.root), payload)
         except ValueError as exc:
+            finish_feishu_plan(workspace, plan, "failed")
             if isinstance(exc, IntakeConflict):
                 raise
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "材料选择无效。"}
             ) from None
+        except Exception:
+            finish_feishu_plan(workspace, plan, "unknown")
+            raise
+        finish_feishu_plan(workspace, plan, "succeeded")
+        return result
 
     @app.get(prefix + "/calendar", dependencies=[Depends(authenticated)])
     def feishu_calendar(
@@ -2191,18 +3254,35 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
         cursor: str | None = None,
         limit: int = 20,
+        plan_id: UUID | None = None,
     ) -> CalendarPage:
         if not 1 <= limit <= 30 or (cursor and len(cursor) > 500):
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "日历分页无效。"}
             )
-        require_feishu_data(workspace)
+        scope = normalize_feishu_scope(
+            "feishu.calendar.read",
+            {
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+                "timezone": timezone,
+                "cursor": cursor,
+                "limit": limit,
+            },
+        )
+        plan = require_feishu_data(workspace, "feishu.calendar.read", scope, plan_id, 2)
         try:
-            return feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
+            result = feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
         except ValueError:
+            finish_feishu_plan(workspace, plan, "failed")
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"}
             ) from None
+        except Exception:
+            finish_feishu_plan(workspace, plan, "unknown")
+            raise
+        finish_feishu_plan(workspace, plan, "succeeded")
+        return result
 
     if web_dist is not None:
         app.mount("/", StaticFiles(directory=web_dist, html=True), name="webui")

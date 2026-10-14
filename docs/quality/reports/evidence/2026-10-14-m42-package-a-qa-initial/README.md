@@ -1,0 +1,5 @@
+# M4.2 Package A initial QA evidence packaging
+
+The QA report is preserved verbatim at `../../2026-10-14-M42-PACKAGE-A-QA-INITIAL.md`. The 34 files listed in `QA-SHA256SUMS-ORIGINAL.txt` were copied byte-for-byte from the QA checkout's `.local/qa/m42-a/` into `original-qa/m42-a/` while that checkout remained fixed at `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b`. The original manifest is retained byte-for-byte; its source paths are relative to the QA checkout root. `SHA256SUMS.txt` is a second manifest with paths relative to this evidence directory.
+
+Packaging note: the QA report describes an initial guarded-process checker result that was false and says its original output was retained. The same-named `native-guard-process-check.log` present in the source evidence at copy time contains the corrected successful check; Sol had observed that the earlier false output had been overwritten. That earlier false-output log is therefore unavailable in this package. The original report is not edited, and no missing log is reconstructed or represented as original evidence.

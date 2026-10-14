@@ -1,0 +1,122 @@
+F841 Local variable `plan` is assigned to but never used
+   --> src/summit_everything/api/app.py:948:13
+    |
+946 |             if prior.operation != operation or request_count > prior.request_limit:
+947 |                 raise PlanConflict("operation does not match its approved request bound")
+948 |             plan = ledger.begin_execution(
+    |             ^^^^
+949 |                 plan_id,
+950 |                 workspace_id=str(workspace.workspace_id),
+    |
+help: Remove assignment to unused variable `plan`
+
+E501 Line too long (104 > 100)
+    --> src/summit_everything/api/app.py:1171:74
+     |
+1169 |                 detail={
+1170 |                     "code": "provider_disabled",
+1171 |                     "message": "真实业务调用需要已选择并启用对应 provider；Fake 不会冒充真实质量结果。",
+     |                                                                                                     ^^^^
+1172 |                 },
+1173 |             )
+     |
+
+F841 Local variable `answer_store` is assigned to but never used
+    --> src/summit_everything/api/app.py:2643:9
+     |
+2641 |         stable_request_id = UUID(request_id)
+2642 |         store = conversations_for(workspace)
+2643 |         answer_store = answer_context_for(workspace)
+     |         ^^^^^^^^^^^^
+2644 |         replay_existing = store.has_request(workspace.workspace_id, stable_request_id)
+2645 |         context = AnswerContext(answer_mode=payload.answer_mode)
+     |
+help: Remove assignment to unused variable `answer_store`
+
+E501 Line too long (101 > 100)
+  --> tests/integration/authorized_feishu_client.py:18:101
+   |
+17 | class AuthorizedFeishuReadClient(TestClient):
+18 |     def _create_and_confirm(self, operation: str, scope: dict[str, Any], headers: Any) -> str | None:
+   |                                                                                                     ^
+19 |         created = super().post(
+20 |             "/api/v1/acceptance-plans",
+   |
+
+E501 Line too long (104 > 100)
+  --> tests/integration/authorized_feishu_client.py:40:101
+   |
+38 |         # URL query values arrive as singleton lists; TestClient params can be
+39 |         # mappings or sequences. Normalize both to the values FastAPI receives.
+40 |         params = {key: value[-1] if isinstance(value, list) else value for key, value in params.items()}
+   |                                                                                                     ^^^^
+41 |         if isinstance(request_params, Mapping):
+42 |             params.update(request_params)
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/integration/test_real_model_approval_flow.py:82:75
+   |
+80 | …                     "title": "访客登记办法",
+81 | …                     "kind": "topic",
+82 | …                     "body": "## 访客登记\n\n青榆的访客登记须由前台核验姓名并记录来访时间。\n",
+   |                                                                                           ^^^^^^
+83 | …                     "input_indexes": [0],
+84 | …                     "important_conflicts": [],
+   |
+
+E501 Line too long (102 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:211:101
+    |
+209 |         f"/api/v1/acceptance-plans/{organize_plan['plan']['plan_id']}/confirm",
+210 |         headers=HEADERS,
+211 |         json={"scope_sha256": organize_plan["plan"]["scope_sha256"], "scope": organize_plan["scope"]},
+    |                                                                                                     ^^
+212 |     )
+213 |     assert organize_confirm.status_code == 200, organize_confirm.text
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:274:101
+    |
+272 |         f"/api/v1/acceptance-plans/{index_preview['plan']['plan_id']}/confirm",
+273 |         headers=HEADERS,
+274 |         json={"scope_sha256": index_preview["plan"]["scope_sha256"], "scope": index_preview["scope"]},
+    |                                                                                                     ^^
+275 |     )
+276 |     assert index_confirm.status_code == 200, index_confirm.text
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:314:101
+    |
+312 |         f"/api/v1/acceptance-plans/{query_preview['plan']['plan_id']}/confirm",
+313 |         headers=HEADERS,
+314 |         json={"scope_sha256": query_preview["plan"]["scope_sha256"], "scope": query_preview["scope"]},
+    |                                                                                                     ^^
+315 |     )
+316 |     assert query_confirm.status_code == 200, query_confirm.text
+    |
+
+E501 Line too long (101 > 100)
+   --> tests/integration/test_real_model_approval_flow.py:335:101
+    |
+333 |         "deepseek",
+334 |     ]
+335 |     assert all(item["request_id"].startswith("synthetic-") for item in query_state["provider_usage"])
+    |                                                                                                     ^
+336 |
+337 |     model_calls = [item for item in calls if item[0].endswith("/chat/completions")]
+    |
+
+E501 Line too long (101 > 100)
+   --> tests/unit/test_acceptance_plan_ledger.py:163:101
+    |
+163 | def test_provider_usage_records_only_reported_counts_and_bounded_request_ids(tmp_path: Path) -> None:
+    |                                                                                                     ^
+164 |     ledger = AcceptancePlanLedger(tmp_path)
+165 |     plan = ledger.create(
+    |
+
+Found 22 errors (11 fixed, 11 remaining).
+No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).

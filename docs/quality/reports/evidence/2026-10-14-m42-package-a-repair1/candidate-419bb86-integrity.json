@@ -1,0 +1,13 @@
+{
+  "app": "/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1-empty-feedback/artifacts/SummitEverything Internal 419bb86.app",
+  "app_files": 156,
+  "app_manifest_sha256": "9bb4d2c6e511e47812db8cca6e1af56d4dd248e1ca177a92525e1f7271c8c7f0",
+  "app_version": "0.1.0",
+  "build_id": "20261014T050331Z-788b29e2f3bb",
+  "dependencies_sha256": "2aa53e0cf1698d768c2f3f06995a9fd9dcd680003f598a94ca7bc1e7a057fe5f",
+  "dirty": false,
+  "dmg": "/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1-empty-feedback/artifacts/SummitEverything-Internal-419bb86.dmg",
+  "dmg_sha256": "2e176a2d27f13821f2f82768966719408780c0ed963ee9d9e4413b75ff16f14a",
+  "frontend_sha256": "788b29e2f3bb8b95736179ed07af6fa0d02eea17b3e881f92a8d79f2e70cb2ec",
+  "source_sha": "419bb865b334389d1efd0f4a1a855cd0d5324d28"
+}

@@ -1,0 +1,118 @@
+Window: "SummitEverything Internal", App: SummitEverything Internal.
+0 standard window SummitEverything Internal, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.(unknown context at $102b32d88).InternalWindow, SwiftUI._FlexFrameLayout>>-1-AppWindow-1
+	1 scroll area
+		2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/
+			3 container
+				4 text SummitEverything 个人知识工作台
+				5 container 主导航
+					6 button 今日
+					7 button 日志与思考
+					8 button 项目与知识
+					9 button 知识问答
+					10 button 设置
+				11 text 仅本机运行
+				12 button M M42 Repair 1 exact QA synthetic 已连接工作库
+			13 container
+				14 text 设置 本机已保存
+				15 button 打开设置
+				16 text 本机 PROFILE
+				17 heading 设置, Value: 1
+					18 text 设置
+				19 text Provider 设置与密钥按当前工作库保存在这台设备。读取、保存和刷新设置不会连接外部服务。
+				20 heading Provider 选择, Value: 2
+					21 text Provider 选择
+				22 text 离线模式
+				23 container
+					24 text 运行模式
+					25 pop up button (collapsed) 运行模式, Value: Fake · 离线, Secondary Actions: Expand
+				26 container
+					27 text 整理模型
+					28 pop up button (collapsed) 整理模型, Value: Fake · 离线, Secondary Actions: Expand
+				29 container
+					30 text DeepSeek 账户标识
+					31 text field (settable) DeepSeek 账户标识, Value: default
+				32 summary 问答输出预算, Value: off
+					33 text 问答输出预算
+				34 container
+					35 text Embedding
+					36 pop up button (collapsed) Embedding, Value: Fake · 离线, Secondary Actions: Expand
+				37 container
+					38 text Embedding Base URL
+					39 URL field (settable) Embedding Base URL, Value: https://dashscope.aliyuncs.com/compatible-mode/v1
+				40 container
+					41 text Rerank
+					42 pop up button (collapsed) Rerank, Value: Fake · 离线, Secondary Actions: Expand
+				43 container
+					44 text Rerank API Base URL
+					45 URL field (settable) Rerank API Base URL, Value: https://dashscope.aliyuncs.com/api/v1
+				46 container
+					47 text Model Studio 账户标识
+					48 text field (settable) Model Studio 账户标识, Value: default
+				49 text Model Studio 区域
+				50 text 中国大陆（当前已核对 endpoint）
+				51 container
+					52 text Feishu App ID
+					53 text field (settable) Feishu App ID
+				54 container
+					55 text 注册 callback URI
+					56 text field (settable) 注册 callback URI, Placeholder: http://127.0.0.1:5173/api/v1/integrations/feishu/callback
+				57 text 飞书 callback 必须与开发者后台完全一致且使用本机 loopback。Model Studio 只接受其 HTTPS 域名。请勿在聊天中发送密钥。Embedding 参数变化需要显式查看索引计划。
+				58 button 保存 provider 设置
+				59 heading 本机密钥, Value: 2
+					60 text 本机密钥
+				61 text 钥匙串不可用
+				62 text 当前运行环境无法访问 macOS 钥匙串。真实模式保存会失败关闭，不会写入文件或内存。
+				63 container
+					64 text Provider
+					65 pop up button (collapsed) Provider, Value: DeepSeek API Key · 未配置, Secondary Actions: Expand
+				66 text 当前账户标识
+				67 text default
+				68 container
+					69 text 密钥
+					70 secure text field (settable) 密钥
+				71 text 密钥只提交给本机 API 与系统钥匙串；不会进入工作库、配置文件或浏览器持久存储。
+				72 button (disabled) 保存到钥匙串
+				73 button (disabled) 删除本机密钥
+				74 container 能力状态
+					75 heading 能力状态, Value: 2
+						76 text 能力状态
+					77 text 当前不可对外请求
+					78 text 读取已选择的飞书材料
+					79 text 已配置，待本次确认 每次使用前需预览并确认本次范围。
+					80 text 读取飞书日历
+					81 text 已配置，待本次确认 每次使用前需预览并确认本次范围。
+					82 text 读取飞书任务
+					83 text 已配置，待本次确认 每次使用前需预览并确认本次范围。
+					84 text 创建或更改飞书任务
+					85 text 未启用 当前使用离线 Fake；此路径不会访问真实 provider。
+					86 text 整理与问答模型
+					87 text 未启用 当前使用离线 Fake；此路径不会访问真实 provider。
+					88 text 知识索引向量化
+					89 text 未启用 当前使用离线 Fake；此路径不会访问真实 provider。
+					90 text 检索结果排序
+					91 text 未启用 当前使用离线 Fake；此路径不会访问真实 provider。
+				92 container 受限合成连接检查
+					93 heading 受限合成连接检查, Value: 2
+						94 text 受限合成连接检查
+					95 text 每项最多一次
+					96 text 固定短合成 payload，仅检查接口连通与响应结构；失败、超时和未知结果也占用次数，不会自动重试。DeepSeek 最多输出 64 tokens；按当前官方高峰价估算，三项合计低于 ¥0.01（实际账单待服务方核对）。CNY 5 是提示词建议上限，不是用户设定预算。
+					97 button (disabled) DeepSeek Chat（剩余 1）
+					98 button (disabled) Embedding（剩余 1）
+					99 button (disabled) Rerank（剩余 1）
+					100 text 调用前先保存 Real/provider 设置并通过本机钥匙串录入密钥。检查不会发送工作库材料。
+				101 text 当前工作库 M42 Repair 1 exact QA synthetic 运行方式 本机 API + WebUI
+				102 button 切换工作库
+		103 scroll bar (settable, float) 0
+	104 close button
+	105 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	106 minimize button
+	107 text SummitEverything Internal
+108 menu bar
+	109 SummitEverything Internal
+	110 File
+	111 Edit
+	112 View
+	113 Window
+	114 Help
+
+The focused UI element is 10 button 设置
