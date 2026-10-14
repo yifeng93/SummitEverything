@@ -24,6 +24,7 @@ M4.2 工作包 A 初始固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` �
 | Stage B 用户单机真实验收 / install / 公证 / 五日 / 双机 / M5 / release | NOT_RUN | Internal App/DMG 技术包验证不等于正式用户安装或完整产品验收；该 Stage 名称沿用验收矩阵 |
 | Gatekeeper assessment | 本机 `spctl` exit 3 / ad-hoc rejected；未绕过 | 详见固定 SHA [QA 报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) |
 | 远端离线 CI | M4.2 PR #18 的 run 38550700081 全步骤 success（源 head `0e8fc46`）；工作流显示名沿用 M4.1，但适用于本 PR。M4.1 的 f7ad success 仍为独立历史记录 | [M4.2 CI 原始证据](../quality/reports/evidence/2026-10-14-m42-ci/README.md)、[M4.1 CI 历史](../quality/reports/evidence/2026-10-13-m41-ci/README.md) |
+| F2 修复：origin guard 对损坏 profile 的失败形态（分支 `codex/origin-guard-error-20261014`） | 固定产品 SHA `c9b3f7cc9af75d1bc46b9ab32e0950ba32995db9`；裸 500 → 设计好的 503 JSON 信封；全量 516 passed；**独立 QA 7 项全 PASS、未发现新缺陷** | [F2 报告](../quality/reports/2026-10-14-ORIGIN-GUARD-SETTINGS-ERROR.md)、[QA 证据](../quality/reports/evidence/2026-10-14-origin-guard-settings-error/README.md) |
 
 本轮也有未前置 process checker 的较早 UI 启动，以及恢复上下文后的 late CUA guard=false 启动；late attempt 在 UI 输入前终止 QA 自有进程。Keychain 查询次数和默认 profile 回退继续 UNVERIFIED，不宣称本轮零 Keychain 查询或全程正确隔离。QA 一条错误 P1 assertion 有完整 raw；另一临时 assertion 失败 raw 已被覆盖，QA 报告明确披露且不补造。CUA 内容是观察转录，不是 screenshot/AX raw dump。完整边界见[Sol gate](../quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。
 
