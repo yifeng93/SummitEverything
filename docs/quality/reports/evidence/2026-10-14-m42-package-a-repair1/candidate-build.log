@@ -1,0 +1,180 @@
+
+> web@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 28 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.62 kB │ gzip:  0.39 kB
+dist/assets/index-B3KNOB32.css   28.63 kB │ gzip:  6.26 kB
+dist/assets/index-DavpFuCK.js   338.32 kB │ gzip: 99.48 kB
+
+✓ built in 238ms
+Resolved 48 packages in 3ms
+Checked 45 packages in 1ms
+28 INFO: PyInstaller: 6.22.3, contrib hooks: 2026.8
+28 INFO: Python: 3.12.13
+40 INFO: Platform: macOS-27.0.1-arm64-arm-64bit
+40 INFO: Python environment: /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv
+40 INFO: wrote /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/summit-backend.spec
+44 INFO: Removing temporary files and cleaning cache in /Users/yifengstudio/Library/Application Support/pyinstaller
+164 INFO: Module search paths (PYTHONPATH):
+['/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python312.zip',
+ '/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12',
+ '/Users/yifengstudio/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/lib-dynload',
+ '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages',
+ '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/src',
+ '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/scripts',
+ '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/src']
+225 INFO: Appending 'datas' from .spec
+226 INFO: checking Analysis
+226 INFO: Building Analysis because Analysis-00.toc is non existent
+226 INFO: Looking for Python shared library...
+232 INFO: Using Python shared library: /Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/libpython3.12.dylib
+232 INFO: Running Analysis Analysis-00.toc
+232 INFO: Target bytecode optimization level: 0
+232 INFO: Initializing module dependency graph...
+233 INFO: Initializing module graph hook caches...
+237 INFO: Analyzing modules for base_library.zip ...
+497 INFO: Processing standard module hook 'hook-encodings.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+672 INFO: Processing standard module hook 'hook-math.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1077 INFO: Processing standard module hook 'hook-pickle.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1394 INFO: Processing standard module hook 'hook-heapq.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1553 INFO: Caching module dependency graph...
+1568 INFO: Analyzing /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/scripts/packaged_server.py
+1569 INFO: Processing standard module hook 'hook-uvicorn.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+1709 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1769 INFO: Processing standard module hook 'hook-xml.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1862 INFO: Processing standard module hook 'hook-_ctypes.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2063 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+2064 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2341 INFO: Processing standard module hook 'hook-platform.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2452 INFO: Processing standard module hook 'hook-difflib.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2499 INFO: Processing standard module hook 'hook-webbrowser.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2709 INFO: Processing standard module hook 'hook-anyio.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+2974 INFO: Processing standard module hook 'hook-pydantic.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+3239 INFO: Processing standard module hook 'hook-zoneinfo.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+3253 INFO: Processing standard module hook 'hook-sysconfig.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+3258 INFO: Processing standard module hook 'hook-_osx_support.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+3742 INFO: Processing standard module hook 'hook-opentelemetry.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+3865 INFO: Processing standard module hook 'hook-keyring.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+3988 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+3989 INFO: Setuptools: 'jaraco' appears to be a partial setuptools-vendored copy - extending search paths to ['/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/jaraco', '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/setuptools/_vendor/jaraco']!
+3989 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4061 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4062 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+4064 INFO: Processing standard module hook 'hook-setuptools.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4068 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4079 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4082 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4138 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4269 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4269 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+4273 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4274 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4427 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4427 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+4621 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4621 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+4669 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4669 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+4678 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4686 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4686 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+4869 INFO: Processing standard module hook 'hook-certifi.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+4977 INFO: Processing standard module hook 'hook-pygments.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+5323 INFO: Processing standard module hook 'hook-sqlite3.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+5452 INFO: Analyzing hidden import 'keyring.__main__'
+5456 INFO: Analyzing hidden import 'keyring.backends.SecretService'
+5458 INFO: Analyzing hidden import 'keyring.backends.Windows'
+5460 INFO: Analyzing hidden import 'keyring.backends.chainer'
+5461 INFO: Analyzing hidden import 'keyring.backends.kwallet'
+5463 INFO: Analyzing hidden import 'keyring.backends.libsecret'
+5465 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+5465 INFO: Analyzing hidden import 'keyring.backends.null'
+5466 INFO: Analyzing hidden import 'keyring.devpi_client'
+5484 INFO: Analyzing hidden import 'keyring.http'
+5485 INFO: Analyzing hidden import 'keyring.testing'
+5485 INFO: Analyzing hidden import 'keyring.testing.backend'
+5489 INFO: Processing standard module hook 'hook-pytest.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+5572 INFO: Processing standard module hook 'hook-py.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+6205 INFO: Processing module hooks (post-graph stage)...
+7229 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+8140 INFO: Performing binary vs. data reclassification (57 entries)
+8148 INFO: Looking for ctypes DLLs
+8162 INFO: Analyzing run-time hooks ...
+8164 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+8166 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+8166 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+8167 INFO: Including run-time hook 'pyi_rth_setuptools.py' from '/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+8175 INFO: Creating base_library.zip...
+8183 INFO: Looking for dynamic libraries
+8437 INFO: Warnings written to /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/work/summit-backend/warn-summit-backend.txt
+8464 INFO: Graph cross-reference written to /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/work/summit-backend/xref-summit-backend.html
+8501 INFO: checking PYZ
+8501 INFO: Building PYZ because PYZ-00.toc is non existent
+8501 INFO: Building PYZ (ZlibArchive) /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/work/summit-backend/PYZ-00.pyz
+9015 INFO: Building PYZ (ZlibArchive) /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/work/summit-backend/PYZ-00.pyz completed successfully.
+9025 INFO: EXE target arch: arm64
+9025 INFO: Code signing identity: None
+9031 INFO: checking PKG
+9031 INFO: Building PKG because PKG-00.toc is non existent
+9031 INFO: Building PKG (CArchive) summit-backend.pkg
+9039 INFO: Building PKG (CArchive) summit-backend.pkg completed successfully.
+9040 INFO: Bootloader /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/bootloader/Darwin-64bit/run
+9040 INFO: checking EXE
+9040 INFO: Building EXE because EXE-00.toc is non existent
+9040 INFO: Building EXE from EXE-00.toc
+9040 INFO: Copying bootloader EXE to /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/work/summit-backend/summit-backend
+9042 INFO: Converting EXE to target arch (arm64)
+9061 INFO: Removing signature(s) from EXE
+9076 INFO: Modifying Mach-O image UUID(s) in EXE
+9082 INFO: Appending PKG archive to EXE
+9084 INFO: Fixing EXE headers for code signing
+9087 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (15.0.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+9088 INFO: Re-signing the EXE
+9109 INFO: Building EXE from EXE-00.toc completed successfully.
+9110 INFO: checking COLLECT
+9110 INFO: Building COLLECT because COLLECT-00.toc is non existent
+9110 INFO: Building COLLECT COLLECT-00.toc
+10339 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+10341 INFO: Build complete! The results are available in: /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/dist
+Building for production...
+[3 / 10] NativeUploadPolicy
+[5 / 11] NativeUploadPolicy
+[10 / 13] SummitEverything-product
+[11 / 14] SummitEverything-product
+[13 / 14] SummitEverything-product
+[14 / 14] SummitEverything-product
+Build complete! (2.45秒)
+/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/SummitEverything Internal bc5018d.app: replacing existing signature
+created: /Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/summit-dmg-9skm4qw0/SummitEverything-Internal-bc5018d.dmghdiutil: WARNING: 'hdiutil create -volname -format ...' is deprecated. Please use 'diskutil image create from/blank --volumeName --format ...' instead.
+
+正在检查“Protective Master Boot Record（MBR：0）”的校验和…
+Protective Master Boot Record（MBR：0）：已验证CRC32 $51C39656
+正在检查“GPT Header（Primary GPT Header：1）”的校验和…
+    GPT Header（Primary GPT Header：1）：已验证CRC32 $C3998CDD
+正在检查“GPT Partition Data（Primary GPT Table：2）”的校验和…
+GPT Partition Data（Primary GPT Table：已验证CRC32 $08032ECE
+正在检查“（Apple_Free：3）”的校验和…
+                      （Apple_Free：3）：已验证CRC32 $00000000
+正在检查“disk image（Apple_APFS：4）”的校验和…
+            disk image（Apple_APFS：4）：已验证CRC32 $8C3A4EBC
+正在检查“（Apple_Free：5）”的校验和…
+                      （Apple_Free：5）：已验证CRC32 $00000000
+正在检查“GPT Partition Data（Backup GPT Table：6）”的校验和…
+GPT Partition Data（Backup GPT Table：：已验证CRC32 $08032ECE
+正在检查“GPT Header（Backup GPT Header：7）”的校验和…
+     GPT Header（Backup GPT Header：7）：已验证CRC32 $DA17C95D
+已验证CRC32 $20D7DB7C
+hdiutil: verify: checksum of "/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/summit-dmg-9skm4qw0/SummitEverything-Internal-bc5018d.dmg" is VALID
+预计CRC32 $20D7DB7C
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
+/dev/disk5          	GUID_partition_scheme          	
+/dev/disk5s1        	Apple_APFS                     	
+/dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/yifengstudio/.codex/worktrees/m42-readiness/SummitEverything/.local/dev/m42-package-a/repair1/artifacts/.summit-internal-build-eacrgyto/summit-dmg-9skm4qw0/mount
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+"disk5" ejected.

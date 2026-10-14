@@ -1,0 +1,1 @@
+$ open -n --env SUMMIT_OFFLINE_GUARD_ACTIVE=1 --env SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<fresh profile> <candidate.app>

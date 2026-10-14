@@ -1,0 +1,5 @@
+Fixed candidate source SHA: 419bb865b334389d1efd0f4a1a855cd0d5324d28
+Compared prior M4.2 offline product implementation SHA: 4c6b0bdd453db63f7f59599592c6c725303a6e1e
+Command: git diff --quiet 4c6b0bdd453db63f7f59599592c6c725303a6e1e 419bb865b334389d1efd0f4a1a855cd0d5324d28 -- src web uv.lock
+Exit: 0
+Result: Python source, frontend source, and uv.lock trees are identical. The product delta is limited to Native Swift source/tests; docs/evidence changed separately after candidate build and are not part of candidate source SHA.

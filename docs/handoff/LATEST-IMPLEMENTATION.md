@@ -1,16 +1,14 @@
 # 最新实现交接
 
-## 当前 M4.2 工作包 A：修复轮 1 实现完成，candidate UI 与 fresh QA 待办
+## 当前 M4.2 工作包 A：修复轮 1 Developer handoff，固定候选待 fresh QA
 
-初始受测 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 的独立 QA 结论为 FAIL；报告与初始原始证据见[QA 初始报告](../quality/reports/2026-10-14-M42-PACKAGE-A-QA-INITIAL.md)及[evidence 包](../quality/reports/evidence/2026-10-14-m42-package-a-qa-initial/)。自动修复轮 1 的实现及回归测试提交为 `4c6b0bd`。P1 修复跨进程重启后终态 `unknown` 查询缺少 `finished_at` 的 500，同时保留 reservation/run/ledger 不写语义并区分仍活跃 owner。P2 修复开放动作问句只取得半句证据，保留复合 topic、明确 entity 边界与多分句保守 fallback。该提交同时补齐规格既有的批量文件/目录导入和 Real 日志 AI 辅助，详见[修复 readiness](M42-PACKAGE-A-READINESS.md)及[实现计划](../superpowers/plans/2026-10-13-m42-integrated-packages.md)。
+初始 QA 固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL；原报告与原始字节副本保持不变。修复轮 1 当前产品源码 SHA 为 `419bb865b334389d1efd0f4a1a855cd0d5324d28`（实现提交 `4c6b0bd` 后追加最小 Native 修复提交 `419bb86`）。P1 修复重启后 unknown 计划 GET 缺少 `finished_at` 的 500，保留 reservation/run/ledger 不写与活跃 owner 行为。P2 修复 planner 问句只取得半句证据，保留复合主题和保守 fallback。原规格范围内的批量文件/文件夹导入与 Journal Assist 也在实现提交中。新发现的混合有效/零字节选择静默失败已改为可信原生选择后的通用可操作提示，仍严格整批拒绝；主动取消保持无提示。
 
-修复提交后的完整自动检查均实际 exit 0：guarded Python `513 passed, 1 warning`；ruff check/format、mypy、`uv lock --check`、`uv build`；Web `64 passed`、typecheck、lint、production build；Swift `4 passed`。OpenAPI/TS 类型生成命令与 diff check 也 exit 0。逐命令 exit 和原始日志在此 worktree ignored `.local/dev/m42-package-a/repair1/final-checks/`，不会随代码提交；schema generation / exits 文件也保存在此目录。历史原始 QA 的 34 个文件字节与旧 QA 清单 hash 均保留；相对 evidence SHA manifest 与包装披露见上述 evidence 包。原 QA 报告正文不变。
+Developer 最新候选由 fixed SHA clean build：App source `419bb865b334389d1efd0f4a1a855cd0d5324d28`、`dirty=false`；Swift 全量 5 tests、App codesign verify、DMG verify、guard checker 均 exit 0。最终 App/DMG 路径、摘要、原始日志、previous candidate 与新 Native UI 记录见 [修复轮 1 DEV handoff](../quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md) 和其 [evidence](../quality/reports/evidence/2026-10-14-m42-package-a-repair1/README.md)。此前完整检查是在 Python/frontend/lock 相同的 `4c6b0bd` 产品树完成：Python 513、Web 实际 65、Swift 当时 4；lint 有 2 条 React set-state-in-effect warnings，日志已保留。OpenAPI 类型生成和 diff 检查均 exit 0。
 
-代码实现提交 `4c6b0bd` 为固定实现 checkpoint。接下来会先从 clean source 建立全新 Internal `.app` 与 DMG，再用合成内容及隔离 profile 复演真实 WKWebView 的多选/取消、目录内 TXT/MD/unsupported/hidden/symlink 处理、失败项原 operation 重试，以及 journal 建议取消/采用/另行保存和重启持久性。若 WK 文件夹选择器未返回期望 file list，保留复现并只修实际 root 路径。candidate 的 source SHA 与 build manifest 在构建后补记；在此之前不得启动 fresh QA。
+`419bb86` 新候选以 LaunchServices + offline guard + 独立 temp profile 启动；实际进程 checker 观察 native/backend guard 均为 1 且 profile root canonical 匹配。真实 WK 文件面板实测 valid+zero-byte mixed selection 有明确提示且收件箱不变；主动 Cancel 无提示；仅有效 alpha/beta 实际导入成功。之前 `bc5018d` 候选上完成的 exact QA body/question UI 与 JournalAssist cancel/adopt/save/reopen 原始记录清楚归属于旧候选，不能替代对 `419bb86` 的 fresh QA。Developer 最新 UI 记录未保存新截图，详见报告的证据披露。
 
-Candidate 的验证启动必须复制到新 `DARWIN_USER_TEMP_DIR` 子目录，运行 `open -n --env SUMMIT_OFFLINE_GUARD_ACTIVE=1 --env SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<fresh temp child> <candidate.app>`。在交互前分别只核验 native guard/profile 与 backend guard/`SUMMIT_PROFILE_ROOT`，设置页须显示钥匙串不可用且录入/删除按钮禁用；只提取所需布尔值，不打印全环境或 session token。仅关闭本轮启动的进程。此前在初始 FAIL SHA 的正确 guard 复演与首轮错误启动边界沿用初始 QA/历史 DEV 记录：初始坏启动的 Keychain 查询次数与默认 profile 回退继续 UNVERIFIED。
-
-本轮仅使用合成文本、Mock/loopback 与隔离 profile/workspace；未读取四份真实桌面材料，也未使用真实凭据/Keychain、付费模型、真实 Feishu 或任务写。本机候选、五日、双机、公证、真实质量/账单与发布继续 NOT_RUN；runtime model metadata 为 UNVERIFIED。修复轮 1 独立 QA 尚未开始，Developer 自测不是 QA PASS。QA 应由 Sol 对 candidate 固定 SHA 创建全新隔离 checkout；不在本 worktree 或 QA 目录变更产品期间。
+fresh QA 正待 Sol 在全新独立 checkout 对 fixed source SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 全量复核。Developer 停止产品源码修改。部分失败后的原 operation ID 失败项重试与 Real JournalAssist 的实际 provider/network UI 仍 NOT_RUN。真实模型/Feishu/任务、材料、OS Keychain、生产安装/覆盖或绕 Gatekeeper、Developer ID/公证、五日/双机/发布均 NOT_RUN；模型 runtime metadata UNVERIFIED。首轮错误启动时 Keychain 查询次数与默认 profile 回退仍 UNVERIFIED。
 
 ## M4.1 固定候选与技术门（历史 SHA）
 

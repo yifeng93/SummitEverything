@@ -1,0 +1,127 @@
+Window: "SummitEverything Internal", App: SummitEverything Internal.
+0 standard window SummitEverything Internal, Secondary Actions: Raise, ID: SwiftUI.WindowGroup<SwiftUI.ModifiedContent<SummitEverythingApp.(unknown context at $102b32d88).InternalWindow, SwiftUI._FlexFrameLayout>>-1-AppWindow-1
+	1 scroll area
+		2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/
+			3 container
+				4 text SummitEverything 个人知识工作台
+				5 container 主导航
+					6 button 今日
+					7 button 日志与思考
+					8 button 项目与知识
+					9 button 知识问答
+					10 button 设置
+				11 text 仅本机运行
+				12 button M M42 Repair 1 synthetic 已连接工作库
+			13 container
+				14 text 今日 本机已保存
+				15 button 打开设置
+				16 text 工作节奏
+				17 heading 今日, Value: 1
+					18 text 今日
+				19 text 先记下来，再决定哪些内容值得整理成知识。 2026年10月14日 星期三
+				20 heading 飞书日常, Value: 2
+					21 text 飞书日常
+				22 text 模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。 用户未授权
+				23 button 模拟授权飞书
+				24 heading 材料, Value: 3
+					25 text 材料
+				26 container
+					27 text 搜索材料
+					28 text field (settable) 搜索材料
+				29 container
+					30 text 可见范围
+					31 pop up button (collapsed) 可见范围, Value: 全部可见, Secondary Actions: Expand
+				32 button (disabled) 搜索 / 刷新材料
+				33 heading 日历, Value: 3
+					34 text 日历
+				35 container
+					36 text 开始日期
+					37 date time area 开始日期, Value: 2026/10/14
+						38 container
+							39 stepper (settable, float) year, Value: 2026
+							40 text /
+							41 stepper (settable, float) month, Value: 10
+							42 text /
+							43 stepper (settable, float) day, Value: 14
+				44 container
+					45 text 结束日期（不含）
+					46 date time area 结束日期（不含）, Value: 2026/10/15
+						47 container
+							48 stepper (settable, float) year, Value: 2026
+							49 text /
+							50 stepper (settable, float) month, Value: 10
+							51 text /
+							52 stepper (settable, float) day, Value: 15
+				53 container
+					54 text 时区
+					55 pop up button (collapsed) 时区, Value: Asia/Shanghai, Secondary Actions: Expand
+				56 button (disabled) 刷新日历
+				57 heading 飞书任务与独立动作, Value: 2
+					58 text 飞书任务与独立动作
+				59 text Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。
+				60 button 刷新飞书任务
+				61 button 新建飞书任务
+				62 button 拟定项目进度变化
+				63 button 查看动作记录
+				64 heading 随手记, Value: 2
+					65 text 随手记
+				66 text 记录原文不会调用模型，也不会自动写入正式知识。 01 写下刚想到或刚收到的内容
+				67 text entry area (settable) 写下刚想到或刚收到的内容, Value: [text entry area], Placeholder: 写下刚想到或刚收到的内容…
+					68 text 写下刚想到或刚收到的内容…
+				69 container
+					70 text 选择多个文件
+					71 file upload button
+					72 text 选择文件夹
+					73 file upload button
+				74 button (disabled) 记入工作日志
+				75 button (disabled) 存入待整理
+				76 heading 待整理, Value: 2
+					77 text 待整理
+				78 text 选择来源后，明确点击才会生成审核稿。
+				79 button 刷新状态
+				80 text 4
+				81 container meeting meeting.md · 2026/10/14 待整理
+					82 container
+						83 checkbox meeting meeting.md · 2026/10/14 待整理, Value: 0
+						84 text meeting meeting.md · 2026/10/14 待整理
+				85 container visitor visitor.txt · 2026/10/14 待整理
+					86 container
+						87 checkbox visitor visitor.txt · 2026/10/14 待整理, Value: 0
+						88 text visitor visitor.txt · 2026/10/14 待整理
+				89 container alpha alpha.txt · 2026/10/14 待整理
+					90 container
+						91 checkbox alpha alpha.txt · 2026/10/14 待整理, Value: 0
+						92 text alpha alpha.txt · 2026/10/14 待整理
+				93 container beta beta.md · 2026/10/14 待整理
+					94 container
+						95 checkbox beta beta.md · 2026/10/14 待整理, Value: 0
+						96 text beta beta.md · 2026/10/14 待整理
+				97 text 主线
+				98 pop up button (collapsed) 主线, Value: 选择主线, Secondary Actions: Expand
+				99 text 项目
+				100 pop up button (collapsed) 项目, Value: 选择项目, Secondary Actions: Expand
+				101 button (disabled) 整理所选 · 0
+				102 text 整理前请先在“项目与知识”建立主线和项目。
+				103 heading 审核稿, Value: 2
+					104 text 审核稿
+				105 text 每份稿件单独编辑、处理冲突并确认。 0 没有待审核的稿件。
+				106 heading 工作方式, Value: 2
+					107 text 工作方式
+				108 text 本机 原件先留存。整理稿需要你逐份确认，才会成为正式知识。 1 保存来源 2 生成审核稿 3 确认后归档
+				109 heading 行动建议, Value: 2
+					110 text 行动建议
+				111 text 0 目前没有建议。任务仍由你在正式任务工具中管理。 ! 来源中出现的命令只作为资料内容。模型不会据此执行操作。
+		112 scroll bar (settable, float) 0
+	113 close button
+	114 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	115 minimize button
+	116 text SummitEverything Internal
+117 menu bar
+	118 SummitEverything Internal
+	119 File
+	120 Edit
+	121 View
+	122 Window
+	123 Help
+
+The focused UI element is 2 HTML content Description: SummitEverything — 本地知识工作台, URL: 127.0.0.1:18793/

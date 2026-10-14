@@ -4,7 +4,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前状态
 
-M4.2 工作包 A 初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL；修复轮 1 已提交代码与回归测试（实现提交 `4c6b0bd`），修复包括重启后 unknown 计划查询、共享 planner 的完整问句依据、规格已确认的批量/文件夹导入与 Real 日志 AI 辅助。Developer 完整离线自动检查和 schema 生成检查均 exit 0；clean 修复候选和真实 WKWebView 文件夹/多选 UI 复演仍待完成，fresh QA 尚未开始。以上均不是独立 QA 通过。见[初始 QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-INITIAL.md)、[修复计划](docs/superpowers/plans/2026-10-13-m42-integrated-packages.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
+M4.2 工作包 A 初始 QA 对固定 SHA `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 固定产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28`：包括重启 unknown 计划 GET、问句 planner、规格中的批量文件/文件夹与 Journal Assist 实现，以及 Native 混选零字节时的显式拒绝提示。候选从 clean source 构建且 `dirty=false`；Developer 自动检查与实际 WK 原生文件选择复演已完成，fresh QA 仍待 Sol 在新独立 checkout 验收。Developer 证据不等于 QA PASS。见[初始 QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-INITIAL.md)、[修复轮 1 DEV handoff](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)、[修复计划](docs/superpowers/plans/2026-10-13-m42-integrated-packages.md)与[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)。
 
 M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；该历史结论不适用于 M4.2，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
 
@@ -53,7 +53,7 @@ npm --prefix web ci
 scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
 ~~~
 
-该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。M4.2 QA 使用 fresh temporary profile；macOS LaunchServices 启动时必须显式传递 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。按 [M4.2 DEV 报告](docs/quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)中的候选路径执行，不使用直接运行 `.app/Contents/MacOS/...` 的 shell 启动方式。
+该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。M4.2 QA 使用 fresh temporary profile；macOS LaunchServices 启动时必须显式传递 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。本轮固定候选、启动信息和边界见 [M4.2 修复轮 1 DEV 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)，不使用直接运行 `.app/Contents/MacOS/...` 的 shell 启动方式。
 
 ### 本地 WebUI 开发预览（M1 / M2）
 
@@ -92,7 +92,7 @@ uv run mypy src
 cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
 ~~~
 
-本轮适用离线检查和候选状态见 [M4.2 工作包 A DEV 报告](docs/quality/reports/2026-10-13-M42-PACKAGE-A-DEV.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。
+本轮适用离线检查、固定 `419bb86` 候选和限制见 [M4.2 Package A 修复轮 1 DEV 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。
 
 M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；已有真实 adapter、凭据设置 UI 与 fail-closed Keychain 接口；此段 Fake 复演不能证明真实账户或 OS Keychain 通过。
 

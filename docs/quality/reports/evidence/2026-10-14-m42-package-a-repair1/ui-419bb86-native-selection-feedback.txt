@@ -1,0 +1,16 @@
+M4.2 Package A repair1 Native selection-feedback packaged UI observation
+Candidate source SHA: 419bb865b334389d1efd0f4a1a855cd0d5324d28
+Launch: LaunchServices `open -n --env SUMMIT_OFFLINE_GUARD_ACTIVE=1 --env SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<fresh DARWIN_USER_TEMP_DIR child>/profile <copied candidate.app>`; see ui-419bb86-open.log and ui-419bb86-guarded-processes.log.
+Workspace: newly created, synthetic, at a child of the same isolated temporary directory. No real user material or credential was used.
+
+Observed in native WKWebView UI:
+1. Today showed the two file-upload controls “选择多个文件” and “选择文件夹”; inbox began with “0 ＋ 收件箱是空的”.
+2. The actual macOS Open panel selected alpha.txt (16 bytes), beta.md (17 bytes), and empty.txt (0 bytes) together. After confirming, the UI displayed alert AX text:
+   “文件未导入 所选文件未导入。请确认文件为非空 TXT / Markdown 且符合大小和数量限制后重新选择。”
+   The inbox remained empty; no pending file was added. This confirms strict all-or-nothing rejection gets actionable UI feedback.
+3. Dismissed the alert, reopened the actual native Open panel, then chose its Cancel button. The panel closed without an alert; the inbox remained empty.
+4. Reopened the actual native Open panel and selected only alpha.txt + beta.md. The UI listed both as “待导入” and displayed “导入可用文件”. Clicking that action changed both to “已导入 · 已保存到待整理”; inbox count became 2. This was a write only to the isolated synthetic workspace.
+
+Process checker output (exit 0): native guard_is_1=True profile_matches_fresh_root=True; backend guard_is_1=True profile_matches_fresh_root=True. Only targeted boolean values were recorded; complete environment and session token were not printed.
+
+CUA reported these accessibility states in the live session. The current tool exposed screenshots visually but did not provide a supported method to save this new screenshot to the evidence directory; therefore this record is the preserved accessibility observation, not a screenshot. The old-candidate screenshot remains separately preserved and is not represented as belonging to this candidate.
