@@ -1,0 +1,239 @@
+{
+  "source_report": "<QA_WORKTREE>/.local/qa/frontend-a-repair1/QA-REPORT.md",
+  "fixed_product_sha": "9c33a9dde3080fff3e3b3dd8a4193589ef52575f",
+  "archived_files": [
+    {
+      "path": "QA-REPORT.md",
+      "sha256": "ffa1d2b0322c7a23ff95b353597a95e113bb7b86ec2f76f886d8df5e2794f238",
+      "bytes": 8265
+    },
+    {
+      "path": "fastapi-integration/fastapi-onboarding-complete.png",
+      "sha256": "30cebebbc6fd0614625c77bd3f34c2882d5fb943b5dacd31986e4707131c3e90",
+      "bytes": 76450
+    },
+    {
+      "path": "fastapi-integration/fastapi-onboarding-step-2.png",
+      "sha256": "a618b8f2db62fa1f1e61920deae382ef83b9de0154bea996d3f138b2f09f5365",
+      "bytes": 81601
+    },
+    {
+      "path": "fastapi-integration/fastapi-request-manifest.json",
+      "sha256": "193305845064612cc1ed809a459a3ef98fe26f6bd154f981ed042b8621155557",
+      "bytes": 2334
+    },
+    {
+      "path": "harness/first-use-real.spec.ts",
+      "sha256": "539bfb7ec6f02f9af67a957cb891c7cbd46257103650ecf49779d6f4114f651c",
+      "bytes": 3251
+    },
+    {
+      "path": "harness/frontend-a-regressions.spec.ts",
+      "sha256": "8b27ee4c34886a4e8f9603534a4ef5a24c4500ca0912791f9df7ad8a5aa037c1",
+      "bytes": 16269
+    },
+    {
+      "path": "logs/build.log",
+      "sha256": "e2261fa942b10d602c60471ee379ce375a08d434c8ee4c29c31594435bfc612e",
+      "bytes": 394
+    },
+    {
+      "path": "logs/e2e.log",
+      "sha256": "e8d3404d9f106f35891a1091025cd3733689271fad95fd7c71889bf62c6b06fc",
+      "bytes": 667
+    },
+    {
+      "path": "logs/f1-f3.log",
+      "sha256": "ed0f9fa22f514775ec19183f8d416ded32fa86464890d8897b1cfda579f05c1c",
+      "bytes": 1049
+    },
+    {
+      "path": "logs/fastapi-fake.log",
+      "sha256": "b125786953c7f40ba88de67570803bd089eac66d88ce588f8e06afe03e283ad0",
+      "bytes": 803
+    },
+    {
+      "path": "logs/lint.log",
+      "sha256": "40ccf88cbb2fefbc0d16a3bc92bc3331fd8a3f381377f45eceab08bc3b75956c",
+      "bytes": 1466
+    },
+    {
+      "path": "logs/npm-ci.log",
+      "sha256": "ccef9671aeb41b18232c6127cb15925cdcf7d2a56352f0bc41fe2e8c395c51ff",
+      "bytes": 144
+    },
+    {
+      "path": "logs/npm-test.log",
+      "sha256": "6327536411ddefa1650e9c4ce3af2a95b5ada2f79f167adc2f1a6744ac5b13d9",
+      "bytes": 235
+    },
+    {
+      "path": "logs/typecheck.log",
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87",
+      "bytes": 42
+    },
+    {
+      "path": "mock-evidence/measurements.json",
+      "sha256": "fd7b30af50aafebc3609885cc7832eb9fb43a456b44d9d8cfb1fd4784629bd30",
+      "bytes": 58267
+    },
+    {
+      "path": "mock-evidence/onboarding-reauthorize-step-4.png",
+      "sha256": "fdbe2e06fef8a6a58e3c361aecc19cd41d0f885253a7d95bf4a208055cdbc722",
+      "bytes": 75452
+    },
+    {
+      "path": "mock-evidence/onboarding-step-2.png",
+      "sha256": "97b48c5affb1d40ae517b01f3c2347b4c9adc8369c2dc65bbcac67466a9fb77d",
+      "bytes": 80559
+    },
+    {
+      "path": "mock-evidence/onboarding-step-3-manual-resume.png",
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035",
+      "bytes": 50950
+    },
+    {
+      "path": "mock-evidence/onboarding-step-3-reloaded-open.png",
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035",
+      "bytes": 50950
+    },
+    {
+      "path": "mock-evidence/onboarding-step-3.png",
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035",
+      "bytes": 50950
+    },
+    {
+      "path": "mock-evidence/onboarding-step-4.png",
+      "sha256": "fdbe2e06fef8a6a58e3c361aecc19cd41d0f885253a7d95bf4a208055cdbc722",
+      "bytes": 75452
+    },
+    {
+      "path": "mock-evidence/onboarding-step-5.png",
+      "sha256": "f4d704bda25c4a956450f6d530a5b1bf9361d6495ae92ca545e2091f731c873a",
+      "bytes": 75088
+    },
+    {
+      "path": "mock-evidence/onboarding-workspace-error.png",
+      "sha256": "b8aaae9619e09db5ec81df33730c0f5ff595cc1a84114342d3f601cd7ea955db",
+      "bytes": 60770
+    },
+    {
+      "path": "mock-evidence/settings-1280-dark.png",
+      "sha256": "ddc8c64773566d6db5a59757591e731a8338badfb17958ba3d8fdf05582b80c6",
+      "bytes": 188259
+    },
+    {
+      "path": "mock-evidence/settings-1280-light.png",
+      "sha256": "6dea0663a563bee96a891c320aaafd692e8f37cd99969b478676775a8b523f34",
+      "bytes": 188604
+    },
+    {
+      "path": "mock-evidence/settings-320-dark.png",
+      "sha256": "a9ec4f5f8b34947214d9c422107cab1c9c32c555c5f12ddcee3111bb554e3f77",
+      "bytes": 162734
+    },
+    {
+      "path": "mock-evidence/settings-320-light.png",
+      "sha256": "cc63ca3632b03c286252309b44a926967070933e853a32220be6702a671a90db",
+      "bytes": 162030
+    },
+    {
+      "path": "mock-evidence/settings-390-dark.png",
+      "sha256": "f63f62de821786c21d032e487ceaadd4e3e4dbef5ae18192089dd3f43f3c7608",
+      "bytes": 164686
+    },
+    {
+      "path": "mock-evidence/settings-390-light.png",
+      "sha256": "e087fec457346e05641d28edadb9ff96b38b1ee497be808782d243391a1cae3c",
+      "bytes": 163937
+    },
+    {
+      "path": "mock-evidence/settings-768-dark.png",
+      "sha256": "abf30a0b96eb108f7f85f821c2dd89cabc55e94e554ca4fe45ef7cbeddff49dc",
+      "bytes": 170302
+    },
+    {
+      "path": "mock-evidence/settings-768-light.png",
+      "sha256": "68bc4d71c0c12bf36db8f6f338dad042f8a8cd5fb8fe528df0d4df7e028c44bc",
+      "bytes": 170019
+    },
+    {
+      "path": "mock-evidence/settings-960-dark.png",
+      "sha256": "1261aacafc9c46fb471f341e2609c759fb78eb43a5891b734f210ca66a99ee24",
+      "bytes": 184076
+    },
+    {
+      "path": "mock-evidence/settings-960-light.png",
+      "sha256": "f83445a7fc954fda68b1d3afee5b4fa505d351cf7d2ea1952ecfeba7caf91a7d",
+      "bytes": 184381
+    },
+    {
+      "path": "mock-evidence/today-1280-dark.png",
+      "sha256": "ab92e4b9b26c01d0e3fa44a3ef9fcc29f87db224e9d753ee0b5eb2b59fc28303",
+      "bytes": 170123
+    },
+    {
+      "path": "mock-evidence/today-1280-light.png",
+      "sha256": "70e6e34b85e185c36ebab7d2f6d7138a12964aa4dc02c49071ef4bfbc6d4a055",
+      "bytes": 168156
+    },
+    {
+      "path": "mock-evidence/today-320-dark.png",
+      "sha256": "d3df56b2d0fbf0f05b634c0d2b9c8e91d3c543c1a1934c6bd57c68e92dce29d0",
+      "bytes": 136450
+    },
+    {
+      "path": "mock-evidence/today-320-light.png",
+      "sha256": "51243f913effaffb49fcca5fd81c3d824c492d927d00ef9fa91c8e243b9bb7a9",
+      "bytes": 146687
+    },
+    {
+      "path": "mock-evidence/today-390-dark.png",
+      "sha256": "90765e7cc18aabbaa004e5003bb73c7cf5568badd82a41615f2710d335e7e961",
+      "bytes": 131163
+    },
+    {
+      "path": "mock-evidence/today-390-light.png",
+      "sha256": "f39f0df2fe9cc6f7fd03eb681180ad165a148638e77808f3ea19acec7065fcbe",
+      "bytes": 139239
+    },
+    {
+      "path": "mock-evidence/today-768-dark.png",
+      "sha256": "e482ca0a2830229aff5d1e9e1d11e124bdbf3256c8f48fdb74e48ca9ccdb7eac",
+      "bytes": 152745
+    },
+    {
+      "path": "mock-evidence/today-768-light.png",
+      "sha256": "41773aff1f25060705dfb928c06f7c42c4cb28c5343bfd68bd71d202e05a3e0e",
+      "bytes": 152483
+    },
+    {
+      "path": "mock-evidence/today-960-dark.png",
+      "sha256": "341c77cad773dbe527800679e9924432de45ff68157a31f023ffe64d42157ec7",
+      "bytes": 170172
+    },
+    {
+      "path": "mock-evidence/today-960-light.png",
+      "sha256": "62162031c5d8b37bc3626caefa85ac17529792f16ea459fe32728386d950ee31",
+      "bytes": 170867
+    },
+    {
+      "path": "playwright.integration.config.ts",
+      "sha256": "b768219b07b65120de21944bf95c3eb13d3718362fbf62e584e47a61b1386f19",
+      "bytes": 1957
+    },
+    {
+      "path": "playwright.review.config.ts",
+      "sha256": "9acd7ebb082a50b8c9fe7e1c64171a4a18aac84dfb6575f3ced8188dc28ce7a7",
+      "bytes": 815
+    }
+  ],
+  "excluded": [
+    ".venv",
+    "integration-results/ isolated workspace, transaction files, and generated browser result bundles"
+  ],
+  "redactions": [
+    "absolute QA worktree path replaced with <QA_WORKTREE>",
+    "synthetic password canary replaced with <SYNTHETIC_SECRET_CANARY> in copied harness"
+  ]
+}

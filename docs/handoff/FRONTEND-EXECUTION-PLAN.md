@@ -1,6 +1,6 @@
 # 前端体验实施路线图（2026-10-15）
 
-状态：里程碑 A 执行中。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。本文件先于产品代码提交，后续每个里程碑在完成后补充固定 SHA 和证据入口。
+状态：里程碑 A 适用离线技术门 PASS；里程碑 B 执行中。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。本次 A gate 结论保留 8 项全站 todo 与 3 条 lint warning，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未重跑。
 
 ## 决议优先级与范围
 
@@ -33,9 +33,9 @@
 
 ## 里程碑与逻辑提交
 
-### A — 共享准备 + 切片 3 首配合并 + 切片 9 设置对齐（本轮）
+### A — 共享准备 + 切片 3 首配合并 + 切片 9 设置对齐（适用离线技术门 PASS）
 
-顺序：先提交本路线图；安装/锁定离线 Playwright harness 并采集五档 × 双主题基线；建立共享确认弹窗、轻量三态、Markdown/流式共享组件及对应组件与真实服务测试；再合并首配流程；最后对齐设置三卡。最终提交固定后交 fresh QA，本执行者不判定阶段通过。
+固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f` 已交 fresh QA；Sol 核读报告、raw 日志、SHA 与 clean 状态后判适用离线技术门 PASS，自动修复使用 1/2。QA 留下的 8 项全站 todo 和 3 条 lint warning 继续登记；真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未在 A 重跑。完整 gate 及脱敏原始证据见 [A Sol gate](../quality/reports/2026-10-15-FRONTEND-A-SOL-GATE.md) 与 [QA archive](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。
 
 验收点：
 
@@ -81,4 +81,4 @@ QA 不与开发同时修改共享 checkout；每次报告绑定精确产品 SHA�
 
 ## 本轮明确不进入范围
 
-本轮执行者只完成 A 后停止：不开始审批/今日和后续页面、不做答案质量切片、不调用真实 OAuth/provider/飞书、不碰真实 Keychain/本机账户/业务文件、不修改旧应用，不做生产发布、push、merge 或分支/worktree 清理。本轮未重跑真实连接与业务材料；不得覆盖既有 `a81f3f1` / 用户历史联通成功事实。正式安装、公证、五日/双机仍按各自证据状态记录。
+里程碑 B 执行审批五组与今日，不进入答案质量切片、项目/问答/阅读页面、生产发布、push、merge 或分支/worktree 清理。真实 provider、OAuth、飞书、Keychain 与用户业务材料继续按实际授权和本轮证据记录；不得覆盖既有 `a81f3f1` / 用户历史联通成功事实。正式安装、公证、五日/双机仍是各自独立门。

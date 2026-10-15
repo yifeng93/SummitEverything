@@ -1,14 +1,14 @@
 # 最新实现交接
 
-## 当前前端 UX 里程碑 A：repair1 固定，Fresh QA 复验中
+## 当前前端 UX 里程碑 B：审批五组与今日页执行中
 
 A 初始固定产品 SHA `9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad` 经独立 QA 判 **FAIL**，发现 F1 首配缺少密钥时仍可提交、F2 单项成功会使 AI 总卡误报通过、F3 飞书刷新失败丢失最近成功状态。初始 QA 报告与脱敏 harness 已归档到 [初次 QA 证据目录](../quality/reports/2026-10-15-FRONTEND-A-INITIAL/)；原始 QA worktree 未修改。
 
-修复轮 1 的产品 SHA 固定为 `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，基于初始产品 SHA；只修复 F1–F3，产品已冻结。开发实际记录：Vitest 24 files / 164 passed / 8 todo；typecheck、lint、build、离线 E2E（2）、隔离 FastAPI/Fake（1）、F1–F3 设置 E2E（3）和向导视口/失败关闭 E2E（12）均 exit 0；三项隔离突变检测各自按预期 exit 1，源文件逐字节恢复。lint 有 3 条既有 React effect warnings。Sol 已启动独立 fresh QA 对固定 `9c33a9d` 复验；当前状态 **PENDING**，不代表 A 已通过。见 [repair1 DEV 报告](../quality/reports/2026-10-15-FRONTEND-A-DEV-REPAIR1.md)、[命令退出结果](../quality/reports/evidence/2026-10-15-frontend-a-repair1/command-results.json) 和[原始证据 manifest](../quality/reports/evidence/2026-10-15-frontend-a-repair1/evidence-manifest.json)。修复轮原始日志与截图留在开发 worktree `.local/dev/frontend-a/repair1/`。
+修复轮 1 产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f` 经 fresh QA 与 Sol 核验，适用离线技术门 **PASS**；初始 `9ed544a` FAIL，自动修复用 1/2。QA 的 8 项全站 todo 与 3 条 lint warning 保持未关闭，不视为全站通过。真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未在 A 重跑；历史真实链路成功事实不受本次离线验证影响。报告和脱敏 raw evidence 归档于 [A repair1 QA 目录](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。Sol 本轮核验结论见该目录报告。
 
 A 行为包括：App 统一宿主持有工作库→模型/密钥→检查→Feishu→完成；无库关闭返回欢迎页、选库后关闭返回来源业务；真实 profile + workspace 身份隔离保存非秘密步骤；仍打开时 page reload 恢复当前步骤，显式关闭不自动弹但设置能手动续接，完成后不自动打扰。设置连接/重新授权入口直达同一向导第 4 步，工作库入口直达第 1 步。设置主区三张纵向卡为工作库 / AI 模型 / 飞书，技术字段进高级区，危险区仅删除选择的密钥。密钥不进浏览器存储；刷新、展开、保存都不自动访问 provider。Mocked 浏览器在五个视口与浅/深主题运行无横向溢出；真实 FastAPI/Fake 只用临时 profile/workspace，记录 external attempts 为 0。
 
-A 未做真实 OAuth、真实 Keychain、Real provider、进程级重启或 Internal App/DMG 验证。今日原有 Feishu 入口迁移归 B；审批/今日/项目/问答页面完整实现和全应用守卫仍属后续切片。尚余的 8 个全局 `todo` 保留原样，不能按 A 的局部测试解释为全站通过。
+A 的结论只适用于离线技术门；B 当前产品范围为完整审批五组与今日页。具体实现裁定：索引保留产品规格既有自动增量行为，只对 status/manual_required 对应的首次、Real、模型变更或重建计划做明确范围确认；`quick_note` / `file` / `feishu_material` 来源类型由可信路由标记，旧项保持 `unknown`；今日远端成功结果用按 workspace 隔离的 App 会话缓存，切页不外发、换库或授权身份失效时清缓存并丢弃旧异步响应；“检查并应用”只汇总和导航，类别各自独立确认。项目/问答/阅读留给 C。
 
 ### 已合入 main 的前端基础（切片 1–2）
 
