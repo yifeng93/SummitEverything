@@ -1,6 +1,14 @@
 # 最新实现交接
 
-## 当前前端 UX 里程碑 B：审批五组与今日页执行中
+## 当前前端 UX 里程碑 B：产品冻结，fresh QA pending
+
+B 产品固定 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc`（`codex/frontend-ux-20261015`）。Developer 自测已完成，fresh QA 正在独立 checkout 验收，Sol 尚未判门；不得将此状态称为 B PASS。Developer 报告：[B DEV](../quality/reports/2026-10-15-FRONTEND-B-DEV.md)；逐命令退出码、失败历史映射和截图清单：[raw evidence index](../quality/reports/evidence/2026-10-15-frontend-b-dev/README.md)。
+
+当前实现包括五组独立审批加载/空/错/最近成功与重试、只汇总选择且逐类确认、今日会议/任务/条件行动建议/工具/收件箱、来源/稿件/正式正文/索引与外部动作独立确认。Fake FastAPI 闭环覆盖来源原始字节和 origin kind、取消零写、整理到有部分冲突的稿件、暂时未决选择、正式正文确认与索引；自动化记录外部尝试 0。离线浏览器矩阵覆盖 Today、Approval、Import Drawer、Journal Dialog、审批选择汇总五种场景，各 320/390/768/960/1280 × light/dark。
+
+待 QA 单独核实：Real 索引范围确认目前显示标题、类型与一句范围提示，未显式展示完整 `pending.scope` 内容，是否足够支持知情确认尚无结论。当前 Web 套件保留 6 个 todo，归 C/D，不作为 B 全站验收通过。真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机均未在 B 执行。
+
+### A 固定离线技术门（适用范围 PASS）
 
 A 初始固定产品 SHA `9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad` 经独立 QA 判 **FAIL**，发现 F1 首配缺少密钥时仍可提交、F2 单项成功会使 AI 总卡误报通过、F3 飞书刷新失败丢失最近成功状态。初始 QA 报告与脱敏 harness 已归档到 [初次 QA 证据目录](../quality/reports/2026-10-15-FRONTEND-A-INITIAL/)；原始 QA worktree 未修改。
 

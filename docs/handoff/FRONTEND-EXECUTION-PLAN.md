@@ -1,6 +1,6 @@
 # 前端体验实施路线图（2026-10-15）
 
-状态：里程碑 A 适用离线技术门 PASS；里程碑 B 执行中。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。本次 A gate 结论保留 8 项全站 todo 与 3 条 lint warning，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未重跑。
+状态：A 适用离线技术门 PASS；B 产品固定 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc`，Developer 自测完成、fresh QA 独立验收中，Sol gate pending。B DEV 与命令索引：[报告](../quality/reports/2026-10-15-FRONTEND-B-DEV.md)、[raw evidence](../quality/reports/evidence/2026-10-15-frontend-b-dev/README.md)。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。本次 A gate 结论保留 8 项全站 todo 与 3 条 lint warning，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未重跑。
 
 ## 决议优先级与范围
 
@@ -56,7 +56,11 @@
 
 审批按待整理来源 → 待复核稿件 → 待确认正式内容 → 待确认索引 → 待确认外部动作五组展示，每组独立加载/空/错和业务回执。主操作只对用户已选项做总览，再逐类别分别范围预览与确认；不做类别间合并确认，不新增跨类别事务。今日按会议、待办、行动建议、工具顺序呈现；简报仅汇总现有数据，不新增模型总结。会议只读，Real task 写保持禁用，Fake 既有动作复演保留。
 
-交付：一份逻辑产品提交 + DEV 证据；fresh QA 固定 SHA。核心守卫①②④⑤⑧⑨及对应变异；浏览器离线，另用真实 FastAPI/Fake 测待整理/稿件/确认状态。回滚：ApprovalView 与 TodayView 分离提交。入口迁移时去掉今日旧授权按钮；共享 OAuth 行为继续由首配第 4 步承载。
+产品已提交并冻结：`613d453ab1a47e2f0bfe78d685fb90817f70f4cc`。Developer 证据：web 176 passed / 6 todo，typecheck/lint/build exit 0，离线 Playwright 2/2，FastAPI/Fake 冲突闭环 1/1，Python fixture static/schema 检查 exit 0。五类页面/弹窗截图为 320/390/768/960/1280 × light/dark，共 50 张；Import、Journal、审批选择汇总均验证固定视口边界、焦点陷阱、Escape 与焦点归还。①②④⑤⑧⑨⑩已做隔离变异红/恢复绿，详情见 DEV 和 raw index。
+
+fresh QA 正在对固定 SHA 独立验收，Sol 保留 gate 决定权。QA 请核对 Real 索引范围预览的实际可见明细：目前弹窗显示标题、类型与一句范围提示，是否充分呈现 `pending.scope` 尚待独立判定；不能将该用例列为通过，除非证实范围内容对用户可辨识。6 项 todo 归到 C/D：项目/问答/阅读页面渲染与加载/确认状态、Markdown 流式渲染、模型调用零次、全页面内部 ID 源码位置扫描。详见 [B DEV 报告](../quality/reports/2026-10-15-FRONTEND-B-DEV.md)。
+
+回滚：ApprovalView 与 TodayView 分离提交。入口迁移时去掉今日旧授权按钮；共享 OAuth 行为继续由首配第 4 步承载。
 
 ### C — 切片 6 项目列表和详情 + 切片 7 问答流式 + 切片 8 阅读渲染
 

@@ -12,6 +12,8 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 
 | 报告 | 范围 |
 |---|---|
+| [前端 UX 里程碑 B Developer 报告](2026-10-15-FRONTEND-B-DEV.md) | 固定产品 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc`；Developer 自测，fresh QA pending；不构成 Sol gate 或里程碑 PASS |
+| [前端 UX 里程碑 B raw evidence 索引](evidence/2026-10-15-frontend-b-dev/README.md) | 最终命令退出码、变异红绿、保留的旧失败与最终修复日志对应、5×2 页面/弹窗截图索引 |
 | [前端 UX 里程碑 A Sol gate](2026-10-15-FRONTEND-A-SOL-GATE.md) | 固定 `9c33a9d` 适用离线技术门 PASS；8 项 todo / 3 条 lint warning 保留，真实门未重跑 |
 | [前端 UX 里程碑 A repair1 fresh QA 归档](evidence/2026-10-15-frontend-a-repair1-qa/README.md) | fresh QA 固定 SHA `9c33a9d` 的脱敏报告、harness、raw logs、Mock/FastAPI evidence 与截图 |
 | [M4.2 Package A 初始 QA](2026-10-14-M42-PACKAGE-A-QA-INITIAL.md) | 固定 `fe473399` 初始 FAIL；原始 34 项证据及 hash 副本在对应 evidence 目录 |
