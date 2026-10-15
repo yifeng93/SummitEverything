@@ -7,6 +7,7 @@ import { TodayView } from './components/TodayView'
 import { JournalView } from './components/JournalView'
 import { WorkspaceGate } from './components/WorkspaceGate'
 import { SettingsView } from './components/SettingsView'
+import { THEME_LABELS, THEME_PREFERENCES, useThemePreference } from './theme'
 import './App.css'
 
 type Section = 'today' | 'journal' | 'projects' | 'ask' | 'settings'
@@ -23,6 +24,7 @@ export default function App() {
   const [section, setSection] = useState<Section>('today')
   const [page, setPage] = useState<Page | null>(null)
   const [error, setError] = useState('')
+  const [themePreference, setThemePreference] = useThemePreference()
 
   useEffect(() => {
     api.get<Workspace>('/workspaces/current').then(setWorkspace).catch(() => undefined)
@@ -66,12 +68,12 @@ export default function App() {
               onClick={() => { setPage(null); setSection(item.id) }}
             >
               <span className={'nav-symbol nav-' + item.id} aria-hidden="true" />
-              {item.label}
+              <span className="nav-label">{item.label}</span>
             </button>
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="local-indicator"><span />仅本机运行</div>
+          <div className="local-indicator"><span /><span className="local-indicator-text">仅本机运行</span></div>
           <button className="workspace-name" onClick={() => setWorkspace(null)}>
             <span className="workspace-avatar">{workspace.name.slice(0, 1)}</span>
             <span className="workspace-name-text"><strong>{workspace.name}</strong><small>已连接工作库</small></span>
@@ -88,6 +90,17 @@ export default function App() {
           </div>
           <div className="topbar-right">
             <span className="save-state"><span />本机已保存</span>
+            <select
+              className="theme-select"
+              aria-label="主题"
+              title="主题：跟随系统 / 浅色 / 深色"
+              value={themePreference}
+              onChange={(event) => setThemePreference(event.target.value as typeof themePreference)}
+            >
+              {THEME_PREFERENCES.map((preference) => (
+                <option key={preference} value={preference}>{THEME_LABELS[preference]}</option>
+              ))}
+            </select>
             <button className="avatar-button" aria-label="打开设置" onClick={() => setSection('settings')}>罗</button>
           </div>
         </header>

@@ -1,0 +1,114 @@
+/*
+ * SummitEverything 主题 tokens（唯一真源，见 FRONTEND-GUIDE §6）。
+ *
+ * 两条硬规则：
+ * 1. 本文件是仓库里**唯一**允许出现颜色字面量的地方。其它 CSS / TSX 内联样式一律
+ *    通过 var(--token) 引用；由 web/src/ui-contract.test.ts 守卫 ① 强制。
+ * 2. 主题由 <html data-theme="light|dark"> 驱动（不是只靠 @media prefers-color-scheme）。
+ *    首屏前由 web/index.html 的引导脚本读取 localStorage 的 `sx:theme-preference`
+ *    写入 data-theme；深色块必须覆盖下面 :root 里的**全部**颜色 tokens。
+ *    由 web/src/theme.test.ts（守卫 ⑦）强制。
+ *
+ * 字号下限 12px（--text-caption）；禁止 9/10/11px（守卫 ③）。
+ */
+
+:root {
+  /* ── 颜色 · 浅色 ─────────────────────────────────────────────── */
+  --ink: #242a2c;
+  --muted: #666f6e;              /* 为满足 §6.2 对比度，较原 #717a79 加深 */
+  --quiet: #6f7876;
+  --paper: #f4f5f2;
+  --surface: #ffffff;
+  --surface-2: #f8f9f6;
+  --line: #e4e8e3;
+  --line-strong: #d5dbd5;
+  --control-border: #8d948f;     /* 表单控件边框；≥3:1 对 --surface */
+  --accent: #a04d2c;             /* 为满足 accent/--accent-wash ≥4.5:1，较原 #b65a36 加深 */
+  --accent-dark: #8a3f22;
+  --accent-wash: #f7ebe5;
+  --on-accent: #ffffff;
+  --green: #3e7258;
+  --green-wash: #eaf2ed;
+  --danger: #a53a2a;
+  --danger-wash: #fbeae6;
+  --danger-ink: #7f2c1f;
+  --warn: #7a5a12;
+  --warn-wash: #fbf4e8;
+  --warn-ink: #5f4409;
+  --sidebar: #202928;
+  --sidebar-muted: #9ca9a3;
+  --sidebar-active: #34403c;
+  --sidebar-fg: #edf2ee;
+  --sidebar-line: #3c4843;
+  --sidebar-avatar: #46544d;
+  --sidebar-mark: #d89577;
+  --focus-ring: #a04d2c;
+  --selection: #ead0c4;
+  --overlay: rgb(28 32 29 / 42%);
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── 尺度 · 间距（8 的倍数优先）─────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ── 尺度 · 圆角 ─────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius: 9px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* ── 尺度 · 阴影 ─────────────────────────────────────────────── */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-2: 0 6px 20px rgb(0 0 0 / 15%);
+
+  /* ── 尺度 · 字号（12px 是下限）与行高 ────────────────────────── */
+  --text-caption: 12px;
+  --text-small: 13px;
+  --text-list: 14px;
+  --text-body: 15px;
+  --text-section: 16px;
+  --text-page: 22px;
+  --text-display: 31px;
+  --lh-body: 1.6;
+  --lh-read: 1.75;
+  --measure-read: 72ch;
+}
+
+/* 深色：覆盖上面每一个颜色 token（theme.test.ts 逐条核对）。 */
+:root[data-theme="dark"] {
+  --ink: #e7ebe7;
+  --muted: #abb5af;
+  --quiet: #96a09a;
+  --paper: #171d1b;
+  --surface: #222a27;
+  --surface-2: #1d2522;
+  --line: #37413c;
+  --line-strong: #4a5650;
+  --control-border: #6d7a74;
+  --accent: #e09170;
+  --accent-dark: #efaa8d;
+  --accent-wash: #3a2b25;
+  --on-accent: #1c1512;
+  --green: #9ac5a9;
+  --green-wash: #253b2e;
+  --danger: #f0a08c;
+  --danger-wash: #43241d;
+  --danger-ink: #f4b6a4;
+  --warn: #e0b872;
+  --warn-wash: #3d3220;
+  --warn-ink: #e8c98d;
+  --sidebar: #111715;
+  --sidebar-muted: #9ca9a3;
+  --sidebar-active: #2a3631;
+  --sidebar-fg: #e7ebe7;
+  --sidebar-line: #333e39;
+  --sidebar-avatar: #2c3833;
+  --sidebar-mark: #e7ac91;
+  --focus-ring: #e09170;
+  --selection: #4a3229;
+  --overlay: rgb(0 0 0 / 58%);
+}
