@@ -2339,6 +2339,7 @@ def create_app(
             payload.text,
             filename=payload.filename,
             operation_id=payload.operation_id,
+            origin_kind="quick_note",
         )
         profile_event(
             Path(workspace.local_profile_dir),
@@ -2365,6 +2366,7 @@ def create_app(
             raw,
             filename=file.filename or "source.txt",
             operation_id=operation_id,
+            origin_kind="file",
         )
         profile_event(
             Path(workspace.local_profile_dir),

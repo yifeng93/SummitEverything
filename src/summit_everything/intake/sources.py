@@ -8,7 +8,7 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid5
 
 from summit_everything.domain.models import Draft, IntakeItem, SourceDetail, SourceRecord
@@ -56,6 +56,7 @@ class SourceStore:
         operation_id: str,
         *,
         external_identity: dict[str, str] | None = None,
+        origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown",
     ) -> IntakeItem:
         root = root.resolve()
         filename = safe_source_filename(filename)
@@ -76,7 +77,10 @@ class SourceStore:
             if prior is not None:
                 intent = self._read_intent_value(prior)
                 if intent.get("request_hash") != self._request_hash(
-                    raw, filename, external_identity
+                    raw,
+                    filename,
+                    external_identity,
+                    origin_kind=intent.get("origin_kind", "unknown"),
                 ):
                     raise IntakeConflict("operation_id was already used for different intake")
                 if journal_path.exists():
@@ -96,9 +100,12 @@ class SourceStore:
             original_path = f"原件/{month}/{source_id}-{filename}"
             intent = {
                 "schema": "intake-source-v1",
+                "origin_kind": origin_kind,
                 "external_identity": external_identity,
                 "operation_id": operation_id,
-                "request_hash": self._request_hash(raw, filename, external_identity),
+                "request_hash": self._request_hash(
+                    raw, filename, external_identity, origin_kind=origin_kind
+                ),
                 "source_id": str(source_id),
                 "item_id": str(item_id),
                 "filename": filename,
@@ -232,14 +239,22 @@ class SourceStore:
             archive_completed_transactions(root, locked=True)
 
     def _request_hash(
-        self, raw: bytes, filename: str, external_identity: dict[str, str] | None = None
+        self,
+        raw: bytes,
+        filename: str,
+        external_identity: dict[str, str] | None = None,
+        *,
+        origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown",
     ) -> str:
+        fields: dict[str, Any] = {
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "filename": filename,
+            **({"external_identity": external_identity} if external_identity else {}),
+        }
+        if origin_kind != "unknown":
+            fields["origin_kind"] = origin_kind
         payload = json.dumps(
-            {
-                "sha256": hashlib.sha256(raw).hexdigest(),
-                "filename": filename,
-                **({"external_identity": external_identity} if external_identity else {}),
-            },
+            fields,
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
@@ -311,6 +326,7 @@ class SourceStore:
             sha256=intent["sha256"],
             created_at=created_at,
             external_identity=intent.get("external_identity"),
+            origin_kind=intent.get("origin_kind", "unknown"),
         )
         source_index = root / ".summit-everything" / "sources" / f"{month}.json"
         existing_records: list[dict[str, Any]] = []
@@ -337,6 +353,7 @@ class SourceStore:
             filename=intent["filename"],
             original_relative_path=original_path.as_posix(),
             created_at=created_at,
+            origin_kind=intent.get("origin_kind", "unknown"),
         )
         item_path = root / ".summit-everything" / "intake" / "items" / f"{item_id}.json"
         if item_path.exists():
@@ -357,11 +374,31 @@ class IntakeService:
     def __init__(self, source_store: SourceStore | None = None) -> None:
         self.source_store = source_store or SourceStore()
 
-    def add_text(self, root: Path, text: str, *, filename: str, operation_id: str) -> IntakeItem:
-        return self.source_store.capture(root, text.encode("utf-8"), filename, operation_id)
+    def add_text(
+        self,
+        root: Path,
+        text: str,
+        *,
+        filename: str,
+        operation_id: str,
+        origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown",
+    ) -> IntakeItem:
+        return self.source_store.capture(
+            root, text.encode("utf-8"), filename, operation_id, origin_kind=origin_kind
+        )
 
-    def add_file(self, root: Path, raw: bytes, *, filename: str, operation_id: str) -> IntakeItem:
-        return self.source_store.capture(root, raw, filename, operation_id)
+    def add_file(
+        self,
+        root: Path,
+        raw: bytes,
+        *,
+        filename: str,
+        operation_id: str,
+        origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown",
+    ) -> IntakeItem:
+        return self.source_store.capture(
+            root, raw, filename, operation_id, origin_kind=origin_kind
+        )
 
     def list_items(self, root: Path) -> list[IntakeItem]:
         return self.source_store.list_items(root)

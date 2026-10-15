@@ -6624,6 +6624,17 @@
       },
       "IntakeItem": {
         "properties": {
+          "origin_kind": {
+            "type": "string",
+            "enum": [
+              "quick_note",
+              "file",
+              "feishu_material",
+              "unknown"
+            ],
+            "title": "Origin Kind",
+            "default": "unknown"
+          },
           "item_id": {
             "type": "string",
             "format": "uuid",
@@ -8374,6 +8385,17 @@
       },
       "SourceRecord": {
         "properties": {
+          "origin_kind": {
+            "type": "string",
+            "enum": [
+              "quick_note",
+              "file",
+              "feishu_material",
+              "unknown"
+            ],
+            "title": "Origin Kind",
+            "default": "unknown"
+          },
           "external_identity": {
             "anyOf": [
               {

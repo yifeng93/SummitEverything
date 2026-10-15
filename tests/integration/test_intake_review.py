@@ -46,6 +46,7 @@ def test_pasting_and_listing_intake_preserves_original_without_model_call(
     assert listed == [item]
     assert raw_path.read_bytes() == original.encode("utf-8")
     assert source_record["sha256"] == hashlib.sha256(original.encode("utf-8")).hexdigest()
+    assert source_record["origin_kind"] == item.origin_kind == "unknown"
     assert not (root / ".summit-everything" / "drafts").exists()
 
 
@@ -1291,7 +1292,10 @@ def test_authenticated_api_intake_file_job_and_review_flow(tmp_path: Path) -> No
     assert item_response.status_code == 201, item_response.text
     item = item_response.json()
     assert item["state"] == "pending"
+    assert item["origin_kind"] == "file"
     assert (workspace / item["original_relative_path"]).read_bytes() == original
+    source_record = api.get(f"/api/v1/sources/{item['source_id']}").json()["source"]
+    assert source_record["origin_kind"] == "file"
     assert len(api.get("/api/v1/intake/items").json()) == 1
     assert provider.calls == 0
     job_response = api.post(
@@ -1442,3 +1446,56 @@ def test_job_start_directory_failure_releases_attempt_lease_without_gc(
     assert IntakeService().list_items(root)[0].state == "pending"
     assert not jobs_root.exists()
     assert provider.calls == 0
+
+
+def test_text_intake_route_records_quick_note_without_client_selected_kind(tmp_path: Path) -> None:
+    token = "m1-quick-note-token"
+    app = create_app(session_token=token, profile_root=tmp_path / "profiles")
+    api = TestClient(app)
+    api.headers.update({"Authorization": f"Bearer {token}"})
+    workspace = tmp_path / "workspace"
+    created = api.post(
+        "/api/v1/workspaces",
+        json={
+            "root": str(workspace),
+            "mode": "create",
+            "name": "模拟库",
+            "operation_id": "workspace",
+        },
+    )
+    assert created.status_code == 201, created.text
+    response = api.post(
+        "/api/v1/intake/items",
+        json={"text": "一句合成记录", "filename": "arbitrary.txt", "operation_id": "note"},
+    )
+    assert response.status_code == 201, response.text
+    item = response.json()
+    assert item["origin_kind"] == "quick_note"
+    source = api.get(f"/api/v1/sources/{item['source_id']}").json()["source"]
+    assert source["origin_kind"] == "quick_note"
+    assert (workspace / item["original_relative_path"]).read_bytes() == "一句合成记录".encode()
+
+
+def test_legacy_intake_replay_stays_unknown_when_route_now_tags_it(
+    tmp_path: Path,
+) -> None:
+    root = make_workspace(tmp_path / "workspace")
+    service = IntakeService()
+    original = b"legacy receipt bytes"
+    legacy = service.add_file(root, original, filename="same.txt", operation_id="legacy-op")
+
+    replay = service.source_store.capture(
+        root, original, "same.txt", "legacy-op", origin_kind="file"
+    )
+
+    assert replay.item_id == legacy.item_id
+    assert replay.origin_kind == "unknown"
+    source = json.loads(
+        (
+            root
+            / ".summit-everything"
+            / "sources"
+            / f"{legacy.created_at.strftime('%Y-%m')}.json"
+        ).read_text(encoding="utf-8")
+    )[0]
+    assert source["origin_kind"] == "unknown"

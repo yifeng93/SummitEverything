@@ -493,6 +493,7 @@ class FeishuService:
                                     "token_type": "user" if identity is not None else "app",
                                     "content_type": body.content_type,
                                 },
+                                origin_kind="feishu_material",
                             )
                         outcome = ImportOutcome(
                             material_id=material_id,

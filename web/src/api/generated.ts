@@ -1831,6 +1831,12 @@ export interface components {
         /** IntakeItem */
         IntakeItem: {
             /**
+             * Origin Kind
+             * @default unknown
+             * @enum {string}
+             */
+            origin_kind: "quick_note" | "file" | "feishu_material" | "unknown";
+            /**
              * Item Id
              * Format: uuid
              */
@@ -2486,6 +2492,12 @@ export interface components {
         };
         /** SourceRecord */
         SourceRecord: {
+            /**
+             * Origin Kind
+             * @default unknown
+             * @enum {string}
+             */
+            origin_kind: "quick_note" | "file" | "feishu_material" | "unknown";
             /** External Identity */
             external_identity?: {
                 [key: string]: string;
