@@ -1,10 +1,10 @@
 # 最新实现交接
 
-## 当前前端 UX：B repair1 离线门通过，C 实施中
+## 当前前端 UX：C 产品已固定，等待 fresh QA
 
 B repair1 产品固定 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`（`codex/frontend-ux-20261015`）经独立 QA 与 Sol 核验，适用离线核心及 repair1 两项修复 **PASS**；初始产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 的首次 QA **FAIL** 原件仍保留。此 gate 只覆盖 B 离线范围，不代表全站、C/D、Stage C 或产品整体 PASS。QA 报告与脱敏 hash 索引见[B QA repair1](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)及[QA evidence](../quality/reports/evidence/2026-10-15-frontend-b-repair1-qa/README.md)；原 DEV 报告和开发 evidence 保留。Web 180 passed / 6 todo；typecheck/lint/build、离线 Playwright 2/2、FastAPI/Fake 1/1、Real frozen scope/focus 1/1 exit 0；Python 661 与 QA mutation 未运行。全站 todo、真实 provider/飞书/OAuth/Keychain、用户材料、DMG/安装/公证、五日和双机仍 NOT_RUN。
 
-当前 C 唯一 writer 在 `codex/frontend-ux-20261015` 实现树，产品基于上述 B 固定 SHA，工作树仅允许串行修改。C 范围为项目列表/独立详情及返回状态、question-first Ask 安全流式 Markdown、Reader 同一渲染器与引用版本边界；不得改内容资格/检索/prompt，也不得以推断补造项目日期或状态。最新范围见[执行路线图](FRONTEND-EXECUTION-PLAN.md)。
+C 产品源码已提交并固定为 `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c`，基于 B repair1 固定 SHA，位于 `codex/frontend-ux-20261015` 实现树。项目、Ask、Reader 与共享 Markdown 完成；DEV 自测 Web 190 passed / 4 todo，typecheck/lint/build、Fake FastAPI 闭环、40 张 responsive/theme 截图、7 条守卫变异均留有原始日志和独立 exit 文件。此为开发者自测，fresh QA 尚未执行，Sol 尚未判定 C gate。4 个仍开放的全站守卫归 D：①普通可见区域标识/路径泄漏；④Today/Approval/Ask 加载与空态；⑤全站危险动作确认；⑥每个流式不完整 Markdown 中间态。②中文名称与⑨导航/阅读不触发 provider/index plan 在 C 用例已覆盖，但不等于全站覆盖。Python 661、真实 provider/OAuth/Feishu/Keychain、用户材料、DMG/安装/公证、五日和双机均 NOT_RUN。详情见 [C DEV 报告](../quality/reports/2026-10-15-FRONTEND-C-DEV.md)；QA 固定目标为上述产品 SHA，不包含随后文档提交。
 
 当前实现包括五组独立审批加载/空/错/最近成功与重试、只汇总选择且逐类确认、今日会议/任务/条件行动建议/工具/收件箱、来源/稿件/正式正文/索引与外部动作独立确认。Fake FastAPI 闭环覆盖来源原始字节和 origin kind、取消零写、整理到有部分冲突的稿件、暂时未决选择、正式正文确认与索引；自动化记录外部尝试 0。离线浏览器矩阵覆盖 Today、Approval、Import Drawer、Journal Dialog、审批选择汇总五种场景，各 320/390/768/960/1280 × light/dark。
 
