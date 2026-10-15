@@ -1,6 +1,6 @@
 # 前端体验实施路线图（2026-10-15）
 
-状态：A 适用离线技术门 PASS；B 产品固定 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc`，Developer 自测完成、fresh QA 独立验收中，Sol gate pending。B DEV 与命令索引：[报告](../quality/reports/2026-10-15-FRONTEND-B-DEV.md)、[raw evidence](../quality/reports/evidence/2026-10-15-frontend-b-dev/README.md)。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。本次 A gate 结论保留 8 项全站 todo 与 3 条 lint warning，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未重跑。
+状态：A 适用离线技术门 PASS；B 初始 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 首次 QA **FAIL**，repair1 产品固定 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`，Developer 自测完成、fresh QA pending、Sol gate pending。报告：[B repair1 DEV](../quality/reports/2026-10-15-FRONTEND-B-DEV-REPAIR1.md)；[repair1 evidence](../quality/reports/evidence/2026-10-15-frontend-b-repair1/README.md)；[初次 QA FAIL 归档](../quality/reports/evidence/2026-10-15-frontend-b-initial-qa/README.md)。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。本次 A gate 结论保留 8 项全站 todo 与 3 条 lint warning，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未重跑。
 
 ## 决议优先级与范围
 
@@ -56,9 +56,9 @@
 
 审批按待整理来源 → 待复核稿件 → 待确认正式内容 → 待确认索引 → 待确认外部动作五组展示，每组独立加载/空/错和业务回执。主操作只对用户已选项做总览，再逐类别分别范围预览与确认；不做类别间合并确认，不新增跨类别事务。今日按会议、待办、行动建议、工具顺序呈现；简报仅汇总现有数据，不新增模型总结。会议只读，Real task 写保持禁用，Fake 既有动作复演保留。
 
-产品已提交并冻结：`613d453ab1a47e2f0bfe78d685fb90817f70f4cc`。Developer 证据：web 176 passed / 6 todo，typecheck/lint/build exit 0，离线 Playwright 2/2，FastAPI/Fake 冲突闭环 1/1，Python fixture static/schema 检查 exit 0。五类页面/弹窗截图为 320/390/768/960/1280 × light/dark，共 50 张；Import、Journal、审批选择汇总均验证固定视口边界、焦点陷阱、Escape 与焦点归还。①②④⑤⑧⑨⑩已做隔离变异红/恢复绿，详情见 DEV 和 raw index。
+父产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 已由初次独立 QA 判 **FAIL**，发现 QA-001 SourceOrganizer Real 来源整理未展示被冻结的 `outgoing_inputs` 正文与可读目标，以及 QA-002 Import Drawer 隐藏文件 input 焦点不可见。repair1 产品固定 SHA：`a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`；Developer 检查 180 passed / 6 todo、typecheck/lint/build exit 0、离线 Playwright 2/2、FastAPI/Fake 冲突闭环 1/1、同范围真实冻结 scope 取消 1/1；Python 在 repair1 未重跑（后端未改）。Import Drawer 焦点捕获为 5 个宽度 × light/dark 共 10 张；退出码、原失败/重跑和文件哈希见 [repair1 DEV/evidence](../quality/reports/2026-10-15-FRONTEND-B-DEV-REPAIR1.md)。
 
-fresh QA 正在对固定 SHA 独立验收，Sol 保留 gate 决定权。QA 请核对 Real 索引范围预览的实际可见明细：目前弹窗显示标题、类型与一句范围提示，是否充分呈现 `pending.scope` 尚待独立判定；不能将该用例列为通过，除非证实范围内容对用户可辨识。6 项 todo 归到 C/D：项目/问答/阅读页面渲染与加载/确认状态、Markdown 流式渲染、模型调用零次、全页面内部 ID 源码位置扫描。详见 [B DEV 报告](../quality/reports/2026-10-15-FRONTEND-B-DEV.md)。
+产品已冻结，fresh QA 待对 repair1 SHA 独立复验，Sol 保留 gate 决定权。验收重点：scope 正文/目标/预算与服务器冻结值一致、改变选择器后仍确认原 scope、未知/错误目标 fail closed、取消及刷新零 provider/job；两个文件入口在 5×2 上焦点可见且保留原生键盘选择、Escape 和焦点归还。来源整理 scope 与 Real 索引 plan 是不同流程。6 项 todo 归到 C/D，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机仍未测。不得把初始 FAIL 合并写成 PASS。
 
 回滚：ApprovalView 与 TodayView 分离提交。入口迁移时去掉今日旧授权按钮；共享 OAuth 行为继续由首配第 4 步承载。
 

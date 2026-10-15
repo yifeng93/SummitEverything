@@ -2,6 +2,8 @@
 
 日期：2026-10-15。固定产品提交：`613d453ab1a47e2f0bfe78d685fb90817f70f4cc`（分支 `codex/frontend-ux-20261015`）。本报告只记录 Developer 自测；**fresh QA pending，Sol 尚未判门，不声称里程碑 PASS**。后续报告、路线图和进度账本提交均为 docs-only，不改变此产品 SHA。
 
+后续状态注记：首次独立 QA 对此 SHA 判 **FAIL**（QA-001 来源整理范围预览缺少冻结原件正文/可读目标，QA-002 文件选择键盘焦点不可见）。此历史报告只对应 `613d453`；修复轮 1 固定产品与验收见 [B DEV repair1](2026-10-15-FRONTEND-B-DEV-REPAIR1.md)，初次失败报告保存在 [QA archive](evidence/2026-10-15-frontend-b-initial-qa/README.md)。
+
 ## 交付范围
 
 审批页按来源、稿件、正式内容、索引、外部动作分成五组，各自表达加载、空、错误、最近成功与重试。检查并应用只汇总已选事项，确认仍逐类独立；Real 索引只有 plan 与 acceptance 请求完整成功才开放确认。来源整理保留原件，历史未知来源按 `unknown` 展示；稿件冲突要求选择明确结果，正式正文仍走 expected-hash 原子确认 API。外部动作先独立确认，结果未知只对账或记录用户提供的结果；Real 任务写禁用。
@@ -34,7 +36,7 @@ Playwright 产物在 `.local/dev/frontend-b/viewport/`，`screenshot-manifest.js
 
 ## Fresh QA 交接
 
-QA 固定检查 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc`，不得在受测目标上并行写产品。请独立验证五组审批确认隔离、按 workspace/auth 的缓存失效与竞态、quick-note 原件字节/稳定幂等、中文输入法确认、冲突正文资格、Real index preview fail-closed、Import/Journal 多文件失败与弹窗语义，以及独立可重复的真实 FastAPI + Fake 闭环。**已知需判定的范围呈现疑点：Real 索引范围确认弹窗当前只显示计划标题、类型与一句占位范围提示，没有展开 `pending.scope` 明细；本报告不把“范围确认足够清楚”列为 PASS，请 QA 以实际 UI 与 API 返回范围对照判断。**重点审阅 raw index 中的历史失败与最终成功对应关系。QA 需自行决定未测/失败项；Developer 自测不能代替 QA verdict。
+本报告的旧 QA 交接段落把来源整理的范围预览疑点误标成了 Real index。这里的 QA-001 实际针对 `SourceOrganizer` Real 来源整理确认：旧版 UI 未展示 acceptance plan 冻结的 `outgoing_inputs` 原文和目标中文名。它与 `IndexControls` 的 Real 索引范围计划是两条独立流程。QA 首次报告已固定并归档，修复轮 1 另行交付该来源整理问题与 Import Drawer 焦点问题；QA 应按各自固定 SHA 和报告判断，不从这段旧交接推断 Index scope 的测试结果。
 
 明确未测：真实 provider、Feishu OAuth/资料/任务写、真实 Keychain、真实用户材料、付费预算、打包 App、安装/公证、五日与双机。产品主 SHA 后没有代码变更；如果发现缺陷，修复须产生新产品 SHA 并由全新 QA 复验。
 

@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SourceOrganizer.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  17:28:29
+   Duration  546ms (environment 53%, tests 28%, import 10%, transform 8%)
+

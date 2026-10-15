@@ -1,6 +1,6 @@
 # Frontend B Developer raw evidence index
 
-固定产品 SHA：`613d453ab1a47e2f0bfe78d685fb90817f70f4cc`。本目录是索引；原始日志、截图与 workflow manifest 在开发 worktree 的 `.local/dev/frontend-b/`，路径均相对仓库根。独立 QA 需在固定 checkout 自己复验。Developer 自测不是 QA 结论。
+固定产品 SHA：`613d453ab1a47e2f0bfe78d685fb90817f70f4cc`。此为历史父 SHA 的索引；该 SHA 后经首次独立 QA 判 **FAIL**，QA 报告及脱敏归档见 [initial QA archive](../2026-10-15-frontend-b-initial-qa/README.md)。产品修复轮 1 与当前验收入口为 [repair1 DEV/evidence](../2026-10-15-FRONTEND-B-DEV-REPAIR1.md) 和 [repair1 raw evidence](../2026-10-15-frontend-b-repair1/README.md)。本目录只索引父 SHA 的原始开发日志，不能代替 repair1 测试或 QA 结论。原始开发日志、截图与 workflow manifest 在开发 worktree 的 `.local/dev/frontend-b/`，路径均相对仓库根。Developer 自测不是 QA 结论。
 
 ## 最终命令结果
 

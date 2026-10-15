@@ -1,0 +1,25 @@
+[WebServer] INFO:     Started server process [83439]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8794 (Press CTRL+C to quit)
+[WebServer] (node:83465) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+Error: Cannot find module '@playwright/test'
+Require stack:
+- /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.local/qa/frontend-b-repair1/harness/source-scope.spec.ts
+- /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/node_modules/playwright/lib/common/index.js
+- /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/node_modules/playwright/lib/program.js
+- /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/node_modules/@playwright/test/cli.js
+
+   at source-scope.spec.ts:4
+
+  2 | import { resolve } from 'node:path'
+  3 | import { randomUUID } from 'node:crypto'
+> 4 | import { expect, test } from '@playwright/test'
+    | ^
+  5 |
+  6 | test('Real source preview shows the exact synthetic scope before any organize call', async ({ page }, testInfo) => {
+  7 |   const externalAttempts: string[] = []
+    at Object.<anonymous> (/Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.local/qa/frontend-b-repair1/harness/source-scope.spec.ts:4:1)
+Error: No tests found
+
