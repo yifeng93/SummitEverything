@@ -56,6 +56,8 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 | Oxlint | **PASS**，exit 0；仍有 **2 条既存** React effect warning，无新增 | `lint.log`、`static.exit` |
 | Vite build | **PASS**，exit 0；保留既存 >500 kB chunk 提示 | `build.log`、`static.exit` |
 | Offline Playwright（含首配闭环与五档/深浅基线） | **PASS**，**2/2**，exit 0 | `green-e2e.log`、`green-e2e.exit` |
+| FastAPI + Fake 集成 E2E（真实后端，隔离 profile/工作库） | **PASS**，**1/1**，exit 0 | `green-e2e-integration.log`、`green-e2e-integration.exit` |
+| OpenAPI ↔ 浏览器类型逐字节一致（CI 门） | **PASS**：重新运行 `scripts/export_openapi.py` 后 `web/openapi.json` 与 `web/src/api/generated.ts` 相对 tracked 无 diff | `static.exit` |
 | `ruff check src tests` | **PASS**，exit 0 | `ruff-check.log`、`static.exit` |
 | `ruff format --check src tests` | **PASS**，exit 0 | `ruff-format.log`、`static.exit` |
 | `mypy src` | **PASS**，exit 0，47 source files | `mypy.log`、`static.exit` |
@@ -72,7 +74,7 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 | 02 | `FirstUseWizard.commit` 忽略写入失败，照样前进 | **RED**，exit 1，3 failed / 23 passed | `mutation/02-commit-ignores-write-failure.log` |
 | 03 | `resolveFirstUseProgress` 跳过 durable 读取 | **RED**，exit 1，3 failed / 4 passed | `mutation/03-durable-read-ignored.log` |
 
-本轮**没有**重跑 876 的全站视口矩阵与全部十条变异；受影响 E2E（首配闭环 + 五档/深浅基线）已重跑通过。
+本轮**没有**重跑 876 的全站视口矩阵与全部十条变异；受影响 E2E（首配闭环、五档/深浅基线，以及真实 FastAPI + Fake 的集成闭环）已重跑通过。
 
 ## 测试契约的显式更新
 
