@@ -223,6 +223,13 @@ h3 { color: var(--ink); margin: 0; font-size: var(--text-list); font-weight: 600
   .provider-settings { padding: 1rem; }
 }
 .conversation-history, .conversation-thread { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px 16px; }
+.ask-secondary { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px 16px; }
+.ask-secondary > summary, .query-options > summary { cursor: pointer; color: var(--ink); font-size: var(--text-list); font-weight: 600; }
+.ask-secondary[open] > summary { margin-bottom: 12px; }
+.query-options { margin-top: 12px; color: var(--muted); }
+.query-options[open] { display: grid; gap: 8px; }
+.query-options > label { color: var(--ink); font-size: var(--text-small); font-weight: 600; }
+.query-options > select { max-width: 100%; }
 .section-title-row, .conversation-history li { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .section-title-row h2, .conversation-thread > h2 { margin: 0; }
 .section-title-row > span, .history-open small { color: var(--muted); font-size: var(--text-small); }

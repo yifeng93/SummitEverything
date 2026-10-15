@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, sessionHeaders, type Citation, type IndexPlan, type IndexResult, type Page } from '../api/client'
 import type { components } from '../api/generated'
+import { ConfirmDialog } from './ConfirmDialog'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
 type IndexStatus = { fingerprint: string | null; pages: number; chunks: number; state: 'not_ready' | 'ready' | 'stale'; current_pages: number; stale_pages: number }
@@ -21,6 +22,7 @@ type RetrievalPurpose = 'current' | 'history'
 type AnswerRole = components['schemas']['AnswerRole']
 type UserMemory = components['schemas']['UserMemory']
 type MemoryCandidate = components['schemas']['MemoryCandidate']
+type PendingDelete = { kind: 'conversation' | 'role' | 'memory'; id: string; label: string }
 const answerModeLabel: Record<AnswerMode, string> = {
   fact: '事实问答', comparison: '跨材料比较', plan: '工作方案',
 }
@@ -66,6 +68,7 @@ export function AskView({ onError, onOpenPage }: Props) {
   const [candidateDrafts, setCandidateDrafts] = useState<Record<string, string>>({})
   const [memoryAttestations, setMemoryAttestations] = useState<Record<string, boolean>>({})
   const [answerDetails, setAnswerDetails] = useState<Pick<components['schemas']['Answer'], 'source_statements' | 'inferences' | 'advice' | 'missing_information'> | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null)
   const abortController = useRef<AbortController | null>(null)
   const historyCursorRef = useRef<string | null>(null)
   const confirmationIds = useRef<Record<string, string>>({})
@@ -240,14 +243,26 @@ export function AskView({ onError, onOpenPage }: Props) {
     setRoleBudget(role?.context_budget ?? 2000)
   }
 
-  async function deleteRole() {
-    if (!selectedRoleId) return
+  async function confirmDelete() {
+    if (!pendingDelete) return
     try {
-      await api.delete(`/roles/${selectedRoleId}`)
-      chooseRole('')
-      await refreshPersonalization()
+      if (pendingDelete.kind === 'conversation') {
+        await api.delete(`/conversations/${pendingDelete.id}`)
+        setHistory((current) => current.filter((item) => item.conversation_id !== pendingDelete.id))
+        if (conversationId === pendingDelete.id) startNewConversation()
+        await refreshHistory()
+      } else if (pendingDelete.kind === 'role') {
+        await api.delete(`/roles/${pendingDelete.id}`)
+        chooseRole('')
+        await refreshPersonalization()
+      } else {
+        await api.delete(`/memory/${pendingDelete.id}`)
+        await refreshPersonalization()
+      }
+      setPendingDelete(null)
+      onError('')
     } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '角色没有删除')
+      onError(cause instanceof Error ? cause.message : '无法完成删除')
     }
   }
 
@@ -276,17 +291,6 @@ export function AskView({ onError, onOpenPage }: Props) {
       onError('')
     } catch (cause) {
       onError(cause instanceof Error ? cause.message : '记忆没有确认')
-    }
-  }
-
-  async function deleteConversation(id: string) {
-    try {
-      await api.delete(`/conversations/${id}`)
-      setHistory((current) => current.filter((item) => item.conversation_id !== id))
-      if (conversationId === id) startNewConversation()
-      await refreshHistory()
-    } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '无法删除问答历史')
     }
   }
 
@@ -474,29 +478,61 @@ export function AskView({ onError, onOpenPage }: Props) {
         <div><div className="eyebrow">仅使用已确认知识</div><h1>知识问答</h1><p className="lede">每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。</p></div>
         <button className="button secondary" onClick={startNewConversation}>新建对话</button>
       </div>
-      <section className="conversation-history" aria-label="本机问答历史">
+      <form ref={queryForm} className="query-form" onSubmit={ask}>
+        <label htmlFor="knowledge-question">你的问题</label>
+        <div className="query-input-wrap">
+          <textarea id="knowledge-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：这个项目已经确认的地点和联系人有哪些？" rows={3} />
+          {streaming ? <button type="button" className="button secondary" onClick={cancel}>停止回答</button> : <button className="button primary" disabled={!question.trim()}>开始检索</button>}
+        </div>
+        <small>回答与历史仅保存在本机；不会自动写入知识页。</small>
+        <details className="query-options">
+          <summary>资料范围与回答方式</summary>
+          <label htmlFor="retrieval-purpose">资料范围</label>
+          <select id="retrieval-purpose" value={retrievalPurpose} onChange={(event) => setRetrievalPurpose(event.target.value as RetrievalPurpose)}>
+            <option value="current">当前有效资料</option><option value="history">包含历史版本</option>
+          </select>
+          {retrievalPurpose === 'history' && <p role="note" className="stale-citation-note">历史资料范围会包含已被替代或失效的版本，只供历史参考，不能代表当前规则。</p>}
+          <label htmlFor="answer-mode">回答方式</label>
+          <select id="answer-mode" value={answerMode} onChange={(event) => setAnswerMode(event.target.value as AnswerMode)}>
+            <option value="fact">查找事实</option><option value="comparison">跨材料比较</option><option value="plan">提出工作方案</option>
+          </select>
+          <label htmlFor="query-role">本次使用角色</label>
+          <select id="query-role" value={selectedRoleId} onChange={(event) => chooseRole(event.target.value)}>
+            <option value="">不使用角色</option>{roles.map((role) => <option key={role.role_id} value={role.role_id}>{role.name}</option>)}
+          </select>
+        </details>
+      </form>
+      <details className="ask-secondary" aria-label="本机问答历史">
+        <summary>本机历史</summary>
+        <section className="conversation-history">
         <div className="section-title-row"><h2>本机历史</h2><span>只保存在此 profile 和工作库</span></div>
         {history.length === 0 ? <p className="empty-state">还没有问答历史。</p> : <ul>
           {history.map((item) => <li key={item.conversation_id} className={item.conversation_id === conversationId ? 'selected' : ''}>
             <button className="history-open" onClick={() => void openConversation(item.conversation_id)}>
               <strong>{item.title}</strong><small>{new Date(item.updated_at).toLocaleString()} · {item.message_count} 个问题 · {stateLabel[item.state]}</small>
             </button>
-            <button className="text-button" aria-label={`删除 ${item.title}`} onClick={() => void deleteConversation(item.conversation_id)}>删除</button>
+            <button className="text-button" aria-label={`删除 ${item.title}`} onClick={() => setPendingDelete({ kind: 'conversation', id: item.conversation_id, label: item.title })}>删除</button>
           </li>)}
         </ul>}
         {historyCursor && <button className="text-button" onClick={() => void refreshHistory(true)}>加载更早历史</button>}
-      </section>
-      <section className="index-status-panel">
+        </section>
+      </details>
+      <details className="ask-secondary ask-index">
+        <summary>本机索引与更新</summary>
+        <section className="index-status-panel">
         <div className="index-status-copy">
           <span className={status?.state === 'ready' ? 'index-state ready' : 'index-state'}>{status?.state === 'stale' ? '本机索引有待更新' : status?.fingerprint ? '本机索引已就绪' : '还没有本机索引'}</span>
-          <p>{status?.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。可确认增量计划更新。` : status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块 · ' + status.fingerprint : '创建计划会展示本次范围与估算，再由你确认运行。'}</p>
+          <p>{status?.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。可确认增量计划更新。` : status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块' : '创建计划会展示本次范围与估算，再由你确认运行。'}</p>
         </div>
         <div className="index-actions">{!plan ? <button className="button secondary" onClick={createPlan}>准备索引计划</button> : <button className="button primary" onClick={executePlan}>{acceptancePlan ? '确认范围并开始索引' : '按计划创建索引'}</button>}</div>
-      </section>
-      {plan && <section className="plan-card" aria-live="polite"><div><strong>{acceptancePlan ? '真实索引范围待独立确认' : '索引计划待确认'}</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个合格页面</span></div><p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{acceptancePlan ? `最多 ${acceptancePlan.request_limit} 次 embedding HTTP 请求，每批最多 20 段（这是调用次数上限，不是金额上限）。按 2026-10-13 核对价估算约 ¥${(plan.estimated_tokens * 0.5 / 1_000_000).toFixed(4)}，实际账单未知。` : plan.estimated_cost === null ? '当前无法估算 provider 费用。' : '本机 Fake embedding 费用为 ¥0。'}</p>{acceptancePlan && <><p>将发送给阿里云百炼 embedding 的页面：</p><ul>{plan.page_ids.map((id) => <li key={id}>{String(eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面')}</li>)}</ul><details><summary>页面内部编号与版本</summary><pre>{JSON.stringify({ page_ids: plan.page_ids, page_versions: plan.page_versions }, null, 2)}</pre></details></>}<button className="text-button" onClick={() => void cancelIndexPlan()}>取消计划</button></section>}
-      {result && <p role="status" className="success-note">已保存到本机：{result.indexed_pages} 页，{result.embedded_chunks} 个新分块，复用 {result.reused_chunks} 个。</p>}
+        </section>
+        {plan && <section className="plan-card"><div><strong>{acceptancePlan ? '真实索引范围待独立确认' : '索引计划待确认'}</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个合格页面</span></div><p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{acceptancePlan ? `最多 ${acceptancePlan.request_limit} 次 embedding HTTP 请求，每批最多 20 段。` : plan.estimated_cost === null ? '当前无法估算 provider 费用。' : '本机 Fake embedding 费用为 ¥0。'}</p>{acceptancePlan && <><p>将发送给阿里云百炼 embedding 的页面：</p><ul>{plan.page_ids.map((id) => <li key={id}>{String(eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面')}</li>)}</ul></>}<button className="text-button" onClick={() => void cancelIndexPlan()}>取消计划</button></section>}
+        {result && <p role="status" className="success-note">已保存到本机：{result.indexed_pages} 页，{result.embedded_chunks} 个新分块，复用 {result.reused_chunks} 个。</p>}
+      </details>
 
-      <section className="conversation-history" aria-label="本机问答偏好与记忆">
+      <details className="ask-secondary" aria-label="本机问答偏好与记忆">
+        <summary>问答角色与记忆</summary>
+        <section className="conversation-history">
         <div className="section-title-row"><h2>问答角色与记忆</h2><span>只调整表达与指代理解，不改变证据或权限</span></div>
         <label htmlFor="answer-role">使用角色</label>
         <select id="answer-role" value={selectedRoleId} onChange={(event) => chooseRole(event.target.value)}>
@@ -508,7 +544,7 @@ export function AskView({ onError, onOpenPage }: Props) {
         <textarea id="role-guidance" value={roleInstructions} maxLength={4000} onChange={(event) => setRoleInstructions(event.target.value)} placeholder="只调整表达方式；不能改变证据标准或执行权限。" rows={2} />
         <label htmlFor="role-budget">角色说明预算（字节）</label>
         <input id="role-budget" type="number" min={0} max={6000} value={roleBudget} onChange={(event) => setRoleBudget(Number(event.target.value))} />
-        <div className="button-row"><button className="button secondary" onClick={() => void saveRole()} disabled={!roleName.trim()}>保存角色</button>{selectedRoleId && <button className="text-button" onClick={() => void deleteRole()}>删除角色</button>}</div>
+        <div className="button-row"><button className="button secondary" onClick={() => void saveRole()} disabled={!roleName.trim()}>保存角色</button>{selectedRoleId && <button className="text-button" onClick={() => setPendingDelete({ kind: 'role', id: selectedRoleId, label: roleName || '当前角色' })}>删除角色</button>}</div>
         <h3>待确认记忆</h3>
         {memoryCandidates.length === 0 ? <p className="empty-state">没有待确认记忆。</p> : memoryCandidates.map((candidate) => <div key={candidate.candidate_id} className="memory-item">
           <textarea aria-label="编辑记忆候选" value={candidateDrafts[candidate.candidate_id] ?? candidate.text} onChange={(event) => setCandidateDrafts((current) => ({ ...current, [candidate.candidate_id]: event.target.value }))} />
@@ -518,10 +554,11 @@ export function AskView({ onError, onOpenPage }: Props) {
         <h3>已确认记忆</h3>
         {memories.length === 0 ? <p className="empty-state">目前没有已确认记忆。</p> : memories.map((memory) => <div key={memory.memory_id} className="memory-item">
           <textarea aria-label="编辑已确认记忆" value={memoryDrafts[memory.memory_id] ?? memory.text} onChange={(event) => setMemoryDrafts((current) => ({ ...current, [memory.memory_id]: event.target.value }))} />
-          <small>来源问题：{memory.source_message_id}</small>
-          <div className="button-row"><button className="text-button" onClick={() => void api.patch(`/memory/${memory.memory_id}`, { text: memoryDrafts[memory.memory_id] ?? memory.text }).then(refreshPersonalization).catch((cause: unknown) => onError(cause instanceof Error ? cause.message : '记忆没有保存修改'))}>保存修改</button><button className="text-button" onClick={() => void api.delete(`/memory/${memory.memory_id}`).then(refreshPersonalization).catch((cause: unknown) => onError(cause instanceof Error ? cause.message : '记忆没有删除'))}>删除记忆</button></div>
+          <small>来源于已确认的本人问题</small>
+          <div className="button-row"><button className="text-button" onClick={() => void api.patch(`/memory/${memory.memory_id}`, { text: memoryDrafts[memory.memory_id] ?? memory.text }).then(refreshPersonalization).catch((cause: unknown) => onError(cause instanceof Error ? cause.message : '记忆没有保存修改'))}>保存修改</button><button className="text-button" onClick={() => setPendingDelete({ kind: 'memory', id: memory.memory_id, label: '这条已确认记忆' })}>删除记忆</button></div>
         </div>)}
-      </section>
+        </section>
+      </details>
 
       {renderedMessages.length > 0 && <section className="conversation-thread" aria-label="对话内容">
         <h2>{thread?.title}</h2>
@@ -548,38 +585,22 @@ export function AskView({ onError, onOpenPage }: Props) {
           <p><strong>已确认记忆</strong></p>{memories?.length ? <ul>{memories.map((memory, index) => <li key={index}>{memory}</li>)}</ul> : <p>无</p>}
           <p><strong>历史问题</strong></p>{prior?.length ? <ul>{prior.map((item, index) => <li key={index}>{item}</li>)}</ul> : <p>无</p>}
         </> })()}
-        <details><summary>内部编号与页面版本</summary><pre>{JSON.stringify({ request_id: pendingQuery.scope.request_id, source_versions: pendingQuery.scope.source_versions }, null, 2)}</pre></details>
         <div className="button-row"><button className="button primary" onClick={() => void confirmQueryPlan()}>确认并发送本次问题</button><button className="button secondary" onClick={() => void cancelQueryPlan()}>取消，不发送</button></div>
       </section>}
-      <form ref={queryForm} className="query-form" onSubmit={ask}>
-        <label htmlFor="retrieval-purpose">资料范围</label>
-        <select id="retrieval-purpose" value={retrievalPurpose} onChange={(event) => setRetrievalPurpose(event.target.value as RetrievalPurpose)}>
-          <option value="current">当前有效资料</option><option value="history">包含历史版本</option>
-        </select>
-        {retrievalPurpose === 'history' && <p role="note" className="stale-citation-note">历史资料范围会包含已被替代或失效的版本，只供历史参考，不能代表当前规则。</p>}
-        <label htmlFor="answer-mode">回答方式</label>
-        <select id="answer-mode" value={answerMode} onChange={(event) => setAnswerMode(event.target.value as AnswerMode)}>
-          <option value="fact">查找事实</option><option value="comparison">跨材料比较</option><option value="plan">提出工作方案</option>
-        </select>
-        <label htmlFor="query-role">本次使用角色</label>
-        <select id="query-role" value={selectedRoleId} onChange={(event) => chooseRole(event.target.value)}>
-          <option value="">不使用角色</option>{roles.map((role) => <option key={role.role_id} value={role.role_id}>{role.name}</option>)}
-        </select>
-        <label htmlFor="knowledge-question">你的问题</label>
-        <div className="query-input-wrap">
-          <textarea id="knowledge-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="例如：这个项目已经确认的地点和联系人有哪些？" rows={3} />
-          {streaming ? <button type="button" className="button secondary" onClick={cancel}>停止回答</button> : <button className="button primary" disabled={!question.trim()}>开始检索</button>}
-        </div>
-        <small>回答与历史仅保存在本机；不会自动写入知识页。</small>
-      </form>
-
-      {(answer || citations.length > 0 || queryState !== 'idle') && (!thread?.messages.some((message) => message.request_id === requestId) || streaming) && <section className="answer-panel" aria-live="polite">
-        <div className="answer-heading"><span className="answer-mark">答</span><div><h2>本次回答 · {stateLabel[queryState]}</h2><span>{streaming ? '正在读取当前页面…' : citations.length ? '根据已确认资料' : '没有找到可引用的依据'}</span></div></div>
+      {(answer || citations.length > 0 || queryState !== 'idle') && (!thread?.messages.some((message) => message.request_id === requestId) || streaming) && <section className="answer-panel">
+        <div className="answer-heading"><span className="answer-mark">答</span><div><h2>本次回答 · <span role="status">{stateLabel[queryState]}</span></h2><span>{streaming ? '正在读取当前页面…' : citations.length ? '根据已确认资料' : '没有找到可引用的依据'}</span></div></div>
         <pre className="answer-text">{answer}</pre>
         {answerDetails && <AnswerDetails details={answerDetails} />}
         {notice && <p role="status" className={queryState === 'error' ? 'form-error' : 'stale-citation-note'}>{notice}</p>}
         {citations.length > 0 && <CitationList citations={citations} onOpen={openCitation} />}
       </section>}
+      {pendingDelete && <ConfirmDialog
+        title={pendingDelete.kind === 'conversation' ? '删除这段问答历史？' : pendingDelete.kind === 'role' ? '删除这个问答角色？' : '删除这条已确认记忆？'}
+        description={pendingDelete.kind === 'conversation' ? `“${pendingDelete.label}”及其本机对话内容将被删除。` : pendingDelete.kind === 'role' ? `“${pendingDelete.label}”将从本机问答偏好中删除。` : '这条记忆将从本机偏好中删除。'}
+        consequence="删除前不会写入任何内容，取消可保留现状。"
+        confirmLabel="确认删除" busyLabel="正在删除…" danger
+        onCancel={() => setPendingDelete(null)} onConfirm={confirmDelete}
+      />}
     </section>
   )
 }

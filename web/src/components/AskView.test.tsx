@@ -78,6 +78,67 @@ it('creates a first conversation on the server, adopts its ID, then continues it
   expect(reopened).toHaveLength(2)
 })
 
+it('puts the question first and keeps history, indexing, and personalization collapsed', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+    throw new Error(`Unexpected fetch ${url}`)
+  }))
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  const question = await screen.findByLabelText('你的问题')
+  const queryForm = question.closest('form')!
+  const historySummary = screen.getByText('本机历史', { selector: 'summary' })
+  expect(queryForm.compareDocumentPosition(historySummary.closest('details')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(historySummary.closest('details')?.open).toBe(false)
+  expect(screen.getByText('本机索引与更新').closest('details')?.open).toBe(false)
+  expect(screen.getByText('问答角色与记忆', { selector: 'summary' }).closest('details')?.open).toBe(false)
+  expect(screen.getByText('资料范围与回答方式').closest('details')?.open).toBe(false)
+})
+
+it('requires confirmation before deleting local history, roles, or confirmed memories', async () => {
+  const deletes: string[] = []
+  const role = { role_id: 'role-1', name: '简明', instructions: '', context_budget: 2000, created_at: '', updated_at: '' }
+  const memory = { memory_id: 'memory-1', source_message_id: 'private-request-id', text: '合成记忆', created_at: '', updated_at: '' }
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input); const method = init?.method ?? 'GET'
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [{ conversation_id: 'conversation-1', title: '合成问题', updated_at: '', message_count: 1, state: 'completed' }], next_cursor: null })
+    if (url.endsWith('/conversations/conversation-1')) { deletes.push(url); return new Response(null, { status: 204 }) }
+    if (url === '/api/v1/roles') return method === 'DELETE' ? new Response(null, { status: 204 }) : Response.json([role])
+    if (url === '/api/v1/memory') return method === 'DELETE' ? new Response(null, { status: 204 }) : Response.json([memory])
+    if (url === '/api/v1/memory/candidates' || url === '/api/v1/pages') return Response.json([])
+    if (url === '/api/v1/roles/role-1' || url === '/api/v1/memory/memory-1') { deletes.push(url); return new Response(null, { status: 204 }) }
+    throw new Error(`Unexpected fetch ${method} ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+
+  fireEvent.click(await screen.findByText('本机历史', { selector: 'summary' }))
+  fireEvent.click(await screen.findByRole('button', { name: '删除 合成问题' }))
+  expect(screen.getByRole('dialog', { name: '删除这段问答历史？' })).toBeTruthy()
+  expect(deletes).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(deletes).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '删除 合成问题' }))
+  fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+  await waitFor(() => expect(deletes).toContain('/api/v1/conversations/conversation-1'))
+
+  fireEvent.click(screen.getByText('问答角色与记忆', { selector: 'summary' }))
+  fireEvent.change(screen.getAllByLabelText('使用角色')[0], { target: { value: 'role-1' } })
+  fireEvent.click(screen.getByRole('button', { name: '删除角色' }))
+  expect(deletes).toHaveLength(1)
+  fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+  await waitFor(() => expect(deletes).toContain('/api/v1/roles/role-1'))
+
+  fireEvent.click(screen.getByRole('button', { name: '删除记忆' }))
+  expect(deletes).toHaveLength(2)
+  fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+  await waitFor(() => expect(deletes).toContain('/api/v1/memory/memory-1'))
+  expect(rawFetch.mock.calls.some(([input]) => String(input).includes('private-request-id'))).toBe(false)
+})
+
 it('previews real question context and cancels without posting a query', async () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'stable-query' })
   const calls: { url: string; method: string }[] = []
@@ -230,7 +291,7 @@ it('shows an explicit server input error without marking the query interrupted o
   fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '请回答问题' } })
   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
 
-  expect(await screen.findByText(/本次回答 · 回答失败/)).toBeTruthy()
+  expect(await screen.findByText('回答失败')).toBeTruthy()
   expect(screen.getByText('角色说明超过设定预算；请编辑角色内容后重试。')).toBeTruthy()
   expect(screen.queryByText(/连接中断/)).toBeNull()
   expect(conversationReads).toBe(1)
@@ -259,8 +320,39 @@ it('does not retry a stream that ends without its single terminal event', async 
   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
 
   expect(await screen.findByText(/连接已结束，回答未完整送达/)).toBeTruthy()
-  expect(screen.getByText('部分')).toBeTruthy()
+  expect(screen.getByText(/^部分/)).toBeTruthy()
   expect(queryCalls).toBe(1)
+})
+
+it.each([
+  ['request id 不匹配', [event('other-request', 3, 'delta', { text: '不得显示' })]],
+  ['seq 不连续', [event('malformed-request', 4, 'delta', { text: '不得显示' })]],
+  ['终态后仍有事件', [event('malformed-request', 3, 'completed', { text: '部分回答' }), event('malformed-request', 4, 'error', { message: '重复终态' })]],
+])('拒绝 %s 并保留部分内容且不自动重发', async (_label, trailingEvents) => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'malformed-request' })
+  let queryCalls = 0
+  const rawFetch = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/settings') return Response.json({ embedding_fingerprint: 'fake-fingerprint' })
+    if (url === '/api/v1/queries') {
+      queryCalls += 1
+      return new Response([
+        event('malformed-request', 1, 'status', { state: 'retrieving', conversation_id: 'malformed-conversation' }),
+        event('malformed-request', 2, 'delta', { text: '部分' }), ...trailingEvents,
+      ].join(''), { status: 200, headers: { 'Content-Type': 'text/event-stream', 'X-Conversation-ID': 'malformed-conversation' } })
+    }
+    if (url.endsWith('/conversations/malformed-conversation/reopen')) return Response.json({ conversation_id: 'malformed-conversation', title: '合成问题', created_at: '', updated_at: '', message_count: 1, state: 'interrupted', messages: [] })
+    throw new Error(`Unexpected fetch ${url}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '合成问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  expect(await screen.findByText(/问答流顺序异常/)).toBeTruthy()
+  expect(screen.getByText(/^部分/)).toBeTruthy()
+  await waitFor(() => expect(queryCalls).toBe(1))
 })
 
 it('sends the selected answer mode and role, and confirms a server-verified memory candidate', async () => {
