@@ -1,6 +1,6 @@
 # 前端体验实施路线图（2026-10-15）
 
-状态：A 适用离线技术门 PASS；B repair1 固定产品 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c` 经 fresh QA 和 Sol 判定适用离线核心及两项修复 PASS。B 初次产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 的 QA **FAIL** 原件保留。C 产品固定 SHA `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c`，DEV 自测已完成，fresh QA 待执行且 Sol 尚未作 gate 判断。C 自测 190 passed / 4 todo；4 条未覆盖的全站守卫明确归 D：① all-site ordinary visible-text identifier/path leak check; ④ Today/Approval/Ask loading-vs-empty; ⑤ app-wide destructive action confirmation classes; ⑥ stream intermediate incomplete Markdown syntax. ② Chinese user-facing terms 与 ⑨ navigation/read do not call provider/index plan have C test cases only, not global coverage. 见 [C DEV 报告](../quality/reports/2026-10-15-FRONTEND-C-DEV.md)。B repair1 QA/evidence：[QA 与 Sol gate](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)、[QA evidence 索引](../quality/reports/evidence/2026-10-15-frontend-b-repair1-qa/README.md)、[B 初始 QA FAIL](../quality/reports/evidence/2026-10-15-frontend-b-initial-qa/README.md)。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL，自动修复使用 1/2；[A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机等继续按各门记为 NOT_RUN。
+状态：A `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`、B repair1 `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`、C `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c` 经 fresh QA 与 Sol 判定各自适用离线范围 PASS。D 初次固定产品 SHA `876008e1d33420f57fb31772c76e471379e6b98d` 经 fresh QA **FAIL / P1**：completed 同 profile/workspace 在 native 重启后仍进入 workspace gate，打开已有库后再次显示向导 step 2。四条全站守卫及十 mutation 的开发证据只属于 876，不抵消 QA FAIL。repair1 已获授权，但用户要求当前仅收尾文档、尚无产品代码变化；按[repair1 handoff](NEXT-FRONTEND-D-REPAIR1.md)继续。A/B/C 报告见 [A](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)、[B](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)、[C](../quality/reports/2026-10-15-FRONTEND-C-QA.md)。D初次脱敏摘要见[QA报告](../quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)。真实 provider/OAuth/Feishu/Keychain/DMG/安装/公证/生产/长期/双机仍按各自门记为 NOT_RUN。
 
 ## 决议优先级与范围
 
@@ -70,7 +70,9 @@ repair1 QA 已对固定产品 SHA 独立复验，Sol 判适用 B 离线核心及
 
 ### D — 切片 10 守卫收口及最终候选
 
-补齐十条守卫、逐条变异和可复现浏览器矩阵；未实现项不能留成含糊 todo。用全新源码树构建新的 Internal App / DMG 候选并记录 source SHA、dirty 标志、前端指纹和构建号；在离线 harness 内完成 WKWebView 隔离复验。此里程碑需要 fresh QA。重要里程碑合并需用户批准，候选构建不等于安装、公证或真实验收。
+初次 D 固定 SHA `876008e1d33420f57fb31772c76e471379e6b98d` 已完成 ①④⑤⑥、十条守卫开发变异、browser matrix 和 ad-hoc candidate，但 fresh QA 发现完成首配后同 profile/workspace 重启又弹 workspace gate / setup step 2，D gate **FAIL / P1**。候选 App/DMG 与 package manifest 不覆盖不删；旧 main candidate `.local/internal-builds/main-bce8843` 也不动。已获 repair1 开始授权但当前用户只允许文档收尾，下一执行者直接从 [D repair1 handoff](NEXT-FRONTEND-D-REPAIR1.md)开始。
+
+repair1 的产品目标是把仅含 `step/completed/open` 的 profile+workspace 隔离首配进度持久化到本机 backend，通过 Pydantic/OpenAPI/TS typed API，保留 WKWebView nonPersistent；在新鲜 focused red-green 用例验证 completed→Today、open incomplete 原 step、closed 不弹、设置手动续接与 step4 优先、失败可见/可 retry、profile/workspace 隔离、原子性及密钥字段拒绝后，再固定 clean 新 SHA 并用 managed new build worktree + 全新 candidate 做 native same-profile restart/Fake GUI 与 fresh QA。不能把旧 876 tests/mutations 或旧候选称为 repair1 证据。CSS 640 是 reflow；root CSS zoom harness 仅 simulation；browser menu 200% 与 native pageZoom **NOT_RUN**。真实服务、Keychain、用户资料、安装 App、生产及发布都不碰。重要里程碑 merge 仍需用户批准。
 
 ## 新鲜 QA 里程碑
 
