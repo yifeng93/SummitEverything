@@ -1753,6 +1753,11 @@ export interface components {
          *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
          *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
          *     rejected instead of having it silently stored on disk.
+         *
+         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
+         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
+         *     out-of-contract payload would look accepted; the validator below closes that
+         *     (independent QA finding D-4).
          */
         FirstUseProgress: {
             /**
