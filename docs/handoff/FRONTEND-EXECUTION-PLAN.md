@@ -1,6 +1,6 @@
 # 前端体验实施路线图（2026-10-15）
 
-状态：A 适用离线技术门 PASS；B 初始 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 首次 QA **FAIL**，repair1 产品固定 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`，Developer 自测完成、fresh QA pending、Sol gate pending。报告：[B repair1 DEV](../quality/reports/2026-10-15-FRONTEND-B-DEV-REPAIR1.md)；[repair1 evidence](../quality/reports/evidence/2026-10-15-frontend-b-repair1/README.md)；[初次 QA FAIL 归档](../quality/reports/evidence/2026-10-15-frontend-b-initial-qa/README.md)。规划基线 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`；实现分支 `codex/frontend-ux-20261015`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。本次 A gate 结论保留 8 项全站 todo 与 3 条 lint warning，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机未重跑。
+状态：A 适用离线技术门 PASS；B repair1 固定产品 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c` 经 fresh QA 和 Sol 判定适用离线核心及两项修复 PASS。初始产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 首次 QA **FAIL** 原件保留。B gate 不代表全站、C/D、Stage C 或产品整体 PASS。报告：[B repair1 fresh QA / Sol gate](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)、[QA evidence 索引](../quality/reports/evidence/2026-10-15-frontend-b-repair1-qa/README.md)、[B 初始 QA FAIL](../quality/reports/evidence/2026-10-15-frontend-b-initial-qa/README.md)。C 当前在同一实现分支按项目、问答、阅读切片串行开发；固定产品 B SHA 为 `a0ccad8`。A 固定产品 SHA `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，初始 `9ed544a` FAIL、自动修复使用 1/2。QA 报告及证据入口见 [A repair1 QA 归档](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)。A 保留全站 todo 与 3 条 lint warning；B 为 6 项 todo / 2 条 lint warning；Python 661、QA 变异、真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机均未在 B 重跑。
 
 ## 决议优先级与范围
 
@@ -58,7 +58,7 @@
 
 父产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 已由初次独立 QA 判 **FAIL**，发现 QA-001 SourceOrganizer Real 来源整理未展示被冻结的 `outgoing_inputs` 正文与可读目标，以及 QA-002 Import Drawer 隐藏文件 input 焦点不可见。repair1 产品固定 SHA：`a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`；Developer 检查 180 passed / 6 todo、typecheck/lint/build exit 0、离线 Playwright 2/2、FastAPI/Fake 冲突闭环 1/1、同范围真实冻结 scope 取消 1/1；Python 在 repair1 未重跑（后端未改）。Import Drawer 焦点捕获为 5 个宽度 × light/dark 共 10 张；退出码、原失败/重跑和文件哈希见 [repair1 DEV/evidence](../quality/reports/2026-10-15-FRONTEND-B-DEV-REPAIR1.md)。
 
-产品已冻结，fresh QA 待对 repair1 SHA 独立复验，Sol 保留 gate 决定权。验收重点：scope 正文/目标/预算与服务器冻结值一致、改变选择器后仍确认原 scope、未知/错误目标 fail closed、取消及刷新零 provider/job；两个文件入口在 5×2 上焦点可见且保留原生键盘选择、Escape 和焦点归还。来源整理 scope 与 Real 索引 plan 是不同流程。6 项 todo 归到 C/D，真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机仍未测。不得把初始 FAIL 合并写成 PASS。
+repair1 QA 已对固定产品 SHA 独立复验，Sol 判适用 B 离线核心及修复 PASS。结果为 180 passed / 6 todo、typecheck/lint/build exit 0、离线 E2E 2/2、Real scope/focus 1/1、Fake FastAPI 1/1。Python 661、QA mutation 未运行；真实 provider/OAuth/Feishu/Keychain/DMG/进程重启/五日/双机仍未测。不得把初始 FAIL 合并写成 PASS；6 项 todo 留给 C/D。
 
 回滚：ApprovalView 与 TodayView 分离提交。入口迁移时去掉今日旧授权按钮；共享 OAuth 行为继续由首配第 4 步承载。
 

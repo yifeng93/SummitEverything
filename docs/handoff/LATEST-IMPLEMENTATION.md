@@ -1,8 +1,10 @@
 # 最新实现交接
 
-## 当前前端 UX 里程碑 B repair1：产品冻结，fresh QA pending
+## 当前前端 UX：B repair1 离线门通过，C 实施中
 
-B repair1 产品固定 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`（`codex/frontend-ux-20261015`）。初次独立 QA 对父产品 SHA `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 判 **FAIL**，其报告和脱敏证据保持在[初次 QA 归档](../quality/reports/evidence/2026-10-15-frontend-b-initial-qa/README.md)。repair1 Developer 自测已完成，fresh QA 待开始，Sol 尚未判门；不得称为 B PASS。报告：[B DEV repair1](../quality/reports/2026-10-15-FRONTEND-B-DEV-REPAIR1.md)；逐命令结果与截图：[repair1 evidence](../quality/reports/evidence/2026-10-15-frontend-b-repair1/README.md)。
+B repair1 产品固定 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`（`codex/frontend-ux-20261015`）经独立 QA 与 Sol 核验，适用离线核心及 repair1 两项修复 **PASS**；初始产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 的首次 QA **FAIL** 原件仍保留。此 gate 只覆盖 B 离线范围，不代表全站、C/D、Stage C 或产品整体 PASS。QA 报告与脱敏 hash 索引见[B QA repair1](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)及[QA evidence](../quality/reports/evidence/2026-10-15-frontend-b-repair1-qa/README.md)；原 DEV 报告和开发 evidence 保留。Web 180 passed / 6 todo；typecheck/lint/build、离线 Playwright 2/2、FastAPI/Fake 1/1、Real frozen scope/focus 1/1 exit 0；Python 661 与 QA mutation 未运行。全站 todo、真实 provider/飞书/OAuth/Keychain、用户材料、DMG/安装/公证、五日和双机仍 NOT_RUN。
+
+当前 C 唯一 writer 在 `codex/frontend-ux-20261015` 实现树，产品基于上述 B 固定 SHA，工作树仅允许串行修改。C 范围为项目列表/独立详情及返回状态、question-first Ask 安全流式 Markdown、Reader 同一渲染器与引用版本边界；不得改内容资格/检索/prompt，也不得以推断补造项目日期或状态。最新范围见[执行路线图](FRONTEND-EXECUTION-PLAN.md)。
 
 当前实现包括五组独立审批加载/空/错/最近成功与重试、只汇总选择且逐类确认、今日会议/任务/条件行动建议/工具/收件箱、来源/稿件/正式正文/索引与外部动作独立确认。Fake FastAPI 闭环覆盖来源原始字节和 origin kind、取消零写、整理到有部分冲突的稿件、暂时未决选择、正式正文确认与索引；自动化记录外部尝试 0。离线浏览器矩阵覆盖 Today、Approval、Import Drawer、Journal Dialog、审批选择汇总五种场景，各 320/390/768/960/1280 × light/dark。
 
