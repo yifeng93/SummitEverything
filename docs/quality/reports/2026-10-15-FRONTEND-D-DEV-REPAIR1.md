@@ -17,7 +17,9 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 
 进度真源移到本机后端，按 profile + 工作库隔离，只保存非秘密的三个字段。
 
-**存储层**：新增 `src/summit_everything/local/first_use_progress.py`。文档位于活动工作库自己的 `local_profile_dir` 下（`first-use-progress.json`），因此不同工作库、不同 profile 天然看不到彼此。写入使用锁文件 + `mkstemp`/`fsync`/`os.replace`/目录 `fsync` 的原子替换；`FirstUseProgress` 是 `extra="forbid"` + 严格布尔的白名单模型，非法 `step`、未知字段、密钥形状字段一律在写盘前被拒绝；损坏或含未知字段的文档读取时失败关闭（`FirstUseProgressError`），不会被静默解释成「还没有进度」。
+**存储层**：新增 `src/summit_everything/local/first_use_progress.py`。文档位于活动工作库自己的 `local_profile_dir` 下（`first-use-progress.json`），因此不同工作库、不同 profile 天然看不到彼此。写入使用锁文件 + `mkstemp`/`fsync`/`os.replace`/目录 `fsync` 的原子替换；`FirstUseProgress` 是 `extra="forbid"` + 严格布尔的白名单模型，未知字段、密钥形状字段、缺字段、非布尔值、越界或非整数 `step` 一律在写盘前被拒绝；损坏或含未知字段的文档读取时失败关闭（`FirstUseProgressError`），不会被静默解释成「还没有进度」。
+
+  一处**已由 fresh QA 独立量化的契约边界**（其 D-4，INFO）：JSON 里写成整数值浮点的 `{"step": 3.0}` 会被 Pydantic `Literal` 归一化后接受（返回 200），落盘为整数 `3`，磁盘上永远不会出现浮点。前端只会发送 `2/3/4/5`，产品面不可达；但本报告原先把「非法 step 一律拒绝」写得过宽，按 QA 结论收紧为：非整数或越界值拒绝，整数值浮点会被归一化接受。QA 已用 A9b 断言把这一实际行为固定下来。
 
 **契约层**：`src/summit_everything/api/app.py` 新增
 
@@ -27,6 +29,8 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 两者都要求活动工作库（无库时沿用 409 `workspace_not_open`）和会话 token。`web/openapi.json` 与 `web/src/api/generated.ts` 已同步，diff 为纯新增（+234 行、0 删除），未改动任何既有 schema。
 
 **前端**：`web/src/components/firstUseProgress.ts` 现在只导出后端读写与一次性迁移；`loadFirstUseProgress` 把 404 `first_use_progress_absent` 映射为「无记录」，其余失败抛出；后端返回形状不合法时失败关闭，不会把看不懂的载荷当成进度。旧 localStorage 键只用于一次性迁移：后端已有记录时后端优先、不迁移；后端没有记录且旧副本形状合法时先写后端、成功后删除浏览器副本，此后不再有任何 localStorage 写入。
+
+  「一次性」的准确范围（QA D-2，P3）：在生产构建里同一场景恰好发出一次迁移 PUT；在 **React StrictMode 的 dev 运行**里，挂载副作用会被调用两次，因此可能发出两次**载荷逐字节相同**的迁移 PUT（幂等，第二次返回 200，不损坏数据）。dev 专属，打包产物不受影响。
 
 `App.tsx` 按本机记录决定落点：
 
@@ -55,7 +59,7 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 | TypeScript (`tsc -b`) | **PASS**，exit 0 | `typecheck.log`、`static.exit` |
 | Oxlint | **PASS**，exit 0；仍有 **2 条既存** React effect warning，无新增 | `lint.log`、`static.exit` |
 | Vite build | **PASS**，exit 0；保留既存 >500 kB chunk 提示 | `build.log`、`static.exit` |
-| Offline Playwright（含首配闭环与五档/深浅基线） | **PASS**，**2/2**，exit 0 | `green-e2e.log`、`green-e2e.exit` |
+| Offline Playwright（默认门：`first-use.spec.ts` + `viewport.spec.ts`） | **PASS**，**2/2**，exit 0 | `green-e2e.log`、`green-e2e.exit` |
 | FastAPI + Fake 集成 E2E（真实后端，隔离 profile/工作库） | **PASS**，**1/1**，exit 0 | `green-e2e-integration.log`、`green-e2e-integration.exit` |
 | OpenAPI ↔ 浏览器类型逐字节一致（CI 门） | **PASS**：重新运行 `scripts/export_openapi.py` 后 `web/openapi.json` 与 `web/src/api/generated.ts` 相对 tracked 无 diff | `static.exit` |
 | `ruff check src tests` | **PASS**，exit 0 | `ruff-check.log`、`static.exit` |
@@ -74,7 +78,7 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 | 02 | `FirstUseWizard.commit` 忽略写入失败，照样前进 | **RED**，exit 1，3 failed / 23 passed | `mutation/02-commit-ignores-write-failure.log` |
 | 03 | `resolveFirstUseProgress` 跳过 durable 读取 | **RED**，exit 1，3 failed / 4 passed | `mutation/03-durable-read-ignored.log` |
 
-本轮**没有**重跑 876 的全站视口矩阵与全部十条变异；受影响 E2E（首配闭环、五档/深浅基线，以及真实 FastAPI + Fake 的集成闭环）已重跑通过。
+本轮**没有**重跑 876 的全站视口矩阵与全部十条变异；受影响 E2E（首配闭环、五档/深浅基线，以及真实 FastAPI + Fake 的集成闭环）已重跑通过。注意 `npm run test:e2e` 的默认 `testMatch` 只含 `first-use.spec.ts` 与 `viewport.spec.ts`；`frontend-c-flow`、`frontend-c-view`、`approval-today`、`first-use-real` 属其他配置，**不在**本行 2/2 的覆盖范围内（QA 的同类指正）。
 
 ## 测试契约的显式更新
 
@@ -89,7 +93,7 @@ D 初次固定 SHA `876008e` 经 fresh QA 判 **FAIL / P1**：完成首次配置
 
 - **Native WKWebView 同 profile 重启：NOT_RUN。** 本轮按用户决定不建包、不启动 GUI，因此原始 P1 的 native 复现环境没有被重新验证。本轮只证明「durable 存储 + 落点判定 + 失败可见」在 API/浏览器层成立；native 同 profile 重启仍需新候选独立复核。
 - **新 macOS 候选/DMG：NOT_RUN。** 没有新的 App、DMG、package manifest、frontend/dependencies hash 或 build ID。876 的候选身份与 `.local/internal-builds/main-bce8843` 均原样保留。
-- **pre-repair1 已配好的工作库会再看到一次向导。** 这类工作库既没有后端记录（旧版本没写过），重装后 WKWebView 里也没有浏览器副本，因此按「本机没有记录」处理会展示一次向导。这符合「不按『有凭据』猜测首次配置已完成」的约束；用户完成或明确关闭一次后，本机就有 durable 记录，之后不再打扰。
+- **pre-repair1 已配好的工作库会再看到一次向导，且关闭前 Today 不可达。** 这类工作库既没有后端记录（旧版本没写过），重装后 WKWebView 里也没有浏览器副本，因此按「本机没有记录」处理会展示一次向导。这符合「不按『有凭据』猜测首次配置已完成」的约束；用户完成或明确关闭一次后，本机就有 durable 记录，之后不再打扰。**fresh QA 指出本报告原先低估了后果**：向导是带 `.wizard-backdrop` 的模态层，在用户关闭它之前会拦截主导航点击，也就是**关掉之前到不了 Today**（QA D-1，P3）。这不是回归（父 SHA `876008e` 在同场景下更差：根本进不去 Today），但若判定要求「老工作库不得再被 onboarding」，就需要一条可区分的落点。
 - **200% 浏览器菜单缩放与原生 `pageZoom`：NOT_RUN**（与 876 相同，未变化）。640 CSS px 仅是 reflow。
 - 真实 provider / OAuth / 飞书 / Keychain / 用户材料 / 已安装 App / Developer ID 与公证 / 五日 / 双机 / 生产与发布：**未触碰、未测**。
 - 读取进度失败时当前实现是「留在今日 + 提示 + 设置可手动打开向导」，失败场景下没有向导自动弹出；这是产品判断，测试只覆盖到「提示可见且不误报已完成」。

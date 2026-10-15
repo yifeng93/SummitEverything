@@ -6,7 +6,8 @@
 - **repair1 产品源码固定 SHA：`faa1edd611a74dcdc26bff234de810bdf47761cb`**（父产品 SHA `876008e1d33420f57fb31772c76e471379e6b98d`），提交后产品 tree clean。该 SHA 之后的 docs/evidence 提交都不是受测产品 SHA。
 - 里程碑 A `9c33a9d`、B repair1 `a0ccad8`、C `1b1efda` 均仅适用各自离线范围 PASS。
 - D 初次 SHA `876008e` 经 fresh QA 判 **FAIL / P1**，脱敏报告见[初次 QA 归档](../quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)，原始证据仍在 `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-initial/SummitEverything/.local/qa/frontend-d-initial/`（不得复制 trace、profile、token 或真实数据到 tracked 文档）。
-- repair1 已实现并自测：见 [D repair1 DEV 报告](../quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR1.md)。**fresh QA 尚未完成；不声称 D PASS 或 P1 已关闭。**
+- repair1 已实现、自测，并经 fresh QA 在独立 worktree（detached `faa1edd`）判 **PASS（限定范围）**：同一自建 harness 在父 `876008e` 复现 P1（20 checks / 8 failed / exit 1）、受测 SHA 64/64 / exit 0；QA 独立重跑全部检查，数字与 Developer 零差异。因此 **repair1 的 P1 在「真实 FastAPI + 生产 WebUI + 真实后端进程重启 + 隔离 profile/工作库」范围内已关闭**。
+- 但 **D 里程碑门仍未通过**：原始 P1 是在 native WKWebView（nonPersistent）里观察到的，而本轮按用户决定没有建包，native 同 profile 重启 **NOT_RUN**。见 [D QA 报告](../quality/reports/2026-10-15-FRONTEND-D-QA-REPAIR1.md)、[Sol 门判断](../quality/reports/2026-10-15-FRONTEND-D-SOL-GATE.md)与 [D repair1 DEV 报告](../quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR1.md)。
 
 Sol 负责计划、调度、gate 判断；实现交给 Developer，修复/实现固定 SHA 后再交**全新** QA 独立验收。串行修改，fresh QA 不修改实现和 tracked tests。最多两轮自动修复；重要里程碑 merge 仍需用户批准。
 
@@ -14,10 +15,13 @@ Sol 负责计划、调度、gate 判断；实现交给 Developer，修复/实现
 
 把首次配置进度从浏览器 `localStorage` 移到本机 backend：新增 profile + workspace 隔离的非秘密进度存储（原子写入、严格白名单 `step/completed/open`、非法与密钥形状字段拒绝），通过 typed API `GET/PUT /api/v1/first-use/progress` 读写（无记录 404 `first_use_progress_absent`，读写失败 503 `progress_unavailable`），OpenAPI 与浏览器类型同步。前端以后端为唯一真源，旧 localStorage 仅一次性迁移且迁移后不再双写。`App` 按本机记录决定落点：completed→今日；未完成且 open→原 step；明确关闭→不自动弹但设置可手动续接；无记录→新工作库从第 2 步开始；**不按「有凭据」猜测首配完成**，也不新增自动打开上次工作库。步骤变化、关闭与完成都必须等 durable write 成功，失败停在原步骤并可重试。
 
-## 仍然缺的两件事
+## 仍然缺的东西
 
-1. **fresh QA**：对固定产品 SHA `faa1edd611a74dcdc26bff234de810bdf47761cb` 在独立 worktree 黑盒复验，重点重演初次 P1 路径（完成首配 → 同 profile/workspace 重启 → 手动打开已有库 → 直接 Today），并独立核对 store 隔离/原子性/白名单、迁移仅一次、失败可见与重试、鉴权与错误码、OpenAPI 逐字节一致，以及真实退出码与计数。
-2. **native 候选与同 profile 重启**：本轮按用户决定**没有**建包，所以原始 P1 被观察到的 native WKWebView 路径 **NOT_RUN**。D 门要覆盖这一条，需要用户另行授权建新候选。
+1. **native 候选与同 profile 重启（D 门的主要缺口）**：本轮按用户决定**没有**建包，所以原始 P1 被观察到的 native WKWebView 路径 **NOT_RUN**。D 门要覆盖这一条，需要用户另行授权建新候选。
+2. **D-1 待用户决议（P3，非回归）**：pre-repair1 已配好、本机无记录的工作库会被再拉进向导一次，而且**关闭前 Today 不可达**（模态遮罩拦截主导航），关闭后自愈。要么接受为已记录限制，要么给一条可区分、不遮 Today 的落点（例如按 create/open 区分，或改为非阻塞提示、只在设置页提示）。属产品可见行为，不由 Sol 单方改动。
+3. **D-4 可选小修（INFO）**：`{"step": 3.0}` 被 `Literal` 归一化接受（落盘为整数 `3`，产品面不可达）。若要让「非法 step 一律拒绝」的字面表述成立，可在下一轮小修中加严格整数校验；代价是新产品 SHA 需要再走一轮 fresh QA。
+4. **D-3（INFO）**：OpenAPI 未声明该路由实际存在的 401/404/503，列为后续契约补全项。
+5. **可继承证据的处理**：876 的十条变异与全站视口矩阵需标注「fixed tree unchanged」或按需重跑，不得冒充新 SHA 结果。
 
 ## Native 候选流程（获授权后执行）
 

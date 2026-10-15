@@ -17,4 +17,4 @@
 | `evidence/native-restart-repro.json` | `dd242ee10fd3d56387faf3a42e2d35aa69b57567e1c05228f4be6ee3603365a2` |
 | `evidence/native-preflight.json` | `c6bbaf8554c55baed76c73412dfe3a8774a025aa11aabaaac6874a4d1dfb28b3` |
 
-上述 json 仅为无秘密安全摘要。此 tracked 摘要不复制 native screen captures、profile、trace、token、真实 workspace 或原始日志。完整范围、退出码和限制以 `.local/qa/frontend-d-initial/QA-REPORT.md` 为准。修复轮 1 的执行入口见[下一步 D repair1 交接](../handoff/NEXT-FRONTEND-D-REPAIR1.md)。
+上述 json 仅为无秘密安全摘要。此 tracked 摘要不复制 native screen captures、profile、trace、token、真实 workspace 或原始日志。完整范围、退出码和限制以 `.local/qa/frontend-d-initial/QA-REPORT.md` 为准。修复轮 1 的执行入口见[下一步 D repair1 交接](../../handoff/NEXT-FRONTEND-D-REPAIR1.md)。
