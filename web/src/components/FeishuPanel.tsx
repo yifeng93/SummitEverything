@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, api, newOperationId } from '../api/client'
 import type { components } from '../api/generated'
+import { startFeishuAuthorization } from './feishuAuthorization'
 
 type Status = components['schemas']['FeishuStatus']
 type Materials = components['schemas']['MaterialPage']
 type Calendar = components['schemas']['CalendarPage']
 type Imports = components['schemas']['ImportResult']
-type Authorization = components['schemas']['AuthorizationStart']
 type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: number; state: string }
 type PendingApproval = { plan: AcceptancePlan; operation: string; scope: Record<string, unknown>; execute: (planId: string) => Promise<void> }
 const prefix = '/integrations/feishu'
@@ -85,19 +85,14 @@ export function FeishuPanel({ onImported, onMode }: { onImported: () => Promise<
   async function authorize() {
     setBusy(true); setError(''); setAuthorizationUrl(null)
     try {
-      const result = await api.post<Authorization>(prefix + '/authorizations', {})
       if (status?.mode === 'real') {
-        const url = new URL(result.authorization_url)
-        if (url.origin !== 'https://accounts.feishu.cn' || url.pathname !== '/open-apis/authen/v1/authorize'
-          || url.username || url.password || url.hash || !url.searchParams.get('state')) {
-          throw new Error('飞书授权入口无效，请检查本机配置。')
-        }
+        const result = await startFeishuAuthorization('real')
         // No fetch to the external authorization endpoint and no automatic code
         // exchange. The user opens the official page in a separate browser.
-        setAuthorizationUrl(result.authorization_url)
+        setAuthorizationUrl(result.authorizationUrl)
       } else {
-        const value = await api.oauthCallback<Status>(result.authorization_url)
-        setStatus(value); setAuthProblem(null)
+        const result = await startFeishuAuthorization('fake')
+        setStatus(result.status); setAuthProblem(null)
       }
     } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '授权失败') }
     finally { setBusy(false) }

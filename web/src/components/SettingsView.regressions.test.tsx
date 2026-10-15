@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { SettingsView } from './SettingsView'
 
@@ -88,7 +88,7 @@ it('asks for an explicit range confirmation before calling the fixed DeepSeek sm
   const button = await screen.findByRole('button', { name: 'DeepSeek Chat（剩余 1）' })
   expect((button as HTMLButtonElement).disabled).toBe(false)
   fireEvent.click(button)
-  const dialog = await screen.findByRole('dialog', { name: '确认本次连接检查' })
+  const dialog = await screen.findByRole('dialog', { name: '确认本次连接检查：DeepSeek Chat' })
   expect(dialog.textContent).toContain('累计已用 0/1')
   expect(dialog.textContent).toContain('不会自动重发')
   expect(smokePosts()).toHaveLength(0)
@@ -98,4 +98,34 @@ it('asks for an explicit range confirmation before calling the fixed DeepSeek sm
   fireEvent.click(button)
   fireEvent.click(await screen.findByRole('button', { name: '确认发送本次检查' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/provider-smoke/deepseek-chat', expect.objectContaining({ method: 'POST' })))
+})
+
+it('does not delete a credential until the destructive confirmation is accepted', async () => {
+  const state = {
+    mode: 'fake', model_studio_account_id: 'synthetic-account',
+    feishu: { app_id: '', redirect_uri: '' },
+    llm: { provider: 'fake', model: null, account_id: 'synthetic-account', enabled: false },
+    embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid/compatible-mode/v1', enabled: false },
+    rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid/api/v1', enabled: false },
+    credential_status: { feishu_app: false, deepseek: true, dashscope: false },
+    capabilities: {}, keychain_available: false,
+  }
+  const fetchMock = vi.fn(async (_url: unknown, init?: RequestInit) => ({ ok: true, status: 200, json: async () => {
+    void init
+    return state
+  } }))
+  vi.stubGlobal('fetch', fetchMock)
+  render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await screen.findAllByRole('button', { name: '删除本机密钥' })
+  const modelCard = screen.getByRole('region', { name: 'AI 模型' })
+  fireEvent.click(within(modelCard).getAllByRole('button', { name: '删除本机密钥' })[0]!)
+  const dialog = await screen.findByRole('dialog', { name: '删除所选本机密钥？' })
+  expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: '取消' }))
+  expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
+  fireEvent.click(within(dialog).getByRole('button', { name: '取消' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
+  fireEvent.click(within(modelCard).getAllByRole('button', { name: '删除本机密钥' })[0]!)
+  fireEvent.click(await screen.findByRole('button', { name: '删除密钥' }))
+  await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(1))
 })

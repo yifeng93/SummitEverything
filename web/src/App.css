@@ -63,6 +63,7 @@ h3 { color: var(--ink); margin: 0; font-size: var(--text-list); font-weight: 600
 
 .button { min-height: 36px; border: 1px solid transparent; border-radius: var(--radius-sm); padding: 0 14px; font-size: var(--text-list); font-weight: 600; transition: background .15s, border-color .15s; }
 .button.primary { background: var(--accent); color: var(--on-accent); }.button.primary:hover:not(:disabled) { background: var(--accent-dark); }
+.button.danger { background: var(--danger); color: var(--on-accent); }.button.danger:hover:not(:disabled) { background: var(--danger-ink); }
 .button.secondary { background: var(--surface); border-color: var(--control-border); color: var(--ink); }.button.secondary:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted); }
 .button.wide { width: 100%; min-height: 44px; }.button-row { display: flex; align-items: center; gap: 8px; }
 .text-button, .back-link { padding: 3px 0; border: 0; background: none; color: var(--accent); font-size: var(--text-list); font-weight: 600; }.text-button:hover, .back-link:hover { text-decoration: underline; }
@@ -177,6 +178,8 @@ h3 { color: var(--ink); margin: 0; font-size: var(--text-list); font-weight: 600
 .settings-section-heading h2 { margin: 0; font-size: var(--text-section); }
 .settings-section-heading span, .settings-help { color: var(--muted); font-size: var(--text-small); }
 .settings-field { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr); align-items: center; gap: 1rem; }
+.settings-field, .settings-card-form { min-width: 0; }
+.settings-field > * { min-width: 0; max-width: 100%; }
 .settings-field > span { font-size: var(--text-list); }
 .settings-field input, .settings-field select { min-width: 0; width: 100%; padding: .65rem .75rem; border: 1px solid var(--control-border); border-radius: var(--radius-sm); color: var(--ink); background: var(--surface); font: inherit; }
 .settings-help { margin: 0; line-height: 1.5; }
@@ -227,8 +230,10 @@ h3 { color: var(--ink); margin: 0; font-size: var(--text-list); font-weight: 600
 .settings-mode-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; color: var(--muted); font-size: var(--text-small); }
 .settings-mode-line strong { color: var(--ink); font-weight: 600; }
 .settings-mode-line span { color: var(--quiet); font-size: var(--text-small); }
-.settings-cards { display: grid; gap: 16px; max-width: 760px; margin: 22px 0 0; }
-.settings-card { display: grid; gap: 12px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.settings-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 760px; min-width: 0; margin: 22px 0 0; }
+.settings-card { box-sizing: border-box; display: grid; min-width: 0; gap: 12px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.settings-card > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.settings-card .button-row { flex-wrap: wrap; }
 .settings-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .settings-card-head h2 { font-size: var(--text-body); }
 .settings-card-desc { margin: 0; color: var(--muted); font-size: var(--text-small); line-height: 1.7; }
@@ -266,6 +271,12 @@ h3 { color: var(--ink); margin: 0; font-size: var(--text-list); font-weight: 600
 .wizard-endpoint span { padding: 2px 7px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--surface); color: var(--quiet); font-size: var(--text-caption); }
 .wizard-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
 .wizard-summary { padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+.confirm-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: var(--overlay); }
+.confirm-dialog { width: min(520px, 100%); max-height: min(90vh, 720px); overflow: auto; display: grid; gap: 12px; padding: 22px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
+.confirm-dialog h2 { margin: 0; font-size: var(--text-section); }
+.confirm-dialog p { margin: 0; line-height: var(--lh-body); }
+.confirm-consequence { padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--surface-2); color: var(--muted); font-size: var(--text-small); }
+.confirm-actions { display: flex; justify-content: flex-start; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
 
 @media (max-width: 560px) {
   .wizard-backdrop { padding: 14px 8px; }

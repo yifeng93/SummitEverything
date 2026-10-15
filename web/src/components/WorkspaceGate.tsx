@@ -53,7 +53,8 @@ export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace) =
           <span className="brand-mark" aria-hidden="true">S</span>
           <div><strong>SummitEverything</strong><span>本地知识工作台</span></div>
         </div>
-        <p className="eyebrow">先连接一个工作库</p>
+        <p className="eyebrow">首次配置 · 第 1 步，共 5 步</p>
+        <p className="settings-card-next">先打开工作库，成功后会在这里继续模型与密钥配置。</p>
         <h1>让工作资料成为<br />自己的知识。</h1>
         <p className="lede">工作库保存在你选择的本机文件夹。试用时请使用隔离的模拟资料。</p>
         <form onSubmit={submit} className="setup-form">

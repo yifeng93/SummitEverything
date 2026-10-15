@@ -22,11 +22,13 @@ import './App.css'
  * 连不上或服务报错时显示就地提示，绝不冒充「还没有工作库」。
  */
 type Connection = 'connecting' | 'ready' | 'no-workspace' | 'unreachable'
+type FirstUseStep = 2 | 3 | 4 | 5
 
 export default function App() {
   const [connection, setConnection] = useState<Connection>('connecting')
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [section, setSection] = useState<ShellSection>('today')
+  const [firstUse, setFirstUse] = useState<{ open: boolean; step: FirstUseStep; returnSection: ShellSection }>({ open: false, step: 2, returnSection: 'today' })
   const [page, setPage] = useState<Page | null>(null)
   const [profileDir, setProfileDir] = useState<string | undefined>(undefined)
   const [approval, setApproval] = useState<{ items: IntakeItem[]; drafts: Draft[]; loading: boolean; error: string }>({
@@ -117,6 +119,7 @@ export default function App() {
   }
 
   function switchWorkspace() {
+    setFirstUse((current) => ({ ...current, open: false }))
     setPage(null)
     setSection('today')
     setWorkspace(null)
@@ -133,6 +136,9 @@ export default function App() {
       resetApproval()
       setWorkspace(opened)
       if (opened.local_profile_dir) setProfileDir(opened.local_profile_dir)
+      setPage(null)
+      setSection('settings')
+      setFirstUse({ open: true, step: 2, returnSection: 'today' })
       setConnection('ready')
     }} />
   }
@@ -174,8 +180,15 @@ export default function App() {
       ) : (
         <SettingsView
           workspaceName={workspace.name}
+          workspaceId={workspace.workspace_id}
+          profileId={workspace.local_profile_dir ?? profileDir ?? 'default'}
           onSwitchWorkspace={switchWorkspace}
-          onOpenFeishuDaily={() => { setPage(null); setSection('today') }}
+        wizardOnly={firstUse.open}
+        initialWizardStep={firstUse.step}
+        onRequestWizard={(step) => setFirstUse({ open: true, step, returnSection: section })}
+        onWizardStepChange={(step) => setFirstUse((current) => ({ ...current, step }))}
+        onWizardClose={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection(firstUse.returnSection) }}
+        onFinishFirstUse={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection('today') }}
         />
       )}
     </AppShell>

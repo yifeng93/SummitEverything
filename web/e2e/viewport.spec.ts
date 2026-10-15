@@ -54,6 +54,8 @@ test('offline viewport and theme baseline for today and settings', async ({ page
         document: document.documentElement.scrollWidth,
         body: document.body.scrollWidth,
       }))
+      expect(todayMetrics.document, `today horizontal overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
+      expect(todayMetrics.body, `today body overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
       await page.screenshot({ path: resolve(evidenceDir, `today-${width}-${theme}.png`), fullPage: true })
 
       await page.getByRole('button', { name: '设置' }).click()
@@ -73,7 +75,8 @@ test('offline viewport and theme baseline for today and settings', async ({ page
           return { selector, width: rect && Math.round(rect.width), left: rect && Math.round(rect.left), right: rect && Math.round(rect.right), scrollWidth: element?.scrollWidth }
         }),
       }))
-      console.log(JSON.stringify({ width, theme, todayMetrics, settingsMetrics }))
+      expect(settingsMetrics.document, `settings horizontal overflow at ${width}px/${theme}`).toBe(settingsMetrics.viewport)
+      expect(settingsMetrics.body, `settings body overflow at ${width}px/${theme}`).toBe(settingsMetrics.viewport)
       measurements.push({ width, theme, today: todayMetrics, settings: settingsMetrics, apiCalls: apiCalls.slice() })
       await page.screenshot({ path: resolve(evidenceDir, `settings-${width}-${theme}.png`), fullPage: true })
       await testInfo.attach(`measure-${width}-${theme}`, {

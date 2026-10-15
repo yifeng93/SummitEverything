@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { api } from '../api/client'
 import { FirstUseWizard } from './FirstUseWizard'
 import { SmokeCheckConfirm } from './SmokeCheckConfirm'
+import { ConfirmDialog } from './ConfirmDialog'
+import { firstUseProgressKey } from './firstUseProgress'
 import {
   badgeClass, capabilityLabels, capabilityStatusLabel, credentialAccountId, feishuCardBadge,
   modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckDisabled, smokeChecks,
@@ -23,12 +25,19 @@ const emptySecrets: Record<SecretProvider, string> = { feishu_app: '', deepseek:
 
 type SettingsViewProps = {
   workspaceName: string
+  workspaceId?: string
+  profileId?: string
   onSwitchWorkspace: () => void
-  /** 首次配置向导的飞书授权入口；由 App.tsx 接到「今日 / 飞书日常」。 */
-  onOpenFeishuDaily?: () => void
+  wizardOnly?: boolean
+  initialWizardStep?: 2 | 3 | 4 | 5
+  onRequestWizard?: (step: 2 | 3 | 4 | 5) => void
+  onWizardStepChange?: (step: 2 | 3 | 4 | 5) => void
+  onWizardClose?: () => void
+  onFinishFirstUse?: () => void
 }
 
-export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDaily }: SettingsViewProps) {
+export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse }: SettingsViewProps) {
+  const progressKey = firstUseProgressKey(profileId, workspaceId)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [smokeStatus, setSmokeStatus] = useState<SmokeStatus | null>(null)
   // 密钥只允许停留在组件内存 state：不写 localStorage / sessionStorage / 工作库，
@@ -39,7 +48,9 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
   // 飞书授权状态来自本地只读接口；读取失败时保持「无法读取」，绝不默认成已授权。
   const [feishuStatus, setFeishuStatus] = useState<FeishuStatusRead>({ state: 'loading' })
   const [pendingCheck, setPendingCheck] = useState<SmokeCheckKey | null>(null)
-  const [wizardOpen, setWizardOpen] = useState(false)
+  const [pendingRemoval, setPendingRemoval] = useState<SecretProvider | null>(null)
+  const [settingsReadFailed, setSettingsReadFailed] = useState(false)
+  const [settingsReadAt, setSettingsReadAt] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
@@ -48,10 +59,13 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
     try {
       const value = await api.get<Settings>('/settings')
       setSettings(value)
+      setSettingsReadAt(new Date().toISOString())
+      setSettingsReadFailed(false)
       setError('')
       return value
     }
     catch (cause) {
+      setSettingsReadFailed(true)
       setError(cause instanceof Error ? cause.message : '无法读取本机设置')
       return null
     }
@@ -77,14 +91,11 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
       .then((value) => {
         if (!active) return
         setSettings(value)
-        // 首次进入设置页且三种凭据都没有配置时自动打开一次向导。判定只读本次
-        // /settings 结果，不额外发请求，也不做任何客户端持久化；关闭后本次挂载
-        // 不会再自动打开（这段逻辑只在挂载时执行一次）。
-        const credentials = value.credential_status ?? {}
-        if (!credentials.deepseek && !credentials.dashscope && !credentials.feishu_app) setWizardOpen(true)
+        setSettingsReadAt(new Date().toISOString())
+        setSettingsReadFailed(false)
       })
       .catch((cause: unknown) => {
-        if (active) setError(cause instanceof Error ? cause.message : '无法读取本机设置')
+        if (active) { setSettingsReadFailed(true); setError(cause instanceof Error ? cause.message : '无法读取本机设置') }
       })
     api.get<SmokeStatus>('/provider-smoke').then((value) => {
       if (active) setSmokeStatus(value)
@@ -95,7 +106,9 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
       setFeishuStatus(parsed ? { state: 'loaded', status: parsed } : { state: 'unreadable' })
     }).catch(() => { if (active) setFeishuStatus({ state: 'unreadable' }) })
     return () => { active = false }
-  }, [])
+  }, [progressKey])
+
+  function openWizard(step: 2 | 3 | 4 | 5 = 2) { onRequestWizard?.(step) }
 
   function setSecret(provider: SecretProvider, value: string) {
     setSecrets((current) => ({ ...current, [provider]: value }))
@@ -175,7 +188,9 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
     finally { setBusy(false) }
   }
 
-  async function removeSecret(provider: SecretProvider) {
+  async function confirmRemoveSecret() {
+    if (!pendingRemoval) return
+    const provider = pendingRemoval
     setBusy(true); setError(''); setNotice('')
     try {
       // 先读回落盘的账户标识，避免用界面上未保存的值去删除钥匙串条目。
@@ -183,9 +198,9 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
       await api.delete('/credentials/' + provider, { account_id: credentialAccountId(fresh, provider) })
       await load()
       if (provider === 'feishu_app') await loadFeishuStatus()
-      setNotice('此工作库 profile 的本应用密钥已从钥匙串删除。')
+      setNotice('所选应用密钥已从本机钥匙串删除；需要重新录入后才能使用对应能力。')
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法删除钥匙串密钥') }
-    finally { setBusy(false) }
+    finally { setBusy(false); setPendingRemoval(null) }
   }
 
   async function confirmSmoke() {
@@ -220,22 +235,52 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
     read: feishuStatus,
   })
 
+  const wizard = settings && <FirstUseWizard
+    settings={settings}
+    smokeStatus={smokeStatus}
+    feishuStatus={feishuStatus}
+    onClose={() => onWizardClose?.()}
+    onSettingsChanged={(updated) => setSettings(updated)}
+    onSmokeStatusRefresh={loadSmokeStatus}
+    onFeishuStatusRefresh={loadFeishuStatus}
+    progressKey={progressKey}
+    initialStep={initialWizardStep}
+    onWorkspaceStepBack={() => { onWizardClose?.(); onSwitchWorkspace() }}
+    onStepChange={onWizardStepChange}
+    onFinish={onFinishFirstUse}
+  />
+
+  if (wizardOnly) return settings ? <main className="onboarding-host">{wizard}</main> : <main className="setup-screen">
+    <section className="setup-card" role={settingsReadFailed ? 'alert' : 'status'}>
+      <h1>{settingsReadFailed ? '暂时无法读取本机设置' : '正在读取本机设置…'}</h1>
+      {error && <p>{error}</p>}
+      {settingsReadFailed && <button className="button secondary" type="button" onClick={() => void load()}>重新读取本机设置</button>}
+    </section>
+  </main>
+
   return <section className="content-wrap settings-view">
     <div className="eyebrow">本机 profile</div>
     <h1>设置</h1>
     <p className="lede">常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。</p>
     <p className="settings-mode-line">当前运行模式：<strong>{settings?.mode === 'real' ? 'Real · 显式启用' : 'Fake · 离线（默认）'}</strong><span>真实调用仍需一次性范围预览与独立确认。</span></p>
     <div className="settings-wizard-entry">
-      <button className="button secondary" type="button" disabled={!settings} onClick={() => setWizardOpen(true)}>重新打开连接向导</button>
-      <span>按步完成模型、密钥、连接检查与飞书接入；每步都可以跳过。</span>
+      <button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard(2)}>打开连接向导</button>
+      <span>按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。</span>
     </div>
     {error && <p role="alert" className="form-error">{error}</p>}
     {notice && <p role="status" className="settings-notice">{notice}</p>}
-    {!settings ? <p role="status">正在读取本机设置…</p> : <>
+    {settingsReadAt && <p className="settings-help">本机设置最近读取于 {new Date(settingsReadAt).toLocaleString()}</p>}
+    {!settings ? <div className="settings-cards" aria-label="设置读取状态">
+      {(['工作库', 'AI 模型', '飞书'] as const).map((title) => <section className="settings-card" aria-label={title} key={title}>
+        <CardHead title={title} badge={{ kind: 'unreadable', label: settingsReadFailed ? '暂时无法读取' : '正在读取', hint: '' }} />
+        <p className="settings-card-desc">{settingsReadFailed ? '本机没有返回可用状态；此处不会推测已连接或可用。' : '正在读取本机保存的状态。'}</p>
+        {settingsReadFailed && <button className="button secondary" type="button" onClick={() => void load()}>重新读取本机设置</button>}
+      </section>)}
+    </div> : <>
       <div className="settings-cards">
         <section className="settings-card" aria-label="工作库">
           <CardHead title="工作库" badge={{ kind: 'verified', label: '已连接', hint: '' }} />
-          <p className="settings-card-desc">知识、原件与索引都放在这个工作库里；本机历史、凭据和诊断日志不随库迁移。</p>
+          <p className="settings-card-desc">知识正文保存在这个工作库；索引、聊天历史、凭据与诊断记录按本机 profile 管理。</p>
           <div className="settings-list">
             <div><span>当前工作库</span><strong>{workspaceName}</strong></div>
             <div><span>运行方式</span><strong>本机 API + WebUI</strong></div>
@@ -257,7 +302,7 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
               <input id="secret-deepseek" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.deepseek} onChange={(event) => setSecret('deepseek', event.target.value)} />
               <div className="secret-slot-actions">
                 <small>{credentials.deepseek ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-                <button className="text-button" type="button" disabled={busy || !credentials.deepseek} onClick={() => void removeSecret('deepseek')}>删除本机密钥</button>
+                <button className="text-button" type="button" disabled={busy || !credentials.deepseek} onClick={() => setPendingRemoval('deepseek')}>删除本机密钥</button>
               </div>
             </div>
             <label className="settings-field"><span>Embedding</span><select value={settings.embedding.provider} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-embedding', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-embedding</option></select></label>
@@ -267,7 +312,7 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
               <input id="secret-dashscope" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.dashscope} onChange={(event) => setSecret('dashscope', event.target.value)} />
               <div className="secret-slot-actions">
                 <small>{credentials.dashscope ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-                <button className="text-button" type="button" disabled={busy || !credentials.dashscope} onClick={() => void removeSecret('dashscope')}>删除本机密钥</button>
+                <button className="text-button" type="button" disabled={busy || !credentials.dashscope} onClick={() => setPendingRemoval('dashscope')}>删除本机密钥</button>
               </div>
             </div>
             <div className="button-row">
@@ -294,11 +339,12 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
 
         <section className="settings-card" aria-label="飞书">
           <CardHead title="飞书" badge={feishuBadge} />
-          <p className="settings-card-desc">保存应用标识与应用密钥后，在「今日 / 飞书日常」完成授权，才能按已确认范围只读材料、日历与任务。</p>
+          <p className="settings-card-desc">保存应用标识与应用密钥后，可从这里连接或重新授权飞书。材料、日历与任务仍只读，并按已确认范围访问。</p>
           <p className="settings-card-next">{feishuBadge.hint}</p>
           <p className="settings-card-next">飞书任务写回仍不可用：缺少可独立核实写结果的方式，本页不提供任何修改飞书任务的入口。</p>
           <div className="button-row">
             <button className="text-button" type="button" disabled={busy} onClick={() => void loadFeishuStatus()}>重新读取授权状态</button>
+            <button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard(4)}>连接 / 重新授权飞书</button>
           </div>
           {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>}
           <form className="settings-card-form" onSubmit={saveFeishuCard}>
@@ -308,7 +354,7 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
               <input id="secret-feishu" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.feishu_app} onChange={(event) => setSecret('feishu_app', event.target.value)} />
               <div className="secret-slot-actions">
                 <small>{credentials.feishu_app ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-                <button className="text-button" type="button" disabled={busy || !credentials.feishu_app} onClick={() => void removeSecret('feishu_app')}>删除本机密钥</button>
+                <button className="text-button" type="button" disabled={busy || !credentials.feishu_app} onClick={() => setPendingRemoval('feishu_app')}>删除本机密钥</button>
               </div>
             </div>
             <div className="button-row">
@@ -374,15 +420,16 @@ export function SettingsView({ workspaceName, onSwitchWorkspace, onOpenFeishuDai
         </section>
       </details>
 
-      {wizardOpen && <FirstUseWizard
-        settings={settings}
-        smokeStatus={smokeStatus}
-        feishuStatus={feishuStatus}
-        onClose={() => setWizardOpen(false)}
-        onSettingsChanged={(updated) => setSettings(updated)}
-        onSmokeStatusRefresh={loadSmokeStatus}
-        onFeishuStatusRefresh={loadFeishuStatus}
-        onOpenFeishuDaily={onOpenFeishuDaily}
+      {pendingRemoval && <ConfirmDialog
+        title="删除所选本机密钥？"
+        description="只会删除这张设置卡上所选应用的密钥。"
+        consequence="删除后无法从本机恢复；对应能力需要重新录入密钥才能使用。"
+        confirmLabel="删除密钥"
+        busyLabel="正在删除…"
+        busy={busy}
+        danger
+        onCancel={() => setPendingRemoval(null)}
+        onConfirm={confirmRemoveSecret}
       />}
     </>}
   </section>
