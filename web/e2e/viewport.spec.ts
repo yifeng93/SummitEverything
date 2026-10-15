@@ -179,7 +179,7 @@ test('offline viewport and theme baseline for today, approvals, tools and settin
       })
     }
   }
-  // At 200% desktop zoom a 1280 px window exposes roughly 640 CSS pixels.
+  // This is a 640 CSS-pixel reflow check only; it does not simulate browser zoom.
   await page.setViewportSize({ width: 640, height: 450 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   for (const theme of ['light', 'dark'] as const) {
@@ -189,10 +189,10 @@ test('offline viewport and theme baseline for today, approvals, tools and settin
     for (const [label, selector] of [['今日', '.today-view'], ['审批', '.approval-view'], ['设置', '.settings-view']] as const) {
       if (label !== '今日') await page.getByRole('button', { name: label }).click()
       const metrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
-      expect(metrics.document, `${label} 200% effective viewport overflow/${theme}`).toBe(metrics.viewport)
-      expect(metrics.body, `${label} 200% effective viewport body overflow/${theme}`).toBe(metrics.viewport)
+      expect(metrics.document, `${label} 640px viewport overflow/${theme}`).toBe(metrics.viewport)
+      expect(metrics.body, `${label} 640px viewport body overflow/${theme}`).toBe(metrics.viewport)
       expect(await page.locator(selector).count()).toBe(1)
-      await page.screenshot({ path: resolve(evidenceDir, `${label}-200pct-${theme}.png`), fullPage: true })
+      await page.screenshot({ path: resolve(evidenceDir, `${label}-effective-640-${theme}.png`), fullPage: true })
     }
     const motion = await page.evaluate(() => ({
       reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
