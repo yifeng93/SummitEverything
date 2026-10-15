@@ -24,7 +24,7 @@ import tempfile
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, StrictBool
+from pydantic import BaseModel, ConfigDict, StrictBool, field_validator
 
 FirstUseStep = Literal[2, 3, 4, 5]
 
@@ -43,6 +43,11 @@ class FirstUseProgress(BaseModel):
     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
     caller that tries to smuggle in a credential, a path or a raw JSON blob is
     rejected instead of having it silently stored on disk.
+
+    ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
+    lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
+    out-of-contract payload would look accepted; the validator below closes that
+    (independent QA finding D-4).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -50,6 +55,14 @@ class FirstUseProgress(BaseModel):
     step: FirstUseStep
     completed: StrictBool
     open: StrictBool
+
+    @field_validator("step", mode="before")
+    @classmethod
+    def integer_step(cls, value: object) -> object:
+        # ``bool`` is an ``int`` subclass, so it is excluded explicitly.
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("step must be an integer")
+        return value
 
 
 class FirstUseProgressStore:

@@ -106,6 +106,13 @@ async function openExistingWorkspace() {
   fireEvent.click(screen.getByRole('button', { name: '打开工作库' }))
 }
 
+/** 走过真实的工作库 gate：保持默认的「新建」并提交。 */
+async function createNewWorkspace() {
+  fireEvent.change(await screen.findByLabelText('工作库名称'), { target: { value: '新模拟库' } })
+  fireEvent.change(screen.getByLabelText('文件夹路径'), { target: { value: '/tmp/workspace' } })
+  fireEvent.click(screen.getByRole('button', { name: '创建本地工作库' }))
+}
+
 const wizard = () => screen.queryByRole('dialog', { name: '首次配置向导' })
 
 beforeEach(() => {
@@ -159,14 +166,26 @@ it('用户明确关闭过向导：重启不自动出现，设置里仍能手动�
   expect(screen.getByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
 })
 
-it('本机没有记录：新工作库仍从第 2 步开始首次配置', async () => {
+it('本机没有记录：新建工作库仍从第 2 步开始首次配置', async () => {
+  backend()
+  render(<App />)
+
+  await createNewWorkspace()
+
+  expect(await screen.findByRole('dialog', { name: '首次配置向导' })).toBeTruthy()
+  expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
+})
+
+it('打开已有工作库但没有本机记录：落到今日并给出非阻塞提示，不遮挡今日（QA D-1）', async () => {
   backend()
   render(<App />)
 
   await openExistingWorkspace()
 
-  expect(await screen.findByRole('dialog', { name: '首次配置向导' })).toBeTruthy()
-  expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
+  // 旧版本配好的工作库在本机没有记录时不再被 onboarding 挡住：今日直接可达。
+  expect(await screen.findByRole('heading', { name: '今日' })).toBeTruthy()
+  expect(wizard()).toBeNull()
+  expect(await screen.findByText(/还没有首次配置记录/)).toBeTruthy()
 })
 
 it('旧的浏览器副本迁移一次后，后端成为唯一真源', async () => {

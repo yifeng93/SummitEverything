@@ -54,28 +54,38 @@ export default function App() {
    * - 已完成：直接进今日，不再打扰；
    * - 未完成且向导还开着：恢复到保存的那一步；
    * - 用户明确关闭过：不自动出现，设置里仍能手动续接；
-   * - 本机没有记录：新工作库，从第 2 步开始首次配置。
+   * - 本机没有记录：新建工作库是首次使用，从第 2 步开始；但「打开已有」的
+   *   工作库（例如旧版本配好的库）不猜已完成，也不把用户挡在向导后面——
+   *   落到今日并用非阻塞提示指向设置（QA D-1）。
    * 这里绝不按「有凭据」推断首次配置已完成。
    */
-  const applyResolvedFirstUse = useCallback((progress: FirstUseProgress | null) => {
-    if (progress === null) {
-      setSection('settings')
-      setFirstUse({ open: true, step: 2, returnSection: 'today', completed: false })
-      return
-    }
-    const resume = progress.open && !progress.completed
-    setSection(resume ? 'settings' : 'today')
-    setFirstUse({ open: resume, step: progress.step, returnSection: 'today', completed: progress.completed })
-  }, [])
+  const applyResolvedFirstUse = useCallback(
+    (progress: FirstUseProgress | null, mode: 'create' | 'open') => {
+      if (progress === null) {
+        const firstUse = mode === 'create'
+        setSection(firstUse ? 'settings' : 'today')
+        setFirstUse({ open: firstUse, step: 2, returnSection: 'today', completed: false })
+        return
+      }
+      const resume = progress.open && !progress.completed
+      setSection(resume ? 'settings' : 'today')
+      setFirstUse({ open: resume, step: progress.step, returnSection: 'today', completed: progress.completed })
+    },
+    [],
+  )
 
   /** 读本机进度（含旧浏览器副本的一次性迁移）。读不出来时不猜结果，只留在今日并说明。 */
-  const resolveFirstUse = useCallback(async (current: Workspace) => {
+  const resolveFirstUse = useCallback(async (current: Workspace, mode: 'create' | 'open') => {
     const key = firstUseProgressKey(current.local_profile_dir ?? 'default', current.workspace_id)
     try {
-      applyResolvedFirstUse(await resolveFirstUseProgress(key))
+      const progress = await resolveFirstUseProgress(key)
+      applyResolvedFirstUse(progress, mode)
+      if (progress === null && mode === 'open') {
+        report('这个工作库在本机还没有首次配置记录。需要配置真实模型或飞书时，可从设置里打开连接向导。', 'neutral')
+      }
     } catch (cause) {
       report('无法读取首次配置进度：' + (cause instanceof Error ? cause.message : '本机没有返回结果') + ' 已留在今日，可在设置里重新打开向导。')
-      applyResolvedFirstUse({ step: 2, completed: false, open: false })
+      applyResolvedFirstUse({ step: 2, completed: false, open: false }, mode)
     }
   }, [applyResolvedFirstUse, report])
 
@@ -99,7 +109,8 @@ export default function App() {
       const current = await api.get<Workspace>('/workspaces/current')
       setWorkspace(current)
       if (current.local_profile_dir) setProfileDir(current.local_profile_dir)
-      await resolveFirstUse(current)
+      // 页面重载时工作库已经开着；没有记录也不当成首次使用（见 QA D-1）。
+      await resolveFirstUse(current, 'open')
       setConnection('ready')
     } catch (cause) {
       if (cause instanceof ApiError && cause.code === 'workspace_not_open') {
@@ -116,13 +127,13 @@ export default function App() {
    * 打开工作库：先解析本机进度再决定落点，避免先闪一下今日又弹向导。
    * 不自动打开上次的工作库，也不按凭据猜测首次配置是否完成。
    */
-  const openWorkspace = useCallback(async (opened: Workspace) => {
+  const openWorkspace = useCallback(async (opened: Workspace, mode: 'create' | 'open') => {
     resetApproval()
     setWorkspace(opened)
     if (opened.local_profile_dir) setProfileDir(opened.local_profile_dir)
     setPage(null)
     setConnection('connecting')
-    await resolveFirstUse(opened)
+    await resolveFirstUse(opened, mode)
     setConnection('ready')
   }, [resetApproval, resolveFirstUse])
 
@@ -176,7 +187,7 @@ export default function App() {
     return <ServiceUnreachableScreen onRetry={() => void connect()} profileDir={profileDir} />
   }
   if (connection === 'no-workspace' || !workspace) {
-    return <WorkspaceGate onOpened={(opened) => void openWorkspace(opened)} />
+    return <WorkspaceGate onOpened={(opened, mode) => void openWorkspace(opened, mode)} />
   }
 
   return (

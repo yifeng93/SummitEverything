@@ -29,7 +29,9 @@ it('creates a workspace through the local API and forwards the returned context'
   fireEvent.change(screen.getByLabelText('文件夹路径'), { target: { value: '/tmp/synthetic' } })
   fireEvent.click(screen.getByRole('button', { name: '创建本地工作库' }))
 
-  await waitFor(() => expect(onOpened).toHaveBeenCalledWith(workspace))
+  // 用户意图（新建 / 打开已有）随返回的工作库一起上抛：App 用它对「本机没有
+  // 首次配置记录」做出不同的落点（QA D-1）。
+  await waitFor(() => expect(onOpened).toHaveBeenCalledWith(workspace, 'create'))
   const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit]
   expect(url).toBe('/api/v1/workspaces')
   expect(JSON.parse(String(options.body))).toEqual({
@@ -38,6 +40,26 @@ it('creates a workspace through the local API and forwards the returned context'
     name: '模拟工作库',
     operation_id: 'stable-operation-id',
   })
+})
+
+it('forwards the open-existing intent so an already-configured workspace is not re-onboarded', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'stable-operation-id' })
+  const workspace = {
+    workspace_id: 'workspace-id',
+    root: '/tmp/synthetic',
+    local_profile_dir: '/tmp/profile',
+    name: '模拟工作库',
+    read_only: false,
+  }
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 201, json: async () => workspace }))
+  const onOpened = vi.fn()
+  render(<WorkspaceGate onOpened={onOpened} />)
+
+  fireEvent.click(screen.getByLabelText('打开已有'))
+  fireEvent.change(screen.getByLabelText('文件夹路径'), { target: { value: '/tmp/synthetic' } })
+  fireEvent.click(screen.getByRole('button', { name: '打开工作库' }))
+
+  await waitFor(() => expect(onOpened).toHaveBeenCalledWith(workspace, 'open'))
 })
 
 it('keeps the setup form visible and explains a rejected workspace', async () => {

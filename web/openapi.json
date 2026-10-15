@@ -6472,7 +6472,7 @@
           "open"
         ],
         "title": "FirstUseProgress",
-        "description": "Exactly the three non-secret fields the wizard is allowed to persist.\n\n``extra=\"forbid\"`` plus strict booleans keep the wire contract honest: a\ncaller that tries to smuggle in a credential, a path or a raw JSON blob is\nrejected instead of having it silently stored on disk."
+        "description": "Exactly the three non-secret fields the wizard is allowed to persist.\n\n``extra=\"forbid\"`` plus strict booleans keep the wire contract honest: a\ncaller that tries to smuggle in a credential, a path or a raw JSON blob is\nrejected instead of having it silently stored on disk.\n\n``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's\nlax mode normalise an integral JSON float (``3.0``) into ``3``, so an\nout-of-contract payload would look accepted; the validator below closes that\n(independent QA finding D-4)."
       },
       "HTTPValidationError": {
         "properties": {

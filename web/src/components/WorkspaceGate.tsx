@@ -8,7 +8,12 @@ declare global {
   }
 }
 
-export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace) => void }) {
+/**
+ * `mode` is forwarded because it carries real user intent: 新建 means first use
+ * (the wizard may open), 打开已有 means the user is returning to a库 that may
+ * already have been configured by an older build (see QA D-1).
+ */
+export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace, mode: 'create' | 'open') => void }) {
   const [root, setRoot] = useState('')
   const [name, setName] = useState('')
   const [mode, setMode] = useState<'create' | 'open'>('create')
@@ -38,7 +43,7 @@ export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace) =
         mode,
         name: mode === 'create' ? name : undefined,
         operation_id: newOperationId(),
-      }))
+      }), mode)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '无法打开工作库')
     } finally {

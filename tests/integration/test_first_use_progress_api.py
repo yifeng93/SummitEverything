@@ -138,6 +138,10 @@ def test_rejects_illegal_steps_and_unknown_or_secret_fields(tmp_path: Path) -> N
     for payload in (
         {"step": 1, "completed": False, "open": True},
         {"step": 6, "completed": False, "open": True},
+        # QA D-4：整数值 JSON 浮点曾被 Literal 归一化接受，现在必须 422。
+        {"step": 3.0, "completed": False, "open": True},
+        {"step": 4.5, "completed": False, "open": True},
+        {"step": True, "completed": False, "open": True},
         {"step": 3, "completed": False, "open": True, "secret": "sk-synthetic-00000000"},
         {"step": 3, "completed": False, "open": True, "api_key": "sk-synthetic-00000000"},
     ):

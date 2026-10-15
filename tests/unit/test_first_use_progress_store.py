@@ -68,11 +68,23 @@ def test_profiles_and_workspaces_are_isolated(tmp_path: Path) -> None:
         {"step": "3", "completed": False, "open": True},
         {"step": 3, "completed": "yes", "open": True},
         {"step": 3, "completed": False},
+        # QA D-4：整数值 JSON 浮点不是合法 step；只有真整数才被接受。
+        {"step": 3.0, "completed": False, "open": True},
+        {"step": 2.0, "completed": False, "open": True},
+        {"step": -1, "completed": False, "open": True},
+        {"step": 4.5, "completed": False, "open": True},
+        {"step": True, "completed": False, "open": True},
     ],
 )
 def test_rejects_values_outside_the_whitelisted_shape(payload: dict[str, object]) -> None:
     with pytest.raises(ValidationError):
         FirstUseProgress.model_validate(payload)
+
+
+def test_integral_float_step_is_never_normalised_into_a_valid_step() -> None:
+    """`3.0` must not be silently coerced into step 3 (QA D-4)."""
+    with pytest.raises(ValidationError):
+        FirstUseProgress.model_validate({"step": 3.0, "completed": False, "open": True})
 
 
 @pytest.mark.parametrize(
