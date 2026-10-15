@@ -12,7 +12,7 @@
 
 **切片间已知空窗**（如实登记，不当作通过）：`JournalView` 在 P3 之前没有入口（导航已移除「日志与思考」）；今日页仍保留飞书授权按钮/待整理队列/审核稿（P3 迁移）；设置页 eyebrow 仍写「本机 profile」、向导文案仍提「今日 / 飞书日常」（P5）。五档视口与深浅截图未做（仓库无浏览器 harness，守卫 ⑩ 仍 todo，记为未测）。
 
-**候选**：收口候选由 main HEAD 构建，身份记录见 `.local/internal-builds/` 下最新目录及 [真实使用与修复报告](../quality/reports/2026-10-14-REAL-FIRST-USE-FINDINGS.md)。
+**收口候选**（由 main HEAD 干净树构建）：`.local/internal-builds/main-bce8843/`，App 与 `SummitEverything-Internal-bce8843.dmg`，DMG SHA-256 `c32dc92ff9c5892154267b2bbd41b6c3086284586d05c62a982a5e0e071320cb`；`source_sha=bce88435c540c777e3866976adc5fff6a529d5b1`、`dirty=false`、`build_id=20261015T003834Z-bd3e74da3244`、`frontend_sha256=bd3e74da3244…`；`smoke_packaged_app.py` PASS。本机保留的历史交付候选：`m42-419bb86`、`3f6eaa4`，以及上一轮 `internal-f40bc39`；其余中间候选、构建缓存与临时 worktree 已在收口时清理（保存的 QA 证据已归档到仓库）。
 
 ## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `8c4f81c`）
 
