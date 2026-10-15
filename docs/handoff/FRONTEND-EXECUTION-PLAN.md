@@ -1,6 +1,6 @@
 # 前端体验实施路线图（2026-10-15）
 
-状态：A `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`、B repair1 `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`、C `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c` 经 fresh QA 与 Sol 判定各自适用离线范围 PASS。D 初次固定产品 SHA `876008e1d33420f57fb31772c76e471379e6b98d` 经 fresh QA **FAIL / P1**：completed 同 profile/workspace 在 native 重启后仍进入 workspace gate，打开已有库后再次显示向导 step 2。四条全站守卫及十 mutation 的开发证据只属于 876，不抵消 QA FAIL。repair1 已获授权，但用户要求当前仅收尾文档、尚无产品代码变化；按[repair1 handoff](NEXT-FRONTEND-D-REPAIR1.md)继续。A/B/C 报告见 [A](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)、[B](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)、[C](../quality/reports/2026-10-15-FRONTEND-C-QA.md)。D初次脱敏摘要见[QA报告](../quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)。真实 provider/OAuth/Feishu/Keychain/DMG/安装/公证/生产/长期/双机仍按各自门记为 NOT_RUN。
+状态：A `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`、B repair1 `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`、C `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c` 经 fresh QA 与 Sol 判定各自适用离线范围 PASS。D 初次固定产品 SHA `876008e1d33420f57fb31772c76e471379e6b98d` 经 fresh QA **FAIL / P1**：completed 同 profile/workspace 在 native 重启后仍进入 workspace gate，打开已有库后再次显示向导 step 2。四条全站守卫及十 mutation 的开发证据只属于 876，不抵消 QA FAIL。**repair1 已实现并固定产品 SHA `faa1edd611a74dcdc26bff234de810bdf47761cb`**（父 `876008e`）：进度改为本机 profile + workspace 隔离的 typed API 持久化，旧 localStorage 只做一次性迁移，`App` 按本机记录决定落点且不按凭据猜测首配完成，步骤/关闭/完成必须等 durable write 成功；Developer 自测 Web 220 passed / 0 todo、Python 686 passed、静态与 build 全 exit 0、离线 Playwright 2/2，三条定向变异先红后恢复。**fresh QA 尚未完成，不声称 PASS**；本轮不建包，D 门仍缺 native 候选 / 同 profile 重启复验。按[repair1 handoff](NEXT-FRONTEND-D-REPAIR1.md)继续。A/B/C 报告见 [A](../quality/reports/evidence/2026-10-15-frontend-a-repair1-qa/README.md)、[B](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)、[C](../quality/reports/2026-10-15-FRONTEND-C-QA.md)。D 初次脱敏摘要见[QA报告](../quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)，repair1 开发证据见[DEV 报告](../quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR1.md)。真实 provider/OAuth/Feishu/Keychain/DMG/安装/公证/生产/长期/双机仍按各自门记为 NOT_RUN。
 
 ## 决议优先级与范围
 
@@ -70,9 +70,11 @@ repair1 QA 已对固定产品 SHA 独立复验，Sol 判适用 B 离线核心及
 
 ### D — 切片 10 守卫收口及最终候选
 
-初次 D 固定 SHA `876008e1d33420f57fb31772c76e471379e6b98d` 已完成 ①④⑤⑥、十条守卫开发变异、browser matrix 和 ad-hoc candidate，但 fresh QA 发现完成首配后同 profile/workspace 重启又弹 workspace gate / setup step 2，D gate **FAIL / P1**。候选 App/DMG 与 package manifest 不覆盖不删；旧 main candidate `.local/internal-builds/main-bce8843` 也不动。已获 repair1 开始授权但当前用户只允许文档收尾，下一执行者直接从 [D repair1 handoff](NEXT-FRONTEND-D-REPAIR1.md)开始。
+初次 D 固定 SHA `876008e1d33420f57fb31772c76e471379e6b98d` 已完成 ①④⑤⑥、十条守卫开发变异、browser matrix 和 ad-hoc candidate，但 fresh QA 发现完成首配后同 profile/workspace 重启又弹 workspace gate / setup step 2，D gate **FAIL / P1**。候选 App/DMG 与 package manifest 不覆盖不删；旧 main candidate `.local/internal-builds/main-bce8843` 也不动。
 
-repair1 的产品目标是把仅含 `step/completed/open` 的 profile+workspace 隔离首配进度持久化到本机 backend，通过 Pydantic/OpenAPI/TS typed API，保留 WKWebView nonPersistent；在新鲜 focused red-green 用例验证 completed→Today、open incomplete 原 step、closed 不弹、设置手动续接与 step4 优先、失败可见/可 retry、profile/workspace 隔离、原子性及密钥字段拒绝后，再固定 clean 新 SHA 并用 managed new build worktree + 全新 candidate 做 native same-profile restart/Fake GUI 与 fresh QA。不能把旧 876 tests/mutations 或旧候选称为 repair1 证据。CSS 640 是 reflow；root CSS zoom harness 仅 simulation；browser menu 200% 与 native pageZoom **NOT_RUN**。真实服务、Keychain、用户资料、安装 App、生产及发布都不碰。重要里程碑 merge 仍需用户批准。
+repair1 产品目标——把仅含 `step/completed/open` 的 profile+workspace 隔离首配进度持久化到本机 backend，通过 Pydantic/OpenAPI/TS typed API，保留 WKWebView nonPersistent——**已按固定产品 SHA `faa1edd611a74dcdc26bff234de810bdf47761cb` 实现并 Developer 自测**：fresh focused 用例覆盖 completed→Today、open incomplete 原 step、closed 不弹、设置手动续接与 step4 优先、失败可见/可 retry、profile/workspace 隔离、原子性与密钥字段拒绝，并先红后绿；三条定向变异先红后恢复。见 [D repair1 DEV 报告](../quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR1.md)。
+
+仍缺：**fresh QA 未完成**；本轮按用户决定**没有**新建 managed build worktree 与全新 candidate，因此 native same-profile restart / Fake GUI **NOT_RUN**，D 门不能只凭浏览器与 API 证据判过。不能把旧 876 tests/mutations 或旧候选称为 repair1 证据。CSS 640 是 reflow；root CSS zoom harness 仅 simulation；browser menu 200% 与 native pageZoom **NOT_RUN**。真实服务、Keychain、用户资料、安装 App、生产及发布都不碰。重要里程碑 merge 仍需用户批准。
 
 ## 新鲜 QA 里程碑
 
