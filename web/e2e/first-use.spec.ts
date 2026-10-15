@@ -40,6 +40,8 @@ test('first use stays in one app-owned flow and resumes to a requested step', as
     if (url.pathname.endsWith('/settings')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(settings) })
     if (url.pathname.endsWith('/provider-smoke')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ counts: {}, limits: {}, remaining: {} }) })
     if (url.pathname.endsWith('/integrations/feishu/status')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ mode: 'fake', authorized: false, app_configured: false, user_identity_verified: false }) })
+    if (url.pathname.endsWith('/action-intents')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], next_cursor: null }) })
+    if (url.pathname.endsWith('/index/status')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ state: 'empty', indexed_count: 0, source_count: 0 }) })
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
   })
 

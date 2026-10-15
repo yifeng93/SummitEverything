@@ -3,12 +3,12 @@ import { randomUUID } from 'node:crypto'
 import { defineConfig, devices } from '@playwright/test'
 
 const repoRoot = resolve(process.cwd(), '..')
-const evidenceRoot = resolve(repoRoot, '.local/dev/frontend-a/fastapi-integration')
+const evidenceRoot = resolve(repoRoot, '.local/dev/frontend-b/fastapi-integration')
 const sessionToken = `playwright-${process.pid}-${randomUUID()}`
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: 'first-use-real.spec.ts',
+  testMatch: ['approval-today.spec.ts'],
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
@@ -20,7 +20,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'uv --directory .. run uvicorn summit_everything.api.app:app --host 127.0.0.1 --port 8794',
+      command: 'uv --directory .. run uvicorn web.e2e.fixtures.fastapi_conflict_app:create_app --factory --host 127.0.0.1 --port 8794',
       cwd: process.cwd(),
       url: 'http://127.0.0.1:8794/api/v1/health',
       reuseExistingServer: false,
@@ -31,6 +31,7 @@ export default defineConfig({
         SUMMIT_SESSION_TOKEN: sessionToken,
         SUMMIT_API_PORT: '8794',
         SUMMIT_WEB_PORT: '5174',
+        SUMMIT_OFFLINE_GUARD_ACTIVE: '1',
       },
     },
     {

@@ -1,8 +1,10 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
-import { TodayView } from './TodayView'
+import { FeishuPanel } from './FeishuPanel'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+
+function renderFeishu() { return render(<FeishuPanel onImported={async () => {}} />) }
 
 it('shows Feishu authorization and never claims success after denied callback', async () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'operation' })
@@ -13,7 +15,7 @@ it('shows Feishu authorization and never claims success after denied callback', 
     return { ok: true, status: 200, json: async () => data }
   })
   vi.stubGlobal('fetch', fetchMock)
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   const button = await screen.findByRole('button', { name: '模拟授权飞书' })
   fireEvent.click(button)
   expect(await screen.findByText('授权已取消')).toBeTruthy()
@@ -32,7 +34,7 @@ it('clears the local authorization when the user disconnects Feishu', async () =
     return { ok: true, status: 200, json: async () => [] }
   })
   vi.stubGlobal('fetch', fetchMock)
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   await screen.findByText('用户已授权')
 
   fireEvent.click(screen.getByRole('button', { name: '断开飞书授权' }))
@@ -60,7 +62,7 @@ it('lists metadata, imports only explicit selection, and shows partial outcomes'
     return { ok: true, status: 200, json: async () => data }
   })
   vi.stubGlobal('fetch', fetchMock)
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   await waitFor(() => expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(false))
   fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
   expect(await screen.findByText('第一份模拟材料')).toBeTruthy()
@@ -76,7 +78,7 @@ it('lists metadata, imports only explicit selection, and shows partial outcomes'
   expect(screen.getByText(/第一份模拟材料：/)).toBeTruthy()
 })
 
-it('cancels selection without importing and displays calendar empty and error states', async () => {
+it('cancels selection without importing and keeps prior calendar data on service failure', async () => {
   let calendarCalls = 0
   const imported: unknown[] = []
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
@@ -87,12 +89,12 @@ it('cancels selection without importing and displays calendar empty and error st
     if (path.endsWith('/imports')) imported.push(path)
     if (path.includes('/calendar?')) {
       calendarCalls += 1
-      if (calendarCalls === 2) return { ok: false, status: 401, json: async () => ({ error: { message: '飞书授权已过期，请重新授权。' } }) }
+      if (calendarCalls === 2) return { ok: false, status: 503, json: async () => ({ error: { message: '日历服务暂不可用。' } }) }
       data = { items: [], next_cursor: null, timezone: 'Asia/Shanghai' }
     }
     return { ok: true, status: 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   await waitFor(() => expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(false))
   fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
   expect(await screen.findByText('可取消的材料')).toBeTruthy()
@@ -103,8 +105,8 @@ it('cancels selection without importing and displays calendar empty and error st
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
   expect(await screen.findByText('所选时间内没有日程。')).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
-  expect(await screen.findByText('飞书授权已过期，请重新授权。')).toBeTruthy()
-  expect(screen.queryByText('所选时间内没有日程。')).toBeNull()
+  expect(await screen.findByText(/日历服务暂不可用/)).toBeTruthy()
+  expect(screen.getByText('所选时间内没有日程。')).toBeTruthy()
 })
 
 it('shows a truncation notice and offers no unusable next page for an explicit range', async () => {
@@ -126,7 +128,7 @@ it('shows a truncation notice and offers no unusable next page for an explicit r
     }
     return { ok: true, status: 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
   expect(await screen.findByRole('button', { name: '确认并执行本次读取' })).toBeTruthy()
@@ -147,7 +149,7 @@ it('cancels a real calendar preview without sending the calendar request', async
         : []
     return { ok: true, status: path.endsWith('/acceptance-plans') ? 201 : 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   fireEvent.click(await screen.findByRole('button', { name: '刷新日历' }))
   await screen.findByRole('button', { name: '取消计划' })
   expect(calls.some((path) => path.includes('/calendar?'))).toBe(false)
@@ -172,7 +174,7 @@ it('shows the next-page control only when the provider actually returned a curso
     }
     return { ok: true, status: 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
   expect(await screen.findByRole('button', { name: '下一页日程' })).toBeTruthy()
@@ -186,7 +188,7 @@ it('preserves configured callback destination when Web and API ports differ', as
     const path = String(input); requests.push({ path, init })
     return { ok: true, status: 200, json: async () => path.endsWith('/authorizations') ? { authorization_url: destination, expires_in_seconds: 300 } : path.includes('/integrations/feishu/') ? { mode: 'fake', authorized: path.includes('/callback'), scopes: [], token_type: 'user' } : [] }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   fireEvent.click(await screen.findByRole('button', { name: '模拟授权飞书' }))
   await screen.findByText('用户已授权')
   expect(requests.some((request) => request.path === destination)).toBe(true)
@@ -202,7 +204,7 @@ for (const [code, expectedLabel, remainsAuthorized] of [['token_expired', '授�
       if (path.includes('/materials?')) return { ok: false, status: code === 'missing_scope' ? 403 : 401, json: async () => ({ error: { code, message: '模拟授权读取失败' } }) }
       return { ok: true, status: 200, json: async () => path.endsWith('/status') ? { mode: 'fake', authorized: true, scopes: [], token_type: 'user' } : [] }
     }))
-    render(<TodayView onError={vi.fn()} />)
+    renderFeishu()
     await screen.findByText('用户已授权')
     fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
     await screen.findByText('模拟授权读取失败')
@@ -258,7 +260,7 @@ it('uses real-mode authorization copy and never calls real OAuth a simulation', 
     if (path.includes('/materials?')) data = { items: [], next_cursor: null }
     return { ok: true, status: 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   expect(await screen.findByRole('button', { name: '授权飞书用户身份' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: '模拟授权飞书' })).toBeNull()
   expect(await screen.findByText('用户未授权')).toBeTruthy()
@@ -275,7 +277,7 @@ it('permits an app-identity calendar without user OAuth but not user-only search
       : path.includes('/calendar?') ? { items: [], next_cursor: null, timezone: 'Asia/Shanghai' } : []
     return { ok: true, status: 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   await waitFor(() => expect((screen.getByRole('button', { name: '刷新日历' }) as HTMLButtonElement).disabled).toBe(false))
   expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: '刷新日历' }))
@@ -297,7 +299,7 @@ it('real OAuth presents an official browser link and refreshes only local status
       : path.endsWith('/authorizations') ? { authorization_url: destination, expires_in_seconds: 300 } : []
     return { ok: true, status: 200, json: async () => data }
   }))
-  render(<TodayView onError={vi.fn()} />)
+  renderFeishu()
   fireEvent.click(await screen.findByRole('button', { name: '授权飞书用户身份' }))
   const link = await screen.findByRole('link', { name: '打开飞书授权页面' })
   expect(link.getAttribute('href')).toBe(destination)

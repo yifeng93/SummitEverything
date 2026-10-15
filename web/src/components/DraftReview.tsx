@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { api, indexUpdateMessage, newOperationId, type Draft, type MutationResult, type Page, type SourceDetail } from '../api/client'
+import { MarkdownText } from './MarkdownText'
+import { ConfirmDialog } from './ConfirmDialog'
 
 type Conflict = { id: string; question: string; alternatives: string[] }
 type Props = {
@@ -21,10 +23,12 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
   const [busy, setBusy] = useState(false)
   const [source, setSource] = useState<SourceDetail | null>(null)
   const [indexNotice, setIndexNotice] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const operationIds = useRef<Record<string, string>>({})
   const target = pages.find((page) => page.page_id === targetId)
   const staleBase = Boolean(target && target.content_sha256 !== baseHash)
   const targetNeedsConfirmation = Boolean(target && target.approval_state !== 'confirmed')
+  const unresolvedConflicts = conflicts.filter((conflict) => !resolutions[conflict.id]).length
   const candidates = useMemo(
     () => pages.filter((page) =>
       (page.approval_state === 'confirmed' || page.page_id === targetId)
@@ -78,6 +82,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
         conflict_resolutions: resolutions,
       })
       setIndexNotice(indexUpdateMessage(result.index_update) ?? '')
+      setConfirmOpen(false)
       delete operationIds.current[key]
       delete operationIds.current[key + ':confirmation']
       onError('')
@@ -119,17 +124,17 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
             </div>
           )}
           <div className="diff-view">
-            <div><span>当前版本</span><pre>{target.body}</pre></div>
-            <div><span>审核稿</span><pre>{body}</pre></div>
+            <div><span>当前版本</span><MarkdownText content={target.body} /></div>
+            <div><span>审核稿</span><MarkdownText content={body} /></div>
           </div>
         </>
       )}
       <label className="field"><span>正文</span><textarea value={body} rows={9} onChange={(event) => setBody(event.target.value)} /></label>
       <div className="source-reference">
         <span>来源</span>
-        {draft.source_ids.map((sourceId) => <button key={sourceId} className="source-chip" onClick={() => api.get<SourceDetail>('/sources/' + sourceId).then(setSource).catch((cause) => onError(cause instanceof Error ? cause.message : '无法读取来源'))}>{sourceId.slice(0, 8)}</button>)}
+        {draft.source_ids.map((sourceId, index) => <button key={sourceId} className="source-chip" onClick={() => api.get<SourceDetail>('/sources/' + sourceId).then(setSource).catch((cause) => onError(cause instanceof Error ? cause.message : '无法读取来源'))}>打开来源 {index + 1}</button>)}
       </div>
-      {source && <section className="original-source"><div><strong>{source.source.filename}</strong><button className="text-button" onClick={() => setSource(null)}>收起</button></div><pre>{source.text}</pre></section>}
+      {source && <section className="original-source"><div><strong>{source.source.filename}</strong><button className="text-button" onClick={() => setSource(null)}>收起</button></div><MarkdownText content={source.text} /></section>}
       {conflicts.length > 0 && (
         <div className="conflict-list">
           <h3>需要你判断的冲突</h3>
@@ -160,9 +165,10 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
         <span>{dirty ? '有尚未保存的修改' : '来源与稿件保持关联'}</span>
         <div className="button-row">
           <button className="button secondary" disabled={!dirty || busy} onClick={() => void saveDraft().catch((cause) => onError(cause instanceof Error ? cause.message : '无法保存稿件'))}>保存修改</button>
-          <button className="button primary" disabled={busy || staleBase} onClick={confirmDraft}>{busy ? '正在保存…' : '确认并写入知识库'}</button>
+          <button className="button primary" disabled={busy || staleBase || unresolvedConflicts > 0} title={unresolvedConflicts ? `还有 ${unresolvedConflicts} 项冲突需要选择，或标记为暂时未决。` : undefined} onClick={() => setConfirmOpen(true)}>{busy ? '正在保存…' : '确认并保存当前版本'}</button>
         </div>
       </div>
+      {confirmOpen && <ConfirmDialog title="确认并保存当前稿件版本？" description={`“${title || '未命名稿件'}”将在你确认后写入正式内容。`} consequence="保存的是当前编辑正文；Fake 活跃索引按现有规则自动增量。不会创建飞书任务或改变项目进度。" confirmLabel="确认并保存当前版本" busyLabel="正在保存…" busy={busy} onCancel={() => setConfirmOpen(false)} onConfirm={confirmDraft}><MarkdownText content={body} /></ConfirmDialog>}
     </section>
   )
 }

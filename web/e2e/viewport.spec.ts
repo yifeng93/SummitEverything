@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 
 const viewports = [320, 390, 768, 960, 1280]
 const settings = {
@@ -16,7 +16,23 @@ const settings = {
   embedding_fingerprint: 'synthetic-fingerprint',
 }
 
-test('offline viewport and theme baseline for today and settings', async ({ page }, testInfo) => {
+async function expectDialogWithinViewport(dialog: Locator) {
+  const layout = await dialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect()
+    return {
+      backdropPosition: getComputedStyle(element.parentElement!).position,
+      rect: { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right },
+      viewport: { width: innerWidth, height: innerHeight },
+    }
+  })
+  expect(layout.backdropPosition).toBe('fixed')
+  expect(layout.rect.top).toBeGreaterThanOrEqual(0)
+  expect(layout.rect.bottom).toBeLessThanOrEqual(layout.viewport.height)
+  expect(layout.rect.left).toBeGreaterThanOrEqual(0)
+  expect(layout.rect.right).toBeLessThanOrEqual(layout.viewport.width)
+}
+
+test('offline viewport and theme baseline for today, approvals, tools and settings', async ({ page }, testInfo) => {
   const apiCalls: string[] = []
   const externalAttempts: string[] = []
   await page.route('**/*', async (route) => {
@@ -31,6 +47,8 @@ test('offline viewport and theme baseline for today and settings', async ({ page
     if (url.pathname.endsWith('/workspaces/current')) {
       body = { workspace_id: 'synthetic-workspace', name: '模拟工作库', root: '/tmp/synthetic-workspace', local_profile_dir: '/tmp/synthetic-profile' }
     } else if (url.pathname.endsWith('/settings')) body = settings
+    else if (url.pathname.endsWith('/index/status')) body = { fingerprint: 'synthetic-fingerprint', pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 }
+    else if (url.pathname.endsWith('/action-intents')) body = { items: [], next_cursor: null }
     else if (url.pathname.endsWith('/provider-smoke')) {
       body = { counts: {}, limits: {}, remaining: { deepseek_chat: 0, model_studio_embedding: 0, model_studio_rerank: 0 } }
     } else if (url.pathname.endsWith('/integrations/feishu/status')) {
@@ -39,7 +57,7 @@ test('offline viewport and theme baseline for today and settings', async ({ page
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) })
   })
 
-  const evidenceDir = resolve(process.env.SUMMIT_E2E_EVIDENCE_DIR ?? '../.local/dev/frontend-a/baseline')
+  const evidenceDir = resolve(process.env.SUMMIT_E2E_EVIDENCE_DIR ?? '../.local/dev/frontend-b/viewport')
   mkdirSync(evidenceDir, { recursive: true })
   const measurements: unknown[] = []
   for (const width of viewports) {
@@ -57,6 +75,58 @@ test('offline viewport and theme baseline for today and settings', async ({ page
       expect(todayMetrics.document, `today horizontal overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
       expect(todayMetrics.body, `today body overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
       await page.screenshot({ path: resolve(evidenceDir, `today-${width}-${theme}.png`), fullPage: true })
+
+      const todaySections = page.locator('.today-stack > section')
+      await expect(todaySections.nth(0).getByRole('heading', { name: '会议' })).toBeVisible()
+      await expect(todaySections.nth(1).getByRole('heading', { name: '待办任务' })).toBeVisible()
+      await expect(page.locator('.today-tools button')).toHaveCount(2)
+      {
+        const importTrigger = page.getByRole('button', { name: '导入会议' })
+        await importTrigger.click()
+        const importDialog = page.getByRole('dialog', { name: '导入会议与材料' })
+        await expect(importDialog).toBeVisible()
+        await expect(importDialog).toContainText('选择本机文件')
+        expect(await importDialog.evaluate((element) => element.contains(document.activeElement))).toBe(true)
+        await expectDialogWithinViewport(importDialog)
+        await page.screenshot({ path: resolve(evidenceDir, `import-drawer-${width}-${theme}.png`) })
+        await page.keyboard.press('Shift+Tab')
+        expect(await importDialog.evaluate((element) => element.contains(document.activeElement))).toBe(true)
+        await page.keyboard.press('Escape')
+        await expect(importDialog).toHaveCount(0)
+        await expect(importTrigger).toBeFocused()
+        await page.getByRole('button', { name: '工作日志 / 思考' }).click()
+        const journalDialog = page.getByRole('dialog', { name: '工作日志与思考' })
+        await expect(journalDialog).toBeVisible()
+        await expectDialogWithinViewport(journalDialog)
+        expect(await journalDialog.evaluate((element) => element.contains(document.activeElement))).toBe(true)
+        await page.screenshot({ path: resolve(evidenceDir, `journal-dialog-${width}-${theme}.png`) })
+        await page.keyboard.press('Escape')
+        await expect(journalDialog).toHaveCount(0)
+        await expect(page.getByRole('button', { name: '工作日志 / 思考' })).toBeFocused()
+      }
+
+      await page.getByRole('button', { name: '审批' }).click()
+      await expect(page.getByRole('heading', { name: '审批' })).toBeVisible()
+      for (const heading of ['1 · 来源', '2 · 稿件', '3 · 正式内容', '4 · 索引', '5 · 外部动作']) await expect(page.getByRole('heading', { name: heading })).toBeVisible()
+      {
+        const indexGroup = page.getByRole('region', { name: /4 · 索引/ })
+        await indexGroup.getByRole('checkbox', { name: '选择索引事项进行检查' }).check()
+        const summaryTrigger = page.getByRole('button', { name: /检查并应用/ })
+        await summaryTrigger.click()
+        const summaryDialog = page.getByRole('dialog', { name: '检查所选事项' })
+        await expect(summaryDialog).toBeVisible()
+        expect(await summaryDialog.evaluate((element) => element.contains(document.activeElement))).toBe(true)
+        await expectDialogWithinViewport(summaryDialog)
+        await page.screenshot({ path: resolve(evidenceDir, `approval-selection-summary-${width}-${theme}.png`) })
+        await page.keyboard.press('Escape')
+        await expect(summaryDialog).toHaveCount(0)
+        await expect(summaryTrigger).toBeFocused()
+      }
+      const approvalMetrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
+      expect(approvalMetrics.document, `approval horizontal overflow at ${width}px/${theme}`).toBe(approvalMetrics.viewport)
+      expect(approvalMetrics.body, `approval body overflow at ${width}px/${theme}`).toBe(approvalMetrics.viewport)
+      await page.screenshot({ path: resolve(evidenceDir, `approval-${width}-${theme}.png`), fullPage: true })
+      await page.getByRole('button', { name: '今日' }).click()
 
       await page.getByRole('button', { name: '设置' }).click()
       await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()

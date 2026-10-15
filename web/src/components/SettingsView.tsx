@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { api } from '../api/client'
 import { FirstUseWizard } from './FirstUseWizard'
 import { SmokeCheckConfirm } from './SmokeCheckConfirm'
@@ -34,9 +34,10 @@ type SettingsViewProps = {
   onWizardStepChange?: (step: 2 | 3 | 4 | 5) => void
   onWizardClose?: () => void
   onFinishFirstUse?: () => void
+  onAuthorizationChanged?: () => void
 }
 
-export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse }: SettingsViewProps) {
+export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged }: SettingsViewProps) {
   const progressKey = firstUseProgressKey(profileId, workspaceId)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [smokeStatus, setSmokeStatus] = useState<SmokeStatus | null>(null)
@@ -47,6 +48,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   const [checkResults, setCheckResults] = useState<CheckResult>({})
   // 读取失败可保留最后一次成功只读状态，但必须显著标记为可能过时。
   const [feishuStatus, setFeishuStatus] = useState<FeishuStatusRead>({ state: 'loading' })
+  const feishuStatusRef = useRef<FeishuStatusRead>({ state: 'loading' })
   const [pendingCheck, setPendingCheck] = useState<SmokeCheckKey | null>(null)
   const [pendingRemoval, setPendingRemoval] = useState<SecretProvider | null>(null)
   const [settingsReadFailed, setSettingsReadFailed] = useState(false)
@@ -81,7 +83,12 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   async function loadFeishuStatus() {
     try {
       const parsed = parseFeishuStatus(await api.get<unknown>('/integrations/feishu/status'))
-      if (parsed) setFeishuStatus({ state: 'loaded', status: parsed, readAt: new Date().toISOString() })
+      if (parsed) {
+        const previous = feishuStatusRef.current
+        const next: FeishuStatusRead = { state: 'loaded', status: parsed, readAt: new Date().toISOString() }
+        feishuStatusRef.current = next; setFeishuStatus(next)
+        if ((previous.state === 'loaded' || previous.state === 'stale') && (previous.status.authorized !== parsed.authorized || previous.status.mode !== parsed.mode || previous.status.app_configured !== parsed.app_configured || previous.status.user_identity_verified !== parsed.user_identity_verified)) onAuthorizationChanged?.()
+      }
       else setFeishuStatus((previous) => failedFeishuStatusRead(previous))
     }
     catch { setFeishuStatus((previous) => failedFeishuStatusRead(previous)) }
@@ -105,7 +112,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     api.get<unknown>('/integrations/feishu/status').then((value) => {
       if (!active) return
       const parsed = parseFeishuStatus(value)
-      if (parsed) setFeishuStatus({ state: 'loaded', status: parsed, readAt: new Date().toISOString() })
+      if (parsed) { const next: FeishuStatusRead = { state: 'loaded', status: parsed, readAt: new Date().toISOString() }; feishuStatusRef.current = next; setFeishuStatus(next) }
       else setFeishuStatus((previous) => failedFeishuStatusRead(previous))
     }).catch(() => { if (active) setFeishuStatus((previous) => failedFeishuStatusRead(previous)) })
     return () => { active = false }

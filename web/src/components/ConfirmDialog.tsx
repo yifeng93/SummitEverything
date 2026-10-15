@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useDialogFocus } from './useDialogFocus'
 
 type Props = {
   title: string
@@ -13,55 +14,21 @@ type Props = {
   onConfirm: () => void | Promise<void>
 }
 
-const focusable = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-
 export function ConfirmDialog({
   title, description, consequence, confirmLabel, busyLabel, busy = false, danger = false,
   children, onCancel, onConfirm,
 }: Props) {
-  const dialogRef = useRef<HTMLElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const cancelAction = useRef(onCancel)
   const busyRef = useRef(busy)
   const [submitting, setSubmitting] = useState(false)
   const isBusy = busy || submitting
+  const dialogRef = useDialogFocus(() => { if (!busyRef.current) cancelAction.current() })
 
   useEffect(() => {
     cancelAction.current = onCancel
     busyRef.current = isBusy
   }, [isBusy, onCancel])
-
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    cancelRef.current?.focus()
-    const dialog = dialogRef.current
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        if (!busyRef.current) cancelAction.current()
-        return
-      }
-      if (event.key !== 'Tab' || !dialog) return
-      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(focusable))
-      if (controls.length === 0) {
-        event.preventDefault()
-        dialog.focus()
-      } else if (event.shiftKey && document.activeElement === controls[0]) {
-        event.preventDefault()
-        controls.at(-1)?.focus()
-      } else if (!event.shiftKey && document.activeElement === controls.at(-1)) {
-        event.preventDefault()
-        controls[0]?.focus()
-      }
-    }
-
-    dialog?.addEventListener('keydown', handleKeyDown)
-    return () => {
-      dialog?.removeEventListener('keydown', handleKeyDown)
-      previousFocus?.focus()
-    }
-  }, [])
 
   async function confirm() {
     if (isBusy) return

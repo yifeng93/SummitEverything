@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { api, ApiError, type Draft, type IntakeItem, type Page, type Workspace } from './api/client'
-import { approvalPendingCount } from './approval-summary'
+import { useCallback, useEffect, useState } from 'react'
+import { api, ApiError, type Page, type Workspace } from './api/client'
 import { AppShell } from './components/AppShell'
 import { ApprovalView } from './components/ApprovalView'
 import { AskView } from './components/AskView'
@@ -32,19 +31,12 @@ export default function App() {
   const [firstUse, setFirstUse] = useState<{ open: boolean; step: FirstUseStep; returnSection: ShellSection }>({ open: false, step: 2, returnSection: 'today' })
   const [page, setPage] = useState<Page | null>(null)
   const [profileDir, setProfileDir] = useState<string | undefined>(undefined)
-  const [approval, setApproval] = useState<{ items: IntakeItem[]; drafts: Draft[]; loading: boolean; error: string }>({
-    items: [],
-    drafts: [],
-    loading: true,
-    error: '',
-  })
+  const [approvalCount, setApprovalCount] = useState(0)
+  const [approvalRefreshEpoch, setApprovalRefreshEpoch] = useState(0)
+  const [todayCacheEpoch, setTodayCacheEpoch] = useState(0)
   const [themePreference, setThemePreference] = useThemePreference()
   const { toasts, notify, dismiss } = useToasts()
-  const loadedSection = useRef<ShellSection | null>(null)
-
-  const resetApproval = useCallback(() => {
-    setApproval({ items: [], drafts: [], loading: true, error: '' })
-  }, [])
+  const resetApproval = useCallback(() => setApprovalCount(0), [])
 
   const connect = useCallback(async () => {
     setConnection('connecting')
@@ -78,33 +70,8 @@ export default function App() {
   const report = useCallback((message: string, kind: ToastKind = 'danger') => {
     notify(message, kind)
   }, [notify])
-
-  /** 侧栏徽章与审批页共用同一份清单，避免两处数字不一致。 */
-  const refreshApproval = useCallback(async () => {
-    setApproval((current) => ({ ...current, loading: true }))
-    try {
-      const [items, drafts] = await Promise.all([
-        api.get<IntakeItem[]>('/intake/items'),
-        api.get<Draft[]>('/drafts'),
-      ])
-      setApproval({ items, drafts, loading: false, error: '' })
-    } catch {
-      // 这里只做本机读取；失败文案保持白话，不外泄原始错误（§4.3、§13.4）。
-      setApproval((current) => ({ ...current, loading: false, error: '现在读不出待处理的清单。本机服务可能刚刚重启。' }))
-    }
-  }, [])
-
-  useEffect(() => {
-    if (connection !== 'ready') {
-      loadedSection.current = null
-      return
-    }
-    const enteringApproval = section === 'approval' && loadedSection.current !== 'approval'
-    if (loadedSection.current === null || enteringApproval) {
-      loadedSection.current = section
-      void refreshApproval()
-    }
-  }, [connection, section, refreshApproval])
+  const refreshApprovalAfterIntake = useCallback(() => setApprovalRefreshEpoch((value) => value + 1), [])
+  const invalidateTodayAfterAuthorizationChange = useCallback(() => setTodayCacheEpoch((value) => value + 1), [])
 
   async function openPage(pageId: string, expectedHash?: string) {
     try {
@@ -157,7 +124,7 @@ export default function App() {
       onSelect={(next) => { setPage(null); setSection(next) }}
       workspaceName={workspace.name}
       onSwitchWorkspace={switchWorkspace}
-      approvalCount={approvalPendingCount(approval.items, approval.drafts)}
+      approvalCount={approvalCount}
       openPageTitle={page ? String(page.metadata.title ?? '未命名页面') : null}
       themePreference={themePreference}
       onThemePreferenceChange={setThemePreference}
@@ -172,15 +139,9 @@ export default function App() {
           onReload={() => void openPage(page.page_id)}
         />
       ) : section === 'today' ? (
-        <TodayView onError={report} />
+        null
       ) : section === 'approval' ? (
-        <ApprovalView
-          items={approval.items}
-          drafts={approval.drafts}
-          loading={approval.loading}
-          error={approval.error}
-          onRetry={() => void refreshApproval()}
-        />
+        null
       ) : section === 'projects' ? (
         <ProjectsView onError={report} onOpenPage={openPage} />
       ) : section === 'ask' ? (
@@ -197,8 +158,17 @@ export default function App() {
         onWizardStepChange={(step) => setFirstUse((current) => ({ ...current, step }))}
         onWizardClose={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection(firstUse.returnSection) }}
         onFinishFirstUse={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection('today') }}
+        onAuthorizationChanged={invalidateTodayAfterAuthorizationChange}
         />
       )}
+      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={() => setSection('approval')} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
+      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={`${workspace.workspace_id}:${approvalRefreshEpoch}`} onPendingCount={setApprovalCount} onError={report} onOpenPage={(title) => {
+        void api.get<Page[]>('/pages').then((pages) => {
+          const match = pages.find((candidate) => String(candidate.metadata.title ?? '') === title)
+          if (match) void openPage(match.page_id)
+          else report('找不到这条页面链接，请从项目目录中打开页面。', 'neutral')
+        }).catch(() => report('无法读取页面目录'))
+      }} /></div>
     </AppShell>
   )
 }

@@ -34,19 +34,22 @@ const workspace = {
  * 外壳夹具。未登记的端点回一个中文 404（而不是抛错），
  * 这样扫描到的 DOM 里不会出现英文的 fetch 异常文案。
  */
-function stubShell(overrides: Record<string, unknown> = {}): void {
+function stubShell(overrides: Record<string, unknown> = {}) {
   const rawFetch = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input)
     if (url === '/api/v1/workspaces/current') return Response.json(workspace)
     if (url === '/api/v1/integrations/feishu/status') {
       return Response.json({ mode: 'fake', authorized: false, app_configured: false, user_identity_verified: false, scopes: [] })
     }
+    if (url.startsWith('/api/v1/index/status')) return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
     const table: Record<string, unknown> = {
       '/api/v1/today': { items: [] },
       '/api/v1/journal': { items: [] },
       '/api/v1/intake/items': [],
       '/api/v1/drafts': [],
       '/api/v1/actions': [],
+      '/api/v1/action-intents?limit=20': { items: [], next_cursor: null },
+      '/api/v1/settings': { mode: 'fake', embedding_fingerprint: null },
       '/api/v1/lines': [],
       '/api/v1/projects': [],
       '/api/v1/pages': [],
@@ -56,6 +59,7 @@ function stubShell(overrides: Record<string, unknown> = {}): void {
     return Response.json({ error: { code: 'not_found', message: '本机没有这个接口。' } }, { status: 404 })
   })
   vi.stubGlobal('fetch', rawFetch)
+  return rawFetch
 }
 
 function stubSystemPrefersDark(matches: boolean): void {
@@ -188,6 +192,22 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     const approval = await within(nav).findByRole('button', { name: '审批，3 项待处理' })
     expect(within(approval).getByText('3'), '徽章显示待处理总数（来源 + 稿件）').toBeTruthy()
   })
+
+  it('今日主内容按会议、任务、行动、收件箱排列，只提供两个主工具并且默认不发送', async () => {
+    const fetchMock = stubShell()
+    render(<App />)
+    await screen.findByText('收件箱目前没有内容。')
+    const today = document.querySelector('.today-view') as HTMLElement
+    const stack = today.querySelector('.today-stack') as HTMLElement
+    const headings = Array.from(stack.children).map((section) => section.querySelector('h2')?.textContent).filter(Boolean)
+    expect(headings).toEqual(['会议', '待办任务', '收件箱'])
+    expect(today.querySelectorAll('.today-tools button')).toHaveLength(2)
+    expect(today.querySelector('.queue-panel, .review-panel, .today-rail')).toBeNull()
+    expect(within(today).queryByRole('button', { name: /授权飞书/ })).toBeNull()
+    expect(screen.queryByRole('heading', { name: '需要行动' })).toBeNull()
+    const paths = fetchMock.mock.calls.map(([input]) => String(input))
+    expect(paths.some((path) => /\/acceptance-plans|\/intake\/jobs|\/index\/plans|\/calendar\?|\/integrations\/feishu\/tasks\?/.test(path))).toBe(false)
+  })
 })
 
 // ── 本轮不实现，登记归属切片（禁止当成通过）───────────────────────────────────
@@ -195,6 +215,4 @@ it.todo('② 中文优先：渲染含英文 ID 的项目/主线，可见文本�
 it.todo('④ 加载与空分离：对今日/审批/项目/问答 mock 永不 resolve 的 fetch，断言出现「正在读取…」且不出现空态文案 —— 归属 P3 · 信息架构（需要四个视图）')
 it.todo('⑤ 删除/断开类动作必须确认：点击后出现 role="dialog" 且 API 未被调用，确认后恰好 1 次 —— 归属 P3/P4（需要页面实现确认弹层）')
 it.todo('⑥ Markdown 渲染与流式容错：断言输出含 <strong>/标题/<table>，可见文本不含 ** / [[，三分块流式中间态不出现未闭合标记 —— 归属 P2 · 阅读与流式（含 react-markdown + remark-gfm 新依赖）')
-it.todo('⑧ 今日恰好 2 个工具（记一句 / 导入会议）+ 3 个内容区且顺序为 会议 → 待办任务 → 需要行动 —— 归属 P3 · 信息架构')
-it.todo('⑧ 今日不含已退役内容（飞书授权按钮 / 待整理队列 / 审核稿）—— 这三块本轮仍在今日，迁移属 P3 · 信息架构')
-it.todo('⑨ 列表渲染不得调用模型：渲染今日/审批/项目/问答时对 /acceptance-plans、/intake/jobs、/index/plans 的调用次数为 0 —— 归属 P3/P4（需要视图）')
+it.todo('⑨ 项目/问答列表渲染不得调用模型：对 /acceptance-plans、/index/plans 的调用次数为 0 —— 归属 P4（需项目与问答空/加载覆盖）')
