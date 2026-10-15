@@ -9,6 +9,7 @@
     "typecheck": "tsc -b --pretty",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:integration": "playwright test --config playwright.integration.config.ts",
     "api:types": "cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts",
     "lint": "oxlint",
     "preview": "vite preview"

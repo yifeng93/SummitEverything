@@ -13,6 +13,7 @@ import { WorkspaceGate } from './components/WorkspaceGate'
 import type { ShellSection } from './navigation'
 import { useThemePreference } from './theme'
 import { useToasts, type ToastKind } from './toast'
+import { firstUseProgressKey, readFirstUseProgress } from './components/firstUseProgress'
 import './App.css'
 
 /**
@@ -54,6 +55,13 @@ export default function App() {
       const current = await api.get<Workspace>('/workspaces/current')
       setWorkspace(current)
       if (current.local_profile_dir) setProfileDir(current.local_profile_dir)
+      if (current.local_profile_dir && current.workspace_id) {
+        const progress = readFirstUseProgress(firstUseProgressKey(current.local_profile_dir, current.workspace_id))
+        if (progress?.open && !progress.completed) {
+          setSection('settings')
+          setFirstUse({ open: true, step: progress.step, returnSection: 'today' })
+        }
+      }
       setConnection('ready')
     } catch (cause) {
       if (cause instanceof ApiError && cause.code === 'workspace_not_open') {

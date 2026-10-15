@@ -1,6 +1,6 @@
 import react from '@vitejs/plugin-react'
 import type { ProxyOptions } from 'vite'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 const apiProxy: ProxyOptions = {
   target: process.env.SUMMIT_API_TARGET ?? 'http://127.0.0.1:8793',
@@ -18,6 +18,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     restoreMocks: true,
+    exclude: [...configDefaults.exclude, 'e2e/**'],
   },
   server: {
     host: '127.0.0.1',

@@ -32,7 +32,7 @@ it('explains the one-time real-operation confirmation gate', async () => {
 
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
   expect(await screen.findByText('已配置，待本次确认')).toBeTruthy()
-  expect(screen.getByText('每次使用前需预览并确认本次范围。')).toBeTruthy()
+  expect(screen.getByText(/每次使用前需预览并确认本次范围/)).toBeTruthy()
 })
 
 it('sends the saved account id with the secret and clears the password field', async () => {
@@ -59,6 +59,7 @@ it('sends the saved account id with the secret and clears the password field', a
   vi.stubGlobal('fetch', fetchMock)
 
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '配置 AI 模型与密钥' }))
   const password = await screen.findByLabelText(/DeepSeek API Key/) as HTMLInputElement
   fireEvent.change(password, { target: { value: 'synthetic-secret' } })
   fireEvent.click(screen.getByRole('button', { name: '保存 AI 模型设置' }))

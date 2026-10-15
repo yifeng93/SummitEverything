@@ -26,8 +26,10 @@ export function ConfirmDialog({
   const [submitting, setSubmitting] = useState(false)
   const isBusy = busy || submitting
 
-  cancelAction.current = onCancel
-  busyRef.current = isBusy
+  useEffect(() => {
+    cancelAction.current = onCancel
+    busyRef.current = isBusy
+  }, [isBusy, onCancel])
 
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -41,7 +43,7 @@ export function ConfirmDialog({
         return
       }
       if (event.key !== 'Tab' || !dialog) return
-      const controls = [...dialog.querySelectorAll<HTMLElement>(focusable)]
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(focusable))
       if (controls.length === 0) {
         event.preventDefault()
         dialog.focus()

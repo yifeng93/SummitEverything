@@ -54,6 +54,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
 
   async function load(): Promise<Settings | null> {
     try {
@@ -109,6 +110,14 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   }, [progressKey])
 
   function openWizard(step: 2 | 3 | 4 | 5 = 2) { onRequestWizard?.(step) }
+
+  function openAdvanced() {
+    setAdvancedOpen(true)
+    requestAnimationFrame(() => {
+      const advanced = document.querySelector('.settings-advanced-block')
+      if (advanced && typeof advanced.scrollIntoView === 'function') advanced.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
 
   function setSecret(provider: SecretProvider, value: string) {
     setSecrets((current) => ({ ...current, [provider]: value }))
@@ -292,80 +301,91 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
 
         <section className="settings-card" aria-label="AI 模型">
           <CardHead title="AI 模型" badge={modelBadge} />
-          <p className="settings-card-desc">整理与问答用整理模型；知识索引向量化和检索排序用 Model Studio。密钥只保存在本机钥匙串，页面不会回显。</p>
-          <p className="settings-card-next">{modelBadge.hint}</p>
-          {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>}
-          <form className="settings-card-form" onSubmit={saveModelCard}>
-            <label className="settings-field"><span>整理模型</span><select value={settings.llm.provider} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, provider: event.target.value as LLMProvider, model: event.target.value === 'fake' ? null : 'deepseek-flash', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="deepseek">DeepSeek · deepseek-flash</option></select></label>
-            <div className="secret-slot">
-              <label htmlFor="secret-deepseek">DeepSeek API Key<span>用于整理与问答。已保存的密钥不会显示，留空表示不修改。</span></label>
-              <input id="secret-deepseek" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.deepseek} onChange={(event) => setSecret('deepseek', event.target.value)} />
-              <div className="secret-slot-actions">
-                <small>{credentials.deepseek ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-                <button className="text-button" type="button" disabled={busy || !credentials.deepseek} onClick={() => setPendingRemoval('deepseek')}>删除本机密钥</button>
+          <p className="settings-card-desc">按业务能力查看状态。模型名称、账户与密钥放在高级配置中；密钥只保存在本机钥匙串，页面不会回显。</p>
+          <div className="settings-capability-summary">
+            {(['llm', 'embedding', 'rerank'] as const).map((id) => {
+              const capability = capabilities[id]
+              const reason = reasonText(capability?.disabled_reason)
+              return <div className="settings-capability-item" key={id}>
+                <strong>{capabilityLabels[id]}</strong>
+                <span>{capabilityStatusLabel(capability)}</span>
+                {capability?.disabled_reason && <small>{reason.text} 下一步：{reason.next}</small>}
               </div>
-            </div>
-            <label className="settings-field"><span>Embedding</span><select value={settings.embedding.provider} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-embedding', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-embedding</option></select></label>
-            <label className="settings-field"><span>Rerank</span><select value={settings.rerank.provider} onChange={(event) => setSettings({ ...settings, rerank: { ...settings.rerank, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-rerank', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-rerank</option></select></label>
-            <div className="secret-slot">
-              <label htmlFor="secret-dashscope">阿里云 Model Studio API Key<span>Embedding 与 Rerank 共用此密钥。已保存的密钥不会显示，留空表示不修改。</span></label>
-              <input id="secret-dashscope" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.dashscope} onChange={(event) => setSecret('dashscope', event.target.value)} />
-              <div className="secret-slot-actions">
-                <small>{credentials.dashscope ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-                <button className="text-button" type="button" disabled={busy || !credentials.dashscope} onClick={() => setPendingRemoval('dashscope')}>删除本机密钥</button>
-              </div>
-            </div>
-            <div className="button-row">
-              <button className="button primary" disabled={busy}>保存 AI 模型设置</button>
-            </div>
-          </form>
-          <div className="settings-check-block">
-            <h3>受限合成连接检查</h3>
-            <p className="settings-help">先用固定短合成 payload 检查接口连通与响应结构，不发送工作库材料。每项最多一次，失败、超时与未知结果同样计数且不会自动重发；点击后需确认本次范围才会发出请求。</p>
-            <div className="button-row">
-              <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'deepseek_chat', busy)} type="button" onClick={() => setPendingCheck('deepseek_chat')}>DeepSeek Chat（剩余 {smokeStatus?.remaining?.deepseek_chat ?? '…'}）</button>
-              <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'model_studio_embedding', busy)} type="button" onClick={() => setPendingCheck('model_studio_embedding')}>Embedding（剩余 {smokeStatus?.remaining?.model_studio_embedding ?? '…'}）</button>
-              <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'model_studio_rerank', busy)} type="button" onClick={() => setPendingCheck('model_studio_rerank')}>Rerank（剩余 {smokeStatus?.remaining?.model_studio_rerank ?? '…'}）</button>
-            </div>
-            {pendingCheck && <SmokeCheckConfirm
-              check={pendingCheck}
-              smokeStatus={smokeStatus}
-              busy={busy}
-              onConfirm={() => void confirmSmoke()}
-              onCancel={() => setPendingCheck(null)}
-            />}
+            })}
           </div>
+          <button className="button primary" type="button" onClick={openAdvanced}>配置 AI 模型与密钥</button>
         </section>
 
         <section className="settings-card" aria-label="飞书">
           <CardHead title="飞书" badge={feishuBadge} />
-          <p className="settings-card-desc">保存应用标识与应用密钥后，可从这里连接或重新授权飞书。材料、日历与任务仍只读，并按已确认范围访问。</p>
+          <p className="settings-card-desc">状态来自本机授权记录。材料、日历与任务仍只读，并按已确认范围访问。</p>
           <p className="settings-card-next">{feishuBadge.hint}</p>
-          <p className="settings-card-next">飞书任务写回仍不可用：缺少可独立核实写结果的方式，本页不提供任何修改飞书任务的入口。</p>
-          <div className="button-row">
-            <button className="text-button" type="button" disabled={busy} onClick={() => void loadFeishuStatus()}>重新读取授权状态</button>
-            <button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard(4)}>连接 / 重新授权飞书</button>
+          <div className="settings-capability-summary">
+            {(['feishu_material_read', 'feishu_calendar_read', 'feishu_task_read', 'feishu_task_write'] as const).map((id) => {
+              const capability = capabilities[id]
+              const reason = reasonText(capability?.disabled_reason)
+              return <div className="settings-capability-item" key={id}>
+                <strong>{capabilityLabels[id]}</strong>
+                <span>{capabilityStatusLabel(capability)}</span>
+                {capability?.disabled_reason && <small>{reason.text} 下一步：{reason.next}</small>}
+              </div>
+            })}
           </div>
+          <p className="settings-card-next">飞书任务写回仍不可用；本页不提供任何修改飞书任务的入口。</p>
+          <button className="button primary" type="button" disabled={!settings} onClick={() => openWizard(4)}>连接 / 重新授权飞书</button>
+        </section>
+      </div>
+
+      <details className="settings-advanced-block" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
+        <summary>高级与自定义（模型配置、密钥、端点、账户标识、检查额度与诊断）</summary>
+
+        <section className="provider-settings" aria-labelledby="model-config-heading">
+          <div className="settings-section-heading"><h2 id="model-config-heading">AI 模型与密钥</h2><span>仅保存在本机</span></div>
+          {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>}
+          <form className="settings-card-form" onSubmit={saveModelCard}>
+            <label className="settings-field"><span>整理与问答模型</span><select value={settings.llm.provider} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, provider: event.target.value as LLMProvider, model: event.target.value === 'fake' ? null : 'deepseek-flash', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="deepseek">DeepSeek · deepseek-flash</option></select></label>
+            <div className="secret-slot">
+              <label htmlFor="secret-deepseek">DeepSeek API Key<span>用于整理与问答。已保存的密钥不会显示，留空表示不修改。</span></label>
+              <input id="secret-deepseek" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.deepseek} onChange={(event) => setSecret('deepseek', event.target.value)} />
+              <small>{credentials.deepseek ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
+            </div>
+            <label className="settings-field"><span>知识索引向量化模型</span><select value={settings.embedding.provider} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-embedding', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-embedding</option></select></label>
+            <label className="settings-field"><span>检索结果排序模型</span><select value={settings.rerank.provider} onChange={(event) => setSettings({ ...settings, rerank: { ...settings.rerank, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-rerank', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-rerank</option></select></label>
+            <div className="secret-slot">
+              <label htmlFor="secret-dashscope">阿里云 Model Studio API Key<span>向量化与排序共用此密钥。已保存的密钥不会显示，留空表示不修改。</span></label>
+              <input id="secret-dashscope" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.dashscope} onChange={(event) => setSecret('dashscope', event.target.value)} />
+              <small>{credentials.dashscope ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
+            </div>
+            <div className="button-row"><button className="button primary" disabled={busy}>保存 AI 模型设置</button></div>
+          </form>
+        </section>
+
+        <section className="provider-settings" aria-labelledby="feishu-config-heading">
+          <div className="settings-section-heading"><h2 id="feishu-config-heading">飞书应用设置</h2><span>{feishuBadge.label}</span></div>
+          <p className="settings-help">重新读取只检查本机保存状态，不连接飞书，也不占用连接检查额度。</p>
+          <button className="button secondary" type="button" disabled={busy} onClick={() => void loadFeishuStatus()}>重新读取授权状态</button>
           {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>}
           <form className="settings-card-form" onSubmit={saveFeishuCard}>
             <label className="settings-field"><span>飞书应用 App ID</span><input value={settings.feishu.app_id} maxLength={200} placeholder="cli_…（非秘密，用于本机凭据槽）" onChange={(event) => setSettings({ ...settings, feishu: { ...settings.feishu, app_id: event.target.value } })} /></label>
             <div className="secret-slot">
               <label htmlFor="secret-feishu">飞书应用密钥<span>App Secret，仅保存在本机钥匙串。已保存的密钥不会显示，留空表示不修改。</span></label>
               <input id="secret-feishu" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.feishu_app} onChange={(event) => setSecret('feishu_app', event.target.value)} />
-              <div className="secret-slot-actions">
-                <small>{credentials.feishu_app ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-                <button className="text-button" type="button" disabled={busy || !credentials.feishu_app} onClick={() => setPendingRemoval('feishu_app')}>删除本机密钥</button>
-              </div>
+              <small>{credentials.feishu_app ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
             </div>
-            <div className="button-row">
-              <button className="button primary" disabled={busy}>保存飞书设置</button>
-            </div>
+            <div className="button-row"><button className="button primary" disabled={busy}>保存飞书设置</button></div>
           </form>
         </section>
-      </div>
 
-      <details className="settings-advanced-block">
-        <summary>高级与自定义（Endpoint · 账户标识 · 输出预算 · 能力状态 · 检查额度 · 诊断）</summary>
+        <section className="provider-settings settings-check-block">
+          <div className="settings-section-heading"><h2>受限合成连接检查</h2><span>每项需单独确认</span></div>
+          <p className="settings-help">先用固定短合成 payload 检查接口连通与响应结构，不发送工作库材料。每项最多一次，失败、超时与未知结果同样计数且不会自动重发；点击后需确认本次范围才会发出请求。</p>
+          <div className="button-row">
+            <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'deepseek_chat', busy)} type="button" onClick={() => setPendingCheck('deepseek_chat')}>DeepSeek Chat（剩余 {smokeStatus?.remaining?.deepseek_chat ?? '…'}）</button>
+            <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'model_studio_embedding', busy)} type="button" onClick={() => setPendingCheck('model_studio_embedding')}>Embedding（剩余 {smokeStatus?.remaining?.model_studio_embedding ?? '…'}）</button>
+            <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'model_studio_rerank', busy)} type="button" onClick={() => setPendingCheck('model_studio_rerank')}>Rerank（剩余 {smokeStatus?.remaining?.model_studio_rerank ?? '…'}）</button>
+          </div>
+          {pendingCheck && <SmokeCheckConfirm check={pendingCheck} smokeStatus={smokeStatus} busy={busy} onConfirm={() => void confirmSmoke()} onCancel={() => setPendingCheck(null)} />}
+        </section>
 
         <form className="provider-settings" onSubmit={saveAdvancedSettings}>
           <div className="settings-section-heading"><h2>运行模式与账户标识</h2><span>{settings.mode === 'fake' ? '离线模式' : '真实 provider 已选择'}</span></div>
@@ -380,19 +400,6 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
           <p className="settings-help">飞书 callback 必须与开发者后台完全一致且使用本机 loopback。Model Studio 只接受其 HTTPS 域名。请勿在聊天中发送密钥。</p>
           <div className="button-row"><button className="button primary" disabled={busy}>保存 provider 设置</button></div>
         </form>
-
-        <section className="provider-settings capability-list" aria-labelledby="capability-heading">
-          <div className="settings-section-heading"><h2 id="capability-heading">能力状态</h2><span>当前不可对外请求</span></div>
-          {Object.entries(capabilities).map(([id, capability]) => {
-            const reason = reasonText(capability.disabled_reason)
-            return <div className="capability-row" key={id}>
-              <strong>{capabilityLabels[id] ?? id}</strong>
-              <span>{capabilityStatusLabel(capability)}</span>
-              <small>{reason.text}</small>
-              <small className="capability-next">下一步：{reason.next}</small>
-            </div>
-          })}
-        </section>
 
         <section className="provider-settings" aria-labelledby="smoke-quota-heading">
           <div className="settings-section-heading"><h2 id="smoke-quota-heading">受限合成连接检查的额度细节</h2><span>跨运行不重置</span></div>
@@ -416,6 +423,16 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
             <span>运行模式</span><strong>{settings.mode === 'real' ? 'Real · 显式启用' : 'Fake · 离线'}</strong>
             <span>macOS 钥匙串</span><strong>{settings.keychain_available ? '可用' : '不可用（密钥保存失败关闭）'}</strong>
             <span>Embedding 指纹</span><strong>{settings.embedding_fingerprint ?? '—'}</strong>
+          </div>
+        </section>
+
+        <section className="provider-settings settings-danger-zone" aria-labelledby="danger-zone-heading">
+          <div className="settings-section-heading"><h2 id="danger-zone-heading">危险操作</h2><span>仅影响所选应用密钥</span></div>
+          <p className="settings-help">删除后无法从本机恢复；对应能力需要重新录入密钥才能使用。</p>
+          <div className="button-row">
+            <button className="button danger-secondary" type="button" disabled={busy || !credentials.deepseek} onClick={() => setPendingRemoval('deepseek')}>删除 DeepSeek 密钥</button>
+            <button className="button danger-secondary" type="button" disabled={busy || !credentials.dashscope} onClick={() => setPendingRemoval('dashscope')}>删除 Model Studio 密钥</button>
+            <button className="button danger-secondary" type="button" disabled={busy || !credentials.feishu_app} onClick={() => setPendingRemoval('feishu_app')}>删除飞书应用密钥</button>
           </div>
         </section>
       </details>

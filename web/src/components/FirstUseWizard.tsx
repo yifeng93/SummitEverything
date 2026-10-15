@@ -102,7 +102,7 @@ export function FirstUseWizard({
     setError('')
     setNotice('')
     setStep(next)
-    writeFirstUseProgress(progressKey, { step: next === 1 ? 2 : next as 2 | 3 | 4 | 5, completed: false })
+    writeFirstUseProgress(progressKey, { step: next === 1 ? 2 : next as 2 | 3 | 4 | 5, completed: false, open: true })
     onStepChange?.(next === 1 ? 2 : next as 2 | 3 | 4 | 5)
   }
 
@@ -111,7 +111,7 @@ export function FirstUseWizard({
     setPendingCheck(null)
     setError('')
     setStep(next)
-    writeFirstUseProgress(progressKey, { step: next as 2 | 3 | 4 | 5, completed: false })
+    writeFirstUseProgress(progressKey, { step: next as 2 | 3 | 4 | 5, completed: false, open: true })
     onStepChange?.(next as 2 | 3 | 4 | 5)
     setNotice(message)
   }
@@ -123,6 +123,7 @@ export function FirstUseWizard({
 
   function close() {
     setPendingCheck(null)
+    writeFirstUseProgress(progressKey, { step: step as 2 | 3 | 4 | 5, completed: false, open: false })
     onClose()
   }
 
@@ -239,7 +240,7 @@ export function FirstUseWizard({
   }
 
   function finish() {
-    writeFirstUseProgress(progressKey, { step: 5, completed: true })
+    writeFirstUseProgress(progressKey, { step: 5, completed: true, open: false })
     onFinish?.()
   }
 

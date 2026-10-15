@@ -46,3 +46,18 @@ it('keeps code content once its fence is complete', () => {
   rerender(<StreamingMarkdown content={'```ts\nconst value = 1\n```'} complete />)
   expect(container.querySelector('code')?.textContent?.trimEnd()).toBe('const value = 1')
 })
+
+it('keeps earlier complete code blocks visible while hiding only the unfinished final block', () => {
+  const firstBlock = '```ts\nconst earlier = 1\n```'
+  const partial = `${firstBlock}\n\n正文仍在继续。\n\n\`\`\`js\nconst unfinished = 2`
+  const { container, rerender } = render(<StreamingMarkdown content={partial} />)
+  expect(container.textContent).toContain('const earlier = 1')
+  expect(container.textContent).toContain('正文仍在继续。')
+  expect(container.textContent).not.toContain('const unfinished = 2')
+  expect(container.textContent).not.toContain('```')
+
+  const complete = `${firstBlock}\n\n正文仍在继续。\n\n\`\`\`js\nconst unfinished = 2\n\`\`\``
+  rerender(<StreamingMarkdown content={complete} complete />)
+  expect(container.querySelectorAll('code')).toHaveLength(2)
+  expect(container.textContent).toContain('const unfinished = 2')
+})

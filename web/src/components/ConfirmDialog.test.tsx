@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it } from 'vitest'
 import { ConfirmDialog } from './ConfirmDialog'
 
 afterEach(cleanup)
@@ -46,7 +46,7 @@ it('places cancel before the destructive action and states its impact', () => {
   render(<DialogHarness />)
   fireEvent.click(screen.getByRole('button', { name: '打开' }))
   const dialog = screen.getByRole('dialog', { name: '删除密钥' })
-  const actions = [...dialog.querySelectorAll('button')].map((button) => button.textContent)
+  const actions = Array.from(dialog.querySelectorAll('button')).map((button) => button.textContent)
   expect(actions).toEqual(['取消', '删除'])
   expect(dialog.textContent).toContain('会删除所选应用的本机密钥。')
   expect(dialog.textContent).toContain('删除后需要重新录入，无法从本地恢复。')

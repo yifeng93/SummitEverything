@@ -61,6 +61,7 @@ test('offline viewport and theme baseline for today and settings', async ({ page
       await page.getByRole('button', { name: '设置' }).click()
       await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()
       await expect(page.getByRole('region', { name: '工作库' })).toBeVisible()
+      await expect(page.getByRole('button', { name: '配置 AI 模型与密钥' })).toBeVisible()
       const settingsMetrics = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         document: document.documentElement.scrollWidth,

@@ -258,7 +258,7 @@ export function feishuCardBadge(input: {
   if (input.read.state === 'unreadable') {
     return {
       kind: 'unreadable', label: '授权状态暂时无法读取',
-      hint: '无法读取本机授权状态，也不假设已授权。可点击“重新读取授权状态”重试；读取状态不联网，也不占用连接检查额度。',
+      hint: '无法读取本机授权状态，也不假设已授权。可在高级与自定义中重新读取；读取状态不联网，也不占用连接检查额度。',
     }
   }
   const status = input.read.status
