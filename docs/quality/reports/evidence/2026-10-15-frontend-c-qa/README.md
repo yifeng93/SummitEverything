@@ -2,7 +2,7 @@
 
 Fixed product SHA: `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c`
 
-QA source: `/Users/yifengstudio/.codex/worktrees/frontend-c-qa-initial/SummitEverything/.local/qa/frontend-c-initial/`
+QA source: independent QA checkout, ignored path `.local/qa/frontend-c-initial/`. The original checkout path is intentionally omitted from this tracked index.
 
 The original report, raw gate logs, exit sidecars, Playwright harness, screenshots, and manifests remain in the ignored `.local/qa` directory above. This tracked index contains only classifications and hashes; it does not copy profile state, tokens, traces, screenshots, or raw logs.
 
@@ -16,10 +16,10 @@ The original report, raw gate logs, exit sidecars, Playwright harness, screensho
 | Focused C components | PASS, 31 tests, exit 0 | `gates/focused-c-tests.exit` |
 | Project / Reader / Ask matrix | PASS, 40 screenshots, overflow 0 | `gates/view-matrix.exit`, `view-matrix/measurements.json` |
 | FastAPI + Fake citation update | PASS, 1/1; external requests 0 | `gates/fastapi-flow.exit`, `fastapi-integration/frontend-c-flow-manifest.json` |
-| Project return state | Initial attempt FAIL (fixture shape), retry FAIL, final fixed harness PASS, exit 0 | `gates/project-return-state.exit`, `gates/project-return-state-retry.exit`, `gates/project-return-state-final.exit` |
+| Project return state | Initial harness exit 1; retry harness exit 1; final corrected harness exit 0. The two nonzero results are retained as harness failures, not product failures. | [`project-return-exits.json`](project-return-exits.json), original sidecars at ignored QA source |
 | Project journal progress invariant | PASS; `progress` and `progress_version` unchanged | `gates/project-journal-progress.exit`, `test_project_journal_progress.py` |
 
-The two nonzero project-return attempts are preserved and classified as QA harness failures. Only the final rerun is the passing evidence. UI return-state and backend journal/progress checks are separate tests, not one end-to-end claim.
+The two nonzero project-return attempts are preserved and classified as QA harness failures. Only the final rerun is the passing evidence. UI return-state and backend journal/progress checks are separate tests, not one end-to-end claim. Raw logs and exit sidecars remain unchanged in the ignored QA source; only the sanitized exit summary is tracked here.
 
 ## SHA-256
 

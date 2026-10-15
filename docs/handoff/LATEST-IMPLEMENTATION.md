@@ -1,10 +1,12 @@
 # 最新实现交接
 
-## 当前前端 UX：C 离线门 PASS，D 执行中
+## 当前前端 UX：C 离线门 PASS，D 开发候选已交 fresh QA
 
 B repair1 产品固定 SHA `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c`（`codex/frontend-ux-20261015`）经独立 QA 与 Sol 核验，适用离线核心及 repair1 两项修复 **PASS**；初始产品 `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` 的首次 QA **FAIL** 原件仍保留。此 gate 只覆盖 B 离线范围，不代表全站、C/D、Stage C 或产品整体 PASS。QA 报告与脱敏 hash 索引见[B QA repair1](../quality/reports/2026-10-15-FRONTEND-B-QA-REPAIR1.md)及[QA evidence](../quality/reports/evidence/2026-10-15-frontend-b-repair1-qa/README.md)；原 DEV 报告和开发 evidence 保留。Web 180 passed / 6 todo；typecheck/lint/build、离线 Playwright 2/2、FastAPI/Fake 1/1、Real frozen scope/focus 1/1 exit 0；Python 661 与 QA mutation 未运行。全站 todo、真实 provider/飞书/OAuth/Keychain、用户材料、DMG/安装/公证、五日和双机仍 NOT_RUN。
 
-C 产品源码固定为 `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c`。fresh QA 与 Sol 判定适用 C 离线前端场景 **PASS**，仅限 QA 实际执行范围；固定 SHA 与 dirty 状态、最后项目返回 harness rerun 及完整边界见 [C QA 报告](../quality/reports/2026-10-15-FRONTEND-C-QA.md)和[证据哈希索引](../quality/reports/evidence/2026-10-15-frontend-c-qa/README.md)。QA 实际 Web 190 passed / 4 todo；typecheck/lint/build 与 `npm ci` exit 0；Fake 引用更新、40 图视口矩阵、项目返回状态、项目日志不改进度分别通过。项目返回初次和 retry harness 失败均保留，最终 harness 修正复演 exit 0。UI 返回状态与后端日志进度不变是两个独立用例，不是同一 UI+真实路由 E2E。①、④、⑤、⑥仍归 D；Python 661 与 QA mutations 未重跑。真实 provider/OAuth/Feishu/Keychain、用户材料、DMG/安装/公证、五日和双机均 NOT_RUN。
+C 产品源码固定为 `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c`。fresh QA 与 Sol 判定适用 C 离线前端场景 **PASS**，仅限 QA 实际执行范围；固定 SHA 与完整边界见 [C QA 报告](../quality/reports/2026-10-15-FRONTEND-C-QA.md)和[证据哈希索引](../quality/reports/evidence/2026-10-15-frontend-c-qa/README.md)。QA 实际 Web 190 passed / 4 todo；typecheck/lint/build 与 `npm ci` exit 0；Fake 引用更新、40 图视口矩阵、项目返回状态、项目日志不改进度分别通过。项目返回初次和 retry harness exit 1 均保留，最终修正复演 exit 0；UI 返回状态与后端日志进度不变是两个独立测试。C 原件仍在忽略的 QA `.local` 目录，tracked 索引仅含脱敏说明与 exit summary。真实 provider/OAuth/Feishu/Keychain、用户材料、DMG/安装/公证、五日和双机均 NOT_RUN。
+
+D 产品源码固定 SHA `876008e1d33420f57fb31772c76e471379e6b98d`，10 条守卫、全站五档双主题与 reduced-motion/browser 运行检查、Python/Swift/web gates、全新 ad-hoc DMG 和隔离 profile 的 Fake WKWebView 流程均已由 Developer 记录；fresh QA 现在对该 SHA 与同一候选独立验收，Sol gate 尚未作出。restart 后向导重新出现的状态列为 **UNVERIFIED**；native WKWebView pageZoom 2× 为 **NOT_RUN**，独立 CSS zoom simulation 不代替它。全部 scope、命令、候选 identity 与限制见 [D DEV 报告](../quality/reports/2026-10-15-FRONTEND-D-DEV.md)及[D DEV evidence](../quality/reports/evidence/2026-10-15-frontend-d-dev/README.md)。真实 provider/OAuth/Feishu/Keychain、真实资料、已安装 App、签名/公证/发布、五日和双机均 NOT_RUN。
 
 当前实现包括五组独立审批加载/空/错/最近成功与重试、只汇总选择且逐类确认、今日会议/任务/条件行动建议/工具/收件箱、来源/稿件/正式正文/索引与外部动作独立确认。Fake FastAPI 闭环覆盖来源原始字节和 origin kind、取消零写、整理到有部分冲突的稿件、暂时未决选择、正式正文确认与索引；自动化记录外部尝试 0。离线浏览器矩阵覆盖 Today、Approval、Import Drawer、Journal Dialog、审批选择汇总五种场景，各 320/390/768/960/1280 × light/dark。
 
