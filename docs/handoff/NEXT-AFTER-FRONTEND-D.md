@@ -9,7 +9,7 @@
 
 ## 下一步（按顺序）
 
-1. **看 PR #21 的 CI**：`pull_request` 事件会触发 `.github/workflows/m41-internal-app.yml`（`offline-arm64`，其 push 触发分支只覆盖 `codex/m41-internal-app-*`，所以本分支只有 PR/dispatch 才会跑）。**这是本任务第一次真实远端 CI 运行**，此前所有 CI 门都是本地精确复现。CI 失败则按失败步骤修复并出新 SHA，再走 fresh QA。
+1. **PR #21 的真实 CI 已通过**：`pull_request` 事件触发 `.github/workflows/m41-internal-app.yml`（`offline-arm64`），run [`38757225760`](https://github.com/yifeng93/SummitEverything/actions/runs/38757225760) **completed / success，4m42s**，全部步骤 success——含 `Guarded Python checks`、`Web checks and API types`（**D-6 那条门**）、`Native upload policy tests`（`swift test --package-path native`）、`Build and verify internal App and DMG`。此前所有 CI 门都只是本地精确复现；这是第一次真实远端运行，并顺带覆盖了 `swift test` 与 App/DMG 构建校验。若后续再改动产品，需重跑该 CI。
 2. **用户批准后合并**（AGENTS：重要里程碑合并需用户批准）。合并后应做一次 merge 后核对：main 的产品/tests/lock 树与 `e8e1dba` 一致，并在文档中记录 merge commit、CI run 与「PR head ≠ 受测产品 SHA」的区分。
 3. **合并后收尾**：更新 README / PROGRESS / LATEST-IMPLEMENTATION 的合入事实；把 repair1 的历史交接（[history/2026-10-15-NEXT-FRONTEND-D-REPAIR1.md](history/2026-10-15-NEXT-FRONTEND-D-REPAIR1.md)）保持原样仅作追溯。
 
@@ -18,8 +18,9 @@
 - **D-3（INFO）**：`GET/PUT /api/v1/first-use/progress` 的 OpenAPI 只声明 200/422，未声明实际存在的 401/404/503。前端依赖 404 `first_use_progress_absent` 做控制流，建议后续补契约描述。属小切片。
 - **D-5（P3，用户已决议接受）**：新建工作库后若一步都没走就 reload/重启，会落到今日并给非阻塞提示（`create` 意图只在内存）。已在文档中把「新建仍走向简」限定为「点击创建那一刻」。
 - **D-2（P3，dev 专属）**：React StrictMode 下旧 localStorage 迁移会发两次载荷相同的 PUT；生产构建恰好一次。已按生产构建语义表述。
-- **`swift test`**：`native/` 在 `876008e..e8e1dba` 未改，本轮未重跑，不继承旧 5/5 作为本轮结果。
+- **`swift test`**：本地未重跑（`native/` 在 `876008e..e8e1dba` 未改），但**真实 CI 已运行 `swift test --package-path native` 并通过**。
 - **200% 浏览器菜单缩放与原生 `pageZoom`**：**NOT_RUN**；640 CSS px 只是 reflow，root CSS zoom harness 只是 simulation。
+- **native GUI 的独立复现**：native 三条路径由 Sol 实机以本机 Vision OCR 判读通过，但 QA 无 GUI 能力、未独立复现；如需第三方独立验证 native 交互，必须另行授权（且需要 macOS 辅助功能权限或人工点击配合）。
 - **真实门**：真实 provider / 飞书 OAuth / Keychain 生命周期 / 真实业务材料 / 已安装 App / Developer ID 与公证 / 五日 / 双机 / 生产与发布，全部仍是各自独立的未测门，需要用户按准备卡单独授权。**D 门的 PASS 不含这些。**
 
 ## 保留的产物与工作树（未经授权不删）

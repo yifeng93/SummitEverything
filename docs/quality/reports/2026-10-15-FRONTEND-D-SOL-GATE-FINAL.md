@@ -64,10 +64,19 @@
 - **全站视口矩阵：已在 `e8e1dba` 重跑。** 默认 `test:e2e`（`viewport.spec.ts` + `first-use.spec.ts`）2/2、`frontend-c-view.spec.ts`（项目/阅读/问答 × 五档 × 深浅）1/1、`frontend-c-flow.spec.ts`（引用更新闭环）1/1，全部 exit 0，产出 92 张矩阵截图（`.local/dev/frontend-c/`）。日志在 `.local/dev/frontend-d-repair3/viewport-matrix-c-view.log`、`frontend-c-flow.log`。
 - 876 的 204 Web tests / 候选 / CSS zoom 模拟同样只作历史，不作为本轮证据。
 
+## 真实远端 CI（本轮首次运行）
+
+PR [#21](https://github.com/yifeng93/SummitEverything/pull/21) 触发 `.github/workflows/m41-internal-app.yml`（`pull_request` 事件；该 workflow 的 push 触发分支只覆盖 `codex/m41-internal-app-*`，所以此前的 CI 门都只是本地精确复现）。
+
+- run `38757225760`（job `offline-arm64`）：**completed / success，4m42s**，headSha `289947fac15ec5e79fe0122195f9cbe32f59d629`（docs tip；其祖先即受测产品 `e8e1dba`，docs 提交不改产品树）。
+- 全部步骤 success，包含：`Guarded Python checks`（`pytest -q` + `ruff check` + `ruff format --check` + `mypy src` + `uv lock --check` + `uv build`）、`Web checks and API types`（`api:types` + **`git diff --exit-code -- web/src/api/generated.ts`** + `vitest` + `typecheck` + `lint` + `build`）、**`Native upload policy tests`（`swift test --package-path native`）**、`Build and verify internal App and DMG`。
+- 意义：**D-6 那条 CI 门已在真实远端 CI 上通过**；此外它顺带关闭了两个此前记为 NOT_RUN 的项——**`swift test` 真实运行通过**，以及 **App/DMG 的构建与校验在 CI 中完成**（仍不含 GUI 交互）。
+- 原始证据：`gh run view 38757225760 --json …` 输出在 `.local/dev/frontend-d-repair3/pr21-ci-run.json`，`gh pr checks --watch` 日志在 `pr21-ci.log` / `pr21-ci.exit`（exit 0）。
+
 ## 合入
 
 用户已批准「同时开 PR 到 main」。本轮分支 `codex/frontend-ux-20261015` 相对 `main` 的 merge-base 是 `e84e9e5`，PR 实际包含**整条前端 UX 线 A→D**（217 文件、+15341/−1755），不是仅 D。PR 链接与合入状态见[最新交接](../../handoff/LATEST-IMPLEMENTATION.md)；**合并动作本身仍需用户明确批准**（AGENTS：重要里程碑合并需用户批准）。
 
 ## 本 PASS 明确不覆盖
 
-真实 provider / 飞书 OAuth / Keychain 生命周期 / 真实业务材料 / 已安装 App / Developer ID 与公证 / 五日 / 双机 / 生产与发布；200% 浏览器菜单缩放与原生 `pageZoom`；Swift 测试（`native/` 在 `876008e..e8e1dba` 未改，本轮未重跑 `swift test`）；真实 CI 运行（本分支 push 不触发该 workflow，仅本地精确复现其步骤）。
+真实 provider / 飞书 OAuth / Keychain 生命周期 / 真实业务材料 / 已安装 App / Developer ID 与公证 / 五日 / 双机 / 生产与发布；200% 浏览器菜单缩放与原生 `pageZoom`；native GUI 的**独立**复现（native 三条路径由 Sol 实机以机器 OCR 判读，QA 未独立复现；`swift test` 与 App/DMG 构建校验已由真实 CI 覆盖，但仍不含 GUI 交互）。
