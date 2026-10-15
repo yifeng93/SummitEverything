@@ -103,31 +103,33 @@ it('asks for an explicit range confirmation before calling the fixed DeepSeek sm
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/provider-smoke/deepseek-chat', expect.objectContaining({ method: 'POST' })))
 })
 
-it('does not delete a credential until the destructive confirmation is accepted', async () => {
+it.each([
+  ['deepseek', '删除 DeepSeek 密钥'],
+  ['dashscope', '删除 Model Studio 密钥'],
+  ['feishu_app', '删除飞书应用密钥'],
+] as const)('does not delete the %s credential until destructive confirmation is accepted', async (provider, buttonLabel) => {
   const state = {
     mode: 'fake', model_studio_account_id: 'synthetic-account',
     feishu: { app_id: '', redirect_uri: '' },
     llm: { provider: 'fake', model: null, account_id: 'synthetic-account', enabled: false },
     embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid/compatible-mode/v1', enabled: false },
     rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid/api/v1', enabled: false },
-    credential_status: { feishu_app: false, deepseek: true, dashscope: false },
+    credential_status: { feishu_app: true, deepseek: true, dashscope: true },
     capabilities: {}, keychain_available: false,
   }
-  const fetchMock = vi.fn(async (_url: unknown, init?: RequestInit) => ({ ok: true, status: 200, json: async () => {
-    void init
-    return state
-  } }))
+  const fetchMock = vi.fn(async (_url: unknown, _init?: RequestInit) => ({ ok: true, status: 200, json: async () => state }))
   vi.stubGlobal('fetch', fetchMock)
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
   fireEvent.click(screen.getByText(/高级与自定义/))
-  fireEvent.click(await screen.findByRole('button', { name: '删除 DeepSeek 密钥' }))
+  fireEvent.click(await screen.findByRole('button', { name: buttonLabel }))
   const dialog = await screen.findByRole('dialog', { name: '删除所选本机密钥？' })
   expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: '取消' }))
   expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
   fireEvent.click(within(dialog).getByRole('button', { name: '取消' }))
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
-  fireEvent.click(screen.getByRole('button', { name: '删除 DeepSeek 密钥' }))
+  fireEvent.click(screen.getByRole('button', { name: buttonLabel }))
   fireEvent.click(await screen.findByRole('button', { name: '删除密钥' }))
   await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(1))
+  expect(fetchMock.mock.calls.some(([url]) => String(url) === `/api/v1/credentials/${provider}`)).toBe(true)
 })

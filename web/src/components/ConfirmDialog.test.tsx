@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
-import { afterEach, expect, it } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { ConfirmDialog } from './ConfirmDialog'
 
 afterEach(cleanup)
@@ -50,4 +50,18 @@ it('places cancel before the destructive action and states its impact', () => {
   expect(actions).toEqual(['取消', '删除'])
   expect(dialog.textContent).toContain('会删除所选应用的本机密钥。')
   expect(dialog.textContent).toContain('删除后需要重新录入，无法从本地恢复。')
+})
+
+it('single-flights rapid confirmation clicks while the destructive request is pending', async () => {
+  let finish: (() => void) | undefined
+  const onConfirm = vi.fn(() => new Promise<void>((resolve) => { finish = resolve }))
+  render(<DialogHarness onConfirm={onConfirm} />)
+  fireEvent.click(screen.getByRole('button', { name: '打开' }))
+  const confirm = screen.getByRole('button', { name: '删除' })
+  fireEvent.click(confirm)
+  fireEvent.click(confirm)
+  expect(onConfirm).toHaveBeenCalledTimes(1)
+  expect(screen.getByRole('button', { name: '正在删除…' }).hasAttribute('disabled')).toBe(true)
+  finish?.()
+  await Promise.resolve()
 })

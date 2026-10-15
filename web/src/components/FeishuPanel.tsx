@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, api, newOperationId } from '../api/client'
 import type { components } from '../api/generated'
 import { startFeishuAuthorization } from './feishuAuthorization'
+import { ConfirmDialog } from './ConfirmDialog'
 
 type Status = components['schemas']['FeishuStatus']
 type Materials = components['schemas']['MaterialPage']
@@ -17,6 +18,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
   const [authProblem, setAuthProblem] = useState<'expired' | 'scope' | null>(null)
   const [busy, setBusy] = useState(false)
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false)
   const [query, setQuery] = useState('')
   const [visibility, setVisibility] = useState('')
   const [materials, setMaterials] = useState<Materials | null>(null)
@@ -211,7 +213,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   return <section className="panel feishu-panel">
     {showAuthorization && <>
     {view === 'all' && <div className="panel-heading"><div><h2>飞书日常</h2><p>{status?.mode === 'real' ? '真实模式 · 应用身份优先；仅妙记搜索与任务列表需要一次性用户授权。' : '模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。'}</p></div><span className="status-label">{authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '用户已授权' : '用户未授权'}</span></div>}
-    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>{status?.mode === 'real' ? '授权飞书用户身份' : '模拟授权飞书'}</button>{status?.authorized && <button className="button secondary" disabled={busy} onClick={logout}>断开飞书授权</button>}</div>
+    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>{status?.mode === 'real' ? '授权飞书用户身份' : '模拟授权飞书'}</button>{status?.authorized && <button className="button secondary" disabled={busy} onClick={() => setConfirmDisconnect(true)}>断开飞书授权</button>}</div>
     {status?.mode === 'real' && <p className="quiet-empty" role="status">{status.app_configured ? '应用密钥已配置。' : '尚未配置应用密钥。'}{!status.user_identity_verified && ' 用户身份尚未验证。'}</p>}
     {status?.mode === 'real' && <div className="button-row">
       {authorizationUrl && <><a className="button secondary" href={authorizationUrl} target="_blank" rel="noopener noreferrer">打开飞书授权页面</a><span>在浏览器完成后刷新本机授权状态；入口有效期5分钟。注册callback的本机端口须正在运行。刷新只反映当前凭据，不代表用户身份已核验。</span></>}
@@ -219,6 +221,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
     </div>}
     </>}
     {error && <p role="alert" className="helper-line">{error}</p>}
+    {confirmDisconnect && <ConfirmDialog title="断开飞书用户授权？" description="这会清除保存在本机的飞书用户授权。" consequence="不会删除已导入的本机材料；取消不会修改授权状态。" confirmLabel="确认断开授权" busyLabel="正在断开…" busy={busy} danger onCancel={() => setConfirmDisconnect(false)} onConfirm={async () => { await logout(); setConfirmDisconnect(false) }} />}
     {approval && <section className="provider-settings" aria-label="本次真实飞书操作确认"><h3>本次范围预览</h3><p>确认后只执行以下范围。最多 {approval.plan.request_limit} 次 HTTP 请求（包含必要的授权刷新或备用读取）；这是调用次数上限，不是金额上限。失败和未知结果都计入本次额度，不会自动重发。</p>
       {approval.operation === 'feishu.materials.read' && <p>搜索飞书材料：“{String(approval.scope.query || '全部材料')}”；可见范围：{approval.scope.visibility === 'owner' ? '我拥有的' : approval.scope.visibility === 'shared' ? '共享给我的' : '全部可见'}；最多一页、{String(approval.scope.limit)} 条。</p>}
       {approval.operation === 'feishu.materials.import' && <><p>读取并保存以下所选材料正文，仍需之后单独整理和审核：</p><ul>{(approval.scope.material_ids as string[]).map((id) => <li key={id}>{titles[id] ?? '所选材料'}</li>)}</ul></>}

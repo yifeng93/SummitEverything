@@ -6,7 +6,7 @@
  *   ① allowlist 机制 —— 内部 ID/hash/路径实例的「文件:字段」次数与 ui-contract.allowlist.json 精确相等（§9、§11 ①）
  *   ③ 字号下限 —— web/src/**\/*.css 全部 font-size ≥ 12px，9/10/11px 出现次数为 0（§6.1、§11 ③）
  *   ⑧ 外壳几何 —— 侧栏 200px / ≤800px 64px 图标栏 / ≤560px 底部 5 栏且每项 ≥44px / 粗指针 ≥44px（§0、§8.1）
- * ① 的全应用可见位置断言仍为 todo；⑩ 五档浏览器视口由 web/e2e/viewport.spec.ts 实际执行。
+ * ① 的运行时正文/details/title/aria-label 断言见 ui-contract.render.test.tsx；⑩ 五档浏览器视口由 Playwright 实际执行。
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'

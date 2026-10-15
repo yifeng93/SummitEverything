@@ -128,6 +128,56 @@ it('keeps archived knowledge retrievable and exposes the archived project in the
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/projects/project-archived', expect.objectContaining({ method: 'PATCH' }))
 })
 
+it('requires confirmation before archiving an active project and writes exactly once', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'archive-operation' })
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/projects/project-1' && init?.method === 'PATCH') {
+      projects[0].archived = true
+      return { ok: true, status: 200, json: async () => projects[0] }
+    }
+    if (url.endsWith('/lines')) return { ok: true, status: 200, json: async () => lines }
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => projects }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => pages }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
+  fireEvent.click(screen.getByText('更多'))
+  fireEvent.click(screen.getByRole('button', { name: '归档项目' }))
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH')).toHaveLength(0)
+  const dialog = within(screen.getByRole('dialog', { name: '归档这个项目？' }))
+  fireEvent.click(dialog.getByRole('button', { name: '取消' }))
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH')).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '归档项目' }))
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '归档项目' }))
+  await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH')).toHaveLength(1))
+})
+
+it('keeps deleting an empty project behind confirmation and sends one delete after acceptance', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'delete-operation' })
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/projects/project-1' && init?.method === 'DELETE') return { ok: true, status: 204, json: async () => ({}) }
+    if (url.endsWith('/lines')) return { ok: true, status: 200, json: async () => lines }
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => projects }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => [] }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
+  fireEvent.click(screen.getByText('更多'))
+  fireEvent.click(screen.getByRole('button', { name: '删除空项目' }))
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(0)
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '取消' }))
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '删除空项目' }))
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '删除空项目' }))
+  await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(1))
+})
+
 it('shows the workspace refusal when deleting a non-empty line', async () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
   const onError = vi.fn()
@@ -142,6 +192,9 @@ it('shows the workspace refusal when deleting a non-empty line', async () => {
   vi.stubGlobal('fetch', fetchMock)
   render(<ProjectsView onError={onError} onOpenPage={vi.fn()} />)
   fireEvent.click(await screen.findByRole('button', { name: '删除空主线' }))
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '取消' }))
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: '删除空主线' }))
   fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '删除空主线' }))
   await waitFor(() => expect(onError).toHaveBeenCalledWith('Move projects before deleting this line'))
 })

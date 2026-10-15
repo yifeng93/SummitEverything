@@ -132,9 +132,13 @@ it('正式页面点击确认前先预览，确认后原子保存当前metadata/b
   fireEvent.click(within(screen.getByRole('region', { name: /3 · 正式内容/ })).getByRole('button', { name: '确认并保存当前版本' }))
   expect(screen.getByRole('dialog').textContent).toContain('不会创建飞书任务')
   expect(calls.some(({ path }) => path.endsWith('/confirmations'))).toBe(false)
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '取消' }))
+  expect(calls.some(({ path }) => path.endsWith('/confirmations'))).toBe(false)
+  fireEvent.click(within(screen.getByRole('region', { name: /3 · 正式内容/ })).getByRole('button', { name: '确认并保存当前版本' }))
   fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '确认并保存当前版本' }))
   await waitFor(() => expect(calls.some(({ path, method }) => path.endsWith('/pages/page-1/confirmations') && method === 'POST')).toBe(true))
   const request = calls.find(({ path }) => path.endsWith('/pages/page-1/confirmations'))
+  expect(calls.filter(({ path, method }) => path.endsWith('/pages/page-1/confirmations') && method === 'POST')).toHaveLength(1)
   expect(request?.body).toMatchObject({ metadata: page.metadata, body: page.body, expected_base_sha256: page.content_sha256 })
 })
 

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { AskView } from './AskView'
+import { MarkdownText } from './MarkdownText'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
@@ -97,6 +98,118 @@ it('puts the question first and keeps history, indexing, and personalization col
   expect(screen.getByText('资料范围与回答方式').closest('details')?.open).toBe(false)
 })
 
+it('shows loading while Ask history and personalization are unresolved, then shows empty only after success', async () => {
+  const pending: Array<{ url: string; resolve: (response: Response) => void }> = []
+  const rawFetch = vi.fn((input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Promise.resolve(Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 }))
+    return new Promise<Response>((resolve) => pending.push({ url, resolve }))
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByText('本机历史', { selector: 'summary' }))
+  fireEvent.click(screen.getByText('问答角色与记忆', { selector: 'summary' }))
+  expect(screen.getByText('正在读取问答历史…')).toBeTruthy()
+  expect(screen.getByText('正在读取问答偏好与记忆…')).toBeTruthy()
+  expect(screen.queryByText('还没有问答历史。')).toBeNull()
+  expect(screen.queryByText('没有待确认记忆。')).toBeNull()
+
+  await waitFor(() => expect(pending).toHaveLength(5))
+  pending.find(({ url }) => url.includes('/conversations?'))!.resolve(Response.json({ items: [], next_cursor: null }))
+  pending.filter(({ url }) => ['/roles', '/memory', '/memory/candidates'].some((path) => url.endsWith(path))).forEach(({ resolve }) => resolve(Response.json([])))
+  expect(await screen.findByText('还没有问答历史。')).toBeTruthy()
+  expect(await screen.findByText('没有待确认记忆。')).toBeTruthy()
+  expect(screen.getByText('目前没有已确认记忆。')).toBeTruthy()
+})
+
+it('keeps Ask request failures distinct from successful empty results', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.includes('/conversations?')) throw new Error('history unavailable')
+    if (['/roles', '/memory', '/memory/candidates'].some((path) => url.endsWith(path))) throw new Error('preferences unavailable')
+    if (url === '/api/v1/pages') return Response.json([])
+    throw new Error(`Unexpected fetch ${url}`)
+  }))
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByText('本机历史', { selector: 'summary' }))
+  fireEvent.click(screen.getByText('问答角色与记忆', { selector: 'summary' }))
+  expect(await screen.findByText(/问答历史读取失败：history unavailable/)).toBeTruthy()
+  expect(await screen.findByText(/问答偏好与记忆读取失败：preferences unavailable/)).toBeTruthy()
+  expect(screen.queryByText('还没有问答历史。')).toBeNull()
+  expect(screen.queryByText('没有待确认记忆。')).toBeNull()
+})
+
+it('does not turn a cancelled partial answer into visible Markdown delimiters', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'partial-request' })
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+    if (url === '/api/v1/settings') return Response.json({ mode: 'fake', embedding_fingerprint: null })
+    if (url === '/api/v1/queries') {
+      const payload = [
+        event('partial-request', 1, 'delta', { text: '**半句尚未结束' }),
+        event('partial-request', 2, 'error', { code: 'cancelled', message: '已取消' }),
+      ].join('')
+      return new Response(payload, { status: 200, headers: { 'Content-Type': 'text/event-stream', 'X-Conversation-ID': 'conversation-partial' } })
+    }
+    if (url.endsWith('/conversations/conversation-partial/reopen')) return Response.json({
+      conversation_id: 'conversation-partial', title: '合成问题', created_at: '', updated_at: '', message_count: 1, state: 'cancelled',
+      messages: [{ request_id: 'partial-request', question: '合成问题', answer: '**半句尚未结束', state: 'cancelled', purpose: 'current', answer_mode: 'fact', citations: [], events: [], created_at: '' }],
+    })
+    throw new Error(`Unexpected fetch ${url} ${init?.method ?? 'GET'}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '合成问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  await screen.findByText('半句尚未结束')
+  expect(document.querySelector('.ask-view')?.textContent).not.toContain('**')
+  expect(document.querySelector('.ask-view')?.textContent).toContain('半句尚未结束')
+})
+
+it('renders actual SSE delta frames with stable syntax and matches the terminal static DOM', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'golden-request' })
+  let streamController: ReadableStreamDefaultController<Uint8Array> | undefined
+  const encoder = new TextEncoder()
+  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+    if (url === '/api/v1/settings') return Response.json({ mode: 'fake', embedding_fingerprint: null })
+    if (url === '/api/v1/queries') return new Response(new ReadableStream<Uint8Array>({ start(controller) { streamController = controller } }), {
+      status: 200, headers: { 'Content-Type': 'text/event-stream', 'X-Conversation-ID': 'stream-conversation' },
+    })
+    if (url.endsWith('/conversations/stream-conversation/reopen')) return Response.json({
+      conversation_id: 'stream-conversation', title: '合成问题', created_at: '', updated_at: '', message_count: 1, state: 'completed',
+      messages: [{ request_id: 'golden-request', question: '合成问题', answer: '**hello world**', state: 'completed', purpose: 'current', answer_mode: 'fact', citations: [], events: [], created_at: '' }],
+    })
+    throw new Error(`Unexpected fetch ${url} ${init?.method ?? 'GET'}`)
+  })
+  vi.stubGlobal('fetch', rawFetch)
+  const { container } = render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.change(await screen.findByLabelText('你的问题'), { target: { value: '合成问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  await waitFor(() => expect(streamController).toBeTruthy())
+  const send = (seq: number, type: string, data: Record<string, unknown>) => streamController!.enqueue(encoder.encode(event('golden-request', seq, type, data)))
+  send(1, 'delta', { text: '**hello' })
+  await screen.findByText('hello', { selector: '.answer-panel strong' })
+  expect(container.querySelector('.answer-panel .answer-text')?.textContent).toContain('hello')
+  expect(container.querySelector('.answer-panel .answer-text')?.textContent).not.toContain('**')
+  send(2, 'delta', { text: ' world' })
+  await waitFor(() => expect(container.querySelector('.answer-panel .answer-text')?.textContent).toContain('world'))
+  expect(container.querySelector('.answer-panel .answer-text')?.textContent).not.toContain('**')
+  send(3, 'completed', { text: '**hello world**' })
+  streamController!.close()
+  await screen.findByText('回答 · 事实问答 · 已完成')
+  const answer = container.querySelector('.conversation-thread .answer-text')!
+  const staticAnswer = render(<MarkdownText content="**hello world**" />)
+  expect(answer.innerHTML).toBe(staticAnswer.container.querySelector('.markdown-content')?.innerHTML)
+})
+
 it('requires confirmation before deleting local history, roles, or confirmed memories', async () => {
   const deletes: string[] = []
   const role = { role_id: 'role-1', name: '简明', instructions: '', context_budget: 2000, created_at: '', updated_at: '' }
@@ -129,11 +242,17 @@ it('requires confirmation before deleting local history, roles, or confirmed mem
   fireEvent.change(screen.getAllByLabelText('使用角色')[0], { target: { value: 'role-1' } })
   fireEvent.click(screen.getByRole('button', { name: '删除角色' }))
   expect(deletes).toHaveLength(1)
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(deletes).toHaveLength(1)
+  fireEvent.click(screen.getByRole('button', { name: '删除角色' }))
   fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
   await waitFor(() => expect(deletes).toContain('/api/v1/roles/role-1'))
 
   fireEvent.click(screen.getByRole('button', { name: '删除记忆' }))
   expect(deletes).toHaveLength(2)
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(deletes).toHaveLength(2)
+  fireEvent.click(screen.getByRole('button', { name: '删除记忆' }))
   fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
   await waitFor(() => expect(deletes).toContain('/api/v1/memory/memory-1'))
   expect(rawFetch.mock.calls.some(([input]) => String(input).includes('private-request-id'))).toBe(false)

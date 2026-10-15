@@ -216,6 +216,22 @@ it('shows a stale inbox after a failed refresh instead of treating it as empty',
   expect(screen.queryByText('收件箱目前没有内容。')).toBeNull()
 })
 
+it('keeps the initial Today inbox pending until its first successful read', async () => {
+  let finishRead: ((response: Response) => void) | undefined
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    if (path.endsWith('/intake/items')) return await new Promise<Response>((resolve) => { finishRead = resolve })
+    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false, scopes: [], token_type: 'user' })
+    if (path.endsWith('/actions') || path.endsWith('/projects')) return Response.json([])
+    return Response.json([])
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  expect(await screen.findByText('正在读取收件箱…')).toBeTruthy()
+  expect(screen.queryByText('收件箱目前没有内容。')).toBeNull()
+  finishRead?.(Response.json([]))
+  expect(await screen.findByText('收件箱目前没有内容。')).toBeTruthy()
+})
+
 it('restores the work journal modal without merging its save workflow into quick notes', async () => {
   mockApi({ '/actions': [], '/intake/items': [], '/lines': [], '/projects': [], '/pages': [] })
   render(<TodayView onError={vi.fn()} />)

@@ -225,7 +225,7 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     const page = {
       page_id: 'page-internal-abc', relative_path: '中文业务主线/中文业务项目/事实.md',
       metadata: { id: 'page-internal-abc', title: '中文事实记录', role: 'knowledge', kind: 'topic', line_id: line.id, project_id: project.id },
-      body: '已确认的中文正文。', content_sha256: 'f'.repeat(64), raw_sha256: 'e'.repeat(64),
+      body: '已确认的中文正文。\n\n```ts\nconst userText = "page-internal-abc";\n```', content_sha256: 'f'.repeat(64), raw_sha256: 'e'.repeat(64),
       storage_area: 'formal', approval_state: 'confirmed', validity: 'current',
     }
     const fetchMock = stubShell({ '/api/v1/lines': [line], '/api/v1/projects': [project], '/api/v1/pages': [page] })
@@ -245,7 +245,17 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     noIdentifiers(document.querySelector('.project-detail')?.textContent ?? '')
     fireEvent.click(screen.getByRole('button', { name: /中文事实记录/ }))
     expect(await screen.findByText('已确认的中文正文。')).toBeTruthy()
-    noIdentifiers(document.querySelector('.page-reader')?.textContent ?? '')
+    const reader = document.querySelector('.page-reader') as HTMLElement
+    const readerOrdinaryText = reader.cloneNode(true) as HTMLElement
+    readerOrdinaryText.querySelectorAll('pre code').forEach((code) => code.remove())
+    noIdentifiers(readerOrdinaryText.textContent ?? '')
+    expect(document.querySelector('.page-reader pre code')?.textContent).toMatch(/^const userText = "page-internal-abc";\n?$/)
+    const ordinaryMetadata = document.querySelectorAll<HTMLElement>('.projects-view, .project-detail, .page-reader, .ask-view')
+    const internalValue = /line-internal-123|project-internal-456|overview-internal-789|page-internal-abc|(?:[a-f0-9]{64})|(?:[\w.-]+\/){2,}[\w.-]+\.md|\{"(?:id|page_id|project_id)"/i
+    const metadataLeaks = Array.from(ordinaryMetadata).flatMap((root) => Array.from(root.querySelectorAll<HTMLElement>('*')).filter((element) => !element.closest('pre code')).flatMap((element) =>
+      ['title', 'aria-label'].map((attribute) => ({ tag: element.tagName.toLowerCase(), attribute, value: element.getAttribute(attribute) ?? '' }))
+        .filter((entry) => internalValue.test(entry.value))))
+    expect(metadataLeaks).toEqual([])
     fireEvent.click(within(nav).getByRole('button', { name: '知识问答' }))
     const question = await screen.findByLabelText('你的问题')
     const form = question.closest('form')!
@@ -257,8 +267,70 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
   })
 })
 
-// C 已覆盖项目/Reader/Ask 的具体路径；全应用守卫仍留给 D 切片补齐。
-it.todo('① 全站位置断言：普通正文、details、title 与 aria-label 不显示 ID/hash/路径/原始 JSON；仅诊断导出允许原始值')
-it.todo('④ 全站加载与空分离：Today、Approval、Ask 未完成请求时不显示空态；Projects 对应的 C 路径已由 ProjectsView.test.tsx 覆盖')
-it.todo('⑤ 全站危险动作确认：逐类覆盖删除、断开、覆盖与移动；C 已覆盖项目归档/恢复和 Reader 跨项目移动的取消零写入与确认一次写入')
-it.todo('⑥ 流式语法中间态：每个 SSE chunk 的未闭合 Markdown 标记不作为源码显示，终态 DOM 与静态 Markdown 一致；C 已验证代码保真及终态一致')
+it('① 全站普通详情、标题与可访问名称不泄漏元数据并逐字保留用户代码', async () => {
+  const line = { id: 'line-internal-123', name: '中文业务主线', directory: '中文业务主线' }
+  const project = { id: 'project-internal-456', line_id: line.id, name: '中文业务项目', directory: '中文业务主线/中文业务项目', overview_id: 'overview-internal-789', archived: false, progress: '已经启动', progress_version: 1 }
+  const page = {
+    page_id: 'page-internal-abc', relative_path: '私密目录/中文事实.md',
+    metadata: { id: 'page-internal-abc', title: '中文事实页面', role: 'knowledge', kind: 'topic', line_id: line.id, project_id: project.id },
+    body: '中文业务正文。行内代码 `page-internal-abc`。\n\n```ts\nconst copiedExactly = "page-internal-abc";\n```',
+    content_sha256: 'a'.repeat(64), raw_sha256: 'b'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current',
+  }
+  const source = { item_id: 'item-internal-12', source_id: 'source-internal-34', origin_kind: 'file', title: '中文收件标题', filename: '材料.txt', original_relative_path: '私密目录/材料.txt', created_at: '2026-10-14T00:00:00Z', state: 'pending' }
+  const draft = { draft_id: 'draft-internal-56', input_ids: [], target_page_id: page.page_id, metadata: { title: '中文待审稿件' }, body: '中文待审核正文。', source_ids: [source.source_id], important_conflicts: [], state: 'pending', created_at: '2026-10-14T00:00:00Z', version: 1 }
+  stubShell({
+    '/api/v1/intake/items': [source], '/api/v1/drafts': [draft], '/api/v1/pages': [page],
+    '/api/v1/lines': [line], '/api/v1/projects': [project],
+    '/api/v1/conversations?limit=20': { items: [], next_cursor: null },
+    '/api/v1/settings': {
+      mode: 'fake', model_studio_account_id: 'account-internal-789',
+      feishu: { app_id: '', redirect_uri: '', identity: 'app', calendar_id: '', material_content: 'transcript', real_data_enabled: false },
+      llm: { provider: 'fake', model: null, account_id: 'model-internal-123', enabled: false, max_output_tokens: 2048, reasoning_effort: 'low' },
+      embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid/v1', enabled: false },
+      rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid/v1', enabled: false },
+      capabilities: {}, credential_status: { feishu_app: false, deepseek: false, dashscope: false }, keychain_available: false, embedding_fingerprint: 'fp-internal-456',
+    },
+  })
+  render(<App />)
+  await screen.findByLabelText('主题')
+  const nav = screen.getByRole('navigation', { name: '主导航' })
+  const scan = (root: Element | null, expectChineseName = true) => {
+    expect(root).toBeTruthy()
+    const clone = root!.cloneNode(true) as HTMLElement
+    clone.querySelectorAll('code').forEach((code) => code.remove())
+    const forbidden = /line-internal-123|project-internal-456|overview-internal-789|page-internal-abc|source-internal-34|item-internal-12|draft-internal-56|account-internal-789|model-internal-123|fp-internal-456|[a-f0-9]{64}|私密目录\/|\{"(?:id|page_id|project_id|source_id)"/i
+    expect(clone.textContent).not.toMatch(forbidden)
+    const attributes = Array.from(root!.querySelectorAll<HTMLElement>('*')).filter((element) => !element.closest('pre code')).flatMap((element) =>
+      ['title', 'aria-label'].map((attribute) => element.getAttribute(attribute) ?? ''))
+    expect(attributes.join('\n')).not.toMatch(forbidden)
+    if (expectChineseName) expect(clone.textContent).toContain('中文')
+  }
+
+  scan(document.querySelector('.today-view'), false)
+  fireEvent.click(within(nav).getByRole('button', { name: '审批' }))
+  await screen.findAllByText('中文收件标题')
+  scan(document.querySelector('.approval-view'))
+  fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+  const projectRow = await screen.findByRole('button', { name: /中文业务项目/ })
+  scan(document.querySelector('.projects-view'))
+  fireEvent.click(projectRow)
+  await screen.findByRole('region', { name: '项目详情' })
+  scan(document.querySelector('.project-detail'))
+  fireEvent.click(screen.getByRole('button', { name: /中文事实页面/ }))
+  await screen.findByText(/中文业务正文。行内代码/)
+  const reader = document.querySelector('.page-reader')
+  scan(reader)
+  expect(reader?.querySelector('pre code')?.textContent).toMatch(/^const copiedExactly = "page-internal-abc";\n?$/)
+  expect(reader?.querySelector('p code')?.textContent).toBe('page-internal-abc')
+  fireEvent.click(within(nav).getByRole('button', { name: '知识问答' }))
+  await screen.findByLabelText('你的问题')
+  scan(document.querySelector('.ask-view'), false)
+  fireEvent.click(within(nav).getByRole('button', { name: '设置' }))
+  await screen.findByRole('heading', { name: '设置' })
+  scan(document.querySelector('.settings-view'), false)
+  fireEvent.click(await screen.findByRole('button', { name: '打开连接向导' }))
+  await screen.findByRole('dialog', { name: '首次配置向导' })
+  scan(document.querySelector('.onboarding-host'), false)
+})
+
+// ① 元数据渲染断言见上方运行时跨页测试；Ask/Today/Approval 状态、危险操作和 Markdown 分块断言由 focused 渲染测试覆盖。

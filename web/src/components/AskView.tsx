@@ -48,6 +48,8 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
   const [requestId, setRequestId] = useState('')
   const [conversationId, setConversationId] = useState('')
   const [history, setHistory] = useState<Summary[]>([])
+  const [historyLoading, setHistoryLoading] = useState(true)
+  const [historyError, setHistoryError] = useState('')
   const [historyCursor, setHistoryCursor] = useState<string | null>(null)
   const [thread, setThread] = useState<Conversation | null>(null)
   const [queryState, setQueryState] = useState<QueryState>('idle')
@@ -61,6 +63,8 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
   const [roleBudget, setRoleBudget] = useState(2000)
   const [memories, setMemories] = useState<UserMemory[]>([])
   const [memoryCandidates, setMemoryCandidates] = useState<MemoryCandidate[]>([])
+  const [personalizationLoading, setPersonalizationLoading] = useState(true)
+  const [personalizationError, setPersonalizationError] = useState('')
   const [memoryDrafts, setMemoryDrafts] = useState<Record<string, string>>({})
   const [candidateDrafts, setCandidateDrafts] = useState<Record<string, string>>({})
   const [memoryAttestations, setMemoryAttestations] = useState<Record<string, boolean>>({})
@@ -82,6 +86,8 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
   }, [onError])
 
   const refreshHistory = useCallback(async (append = false) => {
+    setHistoryLoading(true)
+    setHistoryError('')
     try {
       const cursor = append ? historyCursorRef.current : null
       const query = new URLSearchParams({ limit: '20' })
@@ -90,12 +96,18 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
       setHistory((current) => append ? [...current, ...page.items] : page.items)
       historyCursorRef.current = page.next_cursor
       setHistoryCursor(page.next_cursor)
+      setHistoryError('')
     } catch (cause) {
+      setHistoryError(cause instanceof Error ? cause.message : '无法读取问答历史')
       onError(cause instanceof Error ? cause.message : '无法读取问答历史')
+    } finally {
+      setHistoryLoading(false)
     }
   }, [onError])
 
   const refreshPersonalization = useCallback(async () => {
+    setPersonalizationLoading(true)
+    setPersonalizationError('')
     try {
       const [roleItems, memoryItems, candidateItems] = await Promise.all([
         api.get<AnswerRole[]>('/roles'), api.get<UserMemory[]>('/memory'),
@@ -104,8 +116,12 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
       setRoles(roleItems)
       setMemories(memoryItems)
       setMemoryCandidates(candidateItems)
+      setPersonalizationError('')
     } catch (cause) {
+      setPersonalizationError(cause instanceof Error ? cause.message : '无法读取本机问答偏好')
       onError(cause instanceof Error ? cause.message : '无法读取本机问答偏好')
+    } finally {
+      setPersonalizationLoading(false)
     }
   }, [onError])
 
@@ -449,15 +465,16 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
         <summary>本机历史</summary>
         <section className="conversation-history">
         <div className="section-title-row"><h2>本机历史</h2><span>只保存在此 profile 和工作库</span></div>
-        {history.length === 0 ? <p className="empty-state">还没有问答历史。</p> : <ul>
+        {historyLoading && history.length === 0 ? <p className="empty-state" role="status">正在读取问答历史…</p> : historyError && history.length === 0 ? <p className="empty-state" role="alert">问答历史读取失败：{historyError}。尚未获得可显示的数据。</p> : history.length === 0 ? <p className="empty-state">还没有问答历史。</p> : <>{historyError && <p role="status">问答历史更新失败：{historyError}；保留上次成功读取的内容。</p>}<ul>
           {history.map((item) => <li key={item.conversation_id} className={item.conversation_id === conversationId ? 'selected' : ''}>
             <button className="history-open" onClick={() => void openConversation(item.conversation_id)}>
               <strong>{item.title}</strong><small>{new Date(item.updated_at).toLocaleString()} · {item.message_count} 个问题 · {stateLabel[item.state]}</small>
             </button>
             <button className="text-button" aria-label={`删除 ${item.title}`} onClick={() => setPendingDelete({ kind: 'conversation', id: item.conversation_id, label: item.title })}>删除</button>
           </li>)}
-        </ul>}
-        {historyCursor && <button className="text-button" onClick={() => void refreshHistory(true)}>加载更早历史</button>}
+        </ul></>}
+        {historyLoading && history.length > 0 && <p role="status">正在更新问答历史…</p>}
+        {historyCursor && <button className="text-button" disabled={historyLoading} onClick={() => void refreshHistory(true)}>加载更早历史</button>}
         </section>
       </details>
       <details className="ask-secondary ask-index">
@@ -488,7 +505,7 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
         <input id="role-budget" type="number" min={0} max={6000} value={roleBudget} onChange={(event) => setRoleBudget(Number(event.target.value))} />
         <div className="button-row"><button className="button secondary" onClick={() => void saveRole()} disabled={!roleName.trim()}>保存角色</button>{selectedRoleId && <button className="text-button" onClick={() => setPendingDelete({ kind: 'role', id: selectedRoleId, label: roleName || '当前角色' })}>删除角色</button>}</div>
         <h3>待确认记忆</h3>
-        {memoryCandidates.length === 0 ? <p className="empty-state">没有待确认记忆。</p> : memoryCandidates.map((candidate) => <div key={candidate.candidate_id} className="memory-item">
+        {personalizationLoading && roles.length + memories.length + memoryCandidates.length === 0 ? <p role="status" className="empty-state">正在读取问答偏好与记忆…</p> : personalizationError && roles.length + memories.length + memoryCandidates.length === 0 ? <p role="alert" className="empty-state">问答偏好与记忆读取失败：{personalizationError}。尚未获得可显示的数据。</p> : <>{personalizationError && <p role="status">偏好与记忆更新失败：{personalizationError}；保留上次成功读取的内容。</p>}{personalizationLoading && <p role="status">正在更新问答偏好与记忆…</p>}{memoryCandidates.length === 0 ? <p className="empty-state">没有待确认记忆。</p> : memoryCandidates.map((candidate) => <div key={candidate.candidate_id} className="memory-item">
           <textarea aria-label="编辑记忆候选" value={candidateDrafts[candidate.candidate_id] ?? candidate.text} onChange={(event) => setCandidateDrafts((current) => ({ ...current, [candidate.candidate_id]: event.target.value }))} />
           <small>来自本机历史中的本人问题；确认后才会用于回答。</small>
           <button className="button secondary" onClick={() => void confirmMemory(candidate)}>确认并保存</button>
@@ -498,7 +515,7 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
           <textarea aria-label="编辑已确认记忆" value={memoryDrafts[memory.memory_id] ?? memory.text} onChange={(event) => setMemoryDrafts((current) => ({ ...current, [memory.memory_id]: event.target.value }))} />
           <small>来源于已确认的本人问题</small>
           <div className="button-row"><button className="text-button" onClick={() => void api.patch(`/memory/${memory.memory_id}`, { text: memoryDrafts[memory.memory_id] ?? memory.text }).then(refreshPersonalization).catch((cause: unknown) => onError(cause instanceof Error ? cause.message : '记忆没有保存修改'))}>保存修改</button><button className="text-button" onClick={() => setPendingDelete({ kind: 'memory', id: memory.memory_id, label: '这条已确认记忆' })}>删除记忆</button></div>
-        </div>)}
+        </div>)}</>}
         </section>
       </details>
 
@@ -506,7 +523,7 @@ export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
         <h2>{thread?.title}</h2>
         {renderedMessages.map((message) => <article className="conversation-turn" key={message.request_id}>
           <div className="user-question"><strong>你</strong><p>{message.question}</p></div>
-          <div className="assistant-answer"><strong>回答 · {answerModeLabel[message.answer_mode]} · {stateLabel[message.state]}</strong><StreamingMarkdown className="answer-text" content={message.answer || (message.state === 'running' ? '正在检索与整理…' : '尚无回答内容')} complete={message.state !== 'running'} pageIndex={markdownPages} onOpenPage={onOpenPage} />
+          <div className="assistant-answer"><strong>回答 · {answerModeLabel[message.answer_mode]} · {stateLabel[message.state]}</strong><StreamingMarkdown className="answer-text" content={message.answer || (message.state === 'running' ? '正在检索与整理…' : '尚无回答内容')} complete={message.state === 'completed'} pageIndex={markdownPages} onOpenPage={onOpenPage} />
             <AnswerDetails details={message} />
             <label className="memory-attestation"><input type="checkbox" checked={memoryAttestations[message.request_id] ?? false} onChange={(event) => setMemoryAttestations((current) => ({ ...current, [message.request_id]: event.target.checked }))} />这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用</label>
             <button className="text-button" disabled={!memoryAttestations[message.request_id]} onClick={() => void proposeMemory(message)}>创建待确认记忆候选</button>

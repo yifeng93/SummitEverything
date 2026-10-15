@@ -1492,10 +1492,7 @@ def test_legacy_intake_replay_stays_unknown_when_route_now_tags_it(
     assert replay.origin_kind == "unknown"
     source = json.loads(
         (
-            root
-            / ".summit-everything"
-            / "sources"
-            / f"{legacy.created_at.strftime('%Y-%m')}.json"
+            root / ".summit-everything" / "sources" / f"{legacy.created_at.strftime('%Y-%m')}.json"
         ).read_text(encoding="utf-8")
     )[0]
     assert source["origin_kind"] == "unknown"

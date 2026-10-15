@@ -101,6 +101,38 @@ test('C project, reader and question-first views fit required widths and themes'
       measurements.push({ width, theme, listMetrics, detailMetrics, readerMetrics, askMetrics })
     }
   }
+  // A 640 CSS px window covers the effective layout width of a 1280 px display at 200% zoom.
+  await page.setViewportSize({ width: 640, height: 450 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  for (const theme of ['light', 'dark'] as const) {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { name: '今日' })).toBeVisible()
+    await page.getByRole('combobox', { name: '主题' }).selectOption(theme)
+    await page.getByRole('button', { name: '项目' }).click()
+    for (const [label, selector] of [['项目列表', '.projects-view'], ['项目详情', '.project-detail']] as const) {
+      if (label === '项目详情') await page.getByRole('button', { name: /模拟测试项目/ }).click()
+      await expect(page.locator(selector)).toBeVisible()
+      const metrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
+      expect(metrics.document, `${label} 200% effective viewport overflow/${theme}`).toBe(metrics.viewport)
+      expect(metrics.body, `${label} 200% effective viewport body overflow/${theme}`).toBe(metrics.viewport)
+      await page.screenshot({ path: resolve(evidenceDir, `${label}-200pct-${theme}.png`), fullPage: true })
+    }
+    await page.getByRole('button', { name: /合成会议记录/ }).click()
+    await expect(page.locator('.page-reader')).toBeVisible()
+    let metrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
+    expect(metrics.document, `Reader 200% effective viewport overflow/${theme}`).toBe(metrics.viewport)
+    await page.screenshot({ path: resolve(evidenceDir, `Reader-200pct-${theme}.png`), fullPage: true })
+    await page.getByRole('button', { name: '← 返回项目' }).click()
+    await page.getByRole('button', { name: '知识问答' }).click()
+    metrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
+    expect(metrics.document, `Ask 200% effective viewport overflow/${theme}`).toBe(metrics.viewport)
+    expect(metrics.body, `Ask 200% effective viewport body overflow/${theme}`).toBe(metrics.viewport)
+    await page.screenshot({ path: resolve(evidenceDir, `Ask-200pct-${theme}.png`), fullPage: true })
+    const motion = await page.evaluate(() => ({ reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, transition: getComputedStyle(document.querySelector('.nav-item')!).transitionDuration, scroll: getComputedStyle(document.documentElement).scrollBehavior }))
+    expect(motion.reduced).toBe(true)
+    expect(motion.scroll).toBe('auto')
+    expect(motion.transition.split(',').every((value) => Number.parseFloat(value) <= 0.00001)).toBe(true)
+  }
   expect(externalAttempts).toEqual([])
   expect(apiCalls.some((call) => call.startsWith('POST '))).toBe(false)
   writeFileSync(resolve(evidenceDir, 'measurements.json'), JSON.stringify({ measurements, apiCalls, externalAttempts }, null, 2))

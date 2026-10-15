@@ -396,9 +396,7 @@ class IntakeService:
         operation_id: str,
         origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown",
     ) -> IntakeItem:
-        return self.source_store.capture(
-            root, raw, filename, operation_id, origin_kind=origin_kind
-        )
+        return self.source_store.capture(root, raw, filename, operation_id, origin_kind=origin_kind)
 
     def list_items(self, root: Path) -> list[IntakeItem]:
         return self.source_store.list_items(root)

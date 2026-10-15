@@ -444,7 +444,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
             <span>运行方式</span><strong>本机 API + WebUI</strong>
             <span>运行模式</span><strong>{settings.mode === 'real' ? 'Real · 显式启用' : 'Fake · 离线'}</strong>
             <span>macOS 钥匙串</span><strong>{settings.keychain_available ? '可用' : '不可用（密钥保存失败关闭）'}</strong>
-            <span>Embedding 指纹</span><strong>{settings.embedding_fingerprint ?? '—'}</strong>
+            <span>Embedding 配置</span><strong>{settings.embedding_fingerprint ? '已配置' : '未配置'}</strong>
           </div>
         </section>
 

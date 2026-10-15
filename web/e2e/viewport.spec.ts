@@ -179,6 +179,31 @@ test('offline viewport and theme baseline for today, approvals, tools and settin
       })
     }
   }
+  // At 200% desktop zoom a 1280 px window exposes roughly 640 CSS pixels.
+  await page.setViewportSize({ width: 640, height: 450 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  for (const theme of ['light', 'dark'] as const) {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { name: '今日' })).toBeVisible()
+    await page.getByRole('combobox', { name: '主题' }).selectOption(theme)
+    for (const [label, selector] of [['今日', '.today-view'], ['审批', '.approval-view'], ['设置', '.settings-view']] as const) {
+      if (label !== '今日') await page.getByRole('button', { name: label }).click()
+      const metrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
+      expect(metrics.document, `${label} 200% effective viewport overflow/${theme}`).toBe(metrics.viewport)
+      expect(metrics.body, `${label} 200% effective viewport body overflow/${theme}`).toBe(metrics.viewport)
+      expect(await page.locator(selector).count()).toBe(1)
+      await page.screenshot({ path: resolve(evidenceDir, `${label}-200pct-${theme}.png`), fullPage: true })
+    }
+    const motion = await page.evaluate(() => ({
+      reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      transition: getComputedStyle(document.querySelector('.nav-item')!).transitionDuration,
+      scroll: getComputedStyle(document.documentElement).scrollBehavior,
+    }))
+    expect(motion.reduced).toBe(true)
+    expect(motion.scroll).toBe('auto')
+    expect(motion.transition.split(',').every((value) => Number.parseFloat(value) <= 0.00001)).toBe(true)
+    await page.screenshot({ path: resolve(evidenceDir, `reduced-motion-${theme}.png`), fullPage: true })
+  }
   writeFileSync(resolve(evidenceDir, 'measurements.json'), JSON.stringify(measurements, null, 2))
   expect(externalAttempts).toEqual([])
 })

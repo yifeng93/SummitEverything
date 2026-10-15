@@ -24,10 +24,14 @@ it('shows Feishu authorization and never claims success after denied callback', 
 
 it('clears the local authorization when the user disconnects Feishu', async () => {
   let authorized = true
+  let finishDelete: (() => void) | undefined
+  let deleteCalls = 0
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
     if (path.endsWith('/status')) return { ok: true, status: 200, json: async () => ({ mode: 'fake', authorized, scopes: [], token_type: 'user' }) }
     if (path.endsWith('/authorizations') && init?.method === 'DELETE') {
+      deleteCalls += 1
+      await new Promise<void>((resolve) => { finishDelete = resolve })
       authorized = false
       return { ok: true, status: 204, json: async () => undefined }
     }
@@ -38,9 +42,19 @@ it('clears the local authorization when the user disconnects Feishu', async () =
   await screen.findByText('用户已授权')
 
   fireEvent.click(screen.getByRole('button', { name: '断开飞书授权' }))
+  expect(screen.getByRole('dialog', { name: '断开飞书用户授权？' })).toBeTruthy()
+  expect(deleteCalls).toBe(0)
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(deleteCalls).toBe(0)
+  fireEvent.click(screen.getByRole('button', { name: '断开飞书授权' }))
+  fireEvent.click(screen.getByRole('button', { name: '确认断开授权' }))
+  fireEvent.click(screen.getByRole('button', { name: '正在断开…' }))
+  expect(deleteCalls).toBe(1)
+  finishDelete?.()
 
   expect(await screen.findByText('用户未授权')).toBeTruthy()
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/integrations/feishu/authorizations', expect.objectContaining({ method: 'DELETE' }))
+  expect(deleteCalls).toBe(1)
 })
 
 it('lists metadata, imports only explicit selection, and shows partial outcomes', async () => {
