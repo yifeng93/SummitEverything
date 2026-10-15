@@ -19,6 +19,7 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 | [前端 UX 里程碑 B repair1 QA evidence](evidence/2026-10-15-frontend-b-repair1-qa/README.md) | 脱敏命令退出码与关键网络/Fake 证据哈希索引；原件留在 QA `.local` |
 | [前端 UX 里程碑 B repair1 DEV evidence](evidence/2026-10-15-frontend-b-repair1/README.md) | 开发命令、失败历史、Frozen SourceOrganizer scope harness 与 Import Drawer 5×2 焦点截图 |
 | [前端 UX 里程碑 C DEV 报告](2026-10-15-FRONTEND-C-DEV.md) | 固定产品 SHA `1b1efda`；DEV 自测与 Fake/矩阵/变异证据，4 个全站守卫归 D，fresh QA pending |
+| [前端 UX 里程碑 C 独立 QA](2026-10-15-FRONTEND-C-QA.md) | 固定产品 SHA `1b1efda`；Sol 判适用 C 离线前端场景 PASS，4 个全站守卫与真实/打包门留 D 或未测；[证据索引](evidence/2026-10-15-frontend-c-qa/README.md) |
 | [前端 UX 里程碑 A Sol gate](2026-10-15-FRONTEND-A-SOL-GATE.md) | 固定 `9c33a9d` 适用离线技术门 PASS；8 项 todo / 3 条 lint warning 保留，真实门未重跑 |
 | [前端 UX 里程碑 A repair1 fresh QA 归档](evidence/2026-10-15-frontend-a-repair1-qa/README.md) | fresh QA 固定 SHA `9c33a9d` 的脱敏报告、harness、raw logs、Mock/FastAPI evidence 与截图 |
 | [M4.2 Package A 初始 QA](2026-10-14-M42-PACKAGE-A-QA-INITIAL.md) | 固定 `fe473399` 初始 FAIL；原始 34 项证据及 hash 副本在对应 evidence 目录 |
