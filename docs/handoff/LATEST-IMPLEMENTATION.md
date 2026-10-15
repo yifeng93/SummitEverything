@@ -1,10 +1,10 @@
 # 最新实现交接
 
-## 当前前端 UX 里程碑 A：开发已固定，独立 QA 待判
+## 当前前端 UX 里程碑 A：repair1 固定，Fresh QA 复验中
 
-开发产品固定 SHA：`9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad`，基于 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`。本次产品提交包含共享 UI 基础、切片 3 的统一首次配置流程与切片 9 设置页；报告提交与产品 SHA 分开。Sol 已启动 fresh QA，对固定产品 SHA 独立复验；在 Sol 判门前状态为 PENDING，不代表里程碑通过。
+A 初始固定产品 SHA `9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad` 经独立 QA 判 **FAIL**，发现 F1 首配缺少密钥时仍可提交、F2 单项成功会使 AI 总卡误报通过、F3 飞书刷新失败丢失最近成功状态。初始 QA 报告与脱敏 harness 已归档到 [初次 QA 证据目录](../quality/reports/2026-10-15-FRONTEND-A-INITIAL/)；原始 QA worktree 未修改。
 
-本地开发检查：`npm ci` exit 0；Vitest 24 files / 160 passed / 8 todo；typecheck、lint、Vite build、offline mocked Playwright（2 tests）与本机 FastAPI + isolated Fake（1 test）均 exit 0。Lint 留有 App/Projects/Today 三条 React effect warnings。A 相关守卫 ①③④⑤⑥⑦⑧⑨⑩ 的隔离变异均 exit 1 后恢复，恢复后整套门禁重新通过。完整矩阵、未测项、精确命令、退出码、截图路径见 [前端 A DEV 报告](../quality/reports/2026-10-15-FRONTEND-A-DEV.md) 和 [命令结果 JSON](../quality/reports/evidence/2026-10-15-frontend-a-dev/command-results.json)；原始日志/截图在执行 worktree `.local/dev/frontend-a/`。
+修复轮 1 的产品 SHA 固定为 `9c33a9dde3080fff3e3b3dd8a4193589ef52575f`，基于初始产品 SHA；只修复 F1–F3，产品已冻结。开发实际记录：Vitest 24 files / 164 passed / 8 todo；typecheck、lint、build、离线 E2E（2）、隔离 FastAPI/Fake（1）、F1–F3 设置 E2E（3）和向导视口/失败关闭 E2E（12）均 exit 0；三项隔离突变检测各自按预期 exit 1，源文件逐字节恢复。lint 有 3 条既有 React effect warnings。Sol 已启动独立 fresh QA 对固定 `9c33a9d` 复验；当前状态 **PENDING**，不代表 A 已通过。见 [repair1 DEV 报告](../quality/reports/2026-10-15-FRONTEND-A-DEV-REPAIR1.md)、[命令退出结果](../quality/reports/evidence/2026-10-15-frontend-a-repair1/command-results.json) 和[原始证据 manifest](../quality/reports/evidence/2026-10-15-frontend-a-repair1/evidence-manifest.json)。修复轮原始日志与截图留在开发 worktree `.local/dev/frontend-a/repair1/`。
 
 A 行为包括：App 统一宿主持有工作库→模型/密钥→检查→Feishu→完成；无库关闭返回欢迎页、选库后关闭返回来源业务；真实 profile + workspace 身份隔离保存非秘密步骤；仍打开时 page reload 恢复当前步骤，显式关闭不自动弹但设置能手动续接，完成后不自动打扰。设置连接/重新授权入口直达同一向导第 4 步，工作库入口直达第 1 步。设置主区三张纵向卡为工作库 / AI 模型 / 飞书，技术字段进高级区，危险区仅删除选择的密钥。密钥不进浏览器存储；刷新、展开、保存都不自动访问 provider。Mocked 浏览器在五个视口与浅/深主题运行无横向溢出；真实 FastAPI/Fake 只用临时 profile/workspace，记录 external attempts 为 0。
 

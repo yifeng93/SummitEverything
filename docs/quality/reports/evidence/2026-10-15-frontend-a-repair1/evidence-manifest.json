@@ -1,0 +1,477 @@
+{
+  "productSha": "9c33a9dde3080fff3e3b3dd8a4193589ef52575f",
+  "baselineSha": "e84e9e5a56475a19f68ca1a684366fba7f9fee83",
+  "evidenceRoot": ".local/dev/frontend-a/repair1/",
+  "excluded": [
+    ".venv",
+    "runtime profile/workspace directories",
+    "browser caches and generated build output"
+  ],
+  "files": [
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/build.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/build.log",
+      "sizeBytes": 393,
+      "sha256": "46d601b526f7e92bbbe584607b381fd1cdf765c42b67938c60bfefeda4753912"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/fastapi-fake.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/fastapi-fake.log",
+      "sizeBytes": 980,
+      "sha256": "84fcd7c372a555d99467923d9d845cbec768c23197b61efd0210bacd312a4d8e"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-build.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-build.log",
+      "sizeBytes": 393,
+      "sha256": "7e5fb7c13c424971b7a7e6915d77f6d826f04ca8a9cc07dc1f506251a77383c8"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-fastapi-fake.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-fastapi-fake.log",
+      "sizeBytes": 816,
+      "sha256": "91e18453ca79c138a809b58320d4d6c0fb3760b3bc39f6751cae6c6af75fc2da"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-lint.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-lint.log",
+      "sizeBytes": 1466,
+      "sha256": "40ccf88cbb2fefbc0d16a3bc92bc3331fd8a3f381377f45eceab08bc3b75956c"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-mock-e2e.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-mock-e2e.log",
+      "sizeBytes": 738,
+      "sha256": "13a9cafe05ecb4518ac02521c9dc9b5a86d6fb2235e7eae4f3879ba7ce745505"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-npm-test.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-npm-test.log",
+      "sizeBytes": 290,
+      "sha256": "ec08132c18066ccf7ee2c8c2d2f6dc4270c4fd7c1fb9a7c91545aee24858ee89"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-review-e2e.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-review-e2e.log",
+      "sizeBytes": 969,
+      "sha256": "bcd94796169c1a5b93b8cfe6507b2dc63cfaca91c69c4e35917e638c6ba86875"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-typecheck.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final-typecheck.log",
+      "sizeBytes": 42,
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final2-build.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final2-build.log",
+      "sizeBytes": 393,
+      "sha256": "700daecbc017b1927216af40684a6da9858debb89baab3d7c9a4ffaaa334ee19"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final2-lint.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/final2-lint.log",
+      "sizeBytes": 1466,
+      "sha256": "40ccf88cbb2fefbc0d16a3bc92bc3331fd8a3f381377f45eceab08bc3b75956c"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/lint.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/lint.log",
+      "sizeBytes": 1466,
+      "sha256": "40ccf88cbb2fefbc0d16a3bc92bc3331fd8a3f381377f45eceab08bc3b75956c"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mock-e2e.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mock-e2e.log",
+      "sizeBytes": 738,
+      "sha256": "4f4f0a3b7b275d7e9e7b32471c9dfcf14c6c2572b17e2dc2d25d958d23e31bc9"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mutation-f1.exit",
+      "sizeBytes": 29,
+      "sha256": "0818c5b9fdc3bfa91bec8a6be1dc84f2ed10295d1d8adba664d2fe9d21708c91"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mutation-f1.log",
+      "sizeBytes": 2081,
+      "sha256": "28d5a3317e03cd90e7fdaec7facfaba1a3477215c8a962c77364773efb31e2bc"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mutation-f2.exit",
+      "sizeBytes": 29,
+      "sha256": "0818c5b9fdc3bfa91bec8a6be1dc84f2ed10295d1d8adba664d2fe9d21708c91"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mutation-f2.log",
+      "sizeBytes": 1222,
+      "sha256": "3aa08bee9e4998d293c197246b8d7151c11fdb76fda6111243f8e004f6b4d3e6"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mutation-f3.exit",
+      "sizeBytes": 29,
+      "sha256": "0818c5b9fdc3bfa91bec8a6be1dc84f2ed10295d1d8adba664d2fe9d21708c91"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/mutation-f3.log",
+      "sizeBytes": 1737,
+      "sha256": "3d162f288e7a25709980bbb0725862b7d19ca005ad3a2edb1d3b3f3f8d2f48f8"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/npm-test.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/npm-test.log",
+      "sizeBytes": 290,
+      "sha256": "ddb5cae3bd06cba4c065d3007e5fff793745581e48c41b786da69c58f61a179b"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/post-mutation-npm-test.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/post-mutation-npm-test.log",
+      "sizeBytes": 290,
+      "sha256": "9af5941f98d50350d8b82c45b2c313707c2ddd2c52ed831d5ae54518a848bf27"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/post-mutation-typecheck.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/post-mutation-typecheck.log",
+      "sizeBytes": 42,
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/review-e2e.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/review-e2e.log",
+      "sizeBytes": 969,
+      "sha256": "42c9409260c61e8faf8cd48f2adbd08509d72f14f676fe1b8133fb42437ea822"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/typecheck.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/typecheck.log",
+      "sizeBytes": 42,
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/wizard-e2e.exit",
+      "sizeBytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/wizard-e2e.log",
+      "sizeBytes": 2308,
+      "sha256": "2fa0dba3326f46cd9e1f8444637b4a3b8a6f1ec59f94b00e1b72a72628ea7244"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/wizard-guidance-screenshot.exit",
+      "sizeBytes": 14,
+      "sha256": "2551130a463dcf3a1493d80930a970d08b8104b8aff99bcc792505c522f6ee5c"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/command-logs/wizard-guidance-screenshot.log",
+      "sizeBytes": 601,
+      "sha256": "56aa3de48edf7fb35d77d0a48bb0e91a633611de138cf6e7e9035a3e64e0b3e5"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/fastapi-evidence/fastapi-onboarding-complete.png",
+      "sizeBytes": 76450,
+      "sha256": "30cebebbc6fd0614625c77bd3f34c2882d5fb943b5dacd31986e4707131c3e90"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/fastapi-evidence/fastapi-onboarding-step-2.png",
+      "sizeBytes": 81601,
+      "sha256": "a618b8f2db62fa1f1e61920deae382ef83b9de0154bea996d3f138b2f09f5365"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/fastapi-evidence/fastapi-request-manifest.json",
+      "sizeBytes": 2334,
+      "sha256": "193305845064612cc1ed809a459a3ef98fe26f6bd154f981ed042b8621155557"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/integration-harness/first-use-real.spec.ts",
+      "sizeBytes": 3248,
+      "sha256": "297e580ab395e7071da766ea3385f1bd0e2f066d58c9b34f31cb06e4d162a26d"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/green-review-attempt.log",
+      "sizeBytes": 780,
+      "sha256": "e5774170ac1d4dec86ed046d29314e5fa3bd6030caf4f2c37aa275dedbb82eaf"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/green-review.log",
+      "sizeBytes": 969,
+      "sha256": "4a51ebb60d38b7fb7a9d95998f2ba3b5bd55e831f3ec871b770e4aaeb2a82cfa"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/green-wizard-attempt.log",
+      "sizeBytes": 2296,
+      "sha256": "77310ad16089704d9da09df5759a371d73827f62094ae871cd484d296f6ada8f"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/green-wizard.log",
+      "sizeBytes": 601,
+      "sha256": "717e04d33f31383f351892b77874ebcd166c93b37f46de43c670b18b37704bf3"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/red-exitcodes.txt",
+      "sizeBytes": 28,
+      "sha256": "78cf037c8a4be815e20caf5cfbd50846bcfb58483ae94a5e1c6bc2a26e9b438d"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/red-review.log",
+      "sizeBytes": 4660,
+      "sha256": "078459251d152162e121088b4ac689d652220d68dc075ea5b90172fe8e0c2232"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/logs/red-wizard.log",
+      "sizeBytes": 1943,
+      "sha256": "dfeefd238eeadf857e2590da92f95c883db73475e0a4d45944af569a736a87b5"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/measurements.json",
+      "sizeBytes": 58267,
+      "sha256": "fd7b30af50aafebc3609885cc7832eb9fb43a456b44d9d8cfb1fd4784629bd30"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-missing-key-guidance.png",
+      "sizeBytes": 148821,
+      "sha256": "16493a463c261c615cc324a5f97b70d0fea83375e981a28928062e6529d50b42"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-reauthorize-step-4.png",
+      "sizeBytes": 75452,
+      "sha256": "fdbe2e06fef8a6a58e3c361aecc19cd41d0f885253a7d95bf4a208055cdbc722"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-step-2.png",
+      "sizeBytes": 80559,
+      "sha256": "97b48c5affb1d40ae517b01f3c2347b4c9adc8369c2dc65bbcac67466a9fb77d"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-step-3-manual-resume.png",
+      "sizeBytes": 50950,
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-step-3-reloaded-open.png",
+      "sizeBytes": 50950,
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-step-3.png",
+      "sizeBytes": 50950,
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-step-4.png",
+      "sizeBytes": 75452,
+      "sha256": "fdbe2e06fef8a6a58e3c361aecc19cd41d0f885253a7d95bf4a208055cdbc722"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-step-5.png",
+      "sizeBytes": 75088,
+      "sha256": "f4d704bda25c4a956450f6d530a5b1bf9361d6495ae92ca545e2091f731c873a"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/onboarding-workspace-error.png",
+      "sizeBytes": 60770,
+      "sha256": "b8aaae9619e09db5ec81df33730c0f5ff595cc1a84114342d3f601cd7ea955db"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-1280-dark.png",
+      "sizeBytes": 188095,
+      "sha256": "e4e1f0b6b45e34b71dbc44a6d71fced82edde56846f718947b8063e4178baa68"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-1280-light.png",
+      "sizeBytes": 188455,
+      "sha256": "69703e85450563fe92467e716ad1fc27d2541ffc6810a4193bbc2b3aa1bcfb64"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-320-dark.png",
+      "sizeBytes": 162727,
+      "sha256": "be158030f8ff15974e7832d6b16a83730355d0d3fa53e56f266c14179aaab82b"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-320-light.png",
+      "sizeBytes": 161908,
+      "sha256": "931511fd7aaf45a365fa2089133ede856306617208a4d3c946a16549fca1a0df"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-390-dark.png",
+      "sizeBytes": 164519,
+      "sha256": "6f489f57a212c0649aa48fa01682f7b7b9e9330daf3b97d2b06edfb1dafa5432"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-390-light.png",
+      "sizeBytes": 163936,
+      "sha256": "2a5a028d0036edb5caf903d1afcb85ac8f133b5d4f190666579f5ed67c0431dc"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-768-dark.png",
+      "sizeBytes": 170144,
+      "sha256": "72cef4c0c23fb9da7158e7f0cea86659baadb161fc8d82f43aa7f229f02a4c33"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-768-light.png",
+      "sizeBytes": 169872,
+      "sha256": "70929056b29965a43ba2fdf5968eced8d479e6b4c0efe62f48af7f95e9e47478"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-960-dark.png",
+      "sizeBytes": 183910,
+      "sha256": "42c84db0a6b3429fe142956b956edc7f1b619a7e7c09b2b23d6fc2aae7122ea2"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-960-light.png",
+      "sizeBytes": 184253,
+      "sha256": "9422c8ffecdad81e8b634ccd301a887309809b37bf1124c5f05e4aeb04d68aaa"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-ai-per-capability.png",
+      "sizeBytes": 520090,
+      "sha256": "646249bf000850872c5ed6262d8a0fa6302afeb8c6d4eac1271211150ba154ba"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/settings-feishu-stale-read.png",
+      "sizeBytes": 525743,
+      "sha256": "1cdfc279e0df8a825f83acc317e6d2cc0946c85009dc60f2fd157052bff80af2"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-1280-dark.png",
+      "sizeBytes": 170123,
+      "sha256": "ab92e4b9b26c01d0e3fa44a3ef9fcc29f87db224e9d753ee0b5eb2b59fc28303"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-1280-light.png",
+      "sizeBytes": 168156,
+      "sha256": "70e6e34b85e185c36ebab7d2f6d7138a12964aa4dc02c49071ef4bfbc6d4a055"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-320-dark.png",
+      "sizeBytes": 144987,
+      "sha256": "cde1e88fd858bfff9d1278fee077a139644a937292e43eb9479b951046b000a6"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-320-light.png",
+      "sizeBytes": 146687,
+      "sha256": "51243f913effaffb49fcca5fd81c3d824c492d927d00ef9fa91c8e243b9bb7a9"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-390-dark.png",
+      "sizeBytes": 139534,
+      "sha256": "e6ed57c31f73fe3ca58b27957fd49820e35752c7e46df6356f7491952c4b5890"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-390-light.png",
+      "sizeBytes": 139239,
+      "sha256": "f39f0df2fe9cc6f7fd03eb681180ad165a148638e77808f3ea19acec7065fcbe"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-768-dark.png",
+      "sizeBytes": 152745,
+      "sha256": "e482ca0a2830229aff5d1e9e1d11e124bdbf3256c8f48fdb74e48ca9ccdb7eac"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-768-light.png",
+      "sizeBytes": 152483,
+      "sha256": "41773aff1f25060705dfb928c06f7c42c4cb28c5343bfd68bd71d202e05a3e0e"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-960-dark.png",
+      "sizeBytes": 160586,
+      "sha256": "f3dfb8cbf7e6753fb7003f49853c247db749568d40364347d3967ada109e2f29"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/mock-evidence/today-960-light.png",
+      "sizeBytes": 168154,
+      "sha256": "1fcc119ee2f74e3b66508575347b05609a39b30c597e97bc3a5ad78ce53f535b"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/red-harness/playwright.review.config.ts",
+      "sizeBytes": 746,
+      "sha256": "5784f0c27ee11d67e9bb9bdcb1087e254adf83cb4925f9aaa1425a000143f0d5"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/red-harness/playwright.wizard.config.ts",
+      "sizeBytes": 746,
+      "sha256": "62de48853ea2a44e4bd90d6e2191318d3f36314a11ac226c74de4b8bf9e2ff59"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs",
+      "sizeBytes": 14460,
+      "sha256": "7304e45579f2fb799918b3f4010d91be92f22aba41dc32acc12e17336cee6d72"
+    },
+    {
+      "path": ".local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs",
+      "sizeBytes": 10184,
+      "sha256": "0e04808faf442c8ea5839bcf26b1a08acd6bb8c9ae40e853a3ef289c442f97a8"
+    }
+  ]
+}
