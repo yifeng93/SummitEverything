@@ -5,6 +5,7 @@
  *   ① 裸色部分 —— 组件 CSS 与 TSX/TS 内联样式不得出现裸 hex / rgb / hsl（§6.1、§11 ①）
  *   ① allowlist 机制 —— 内部 ID/hash/路径实例的「文件:字段」次数与 ui-contract.allowlist.json 精确相等（§9、§11 ①）
  *   ③ 字号下限 —— web/src/**\/*.css 全部 font-size ≥ 12px，9/10/11px 出现次数为 0（§6.1、§11 ③）
+ *   ⑧ 外壳几何 —— 侧栏 200px / ≤800px 64px 图标栏 / ≤560px 底部 5 栏且每项 ≥44px / 粗指针 ≥44px（§0、§8.1）
  * 另有 ① 的位置断言与 ⑩ 视口断言以 it.todo 登记，注明归属切片（不得当成已通过）。
  */
 import { readFileSync, readdirSync } from 'node:fs'
@@ -293,6 +294,60 @@ describe('守卫① 内部标识基线（GUIDE §11 ①、§9）', () => {
     const missing = Object.keys(allowlist.entries).filter((key) => !allowlist.attribution[key]?.slice)
     expect(missing, '守卫① 基线（GUIDE §9）：allowlist 的每条都要写归属切片，否则后续切片不知道该清哪一条').toEqual([])
     expect(Object.keys(allowlist.attribution).filter((key) => !(key in allowlist.entries))).toEqual([])
+  })
+})
+
+/**
+ * 外壳几何与响应式（逐页规格 §0、GUIDE §8.1）。
+ *
+ * jsdom 量不到布局与 scrollWidth（真正的五档断言是守卫 ⑩，仍登记为 todo），
+ * 所以这一组直接断言 App.css 里被点名的几何值；改坏几何必须让这里的断言变红。
+ */
+const RULE_SHELL_GEOMETRY = '守卫⑧ 外壳几何（逐页规格 §0 与 GUIDE §8.1）：侧栏 200px、≤800px 64px 图标栏、≤560px 底部 5 栏每项 ≥44px、粗指针 ≥44px'
+
+function declarationValue(
+  rules: ReturnType<typeof parseCss>,
+  selector: string,
+  property: string,
+  atRuleFragment = '',
+): string | undefined {
+  for (const rule of rules) {
+    if (atRuleFragment && !rule.atRule.includes(atRuleFragment)) continue
+    if (!rule.selectors.includes(selector)) continue
+    const found = rule.declarations.find((declaration) => declaration.property === property)
+    if (found) return found.value
+  }
+  return undefined
+}
+
+describe('守卫⑧ 外壳几何与响应式（逐页规格 §0、GUIDE §8.1）', () => {
+  const appCss = parseCss(readFileSync(join(SRC_ROOT, 'App.css'), 'utf8'))
+  const px = (value: string | undefined) => (value ? Number(value.match(/(-?\d*\.?\d+)px/)?.[1] ?? NaN) : NaN)
+
+  it('桌面：侧栏 200px、顶栏 62px、主内容 max-width 1200px、导航项高 44px', () => {
+    expect(declarationValue(appCss, '.sidebar', 'width'), `${RULE_SHELL_GEOMETRY}；侧栏必须是 200px`).toBe('200px')
+    expect(declarationValue(appCss, '.sidebar', 'flex'), `${RULE_SHELL_GEOMETRY}；侧栏不得被内容撑开`).toContain('200px')
+    expect(declarationValue(appCss, '.topbar', 'height'), `${RULE_SHELL_GEOMETRY}；顶栏必须是 62px`).toBe('62px')
+    expect(declarationValue(appCss, '.content-wrap', 'max-width'), `${RULE_SHELL_GEOMETRY}；主内容区必须 max-width: 1200px 居中`).toBe('1200px')
+    expect(px(declarationValue(appCss, '.nav-item', 'min-height')), `${RULE_SHELL_GEOMETRY}；导航项每项高 44px`).toBeGreaterThanOrEqual(44)
+    expect(declarationValue(appCss, '.nav-item.active::before', 'width'), `${RULE_SHELL_GEOMETRY}；当前项左侧 3px 强调条`).toBe('3px')
+  })
+
+  it('≤800px：侧栏折成 64px 图标栏', () => {
+    expect(declarationValue(appCss, '.sidebar', 'width', 'max-width: 800px'), `${RULE_SHELL_GEOMETRY}；≤800px 折成 64px 图标栏`).toBe('64px')
+    expect(declarationValue(appCss, '.sidebar', 'flex-basis', 'max-width: 800px')).toBe('64px')
+  })
+
+  it('≤560px：底栏是 5 栏，每一项 ≥44px', () => {
+    expect(declarationValue(appCss, '.primary-nav', 'grid-template-columns', 'max-width: 560px'), `${RULE_SHELL_GEOMETRY}；≤560px 变底部 5 栏`).toMatch(/repeat\(\s*5\s*,/)
+    expect(declarationValue(appCss, '.sidebar', 'position', 'max-width: 560px'), `${RULE_SHELL_GEOMETRY}；底栏固定在视口底部`).toBe('fixed')
+    expect(px(declarationValue(appCss, '.nav-item', 'min-height', 'max-width: 560px')), `${RULE_SHELL_GEOMETRY}；底部导航每项 ≥44px`).toBeGreaterThanOrEqual(44)
+  })
+
+  it('粗指针：导航项与图标按钮 ≥44px', () => {
+    expect(px(declarationValue(appCss, '.nav-item', 'min-height', 'pointer: coarse')), `${RULE_SHELL_GEOMETRY}；粗指针下导航项 ≥44px`).toBeGreaterThanOrEqual(44)
+    expect(px(declarationValue(appCss, '.toast-close', 'min-width', 'pointer: coarse')), `${RULE_SHELL_GEOMETRY}；粗指针下图标按钮 44×44`).toBeGreaterThanOrEqual(44)
+    expect(px(declarationValue(appCss, '.toast-close', 'min-height', 'pointer: coarse'))).toBeGreaterThanOrEqual(44)
   })
 })
 

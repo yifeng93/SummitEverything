@@ -33,6 +33,10 @@ it('keeps the updated citation version warning visible after navigating to the p
     if (url === '/api/v1/pages/page-1') return Response.json(page)
     if (url === '/api/v1/projects' || url === '/api/v1/pages') return Response.json([])
     if (url === '/api/v1/today' || url === '/api/v1/journal') return Response.json({ items: [] })
+    // 外壳重构后 App 挂载时会读取今日与审批清单（侧栏徽章）；补全夹具，避免无关的加载失败提示。
+    if (url === '/api/v1/intake/items' || url === '/api/v1/drafts' || url === '/api/v1/actions'
+      || url === '/api/v1/lines' || url === '/api/v1/roles' || url === '/api/v1/memory'
+      || url === '/api/v1/memory/candidates') return Response.json([])
     throw new Error(`Unexpected fetch ${url}`)
   })
   vi.stubGlobal('fetch', rawFetch)

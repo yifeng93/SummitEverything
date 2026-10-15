@@ -15,8 +15,10 @@ import {
 } from '../api/client'
 import { DraftReview } from './DraftReview'
 import type { components } from '../api/generated'
+import type { ToastKind } from '../toast'
 
-type Props = { onError: (message: string) => void }
+/** `kind` 让「已取消」这类中性信息走中性色，而不是被涂成错误（GUIDE §5.3）。 */
+type Props = { onError: (message: string, kind?: ToastKind) => void }
 type PendingOrganize = { plan: { plan_id: string; scope_sha256: string; request_limit: number }; scope: Record<string, unknown>; body: Record<string, unknown>; key: string }
 type BatchUpload = { key: string; file: File; path: string; state: 'queued' | 'uploading' | 'succeeded' | 'failed' | 'skipped' | 'blocked'; message?: string }
 const MAX_BATCH_FILES = 100
@@ -234,7 +236,7 @@ export function TodayView({ onError }: Props) {
     try {
       await api.delete(`/acceptance-plans/${pendingOrganize.plan.plan_id}`)
       setPendingOrganize(null)
-      onError('已取消本次整理预览，没有发送所选材料。')
+      onError('已取消本次整理预览，没有发送所选材料。', 'neutral')
     } catch (cause) {
       onError(cause instanceof Error ? cause.message : '无法取消本次整理计划')
     }
