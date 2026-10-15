@@ -1,5 +1,19 @@
 # 最新实现交接
 
+## 前端基线切片 1–2 已合入 main（2026-10-14 收口）
+
+**已完成并合入**：PR #20（merge `5d8be8c`，CI `offline-arm64` 3m45s 通过）。内容包括设计 tokens（颜色唯一真源）、字号下限抬到 ≥12px（79 条低于 12px 全部归并、组件零裸色）、深色由 `html[data-theme]` 驱动且首屏前应用（10 组对比度两套主题全达标）、5 栏导航（今日/审批/项目/知识问答/设置）与审批数量徽章、顶栏真实保存三态 + 主题入口、加载/服务不可达/无工作库三态分离（只有 409 `workspace_not_open` 进首配）、三色 toast、≤800px 图标栏与 ≤560px 底部 5 栏、审批页最小可用版（待整理来源 + 待复核稿件）。
+
+**验证**：web **147 passed | 10 todo**、typecheck/lint/build 全 0；守卫 ③ 字号下限、⑦ 对比度、① 裸色与 allowlist、⑧ 外壳前半为真实断言，共 18 + 19 条变异验证（改坏→红→恢复）。未实现守卫以 `it.todo` 登记并标注归属切片，**不得**读作通过。
+
+**规格实施偏差**已登记在 [FRONTEND-GUIDE §13](../product/FRONTEND-GUIDE.md)：浅色 `--muted/--accent` 为达 4.5:1 做保留色相的最小加深；`index.html` 引导脚本保留 2 个颜色字面量为例外；间距字面量迁移延后到布局重写切片；allowlist 采用 entries + attribution 双层。
+
+**下一步切片**（规格已在仓库，逐页区块顺序是硬规格）：3 向导合并（工作库→密钥→连接检查→飞书→今日，可中断续接）→ 4 审批页完整五组 → 5 今日页（简报置顶，飞书/待整理/审核稿离开今日）→ 6 项目页列表→详情 → 7 问答 Markdown 流式（需 `react-markdown`/`remark-gfm`）→ 8 阅读渲染 → 9 **设置页对齐 §8** → 10 守卫 ②④⑤⑥⑨⑩ 收口。
+
+**切片间已知空窗**（如实登记，不当作通过）：`JournalView` 在 P3 之前没有入口（导航已移除「日志与思考」）；今日页仍保留飞书授权按钮/待整理队列/审核稿（P3 迁移）；设置页 eyebrow 仍写「本机 profile」、向导文案仍提「今日 / 飞书日常」（P5）。五档视口与深浅截图未做（仓库无浏览器 harness，守卫 ⑩ 仍 todo，记为未测）。
+
+**候选**：收口候选由 main HEAD 构建，身份记录见 `.local/internal-builds/` 下最新目录及 [真实使用与修复报告](../quality/reports/2026-10-14-REAL-FIRST-USE-FINDINGS.md)。
+
 ## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `8c4f81c`）
 
 用户在 2026-10-14 要求按 SummitWorkbench 的配置方式重做首次配置，并明确「Base URL、callback、Feishu App ID 这些非秘密值不要再让我填，只输入密钥」。决议与边界见 [ADR 0010](../decisions/0010-first-use-configuration-ux.md)。
