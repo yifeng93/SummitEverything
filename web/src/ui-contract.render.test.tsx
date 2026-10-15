@@ -6,7 +6,7 @@
  *   B 深色一等公民 —— 主题三选在运行期写 <html data-theme> 并持久化（§5.6、§6.2）
  *   ⑧ 前半 —— 导航恰好 5 项、标签精确、顺序固定、当前项 aria-current="page"；
  *           退役的导航项不再占位；今日不出现「项目推进」卡与「待确认 N 条」计数
- * 其余渲染类守卫以 it.todo 登记归属切片（不得当成已通过）。
+ * 其余本轮契约由 ProjectsView、PageReader、AskView、MarkdownText 的 focused 测试覆盖。
  */
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -53,7 +53,17 @@ function stubShell(overrides: Record<string, unknown> = {}) {
       '/api/v1/lines': [],
       '/api/v1/projects': [],
       '/api/v1/pages': [],
+      '/api/v1/conversations?limit=20': { items: [], next_cursor: null },
+      '/api/v1/roles': [],
+      '/api/v1/memory': [],
+      '/api/v1/memory/candidates': [],
       ...overrides,
+    }
+    if (url.startsWith('/api/v1/pages/')) {
+      const pageId = new URL(url, 'http://localhost').pathname.split('/').at(-1)
+      const pages = table['/api/v1/pages'] as Array<{ page_id: string }>
+      const match = pages.find((page) => page.page_id === pageId)
+      return match ? Response.json(match) : Response.json({ error: { code: 'not_found', message: '找不到这个页面。' } }, { status: 404 })
     }
     if (url in table) return Response.json(table[url])
     return Response.json({ error: { code: 'not_found', message: '本机没有这个接口。' } }, { status: 404 })
@@ -208,11 +218,47 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     const paths = fetchMock.mock.calls.map(([input]) => String(input))
     expect(paths.some((path) => /\/acceptance-plans|\/intake\/jobs|\/index\/plans|\/calendar\?|\/integrations\/feishu\/tasks\?/.test(path))).toBe(false)
   })
+
+  it('项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识', async () => {
+    const line = { id: 'line-internal-123', name: '中文业务主线', directory: '中文业务主线' }
+    const project = { id: 'project-internal-456', line_id: line.id, name: '中文业务项目', directory: '中文业务主线/中文业务项目', overview_id: 'overview-internal-789', archived: false, progress: '已经启动', progress_version: 1 }
+    const page = {
+      page_id: 'page-internal-abc', relative_path: '中文业务主线/中文业务项目/事实.md',
+      metadata: { id: 'page-internal-abc', title: '中文事实记录', role: 'knowledge', kind: 'topic', line_id: line.id, project_id: project.id },
+      body: '已确认的中文正文。', content_sha256: 'f'.repeat(64), raw_sha256: 'e'.repeat(64),
+      storage_area: 'formal', approval_state: 'confirmed', validity: 'current',
+    }
+    const fetchMock = stubShell({ '/api/v1/lines': [line], '/api/v1/projects': [project], '/api/v1/pages': [page] })
+    render(<App />)
+    await screen.findByLabelText('主题')
+    const nav = screen.getByRole('navigation', { name: '主导航' })
+    fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+    const row = await screen.findByRole('button', { name: /中文业务项目/ })
+    expect(row.textContent).toContain('在推进')
+    const noIdentifiers = (text: string, expectBusinessName = true) => {
+      if (expectBusinessName) expect(text).toContain('中文')
+      expect(text).not.toMatch(/line-internal-123|project-internal-456|overview-internal-789|page-internal-abc|f{64}|中文业务主线\/中文业务项目/)
+    }
+    noIdentifiers(document.querySelector('.projects-view')?.textContent ?? '')
+    fireEvent.click(row)
+    expect(await screen.findByRole('region', { name: '项目详情' })).toBeTruthy()
+    noIdentifiers(document.querySelector('.project-detail')?.textContent ?? '')
+    fireEvent.click(screen.getByRole('button', { name: /中文事实记录/ }))
+    expect(await screen.findByText('已确认的中文正文。')).toBeTruthy()
+    noIdentifiers(document.querySelector('.page-reader')?.textContent ?? '')
+    fireEvent.click(within(nav).getByRole('button', { name: '知识问答' }))
+    const question = await screen.findByLabelText('你的问题')
+    const form = question.closest('form')!
+    const history = document.querySelector('.ask-view details[aria-label="本机问答历史"]')!
+    expect(form.compareDocumentPosition(history) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    noIdentifiers(document.querySelector('.ask-view')?.textContent ?? '', false)
+    const providerOrPlanCalls = fetchMock.mock.calls.filter(([input]) => /acceptance-plans|index\/plans|index\/jobs|provider-smoke/.test(String(input)))
+    expect(providerOrPlanCalls).toHaveLength(0)
+  })
 })
 
-// ── 本轮不实现，登记归属切片（禁止当成通过）───────────────────────────────────
-it.todo('② 中文优先：渲染含英文 ID 的项目/主线，可见文本含中文名且不含 ID，ID 能在某个 title 里找到 —— 归属 P4 · 项目与问答（需要项目页）')
-it.todo('④ 加载与空分离：对今日/审批/项目/问答 mock 永不 resolve 的 fetch，断言出现「正在读取…」且不出现空态文案 —— 归属 P3 · 信息架构（需要四个视图）')
-it.todo('⑤ 删除/断开类动作必须确认：点击后出现 role="dialog" 且 API 未被调用，确认后恰好 1 次 —— 归属 P3/P4（需要页面实现确认弹层）')
-it.todo('⑥ Markdown 渲染与流式容错：断言输出含 <strong>/标题/<table>，可见文本不含 ** / [[，三分块流式中间态不出现未闭合标记 —— 归属 P2 · 阅读与流式（含 react-markdown + remark-gfm 新依赖）')
-it.todo('⑨ 项目/问答列表渲染不得调用模型：对 /acceptance-plans、/index/plans 的调用次数为 0 —— 归属 P4（需项目与问答空/加载覆盖）')
+// C 已覆盖项目/Reader/Ask 的具体路径；全应用守卫仍留给 D 切片补齐。
+it.todo('① 全站位置断言：普通正文、details、title 与 aria-label 不显示 ID/hash/路径/原始 JSON；仅诊断导出允许原始值')
+it.todo('④ 全站加载与空分离：Today、Approval、Ask 未完成请求时不显示空态；Projects 对应的 C 路径已由 ProjectsView.test.tsx 覆盖')
+it.todo('⑤ 全站危险动作确认：逐类覆盖删除、断开、覆盖与移动；C 已覆盖项目归档/恢复和 Reader 跨项目移动的取消零写入与确认一次写入')
+it.todo('⑥ 流式语法中间态：每个 SSE chunk 的未闭合 Markdown 标记不作为源码显示，终态 DOM 与静态 Markdown 一致；C 已验证代码保真及终态一致')

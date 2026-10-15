@@ -37,11 +37,24 @@ it('renders GFM, resolves only real unique page links, and secures external link
 })
 
 it('rejects root escape, absolute, and protocol-relative Markdown targets while keeping labels readable', () => {
-  render(<MarkdownText pageIndex={pages} sourcePath="line/project/source.md" content={'[[../../outside.md|越界]]\n\n[绝对](/line/project/safety.md)\n\n[协议相对](//example.com)'} />)
+  render(<MarkdownText pageIndex={pages} sourcePath="line/project/source.md" content={'[[../../../outside.md|越界]]\n\n[绝对](/line/project/safety.md)\n\n[协议相对](//example.com)\n\n[坏编码](bad%ZZ.md)'} />)
   expect(screen.getByText('越界')).toBeTruthy()
   expect(screen.getByText('绝对')).toBeTruthy()
   expect(screen.getByText('协议相对')).toBeTruthy()
+  expect(screen.getByText('坏编码')).toBeTruthy()
   expect(screen.queryAllByRole('link')).toHaveLength(0)
+})
+
+it('resolves reference-style internal links and keeps external references safe', () => {
+  const onOpenPage = vi.fn()
+  render(<MarkdownText pageIndex={pages} sourcePath="line/project/source.md" onOpenPage={onOpenPage} content={'[阅读安全说明][guide]、[外部说明][site]、[危险链接][bad]\n\n[guide]: safety.md\n[site]: https://example.com/docs\n[bad]: javascript:alert(1)'} />)
+  fireEvent.click(screen.getByRole('link', { name: '阅读安全说明' }))
+  expect(onOpenPage).toHaveBeenCalledWith('page-1', 'a'.repeat(64))
+  const external = screen.getByRole('link', { name: '外部说明' })
+  expect(external.getAttribute('href')).toBe('https://example.com/docs')
+  expect(external.getAttribute('rel')).toContain('noopener')
+  expect(screen.getByText('危险链接')).toBeTruthy()
+  expect(screen.queryByRole('link', { name: '危险链接' })).toBeNull()
 })
 
 it('shows raw HTML as text and does not create executable elements', () => {

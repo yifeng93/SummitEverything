@@ -350,8 +350,3 @@ describe('守卫⑧ 外壳几何与响应式（逐页规格 §0、GUIDE §8.1）
     expect(px(declarationValue(appCss, '.toast-close', 'min-height', 'pointer: coarse'))).toBeGreaterThanOrEqual(44)
   })
 })
-
-// ── 全应用范围仍未实现的守卫，登记归属切片（禁止当成通过）────────────────────
-describe('本轮未落地的守卫（GUIDE §11、§14）', () => {
-  it.todo('① 位置断言：内部标识出现在 <details>/title=/aria-label=/诊断模块之外的实例必须为 0 —— 归属各页切片（P1 外壳 / P3 审批 / P4 项目与问答 / P5 首次配置）')
-})

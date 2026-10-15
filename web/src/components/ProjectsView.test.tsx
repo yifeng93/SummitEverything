@@ -187,6 +187,7 @@ it('opens a full project detail and preserves list search/filter state on return
   expect(screen.getByText('默认排序：在推进 → 待建档 → 已归档')).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: /模拟项目/ }))
   expect(await screen.findByRole('region', { name: '项目详情' })).toBeTruthy()
+  expect(screen.getAllByText('在推进').length).toBeGreaterThan(0)
   expect(screen.getByText('进行中')).toBeTruthy()
   expect(screen.getAllByText('安排访谈').length).toBeGreaterThanOrEqual(2)
   expect(screen.getAllByText('还没有记录')).toHaveLength(2)
@@ -196,6 +197,29 @@ it('opens a full project detail and preserves list search/filter state on return
   fireEvent.click(screen.getByRole('button', { name: '← 返回项目列表' }))
   expect(screen.getByLabelText('搜索项目')).toHaveProperty('value', '模拟')
   expect(screen.getByLabelText('筛选状态')).toHaveProperty('value', 'all')
+})
+
+it('keeps the project loading state distinct from a confirmed empty directory', async () => {
+  let resolveLines!: (response: Response) => void
+  let resolveProjects!: (response: Response) => void
+  let resolvePages!: (response: Response) => void
+  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/lines')) return new Promise<Response>((resolve) => { resolveLines = resolve })
+    if (url.endsWith('/projects')) return new Promise<Response>((resolve) => { resolveProjects = resolve })
+    if (url.endsWith('/pages')) return new Promise<Response>((resolve) => { resolvePages = resolve })
+    return Promise.reject(new Error(`Unexpected request ${url}`))
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+
+  expect(await screen.findByText('正在读取项目目录…')).toBeTruthy()
+  expect(screen.queryByText('还没有项目。先建一条主线，再建项目。')).toBeNull()
+  resolveLines(Response.json([]))
+  resolveProjects(Response.json([]))
+  resolvePages(Response.json([]))
+  expect(await screen.findByText('还没有项目。先建一条主线，再建项目。')).toBeTruthy()
+  expect(screen.queryByText('正在读取项目目录…')).toBeNull()
 })
 
 it('uses confirmed overview or explicit progress for status and keeps undated pages honest', async () => {

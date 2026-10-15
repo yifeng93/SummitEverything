@@ -144,6 +144,14 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
     setConfirmAction(null)
   }
 
+  function openProject(project: Project) {
+    detailScrollTop.current = window.scrollY
+    lastOpenedProjectId.current = project.id
+    setProjectId(project.id)
+    setEditingProject(false)
+    setDetailOpen(true)
+  }
+
   function returnToProjectList() {
     const projectIdToFocus = lastOpenedProjectId.current
     setShowArchived(projects.some((project) => project.id === projectIdToFocus && project.archived))
@@ -181,7 +189,7 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
   }
 
   if (detailOpen && selectedProject) return <ProjectDetailView
-    line={selectedLine}
+    line={lines.find((line) => line.id === selectedProject.line_id)}
     project={selectedProject}
     pages={pages.filter((candidate) => String(candidate.metadata.project_id ?? '') === selectedProject.id)}
     overview={overview}
@@ -215,17 +223,14 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
   return (
     <section className="content-wrap projects-view">
       <div className="page-heading">
-        <div><div className="eyebrow">知识目录</div><h1>项目与知识</h1><p className="lede">围绕主线与项目组织正式确认的页面。</p></div>
-        <span className="record-count">{pages.filter((page) => page.approval_state === 'confirmed').length} 个正式页面</span>
+        <div><div className="eyebrow">知识目录</div><h1>项目</h1><p className="lede">这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做什么。</p></div>
       </div>
       {!loaded ? <div role="status" className="loading-state">正在读取项目目录…</div> : loadError && projects.length === 0 && lines.length === 0 ? <div className="empty-state"><strong>暂时无法读取项目目录</strong><span>{loadError}</span><button className="button secondary" onClick={() => void refresh()}>重新加载</button></div> : <>
       {loadError && <p role="alert" className="form-error">项目目录读取失败，当前显示的是最近一次读取结果。<button className="text-button" onClick={() => void refresh()}>重试</button></p>}
       <div className="project-list-page">
         <div className="project-list-heading">
-          <div><span className="eyebrow">正式知识目录</span><h2>项目</h2></div>
           <button className="button primary" disabled={!lines.length} onClick={() => setShowCreateProject((value) => !value)}>＋ 新建项目</button>
         </div>
-        <p className="lede">这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做什么。</p>
         <p className="hint project-stats">共 {projects.length} 条 · 在推进 {projects.filter((project) => projectStatusOf(project) === '在推进').length} · 待建档 {projects.filter((project) => projectStatusOf(project) === '待建档').length} · 已归档 {projects.filter((project) => projectStatusOf(project) === '已归档').length}</p>
         {showCreateProject && <form className="project-create-form" onSubmit={createProject}>
           <label className="field"><span>主线</span><select aria-label="新项目主线" value={selectedLineId} onChange={(event) => setLineId(event.target.value)}>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label>
@@ -253,8 +258,8 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
             {!projects.length && !lines.length ? <button className="button primary" onClick={() => setShowCreateLine(true)}>新建第一条主线</button> : search.trim() ? <button className="text-button" onClick={() => setSearch('')}>清空搜索</button> : null}
           </div>
         ) : <>
-          <div className="project-list">{visibleProjectRows.map((project) => renderProjectRow(project, lines, pages, projectStatusOf, () => { detailScrollTop.current = window.scrollY; lastOpenedProjectId.current = project.id; setProjectId(project.id); setEditingProject(false); setDetailOpen(true) }))}</div>
-          {archivedProjectRows.length > 0 && <details className="archived-projects" open={projectStatus === 'archived' || showArchived} onToggle={(event) => setShowArchived(event.currentTarget.open)}><summary>已归档 · {archivedProjectRows.length}</summary><div className="project-list">{archivedProjectRows.map((project) => renderProjectRow(project, lines, pages, projectStatusOf, () => { detailScrollTop.current = window.scrollY; lastOpenedProjectId.current = project.id; setProjectId(project.id); setEditingProject(false); setDetailOpen(true) }))}</div></details>}
+          <div className="project-list">{visibleProjectRows.map((project) => <ProjectRow key={project.id} project={project} lines={lines} pages={pages} statusOf={projectStatusOf} onOpen={openProject} />)}</div>
+          {archivedProjectRows.length > 0 && <details className="archived-projects" open={projectStatus === 'archived' || showArchived} onToggle={(event) => setShowArchived(event.currentTarget.open)}><summary>已归档 · {archivedProjectRows.length}</summary><div className="project-list">{archivedProjectRows.map((project) => <ProjectRow key={project.id} project={project} lines={lines} pages={pages} statusOf={projectStatusOf} onOpen={openProject} />)}</div></details>}
         </>}
       </div>
       </>}
@@ -325,19 +330,19 @@ function explicitOverviewSections(body: string): Record<string, string> {
   return output
 }
 
-function renderProjectRow(
-  project: Project,
-  lines: Line[],
-  pages: Page[],
-  statusOf: (project: Project) => '在推进' | '待建档' | '已归档',
-  open: () => void,
-) {
+function ProjectRow({ project, lines, pages, statusOf, onOpen }: {
+  project: Project
+  lines: Line[]
+  pages: Page[]
+  statusOf: (project: Project) => '在推进' | '待建档' | '已归档'
+  onOpen: (project: Project) => void
+}) {
   const status = statusOf(project)
   const overview = pages.find((page) => page.page_id === project.overview_id && page.approval_state === 'confirmed')
   const nextStep = overview ? explicitOverviewSections(overview.body)['下一步'].trim().split(/\r?\n/).find((line) => line.trim()) : ''
   const summary = project.progress?.trim() || nextStep || '还没有推进记录'
-  return <div key={project.id} className="project-list-row">
-    <button data-project-id={project.id} className="project-row-main" onClick={open}>
+  return <div className="project-list-row">
+    <button data-project-id={project.id} className="project-row-main" onClick={() => onOpen(project)}>
       <span className={`project-status-badge ${status === '在推进' ? 'active' : status === '已归档' ? 'archived' : ''}`}>{status === '待建档' ? '新' : status}</span>
       <span className="project-row-copy"><strong>{project.name}</strong><small>{summary} · {lines.find((line) => line.id === project.line_id)?.name ?? '主线'}</small></span>
     </button>
@@ -377,7 +382,7 @@ function ProjectDetailView(props: ProjectDetailProps) {
       </> : <><p className="muted">还没有项目概览。</p><button className="button secondary" onClick={props.onEditOverview}>创建项目概览</button></>}
       {props.editingOverview && <form className="overview-editor" onSubmit={props.onSaveOverview}><label className="field"><span>概览标题</span><input value={props.overviewTitle} onChange={(event) => props.onOverviewTitle(event.target.value)} /></label><label className="field"><span>自由 Markdown 正文</span><textarea rows={10} value={props.overviewBody} onChange={(event) => props.onOverviewBody(event.target.value)} /></label><div className="journal-actions"><button type="button" className="button secondary" onClick={props.onCancelOverview}>取消</button><button className="button primary" disabled={props.busy || !props.overviewTitle.trim() || !props.overviewBody.trim()}>{overview ? '确认并保存概览' : '确认并创建概览'}</button></div></form>}
     </section>
-    <section className="page-list-section"><div className="directory-title"><h2>时间线</h2><span>{facts.length}</span></div>{facts.length ? <ul className="knowledge-page-list">{facts.map((page) => <li key={page.page_id}><button onClick={() => props.onOpenPage(page.page_id, page.content_sha256)}><span className="page-type-mark">{page.approval_state === 'confirmed' ? '知' : '待'}</span><span><small>{pageBusinessDate(page)?.label ?? '日期未记录'} · {page.metadata.kind === 'journal' ? '推进日志' : page.metadata.kind === 'meeting' ? '关联会议' : '产物'}</small><strong>{String(page.metadata.title ?? '未命名页面')}</strong><small>{page.approval_state === 'confirmed' ? page.body.trim().split(/\r?\n/).find((line) => line.trim())?.slice(0, 120) || '还没有摘要' : '待确认内容'}</small></span><span aria-hidden="true">›</span></button></li>)}</ul> : <p className="muted">还没有关联页面。</p>}</section>
+    <section className="page-list-section"><div className="directory-title"><h2>时间线</h2><span>{facts.length}</span></div>{facts.length ? <ul className="knowledge-page-list">{facts.map((page) => <li key={page.page_id}><div className="project-timeline-item"><button onClick={() => props.onOpenPage(page.page_id, page.content_sha256)}><span className="page-type-mark">{page.approval_state === 'confirmed' ? '知' : '待'}</span><span><small>{pageBusinessDate(page)?.label ?? '日期未记录'} · {page.metadata.kind === 'journal' ? '推进日志' : page.metadata.kind === 'meeting' ? '关联会议' : '产物'}</small><strong>{String(page.metadata.title ?? '未命名页面')}</strong></span><span aria-hidden="true">›</span></button>{page.approval_state === 'confirmed' ? <MarkdownText className="project-timeline-summary" content={page.body.trim().split(/\r?\n/).find((line) => line.trim())?.slice(0, 120) || '还没有摘要'} sourcePath={page.relative_path} pageIndex={markdownPages} onOpenPage={props.onOpenPage} /> : <small>待确认内容</small>}</div></li>)}</ul> : <p className="muted">还没有关联页面。</p>}</section>
     {props.journal}{props.importer}{props.confirmation}
   </div>
 }

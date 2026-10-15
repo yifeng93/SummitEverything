@@ -168,30 +168,22 @@ it('previews real question context and cancels without posting a query', async (
   expect(calls.filter((item) => item.url === '/api/v1/queries')).toHaveLength(0)
 })
 
-it('revokes a real embedding plan when cancelling its scope preview', async () => {
+it('routes index work to Approval instead of creating a second index writer', async () => {
   const calls: { url: string; method: string }[] = []
   const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input); const method = init?.method ?? 'GET'; calls.push({ url, method })
-    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 1, stale_pages: 0 })
+    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
     if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
-    if (url === '/api/v1/settings') return Response.json({ mode: 'real', embedding_fingerprint: 'real-fp' })
-    if (url === '/api/v1/pages') return Response.json([{ page_id: 'page-1', metadata: { title: '合成页面' } }])
+    if (url === '/api/v1/pages') return Response.json([])
     if (url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
-    if (url === '/api/v1/index/plans') return Response.json({ mode: 'initial', fingerprint: 'real-fp', page_ids: ['page-1'], page_versions: { 'page-1': 'a'.repeat(64) }, estimated_tokens: 1000, estimated_cost: null })
-    if (url === '/api/v1/acceptance-plans') return Response.json({
-      plan: { plan_id: 'index-plan', scope_sha256: 'b'.repeat(64), request_limit: 1 },
-      scope: { mode: 'initial', fingerprint: 'real-fp', page_ids: ['page-1'], page_versions: { 'page-1': 'a'.repeat(64) } },
-    })
-    if (url === '/api/v1/acceptance-plans/index-plan' && method === 'DELETE') return new Response(null, { status: 200 })
     throw new Error(`Unexpected fetch ${method} ${url}`)
   })
   vi.stubGlobal('fetch', rawFetch)
-  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
-  fireEvent.click(await screen.findByRole('button', { name: '准备索引计划' }))
-  expect(await screen.findByText('真实索引范围待独立确认')).toBeTruthy()
-  expect(screen.getByText('合成页面')).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: '取消计划' }))
-  await waitFor(() => expect(calls.some((item) => item.url.endsWith('/acceptance-plans/index-plan') && item.method === 'DELETE')).toBe(true))
+  const onOpenApproval = vi.fn()
+  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} onOpenApproval={onOpenApproval} />)
+  fireEvent.click(await screen.findByRole('button', { name: '前往审批查看索引' }))
+  expect(onOpenApproval).toHaveBeenCalledTimes(1)
+  expect(calls.some((item) => item.url === '/api/v1/index/plans')).toBe(false)
   expect(calls.some((item) => item.url === '/api/v1/index/jobs')).toBe(false)
 })
 

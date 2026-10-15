@@ -2,8 +2,9 @@ import ReactMarkdown, { type Components, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 export type MarkdownPage = { page_id: string; content_sha256: string; title: string; relative_path: string }
-type MarkdownTreeNode = { type: string; value?: string; url?: string; children?: MarkdownTreeNode[]; data?: { hProperties?: Record<string, string> } }
+type MarkdownTreeNode = { type: string; value?: string; url?: string; identifier?: string; children?: MarkdownTreeNode[]; data?: { hProperties?: Record<string, string> } }
 type PageResolverOptions = { pages: MarkdownPage[]; sourcePath?: string }
+type ReferenceDefinitions = Map<string, string>
 
 function decodePath(path: string): string | null {
   if (/%2f|%5c/i.test(path)) return null
@@ -88,15 +89,28 @@ function rewriteTextNode(node: MarkdownTreeNode, options: PageResolverOptions): 
   return output
 }
 
-function walk(node: MarkdownTreeNode, options: PageResolverOptions) {
-  if (['link', 'linkReference', 'image', 'imageReference', 'inlineCode', 'code', 'html', 'definition'].includes(node.type)) return
+function walk(node: MarkdownTreeNode, options: PageResolverOptions, definitions: ReferenceDefinitions) {
+  if (node.type === 'definition' && node.identifier && node.url) {
+    definitions.set(node.identifier.trim().toLowerCase(), node.url)
+    return
+  }
+  if (node.type === 'linkReference') {
+    const url = node.identifier ? definitions.get(node.identifier.trim().toLowerCase()) : undefined
+    if (url) {
+      node.type = 'link'
+      node.url = url
+      resolveLinkNode(node, options)
+    }
+    return
+  }
+  if (['link', 'image', 'imageReference', 'inlineCode', 'code', 'html'].includes(node.type)) return
   if (!node.children) return
   const rewritten: MarkdownTreeNode[] = []
   for (const child of node.children) {
     if (child.type === 'text') rewritten.push(...rewriteTextNode(child, options))
     else {
       resolveLinkNode(child, options)
-      walk(child, options)
+      walk(child, options, definitions)
       rewritten.push(child)
     }
   }
@@ -108,7 +122,16 @@ function isMarkdownNode(value: unknown): value is MarkdownTreeNode {
 }
 
 function pageResolverPlugin(options: PageResolverOptions) {
-  return (tree: unknown) => { if (isMarkdownNode(tree)) walk(tree, options) }
+  return (tree: unknown) => {
+    if (!isMarkdownNode(tree)) return
+    const definitions: ReferenceDefinitions = new Map()
+    const collectDefinitions = (node: MarkdownTreeNode) => {
+      if (node.type === 'definition' && node.identifier && node.url) definitions.set(node.identifier.trim().toLowerCase(), node.url)
+      node.children?.forEach(collectDefinitions)
+    }
+    collectDefinitions(tree)
+    walk(tree, options, definitions)
+  }
 }
 
 export function MarkdownText({ content, onOpenPage, pageIndex = [], sourcePath, className }: {

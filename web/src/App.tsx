@@ -154,6 +154,7 @@ export default function App() {
           onClose={closeReader}
           onReload={() => void openPage(page.page_id)}
           onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)}
+          returnLabel={section === 'ask' ? '知识问答' : section === 'projects' ? '项目' : '知识'}
         />
       ) : section === 'today' ? (
         null
@@ -175,7 +176,7 @@ export default function App() {
         />
       ) : null}
       <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
-      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
+      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={() => { setSection('approval'); setVisitedSections((current) => new Set(current).add('approval')) }} />}</div>
       <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={() => setSection('approval')} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
       <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={`${workspace.workspace_id}:${approvalRefreshEpoch}`} onPendingCount={setApprovalCount} onError={report} onOpenPage={(title) => {
         void api.get<Page[]>('/pages').then((pages) => {

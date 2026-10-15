@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { api, sessionHeaders, type Citation, type IndexPlan, type IndexResult, type Page } from '../api/client'
+import { api, sessionHeaders, type Citation, type Page } from '../api/client'
 import type { components } from '../api/generated'
 import { ConfirmDialog } from './ConfirmDialog'
 import { StreamingMarkdown } from './StreamingMarkdown'
 
-type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
+type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void; onOpenApproval?: () => void }
 type IndexStatus = { fingerprint: string | null; pages: number; chunks: number; state: 'not_ready' | 'ready' | 'stale'; current_pages: number; stale_pages: number }
 type StreamEvent = {
   request_id: string
@@ -37,14 +37,10 @@ const stateLabel: Record<QueryState, string> = {
   interrupted: '连接中断',
 }
 
-export function AskView({ onError, onOpenPage }: Props) {
+export function AskView({ onError, onOpenPage, onOpenApproval }: Props) {
   const [status, setStatus] = useState<IndexStatus | null>(null)
-  const [plan, setPlan] = useState<IndexPlan | null>(null)
-  const [acceptancePlan, setAcceptancePlan] = useState<AcceptancePlan | null>(null)
-  const [acceptanceScope, setAcceptanceScope] = useState<Record<string, unknown> | null>(null)
   const [eligiblePages, setEligiblePages] = useState<Page[]>([])
   const [pendingQuery, setPendingQuery] = useState<PendingQuery | null>(null)
-  const [result, setResult] = useState<IndexResult | null>(null)
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
   const [citations, setCitations] = useState<Citation[]>([])
@@ -122,61 +118,6 @@ export function AskView({ onError, onOpenPage }: Props) {
     }, 0)
     return () => window.clearTimeout(timer)
   }, [refreshHistory, refreshPersonalization, refreshStatus])
-
-  async function createPlan() {
-    setResult(null)
-    try {
-      const settings = await api.get<Settings>('/settings')
-      const fingerprint = settings.embedding_fingerprint
-      const mode = !status?.fingerprint ? 'initial' : status.fingerprint === fingerprint ? 'incremental' : 'model_change'
-      const next = await api.post<IndexPlan>('/index/plans', { mode, fingerprint })
-      setPlan(next)
-      if (settings.mode === 'real') {
-        const reviewed = await api.post<{ plan: AcceptancePlan; scope: Record<string, unknown> }>('/acceptance-plans', {
-          operation: 'model.index',
-          scope: { mode: next.mode, fingerprint: next.fingerprint, page_ids: next.page_ids, page_versions: next.page_versions },
-        })
-        setAcceptancePlan(reviewed.plan)
-        setAcceptanceScope(reviewed.scope)
-      } else {
-        setAcceptancePlan(null)
-        setAcceptanceScope(null)
-      }
-      onError('')
-    } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '无法生成索引计划')
-    }
-  }
-
-  async function executePlan() {
-    if (!plan) return
-    try {
-      let executable = plan
-      if (acceptancePlan) {
-        await api.post('/acceptance-plans/' + acceptancePlan.plan_id + '/confirm', { scope_sha256: acceptancePlan.scope_sha256, scope: acceptanceScope })
-        executable = { ...plan, acceptance_plan_id: acceptancePlan.plan_id }
-      }
-      const next = await api.post<IndexResult>('/index/jobs', executable)
-      setResult(next)
-      setPlan(null)
-      setAcceptancePlan(null)
-      await refreshStatus()
-    } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '索引没有完成')
-    }
-  }
-
-  async function cancelIndexPlan() {
-    try {
-      if (acceptancePlan) await api.delete('/acceptance-plans/' + acceptancePlan.plan_id)
-      setPlan(null)
-      setAcceptancePlan(null)
-      setAcceptanceScope(null)
-      onError('')
-    } catch (cause) {
-      onError(cause instanceof Error ? cause.message : '无法撤销本次索引计划')
-    }
-  }
 
   async function openConversation(id: string) {
     try {
@@ -524,12 +465,11 @@ export function AskView({ onError, onOpenPage }: Props) {
         <section className="index-status-panel">
         <div className="index-status-copy">
           <span className={status?.state === 'ready' ? 'index-state ready' : 'index-state'}>{status?.state === 'stale' ? '本机索引有待更新' : status?.fingerprint ? '本机索引已就绪' : '还没有本机索引'}</span>
-          <p>{status?.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。可确认增量计划更新。` : status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块' : '创建计划会展示本次范围与估算，再由你确认运行。'}</p>
+          <p>{status?.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。` : status?.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块' : '建立或更新索引需要先检查范围，再单独确认。'}</p>
         </div>
-        <div className="index-actions">{!plan ? <button className="button secondary" onClick={createPlan}>准备索引计划</button> : <button className="button primary" onClick={executePlan}>{acceptancePlan ? '确认范围并开始索引' : '按计划创建索引'}</button>}</div>
+        <div className="index-actions"><button className="button secondary" onClick={onOpenApproval}>前往审批查看索引</button></div>
         </section>
-        {plan && <section className="plan-card"><div><strong>{acceptancePlan ? '真实索引范围待独立确认' : '索引计划待确认'}</strong><span>{plan.mode === 'initial' ? '首次构建' : '增量更新'} · {plan.page_ids.length} 个合格页面</span></div><p>约 {plan.estimated_tokens.toLocaleString()} 个文本 token；{acceptancePlan ? `最多 ${acceptancePlan.request_limit} 次 embedding HTTP 请求，每批最多 20 段。` : plan.estimated_cost === null ? '当前无法估算 provider 费用。' : '本机 Fake embedding 费用为 ¥0。'}</p>{acceptancePlan && <><p>将发送给阿里云百炼 embedding 的页面：</p><ul>{plan.page_ids.map((id) => <li key={id}>{String(eligiblePages.find((page) => page.page_id === id)?.metadata.title ?? '未命名页面')}</li>)}</ul></>}<button className="text-button" onClick={() => void cancelIndexPlan()}>取消计划</button></section>}
-        {result && <p role="status" className="success-note">已保存到本机：{result.indexed_pages} 页，{result.embedded_chunks} 个新分块，复用 {result.reused_chunks} 个。</p>}
+        <p className="muted">索引范围预览、真实服务授权和执行记录都在审批页的「索引」类别中处理。</p>
       </details>
 
       <details className="ask-secondary" aria-label="本机问答偏好与记忆">

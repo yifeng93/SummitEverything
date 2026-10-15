@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { api, indexUpdateMessage, newOperationId, type MutationResult, type Page, type Project } from '../api/client'
+import { ConfirmDialog } from './ConfirmDialog'
 import { MarkdownText, type MarkdownPage } from './MarkdownText'
 
-type Props = { page: Page; onClose: () => void; onReload: () => Promise<void>; onOpenPage: (id: string, hash: string) => void }
+type Props = { page: Page; onClose: () => void; onReload: () => Promise<void>; onOpenPage: (id: string, hash: string) => void; returnLabel?: string }
 
-export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
+export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = '知识' }: Props) {
   const [title, setTitle] = useState(String(page.metadata.title ?? ''))
   const [body, setBody] = useState(page.body)
   const [busy, setBusy] = useState(false)
@@ -14,6 +15,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
   const [pages, setPages] = useState<Page[]>([])
   const [linkIndex, setLinkIndex] = useState<MarkdownPage[]>([])
   const [moveProject, setMoveProject] = useState('')
+  const [moveConfirmation, setMoveConfirmation] = useState<Project | null>(null)
   const [linkPage, setLinkPage] = useState('')
   const needsConfirmation = page.approval_state !== 'confirmed'
   const historicalValidity = page.validity === 'superseded'
@@ -53,8 +55,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
     }
   }
 
-  async function moveToProject() {
-    const destination = projects.find((project) => project.id === moveProject)
+  async function moveToProject(destination: Project | null = moveConfirmation) {
     if (!destination) return
     setBusy(true)
     setError('')
@@ -64,6 +65,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
         operation_id: newOperationId(),
         ...(destination.id !== String(page.metadata.project_id ?? '') ? { structure_confirmation_id: newOperationId() } : {}),
       })
+      setMoveConfirmation(null)
       await onReload()
       onClose()
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法移动页面') }
@@ -85,7 +87,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
 
   return (
     <article className="page-reader">
-      <button className="back-link" onClick={onClose}>← 返回目录</button>
+      <button className="back-link" onClick={onClose}>← {returnLabel === '知识问答' ? '返回知识问答' : returnLabel === '项目' ? '返回项目' : '返回知识'}</button>
       <div className="page-meta">
         <span className={needsConfirmation ? 'page-status-invalid' : historicalValidity ? 'page-status-historical' : ''}>
           {needsConfirmation
@@ -100,8 +102,8 @@ export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
           <p role="status">此页面自上次确认后已有变化，目前不会用于知识问答。请核对当前正文；只有点击确认后，新版本才会恢复检索资格。</p>
           {error && <p role="alert" className="form-error">{error}</p>}
           {error && <button className="text-button" onClick={() => void onReload()}>重新读取当前版本</button>}
-          <label className="field"><span>页面标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="field"><span>页面正文</span><textarea aria-label="页面正文" rows={18} value={body} onChange={(event) => setBody(event.target.value)} /></label>
+          <MarkdownText className="page-body" content={body} sourcePath={page.relative_path} pageIndex={linkIndex} onOpenPage={onOpenPage} />
+          <details className="page-source-editor"><summary>编辑 Markdown 源码</summary><label className="field"><span>页面标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label><label className="field"><span>页面正文</span><textarea aria-label="页面正文" rows={18} value={body} onChange={(event) => setBody(event.target.value)} /></label></details>
           <div className="button-row">
             <button className="button primary" disabled={busy || !title.trim() || !body.trim()} onClick={() => void confirmCurrentVersion()}>
               {busy ? '正在确认…' : '确认当前版本'}
@@ -111,15 +113,16 @@ export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
       ) : <>
         {error && <p role="alert" className="form-error">{error}</p>}
         {notice && <p role="status" className={notice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{notice}</p>}
-        <MarkdownText className="page-body" content={page.body} sourcePath={page.relative_path} pageIndex={linkIndex} onOpenPage={onOpenPage} />
+        <MarkdownText className="page-body" content={body} sourcePath={page.relative_path} pageIndex={linkIndex} onOpenPage={onOpenPage} />
         <section className="page-structure-actions" aria-label="页面组织操作">
           <label className="field"><span>移动到项目</span><select aria-label="移动到项目" value={moveProject} onChange={(event) => setMoveProject(event.target.value)}><option value="">选择项目</option>{projects.filter((project) => project.id !== String(page.metadata.project_id ?? '')).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
-          <button className="button secondary" disabled={busy || !moveProject} onClick={() => void moveToProject()}>移动页面</button>
+          <button className="button secondary" disabled={busy || !moveProject} onClick={() => setMoveConfirmation(projects.find((project) => project.id === moveProject) ?? null)}>移动页面</button>
           <label className="field"><span>添加页面链接</span><select aria-label="链接到页面" value={linkPage} onChange={(event) => setLinkPage(event.target.value)}><option value="">选择已确认页面</option>{pages.map((candidate) => <option key={candidate.page_id} value={candidate.page_id}>{String(candidate.metadata.title ?? '未命名页面')}</option>)}</select></label>
           <button className="button secondary" disabled={busy || !linkPage} onClick={() => void addLink()}>插入链接</button>
           {body !== page.body && <div className="page-reconfirmation"><p>正文已增加指向已确认页面的相对链接。确认后保存为新版本。</p><label className="field"><span>检查并确认正文</span><textarea aria-label="页面正文" rows={10} value={body} onChange={(event) => setBody(event.target.value)} /></label><button className="button primary" disabled={busy} onClick={() => void confirmCurrentVersion()}>确认新版本</button></div>}
         </section>
       </>}
+      {moveConfirmation && <ConfirmDialog title={`将页面移动到“${moveConfirmation.name}”？`} description="页面会更改所属项目，正文和当前版本不会改变。" consequence="请确认目标项目正确后再继续。取消不会写入。" confirmLabel="确认移动页面" busyLabel="正在移动…" busy={busy} onCancel={() => setMoveConfirmation(null)} onConfirm={() => moveToProject(moveConfirmation)} />}
     </article>
   )
 }
