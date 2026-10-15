@@ -23,7 +23,10 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
   const [detailOpen, setDetailOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [projectStatus, setProjectStatus] = useState<'all' | 'in_progress' | 'needs_setup' | 'archived'>('all')
-  const [sortOrder, setSortOrder] = useState<'status' | 'name'>('status')
+  const [lineFilter, setLineFilter] = useState('')
+  const [showCreateProject, setShowCreateProject] = useState(false)
+  const [showCreateLine, setShowCreateLine] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; label: string; run: () => Promise<void> } | null>(null)
   const [showJournal, setShowJournal] = useState(false)
   const [showImport, setShowImport] = useState(false)
@@ -117,7 +120,7 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
 
   const selectedLineId = lineId || lines[0]?.id || ''
   const selectedLine = lines.find((line) => line.id === selectedLineId)
-  const lineProjects = projects.filter((project) => project.line_id === selectedLineId)
+  const lineProjects = projects.filter((project) => !lineFilter || project.line_id === lineFilter)
   function projectStatusOf(project: Project): '在推进' | '待建档' | '已归档' {
     if (project.archived) return '已归档'
     const confirmedOverview = pages.some((page) => page.page_id === project.overview_id && page.approval_state === 'confirmed')
@@ -128,7 +131,9 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
     if (projectStatus !== 'all' && status !== ({ in_progress: '在推进', needs_setup: '待建档', archived: '已归档' } as const)[projectStatus]) return false
     const needle = search.trim().toLocaleLowerCase()
     return !needle || project.name.toLocaleLowerCase().includes(needle)
-  }).sort((a, b) => sortOrder === 'name' ? a.name.localeCompare(b.name, 'zh-CN') : ['在推进', '待建档', '已归档'].indexOf(projectStatusOf(a)) - ['在推进', '待建档', '已归档'].indexOf(projectStatusOf(b)) || a.name.localeCompare(b.name, 'zh-CN'))
+  }).sort((a, b) => ['在推进', '待建档', '已归档'].indexOf(projectStatusOf(a)) - ['在推进', '待建档', '已归档'].indexOf(projectStatusOf(b)) || a.name.localeCompare(b.name, 'zh-CN'))
+  const visibleProjectRows = projectRows.filter((project) => !project.archived)
+  const archivedProjectRows = projectRows.filter((project) => project.archived)
   const selectedProjectId = projectId || projectRows[0]?.id || ''
   const selectedProject = projects.find((project) => project.id === selectedProjectId)
   const overview = selectedProject ? pages.find((page) => page.page_id === selectedProject.overview_id) : undefined
@@ -141,6 +146,7 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
 
   function returnToProjectList() {
     const projectIdToFocus = lastOpenedProjectId.current
+    setShowArchived(projects.some((project) => project.id === projectIdToFocus && project.archived))
     setDetailOpen(false)
     setEditingOverview(false)
     requestAnimationFrame(() => {
@@ -179,6 +185,7 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
     project={selectedProject}
     pages={pages.filter((candidate) => String(candidate.metadata.project_id ?? '') === selectedProject.id)}
     overview={overview}
+    status={projectStatusOf(selectedProject)}
     overviewNotice={overviewNotice}
     overviewTitle={overviewTitle}
     overviewBody={overviewBody}
@@ -213,56 +220,42 @@ export function ProjectsView({ onError, onOpenPage }: Props) {
       </div>
       {!loaded ? <div role="status" className="loading-state">正在读取项目目录…</div> : loadError && projects.length === 0 && lines.length === 0 ? <div className="empty-state"><strong>暂时无法读取项目目录</strong><span>{loadError}</span><button className="button secondary" onClick={() => void refresh()}>重新加载</button></div> : <>
       {loadError && <p role="alert" className="form-error">项目目录读取失败，当前显示的是最近一次读取结果。<button className="text-button" onClick={() => void refresh()}>重试</button></p>}
-      <div className="directory-layout">
-        <aside className="directory-sidebar">
-          <div className="directory-title"><h2>主线</h2><span>{lines.length}</span></div>
-          {lines.length === 0 ? <p className="muted">还没有主线。</p> : lines.map((line) => (
-            <div key={line.id}>
-              <button className={selectedLineId === line.id ? 'directory-item active' : 'directory-item'} onClick={() => { setLineId(line.id); setProjectId(''); setEditingLine(false) }}>
-                <span className="line-mark">{line.name.slice(0, 1)}</span><span>{line.name}</span><small>{projects.filter((project) => project.line_id === line.id).length}</small>
-              </button>
-              {line.id === selectedLineId && <div className="directory-actions">
-                {editingLine ? <form onSubmit={saveLineName}><label className="sr-only" htmlFor="line-name">主线名称</label><input id="line-name" value={lineName} onChange={(event) => setLineName(event.target.value)} /><button disabled={busy || !lineName.trim()} aria-label="保存主线">保存</button></form> : <button className="text-button" aria-label="重命名主线" onClick={() => { setLineName(line.name); setEditingLine(true) }}>重命名主线</button>}
-                <button className="text-button" onClick={() => setConfirmAction({ title: '删除这条空主线？', description: '只能删除没有项目的主线；删除后无法撤销。', label: '删除空主线', run: async () => { await api.delete(`/lines/${line.id}?operation_id=${newOperationId()}`); setLineId(''); await refresh() } })}>删除空主线</button>
-              </div>}
-            </div>
-          ))}
-          <form className="create-inline" onSubmit={createLine}>
-            <label className="sr-only" htmlFor="new-line">新主线名称</label>
-            <input id="new-line" value={lineName} onChange={(event) => setLineName(event.target.value)} placeholder="新增主线名称" />
-            <button className="icon-button" disabled={busy || !lineName.trim()} aria-label="创建主线">＋</button>
-          </form>
-        </aside>
-
-        <div className="project-browser">
-          <div className="project-browser-header">
-            <div><span className="eyebrow">{selectedLine?.name ?? '选择主线'}</span><h2>项目</h2></div>
-            {selectedLine && <form className="create-project" onSubmit={createProject}>
-              <label className="sr-only" htmlFor="new-project">新项目名称</label>
-              <input id="new-project" value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="新项目名称" />
-              <button className="button secondary" disabled={busy || !projectName.trim()}>创建项目</button>
-            </form>}
-          </div>
-          <div className="project-list-controls">
-            <label className="field"><span>搜索项目</span><input id="project-search" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-            <label className="field"><span>筛选状态</span><select value={projectStatus} onChange={(event) => { setProjectStatus(event.target.value as typeof projectStatus); setProjectId('') }}><option value="all">全部状态</option><option value="in_progress">在推进</option><option value="needs_setup">待建档</option><option value="archived">已归档</option></select></label>
-            <label className="field"><span>排序方式</span><select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)}><option value="status">项目状态</option><option value="name">项目名称</option></select></label>
-          </div>
-          {projectRows.length === 0 ? (
-            <div className="empty-state project-empty"><span className="empty-mark">＋</span><strong>{search.trim() ? '没有符合搜索条件的项目' : projectStatus !== 'all' ? '没有符合状态的项目' : lineProjects.length ? '没有符合筛选条件的项目' : '这条主线还没有项目'}</strong><span>{lineProjects.length ? '调整搜索或筛选，或创建一个项目。' : '创建一个项目，开始保存正式知识。'}</span></div>
-          ) : (
-            <div className="project-list">
-            {projectRows.map((project) => {
-                const projectPages = pages.filter((page) => String(page.metadata.project_id ?? '') === project.id)
-                return <div key={project.id} className="project-card-wrap">
-                  <button data-project-id={project.id} className="project-card" onClick={() => { detailScrollTop.current = window.scrollY; lastOpenedProjectId.current = project.id; setProjectId(project.id); setEditingProject(false); setDetailOpen(true) }}>
-                    <span className="project-card-icon">▤</span><span className="project-card-copy"><strong>{project.name}</strong><small>{projectStatusOf(project)} · {projectPages.length} 个页面 · 主线：{selectedLine?.name}</small></span><span aria-hidden="true">›</span>
-                  </button>
-                </div>
-              })}
-            </div>
-          )}
+      <div className="project-list-page">
+        <div className="project-list-heading">
+          <div><span className="eyebrow">正式知识目录</span><h2>项目</h2></div>
+          <button className="button primary" disabled={!lines.length} onClick={() => setShowCreateProject((value) => !value)}>＋ 新建项目</button>
         </div>
+        <p className="lede">这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做什么。</p>
+        <p className="hint project-stats">共 {projects.length} 条 · 在推进 {projects.filter((project) => projectStatusOf(project) === '在推进').length} · 待建档 {projects.filter((project) => projectStatusOf(project) === '待建档').length} · 已归档 {projects.filter((project) => projectStatusOf(project) === '已归档').length}</p>
+        {showCreateProject && <form className="project-create-form" onSubmit={createProject}>
+          <label className="field"><span>主线</span><select aria-label="新项目主线" value={selectedLineId} onChange={(event) => setLineId(event.target.value)}>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label>
+          <label className="field"><span>项目名称</span><input id="new-project" value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="输入项目名称" /></label>
+          <button className="button primary" disabled={busy || !projectName.trim()}>创建项目</button>
+          <button type="button" className="button secondary" onClick={() => setShowCreateProject(false)}>取消</button>
+        </form>}
+        <details className="line-management" open={showCreateLine}>
+          <summary>主线管理 · {lines.length}</summary>
+          {lines.length > 0 && <label className="field"><span>选择主线</span><select aria-label="管理主线" value={selectedLineId} onChange={(event) => { setLineId(event.target.value); setEditingLine(false) }}>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label>}
+          {selectedLine && <div className="line-management-actions">
+            {editingLine ? <form onSubmit={saveLineName}><label className="field"><span>主线名称</span><input id="line-name" value={lineName} onChange={(event) => setLineName(event.target.value)} /></label><button className="button secondary" disabled={busy || !lineName.trim()} aria-label="保存主线">保存</button></form> : <button className="button secondary" aria-label="重命名主线" onClick={() => { setLineName(selectedLine.name); setEditingLine(true) }}>重命名主线</button>}
+            <button className="button secondary" onClick={() => setConfirmAction({ title: '删除这条空主线？', description: '只能删除没有项目的主线；删除后无法撤销。', label: '删除空主线', run: async () => { await api.delete(`/lines/${selectedLine.id}?operation_id=${newOperationId()}`); setLineId(''); await refresh() } })}>删除空主线</button>
+          </div>}
+          {showCreateLine ? <form className="create-line-form" onSubmit={createLine}><label className="field"><span>新主线名称</span><input id="new-line" value={lineName} onChange={(event) => setLineName(event.target.value)} /></label><button className="button primary" disabled={busy || !lineName.trim()}>新建主线</button></form> : <button className="text-button" onClick={() => setShowCreateLine(true)}>＋ 新建主线</button>}
+        </details>
+        <div className="project-list-controls">
+          <label className="field"><span>搜索项目</span><input id="project-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索名称…" /></label>
+          <label className="field"><span>主线</span><select aria-label="筛选主线" value={lineFilter} onChange={(event) => setLineFilter(event.target.value)}><option value="">全部主线</option>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label>
+          <label className="field"><span>筛选状态</span><select aria-label="筛选状态" value={projectStatus} onChange={(event) => { setProjectStatus(event.target.value as typeof projectStatus); setProjectId('') }}><option value="all">全部状态</option><option value="in_progress">在推进</option><option value="needs_setup">待建档</option><option value="archived">已归档</option></select></label>
+          <span className="sort-note">默认排序：在推进 → 待建档 → 已归档</span>
+        </div>
+        {projectRows.length === 0 ? (
+          <div className="empty-state project-empty"><strong>{search.trim() ? `没有匹配「${search.trim()}」的项目，清空搜索看看` : projectStatus !== 'all' || lineFilter ? '这个状态下还没有项目' : '还没有项目。先建一条主线，再建项目。'}</strong>
+            {!projects.length && !lines.length ? <button className="button primary" onClick={() => setShowCreateLine(true)}>新建第一条主线</button> : search.trim() ? <button className="text-button" onClick={() => setSearch('')}>清空搜索</button> : null}
+          </div>
+        ) : <>
+          <div className="project-list">{visibleProjectRows.map((project) => renderProjectRow(project, lines, pages, projectStatusOf, () => { detailScrollTop.current = window.scrollY; lastOpenedProjectId.current = project.id; setProjectId(project.id); setEditingProject(false); setDetailOpen(true) }))}</div>
+          {archivedProjectRows.length > 0 && <details className="archived-projects" open={projectStatus === 'archived' || showArchived} onToggle={(event) => setShowArchived(event.currentTarget.open)}><summary>已归档 · {archivedProjectRows.length}</summary><div className="project-list">{archivedProjectRows.map((project) => renderProjectRow(project, lines, pages, projectStatusOf, () => { detailScrollTop.current = window.scrollY; lastOpenedProjectId.current = project.id; setProjectId(project.id); setEditingProject(false); setDetailOpen(true) }))}</div></details>}
+        </>}
       </div>
       </>}
       {confirmAction && <ConfirmDialog title={confirmAction.title} description={confirmAction.description} confirmLabel={confirmAction.label} busyLabel="正在处理…" danger onCancel={() => setConfirmAction(null)} onConfirm={doConfirmedAction} />}
@@ -284,6 +277,7 @@ function pageBusinessDate(page: Page): { label: string; timestamp: number } | nu
 type ProjectDetailProps = {
   line?: Line
   project: Project
+  status: '在推进' | '待建档' | '已归档'
   pages: Page[]
   overview?: Page
   overviewNotice: string
@@ -316,15 +310,38 @@ function explicitOverviewSections(body: string): Record<string, string> {
   const names = ['下一步', '阻塞', '跟进事项', '决策记录']
   const output: Record<string, string> = Object.fromEntries(names.map((name) => [name, '']))
   let active = ''
-  let inFence = false
+  let fence: { marker: '`' | '~'; length: number } | null = null
   for (const line of body.split(/\r?\n/)) {
-    if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; continue }
-    if (inFence) continue
+    const fenceLine = /^\s{0,3}(`{3,}|~{3,})(.*)$/.exec(line)
+    if (fence) {
+      if (fenceLine && fenceLine[1][0] === fence.marker && fenceLine[1].length >= fence.length && !fenceLine[2].trim()) fence = null
+      continue
+    }
+    if (fenceLine) { fence = { marker: fenceLine[1][0] as '`' | '~', length: fenceLine[1].length }; continue }
     const heading = /^#{1,6}\s+(.+?)\s*#*\s*$/.exec(line)?.[1]
     if (heading) { active = names.includes(heading.trim()) ? heading.trim() : ''; continue }
     if (active) output[active] += (output[active] ? '\n' : '') + line
   }
   return output
+}
+
+function renderProjectRow(
+  project: Project,
+  lines: Line[],
+  pages: Page[],
+  statusOf: (project: Project) => '在推进' | '待建档' | '已归档',
+  open: () => void,
+) {
+  const status = statusOf(project)
+  const overview = pages.find((page) => page.page_id === project.overview_id && page.approval_state === 'confirmed')
+  const nextStep = overview ? explicitOverviewSections(overview.body)['下一步'].trim().split(/\r?\n/).find((line) => line.trim()) : ''
+  const summary = project.progress?.trim() || nextStep || '还没有推进记录'
+  return <div key={project.id} className="project-list-row">
+    <button data-project-id={project.id} className="project-row-main" onClick={open}>
+      <span className={`project-status-badge ${status === '在推进' ? 'active' : status === '已归档' ? 'archived' : ''}`}>{status === '待建档' ? '新' : status}</span>
+      <span className="project-row-copy"><strong>{project.name}</strong><small>{summary} · {lines.find((line) => line.id === project.line_id)?.name ?? '主线'}</small></span>
+    </button>
+  </div>
 }
 
 function ProjectDetailView(props: ProjectDetailProps) {
@@ -335,16 +352,18 @@ function ProjectDetailView(props: ProjectDetailProps) {
   const markdownPages = pages.map((page) => ({ page_id: page.page_id, content_sha256: page.content_sha256, title: String(page.metadata.title ?? ''), relative_path: page.relative_path }))
   return <div className="content-wrap project-detail" role="region" aria-label="项目详情">
     <button className="back-link" onClick={props.onBack}>← 返回项目列表</button>
-    <div className="page-heading"><div><div className="eyebrow">{line?.name ?? '项目'}</div><h1>{project.name}</h1><p className="lede">{project.archived ? '已归档项目 · 内容仍可查看' : '项目详情与关联知识'}</p></div></div>
+    <div className="page-heading"><div><div className="eyebrow">{line?.name ?? '项目'}</div><h1>{project.name}</h1><span className={`project-status-badge ${project.archived ? 'archived' : props.status === '在推进' ? 'active' : ''}`}>{props.status === '待建档' ? '新' : props.status}</span></div></div>
     <section className="project-detail-actions" aria-label="项目操作">
-      {props.editingProject ? <form onSubmit={props.onSaveProjectName}><label className="field"><span>项目名称</span><input value={props.projectName} onChange={(event) => props.onProjectName(event.target.value)} /></label><button className="button primary" disabled={props.busy || !props.projectName.trim()}>保存名称</button></form> : <button className="button secondary" onClick={props.onRename}>重命名项目</button>}
-      <button className="button secondary" onClick={props.onArchive}>{project.archived ? '恢复项目' : '归档项目'}</button>
-      {pages.length === 0 && <button className="button danger" onClick={props.onDelete}>删除空项目</button>}
-      <button className="button secondary" onClick={props.onJournal}>追加工作日志</button>
-      <button className="button secondary" onClick={props.onImport}>存入待整理材料</button>
+      <button className="button primary" onClick={props.onJournal}>＋ 追加推进日志</button>
+      <button className="button secondary" onClick={props.onImport}>存产物</button>
+      <details className="project-more-actions"><summary>更多</summary>
+        {props.editingProject ? <form onSubmit={props.onSaveProjectName}><label className="field"><span>项目名称</span><input value={props.projectName} onChange={(event) => props.onProjectName(event.target.value)} /></label><button className="button secondary" disabled={props.busy || !props.projectName.trim()}>保存名称</button></form> : <button className="text-button" onClick={props.onRename}>重命名项目</button>}
+        <button className="text-button" onClick={props.onArchive}>{project.archived ? '恢复项目' : '归档项目'}</button>
+        {pages.length === 0 && <button className="text-button" onClick={props.onDelete}>删除空项目</button>}
+      </details>
     </section>
-    <section className="project-section-grid" aria-label="项目摘要">
-      <article><h2>当前状态</h2><p>{project.progress?.trim() || '还没有记录'}</p></article>
+    <section className="project-dossier" aria-label="项目档案">
+      <article><h2>当前状态</h2>{project.progress?.trim() ? <MarkdownText content={project.progress.trim()} pageIndex={markdownPages} onOpenPage={props.onOpenPage} /> : <p>还没有记录</p>}</article>
       {['下一步', '阻塞', '跟进事项', '决策记录'].map((name) => <article key={name}><h2>{name}</h2>{sections[name].trim() ? <MarkdownText content={sections[name]} sourcePath={confirmedOverview?.relative_path} pageIndex={markdownPages} onOpenPage={props.onOpenPage} /> : <p>还没有记录</p>}</article>)}
     </section>
     {props.overviewNotice && <p role="status" className={props.overviewNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{props.overviewNotice}</p>}
@@ -358,7 +377,7 @@ function ProjectDetailView(props: ProjectDetailProps) {
       </> : <><p className="muted">还没有项目概览。</p><button className="button secondary" onClick={props.onEditOverview}>创建项目概览</button></>}
       {props.editingOverview && <form className="overview-editor" onSubmit={props.onSaveOverview}><label className="field"><span>概览标题</span><input value={props.overviewTitle} onChange={(event) => props.onOverviewTitle(event.target.value)} /></label><label className="field"><span>自由 Markdown 正文</span><textarea rows={10} value={props.overviewBody} onChange={(event) => props.onOverviewBody(event.target.value)} /></label><div className="journal-actions"><button type="button" className="button secondary" onClick={props.onCancelOverview}>取消</button><button className="button primary" disabled={props.busy || !props.overviewTitle.trim() || !props.overviewBody.trim()}>{overview ? '确认并保存概览' : '确认并创建概览'}</button></div></form>}
     </section>
-    <section className="page-list-section"><div className="directory-title"><h2>相关页面</h2><span>{facts.length}</span></div>{facts.length ? <ul className="knowledge-page-list">{facts.map((page) => <li key={page.page_id}><button onClick={() => props.onOpenPage(page.page_id)}><span className="page-type-mark">{page.approval_state === 'confirmed' ? '知' : '待'}</span><span><strong>{String(page.metadata.title ?? '未命名页面')}</strong><small>{page.approval_state === 'confirmed' ? '已确认' : '需要确认'} · {pageBusinessDate(page)?.label ?? '日期未记录'}</small></span><span aria-hidden="true">›</span></button></li>)}</ul> : <p className="muted">还没有关联页面。</p>}</section>
+    <section className="page-list-section"><div className="directory-title"><h2>时间线</h2><span>{facts.length}</span></div>{facts.length ? <ul className="knowledge-page-list">{facts.map((page) => <li key={page.page_id}><button onClick={() => props.onOpenPage(page.page_id, page.content_sha256)}><span className="page-type-mark">{page.approval_state === 'confirmed' ? '知' : '待'}</span><span><small>{pageBusinessDate(page)?.label ?? '日期未记录'} · {page.metadata.kind === 'journal' ? '推进日志' : page.metadata.kind === 'meeting' ? '关联会议' : '产物'}</small><strong>{String(page.metadata.title ?? '未命名页面')}</strong><small>{page.approval_state === 'confirmed' ? page.body.trim().split(/\r?\n/).find((line) => line.trim())?.slice(0, 120) || '还没有摘要' : '待确认内容'}</small></span><span aria-hidden="true">›</span></button></li>)}</ul> : <p className="muted">还没有关联页面。</p>}</section>
     {props.journal}{props.importer}{props.confirmation}
   </div>
 }

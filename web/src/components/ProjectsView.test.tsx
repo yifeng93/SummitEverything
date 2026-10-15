@@ -48,12 +48,14 @@ it('renames a line and project while keeping their stable IDs', async () => {
   render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
 
   expect(await screen.findAllByText('模拟主线')).not.toHaveLength(0)
+  fireEvent.click(screen.getByText(/主线管理/))
   expect(await screen.findByRole('button', { name: '重命名主线' })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '重命名主线' }))
   fireEvent.change(screen.getByLabelText('主线名称'), { target: { value: '改名主线' } })
   fireEvent.click(screen.getByRole('button', { name: '保存主线' }))
   await waitFor(() => expect(screen.getAllByText('改名主线').length).toBeGreaterThan(0))
-  expect((screen.getByPlaceholderText('新增主线名称') as HTMLInputElement).value).toBe('')
+  fireEvent.click(screen.getByRole('button', { name: '＋ 新建主线' }))
+  expect((screen.getByLabelText('新主线名称') as HTMLInputElement).value).toBe('')
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/lines/line-1', expect.objectContaining({ method: 'PATCH' }))
 
   fireEvent.click(screen.getByRole('button', { name: /模拟项目/ }))
@@ -62,8 +64,36 @@ it('renames a line and project while keeping their stable IDs', async () => {
   fireEvent.click(screen.getByRole('button', { name: '保存名称' }))
   await waitFor(() => expect(screen.getAllByText('改名项目').length).toBeGreaterThan(0))
   fireEvent.click(screen.getByRole('button', { name: '← 返回项目列表' }))
-  expect((screen.getByPlaceholderText('新项目名称') as HTMLInputElement).value).toBe('')
+  fireEvent.click(screen.getByRole('button', { name: '＋ 新建项目' }))
+  expect((screen.getByPlaceholderText('输入项目名称') as HTMLInputElement).value).toBe('')
   expect(fetchMock).toHaveBeenCalledWith('/api/v1/projects/project-1', expect.objectContaining({ method: 'PATCH' }))
+})
+
+it('creates a project from the explicit list action and keeps archived projects folded by default', async () => {
+  vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/projects' && init?.method === 'POST') {
+      const body = JSON.parse(String(init.body)) as { line_id: string; name: string }
+      const created = { ...projects[0], id: 'project-new', line_id: body.line_id, name: body.name, archived: false }
+      projects.push(created)
+      return { ok: true, status: 201, json: async () => created }
+    }
+    if (url.endsWith('/lines')) return { ok: true, status: 200, json: async () => lines }
+    if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => projects }
+    if (url.endsWith('/pages')) return { ok: true, status: 200, json: async () => pages }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  await screen.findByRole('button', { name: /模拟项目/ })
+  const archived = screen.getByText(/已归档 · 1/).closest('details')
+  expect(archived?.open).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '＋ 新建项目' }))
+  fireEvent.change(screen.getByLabelText('项目名称'), { target: { value: '新项目' } })
+  fireEvent.click(screen.getByRole('button', { name: '创建项目' }))
+  await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => String(url) === '/api/v1/projects' && init?.method === 'POST')).toBe(true))
+  expect(fetchMock).toHaveBeenCalledWith('/api/v1/projects', expect.objectContaining({ method: 'POST', body: expect.stringContaining('新项目') }))
 })
 
 it('keeps archived knowledge retrievable and exposes the archived project in the directory', async () => {
@@ -154,7 +184,7 @@ it('opens a full project detail and preserves list search/filter state on return
   vi.stubGlobal('fetch', fetchMock)
   render(<ProjectsView onError={vi.fn()} onOpenPage={onOpenPage} />)
   fireEvent.change(await screen.findByLabelText('搜索项目'), { target: { value: '模拟' } })
-  fireEvent.change(screen.getByLabelText('排序方式'), { target: { value: 'name' } })
+  expect(screen.getByText('默认排序：在推进 → 待建档 → 已归档')).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: /模拟项目/ }))
   expect(await screen.findByRole('region', { name: '项目详情' })).toBeTruthy()
   expect(screen.getByText('进行中')).toBeTruthy()
@@ -165,7 +195,7 @@ it('opens a full project detail and preserves list search/filter state on return
   expect(screen.queryByText(/project-1|overview-1|模拟主线\/模拟项目/)).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '← 返回项目列表' }))
   expect(screen.getByLabelText('搜索项目')).toHaveProperty('value', '模拟')
-  expect(screen.getByLabelText('排序方式')).toHaveProperty('value', 'name')
+  expect(screen.getByLabelText('筛选状态')).toHaveProperty('value', 'all')
 })
 
 it('uses confirmed overview or explicit progress for status and keeps undated pages honest', async () => {
@@ -188,7 +218,7 @@ it('uses confirmed overview or explicit progress for status and keeps undated pa
   const progressing = await screen.findByRole('button', { name: /模拟项目/ })
   expect(progressing.textContent).toContain('在推进')
   fireEvent.change(screen.getByLabelText('筛选状态'), { target: { value: 'needs_setup' } })
-  expect(screen.getByText('没有符合状态的项目')).toBeTruthy()
+  expect(screen.getByText('这个状态下还没有项目')).toBeTruthy()
   fireEvent.change(screen.getByLabelText('筛选状态'), { target: { value: 'all' } })
   fireEvent.click(screen.getByRole('button', { name: /模拟项目/ }))
   const list = await screen.findByRole('list')
