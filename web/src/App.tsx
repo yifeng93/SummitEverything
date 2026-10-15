@@ -153,6 +153,7 @@ export default function App() {
           page={page}
           onClose={closeReader}
           onReload={() => void openPage(page.page_id)}
+          onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)}
         />
       ) : section === 'today' ? (
         null
@@ -173,7 +174,7 @@ export default function App() {
         onAuthorizationChanged={invalidateTodayAfterAuthorizationChange}
         />
       ) : null}
-      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView onError={report} onOpenPage={(id) => void openPage(id)} />}</div>
+      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
       <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
       <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={() => setSection('approval')} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
       <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={`${workspace.workspace_id}:${approvalRefreshEpoch}`} onPendingCount={setApprovalCount} onError={report} onOpenPage={(title) => {

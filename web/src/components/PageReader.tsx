@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { api, indexUpdateMessage, newOperationId, type MutationResult, type Page, type Project } from '../api/client'
+import { MarkdownText, type MarkdownPage } from './MarkdownText'
 
-type Props = { page: Page; onClose: () => void; onReload: () => Promise<void> }
+type Props = { page: Page; onClose: () => void; onReload: () => Promise<void>; onOpenPage: (id: string, hash: string) => void }
 
-export function PageReader({ page, onClose, onReload }: Props) {
+export function PageReader({ page, onClose, onReload, onOpenPage }: Props) {
   const [title, setTitle] = useState(String(page.metadata.title ?? ''))
   const [body, setBody] = useState(page.body)
   const [busy, setBusy] = useState(false)
@@ -11,6 +12,7 @@ export function PageReader({ page, onClose, onReload }: Props) {
   const [notice, setNotice] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [pages, setPages] = useState<Page[]>([])
+  const [linkIndex, setLinkIndex] = useState<MarkdownPage[]>([])
   const [moveProject, setMoveProject] = useState('')
   const [linkPage, setLinkPage] = useState('')
   const needsConfirmation = page.approval_state !== 'confirmed'
@@ -23,6 +25,7 @@ export function PageReader({ page, onClose, onReload }: Props) {
   useEffect(() => {
     void Promise.all([api.get<Project[]>('/projects'), api.get<Page[]>('/pages')]).then(([nextProjects, nextPages]) => {
       setProjects(nextProjects.filter((project) => !project.archived))
+      setLinkIndex(nextPages.map((candidate) => ({ page_id: candidate.page_id, content_sha256: candidate.content_sha256, title: String(candidate.metadata.title ?? ''), relative_path: candidate.relative_path })))
       setPages(nextPages.filter((candidate) => candidate.page_id !== page.page_id && candidate.approval_state === 'confirmed'))
     }).catch((cause) => setError(cause instanceof Error ? cause.message : '无法加载页面操作'))
   }, [page.page_id])
@@ -89,7 +92,6 @@ export function PageReader({ page, onClose, onReload }: Props) {
             ? historicalValidity ? `待确认 · ${historicalValidity.label}` : '待确认'
             : historicalValidity ? `已确认 · ${historicalValidity.label}` : '已确认知识'}
         </span>
-        <span>{page.relative_path}</span>
       </div>
       <h1>{needsConfirmation ? '检查页面当前版本' : String(page.metadata.title ?? '未命名页面')}</h1>
       {historicalValidity && <p role="status" className="page-validity-note">{historicalValidity.description}</p>}
@@ -109,11 +111,11 @@ export function PageReader({ page, onClose, onReload }: Props) {
       ) : <>
         {error && <p role="alert" className="form-error">{error}</p>}
         {notice && <p role="status" className={notice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{notice}</p>}
-        <pre className="page-body">{page.body}</pre>
+        <MarkdownText className="page-body" content={page.body} sourcePath={page.relative_path} pageIndex={linkIndex} onOpenPage={onOpenPage} />
         <section className="page-structure-actions" aria-label="页面组织操作">
           <label className="field"><span>移动到项目</span><select aria-label="移动到项目" value={moveProject} onChange={(event) => setMoveProject(event.target.value)}><option value="">选择项目</option>{projects.filter((project) => project.id !== String(page.metadata.project_id ?? '')).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
           <button className="button secondary" disabled={busy || !moveProject} onClick={() => void moveToProject()}>移动页面</button>
-          <label className="field"><span>添加页面链接</span><select aria-label="链接到页面" value={linkPage} onChange={(event) => setLinkPage(event.target.value)}><option value="">选择已确认页面</option>{pages.map((candidate) => <option key={candidate.page_id} value={candidate.page_id}>{String(candidate.metadata.title ?? candidate.relative_path)}</option>)}</select></label>
+          <label className="field"><span>添加页面链接</span><select aria-label="链接到页面" value={linkPage} onChange={(event) => setLinkPage(event.target.value)}><option value="">选择已确认页面</option>{pages.map((candidate) => <option key={candidate.page_id} value={candidate.page_id}>{String(candidate.metadata.title ?? '未命名页面')}</option>)}</select></label>
           <button className="button secondary" disabled={busy || !linkPage} onClick={() => void addLink()}>插入链接</button>
           {body !== page.body && <div className="page-reconfirmation"><p>正文已增加指向已确认页面的相对链接。确认后保存为新版本。</p><label className="field"><span>检查并确认正文</span><textarea aria-label="页面正文" rows={10} value={body} onChange={(event) => setBody(event.target.value)} /></label><button className="button primary" disabled={busy} onClick={() => void confirmCurrentVersion()}>确认新版本</button></div>}
         </section>

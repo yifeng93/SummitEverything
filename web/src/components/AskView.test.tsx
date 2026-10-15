@@ -222,12 +222,15 @@ it('reopens local history, continues the same conversation, and labels an update
     throw new Error(`Unexpected fetch ${url}`)
   })
   vi.stubGlobal('fetch', rawFetch)
-  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  const onOpenPage = vi.fn()
+  render(<AskView onError={vi.fn()} onOpenPage={onOpenPage} />)
 
   const openButton = (await screen.findAllByRole('button', { name: /旧问题/ }))[0]
   fireEvent.click(openButton)
   expect((await screen.findAllByText('原回答')).length).toBeGreaterThan(0)
   expect(screen.getByText(/原引用版本已更新 · 引用版本仍可用/)).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: /地点/ }))
+  expect(onOpenPage).toHaveBeenCalledWith('page-1', 'a'.repeat(64))
   fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '继续追问' } })
   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
 

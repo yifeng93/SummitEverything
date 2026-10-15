@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, sessionHeaders, type Citation, type IndexPlan, type IndexResult, type Page } from '../api/client'
 import type { components } from '../api/generated'
 import { ConfirmDialog } from './ConfirmDialog'
+import { StreamingMarkdown } from './StreamingMarkdown'
 
 type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
 type IndexStatus = { fingerprint: string | null; pages: number; chunks: number; state: 'not_ready' | 'ready' | 'stale'; current_pages: number; stale_pages: number }
@@ -471,6 +472,7 @@ export function AskView({ onError, onOpenPage }: Props) {
   }
 
   const renderedMessages = thread?.messages ?? []
+  const markdownPages = eligiblePages.map((page) => ({ page_id: page.page_id, content_sha256: page.content_sha256, title: String(page.metadata.title ?? ''), relative_path: page.relative_path }))
 
   return (
     <section className="content-wrap ask-view">
@@ -564,7 +566,7 @@ export function AskView({ onError, onOpenPage }: Props) {
         <h2>{thread?.title}</h2>
         {renderedMessages.map((message) => <article className="conversation-turn" key={message.request_id}>
           <div className="user-question"><strong>你</strong><p>{message.question}</p></div>
-          <div className="assistant-answer"><strong>回答 · {answerModeLabel[message.answer_mode]} · {stateLabel[message.state]}</strong><pre className="answer-text">{message.answer || (message.state === 'running' ? '正在检索与整理…' : '尚无回答内容')}</pre>
+          <div className="assistant-answer"><strong>回答 · {answerModeLabel[message.answer_mode]} · {stateLabel[message.state]}</strong><StreamingMarkdown className="answer-text" content={message.answer || (message.state === 'running' ? '正在检索与整理…' : '尚无回答内容')} complete={message.state !== 'running'} pageIndex={markdownPages} onOpenPage={onOpenPage} />
             <AnswerDetails details={message} />
             <label className="memory-attestation"><input type="checkbox" checked={memoryAttestations[message.request_id] ?? false} onChange={(event) => setMemoryAttestations((current) => ({ ...current, [message.request_id]: event.target.checked }))} />这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用</label>
             <button className="text-button" disabled={!memoryAttestations[message.request_id]} onClick={() => void proposeMemory(message)}>创建待确认记忆候选</button>
@@ -589,7 +591,7 @@ export function AskView({ onError, onOpenPage }: Props) {
       </section>}
       {(answer || citations.length > 0 || queryState !== 'idle') && (!thread?.messages.some((message) => message.request_id === requestId) || streaming) && <section className="answer-panel">
         <div className="answer-heading"><span className="answer-mark">答</span><div><h2>本次回答 · <span role="status">{stateLabel[queryState]}</span></h2><span>{streaming ? '正在读取当前页面…' : citations.length ? '根据已确认资料' : '没有找到可引用的依据'}</span></div></div>
-        <pre className="answer-text">{answer}</pre>
+        <StreamingMarkdown className="answer-text" content={answer} complete={!streaming} pageIndex={markdownPages} onOpenPage={onOpenPage} />
         {answerDetails && <AnswerDetails details={answerDetails} />}
         {notice && <p role="status" className={queryState === 'error' ? 'form-error' : 'stale-citation-note'}>{notice}</p>}
         {citations.length > 0 && <CitationList citations={citations} onOpen={openCitation} />}

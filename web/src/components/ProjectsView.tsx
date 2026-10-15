@@ -3,8 +3,9 @@ import { ApiError, api, indexUpdateMessage, newOperationId, type Line, type Muta
 import { ConfirmDialog } from './ConfirmDialog'
 import { ImportDrawer } from './ImportDrawer'
 import { JournalDialog } from './JournalDialog'
+import { MarkdownText } from './MarkdownText'
 
-type Props = { onError: (message: string) => void; onOpenPage: (id: string) => void }
+type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void }
 
 export function ProjectsView({ onError, onOpenPage }: Props) {
   const [lines, setLines] = useState<Line[]>([])
@@ -291,7 +292,7 @@ type ProjectDetailProps = {
   editingOverview: boolean
   busy: boolean
   onBack: () => void
-  onOpenPage: (id: string) => void
+  onOpenPage: (id: string, hash?: string) => void
   onEditOverview: () => void
   onCancelOverview: () => void
   onOverviewTitle: (value: string) => void
@@ -328,9 +329,11 @@ function explicitOverviewSections(body: string): Record<string, string> {
 
 function ProjectDetailView(props: ProjectDetailProps) {
   const { project, line, pages, overview } = props
-  const sections = explicitOverviewSections(overview?.body ?? '')
+  const confirmedOverview = overview?.approval_state === 'confirmed' ? overview : undefined
+  const sections = explicitOverviewSections(confirmedOverview?.body ?? '')
   const facts = pages.filter((page) => page.page_id !== overview?.page_id).sort((a, b) => (pageBusinessDate(b)?.timestamp ?? -Infinity) - (pageBusinessDate(a)?.timestamp ?? -Infinity))
-  return <main className="content-wrap project-detail" aria-label="项目详情">
+  const markdownPages = pages.map((page) => ({ page_id: page.page_id, content_sha256: page.content_sha256, title: String(page.metadata.title ?? ''), relative_path: page.relative_path }))
+  return <div className="content-wrap project-detail" role="region" aria-label="项目详情">
     <button className="back-link" onClick={props.onBack}>← 返回项目列表</button>
     <div className="page-heading"><div><div className="eyebrow">{line?.name ?? '项目'}</div><h1>{project.name}</h1><p className="lede">{project.archived ? '已归档项目 · 内容仍可查看' : '项目详情与关联知识'}</p></div></div>
     <section className="project-detail-actions" aria-label="项目操作">
@@ -342,19 +345,20 @@ function ProjectDetailView(props: ProjectDetailProps) {
     </section>
     <section className="project-section-grid" aria-label="项目摘要">
       <article><h2>当前状态</h2><p>{project.progress?.trim() || '还没有记录'}</p></article>
-      {['下一步', '阻塞', '跟进事项', '决策记录'].map((name) => <article key={name}><h2>{name}</h2><p>{sections[name].trim() || '还没有记录'}</p></article>)}
+      {['下一步', '阻塞', '跟进事项', '决策记录'].map((name) => <article key={name}><h2>{name}</h2>{sections[name].trim() ? <MarkdownText content={sections[name]} sourcePath={confirmedOverview?.relative_path} pageIndex={markdownPages} onOpenPage={props.onOpenPage} /> : <p>还没有记录</p>}</article>)}
     </section>
     {props.overviewNotice && <p role="status" className={props.overviewNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{props.overviewNotice}</p>}
     <section className="page-list-section project-overview-section">
       <div className="directory-title"><h2>项目概览</h2>{overview && <button className="text-button" onClick={() => props.onOpenPage(overview.page_id)}>打开概览</button>}</div>
       {overview ? <>
+        {confirmedOverview ? <p className="page-validity-note">已确认概览 · 项目摘要依据</p> : <p role="status" className="page-validity-note">待确认概览 · 正文可读，但不会用于项目摘要</p>}
         <h3>{String(overview.metadata.title ?? '项目概览')}</h3>
-        <pre className="project-overview-body">{overview.body}</pre>
+        <MarkdownText className="project-overview-body" content={overview.body} sourcePath={overview.relative_path} pageIndex={markdownPages} onOpenPage={props.onOpenPage} />
         <button className="button secondary" onClick={props.onEditOverview}>编辑自由 Markdown 概览</button>
       </> : <><p className="muted">还没有项目概览。</p><button className="button secondary" onClick={props.onEditOverview}>创建项目概览</button></>}
       {props.editingOverview && <form className="overview-editor" onSubmit={props.onSaveOverview}><label className="field"><span>概览标题</span><input value={props.overviewTitle} onChange={(event) => props.onOverviewTitle(event.target.value)} /></label><label className="field"><span>自由 Markdown 正文</span><textarea rows={10} value={props.overviewBody} onChange={(event) => props.onOverviewBody(event.target.value)} /></label><div className="journal-actions"><button type="button" className="button secondary" onClick={props.onCancelOverview}>取消</button><button className="button primary" disabled={props.busy || !props.overviewTitle.trim() || !props.overviewBody.trim()}>{overview ? '确认并保存概览' : '确认并创建概览'}</button></div></form>}
     </section>
     <section className="page-list-section"><div className="directory-title"><h2>相关页面</h2><span>{facts.length}</span></div>{facts.length ? <ul className="knowledge-page-list">{facts.map((page) => <li key={page.page_id}><button onClick={() => props.onOpenPage(page.page_id)}><span className="page-type-mark">{page.approval_state === 'confirmed' ? '知' : '待'}</span><span><strong>{String(page.metadata.title ?? '未命名页面')}</strong><small>{page.approval_state === 'confirmed' ? '已确认' : '需要确认'} · {pageBusinessDate(page)?.label ?? '日期未记录'}</small></span><span aria-hidden="true">›</span></button></li>)}</ul> : <p className="muted">还没有关联页面。</p>}</section>
     {props.journal}{props.importer}{props.confirmation}
-  </main>
+  </div>
 }

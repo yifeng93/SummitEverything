@@ -1,35 +1,14 @@
-import { MarkdownText } from './MarkdownText'
+import { MarkdownText, type MarkdownPage } from './MarkdownText'
 
-function stablePrefix(source: string): string {
-  const lines = source.split('\n')
-  let openFenceStart = -1
-  let stableLines: string[] = []
-
-  for (const [index, line] of lines.entries()) {
-    if (/^\s*(```|~~~)/.test(line)) {
-      openFenceStart = openFenceStart === -1 ? index : -1
-      stableLines.push(line)
-      continue
-    }
-    if (openFenceStart !== -1) {
-      stableLines.push(line)
-      continue
-    }
-    const tail = line.match(/(?:\*\*|__|~~|\*|_|`|\x5b[^\x5d]*)[^*_~`\x5b]*$/)?.[0]
-    if (tail && (tail.startsWith('**') || tail.startsWith('__') || tail.startsWith('~~') || tail.startsWith('*') || tail.startsWith('_') || tail.startsWith('`') || tail.startsWith('['))) {
-      stableLines.push(line.slice(0, line.length - tail.length))
-      return stableLines.join('\n')
-    }
-    stableLines.push(line)
-  }
-
-  return openFenceStart === -1 ? stableLines.join('\n') : lines.slice(0, openFenceStart).join('\n')
-}
-
-export function StreamingMarkdown({ content, complete = false, onOpenPage }: {
+export function StreamingMarkdown({ content, onOpenPage, pageIndex, sourcePath, className }: {
   content: string
   complete?: boolean
-  onOpenPage?: (title: string) => void
+  onOpenPage?: (pageId: string, expectedHash: string) => void
+  pageIndex?: MarkdownPage[]
+  sourcePath?: string
+  className?: string
 }) {
-  return <MarkdownText content={complete ? content : stablePrefix(content)} onOpenPage={onOpenPage} />
+  // Render the exact accumulated source on every chunk; ReactMarkdown keeps incomplete
+  // fences and inline syntax readable without dropping already received text.
+  return <MarkdownText content={content} onOpenPage={onOpenPage} pageIndex={pageIndex} sourcePath={sourcePath} className={className} />
 }

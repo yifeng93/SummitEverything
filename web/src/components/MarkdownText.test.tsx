@@ -1,24 +1,47 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
-import { MarkdownText } from './MarkdownText'
+import { MarkdownText, type MarkdownPage } from './MarkdownText'
 import { StreamingMarkdown } from './StreamingMarkdown'
 
 afterEach(cleanup)
 
-it('renders GFM structures, routes internal links, and secures external links', () => {
+const pages: MarkdownPage[] = [
+  { page_id: 'page-1', content_sha256: 'a'.repeat(64), title: '安全说明', relative_path: 'line/project/safety.md' },
+  { page_id: 'page-2', content_sha256: 'b'.repeat(64), title: '重复标题', relative_path: 'line/project/one.md' },
+  { page_id: 'page-3', content_sha256: 'c'.repeat(64), title: '重复标题', relative_path: 'line/project/two.md' },
+]
+
+it('renders GFM, resolves only real unique page links, and secures external links', () => {
   const onOpenPage = vi.fn()
   render(<MarkdownText
+    pageIndex={pages}
+    sourcePath="line/project/source.md"
     onOpenPage={onOpenPage}
-    content={'## 标题\n\n| 名称 | 状态 |\n| --- | --- |\n| 工作库 | 可用 |\n\n- 第一项\n- [[安全说明]]\n\n```ts\nconst answer = 42\n```\n\n[外部说明](https://example.com)'}
+    content={'## 标题\n\n| 名称 | 状态 |\n| --- | --- |\n| 工作库 | 可用 |\n\n- [[page-1|安全说明]]\n- [相对链接](safety.md)\n- [[重复标题]]\n- [[未知页面|仍可读]]\n\n```ts\nconst answer = 42\n[[page-1]]\n```\n\n[外部说明](https://example.com)\n[危险链接](javascript:alert(1))'}
   />)
   expect(screen.getByRole('heading', { name: '标题' })).toBeTruthy()
   expect(screen.getByRole('table')).toBeTruthy()
-  expect(screen.getByText('const answer = 42')).toBeTruthy()
+  expect(screen.getByText(/const answer = 42[\s\S]*\[\[page-1\]\]/)).toBeTruthy()
   fireEvent.click(screen.getByRole('link', { name: '安全说明' }))
-  expect(onOpenPage).toHaveBeenCalledWith('安全说明')
+  fireEvent.click(screen.getByRole('link', { name: '相对链接' }))
+  expect(onOpenPage).toHaveBeenNthCalledWith(1, 'page-1', 'a'.repeat(64))
+  expect(onOpenPage).toHaveBeenNthCalledWith(2, 'page-1', 'a'.repeat(64))
+  expect(screen.queryByRole('link', { name: '重复标题' })).toBeNull()
+  expect(screen.getByText('重复标题', { selector: '.markdown-unresolved-link' })).toBeTruthy()
+  expect(screen.getByText('仍可读')).toBeTruthy()
   const external = screen.getByRole('link', { name: '外部说明' })
   expect(external.getAttribute('target')).toBe('_blank')
   expect(external.getAttribute('rel')).toContain('noopener')
+  expect(screen.queryByRole('link', { name: '危险链接' })).toBeNull()
+  expect(onOpenPage).toHaveBeenCalledTimes(2)
+})
+
+it('rejects root escape, absolute, and protocol-relative Markdown targets while keeping labels readable', () => {
+  render(<MarkdownText pageIndex={pages} sourcePath="line/project/source.md" content={'[[../../outside.md|越界]]\n\n[绝对](/line/project/safety.md)\n\n[协议相对](//example.com)'} />)
+  expect(screen.getByText('越界')).toBeTruthy()
+  expect(screen.getByText('绝对')).toBeTruthy()
+  expect(screen.getByText('协议相对')).toBeTruthy()
+  expect(screen.queryAllByRole('link')).toHaveLength(0)
 })
 
 it('shows raw HTML as text and does not create executable elements', () => {
@@ -27,37 +50,30 @@ it('shows raw HTML as text and does not create executable elements', () => {
   expect(container.textContent).toContain('<img src=x onerror="alert(1)">')
 })
 
-it('holds unfinished syntax while streaming and matches complete Markdown at the terminal state', () => {
-  const text = '答案已完成。**还没结束'
-  const streaming = render(<StreamingMarkdown content={text} />)
-  expect(streaming.container.textContent).toContain('答案已完成。')
-  expect(streaming.container.textContent).not.toContain('**')
-  expect(streaming.container.textContent).not.toContain('还没结束')
-  streaming.rerender(<StreamingMarkdown content={'答案已完成。**完整强调**'} complete />)
-  const terminalHTML = streaming.container.innerHTML
-  const complete = render(<MarkdownText content={'答案已完成。**完整强调**'} />)
+it('keeps every chunk of incomplete syntax visible and matches the static terminal DOM', () => {
+  const completeText = '普通下划线变量_name_仍可读。**完整强调** 与 `行内代码`。\n\n| 名称 | 状态 |\n| --- | --- |\n| Alpha | 已确认 |\n\n[[page-1|相关页面]]\n\n~~~js\nconst unfinishedUntilNow = true\n~~~'
+  const onOpenPage = vi.fn()
+  const { container, rerender } = render(<StreamingMarkdown content="" pageIndex={pages} sourcePath="line/project/source.md" onOpenPage={onOpenPage} />)
+  const chunks = [
+    'ordinary_name',
+    'ordinary_name **bold',
+    'ordinary_name **bold** and `inline',
+    'ordinary_name **bold** and `inline`\n\n~~~js\nconst code = 1',
+    completeText,
+  ]
+  for (const chunk of chunks) {
+    rerender(<StreamingMarkdown content={chunk} pageIndex={pages} sourcePath="line/project/source.md" onOpenPage={onOpenPage} />)
+    if (chunk.includes('ordinary_name')) expect(container.textContent).toContain('ordinary_name')
+    if (chunk.includes('bold')) expect(container.textContent).toContain('bold')
+    if (chunk.includes('inline')) expect(container.textContent).toContain('inline')
+    if (chunk.includes('const code')) expect(container.textContent).toContain('const code = 1')
+  }
+  rerender(<StreamingMarkdown content={completeText} complete pageIndex={pages} sourcePath="line/project/source.md" onOpenPage={onOpenPage} />)
+  const terminalHTML = container.innerHTML
+  const complete = render(<MarkdownText content={completeText} pageIndex={pages} sourcePath="line/project/source.md" onOpenPage={onOpenPage} />)
   expect(terminalHTML).toBe(complete.container.innerHTML)
-  expect(streaming.container.querySelector('[aria-live]')).toBeNull()
-})
-
-it('keeps code content once its fence is complete', () => {
-  const { container, rerender } = render(<StreamingMarkdown content={'```ts\nconst value = 1'} />)
-  expect(container.textContent).not.toContain('```')
-  rerender(<StreamingMarkdown content={'```ts\nconst value = 1\n```'} complete />)
-  expect(container.querySelector('code')?.textContent?.trimEnd()).toBe('const value = 1')
-})
-
-it('keeps earlier complete code blocks visible while hiding only the unfinished final block', () => {
-  const firstBlock = '```ts\nconst earlier = 1\n```'
-  const partial = `${firstBlock}\n\n正文仍在继续。\n\n\`\`\`js\nconst unfinished = 2`
-  const { container, rerender } = render(<StreamingMarkdown content={partial} />)
-  expect(container.textContent).toContain('const earlier = 1')
-  expect(container.textContent).toContain('正文仍在继续。')
-  expect(container.textContent).not.toContain('const unfinished = 2')
-  expect(container.textContent).not.toContain('```')
-
-  const complete = `${firstBlock}\n\n正文仍在继续。\n\n\`\`\`js\nconst unfinished = 2\n\`\`\``
-  rerender(<StreamingMarkdown content={complete} complete />)
-  expect(container.querySelectorAll('code')).toHaveLength(2)
-  expect(container.textContent).toContain('const unfinished = 2')
+  expect(container.querySelector('pre code')?.textContent).toContain('const unfinishedUntilNow = true')
+  fireEvent.click(container.querySelector('a')!)
+  expect(onOpenPage).toHaveBeenCalledWith('page-1', 'a'.repeat(64))
+  expect(container.querySelector('[aria-live]')).toBeNull()
 })
