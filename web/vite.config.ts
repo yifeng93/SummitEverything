@@ -18,7 +18,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     restoreMocks: true,
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    exclude: [...configDefaults.exclude, 'e2e/**', '.local/qa/**'],
   },
   server: {
     host: '127.0.0.1',

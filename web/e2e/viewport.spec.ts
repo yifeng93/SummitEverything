@@ -59,6 +59,8 @@ test('offline viewport and theme baseline for today, approvals, tools and settin
 
   const evidenceDir = resolve(process.env.SUMMIT_E2E_EVIDENCE_DIR ?? '../.local/dev/frontend-b/viewport')
   mkdirSync(evidenceDir, { recursive: true })
+  const emptyFolderPath = resolve(evidenceDir, 'empty-folder')
+  mkdirSync(emptyFolderPath, { recursive: true })
   const measurements: unknown[] = []
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 })
@@ -88,6 +90,27 @@ test('offline viewport and theme baseline for today, approvals, tools and settin
         await expect(importDialog).toContainText('选择本机文件')
         expect(await importDialog.evaluate((element) => element.contains(document.activeElement))).toBe(true)
         await expectDialogWithinViewport(importDialog)
+        await page.keyboard.press('Tab')
+        const filesInput = importDialog.locator('input[type="file"]').nth(0)
+        await expect(filesInput).toBeFocused()
+        const filesLabel = filesInput.locator('..')
+        await expect(filesLabel).toHaveCSS('outline-style', 'solid')
+        await page.screenshot({ path: resolve(evidenceDir, `import-focus-files-${width}-${theme}.png`) })
+        const filesChooserPromise = page.waitForEvent('filechooser')
+        await page.keyboard.press('Enter')
+        const filesChooser = await filesChooserPromise
+        expect(filesChooser.isMultiple()).toBe(true)
+        await filesChooser.setFiles([])
+        await page.keyboard.press('Tab')
+        const folderInput = importDialog.locator('input[type="file"]').nth(1)
+        await expect(folderInput).toBeFocused()
+        const folderLabel = folderInput.locator('..')
+        await expect(folderLabel).toHaveCSS('outline-style', 'solid')
+        const folderChooserPromise = page.waitForEvent('filechooser')
+        await page.keyboard.press('Space')
+        const folderChooser = await folderChooserPromise
+        expect(folderChooser.isMultiple()).toBe(true)
+        await folderChooser.setFiles(emptyFolderPath)
         await page.screenshot({ path: resolve(evidenceDir, `import-drawer-${width}-${theme}.png`) })
         await page.keyboard.press('Shift+Tab')
         expect(await importDialog.evaluate((element) => element.contains(document.activeElement))).toBe(true)

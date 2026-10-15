@@ -60,7 +60,7 @@
     "web/src/components/ApprovalView.tsx:operation_id": 1,
     "web/src/components/ApprovalView.tsx:page_id": 4,
     "web/src/components/ImportDrawer.tsx:operation_id": 1,
-    "web/src/components/SourceOrganizer.tsx:operation_id": 1,
+    "web/src/components/SourceOrganizer.tsx:operation_id": 4,
     "web/src/components/TodayView.tsx:operation_id": 1,
     "web/src/components/TodayView.tsx:.slice(0, 8)": 1
   },
@@ -187,7 +187,7 @@
     },
     "web/src/components/SourceOrganizer.tsx:operation_id": {
       "slice": "P3 · 审批",
-      "reason": "来源整理幂等参数，不显示。"
+      "reason": "来源整理幂等参数及 Real 冻结范围一致性校验，不显示。"
     },
     "web/src/components/TodayView.tsx:operation_id": {
       "slice": "P3 · 今日",
