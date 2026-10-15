@@ -5,9 +5,9 @@ import { SmokeCheckConfirm } from './SmokeCheckConfirm'
 import { ConfirmDialog } from './ConfirmDialog'
 import { firstUseProgressKey } from './firstUseProgress'
 import {
-  badgeClass, capabilityLabels, capabilityStatusLabel, credentialAccountId, feishuCardBadge,
-  modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckDisabled, smokeChecks,
-  type CardBadge, type CheckOutcome, type FeishuStatusRead, type SecretProvider, type Settings,
+  badgeClass, capabilityLabels, capabilityStatusLabel, checkedCapabilityStatusLabel, credentialAccountId, failedFeishuStatusRead, feishuCardBadge,
+  modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckConfigStamp, smokeCheckDisabled, smokeChecks,
+  type CardBadge, type CheckOutcome, type CheckResult, type FeishuStatusRead, type SecretProvider, type Settings,
   type SmokeCheckKey, type SmokeStatus,
 } from './settingsBadges'
 
@@ -43,9 +43,9 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   // 密钥只允许停留在组件内存 state：不写 localStorage / sessionStorage / 工作库，
   // 提交成功后立即清空输入框，页面永不回显。
   const [secrets, setSecrets] = useState<Record<SecretProvider, string>>(emptySecrets)
-  // 只记录最近一次已完成的合成检查结果，用于卡片徽章；不当作真实业务验证。
-  const [lastCheck, setLastCheck] = useState<CheckOutcome>('none')
-  // 飞书授权状态来自本地只读接口；读取失败时保持「无法读取」，绝不默认成已授权。
+  // 每项结果只对产生它的本机配置有效；配置变更后由指纹失配自动过期。
+  const [checkResults, setCheckResults] = useState<CheckResult>({})
+  // 读取失败可保留最后一次成功只读状态，但必须显著标记为可能过时。
   const [feishuStatus, setFeishuStatus] = useState<FeishuStatusRead>({ state: 'loading' })
   const [pendingCheck, setPendingCheck] = useState<SmokeCheckKey | null>(null)
   const [pendingRemoval, setPendingRemoval] = useState<SecretProvider | null>(null)
@@ -81,9 +81,10 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   async function loadFeishuStatus() {
     try {
       const parsed = parseFeishuStatus(await api.get<unknown>('/integrations/feishu/status'))
-      setFeishuStatus(parsed ? { state: 'loaded', status: parsed } : { state: 'unreadable' })
+      if (parsed) setFeishuStatus({ state: 'loaded', status: parsed, readAt: new Date().toISOString() })
+      else setFeishuStatus((previous) => failedFeishuStatusRead(previous))
     }
-    catch { setFeishuStatus({ state: 'unreadable' }) }
+    catch { setFeishuStatus((previous) => failedFeishuStatusRead(previous)) }
   }
 
   useEffect(() => {
@@ -104,8 +105,9 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     api.get<unknown>('/integrations/feishu/status').then((value) => {
       if (!active) return
       const parsed = parseFeishuStatus(value)
-      setFeishuStatus(parsed ? { state: 'loaded', status: parsed } : { state: 'unreadable' })
-    }).catch(() => { if (active) setFeishuStatus({ state: 'unreadable' }) })
+      if (parsed) setFeishuStatus({ state: 'loaded', status: parsed, readAt: new Date().toISOString() })
+      else setFeishuStatus((previous) => failedFeishuStatusRead(previous))
+    }).catch(() => { if (active) setFeishuStatus((previous) => failedFeishuStatusRead(previous)) })
     return () => { active = false }
   }, [progressKey])
 
@@ -172,6 +174,8 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
       const appSecret = secrets.feishu_app.trim()
       if (appSecret) requireKeychain()
       const updated = await patchSettings(settingsPatch(settings))
+      // A confirmed configuration change makes any previous authorization summary stale by definition.
+      setFeishuStatus({ state: 'unreadable' })
       if (appSecret) {
         await api.put('/credentials/feishu_app', { account_id: credentialAccountId(updated, 'feishu_app'), secret: appSecret })
         setSecret('feishu_app', '')
@@ -206,7 +210,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
       const fresh = await api.get<Settings>('/settings')
       await api.delete('/credentials/' + provider, { account_id: credentialAccountId(fresh, provider) })
       await load()
-      if (provider === 'feishu_app') await loadFeishuStatus()
+      if (provider === 'feishu_app') setFeishuStatus({ state: 'invalidated' })
       setNotice('所选应用密钥已从本机钥匙串删除；需要重新录入后才能使用对应能力。')
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法删除钥匙串密钥') }
     finally { setBusy(false); setPendingRemoval(null) }
@@ -220,10 +224,10 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     setBusy(true); setError(''); setNotice('')
     try {
       await api.post('/provider-smoke/' + path, {})
-      setLastCheck('succeeded')
+      if (settings) setCheckResults((current) => ({ ...current, [key]: { outcome: 'succeeded', configStamp: smokeCheckConfigStamp(settings, key) } }))
       setNotice(`${operation} 合成连接检查成功。本次请求已计入授权次数。`)
     } catch (cause) {
-      setLastCheck('failed')
+      if (settings) setCheckResults((current) => ({ ...current, [key]: { outcome: 'failed', configStamp: smokeCheckConfigStamp(settings, key) } }))
       setError(cause instanceof Error ? cause.message : '请求结果未知；此尝试可能已计入次数。')
     } finally {
       await loadSmokeStatus()
@@ -233,11 +237,15 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
 
   const capabilities = settings?.capabilities ?? {}
   const credentials = settings?.credential_status ?? {}
+  const checkOutcomes = Object.fromEntries((Object.keys(smokeChecks) as SmokeCheckKey[]).map((key) => {
+    const result = checkResults[key]
+    return [key, settings && result?.configStamp === smokeCheckConfigStamp(settings, key) ? result.outcome : 'none']
+  })) as Record<SmokeCheckKey, CheckOutcome>
   const modelBadge = modelCardBadge({
     mode: settings?.mode ?? 'fake',
     credentials,
     capabilities,
-    lastCheck,
+    checkOutcomes,
   })
   const feishuBadge = feishuCardBadge({
     keychainAvailable: Boolean(settings?.keychain_available),
@@ -308,7 +316,9 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
               const reason = reasonText(capability?.disabled_reason)
               return <div className="settings-capability-item" key={id}>
                 <strong>{capabilityLabels[id]}</strong>
-                <span>{capabilityStatusLabel(capability)}</span>
+                <span>{checkedCapabilityStatusLabel(capability, checkOutcomes[
+                  id === 'llm' ? 'deepseek_chat' : id === 'embedding' ? 'model_studio_embedding' : 'model_studio_rerank'
+                ])}</span>
                 {capability?.disabled_reason && <small>{reason.text} 下一步：{reason.next}</small>}
               </div>
             })}
@@ -320,6 +330,11 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
           <CardHead title="飞书" badge={feishuBadge} />
           <p className="settings-card-desc">状态来自本机授权记录。材料、日历与任务仍只读，并按已确认范围访问。</p>
           <p className="settings-card-next">{feishuBadge.hint}</p>
+          {feishuStatus.state === 'stale' && <div className="settings-read-warning" role="alert">
+            <p>本次读取失败；以下保留最近一次成功读取的结果，可能已过时{feishuStatus.readAt ? `（成功读取于 ${new Date(feishuStatus.readAt).toLocaleString()}）` : ''}。</p>
+            <button className="button secondary" type="button" onClick={() => void loadFeishuStatus()}>重试读取</button>
+          </div>}
+          {feishuStatus.state === 'unreadable' && <button className="button secondary" type="button" onClick={() => void loadFeishuStatus()}>重试读取</button>}
           <div className="settings-capability-summary">
             {(['feishu_material_read', 'feishu_calendar_read', 'feishu_task_read', 'feishu_task_write'] as const).map((id) => {
               const capability = capabilities[id]

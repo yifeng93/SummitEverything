@@ -238,6 +238,8 @@ h3 { color: var(--ink); margin: 0; font-size: var(--text-list); font-weight: 600
 .settings-card-head h2 { font-size: var(--text-body); }
 .settings-card-desc { margin: 0; color: var(--muted); font-size: var(--text-small); line-height: 1.7; }
 .settings-card-next { margin: 0; padding: 9px 11px; border-left: 3px solid var(--line-strong); border-radius: 0 5px 5px 0; background: var(--surface-2); color: var(--ink); font-size: var(--text-small); line-height: 1.7; }
+.settings-read-warning { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--danger-ink); border-radius: var(--radius-sm); background: var(--danger-wash); color: var(--danger-ink); font-size: var(--text-small); line-height: 1.6; }
+.settings-read-warning p { margin: 0; }
 .settings-card .settings-list { margin: 0; max-width: none; }
 .settings-card-form { display: grid; gap: 14px; margin: 2px 0 0; }
 .settings-capability-summary { display: grid; gap: 8px; }

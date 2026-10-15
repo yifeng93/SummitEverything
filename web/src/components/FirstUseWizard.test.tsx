@@ -191,6 +191,29 @@ it('shows built-in read-only addresses together with secrets on step 2', () => {
   expect(screen.queryByLabelText(/Base URL/)).toBeNull()
 })
 
+it('disables save with field guidance for a selected capability that has no stored key', () => {
+  renderWizard(fixture())
+  fireEvent.click(screen.getByRole('checkbox', { name: /整理与问答/ }))
+  const save = screen.getByRole('button', { name: '保存密钥并继续' }) as HTMLButtonElement
+  expect(save.disabled).toBe(true)
+  expect(save.title).toContain('DeepSeek API Key')
+  expect(screen.getByText(/选择此能力后需要填写 DeepSeek API Key/)).toBeTruthy()
+  expect(screen.queryByText(/需要填写阿里云 Model Studio API Key/)).toBeNull()
+})
+
+it('does not ask again when the selected capability already has a server-stored key', async () => {
+  const configured = fixture({
+    mode: 'real',
+    llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'stored-account', enabled: true, max_output_tokens: 2048, reasoning_effort: 'low' },
+    credential_status: { feishu_app: false, deepseek: true, dashscope: false },
+  })
+  renderWizard(configured)
+  expect((screen.getByLabelText(/DeepSeek API Key/) as HTMLInputElement).value).toBe('')
+  expect((screen.getByRole('button', { name: '保存密钥并继续' }) as HTMLButtonElement).disabled).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '保存密钥并继续' }))
+  await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })
+})
+
 // --- 第 2 步：密钥 ----------------------------------------------------------
 
 it('saves settings before credentials, uses the persisted account ids, and clears the secret fields', async () => {
@@ -243,9 +266,11 @@ it('keeps Fake offline and makes no request when no model or key is selected', (
 it('blocks step 2 entirely when the keychain is unavailable', () => {
   const { state, fetchMock } = renderWizard(fixture({ keychain_available: false }))
   fireEvent.change(screen.getByLabelText(/DeepSeek API Key/), { target: { value: 'synthetic-deepseek' } })
-  fireEvent.click(screen.getByRole('button', { name: '保存密钥并继续' }))
+  const save = screen.getByRole('button', { name: '保存密钥并继续' }) as HTMLButtonElement
 
-  expect(screen.getByRole('alert').textContent).toContain('钥匙串')
+  expect(save.disabled).toBe(true)
+  expect(save.title).toContain('钥匙串')
+  expect(screen.getByRole('status').textContent).toContain('失败关闭')
   expect(state.mode).toBe('fake')
   expect(state.credential_status.deepseek).toBe(false)
   expect(fetchMock).not.toHaveBeenCalled()

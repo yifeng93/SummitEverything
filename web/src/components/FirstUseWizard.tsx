@@ -91,6 +91,16 @@ export function FirstUseWizard({
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
+  const missingDeepSeekCredential = selection.llm && !secrets.deepseek.trim() && !settings.credential_status?.deepseek
+  const missingDashscopeCredential = (selection.embedding || selection.rerank)
+    && !secrets.dashscope.trim() && !settings.credential_status?.dashscope
+  const missingCredentialTitle = missingDeepSeekCredential
+    ? '整理与问答需要填写 DeepSeek API Key，或取消该能力。'
+    : missingDashscopeCredential
+      ? '知识索引向量化或检索结果排序需要填写阿里云 Model Studio API Key，或取消对应能力。'
+      : (secrets.deepseek.trim() || secrets.dashscope.trim()) && !settings.keychain_available
+        ? '当前无法访问 macOS 钥匙串，不能保存新密钥。'
+        : undefined
 
   const feishuBadge = feishuCardBadge({
     keychainAvailable: Boolean(settings.keychain_available),
@@ -292,16 +302,18 @@ export function FirstUseWizard({
           {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。这一步会失败关闭：不能保存设置，也不能写入密钥。</p>}
           <div className="secret-slot">
             <label htmlFor="wizard-secret-deepseek">DeepSeek API Key<span>用于整理与问答。只保存在本机钥匙串，页面不会回显。</span></label>
-            <input id="wizard-secret-deepseek" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.deepseek} onChange={(event) => setSecret('deepseek', event.target.value)} />
+            <input id="wizard-secret-deepseek" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.deepseek} aria-invalid={Boolean(missingDeepSeekCredential)} aria-describedby={missingDeepSeekCredential ? 'wizard-secret-deepseek-guidance' : undefined} onChange={(event) => setSecret('deepseek', event.target.value)} />
+            {missingDeepSeekCredential && <small className="form-error" id="wizard-secret-deepseek-guidance">选择此能力后需要填写 DeepSeek API Key，或取消“整理与问答”。</small>}
           </div>
           <div className="secret-slot">
             <label htmlFor="wizard-secret-dashscope">阿里云 Model Studio API Key<span>Embedding 与 Rerank 共用。只保存在本机钥匙串，页面不会回显。</span></label>
-            <input id="wizard-secret-dashscope" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.dashscope} onChange={(event) => setSecret('dashscope', event.target.value)} />
+            <input id="wizard-secret-dashscope" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.dashscope} aria-invalid={Boolean(missingDashscopeCredential)} aria-describedby={missingDashscopeCredential ? 'wizard-secret-dashscope-guidance' : undefined} onChange={(event) => setSecret('dashscope', event.target.value)} />
+            {missingDashscopeCredential && <small className="form-error" id="wizard-secret-dashscope-guidance">选择此能力后需要填写阿里云 Model Studio API Key，或取消对应能力。</small>}
           </div>
           <div className="wizard-actions">
             <button className="button secondary" type="button" disabled={busy} onClick={() => { onWorkspaceStepBack?.(); close() }}>上一步：工作库</button>
             <button className="button secondary" type="button" disabled={busy} onClick={skipStep}>稍后再说</button>
-            <button className="button primary" disabled={busy}>保存密钥并继续</button>
+            <button className="button primary" disabled={busy || Boolean(missingCredentialTitle)} title={missingCredentialTitle}>保存密钥并继续</button>
           </div>
         </form>}
 

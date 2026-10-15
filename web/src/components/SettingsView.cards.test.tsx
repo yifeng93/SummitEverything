@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { components } from '../api/generated'
-import { feishuCardBadge, modelCardBadge, parseFeishuStatus } from './settingsBadges'
+import { failedFeishuStatusRead, feishuCardBadge, modelCardBadge, parseFeishuStatus, smokeCheckConfigStamp } from './settingsBadges'
 import { SettingsView } from './SettingsView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
@@ -193,26 +193,45 @@ it('falls back to a next-action message for an unknown capability code', async (
   expect(screen.getByText(/下一步：先查看能力详情确认门禁原因/)).toBeTruthy()
 })
 
-it('maps AI model card badges for unconfigured, configured, verified and failed states', () => {
-  const empty = { mode: 'fake' as const, credentials: {}, capabilities: {}, lastCheck: 'none' as const }
+it('maps AI model badges only when all three current capability checks pass', () => {
+  const none = { mode: 'fake' as const, credentials: {}, capabilities: {}, checkOutcomes: { deepseek_chat: 'none' as const, model_studio_embedding: 'none' as const, model_studio_rerank: 'none' as const } }
+  const empty = none
   expect(modelCardBadge(empty).kind).toBe('unconfigured')
 
   const configured = modelCardBadge({
     mode: 'real',
     credentials: { deepseek: true },
     capabilities: { llm: capability({ configured: true, disabled_reason: 'acceptance_plan_required' }) },
-    lastCheck: 'none',
+    checkOutcomes: { deepseek_chat: 'none', model_studio_embedding: 'none', model_studio_rerank: 'none' },
   })
   expect(configured.kind).toBe('configured')
   expect(configured.label).toBe('已配置（尚未验证）')
 
-  expect(modelCardBadge({
-    mode: 'real', credentials: { deepseek: true }, capabilities: {}, lastCheck: 'succeeded',
-  }).kind).toBe('verified')
+  const partial = modelCardBadge({
+    mode: 'real', credentials: { deepseek: true }, capabilities: {},
+    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'none', model_studio_rerank: 'none' },
+  })
+  expect(partial.label).toBe('部分已检查')
+  expect(partial.kind).not.toBe('verified')
+
+  const mixed = modelCardBadge({
+    mode: 'real', credentials: { deepseek: true }, capabilities: {},
+    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'none', model_studio_rerank: 'failed' },
+  })
+  expect(mixed.label).toBe('有检查失败')
+  expect(mixed.kind).toBe('failed')
 
   expect(modelCardBadge({
-    mode: 'real', credentials: { deepseek: true }, capabilities: {}, lastCheck: 'failed',
-  }).kind).toBe('failed')
+    mode: 'real', credentials: { deepseek: true }, capabilities: {},
+    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'succeeded', model_studio_rerank: 'succeeded' },
+  }).kind).toBe('verified')
+})
+
+it('ties each local smoke result to its own active settings so edits invalidate stale results', () => {
+  const original = settings({ mode: 'real', credential_status: { feishu_app: false, deepseek: true, dashscope: true } })
+  expect(smokeCheckConfigStamp(original as never, 'deepseek_chat')).not.toBe(smokeCheckConfigStamp({ ...original, llm: { ...original.llm, model: 'changed-model' } } as never, 'deepseek_chat'))
+  expect(smokeCheckConfigStamp(original as never, 'deepseek_chat')).toBe(smokeCheckConfigStamp({ ...original, rerank: { ...original.rerank, model: 'changed-rerank' } } as never, 'deepseek_chat'))
+  expect(smokeCheckConfigStamp(original as never, 'model_studio_rerank')).not.toBe(smokeCheckConfigStamp({ ...original, rerank: { ...original.rerank, model: 'changed-rerank' } } as never, 'model_studio_rerank'))
 })
 
 it('maps the feishu card badge from the local status payload', () => {
@@ -274,6 +293,15 @@ it('maps the feishu card badge from the local status payload', () => {
   expect(parseFeishuStatus({ mode: 'real' })).toBeNull()
   expect(parseFeishuStatus(null)).toBeNull()
   expect(parseFeishuStatus({ mode: 'real', authorized: true, app_configured: true })?.authorized).toBe(true)
+})
+
+it('retains only a previous successful Feishu read on refresh failure', () => {
+  const previous = { state: 'loaded' as const, status: feishuStatus({ authorized: true }), readAt: '2026-10-15T00:00:00.000Z' }
+  expect(failedFeishuStatusRead(previous)).toEqual({ ...previous, state: 'stale' })
+  expect(failedFeishuStatusRead({ state: 'unreadable' })).toEqual({ state: 'unreadable' })
+  expect(failedFeishuStatusRead({ state: 'invalidated' })).toEqual({ state: 'invalidated' })
+  expect(feishuCardBadge({ keychainAvailable: true, read: { ...previous, state: 'stale' } }).label).toBe('已授权')
+  expect(feishuCardBadge({ keychainAvailable: true, read: { state: 'invalidated' } }).label).toBe('未配置')
 })
 
 it('shows the authorized feishu badge without claiming identity verification or task write-back', async () => {

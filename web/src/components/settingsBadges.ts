@@ -13,6 +13,7 @@ export type Capability = components['schemas']['CapabilityState']
 export type SmokeCheckKey = 'deepseek_chat' | 'model_studio_embedding' | 'model_studio_rerank'
 export type SecretProvider = 'feishu_app' | 'deepseek' | 'dashscope'
 export type CheckOutcome = 'none' | 'succeeded' | 'failed'
+export type CheckResult = Partial<Record<SmokeCheckKey, { outcome: Exclude<CheckOutcome, 'none'>; configStamp: string }>>
 export type CardBadgeKind =
   | 'unconfigured' | 'configured' | 'authorized' | 'verified' | 'failed' | 'reauth' | 'unreadable'
 export type CardBadge = { kind: CardBadgeKind; label: string; hint: string }
@@ -121,7 +122,15 @@ export type FeishuStatusSummary = {
 export type FeishuStatusRead =
   | { state: 'loading' }
   | { state: 'unreadable' }
-  | { state: 'loaded'; status: FeishuStatusSummary }
+  | { state: 'invalidated' }
+  | { state: 'loaded'; status: FeishuStatusSummary; readAt?: string }
+  | { state: 'stale'; status: FeishuStatusSummary; readAt?: string }
+
+export function failedFeishuStatusRead(previous: FeishuStatusRead): FeishuStatusRead {
+  if (previous.state === 'loaded' || previous.state === 'stale') return { ...previous, state: 'stale' }
+  if (previous.state === 'invalidated') return previous
+  return { state: 'unreadable' }
+}
 
 export function parseFeishuStatus(value: unknown): FeishuStatusSummary | null {
   if (!value || typeof value !== 'object') return null
@@ -188,6 +197,24 @@ export function capabilityStatusLabel(capability: Capability | undefined): strin
   return '未启用'
 }
 
+export function smokeCheckConfigStamp(settings: Settings, key: SmokeCheckKey): string {
+  const common = { mode: settings.mode, keychainAvailable: settings.keychain_available }
+  if (key === 'deepseek_chat') {
+    return JSON.stringify({ ...common, credential: settings.credential_status?.deepseek, ...settings.llm })
+  }
+  const model = key === 'model_studio_embedding' ? settings.embedding : settings.rerank
+  return JSON.stringify({ ...common, credential: settings.credential_status?.dashscope, accountId: settings.model_studio_account_id, ...model })
+}
+
+export function checkedCapabilityStatusLabel(
+  capability: Capability | undefined,
+  outcome: CheckOutcome,
+): string {
+  if (outcome === 'succeeded') return '本次合成检查通过'
+  if (outcome === 'failed') return '本次检查失败'
+  return capabilityStatusLabel(capability)
+}
+
 /**
  * AI 模型卡的状态徽章：只描述「配置是否存在 / 最近一次检查结果」，不把保存
  * 当成联网验证。徽章文案与下一步动作分离，便于同一条映射被测试直接固定。
@@ -196,18 +223,25 @@ export function modelCardBadge(input: {
   mode: Settings['mode']
   credentials: Record<string, boolean>
   capabilities: Settings['capabilities']
-  lastCheck: CheckOutcome
+  checkOutcomes: Record<SmokeCheckKey, CheckOutcome>
 }): CardBadge {
-  if (input.lastCheck === 'succeeded') {
+  const outcomes = Object.values(input.checkOutcomes)
+  if (outcomes.every((outcome) => outcome === 'succeeded')) {
     return {
-      kind: 'verified', label: '验证通过',
-      hint: '本进程内的一次合成连接检查已通过。真实业务调用仍需每次预览并独立确认范围。',
+      kind: 'verified', label: '三项检查通过',
+      hint: 'DeepSeek、Embedding 与 Rerank 三项的当前配置均通过本机合成检查。真实业务调用仍需每次预览并独立确认范围。',
     }
   }
-  if (input.lastCheck === 'failed') {
+  if (outcomes.some((outcome) => outcome === 'failed')) {
     return {
-      kind: 'failed', label: '验证失败',
-      hint: '最近一次合成连接检查未通过。失败同样计入额度，不会自动重发；可查看错误后自行决定是否重试。',
+      kind: 'failed', label: '有检查失败',
+      hint: '至少一项当前配置的合成连接检查未通过。逐项状态分别显示，失败同样计入额度，不会自动重发。',
+    }
+  }
+  if (outcomes.some((outcome) => outcome === 'succeeded')) {
+    return {
+      kind: 'configured', label: '部分已检查',
+      hint: '只有部分能力完成了当前配置的合成连接检查。逐项状态会显示已检查、未检查范围；未检查能力不代表可用。',
     }
   }
   const capabilities = input.capabilities ?? {}
@@ -259,6 +293,12 @@ export function feishuCardBadge(input: {
     return {
       kind: 'unreadable', label: '授权状态暂时无法读取',
       hint: '无法读取本机授权状态，也不假设已授权。可在高级与自定义中重新读取；读取状态不联网，也不占用连接检查额度。',
+    }
+  }
+  if (input.read.state === 'invalidated') {
+    return {
+      kind: 'unconfigured', label: '未配置',
+      hint: '已确认删除本机飞书应用密钥，状态已标记为未连接。重新读取状态不会联网；如需连接，请重新保存应用配置并完成授权。',
     }
   }
   const status = input.read.status
