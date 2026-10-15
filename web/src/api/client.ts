@@ -1,3 +1,5 @@
+import { beginSave, failSave, finishSave, tracksSaveRequest } from '../save-status'
+import { markServiceReachable, markServiceUnreachable } from '../service-status'
 import type { components } from './generated'
 
 export type Workspace = components['schemas']['WorkspaceContext']
@@ -69,8 +71,27 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (init?.body && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
-  const response = await fetch('/api/v1' + path, { ...init, headers })
-  return readResponse<T>(response)
+  // 写请求驱动顶栏的真实保存三态；重试重新发出同一个请求（载荷里的 operation_id 保证幂等）。
+  const tracked = tracksSaveRequest(init?.method, path)
+  if (tracked) beginSave(() => { void request(path, init).catch(() => undefined) })
+  let response: Response
+  try {
+    response = await fetch('/api/v1' + path, { ...init, headers })
+  } catch (cause) {
+    // 没拿到响应 = 本机服务不可达（拿到了 4xx/5xx 也算服务在跑）。
+    markServiceUnreachable()
+    if (tracked) failSave()
+    throw cause
+  }
+  markServiceReachable()
+  try {
+    const payload = await readResponse<T>(response)
+    if (tracked) finishSave()
+    return payload
+  } catch (cause) {
+    if (tracked) failSave()
+    throw cause
+  }
 }
 
 export function sessionHeaders(initial?: HeadersInit): Headers {

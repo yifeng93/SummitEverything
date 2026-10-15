@@ -4,9 +4,33 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#171716" />
+    <meta name="theme-color" content="#f4f5f2" />
     <meta name="description" content="SummitEverything 本地知识工作台" />
     <title>SummitEverything — 本地知识工作台</title>
+    <!--
+      首屏前应用主题（FRONTEND-GUIDE §6.2）：在样式表与模块脚本之前解析
+      localStorage 的 `sx:theme-preference`（system|light|dark），写入 <html data-theme>，
+      避免闪白/闪黑。这里的两个颜色字面量与 theme-tokens.css 的 --paper 保持一致；
+      theme-tokens.css 是颜色真源，改名时同步这一处（web/src/theme.test.ts 会核对键名与接线）。
+    -->
+    <script>
+      (function () {
+        try {
+          var preference = window.localStorage.getItem('sx:theme-preference')
+          if (preference !== 'light' && preference !== 'dark') preference = 'system'
+          var dark = preference === 'dark' ||
+            (preference === 'system' &&
+              typeof window.matchMedia === 'function' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var theme = dark ? 'dark' : 'light'
+          document.documentElement.setAttribute('data-theme', theme)
+          var meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', dark ? '#171d1b' : '#f4f5f2')
+        } catch (error) {
+          /* 偏好不可读时保持 CSS 默认的浅色，不影响首屏。 */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
