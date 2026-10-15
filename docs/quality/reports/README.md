@@ -22,6 +22,14 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 | [前端 UX 里程碑 C 独立 QA](2026-10-15-FRONTEND-C-QA.md) | 固定产品 SHA `1b1efda`；Sol 判适用 C 离线前端场景 PASS，4 个全站守卫与真实/打包门留 D 或未测；[证据索引](evidence/2026-10-15-frontend-c-qa/README.md) |
 | [前端 UX 里程碑 A Sol gate](2026-10-15-FRONTEND-A-SOL-GATE.md) | 固定 `9c33a9d` 适用离线技术门 PASS；8 项 todo / 3 条 lint warning 保留，真实门未重跑 |
 | [前端 UX 里程碑 A repair1 fresh QA 归档](evidence/2026-10-15-frontend-a-repair1-qa/README.md) | fresh QA 固定 SHA `9c33a9d` 的脱敏报告、harness、raw logs、Mock/FastAPI evidence 与截图 |
+| [前端 UX 里程碑 D 初次 QA（FAIL / P1）](2026-10-15-FRONTEND-D-QA-INITIAL.md) | 固定 `876008e` 的首次独立 QA FAIL：完成首配后同 profile/workspace 重启仍弹 workspace gate 与向导第 2 步；原件留在 QA `.local` |
+| [前端 UX 里程碑 D repair1 DEV 报告](2026-10-15-FRONTEND-D-DEV-REPAIR1.md) | 固定 `faa1edd`；进度改为本机 profile+workspace 隔离 typed API 持久化、旧 localStorage 一次性迁移、durable write 失败可见可重试；红绿与三条定向变异 |
+| [前端 UX 里程碑 D repair1 独立 QA](2026-10-15-FRONTEND-D-QA-REPAIR1.md) | 固定 `faa1edd`；同一自建 harness 在父 `876008e` 复现 P1（20 checks/8 failed/exit 1）、受测 64/64/exit 0；D-1..D-4 记录 |
+| [前端 UX 里程碑 D repair1 Sol gate](2026-10-15-FRONTEND-D-SOL-GATE.md) | Sol 判 repair1 的 P1 在 API+生产 WebUI+真实后端进程重启范围内 CLOSED；当时 D 门未通过（缺 native 候选） |
+| [前端 UX 里程碑 D repair2/3 DEV 报告（含 native 候选验证）](2026-10-15-FRONTEND-D-DEV-REPAIR2.md) | 固定最终产品 SHA `e8e1dba`；D-1 create/open 区分、D-4 严格整数、D-6 重生成；两个候选身份、包内 runtime 15/15、native WKWebView 三条路径机器 OCR 判读 |
+| [前端 UX 里程碑 D repair2 独立 QA（FAIL / D-6）](2026-10-15-FRONTEND-D-QA-REPAIR2.md) | 固定 `96fdf4d`；D-1/D-4/P1 与 12 条自动检查 PASS，但 CI 门 `api:types` 失败（D-6）；含父 SHA 非空性对照 |
+| [前端 UX 里程碑 D 最终独立 QA](2026-10-15-FRONTEND-D-QA-FINAL.md) | 固定 `e8e1dba`；D-6 收口 + 改动面最小性 + 可继承性 + 12 条自动检查 + D-1/D-4/P1 在新 SHA 重取证，判 PASS（限定范围） |
+| [前端 UX 里程碑 D Sol 最终门判断](2026-10-15-FRONTEND-D-SOL-GATE-FINAL.md) | 固定 `e8e1dba`；P1 CLOSED、native 同 profile 重启 PASS（Sol 实机 OCR，QA 未独立复现）、D 门限「离线 + 内部候选」PASS；真实/安装/发布门仍 NOT_RUN |
 | [M4.2 Package A 初始 QA](2026-10-14-M42-PACKAGE-A-QA-INITIAL.md) | 固定 `fe473399` 初始 FAIL；原始 34 项证据及 hash 副本在对应 evidence 目录 |
 | [M4.2 Package A 修复轮 1 DEV handoff](2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md) | 固定产品 SHA `419bb86`；最终候选、UI 自测、未测边界与 fresh QA handoff |
 | [M4.2 Package A 修复轮 1 fresh QA](2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) | 固定 `419bb86`；仅报告实际验收的离线/API/Mock/packaged UI 场景及 NOT_RUN / UNVERIFIED 限制 |

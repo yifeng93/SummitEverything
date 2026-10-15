@@ -56,7 +56,7 @@ Developer 报告中原先过宽/偏轻的三处表述（非法 step 一律拒绝
 
 ## D 门还需要什么
 
-1. **native 候选**：用户授权后按 [D repair1 交接](../../handoff/NEXT-FRONTEND-D-REPAIR1.md) 的流程新建 managed build worktree + 全新 App/DMG，记录 source SHA / dirty=false / build ID / frontend 与 dependencies hash / DMG hash。
+1. **native 候选**：用户授权后按 [D repair1 交接](../../handoff/history/2026-10-15-NEXT-FRONTEND-D-REPAIR1.md) 的流程新建 managed build worktree + 全新 App/DMG，记录 source SHA / dirty=false / build ID / frontend 与 dependencies hash / DMG hash。
 2. **native 同 profile 重启复验**：完成 → quit → 同 profile 重启 → 手动 open existing → 直接 Today；未完成 step 3/4 → 重启 → open existing → 原 step；明确 close → 重启 → 不弹、设置可手动续接。backend smoke 不能代替 WKWebView。
 3. 可继承的 876 证据（十条变异、全站视口矩阵）需在报告中明确标注为「fixed tree unchanged」或按需重跑，不得冒充新 SHA 结果。
 4. 真实 provider / OAuth / 飞书 / Keychain / 用户材料 / 安装 / 公证 / 五日 / 双机继续各自独立门，仍全部 NOT_RUN。

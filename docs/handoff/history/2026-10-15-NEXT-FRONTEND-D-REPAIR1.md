@@ -1,3 +1,9 @@
+# 历史：前端 D repair1 执行与验收交接（已执行完毕）
+
+> 本文件是 2026-10-15 D repair1 阶段的历史交接，其中的执行项**均已落地**：repair1 `faa1edd`、repair2 `96fdf4d`、repair3 `e8e1dba` 依次固定，D 门已由 Sol 判「离线 + 内部候选」范围 PASS，native 同 profile 重启已在实机验证。当前状态请看 [README](../../../README.md)、[进展账本](../../implementation/PROGRESS.md)、[最新交接](../LATEST-IMPLEMENTATION.md)与[当前下一步交接](../NEXT-AFTER-FRONTEND-D.md)。下文保留原样，仅用于追溯 repair1 当时的约束、候选构建流程与安全边界。
+
+---
+
 # 下一步：前端 D repair1 验收与候选
 
 ## 当前固定状态
@@ -5,9 +11,9 @@
 - 产品工作树：`/Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything`，分支 `codex/frontend-ux-20261015`。
 - **repair1 产品源码固定 SHA：`faa1edd611a74dcdc26bff234de810bdf47761cb`**（父产品 SHA `876008e1d33420f57fb31772c76e471379e6b98d`），提交后产品 tree clean。该 SHA 之后的 docs/evidence 提交都不是受测产品 SHA。
 - 里程碑 A `9c33a9d`、B repair1 `a0ccad8`、C `1b1efda` 均仅适用各自离线范围 PASS。
-- D 初次 SHA `876008e` 经 fresh QA 判 **FAIL / P1**，脱敏报告见[初次 QA 归档](../quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)，原始证据仍在 `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-initial/SummitEverything/.local/qa/frontend-d-initial/`（不得复制 trace、profile、token 或真实数据到 tracked 文档）。
+- D 初次 SHA `876008e` 经 fresh QA 判 **FAIL / P1**，脱敏报告见[初次 QA 归档](../../quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)，原始证据仍在 `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-initial/SummitEverything/.local/qa/frontend-d-initial/`（不得复制 trace、profile、token 或真实数据到 tracked 文档）。
 - repair1 已实现、自测，并经 fresh QA 在独立 worktree（detached `faa1edd`）判 **PASS（限定范围）**：同一自建 harness 在父 `876008e` 复现 P1（20 checks / 8 failed / exit 1）、受测 SHA 64/64 / exit 0；QA 独立重跑全部检查，数字与 Developer 零差异。因此 **repair1 的 P1 在「真实 FastAPI + 生产 WebUI + 真实后端进程重启 + 隔离 profile/工作库」范围内已关闭**。
-- 但 **D 里程碑门仍未通过**：原始 P1 是在 native WKWebView（nonPersistent）里观察到的，而本轮按用户决定没有建包，native 同 profile 重启 **NOT_RUN**。见 [D QA 报告](../quality/reports/2026-10-15-FRONTEND-D-QA-REPAIR1.md)、[Sol 门判断](../quality/reports/2026-10-15-FRONTEND-D-SOL-GATE.md)与 [D repair1 DEV 报告](../quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR1.md)。
+- 但 **D 里程碑门仍未通过**：原始 P1 是在 native WKWebView（nonPersistent）里观察到的，而本轮按用户决定没有建包，native 同 profile 重启 **NOT_RUN**。见 [D QA 报告](../../quality/reports/2026-10-15-FRONTEND-D-QA-REPAIR1.md)、[Sol 门判断](../../quality/reports/2026-10-15-FRONTEND-D-SOL-GATE.md)与 [D repair1 DEV 报告](../../quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR1.md)。
 
 Sol 负责计划、调度、gate 判断；实现交给 Developer，修复/实现固定 SHA 后再交**全新** QA 独立验收。串行修改，fresh QA 不修改实现和 tracked tests。最多两轮自动修复；重要里程碑 merge 仍需用户批准。
 
