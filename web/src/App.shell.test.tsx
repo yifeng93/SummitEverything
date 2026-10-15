@@ -38,6 +38,9 @@ function shellFetch(overrides: Record<string, unknown> = {}, status = 200) {
       return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
     }
     const table: Record<string, unknown> = {
+      // 外壳夹具代表一个已经完成首次配置的工作库：进度记录必须来自本机后端，
+      // 否则 App 会按「新工作库」打开向导。
+      '/api/v1/first-use/progress': { step: 5, completed: true, open: false },
       '/api/v1/intake/items': [],
       '/api/v1/drafts': [],
       '/api/v1/actions': [],

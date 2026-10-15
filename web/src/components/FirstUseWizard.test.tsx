@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { useState } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { FirstUseWizard } from './FirstUseWizard'
+import type { FirstUseProgress } from './firstUseProgress'
 import { parseFeishuStatus, type FeishuStatusRead, type Settings, type SmokeStatus } from './settingsBadges'
 import { SettingsView } from './SettingsView'
 
@@ -43,12 +44,13 @@ type WizardHarness = {
 }
 
 /** 与 SettingsView 一样由父级持有 settings 状态；保存后用服务端返回的响应覆盖。 */
-function Harness({ initial, feishuStatus, onClose, onSmokeStatusRefresh, onFeishuStatusRefresh }: {
+function Harness({ initial, feishuStatus, onClose, onSmokeStatusRefresh, onFeishuStatusRefresh, persistProgress = async () => true }: {
   initial: Settings
   feishuStatus: FeishuStatusRead
   onClose: () => void
   onSmokeStatusRefresh: () => void
   onFeishuStatusRefresh: () => void
+  persistProgress?: (progress: FirstUseProgress) => Promise<boolean>
 }) {
   const [settings, setSettings] = useState(initial)
   return <FirstUseWizard
@@ -59,6 +61,7 @@ function Harness({ initial, feishuStatus, onClose, onSmokeStatusRefresh, onFeish
     onSettingsChanged={setSettings}
     onSmokeStatusRefresh={onSmokeStatusRefresh}
     onFeishuStatusRefresh={onFeishuStatusRefresh}
+    persistProgress={persistProgress}
   />
 }
 
@@ -101,7 +104,7 @@ function stubBackend(initial: Settings) {
   return { state, calls, fetchMock }
 }
 
-function renderWizard(initial: Settings, feishuStatus: FeishuStatusRead = loadedFeishu) {
+function renderWizard(initial: Settings, feishuStatus: FeishuStatusRead = loadedFeishu, persistProgress?: (progress: FirstUseProgress) => Promise<boolean>) {
   const backend = stubBackend(initial)
   const onClose = vi.fn()
   const onSmokeStatusRefresh = vi.fn()
@@ -112,6 +115,7 @@ function renderWizard(initial: Settings, feishuStatus: FeishuStatusRead = loaded
     onClose={onClose}
     onSmokeStatusRefresh={onSmokeStatusRefresh}
     onFeishuStatusRefresh={onFeishuStatusRefresh}
+    persistProgress={persistProgress}
   />)
   const harness: WizardHarness = { state: backend.state, fetchMock: backend.fetchMock, onClose, onSmokeStatusRefresh, onFeishuStatusRefresh }
   return { ...harness, calls: backend.calls, view }
@@ -167,16 +171,70 @@ it('moves forward, backward and skips steps without any request', async () => {
   const { fetchMock } = renderWizard(fixture())
   expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
   expect(document.querySelector('[aria-current="step"]')?.textContent).toContain('模型与密钥')
+  // 步骤变化必须先落到本机再收 UI，所以每次点击后都要等界面确认。
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
-  expect(screen.getByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '上一步' }))
-  expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
-  expect(screen.getByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
   expect(document.querySelector('[aria-current="step"]')?.textContent).toContain('检查连接')
 
   // 打开、切步骤都不产生任何请求（包括 provider 请求）。
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+it('步骤变化先写本机：写入成功才前进，载荷只有白名单字段', async () => {
+  const writes: FirstUseProgress[] = []
+  renderWizard(fixture(), loadedFeishu, async (progress) => { writes.push(progress); return true })
+
+  fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
+
+  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(writes).toEqual([{ step: 3, completed: false, open: true }])
+})
+
+it('写入失败时停在原步骤并给出重试，重试成功后才前进', async () => {
+  let allowed = false
+  const writes: FirstUseProgress[] = []
+  renderWizard(fixture(), loadedFeishu, async (progress) => { writes.push(progress); return allowed })
+
+  fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
+
+  // 没有落地就不能假装前进。
+  expect(await screen.findByText(/还没有保存到本机/)).toBeTruthy()
+  expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
+  expect(screen.queryByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeNull()
+
+  allowed = true
+  fireEvent.click(screen.getByRole('button', { name: '重试保存' }))
+
+  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(writes).toEqual([
+    { step: 3, completed: false, open: true },
+    { step: 3, completed: false, open: true },
+  ])
+})
+
+it('关闭向导要等写入成功才收起，失败时不报告已关闭', async () => {
+  let allowed = false
+  const writes: FirstUseProgress[] = []
+  const { onClose } = renderWizard(fixture(), loadedFeishu, async (progress) => { writes.push(progress); return allowed })
+
+  fireEvent.click(screen.getByRole('button', { name: '关闭向导' }))
+
+  expect(await screen.findByText(/还没有保存到本机/)).toBeTruthy()
+  expect(onClose).not.toHaveBeenCalled()
+  expect(screen.getByRole('dialog', { name: '首次配置向导' })).toBeTruthy()
+
+  allowed = true
+  fireEvent.click(screen.getByRole('button', { name: '重试保存' }))
+
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+  expect(writes).toEqual([
+    { step: 2, completed: false, open: false },
+    { step: 2, completed: false, open: false },
+  ])
 })
 
 it('shows built-in read-only addresses together with secrets on step 2', () => {
@@ -243,11 +301,12 @@ it('saves settings before credentials, uses the persisted account ids, and clear
   // 保存本身不联网检查。
   expect(smokePosts(calls)).toHaveLength(0)
   // 保存成功后前进到检查连接步骤，且页面上不再出现任何密钥值。
-  expect(screen.getByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
   expect(document.body.textContent ?? '').not.toContain('synthetic-deepseek')
   expect(document.body.textContent ?? '').not.toContain('synthetic-dashscope')
   // 返回后输入框已被清空（组件内存里也没有保留明文）。
   fireEvent.click(screen.getByRole('button', { name: '上一步' }))
+  await screen.findByRole('heading', { name: /第 2 步 · 模型与密钥/ })
   expect((screen.getByLabelText(/DeepSeek API Key/) as HTMLInputElement).value).toBe('')
   expect((screen.getByLabelText(/阿里云 Model Studio API Key/) as HTMLInputElement).value).toBe('')
   expect(setItem).not.toHaveBeenCalled()
@@ -255,12 +314,12 @@ it('saves settings before credentials, uses the persisted account ids, and clear
   expect(sessionStorage.length).toBe(0)
 })
 
-it('keeps Fake offline and makes no request when no model or key is selected', () => {
+it('keeps Fake offline and makes no request when no model or key is selected', async () => {
   const { fetchMock } = renderWizard(fixture())
   fireEvent.click(screen.getByRole('button', { name: '保存密钥并继续' }))
-  expect(screen.getByRole('status').textContent).toContain('保留 Fake 离线模式')
+  expect(await screen.findByText(/保留 Fake 离线模式/)).toBeTruthy()
   expect(fetchMock).not.toHaveBeenCalled()
-  expect(screen.getByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
 })
 
 it('blocks step 2 entirely when the keychain is unavailable', () => {
@@ -334,6 +393,7 @@ it('saves the feishu app secret, clears it, and never starts OAuth on its own', 
     status: { mode: 'real', authorized: false, app_configured: true, credential_error: null, user_identity_verified: false },
   })
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
+  await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
   await screen.findByRole('heading', { name: /第 4 步 · 飞书/ })
 
@@ -352,14 +412,16 @@ it('saves the feishu app secret, clears it, and never starts OAuth on its own', 
   expect(calls.filter((call) => call.url.includes('/authorizations'))).toHaveLength(0)
   expect(calls.filter((call) => call.url.includes('/integrations/feishu/') && call.method !== 'GET')).toHaveLength(0)
   // 保存后前进到完成页；回到第 4 步可见密钥输入框已清空。
-  expect(screen.getByRole('heading', { name: /第 5 步 · 完成/ })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: /第 5 步 · 完成/ })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '上一步' }))
+  await screen.findByRole('heading', { name: /第 4 步 · 飞书/ })
   expect((screen.getByLabelText(/飞书应用密钥/) as HTMLInputElement).value).toBe('')
 })
 
 it('routes the authorization button through the injected callback instead of doing OAuth itself', async () => {
   const { calls } = renderWizard(fixture({ mode: 'real', feishu: { app_id: 'cli_synthetic', redirect_uri: 'http://127.0.0.1:5173/api/v1/integrations/feishu/callback', identity: 'app', calendar_id: '', material_content: 'transcript', real_data_enabled: false } }))
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
+  await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
   await screen.findByRole('heading', { name: /第 4 步 · 飞书/ })
 
@@ -376,7 +438,9 @@ it('routes the authorization button through the injected callback instead of doi
 it('summarizes saved and skipped items with the remaining unverified boundaries', async () => {
   const { fetchMock } = renderWizard(fixture())
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
+  await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
+  await screen.findByRole('heading', { name: /第 4 步 · 飞书/ })
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
   await screen.findByRole('heading', { name: /第 5 步 · 完成/ })
   const panel = screen.getByRole('dialog', { name: '首次配置向导' })

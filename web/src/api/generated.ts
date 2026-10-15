@@ -177,6 +177,24 @@ export interface paths {
         patch: operations["patch_settings_api_v1_settings_patch"];
         trace?: never;
     };
+    "/api/v1/first-use/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get First Use Progress */
+        get: operations["get_first_use_progress_api_v1_first_use_progress_get"];
+        /** Put First Use Progress */
+        put: operations["put_first_use_progress_api_v1_first_use_progress_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/credentials/{provider}": {
         parameters: {
             query?: never;
@@ -1728,6 +1746,25 @@ export interface components {
              */
             completed_at: number;
         };
+        /**
+         * FirstUseProgress
+         * @description Exactly the three non-secret fields the wizard is allowed to persist.
+         *
+         *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+         *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+         *     rejected instead of having it silently stored on disk.
+         */
+        FirstUseProgress: {
+            /**
+             * Step
+             * @enum {integer}
+             */
+            step: 2 | 3 | 4 | 5;
+            /** Completed */
+            completed: boolean;
+            /** Open */
+            open: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -3106,6 +3143,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_first_use_progress_api_v1_first_use_progress_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirstUseProgress"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_first_use_progress_api_v1_first_use_progress_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirstUseProgress"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirstUseProgress"];
                 };
             };
             /** @description Validation Error */

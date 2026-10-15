@@ -3,7 +3,7 @@ import { api } from '../api/client'
 import { FirstUseWizard } from './FirstUseWizard'
 import { SmokeCheckConfirm } from './SmokeCheckConfirm'
 import { ConfirmDialog } from './ConfirmDialog'
-import { firstUseProgressKey } from './firstUseProgress'
+import { saveFirstUseProgress, type FirstUseProgress } from './firstUseProgress'
 import {
   badgeClass, capabilityLabels, capabilityStatusLabel, checkedCapabilityStatusLabel, credentialAccountId, failedFeishuStatusRead, feishuCardBadge,
   modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckConfigStamp, smokeCheckDisabled, smokeChecks,
@@ -23,6 +23,20 @@ function CardHead({ title, badge }: { title: string; badge: CardBadge }) {
 
 const emptySecrets: Record<SecretProvider, string> = { feishu_app: '', deepseek: '', dashscope: '' }
 
+/**
+ * 没有显式注入时的默认持久化：直接写本机后端。
+ * 调用方（App）通常会注入自己的实现，以便把解析出来的进度保持同步；
+ * 这里的默认值仍然是真的写盘，不会静默吞掉一次「假保存」。
+ */
+async function persistWizardProgressDefault(progress: FirstUseProgress): Promise<boolean> {
+  try {
+    await saveFirstUseProgress(progress)
+    return true
+  } catch {
+    return false
+  }
+}
+
 type SettingsViewProps = {
   workspaceName: string
   workspaceId?: string
@@ -30,6 +44,12 @@ type SettingsViewProps = {
   onSwitchWorkspace: () => void
   wizardOnly?: boolean
   initialWizardStep?: 2 | 3 | 4 | 5
+  /** 本机已经记住的进度：手动打开向导时从这一步续接。 */
+  resumeWizardStep?: 2 | 3 | 4 | 5
+  /** 本机记录说首次配置已经完成；向导关闭时要保留这个事实。 */
+  initialWizardCompleted?: boolean
+  /** 把向导进度写进本机后端；只有确认写入成功才允许界面前进。 */
+  persistWizardProgress?: (progress: FirstUseProgress) => Promise<boolean>
   onRequestWizard?: (step: 2 | 3 | 4 | 5) => void
   onWizardStepChange?: (step: 2 | 3 | 4 | 5) => void
   onWizardClose?: () => void
@@ -37,8 +57,7 @@ type SettingsViewProps = {
   onAuthorizationChanged?: () => void
 }
 
-export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged }: SettingsViewProps) {
-  const progressKey = firstUseProgressKey(profileId, workspaceId)
+export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, resumeWizardStep = 2, initialWizardCompleted = false, persistWizardProgress, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged }: SettingsViewProps) {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [smokeStatus, setSmokeStatus] = useState<SmokeStatus | null>(null)
   // 密钥只允许停留在组件内存 state：不写 localStorage / sessionStorage / 工作库，
@@ -116,9 +135,12 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
       else setFeishuStatus((previous) => failedFeishuStatusRead(previous))
     }).catch(() => { if (active) setFeishuStatus((previous) => failedFeishuStatusRead(previous)) })
     return () => { active = false }
-  }, [progressKey])
+    // 换工作库（profile 或 workspace 身份）时重新读取本机状态；
+    // 首次配置进度已经是后端按活动工作库解析，不再依赖浏览器存储键。
+  }, [profileId, workspaceId])
 
-  function openWizard(step: 2 | 3 | 4 | 5 = 2) { onRequestWizard?.(step) }
+  /** 手动打开向导：没有指定步骤时从本机记住的那一步续接。 */
+  function openWizard(step: 2 | 3 | 4 | 5 = resumeWizardStep) { onRequestWizard?.(step) }
 
   function openAdvanced() {
     setAdvancedOpen(true)
@@ -267,8 +289,9 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     onSettingsChanged={(updated) => setSettings(updated)}
     onSmokeStatusRefresh={loadSmokeStatus}
     onFeishuStatusRefresh={loadFeishuStatus}
-    progressKey={progressKey}
+    persistProgress={persistWizardProgress ?? persistWizardProgressDefault}
     initialStep={initialWizardStep}
+    initialCompleted={initialWizardCompleted}
     onWorkspaceStepBack={() => { onWizardClose?.(); onSwitchWorkspace() }}
     onStepChange={onWizardStepChange}
     onFinish={onFinishFirstUse}
@@ -288,7 +311,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     <p className="lede">常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。</p>
     <p className="settings-mode-line">当前运行模式：<strong>{settings?.mode === 'real' ? 'Real · 显式启用' : 'Fake · 离线（默认）'}</strong><span>真实调用仍需一次性范围预览与独立确认。</span></p>
     <div className="settings-wizard-entry">
-      <button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard(2)}>打开连接向导</button>
+      <button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard()}>打开连接向导</button>
       <span>按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。</span>
     </div>
     {error && <p role="alert" className="form-error">{error}</p>}

@@ -132,6 +132,11 @@ from summit_everything.local.conversations import (
     QueryStart,
 )
 from summit_everything.local.event_log import FALLBACK_REASON, profile_event
+from summit_everything.local.first_use_progress import (
+    FirstUseProgress,
+    FirstUseProgressError,
+    FirstUseProgressStore,
+)
 from summit_everything.release import (
     fingerprint_web_dist,
     load_build_identity,
@@ -757,6 +762,11 @@ def create_app(
             defaults=app.state.first_use_defaults,
         )
 
+    def first_use_progress_store(workspace: WorkspaceContext) -> FirstUseProgressStore:
+        # Living inside the workspace's own local profile directory is what
+        # isolates the record per profile and per workspace.
+        return FirstUseProgressStore(Path(workspace.local_profile_dir) / "first-use-progress.json")
+
     def acceptance_ledger(workspace: WorkspaceContext) -> AcceptancePlanLedger:
         return AcceptancePlanLedger(Path(workspace.local_profile_dir))
 
@@ -1340,6 +1350,19 @@ def create_app(
     async def settings_error_handler(request: Request, exc: SettingsError) -> JSONResponse:
         return settings_error_response(request, exc)
 
+    @app.exception_handler(FirstUseProgressError)
+    async def first_use_progress_error_handler(
+        request: Request, exc: FirstUseProgressError
+    ) -> JSONResponse:
+        # A store that cannot be read or written must be visible; the wizard
+        # must never be told "saved" when the durable write did not land.
+        return error_envelope(
+            request,
+            status_code=503,
+            code=exc.code,
+            message="首次配置进度无法读写，请检查本机 profile 后重试。",
+        )
+
     @app.exception_handler(ValidationError)
     async def payload_validation_error(_request: Request, exc: ValidationError) -> JSONResponse:
         return JSONResponse(
@@ -1468,6 +1491,33 @@ def create_app(
         if payload.feishu is not None:
             feishu_for(workspace)
         return provider_settings_payload(settings, credential_vault(workspace))
+
+    @app.get("/api/v1/first-use/progress", dependencies=[Depends(authenticated)])
+    def get_first_use_progress(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> FirstUseProgress:
+        progress = first_use_progress_store(workspace).read()
+        if progress is None:
+            # "No record yet" is a real answer, not a default: the UI must be
+            # able to tell a brand-new workspace from one whose wizard the user
+            # explicitly closed.
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "code": "first_use_progress_absent",
+                    "message": "本机还没有保存首次配置进度。",
+                },
+            )
+        return progress
+
+    @app.put("/api/v1/first-use/progress", dependencies=[Depends(authenticated)])
+    def put_first_use_progress(
+        payload: FirstUseProgress,
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> FirstUseProgress:
+        # Only step / completed / open reach this point; extra or secret-shaped
+        # fields are rejected by the model before any write is attempted.
+        return first_use_progress_store(workspace).write(payload)
 
     @app.put("/api/v1/credentials/{provider}", dependencies=[Depends(authenticated)])
     def put_credential(

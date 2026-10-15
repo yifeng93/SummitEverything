@@ -16,6 +16,8 @@ test('first use stays in one app-owned flow and resumes to a requested step', as
   const externalAttempts: string[] = []
   const apiCalls: string[] = []
   let workspaceOpened = false
+  // 首次配置进度现在存在本机后端；这里模拟它的读写，才能验证「重载后仍从原步骤续接」。
+  let storedProgress: { step: number; completed: boolean; open: boolean } | null = null
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url())
     if (url.origin !== 'http://127.0.0.1:5173') {
@@ -25,6 +27,15 @@ test('first use stays in one app-owned flow and resumes to a requested step', as
     if (!url.pathname.startsWith('/api/v1/')) return route.continue()
     const method = route.request().method()
     apiCalls.push(`${method} ${url.pathname}`)
+    if (url.pathname.endsWith('/first-use/progress')) {
+      if (method === 'PUT') {
+        storedProgress = route.request().postDataJSON() as typeof storedProgress
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(storedProgress) })
+      }
+      return storedProgress
+        ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(storedProgress) })
+        : route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: { code: 'first_use_progress_absent', message: '本机还没有保存首次配置进度。' } }) })
+    }
     if (url.pathname.endsWith('/workspaces/current')) {
       return workspaceOpened
         ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ workspace_id: 'synthetic-workspace', name: '模拟工作库', root: '/tmp/synthetic-workspace', local_profile_dir: '/tmp/synthetic-profile' }) })
