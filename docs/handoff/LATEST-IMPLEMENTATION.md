@@ -1,18 +1,18 @@
 # 最新实现交接
 
-## 前端基线切片 1–2 已合入 main（2026-10-14 收口）
+## 当前前端 UX 里程碑 A：开发已固定，独立 QA 待判
 
-**已完成并合入**：PR #20（merge `5d8be8c`，CI `offline-arm64` 3m45s 通过）。内容包括设计 tokens（颜色唯一真源）、字号下限抬到 ≥12px（79 条低于 12px 全部归并、组件零裸色）、深色由 `html[data-theme]` 驱动且首屏前应用（10 组对比度两套主题全达标）、5 栏导航（今日/审批/项目/知识问答/设置）与审批数量徽章、顶栏真实保存三态 + 主题入口、加载/服务不可达/无工作库三态分离（只有 409 `workspace_not_open` 进首配）、三色 toast、≤800px 图标栏与 ≤560px 底部 5 栏、审批页最小可用版（待整理来源 + 待复核稿件）。
+开发产品固定 SHA：`9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad`，基于 `e84e9e5a56475a19f68ca1a684366fba7f9fee83`。本次产品提交包含共享 UI 基础、切片 3 的统一首次配置流程与切片 9 设置页；报告提交与产品 SHA 分开。Sol 已启动 fresh QA，对固定产品 SHA 独立复验；在 Sol 判门前状态为 PENDING，不代表里程碑通过。
 
-**验证**：web **147 passed | 10 todo**、typecheck/lint/build 全 0；守卫 ③ 字号下限、⑦ 对比度、① 裸色与 allowlist、⑧ 外壳前半为真实断言，共 18 + 19 条变异验证（改坏→红→恢复）。未实现守卫以 `it.todo` 登记并标注归属切片，**不得**读作通过。
+本地开发检查：`npm ci` exit 0；Vitest 24 files / 160 passed / 8 todo；typecheck、lint、Vite build、offline mocked Playwright（2 tests）与本机 FastAPI + isolated Fake（1 test）均 exit 0。Lint 留有 App/Projects/Today 三条 React effect warnings。A 相关守卫 ①③④⑤⑥⑦⑧⑨⑩ 的隔离变异均 exit 1 后恢复，恢复后整套门禁重新通过。完整矩阵、未测项、精确命令、退出码、截图路径见 [前端 A DEV 报告](../quality/reports/2026-10-15-FRONTEND-A-DEV.md) 和 [命令结果 JSON](../quality/reports/evidence/2026-10-15-frontend-a-dev/command-results.json)；原始日志/截图在执行 worktree `.local/dev/frontend-a/`。
 
-**规格实施偏差**已登记在 [FRONTEND-GUIDE §13](../product/FRONTEND-GUIDE.md)：浅色 `--muted/--accent` 为达 4.5:1 做保留色相的最小加深；`index.html` 引导脚本保留 2 个颜色字面量为例外；间距字面量迁移延后到布局重写切片；allowlist 采用 entries + attribution 双层。
+A 行为包括：App 统一宿主持有工作库→模型/密钥→检查→Feishu→完成；无库关闭返回欢迎页、选库后关闭返回来源业务；真实 profile + workspace 身份隔离保存非秘密步骤；仍打开时 page reload 恢复当前步骤，显式关闭不自动弹但设置能手动续接，完成后不自动打扰。设置连接/重新授权入口直达同一向导第 4 步，工作库入口直达第 1 步。设置主区三张纵向卡为工作库 / AI 模型 / 飞书，技术字段进高级区，危险区仅删除选择的密钥。密钥不进浏览器存储；刷新、展开、保存都不自动访问 provider。Mocked 浏览器在五个视口与浅/深主题运行无横向溢出；真实 FastAPI/Fake 只用临时 profile/workspace，记录 external attempts 为 0。
 
-**下一步切片**（规格已在仓库，逐页区块顺序是硬规格）：3 向导合并（工作库→密钥→连接检查→飞书→今日，可中断续接）→ 4 审批页完整五组 → 5 今日页（简报置顶，飞书/待整理/审核稿离开今日）→ 6 项目页列表→详情 → 7 问答 Markdown 流式（需 `react-markdown`/`remark-gfm`）→ 8 阅读渲染 → 9 **设置页对齐 §8** → 10 守卫 ②④⑤⑥⑨⑩ 收口。
+A 未做真实 OAuth、真实 Keychain、Real provider、进程级重启或 Internal App/DMG 验证。今日原有 Feishu 入口迁移归 B；审批/今日/项目/问答页面完整实现和全应用守卫仍属后续切片。尚余的 8 个全局 `todo` 保留原样，不能按 A 的局部测试解释为全站通过。
 
-**切片间已知空窗**（如实登记，不当作通过）：`JournalView` 在 P3 之前没有入口（导航已移除「日志与思考」）；今日页仍保留飞书授权按钮/待整理队列/审核稿（P3 迁移）；设置页 eyebrow 仍写「本机 profile」、向导文案仍提「今日 / 飞书日常」（P5）。五档视口与深浅截图未做（仓库无浏览器 harness，守卫 ⑩ 仍 todo，记为未测）。
+### 已合入 main 的前端基础（切片 1–2）
 
-**收口候选**（由 main HEAD 干净树构建）：`.local/internal-builds/main-bce8843/`，App 与 `SummitEverything-Internal-bce8843.dmg`，DMG SHA-256 `c32dc92ff9c5892154267b2bbd41b6c3086284586d05c62a982a5e0e071320cb`；`source_sha=bce88435c540c777e3866976adc5fff6a529d5b1`、`dirty=false`、`build_id=20261015T003834Z-bd3e74da3244`、`frontend_sha256=bd3e74da3244…`；`smoke_packaged_app.py` PASS。本机保留的历史交付候选：`m42-419bb86`、`3f6eaa4`，以及上一轮 `internal-f40bc39`；其余中间候选、构建缓存与临时 worktree 已在收口时清理（保存的 QA 证据已归档到仓库）。
+设计 tokens、深色模式、5 栏导航、窄屏导航与应用外壳已由 PR #20 合入 main；其当时 web 基线为 **147 passed | 10 todo**，typecheck/lint/build 全 0。指南与逐页规格仍是后续页面顺序、文案和守卫权威；本轮批准的首配/设置对齐补充记录在 [ADR 0011](../decisions/0011-frontend-ux-baseline.md) 与 [产品规格](../product/PRODUCT-SPEC.md)。
 
 ## 设置 UX 与内置非秘密默认值（分支 `codex/settings-ux-20261014`，固定产品 SHA `8c4f81c`）
 

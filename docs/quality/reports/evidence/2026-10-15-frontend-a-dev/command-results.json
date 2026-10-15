@@ -1,0 +1,161 @@
+{
+  "baseline": {
+    "source_sha": "e84e9e5a56475a19f68ca1a684366fba7f9fee83",
+    "recorded_before_a": true,
+    "vitest": "147 passed | 10 todo",
+    "baseline_raw_log_in_this_archive": false
+  },
+  "product_sha": "9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad",
+  "final_commands": [
+    {
+      "command": "cd web && npm ci",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/npm-ci-final.log",
+      "result": "226 packages added; 0 vulnerabilities"
+    },
+    {
+      "command": "cd web && npm test -- --run",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/verify-unit-after-ci.log",
+      "result": "24 files passed; 160 passed; 8 todo"
+    },
+    {
+      "command": "cd web && npm run typecheck",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/verify-typecheck-after-ci.log",
+      "result": "tsc -b"
+    },
+    {
+      "command": "cd web && npm run lint",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/verify-lint-after-ci.log",
+      "result": "3 react(set-state-in-effect) warnings in App.tsx, ProjectsView.tsx, TodayView.tsx"
+    },
+    {
+      "command": "cd web && npm run build",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/verify-build-after-ci.log",
+      "result": "Vite production build completed"
+    },
+    {
+      "command": "cd web && SUMMIT_E2E_EVIDENCE_DIR=../.local/dev/frontend-a/current npm run test:e2e",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/verify-e2e-after-ci.log",
+      "result": "2 Playwright tests passed; viewport assertions passed for 320/390/768/960/1280 in light/dark"
+    },
+    {
+      "command": "cd web && npm run test:e2e:integration",
+      "exit_code": 0,
+      "log": ".local/dev/frontend-a/current/verify-integration-after-ci.log",
+      "result": "1 Playwright test passed against local FastAPI + isolated Fake"
+    }
+  ],
+  "expected_red_mutations": {
+    "runner": ".local/dev/frontend-a/current/mutation_checks.py",
+    "summary": ".local/dev/frontend-a/current/mutations/summary.txt",
+    "run_log": ".local/dev/frontend-a/current/mutation-run.log",
+    "all_mutations_exit_1_and_were_restored": true,
+    "guards": [
+      {
+        "guard": "①",
+        "log": ".local/dev/frontend-a/current/mutations/guard-1-internal-details.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "③",
+        "log": ".local/dev/frontend-a/current/mutations/guard-3-font-floor.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "④",
+        "log": ".local/dev/frontend-a/current/mutations/guard-4-error-not-empty.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "⑤",
+        "log": ".local/dev/frontend-a/current/mutations/guard-5-cancel-is-not-confirm.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "⑥",
+        "log": ".local/dev/frontend-a/current/mutations/guard-6-stream-hides-open-syntax.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "⑦",
+        "log": ".local/dev/frontend-a/current/mutations/guard-7-dark-contrast.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "⑧",
+        "log": ".local/dev/frontend-a/current/mutations/guard-8-three-settings-cards.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "⑨",
+        "log": ".local/dev/frontend-a/current/mutations/guard-9-save-does-not-smoke.log",
+        "exit_code": 1
+      },
+      {
+        "guard": "⑩",
+        "log": ".local/dev/frontend-a/current/mutations/guard-10-responsive-overflow.log",
+        "exit_code": 1
+      }
+    ]
+  },
+  "screenshots": {
+    "viewport_directory": ".local/dev/frontend-a/current/",
+    "measurements": ".local/dev/frontend-a/current/measurements.json",
+    "onboarding_directory": ".local/dev/frontend-a/current/onboarding-*.png",
+    "fastapi_directory": ".local/dev/frontend-a/fastapi-integration/"
+  },
+  "api_manifest": ".local/dev/frontend-a/fastapi-integration/fastapi-request-manifest.json",
+  "external_attempts_in_real_integration": 0,
+  "not_run": [
+    "real OAuth",
+    "real Keychain",
+    "real providers",
+    "application process restart",
+    "Internal App/DMG"
+  ],
+  "qa_status": "PENDING_FRESH_QA",
+  "product_diff_files": [
+    "docs/handoff/FRONTEND-EXECUTION-PLAN.md",
+    "web/e2e/first-use-real.spec.ts",
+    "web/e2e/first-use.spec.ts",
+    "web/e2e/fixtures/empty-first-use-defaults.json",
+    "web/e2e/viewport.spec.ts",
+    "web/package-lock.json",
+    "web/package.json",
+    "web/playwright.config.ts",
+    "web/playwright.integration.config.ts",
+    "web/src/App.css",
+    "web/src/App.tsx",
+    "web/src/components/ConfirmDialog.test.tsx",
+    "web/src/components/ConfirmDialog.tsx",
+    "web/src/components/FeishuPanel.tsx",
+    "web/src/components/FirstUseWizard.test.tsx",
+    "web/src/components/FirstUseWizard.tsx",
+    "web/src/components/MarkdownText.test.tsx",
+    "web/src/components/MarkdownText.tsx",
+    "web/src/components/SettingsView.cards.test.tsx",
+    "web/src/components/SettingsView.regressions.test.tsx",
+    "web/src/components/SettingsView.test.tsx",
+    "web/src/components/SettingsView.tsx",
+    "web/src/components/SmokeCheckConfirm.tsx",
+    "web/src/components/StreamingMarkdown.tsx",
+    "web/src/components/WorkspaceGate.tsx",
+    "web/src/components/feishuAuthorization.ts",
+    "web/src/components/firstUseProgress.test.ts",
+    "web/src/components/firstUseProgress.ts",
+    "web/src/components/settingsBadges.ts",
+    "web/src/ui-contract.render.test.tsx",
+    "web/src/ui-contract.test.ts",
+    "web/vite.config.ts"
+  ],
+  "viewport_measurements": {
+    "cases": 10,
+    "max_horizontal_overflow_px": 0,
+    "today_max_horizontal_overflow_px": 0
+  }
+}

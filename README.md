@@ -54,6 +54,20 @@ guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 H
 
 这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Package A 固定 SHA 的独立 QA、Sol 判门和合并/CI 收口见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[收口报告](docs/quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。
 
+### Web 前端验证
+
+安装依赖后，以下命令按职责分开执行：
+
+~~~sh
+npm --prefix web test -- --run                 # Vitest 单元与组件测试
+npm --prefix web run typecheck                 # 正式 TypeScript 项目引用检查
+npm --prefix web run lint                      # Oxlint（保留并报告 warning）
+npm --prefix web run test:e2e                  # Playwright 离线浏览器：首配与五档/深浅主题
+npm --prefix web run test:e2e:integration      # 真实 FastAPI + Fake，隔离 profile/工作库
+~~~
+
+首次使用 Playwright 时先运行 `cd web && npx playwright install chromium`。普通 `test:e2e` 仅访问本机 Vite，并拦截外部请求；`test:e2e:integration` 用一次性 session token、全新 profile 与合成 Fake 工作库连本机 FastAPI，仍不调用真实模型、飞书或 Keychain。Vitest 会排除 `web/e2e/**`，因此 `npm test` 不能替代浏览器或真实 API 集成验收；各检查的退出码和原始日志按里程碑记录在 DEV 报告。
+
 ### 构建 Internal 候选
 
 只在 arm64 macOS 构建机器上运行。输出路径必须是全新路径；脚本先强制构建 WebUI、检查锁定依赖、构建内置 Python onedir 与 Swift 壳、校验 bundle，再创建并验证只读可挂载的未公证 DMG。它不会安装或覆盖应用：
