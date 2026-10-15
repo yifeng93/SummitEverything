@@ -4,10 +4,10 @@ import { FeishuPanel } from './FeishuPanel'
 import { useDialogFocus } from './useDialogFocus'
 
 type Row = { key: string; file: File; path: string; state: 'queued' | 'uploading' | 'succeeded' | 'failed' | 'unknown' | 'skipped' | 'blocked'; message?: string }
-type Props = { onClose: () => void; onImported: () => Promise<void>; onMode?: (mode: 'fake' | 'real' | null) => void; onAuthorizationChanged?: () => void }
+type Props = { onClose: () => void; onImported: () => Promise<void>; onMode?: (mode: 'fake' | 'real' | null) => void; onAuthorizationChanged?: () => void; contextMessage?: string }
 const MAX_FILES = 100, MAX_BATCH = 100 * 1024 * 1024, MAX_FILE = 20 * 1024 * 1024
 
-export function ImportDrawer({ onClose, onImported, onMode, onAuthorizationChanged }: Props) {
+export function ImportDrawer({ onClose, onImported, onMode, onAuthorizationChanged, contextMessage }: Props) {
   const [rows, setRows] = useState<Row[]>([])
   const [busy, setBusy] = useState(false)
   const [remoteBusy, setRemoteBusy] = useState(false)
@@ -49,6 +49,7 @@ export function ImportDrawer({ onClose, onImported, onMode, onAuthorizationChang
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) requestClose() }}>
     <section ref={dialogRef} className="modal-card import-drawer" role="dialog" aria-modal="true" aria-label="导入会议与材料" tabIndex={-1}>
       <div className="panel-heading"><div><h2>导入会议</h2><p>选择本机文件，或在这里搜索飞书材料；导入只保存原件。</p></div><button className="button secondary" onClick={requestClose} disabled={busy || remoteBusy}>关闭</button></div>
+      {contextMessage && <p className="helper-line">{contextMessage}</p>}
       <div className="capture-actions">
         <label className="button secondary file-button">选择多个文件<input type="file" multiple accept=".txt,.md,text/plain,text/markdown" onChange={choose} disabled={busy} /></label>
         <label className="button secondary file-button">选择文件夹<input type="file" multiple webkitdirectory="" accept=".txt,.md,text/plain,text/markdown" onChange={choose} disabled={busy} /></label>

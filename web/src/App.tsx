@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError, type Page, type Workspace } from './api/client'
 import { AppShell } from './components/AppShell'
 import { ApprovalView } from './components/ApprovalView'
@@ -28,8 +28,11 @@ export default function App() {
   const [connection, setConnection] = useState<Connection>('connecting')
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [section, setSection] = useState<ShellSection>('today')
+  const [visitedSections, setVisitedSections] = useState<Set<ShellSection>>(() => new Set(['today', 'approval']))
   const [firstUse, setFirstUse] = useState<{ open: boolean; step: FirstUseStep; returnSection: ShellSection }>({ open: false, step: 2, returnSection: 'today' })
   const [page, setPage] = useState<Page | null>(null)
+  const readerFocusReturn = useRef<HTMLElement | null>(null)
+  const readerOriginScroll = useRef(0)
   const [profileDir, setProfileDir] = useState<string | undefined>(undefined)
   const [approvalCount, setApprovalCount] = useState(0)
   const [approvalRefreshEpoch, setApprovalRefreshEpoch] = useState(0)
@@ -74,6 +77,10 @@ export default function App() {
   const invalidateTodayAfterAuthorizationChange = useCallback(() => setTodayCacheEpoch((value) => value + 1), [])
 
   async function openPage(pageId: string, expectedHash?: string) {
+    if (!page) {
+      readerFocusReturn.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      readerOriginScroll.current = window.scrollY || document.documentElement.scrollTop
+    }
     try {
       const query = expectedHash ? '?expected_content_sha256=' + expectedHash : ''
       setPage(await api.get<Page>('/pages/' + pageId + query))
@@ -91,6 +98,15 @@ export default function App() {
       }
       report(cause instanceof Error ? cause.message : '无法打开页面')
     }
+  }
+
+  function closeReader() {
+    setPage(null)
+    requestAnimationFrame(() => {
+      document.documentElement.scrollTop = readerOriginScroll.current
+      document.body.scrollTop = readerOriginScroll.current
+      readerFocusReturn.current?.focus({ preventScroll: true })
+    })
   }
 
   function switchWorkspace() {
@@ -121,7 +137,7 @@ export default function App() {
   return (
     <AppShell
       section={section}
-      onSelect={(next) => { setPage(null); setSection(next) }}
+      onSelect={(next) => { setPage(null); setSection(next); setVisitedSections((current) => new Set(current).add(next)) }}
       workspaceName={workspace.name}
       onSwitchWorkspace={switchWorkspace}
       approvalCount={approvalCount}
@@ -135,18 +151,14 @@ export default function App() {
         <PageReader
           key={`${page.page_id}:${page.content_sha256}`}
           page={page}
-          onClose={() => setPage(null)}
+          onClose={closeReader}
           onReload={() => void openPage(page.page_id)}
         />
       ) : section === 'today' ? (
         null
       ) : section === 'approval' ? (
         null
-      ) : section === 'projects' ? (
-        <ProjectsView onError={report} onOpenPage={openPage} />
-      ) : section === 'ask' ? (
-        <AskView onError={report} onOpenPage={openPage} />
-      ) : (
+      ) : section === 'settings' ? (
         <SettingsView
           workspaceName={workspace.name}
           workspaceId={workspace.workspace_id}
@@ -160,7 +172,9 @@ export default function App() {
         onFinishFirstUse={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection('today') }}
         onAuthorizationChanged={invalidateTodayAfterAuthorizationChange}
         />
-      )}
+      ) : null}
+      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView onError={report} onOpenPage={(id) => void openPage(id)} />}</div>
+      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
       <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={() => setSection('approval')} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
       <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={`${workspace.workspace_id}:${approvalRefreshEpoch}`} onPendingCount={setApprovalCount} onError={report} onOpenPage={(title) => {
         void api.get<Page[]>('/pages').then((pages) => {

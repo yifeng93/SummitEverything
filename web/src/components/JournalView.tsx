@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, indexUpdateMessage, newOperationId, type Line, type MutationResult, type Page, type Project } from '../api/client'
 import type { components } from '../api/generated'
 
-type Props = { onError: (message: string) => void; onOpenPage: (id: string) => void; initialLineId?: string; initialProjectId?: string }
+type Props = { onError: (message: string) => void; onOpenPage: (id: string) => void; initialLineId?: string; initialProjectId?: string; onSaved?: () => void | Promise<void> }
 type JournalAssistPlan = {
   plan: { plan_id: string; scope_sha256: string; request_limit: number }
   scope: { text: string; max_output_tokens: number }
@@ -27,7 +27,7 @@ function assistStateLabel(state: string): string {
   } as Record<string, string>)[state] ?? '状态暂不可识别'
 }
 
-export function JournalView({ onError, onOpenPage, initialLineId = '', initialProjectId = '' }: Props) {
+export function JournalView({ onError, onOpenPage, initialLineId = '', initialProjectId = '', onSaved }: Props) {
   const [kind, setKind] = useState<'log' | 'thought'>('log')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -74,7 +74,7 @@ export function JournalView({ onError, onOpenPage, initialLineId = '', initialPr
       })
       setNotice(indexUpdateMessage(result.index_update) ?? '')
       pendingSave.current = null
-      setTitle(''); setBody(''); setSuggestion(null); await refresh()
+      setTitle(''); setBody(''); setSuggestion(null); await refresh(); await onSaved?.()
     } catch (cause) { onError(cause instanceof Error ? cause.message : '无法保存记录') }
     finally { setBusy(false) }
   }
