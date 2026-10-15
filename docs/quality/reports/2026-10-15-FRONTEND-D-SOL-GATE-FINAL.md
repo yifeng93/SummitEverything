@@ -69,9 +69,11 @@
 PR [#21](https://github.com/yifeng93/SummitEverything/pull/21) 触发 `.github/workflows/m41-internal-app.yml`（`pull_request` 事件；该 workflow 的 push 触发分支只覆盖 `codex/m41-internal-app-*`，所以此前的 CI 门都只是本地精确复现）。
 
 - run `38757225760`（job `offline-arm64`）：**completed / success，4m42s**，headSha `289947fac15ec5e79fe0122195f9cbe32f59d629`（docs tip；其祖先即受测产品 `e8e1dba`，docs 提交不改产品树）。
+- run `38758095886`：**completed / success，4m0s**，headSha `0a311f37faab92d5f63e7e034d0688a4952943b6`（再一个 docs tip，产品树仍与 `e8e1dba` 相同）。
 - 全部步骤 success，包含：`Guarded Python checks`（`pytest -q` + `ruff check` + `ruff format --check` + `mypy src` + `uv lock --check` + `uv build`）、`Web checks and API types`（`api:types` + **`git diff --exit-code -- web/src/api/generated.ts`** + `vitest` + `typecheck` + `lint` + `build`）、**`Native upload policy tests`（`swift test --package-path native`）**、`Build and verify internal App and DMG`。
-- 意义：**D-6 那条 CI 门已在真实远端 CI 上通过**；此外它顺带关闭了两个此前记为 NOT_RUN 的项——**`swift test` 真实运行通过**，以及 **App/DMG 的构建与校验在 CI 中完成**（仍不含 GUI 交互）。
-- 原始证据：`gh run view 38757225760 --json …` 输出在 `.local/dev/frontend-d-repair3/pr21-ci-run.json`，`gh pr checks --watch` 日志在 `pr21-ci.log` / `pr21-ci.exit`（exit 0）。
+- **必须一并记录的一次基础设施抖动**：PR 创建时的首个 run `38756944004`（headSha `e8e1dba`）**失败**，失败步骤只有 `Build and verify internal App and DMG`，原因是 `hdiutil: create failed - Resource busy`（GitHub macOS runner 的 DMG 创建瞬时故障），不是产品缺陷——同一 run 里 `Guarded Python checks`、`Web checks and API types`（含 D-6 那条门）与 `Native upload policy tests` **全部 success**；随后两个 headSha 的同一产品树上该步骤均成功。日志：`.local/dev/frontend-d-repair3/pr21-ci-failed-run.log`。
+- 意义：**D-6 那条 CI 门已在真实远端 CI 上通过**；此外它顺带关闭了两个此前记为 NOT_RUN 的项——**`swift test` 真实运行通过**，以及 **App/DMG 的构建与校验在 CI 中完成**（仍不含 GUI 交互）。DMG 步骤本身存在 runner 侧抖动风险，后续若再见到该步骤失败应先看是否为 `Resource busy` 后重跑，而不是直接判产品失败。
+- 原始证据：`gh run view … --json` 输出与 `gh pr checks --watch` 日志在 `.local/dev/frontend-d-repair3/`（`pr21-ci-run.json`、`pr21-ci-run-final.json`、`pr21-ci.log`、`pr21-ci-final.log`、`pr21-ci-failed-run.log`，watch 退出码均 0）。
 
 ## 合入
 
