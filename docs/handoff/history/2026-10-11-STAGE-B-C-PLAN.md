@@ -1,3 +1,4 @@
+> 历史归档（2026-10-15）：本文件记录的是 Stage B/C 时期的计划/检查单，固定源码停在 576895f，已不代表当前状态；当前权威状态见 README、PROGRESS 与 LATEST-IMPLEMENTATION。
 # Stage B / C 当前工作计划
 
 2026-10-11。产品 v1 MUST 和全 v1 计划不缩减；本次只收口 Stage B 离线源码，不等于可安装产品或真实账户验收。
