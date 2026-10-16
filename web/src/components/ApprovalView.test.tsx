@@ -11,7 +11,7 @@ const page = { page_id: 'page-1', relative_path: '项目/页面.md', metadata: {
 const candidate = { action_id: 'candidate-1', kind: 'todo', description: '合成任务建议', related_project_id: null, state: 'proposed', source_draft_id: 'draft-1', created_at: '2026-10-14T00:00:00Z' }
 const intent = { action_id: 'action-1', kind: 'project_progress', payload: { progress: '合成' }, payload_sha256: 'b'.repeat(64), state: 'proposed', confirmation_id: null, created_at: '2026-10-14T00:00:00Z' }
 
-function setup(overrides: Record<string, unknown> = {}, props: { target?: ApprovalTarget | null; onTargetHandled?: () => void; refreshEpoch?: number } = {}) {
+function setup(overrides: Record<string, unknown> = {}, props: { target?: ApprovalTarget | null; onTargetHandled?: () => void; refreshEpoch?: number; onOpenPage?: (pageId: string, expectedHash?: string) => void } = {}) {
   const calls: Array<{ path: string; method: string; body?: Record<string, unknown> }> = []
   const onError = vi.fn()
   const responses: Record<string, unknown> = {
@@ -28,8 +28,9 @@ function setup(overrides: Record<string, unknown> = {}, props: { target?: Approv
     const method = init?.method ?? 'GET'
     calls.push({ path, method, ...(init?.body ? { body: JSON.parse(String(init.body)) as Record<string, unknown> } : {}) })
     const value = responses[path]
+    if (path.startsWith('/api/v1/sources/')) return Response.json({ source: { source_id: path.slice('/api/v1/sources/'.length), filename: '合成材料.md', origin_kind: 'quick_note' }, text: '这是对应ID的合成原文。' })
     if (value instanceof Error) return Response.json({ error: { message: value.message } }, { status: 503 })
-    if (path.endsWith('/confirmations') && method === 'POST') return Response.json({ state: 'succeeded', index_update: 'updated' })
+    if (path.endsWith('/confirmations') && method === 'POST') return Response.json(responses[path] ?? { state: 'succeeded', index_update: 'updated' })
     if (path.endsWith('/acceptance-plans') && method === 'POST') return Response.json({ plan: { plan_id: 'plan-1', scope_sha256: 'scope', request_limit: 2 }, scope: {} })
     if (path.includes('/acceptance-plans/') && path.endsWith('/confirm')) return Response.json({})
     if (path.endsWith('/index/plans') && method === 'POST') return Response.json({ plan_id: 'index-1', workspace_id: 'workspace', mode: 'initial', fingerprint: 'fake-fingerprint', page_ids: ['page-1'], page_versions: { 'page-1': 'hash' }, estimated_tokens: 12, estimated_cost: 0, page_preview: [{ title: '正式页', version: 'v1' }] })
@@ -38,8 +39,8 @@ function setup(overrides: Record<string, unknown> = {}, props: { target?: Approv
     return Response.json(value ?? {})
   }))
   const onPendingCount = vi.fn()
-  render(<ApprovalView {...props} onPendingCount={onPendingCount} onError={onError} />)
-  return { calls, onPendingCount, onError }
+  const view = render(<ApprovalView {...props} onPendingCount={onPendingCount} onError={onError} />)
+  return { calls, onPendingCount, onError, rerender: (nextProps: typeof props = props) => view.rerender(<ApprovalView {...nextProps} onPendingCount={onPendingCount} onError={onError} />) }
 }
 
 it('continues with returned source IDs when titles collide and preselects only those exact items', async () => {
@@ -49,12 +50,31 @@ it('continues with returned source IDs when titles collide and preselects only t
   const third = { ...source, item_id: 'returned-item-b', source_id: 'source-b', title: '另一条会议记录' }
   const { calls } = setup({ '/api/v1/intake/items': [first, second, third], '/api/v1/drafts': [] }, { target: { kind: 'source', itemIds: ['returned-item-a', 'returned-item-b'] }, onTargetHandled })
   await screen.findByText('已定位到本次成功保存的 2 项材料。选择归属后可继续整理。')
-  const sourceGroup = screen.getByRole('region', { name: /1 · 来源/ })
-  expect((sourceGroup.querySelector('[data-item-id="same-title-old"] input') as HTMLInputElement).checked).toBe(false)
-  expect((sourceGroup.querySelector('[data-item-id="returned-item-a"] input') as HTMLInputElement).checked).toBe(true)
-  expect((sourceGroup.querySelector('[data-item-id="returned-item-b"] input') as HTMLInputElement).checked).toBe(true)
+  const sourceFocus = await screen.findByRole('region', { name: '来源详情：同名会议记录' })
+  expect(within(sourceFocus).getByText('这是对应ID的合成原文。')).toBeTruthy()
+  expect(within(sourceFocus).getByRole('button', { name: /整理所选 · 2/ })).toBeTruthy()
+  expect(calls.some(({ path }) => path === '/api/v1/sources/source-a')).toBe(true)
+  expect(calls.some(({ path }) => path === '/api/v1/sources/source-old')).toBe(false)
   expect(onTargetHandled).toHaveBeenCalledTimes(1)
   expect(calls.some(({ path }) => path.includes('/intake/jobs'))).toBe(false)
+})
+
+it('routes formal-page targets by page ID when titles collide', async () => {
+  const older = { ...page, page_id: 'older-page', metadata: { ...page.metadata, id: 'older-page' }, body: '旧的同名正文' }
+  const returned = { ...page, page_id: 'returned-page', metadata: { ...page.metadata, id: 'returned-page' }, body: '本次实际页面正文' }
+  setup({ '/api/v1/pages': [older, returned] }, { target: { kind: 'formal', pageIds: ['returned-page'] } })
+  const focus = await screen.findByRole('region', { name: '正式内容：正式页' })
+  expect(within(focus).getByText('本次实际页面正文')).toBeTruthy()
+  expect(within(focus).queryByText('旧的同名正文')).toBeNull()
+})
+
+it('shows an existing processing source without starting a second intake job', async () => {
+  const processing = { ...source, item_id: 'processing-item', source_id: 'processing-source', state: 'processing' }
+  const { calls } = setup({ '/api/v1/intake/items': [processing] }, { target: { kind: 'source', itemIds: ['processing-item'] } })
+  const focus = await screen.findByRole('region', { name: '来源详情：合成速记' })
+  expect(within(focus).getByText('这条材料已有整理任务或稿件，不会再次发起整理。')).toBeTruthy()
+  expect(within(focus).queryByRole('button', { name: /整理所选/ })).toBeNull()
+  expect(calls.some(({ path, method }) => path === '/api/v1/intake/jobs' && method === 'POST')).toBe(false)
 })
 
 it('opens one draft in a focused reading view and returns to its compact list', async () => {
@@ -69,15 +89,64 @@ it('opens one draft in a focused reading view and returns to its compact list', 
   expect(screen.getByText('合成稿件')).toBeTruthy()
 })
 
+it('keeps unsaved draft edits when a hidden approval view receives a refresh epoch', async () => {
+  const { rerender } = setup()
+  await screen.findByText('合成稿件')
+  fireEvent.click(screen.getByRole('button', { name: '打开稿件：合成稿件' }))
+  const focus = await screen.findByRole('region', { name: '稿件审核：合成稿件' })
+  fireEvent.click(within(focus).getByText('编辑稿件与归属'))
+  const body = within(focus).getByLabelText('正文') as HTMLTextAreaElement
+  fireEvent.change(body, { target: { value: '# 本地尚未保存' } })
+
+  rerender({ refreshEpoch: 1 })
+  await waitFor(() => expect(body.value).toBe('# 本地尚未保存'))
+  expect(screen.getByText('正文或归属尚未保存。')).toBeTruthy()
+})
+
+it('preserves the actual confirmation result and opens the exact saved page for one selected draft', async () => {
+  const secondDraft = { ...draft, draft_id: 'draft-2', metadata: { title: '另一份合成稿' }, body: '第二份正文' }
+  const onOpenPage = vi.fn()
+  const { calls } = setup({
+    '/api/v1/drafts': [draft, secondDraft],
+    '/api/v1/drafts/draft-1/confirmations': { state: 'succeeded', index_update: 'update_failed', page_versions: { 'actual-saved-page': 'saved-hash' } },
+    '/api/v1/pages': [page, { ...page, page_id: 'actual-saved-page', metadata: { title: '正式保存页' }, body: '新保存正文' }],
+  }, { onOpenPage })
+  await screen.findByText('合成稿件')
+  fireEvent.click(screen.getByRole('button', { name: '打开稿件：合成稿件' }))
+  const focus = await screen.findByRole('region', { name: '稿件审核：合成稿件' })
+  fireEvent.click(within(focus).getByRole('button', { name: '确认并保存当前版本' }))
+  fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '确认并保存当前版本' }))
+  expect(await screen.findAllByText(/索引更新未完成/)).toHaveLength(2)
+  fireEvent.click(screen.getByRole('button', { name: '打开本次保存的正式页' }))
+  expect(onOpenPage).toHaveBeenCalledWith('actual-saved-page')
+  expect(calls.filter(({ path, method }) => path === '/api/v1/drafts/draft-1/confirmations' && method === 'POST')).toHaveLength(1)
+  expect(calls.some(({ path, method }) => path === '/api/v1/drafts/draft-2/confirmations' && method === 'POST')).toBe(false)
+})
+
 it('五类固定顺序独立读取，局部失败不会把其他分组画成空态', async () => {
   setup({ '/api/v1/pages': new Error('本地读取暂不可用') })
   await screen.findByText('合成速记')
   const headings = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)
   expect(headings.filter((heading) => /[1-5] ·/.test(heading ?? ''))).toEqual(['1 · 来源', '2 · 稿件', '3 · 正式内容', '4 · 索引', '5 · 外部动作'])
-  expect(screen.getByText('合成速记').closest('label')?.textContent).toContain('记一句')
+  expect(screen.getByText('合成速记').closest('li')?.textContent).toContain('记一句')
   expect(screen.getByText('合成稿件')).toBeTruthy()
   expect(screen.getByRole('alert').textContent).toContain('本地读取暂不可用')
   expect(screen.getByText('当前状态：尚未建立')).toBeTruthy()
+})
+
+it('已有正式页但索引尚未建立时将首次索引作为待处理事项展开', async () => {
+  const confirmedPage = { ...page, approval_state: 'confirmed' }
+  setup({ '/api/v1/pages': [confirmedPage], '/api/v1/drafts': [], '/api/v1/intake/items': [], '/api/v1/actions': [], '/api/v1/action-intents?limit=20': { items: [], next_cursor: null }, '/api/v1/index/status': { state: 'not_ready', fingerprint: 'fake-fingerprint', pages: 0, chunks: 0, current_pages: 0, stale_pages: 0 } })
+  const indexGroup = await screen.findByRole('region', { name: /4 · 索引/ })
+  await waitFor(() => expect(indexGroup.hasAttribute('open')).toBe(true))
+  expect(within(indexGroup).getByText('1')).toBeTruthy()
+  expect(within(indexGroup).getByRole('button', { name: '预览首次索引' })).toBeTruthy()
+})
+
+it('没有正式页的初次索引保持折叠', async () => {
+  setup({ '/api/v1/pages': [], '/api/v1/drafts': [], '/api/v1/intake/items': [], '/api/v1/actions': [], '/api/v1/action-intents?limit=20': { items: [], next_cursor: null }, '/api/v1/index/status': { state: 'not_ready', fingerprint: 'fake-fingerprint', pages: 0, chunks: 0, current_pages: 0, stale_pages: 0 } })
+  const indexGroup = await screen.findByRole('region', { name: /4 · 索引/ })
+  await waitFor(() => expect(indexGroup.hasAttribute('open')).toBe(false))
 })
 
 it('来源尚未读取时显示加载而非空态，成功读取后才显示空态', async () => {

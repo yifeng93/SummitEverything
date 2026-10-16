@@ -46,10 +46,10 @@ it('shows a changed target and requires an explicit current-version baseline bef
     .mockResolvedValueOnce({
       ok: false,
       status: 409,
-      json: async () => ({ error: { message: '目标页面已变化，请检查当前版本后再继续审核。' } }),
+      json: async () => ({ error: { code: 'version_conflict', message: '页面内容已变化。' } }),
     })
     .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...draft, version: 2, expected_base_sha256: page.content_sha256 }) })
-    .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ state: 'succeeded' }) })
+    .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ state: 'succeeded', index_update: 'updated', page_versions: { 'saved-page-id': 'saved-hash' } }) })
   vi.stubGlobal('fetch', fetchMock)
   const onError = vi.fn()
   const onUpdated = vi.fn().mockResolvedValue(undefined)
@@ -61,7 +61,7 @@ it('shows a changed target and requires an explicit current-version baseline bef
   const dialog = await screen.findByRole('dialog')
   fireEvent.click(within(dialog).getByRole('button', { name: '确认并保存当前版本' }))
   await waitFor(() => expect(onUpdated).toHaveBeenCalledTimes(1))
-  expect(onError).toHaveBeenLastCalledWith(expect.stringContaining('目标页面已变化'))
+  expect(onError).toHaveBeenLastCalledWith('页面内容已变化。')
   view.rerender(<DraftReview {...props} pages={[currentPage]} />)
 
   expect(screen.getByText(/目标页面已变化/)).toBeTruthy()
@@ -71,6 +71,7 @@ it('shows a changed target and requires an explicit current-version baseline bef
   const retryDialog = await screen.findByRole('dialog')
   fireEvent.click(within(retryDialog).getByRole('button', { name: '确认并保存当前版本' }))
   await waitFor(() => expect(onConfirmed).toHaveBeenCalledTimes(1))
+  expect(onConfirmed).toHaveBeenCalledWith(expect.objectContaining({ index_update: 'updated' }))
   const patchCall = fetchMock.mock.calls[1] as [string, RequestInit]
   expect(patchCall[1].method).toBe('PATCH')
   expect(JSON.parse(String(patchCall[1].body))).toMatchObject({
@@ -78,6 +79,28 @@ it('shows a changed target and requires an explicit current-version baseline bef
     expected_base_sha256: currentPage.content_sha256,
     body: draft.body,
   })
+})
+
+it('recognizes expected-version conflicts by API status and code while preserving unsaved edits', async () => {
+  const draft = {
+    draft_id: 'version-draft', input_ids: [], target_page_id: null,
+    metadata: { id: 'version-draft', title: '版本稿', role: 'knowledge', kind: 'topic' },
+    body: '服务器原稿', expected_base_sha256: null, important_conflicts: [], action_suggestions: [],
+    conflict_resolutions: {}, source_ids: [], state: 'pending', created_at: '2026-10-09T00:00:00Z', version: 3,
+  } as Draft
+  vi.stubGlobal('fetch', vi.fn(async () => Response.json({ error: { code: 'version_conflict', message: '内容变化。' } }, { status: 409 })))
+  vi.stubGlobal('confirm', vi.fn(() => true))
+  const onUpdated = vi.fn().mockResolvedValue(undefined)
+  render(<DraftReview draft={draft} pages={[]} onError={vi.fn()} onConfirmed={vi.fn()} onUpdated={onUpdated} />)
+  fireEvent.click(screen.getByText('编辑稿件与归属'))
+  fireEvent.change(screen.getByLabelText('正文'), { target: { value: '尚未保存的本地修改' } })
+  fireEvent.click(screen.getByRole('button', { name: '保存修改' }))
+
+  expect(await screen.findByRole('alert')).toBeTruthy()
+  expect(onUpdated).toHaveBeenCalledTimes(1)
+  expect(screen.getByLabelText('正文')).toHaveProperty('value', '尚未保存的本地修改')
+  fireEvent.click(screen.getByRole('button', { name: '放弃当前编辑并载入最新版本' }))
+  expect(window.confirm).toHaveBeenCalled()
 })
 
 it('previews how an unresolved conflict will be recorded in the confirmed page', () => {
@@ -100,4 +123,35 @@ it('previews how an unresolved conflict will be recorded in the confirmed page',
 
   fireEvent.click(screen.getByLabelText(/暂时未决/))
   expect(screen.getByLabelText('确认结果预览').textContent).toContain('状态是否已确认？：暂时未决')
+})
+
+it('conflict choices are protected locally, not misrepresented as persisted until confirmation', async () => {
+  const draft = {
+    draft_id: 'choice-draft', input_ids: [], target_page_id: null,
+    metadata: { id: 'choice-draft', title: '待判定事实', role: 'knowledge', kind: 'topic' },
+    body: '状态暂不明确。', expected_base_sha256: null,
+    important_conflicts: [{ id: 'state', question: '目前状态？', alternatives: ['已确认', '待确认'] }],
+    action_suggestions: [], conflict_resolutions: {}, source_ids: ['source-id'], state: 'pending',
+    created_at: '2026-10-09T00:00:00Z', version: 1,
+  } as Draft
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === 'POST') return Response.json({ state: 'succeeded', index_update: 'updated', page_versions: { 'new-page-id': 'saved-hash' } })
+    return Response.json(draft)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  const onDirtyChange = vi.fn()
+  render(<DraftReview draft={draft} pages={[]} onError={vi.fn()} onConfirmed={vi.fn().mockResolvedValue(undefined)} onUpdated={vi.fn().mockResolvedValue(undefined)} onDirtyChange={onDirtyChange} />)
+
+  fireEvent.click(screen.getByLabelText('采用：已确认'))
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true)
+  expect(screen.getByText('冲突选择尚未提交，将在确认时生效。')).toBeTruthy()
+  expect(screen.getByRole('button', { name: '保存修改' })).toHaveProperty('disabled', true)
+
+  fireEvent.click(within(document.querySelector('.review-actions') as HTMLElement).getByRole('button', { name: '确认并保存当前版本' }))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: '确认并保存当前版本' }))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+  const [url, request] = fetchMock.mock.calls[0] as [string, RequestInit]
+  expect(url).toContain('/drafts/choice-draft/confirmations')
+  expect(JSON.parse(String(request.body))).toMatchObject({ conflict_resolutions: { state: '已确认' } })
 })

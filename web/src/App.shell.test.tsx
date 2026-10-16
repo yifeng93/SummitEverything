@@ -172,9 +172,12 @@ it('dirty draft blocks sidebar navigation and accepted discard returns to the sa
   fireEvent.click(within(nav).getByRole('button', { name: /^审批/ }))
   fireEvent.click(await screen.findByRole('button', { name: '打开稿件：需保护的稿件' }))
   const focus = await screen.findByRole('region', { name: '稿件审核：需保护的稿件' })
-  fireEvent.click(within(focus).getByText('编辑稿件、归属与来源'))
+  fireEvent.click(within(focus).getByText('编辑稿件与归属'))
   const body = within(focus).getByLabelText('正文') as HTMLTextAreaElement
   fireEvent.change(body, { target: { value: '# 保留这段修改' } })
+  const unload = new Event('beforeunload', { cancelable: true })
+  window.dispatchEvent(unload)
+  expect(unload.defaultPrevented).toBe(true)
 
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
   fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
@@ -185,9 +188,28 @@ it('dirty draft blocks sidebar navigation and accepted discard returns to the sa
   confirm.mockReturnValue(true)
   fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
   expect(await screen.findByRole('heading', { name: '项目' })).toBeTruthy()
+  const cleanUnload = new Event('beforeunload', { cancelable: true })
+  window.dispatchEvent(cleanUnload)
+  expect(cleanUnload.defaultPrevented).toBe(false)
   fireEvent.click(within(nav).getByRole('button', { name: /^审批/ }))
   expect(await screen.findByRole('region', { name: '审批清单' })).toBeTruthy()
   expect(screen.queryByRole('region', { name: '稿件审核：需保护的稿件' })).toBeNull()
+
+  fireEvent.click(await screen.findByRole('button', { name: '打开稿件：需保护的稿件' }))
+  const reopenedFocus = await screen.findByRole('region', { name: '稿件审核：需保护的稿件' })
+  fireEvent.click(within(reopenedFocus).getByText('编辑稿件与归属'))
+  const reopenedBody = within(reopenedFocus).getByLabelText('正文') as HTMLTextAreaElement
+  fireEvent.change(reopenedBody, { target: { value: '# 切换前保留修改' } })
+  confirm.mockReturnValue(false)
+  fireEvent.click(screen.getByRole('button', { name: '切换工作库' }))
+  expect(confirm).toHaveBeenCalledWith('稿件有未保存的修改。切换工作库会放弃这些修改，是否继续？')
+  expect(screen.getByRole('navigation', { name: '主导航' })).toBeTruthy()
+  expect(reopenedBody.value).toBe('# 切换前保留修改')
+
+  confirm.mockReturnValue(true)
+  fireEvent.click(screen.getByRole('button', { name: '切换工作库' }))
+  expect(await screen.findByRole('button', { name: '创建本地工作库' })).toBeTruthy()
+  expect(screen.queryByRole('navigation', { name: '主导航' })).toBeNull()
 })
 
 it('待处理为 0 时不显示徽章', async () => {

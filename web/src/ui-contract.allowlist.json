@@ -31,7 +31,7 @@
   ],
   "entries": {
     "web/src/App.tsx:content_sha256": 1,
-    "web/src/App.tsx:page_id": 3,
+    "web/src/App.tsx:page_id": 2,
     "web/src/components/AskView.tsx:fingerprint": 4,
     "web/src/components/AskView.tsx:content_sha256": 5,
     "web/src/components/AskView.tsx:candidate_id": 7,
@@ -58,14 +58,13 @@
     "web/src/components/ProjectsView.tsx:relative_path": 5,
     "web/src/components/TasksPanel.tsx:candidate_id": 2,
     "web/src/components/WorkspaceGate.tsx:operation_id": 1,
-    "web/src/components/ApprovalView.tsx:content_sha256": 1,
+    "web/src/components/ApprovalView.tsx:content_sha256": 2,
     "web/src/components/ApprovalView.tsx:fingerprint": 10,
     "web/src/components/ApprovalView.tsx:operation_id": 1,
-    "web/src/components/ApprovalView.tsx:page_id": 4,
+    "web/src/components/ApprovalView.tsx:page_id": 17,
     "web/src/components/ImportDrawer.tsx:operation_id": 1,
     "web/src/components/SourceOrganizer.tsx:operation_id": 4,
-    "web/src/components/TodayView.tsx:operation_id": 1,
-    "web/src/components/TodayView.tsx:.slice(0, 8)": 1
+    "web/src/components/TodayView.tsx:operation_id": 1
   },
   "attribution": {
     "web/src/App.tsx:content_sha256": {
@@ -182,7 +181,7 @@
     },
     "web/src/components/ApprovalView.tsx:content_sha256": {
       "slice": "P3 · 审批",
-      "reason": "正式内容确认的版本并发门，仅作为接口参数，不显示哈希。"
+      "reason": "正式页确认与打开已保存版本使用的接口版本参数；始终留在请求中，不渲染为业务文案。"
     },
     "web/src/components/ApprovalView.tsx:fingerprint": {
       "slice": "P3 · 审批",
@@ -194,7 +193,7 @@
     },
     "web/src/components/ApprovalView.tsx:page_id": {
       "slice": "P3 · 审批",
-      "reason": "正式内容确认和列表关联参数，不显示。"
+      "reason": "真实稿件确认回执、正式页定位及打开详情使用的内部寻址参数；界面只显示标题，运行时正文断言覆盖ID不泄漏。"
     },
     "web/src/components/ImportDrawer.tsx:operation_id": {
       "slice": "P3 · 今日",
@@ -207,10 +206,6 @@
     "web/src/components/TodayView.tsx:operation_id": {
       "slice": "P3 · 今日",
       "reason": "随手记提交使用稳定幂等键，不作为可见内容。"
-    },
-    "web/src/components/TodayView.tsx:.slice(0, 8)": {
-      "slice": "P3 · 今日",
-      "reason": "收件箱首页只展示最新八项，数量仍统计同一完整响应。"
     }
   }
 }

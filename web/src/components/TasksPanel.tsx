@@ -25,6 +25,7 @@ function evidenceSummary(item: Record<string, unknown>) {
 export function TasksPanel({ projects, candidates, mode, readOnly = false }: { projects: Project[]; candidates: ActionCandidate[]; mode: "fake" | "real" | null; readOnly?: boolean }) {
   const remoteWritesEnabled = mode === "fake"
   const [tasks, setTasks] = useState<Tasks | null>(null)
+  const [tasksExpanded, setTasksExpanded] = useState(false)
   const [tasksSuccess, setTasksSuccess] = useState<string | null>(null)
   const [records, setRecords] = useState<ActionPage | null>(null)
   const [action, setAction] = useState<Action | null>(null)
@@ -48,6 +49,7 @@ export function TasksPanel({ projects, candidates, mode, readOnly = false }: { p
   const confirmationId = useRef<string | null>(null)
   const outcomeId = useRef<string | null>(null)
   const inFlight = useRef(false)
+  const visibleTasks = tasks ? (readOnly && !tasksExpanded ? tasks.items.slice(0, 5) : tasks.items) : []
 
   async function run(work: () => Promise<void>) {
     if (inFlight.current) return
@@ -74,7 +76,7 @@ export function TasksPanel({ projects, candidates, mode, readOnly = false }: { p
       const params = new URLSearchParams({ limit: '20' }); if (cursor) params.set('cursor', cursor)
       const execute = async (planId?: string) => {
         const requestParams = new URLSearchParams(params); if (planId) requestParams.set('plan_id', planId)
-        setTasks(await api.get<Tasks>('/integrations/feishu/tasks?' + requestParams)); setTasksSuccess(new Date().toISOString())
+        setTasks(await api.get<Tasks>('/integrations/feishu/tasks?' + requestParams)); if (!cursor) setTasksExpanded(false); setTasksSuccess(new Date().toISOString())
       }
       if (mode === 'real') {
         const scope = { cursor: cursor ?? null, limit: 20 }
@@ -204,6 +206,7 @@ export function TasksPanel({ projects, candidates, mode, readOnly = false }: { p
     {!readOnly && <div className="panel-heading"><div><h2>飞书任务与独立动作</h2><p>{mode === "fake" ? "Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。" : mode === "real" ? "真实飞书任务写入尚未启用。项目进度仍在本机独立确认。" : "正在核对飞书模式；任务写入暂不可用。"}</p></div></div>}
     <div className="button-row">
       <button className="button secondary" disabled={busy || mode === null} onClick={() => void loadTasks()}>刷新飞书任务</button>
+      {readOnly && <small className="last-success">{tasksSuccess ? `${new Date(tasksSuccess).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 已读取${error ? ' · 更新失败' : ''}` : '尚未读取'}</small>}
       {!readOnly && <>
       <button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => open('feishu_task_create')}>新建飞书任务</button>
       <button className="button secondary" disabled={busy} onClick={() => open('project_progress')}>拟定项目进度变化</button>
@@ -212,8 +215,7 @@ export function TasksPanel({ projects, candidates, mode, readOnly = false }: { p
     </div>
     {error && <p role="alert" className="error-banner">{error}</p>}
     {pendingPlan && <section className="provider-settings" aria-label="飞书任务读取确认"><h3>本次任务读取范围</h3><p>只读取飞书未完成任务，最多 {String(pendingPlan.scope.limit)} 条；本次最多 {pendingPlan.plan.request_limit} 次 HTTP 请求（含必要的授权刷新）。这是调用次数上限，不是金额上限；失败或未知结果不会自动重发。</p><div className="button-row"><button className="button primary" disabled={busy} onClick={() => void confirmReadPlan()}>确认并读取任务</button><button className="button secondary" disabled={busy} onClick={() => void cancelReadPlan()}>取消</button></div></section>}
-    {readOnly && <p className="helper-line">{tasksSuccess ? `上次成功读取：${new Date(tasksSuccess).toLocaleString('zh-CN')}${error ? ' · 本次失败，保留上次结果' : ''}` : '尚未读取任务；读取失败不表示没有任务。'}</p>}
-    {tasks && <><ul className="source-list">{tasks.items.map((task) => <li className="task-row" key={task.guid}><div><strong>{task.summary}</strong><small>{task.completed_at ? '飞书已完成' : '飞书未完成'}{task.due ? ' · 截止 ' + new Date(task.due.timestamp).toLocaleString('zh-CN') + (task.due.is_all_day ? '（全天）' : '') : ' · 不设截止日期'}</small></div>{!readOnly && <div className="button-row"><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => open('feishu_task_update', task)}>编辑{task.summary}</button><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => void prepareCompletion(task)}>完成{task.summary}</button></div>}</li>)}</ul>{tasks.items.length === 0 && <p className="muted">飞书暂无任务。</p>}{tasks.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadTasks(tasks.next_cursor!)}>下一页任务</button>}</>}
+    {tasks && <><ul className="source-list">{visibleTasks.map((task) => <li className="task-row" key={task.guid}><div><strong>{task.summary}</strong><small>{task.completed_at ? '飞书已完成' : '飞书未完成'}{task.due ? ' · 截止 ' + (readOnly ? task.due.is_all_day ? '全天' : new Date(task.due.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : new Date(task.due.timestamp).toLocaleString('zh-CN')) : ' · 不设截止日期'}</small></div>{!readOnly && <div className="button-row"><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => open('feishu_task_update', task)}>编辑{task.summary}</button><button className="button secondary" disabled={busy || !remoteWritesEnabled} onClick={() => void prepareCompletion(task)}>完成{task.summary}</button></div>}</li>)}</ul>{tasks.items.length === 0 && <p className="muted">飞书暂无任务。</p>}{readOnly && tasks.items.length > 5 && <button className="button secondary" onClick={() => setTasksExpanded((value) => !value)}>{tasksExpanded ? '收起任务' : `显示全部待办（${tasks.items.length}）`}</button>}{tasks.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadTasks(tasks.next_cursor!)}>下一页任务</button>}</>}
     {!readOnly && candidates.length > 0 && <div className="action-candidates"><h3>审阅行动建议</h3>{candidates.map((suggestion) => <div key={suggestion.action_id}><p>{suggestion.description}</p><button className="button secondary" disabled={busy || suggestion.kind === 'todo' && !remoteWritesEnabled} onClick={() => open(suggestion.kind === 'todo' ? 'feishu_task_create' : 'project_progress', undefined, suggestion)}>将建议填写为待确认动作</button></div>)}</div>}
     {!readOnly && records && <div><h3>动作记录</h3><ul className="candidate-list">{records.items.map((item) => <li key={item.action_id}><button className="button secondary" disabled={busy} onClick={() => { setAction(item); setForm(null); intentId.current = item.action_id }}>{labels[item.kind]} · {states[item.state]}</button></li>)}</ul>{records.items.length === 0 && <p>没有已保存的动作。</p>}{records.next_cursor && <button className="button secondary" disabled={busy} onClick={() => void loadRecords(records.next_cursor!)}>下一页动作</button>}</div>}
     {form && <form className="action-form" onSubmit={(event) => void submit(event)}>

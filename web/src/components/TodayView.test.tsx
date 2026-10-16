@@ -48,6 +48,14 @@ it('keeps a successful note receipt in place and continues with the exact saved 
   expect(requests.some((item) => item.path.endsWith('/drafts') || item.path.includes('/intake/jobs'))).toBe(false)
 })
 
+it('offers a direct connection action when calendar authorization is unavailable', async () => {
+  mockApi({ '/integrations/feishu/status': { mode: 'fake', authorized: false, scopes: [], token_type: 'user' } })
+  const onOpenConnectionWizard = vi.fn()
+  render(<TodayView onError={vi.fn()} onOpenConnectionWizard={onOpenConnectionWizard} />)
+  fireEvent.click(await screen.findByRole('button', { name: '连接飞书' }))
+  expect(onOpenConnectionWizard).toHaveBeenCalledTimes(1)
+})
+
 it('continues from a successful file import with the returned source item id', async () => {
   const onOpenApproval = vi.fn()
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {

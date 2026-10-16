@@ -7,9 +7,9 @@ import { ImportDrawer } from './ImportDrawer'
 import { JournalDialog } from './JournalDialog'
 import type { ApprovalTarget } from '../approvalTarget'
 
-type Props = { onError: (message: string, kind?: ToastKind) => void; onOpenPage?: (id: string) => void; onOpenApproval?: (target?: ApprovalTarget) => void; onInboxChanged?: () => void; onAuthorizationChanged?: () => void }
+type Props = { onError: (message: string, kind?: ToastKind) => void; onOpenPage?: (id: string) => void; onOpenApproval?: (target?: ApprovalTarget) => void; onInboxChanged?: () => void; onAuthorizationChanged?: () => void; onOpenConnectionWizard?: () => void }
 
-export function TodayView({ onError, onOpenPage = () => {}, onOpenApproval, onInboxChanged, onAuthorizationChanged }: Props) {
+export function TodayView({ onError, onOpenPage = () => {}, onOpenApproval, onInboxChanged, onAuthorizationChanged, onOpenConnectionWizard }: Props) {
   const [inbox, setInbox] = useState<IntakeItem[] | null>(null)
   const [inboxError, setInboxError] = useState('')
   const [inboxSuccess, setInboxSuccess] = useState<string | null>(null)
@@ -62,11 +62,11 @@ export function TodayView({ onError, onOpenPage = () => {}, onOpenApproval, onIn
   const stamp = (value: string | null) => value ? `最近成功读取 ${new Date(value).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}` : '尚未成功读取'
 
   return <section className="content-wrap today-view">
-    <div className="page-heading"><div><div className="eyebrow">工作节奏</div><h1>今日</h1><p className="lede">今天的会和待办在左边，右边可以记下原文或导入材料。</p></div><div className="date-label">{new Intl.DateTimeFormat('zh-CN', { dateStyle: 'full' }).format(today)}</div></div>
+    <div className="page-heading"><div><div className="eyebrow">工作节奏</div><h1>今日</h1><p className="lede">查看今天的会与待办，也可以记下原文或导入材料。</p></div><div className="date-label">{new Intl.DateTimeFormat('zh-CN', { dateStyle: 'full' }).format(today)}</div></div>
     <div className="today-columns">
       <div className="today-schedule" role="region" aria-label="今天的安排">
-        <section className="panel today-section"><div className="panel-heading"><div><h2>会议</h2><p>查看日程；读取真实日历前会先预览并确认范围。</p></div></div><FeishuPanel view="calendar" showAuthorization={false} onImported={refreshInbox} onMode={setFeishuMode} onAuthorizationChanged={onAuthorizationChanged} /><p className="helper-line">需要授权时，可到设置里的连接向导处理。</p></section>
-        <section className="panel today-section"><div className="panel-heading"><div><h2>待办任务</h2><p>任务事实来自飞书；这里仅供查看，真实任务修改请在飞书处理。</p></div></div><TasksPanel projects={projects} candidates={[]} mode={feishuMode} readOnly /><p className="helper-line">模拟环境中的动作复演可在审批中查看；项目进度变化仍需单独确认。</p></section>
+        <section className="panel today-section"><div className="panel-heading"><div><h2>会议</h2></div></div><FeishuPanel view="calendar" showAuthorization={false} onImported={refreshInbox} onMode={setFeishuMode} onAuthorizationChanged={onAuthorizationChanged} onOpenConnectionWizard={onOpenConnectionWizard} /></section>
+        <section className="panel today-section"><div className="panel-heading"><div><h2>待办任务</h2></div></div><TasksPanel projects={projects} candidates={[]} mode={feishuMode} readOnly /></section>
         {suggestions.length > 0 && <section className="panel today-section"><div className="panel-heading"><div><h2>需要行动</h2><p>以下是已保存的待确认建议。</p></div><button className="button secondary" onClick={() => onOpenApproval?.()}>去审批查看</button></div><ul className="candidate-list">{suggestions.map((item) => <li key={item.action_id}><span className="candidate-dot">提</span><div><strong>{item.description}</strong><small>尚未确认，不会自动执行</small></div></li>)}</ul></section>}
       </div>
       <section className="panel today-section capture-panel" aria-label="记录与导入"><div className="panel-heading"><div><h2>记录与导入</h2><p>先保存原文；整理和模型调用由你之后主动发起。</p></div></div>

@@ -4,6 +4,7 @@ import { ConfirmDialog } from './ConfirmDialog'
 import type { components } from '../api/generated'
 
 type Plan = { plan_id: string; scope_sha256: string; request_limit: number }
+type Job = components['schemas']['IntakeJob']
 type OutgoingInput = { item_id: string; source_id: string; text: string }
 type OrganizeScope = {
   item_ids: string[]; operation_id: string; line_id: string; project_id: string; reprocess: boolean
@@ -46,7 +47,7 @@ function validatePreview(plan: Plan, scopeValue: unknown, body: Record<string, u
   return scope as unknown as OrganizeScope
 }
 
-export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeItem[]; onComplete: () => Promise<void>; onError: (message: string) => void }) {
+export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeItem[]; onComplete: (job: Job) => Promise<void>; onError: (message: string) => void }) {
   const [lines, setLines] = useState<Line[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [lineId, setLineId] = useState('')
@@ -104,9 +105,9 @@ export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeI
     setBusy(true)
     try {
       if (pending.real && pending.plan && pending.scope) await api.post(`/acceptance-plans/${pending.plan.plan_id}/confirm`, { scope_sha256: pending.plan.scope_sha256, scope: pending.scope })
-      await api.post('/intake/jobs', { ...pending.body, ...(pending.plan ? { acceptance_plan_id: pending.plan.plan_id } : {}) })
+      const job = await api.post<Job>('/intake/jobs', { ...pending.body, ...(pending.plan ? { acceptance_plan_id: pending.plan.plan_id } : {}) })
       setPending(null)
-      await onComplete()
+      await onComplete(job)
     } catch (cause) { onError(cause instanceof Error ? cause.message : '整理没有完成；请检查当前状态后再决定是否重试') }
     finally { setBusy(false) }
   }

@@ -48,6 +48,16 @@ export default function App() {
   const { toasts, notify, dismiss } = useToasts()
   const resetApproval = useCallback(() => setApprovalCount(0), [])
 
+  useEffect(() => {
+    if (!approvalDirty) return
+    const protectUnsavedDraft = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', protectUnsavedDraft)
+    return () => window.removeEventListener('beforeunload', protectUnsavedDraft)
+  }, [approvalDirty])
+
   /** 视图的全局提示入口：默认失败色；取消/中性信息由调用方显式传 'neutral'。 */
   const report = useCallback((message: string, kind: ToastKind = 'danger') => {
     notify(message, kind)
@@ -264,14 +274,8 @@ export default function App() {
       ) : null}
       <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView key={workspace.workspace_id} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
       <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView key={workspace.workspace_id} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={openApproval} />}</div>
-      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={openApproval} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
-      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={workspace.workspace_id} refreshEpoch={approvalRefreshEpoch} target={approvalTarget} onTargetHandled={clearApprovalTarget} onPendingCount={setApprovalCount} onDirtyChange={setApprovalDirty} discardEpoch={approvalDiscardEpoch} onError={report} onOpenPage={(title) => {
-        void api.get<Page[]>('/pages').then((pages) => {
-          const match = pages.find((candidate) => String(candidate.metadata.title ?? '') === title)
-          if (match) void openPage(match.page_id)
-          else report('找不到这条页面链接，请从项目目录中打开页面。', 'neutral')
-        }).catch(() => report('无法读取页面目录'))
-      }} /></div>
+      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={openApproval} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} onOpenConnectionWizard={() => { setFirstUse((current) => ({ ...current, open: true, step: 4, returnSection: 'today' })); setSection('settings'); setVisitedSections((current) => new Set(current).add('settings')) }} /></div>
+      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={workspace.workspace_id} refreshEpoch={approvalRefreshEpoch} target={approvalTarget} onTargetHandled={clearApprovalTarget} onPendingCount={setApprovalCount} onDirtyChange={setApprovalDirty} discardEpoch={approvalDiscardEpoch} onError={report} onOpenPage={(pageId, expectedHash) => void openPage(pageId, expectedHash)} /></div>
     </AppShell>
   )
 }
