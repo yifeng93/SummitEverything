@@ -1,0 +1,9 @@
+<svg viewBox="0 0 67 67" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="罗艺峰 favicon">
+  <!-- 小尺寸变体（favicon／社交头像／水印）。同一高程场，只留两圈
+       ＋ 顶点方块，重简化、加粗线。24px 仍可辨；16px 退化为
+       「两圈套一个暗点」，可接受：小尺寸只需保住「同心不规则
+       ＋ 偏心顶点」的关系，地形的读法本来就需要尺寸。 -->
+  <path d="M31.9,10.6 L10.1,26.9 L4.0,38.3 L4.2,46.7 L17.1,55.9 L55.9,55.3 L62.5,45.5 L60.9,35.3 L40.5,11.4 L31.9,10.6 Z" fill="none" stroke="#4C5B60" stroke-width="2.6" stroke-linejoin="miter"/>
+  <path d="M27.4,20.8 L18.3,26.9 L13.8,35.9 L18.8,41.9 L27.9,45.7 L37.7,42.9 L39.7,37.7 L34.8,25.2 L27.4,20.8 Z" fill="none" stroke="#4C5B60" stroke-width="4.2" stroke-linejoin="miter"/>
+  <rect x="19.6" y="26.4" width="7" height="7" fill="#23292B"/>
+</svg>
