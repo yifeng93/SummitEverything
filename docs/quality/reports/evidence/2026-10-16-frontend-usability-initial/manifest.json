@@ -1,0 +1,111 @@
+{
+  "tested_sha": "0957df2b871970d626fb2745048a6e79bad4defb",
+  "source_root": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything/.local/qa/frontend-usability-0957",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 8149,
+      "sha256": "8c20c739ec3877fb1ad96a4a515568ef5fd48488709bb6d97bdfe3c9ffd763e9"
+    },
+    {
+      "path": "focused-browser.cjs",
+      "bytes": 12404,
+      "sha256": "28cef40262b7c397704d02c6b726fad63ad05c33734dc06b3030946177c2eef0"
+    },
+    {
+      "path": "multidraft-fastapi.cjs",
+      "bytes": 9705,
+      "sha256": "010daf2b3942950b58d2d951b887cc60efa7748cac0de815159a52290ff0af73"
+    },
+    {
+      "path": "file-batch-mock.cjs",
+      "bytes": 8247,
+      "sha256": "d1c31666410de1d3adc4d2fec5149b7eb6d423ac82219402599da54dfa0f7a83"
+    },
+    {
+      "path": "focused-browser-manifest.json",
+      "bytes": 2064,
+      "sha256": "6b44c996299ddc1bf68b4d4ae0ed53de50ec10ec1fe780c6b7d4c92f529fae6d"
+    },
+    {
+      "path": "file-batch-mock-manifest.json",
+      "bytes": 3257,
+      "sha256": "a599d29a69f747252248496069787f4e48ffcba9e0fdc77f81236f63f24c0bcd"
+    },
+    {
+      "path": "logs/web-unit.log",
+      "bytes": 305,
+      "sha256": "12509395aa1e54f127e08c6518b311521ec9f84a64aa00e99164c38d2c805d83"
+    },
+    {
+      "path": "logs/web-typecheck.log",
+      "bytes": 49,
+      "sha256": "1f9ffa697244bf669a39b731f5a2ec25632e4d6330b4a7810db1f9c1adc853f8"
+    },
+    {
+      "path": "logs/web-lint.log",
+      "bytes": 990,
+      "sha256": "cb5c2cb8fff9652c02f635d19d07cdaccb384b5399cf4939a3bea8c831dabc05"
+    },
+    {
+      "path": "logs/web-build.log",
+      "bytes": 762,
+      "sha256": "f3d533735d4315d0848cb358d3066ea085c24d148bf7195f48a73ce69dd6682f"
+    },
+    {
+      "path": "logs/web-api-types.log",
+      "bytes": 593,
+      "sha256": "7a8ab5c0db5badd97dc0fd727265d5630581a551e919775c66f5d888560503fb"
+    },
+    {
+      "path": "logs/web-e2e-viewport.log",
+      "bytes": 694,
+      "sha256": "77174818da9775ede1b09a21ea022f5e4042b42742b656f26d29a19a5a208e70"
+    },
+    {
+      "path": "logs/web-e2e-integration.log",
+      "bytes": 888,
+      "sha256": "212cc069426d836c2beb53505356ca9d5d018bf6cce74bd2c1998ea40c8a337b"
+    },
+    {
+      "path": "logs/focused-browser-final.log",
+      "bytes": 2072,
+      "sha256": "fe21821a5030d4ff4165906a407af4ad4b4d84bb480d97984eda687cae7aa3a1"
+    },
+    {
+      "path": "logs/multidraft-fastapi-final.log",
+      "bytes": 1599,
+      "sha256": "00696d8fa476a1392d556cf6e292a10f382b8236ff3734317fe86e640637c30e"
+    },
+    {
+      "path": "logs/file-batch-mock.log",
+      "bytes": 3265,
+      "sha256": "637554602a8a032688709ba34f7b3b66c76c92148accc7a11046a8210bce5579"
+    },
+    {
+      "path": "logs/baseline-counterexample.log",
+      "bytes": 356,
+      "sha256": "5ce1d61cf5af382d8d21195952df86e1a69afa67f1b87b8b558cf8c00d9049a9"
+    },
+    {
+      "path": "focused-exact-id-initial-index.png",
+      "bytes": 76606,
+      "sha256": "8df40d4337f64c815ec77f762097ca562322925779b1a4e8894dbb6e87d19072"
+    },
+    {
+      "path": "multidraft-97316/manifest.json",
+      "bytes": 1591,
+      "sha256": "1baa41b2d413e32a7bf63954a3a49f95974f151e880209505f8342a9d4f0f8e4"
+    },
+    {
+      "path": "multidraft-97316/one-confirmed-one-pending.png",
+      "bytes": 77770,
+      "sha256": "10d6b7031704cae36c7647cd73598e51dcd68bf78d1488096cab119da6fbdb9e"
+    },
+    {
+      "path": "file-batch-mock-final.png",
+      "bytes": 78677,
+      "sha256": "fc948a1869522b0c2034c194c365f436830da217a88189772274fbb54e61ad07"
+    }
+  ]
+}

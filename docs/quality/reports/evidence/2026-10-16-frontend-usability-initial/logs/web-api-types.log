@@ -1,0 +1,13 @@
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Using CPython 3.12.13
+Creating virtual environment at: .venv
+   Building summit-everything @ file:///Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything
+      Built summit-everything @ file:///Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything
+Installed 40 packages in 65ms
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [69.5ms]
+exit=0

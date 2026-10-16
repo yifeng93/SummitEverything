@@ -1,0 +1,14 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything/web
+
+
+ Test Files  26 passed (26)
+      Tests  235 passed (235)
+   Start at  21:55:31
+   Duration  2.13s (environment 56%, tests 25%, import 10%, transform 10%)
+
+exit=0
