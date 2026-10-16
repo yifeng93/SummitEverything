@@ -4,8 +4,10 @@
 
 ## 当前状态
 
-### 今日与审批可用性（2026-10-16；独立 QA 待开始）
+### 今日与审批可用性（2026-10-16；修复轮 1 完成，等待 fresh QA）
 
-固定受测产品 SHA：`0957df2b871970d626fb2745048a6e79bad4defb`，分支 `codex/frontend-usability-20261016`。本轮基于用户批准计划实施，提交链为产品基线 `6ecfc75` → 计划 `42f8872` → 产品 checkpoint `431fc95` → 产品 SHA `0957df2`。宽屏今日并列显示日程/任务与记录/导入，窄屏纵向排列，默认显示会议 3 条、任务 5 条；保存回执按真实 ID 接续。审批组待处理时展开、空组可折叠，单项专注页和未保存保护已实现；首次索引待处理由 API 正式页状态提示。
+初验产品 SHA `0957df2b871970d626fb2745048a6e79bad4defb` 的行为验收通过，但 Sol 门因 ApprovalView 两处新增 lint suppression 未披露而判 FAIL；不得把初验状态当作修复轮结论。修复轮 1 移除 suppression，并将 refreshEpoch 改为可取消、按资源独立更新的异步生命周期，目标路由及来源详情采用请求身份保护。修复轮产品 SHA 和文档 tip 见[DEV 修复轮 1 交接](../quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)；当前 SHA 等待 fresh QA，Sol 尚未判门。
 
-当前开发者检查：Web 单测 **235/235**、typecheck、lint、build、API types、Playwright **2/2**、FastAPI Fake 集成 **1/1** 均 exit 0。Lint 有 2 条既有 warning，build 有主 bundle 大小 warning。该记录不是独立 QA 结论；QA 尚未运行。完整日志、截图、限制和复演清单见[DEV 交接报告](../handoff/DEV-FRONTEND-USABILITY-20261016.md)。
+原批准行为仍包括：宽屏今日并列显示日程/任务与记录/导入，窄屏纵向排列，默认显示会议 3 条、任务 5 条；保存回执按真实 ID 接续。审批组待处理时展开、空组可折叠，单项专注页和未保存保护已实现；首次索引待处理由 API 正式页状态提示。
+
+修复轮开发检查：Web 单测 **239/239**、typecheck、lint、build、Playwright **2/2**、FastAPI Fake 集成 **1/1** 均 exit 0。Lint 保留 `App.tsx` 与 `ProjectsView.tsx` 两条既有 warning，ApprovalView 无新增 warning；build 有 Vite 主 bundle 大小 warning。该记录不是独立 QA 结论；fresh QA 尚未运行。精确退出码和原始日志见 [DEV 修复轮 1 报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。

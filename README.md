@@ -4,7 +4,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前开发分支（未合入 main）
 
-- **今日/审批可用性（2026-10-16；独立 QA 待开始）**：固定产品源码 `0957df2b871970d626fb2745048a6e79bad4defb`（父 `431fc95`；文档更新另成 docs-only commit，QA 尚未开始）。今日宽屏并排提供会议/任务与记录/导入，默认显示 3 场会议和 5 项任务；保存结果按精确材料 ID 接续。审批进入单项专注阅读，保护未保存编辑，空组可展开；已有确认正式内容而首次索引未建时提示并展开独立索引确认。Web 单测 235/235、typecheck、lint、build、Playwright 2/2、Fake API 集成 1/1 和 API types 当前开发检查通过；lint 保留 2 条原有 warning，build 有 602 KB 主包提示。独立 QA 尚未运行，不能视为验收通过。见[开发交接](docs/handoff/DEV-FRONTEND-USABILITY-20261016.md)和[决策 ADR 0012](docs/decisions/0012-today-approval-focused-usability.md)。
+- **今日/审批可用性（2026-10-16；修复轮 1，等待 fresh QA）**：初验产品 SHA `0957df2b871970d626fb2745048a6e79bad4defb` 的产品行为经 QA 检查通过，但 Sol 门判断因 ApprovalView 两处 suppression 违反已批准的质量门而 FAIL；未披露是额外透明度问题，不能以补充说明豁免门限。见[初验报告](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)。修复轮 1 移除 suppression，以可取消的刷新 epoch 和请求身份保护替代；固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`，fresh QA 尚未运行。已重跑 Web 单测、typecheck、lint、build、Playwright 与 FastAPI Fake 集成，具体退出码和日志见[修复轮 1 DEV 交接](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。既有产品行为仍为今日会议/任务及记录/导入并列、精确材料 ID 接续、审批单项专注与未保存保护。当前工作尚未验收，不代表通过。
 
 ## main 当前状态（截至 2026-10-16）
 
