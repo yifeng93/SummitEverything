@@ -8,6 +8,7 @@ import json
 import os
 import plistlib
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -69,19 +70,62 @@ def resolve_setfile() -> Path:
     return Path(resolved)
 
 
+def assert_valid_icns(data: bytes, *, path: Path) -> list[tuple[bytes, int]]:
+    """Parse and validate the icns block table of ``data``.
+
+    A file that merely starts with ``b"icns"`` is not enough: the four length
+    bytes after the magic must equal the real file size, every block must
+    declare at least 8 bytes (type + length) and stay inside the file, and the
+    blocks must tile the file exactly with no trailing bytes. Every failure
+    raises ``RuntimeError`` naming the check that failed, so a corrupted
+    committed icon fails the build instead of being copied into the bundle.
+    """
+    if len(data) < 8:
+        raise RuntimeError(f"Not a valid .icns file (shorter than the 8-byte header): {path}")
+    if data[:4] != b"icns":
+        raise RuntimeError(f"Not a valid .icns file (bad header): {path}")
+    declared = struct.unpack(">I", data[4:8])[0]
+    if declared != len(data):
+        raise RuntimeError(
+            f"Not a valid .icns file (header length {declared} != file size {len(data)}): {path}"
+        )
+    blocks: list[tuple[bytes, int]] = []
+    offset = 8
+    while offset < len(data):
+        if offset + 8 > len(data):
+            raise RuntimeError(
+                f"Not a valid .icns file (truncated block header at offset {offset}): {path}"
+            )
+        block_type = data[offset : offset + 4]
+        length = struct.unpack(">I", data[offset + 4 : offset + 8])[0]
+        if length < 8:
+            raise RuntimeError(
+                f"Not a valid .icns file (block {block_type!r} length {length} < 8): {path}"
+            )
+        if offset + length > len(data):
+            raise RuntimeError(
+                f"Not a valid .icns file (block {block_type!r} at offset {offset} overruns "
+                f"the file): {path}"
+            )
+        blocks.append((block_type, length))
+        offset += length
+    if not blocks:
+        raise RuntimeError(f"Not a valid .icns file (no icon blocks): {path}")
+    return blocks
+
+
 def embed_app_icon(resources: Path, *, source: Path | None = None) -> str:
     """Validate and copy the committed ``.icns`` into Resources.
 
     Returns the icon stem for ``CFBundleIconFile``. The icon is a committed
-    generated artifact, so a missing or malformed file fails the build instead
-    of silently shipping a bundle with the generic application icon.
+    generated artifact, so a missing, malformed or truncated file fails the
+    build instead of silently shipping a bundle with the generic application
+    icon: the whole icns block table is parsed, not just the magic.
     """
     path = source if source is not None else ROOT / APP_ICON_RELATIVE_PATH
     if not path.is_file():
         raise RuntimeError(f"Missing app icon: {path}")
-    data = path.read_bytes()
-    if len(data) < 8 or data[:4] != b"icns":
-        raise RuntimeError(f"Not a valid .icns file (bad header): {path}")
+    assert_valid_icns(path.read_bytes(), path=path)
     shutil.copy2(path, resources / BUNDLE_ICON_NAME)
     return BUNDLE_ICON_STEM
 

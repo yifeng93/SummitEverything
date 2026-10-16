@@ -19,7 +19,11 @@
  * Usage:
  *   node assets/branding/make-appicon.mjs                       # faithful, render + self-check
  *   node assets/branding/make-appicon.mjs --profile legible     # alternative treatment
- *   node assets/branding/make-appicon.mjs --check-only          # verify committed .icns, no Playwright
+ *   node assets/branding/make-appicon.mjs --check               # verify committed .icns, no Playwright
+ *   node assets/branding/make-appicon.mjs --check-only          # alias of --check
+ *
+ * One PNG is rendered per *distinct* pixel size and then copied to every iconset
+ * name that needs that size, so a size never goes through two rendering paths.
  *
  * See assets/branding/README.md for the profile rationale and provenance.
  */
@@ -109,6 +113,42 @@ const CANONICAL_BY_SIZE = new Map([
   [1024, "icon_512x512@2x.png"],
 ]);
 
+/** icns block type -> pixel size, for the ten standard representations. */
+const ICNS_BLOCK_SIZES = {
+  ic04: 16,
+  ic11: 32,
+  ic05: 32,
+  ic12: 64,
+  ic07: 128,
+  ic13: 256,
+  ic08: 256,
+  ic14: 512,
+  ic09: 512,
+  ic10: 1024,
+};
+
+/** Every representation block the committed `.icns` must contain. */
+const EXPECTED_ICNS_BLOCKS = Object.keys(ICNS_BLOCK_SIZES);
+
+/**
+ * Pixel size -> the iconset file names that must carry that exact image.
+ *
+ * The renderer produces one PNG per distinct pixel size; every name returned
+ * here is a byte-for-byte copy of it, so a size is rendered once and never
+ * through a second compositing path.
+ */
+function sharedSizeGroups() {
+  const groups = new Map();
+  for (const [fileName, size] of ICONSET_ENTRIES) {
+    const names = groups.get(size) ?? [];
+    names.push(fileName);
+    groups.set(size, names);
+  }
+  return [...groups.entries()]
+    .filter(([, names]) => names.length > 1)
+    .map(([size, names]) => ({ size, names }));
+}
+
 /**
  * Lower bounds for the brand-colour pixel count, ~80% of the measured values
  * (see README). Guard rails against a silently blank or over-thin render.
@@ -121,6 +161,13 @@ const INK_FLOORS = {
 
 /** Chebyshev (max-channel) distance used to decide "this pixel is brand colour". */
 const COLOUR_TOLERANCE = 40;
+
+/**
+ * A pixel counts as brand ink only when it is opaque enough to be seen: the
+ * measured counts in README §5 use `alpha > 140`. The looser `alpha > 0` reading
+ * would count anti-aliased plate corners too (32px: 58 instead of 52).
+ */
+const INK_ALPHA_FLOOR = 140;
 
 const PIXEL_CHECK_PY = `
 import json
@@ -155,7 +202,7 @@ def stats(path):
     plate = False
     present = {name: False for name in TOKENS}
     for pixel in pixels:
-        if pixel[3] == 0:
+        if pixel[3] <= ${INK_ALPHA_FLOOR}:
             continue
         rgb = pixel[:3]
         if not plate and near(rgb, PLATE):
@@ -182,9 +229,274 @@ def stats(path):
 print(json.dumps([stats(p) for p in sys.argv[1:]]))
 `;
 
+/**
+ * Decode the committed .icns and the iconset iconutil extracted from it.
+ *
+ * Two facts have to be separable to judge "same pixel size, one render":
+ *  1. inside the container the shared-size representations must hold identical
+ *     pixels (iconutil stores 16px/32px 1x as `ARGB` RLE and the rest as PNG);
+ *  2. `iconutil -c iconset` is not byte-faithful for the `ARGB` blocks — it
+ *     unpremultiplies payloads that it wrote unpremultiplied. That rewrite is
+ *     reported, and it must be the *only* difference left after extraction.
+ */
+const ICNS_AUDIT_PY = `
+import hashlib
+import io
+import json
+import struct
+import sys
+
+from PIL import Image
+
+PNG_MAGIC = bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+BLOCK_SIZES = {
+    "ic04": 16, "ic11": 32, "ic05": 32, "ic12": 64, "ic07": 128,
+    "ic13": 256, "ic08": 256, "ic14": 512, "ic09": 512, "ic10": 1024,
+}
+SHARED = {
+    32: ["icon_16x16@2x.png", "icon_32x32.png"],
+    256: ["icon_128x128@2x.png", "icon_256x256.png"],
+    512: ["icon_256x256@2x.png", "icon_512x512.png"],
+}
+CANONICAL = {
+    16: "icon_16x16.png", 32: "icon_32x32.png", 64: "icon_32x32@2x.png",
+    128: "icon_128x128.png", 256: "icon_256x256.png", 512: "icon_512x512.png",
+    1024: "icon_512x512@2x.png",
+}
+NAME_BLOCK = {
+    "icon_16x16.png": "ic04", "icon_16x16@2x.png": "ic11", "icon_32x32.png": "ic05",
+    "icon_32x32@2x.png": "ic12", "icon_128x128.png": "ic07", "icon_128x128@2x.png": "ic13",
+    "icon_256x256.png": "ic08", "icon_256x256@2x.png": "ic14", "icon_512x512.png": "ic09",
+    "icon_512x512@2x.png": "ic10",
+}
+
+
+def unpack_rle(body, count):
+    out = bytearray()
+    index = 0
+    while len(out) < count:
+        control = body[index]
+        index += 1
+        if control >= 0x80:
+            run = control - 125
+            value = body[index]
+            index += 1
+            out.extend(bytes([value]) * run)
+        else:
+            run = control + 1
+            out.extend(body[index:index + run])
+            index += run
+    return bytes(out[:count])
+
+
+def decode_argb(payload, size):
+    count = size * size
+    planes = []
+    body = payload[4:]
+    position = 0
+    for _ in range(4):
+        plane = bytearray()
+        while len(plane) < count:
+            control = body[position]
+            position += 1
+            if control >= 0x80:
+                run = control - 125
+                value = body[position]
+                position += 1
+                plane.extend(bytes([value]) * run)
+            else:
+                run = control + 1
+                plane.extend(body[position:position + run])
+                position += run
+        planes.append(bytes(plane[:count]))
+    alpha, red, green, blue = planes
+    return [(red[i], green[i], blue[i], alpha[i]) for i in range(count)]
+
+
+def decode(payload, size):
+    if payload[:8] == PNG_MAGIC:
+        return list(Image.open(io.BytesIO(payload)).convert("RGBA").getdata())
+    if payload[:4] == b"ARGB":
+        return decode_argb(payload, size)
+    return None
+
+
+def unpremultiply(pixels):
+    """What iconutil -c iconset does to an ARGB payload it wrote unpremultiplied."""
+    out = []
+    for red, green, blue, alpha in pixels:
+        if alpha == 0:
+            out.append((0, 0, 0, 0) if (red, green, blue) == (0, 0, 0) else (255, 255, 255, 0))
+            continue
+        out.append(tuple(min(255, (channel * 255 + alpha // 2) // alpha) for channel in (red, green, blue)) + (alpha,))
+    return out
+
+
+def delta(first, second):
+    return max(abs(a - b) for a, b in zip(first[:3], second[:3]))
+
+
+def read(path):
+    with open(path, "rb") as stream:
+        return stream.read()
+
+
+def main():
+    icns_path, iconset = sys.argv[1], sys.argv[2]
+    data = read(icns_path)
+    blocks = []
+    offset = 8
+    while offset < len(data):
+        block_type = data[offset:offset + 4].decode("latin-1")
+        length = struct.unpack(">I", data[offset + 4:offset + 8])[0]
+        payload = data[offset + 8:offset + length]
+        kind = "PNG" if payload[:8] == PNG_MAGIC else ("ARGB" if payload[:4] == b"ARGB" else "other")
+        blocks.append((block_type, payload, kind))
+        offset += length
+
+    report = {
+        "blocks": [{"type": t, "length": len(p) + 8, "kind": k} for t, p, k in blocks],
+        "shared": [],
+        "pairs": [],
+        "extracted": {},
+    }
+
+    by_size = {}
+    for block_type, payload, _kind in blocks:
+        size = BLOCK_SIZES.get(block_type)
+        if size is not None:
+            by_size.setdefault(size, []).append((block_type, decode(payload, size)))
+    for size in sorted(by_size):
+        entries = by_size[size]
+        if len(entries) < 2:
+            continue
+        reference = entries[0][1]
+        differing = 0
+        worst = 0
+        alpha_equal = True
+        for _name, pixels in entries[1:]:
+            for first, second in zip(reference, pixels):
+                if first[3] != second[3]:
+                    alpha_equal = False
+                if first != second:
+                    differing += 1
+                    worst = max(worst, delta(first, second))
+        report["shared"].append({
+            "size": size,
+            "blocks": [name for name, _pixels in entries],
+            "pixel_diff": differing,
+            "max_rgb_delta": worst,
+            "alpha_equal": alpha_equal,
+        })
+
+    for size in sorted(set(SHARED) | set(CANONICAL)):
+        name = CANONICAL[size]
+        raw = read(iconset + "/" + name)
+        pixels = list(Image.open(io.BytesIO(raw)).convert("RGBA").getdata())
+        report["extracted"][name] = {
+            "size": size,
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "whitish_semitransparent": sum(
+                1 for p in pixels if 0 < p[3] < 255 and p[0] > 200 and p[1] > 200 and p[2] > 200
+            ),
+        }
+
+    for size, names in SHARED.items():
+        raw = [read(iconset + "/" + name) for name in names]
+        pixels = [list(Image.open(io.BytesIO(item)).convert("RGBA").getdata()) for item in raw]
+        decoded = {
+            block_type: decode(payload, size)
+            for block_type, payload, _kind in blocks
+            if BLOCK_SIZES.get(block_type) == size
+        }
+        origins = {}
+        for name, values in zip(names, pixels):
+            reference = decoded.get(NAME_BLOCK[name])
+            if reference is None:
+                origins[name] = None
+            elif values == reference:
+                origins[name] = NAME_BLOCK[name] + ":exact"
+            elif values == unpremultiply(reference):
+                origins[name] = NAME_BLOCK[name] + ":unpremultiplied"
+            else:
+                origins[name] = None
+        report["pairs"].append({
+            "size": size,
+            "names": names,
+            "bytes_equal": raw[0] == raw[1],
+            "alpha_equal": all(a[3] == b[3] for a, b in zip(pixels[0], pixels[1])),
+            "rgb_diff_pixels": sum(1 for a, b in zip(pixels[0], pixels[1]) if a != b),
+            "max_rgb_delta": max([delta(a, b) for a, b in zip(pixels[0], pixels[1])] + [0]),
+            "against_container": origins,
+        })
+
+    print(json.dumps(report))
+
+
+main()
+`;
+
 function fail(message) {
   process.stderr.write(`make-appicon: ${message}\n`);
   process.exit(1);
+}
+
+/**
+ * Assert that every iconset name sharing a pixel size holds `cmp`-identical bytes.
+ *
+ * This is the assertion behind "one render per pixel size": the iconset handed
+ * to `iconutil` must contain a single image per size, duplicated by name.
+ */
+function assertSharedSizesByteIdentical(directory, label) {
+  const problems = [];
+  const rows = [];
+  for (const { size, names } of sharedSizeGroups()) {
+    const reference = fs.readFileSync(path.join(directory, names[0]));
+    for (const name of names.slice(1)) {
+      const candidate = fs.readFileSync(path.join(directory, name));
+      if (!reference.equals(candidate)) {
+        problems.push(`${size}px: ${names[0]} and ${name} are not byte-identical`);
+      }
+    }
+    rows.push(
+      `  ${String(size).padStart(4)}px  ${names.join(" == ")}` +
+        `  (${reference.length} bytes each)  cmp OK`,
+    );
+  }
+  process.stdout.write(`${label}: one byte-identical image per pixel size\n${rows.join("\n")}\n`);
+  if (problems.length > 0) {
+    fail(`shared pixel sizes are not byte-identical:\n  - ${problems.join("\n  - ")}`);
+  }
+}
+
+/**
+ * Parse and validate an `.icns` block table (the same rules as
+ * `scripts/build_macos_app.py`): the declared total length must equal the real
+ * file size, every block must declare at least 8 bytes and stay inside the file,
+ * and the blocks must tile the file exactly.
+ */
+function parseIcns(data, label) {
+  if (data.length < 8) fail(`${label}: shorter than the 8-byte icns header`);
+  if (data.subarray(0, 4).toString("latin1") !== "icns") fail(`${label}: bad icns magic`);
+  const declared = data.readUInt32BE(4);
+  if (declared !== data.length) {
+    fail(`${label}: header length ${declared} != file size ${data.length}`);
+  }
+  const blocks = [];
+  let offset = 8;
+  while (offset < data.length) {
+    if (offset + 8 > data.length) fail(`${label}: truncated block header at offset ${offset}`);
+    const type = data.subarray(offset, offset + 4).toString("latin1");
+    const length = data.readUInt32BE(offset + 4);
+    if (length < 8) fail(`${label}: block ${type} declares ${length} bytes (< 8)`);
+    if (offset + length > data.length) {
+      fail(`${label}: block ${type} at offset ${offset} overruns the file`);
+    }
+    blocks.push({ type, length, offset });
+    offset += length;
+  }
+  if (blocks.length === 0) fail(`${label}: no icon blocks`);
+  return blocks;
 }
 
 /** Resolve Playwright from the repository's own web/node_modules. */
@@ -198,6 +510,18 @@ function loadChromium() {
         `Run \`npm --prefix web ci\` first, or use --check-only to validate the committed .icns. (${error.message})`,
     );
   }
+}
+
+/** Run an inline Python helper (Pillow is available in it) and return its stdout. */
+function runPython(python, source, args) {
+  const scriptPath = path.join(
+    fs.mkdtempSync(path.join(os.tmpdir(), "appicon-python-")),
+    "helper.py",
+  );
+  fs.writeFileSync(scriptPath, source, "utf8");
+  return execFileSync(python.command, [...python.prefix, scriptPath, ...args], {
+    encoding: "utf8",
+  });
 }
 
 function readBrandMark(fileName) {
@@ -276,7 +600,14 @@ function compose(profile, size) {
   );
 }
 
-/** Render one PNG per icon size, transparent background, for a profile. */
+/**
+ * Render one PNG per *distinct* pixel size, on a transparent background.
+ *
+ * `ICON_SIZES` is a set, so 32px is rendered exactly once and then copied (by
+ * `makeIconset`) to both `icon_16x16@2x.png` and `icon_32x32.png`. `omitBackground`
+ * plus `background:transparent` is what keeps the anti-aliased plate corners
+ * free of composited white.
+ */
 async function renderProfile(chromium, profile, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   const browser = await chromium.launch();
@@ -321,15 +652,12 @@ function resolvePython() {
 
 /** Run the Pillow pixel statistics over the given PNG paths. */
 function readPixelStats(python, paths) {
-  const scriptPath = path.join(
-    fs.mkdtempSync(path.join(os.tmpdir(), "appicon-pixels-")),
-    "pixel_check.py",
-  );
-  fs.writeFileSync(scriptPath, PIXEL_CHECK_PY, "utf8");
-  const raw = execFileSync(python.command, [...python.prefix, scriptPath, ...paths], {
-    encoding: "utf8",
-  });
-  return JSON.parse(raw);
+  return JSON.parse(runPython(python, PIXEL_CHECK_PY, paths));
+}
+
+/** Decode the committed .icns and the iconset iconutil extracted from it. */
+function auditIcns(python, icnsPath, iconsetDir) {
+  return JSON.parse(runPython(python, ICNS_AUDIT_PY, [icnsPath, iconsetDir]));
 }
 
 /**
@@ -383,9 +711,14 @@ function assertStats(profile, stats, label) {
 function makeIconset(profileDir, iconsetPath) {
   fs.rmSync(iconsetPath, { recursive: true, force: true });
   fs.mkdirSync(iconsetPath, { recursive: true });
+  // One rendered PNG per distinct pixel size, copied to every name that needs
+  // it: 16 -> 1 name; 32 -> icon_16x16@2x.png + icon_32x32.png; 64 -> 1;
+  // 128 -> 1; 256 -> icon_128x128@2x.png + icon_256x256.png; 512 ->
+  // icon_256x256@2x.png + icon_512x512.png; 1024 -> icon_512x512@2x.png.
   for (const [fileName, size] of ICONSET_ENTRIES) {
     fs.copyFileSync(path.join(profileDir, `icon-${size}.png`), path.join(iconsetPath, fileName));
   }
+  assertSharedSizesByteIdentical(iconsetPath, "iconset about to be packed");
 }
 
 function buildIcns(python, profile) {
@@ -407,25 +740,120 @@ function buildIcns(python, profile) {
   );
 }
 
-/** Validate already-committed .icns files without Playwright or re-rendering. */
-function checkOnly(python) {
+/**
+ * Validate already-committed .icns files without Playwright or re-rendering.
+ *
+ * Checks, in order: the block table parses and holds the ten expected
+ * representations; both committed files are byte-identical; the container's
+ * shared-size representations carry identical pixels; the iconset handed to
+ * `iconutil` is one byte-identical image per size; the pixel floors hold; and
+ * any difference `iconutil -c iconset` introduces is accounted for.
+ */
+function checkOnly(python, profile) {
   for (const icns of [APP_ICON_PATH, VOLUME_ICON_PATH]) {
     if (!fs.existsSync(icns)) fail(`missing committed icon: ${path.relative(ROOT, icns)}`);
   }
-  const extracted = fs.mkdtempSync(path.join(os.tmpdir(), "appicon-extract-"));
+  const appLabel = path.relative(ROOT, APP_ICON_PATH);
+  const appBytes = fs.readFileSync(APP_ICON_PATH);
+  const volumeBytes = fs.readFileSync(VOLUME_ICON_PATH);
+  const blocks = parseIcns(appBytes, appLabel);
+  const types = blocks.map((block) => block.type);
+  const missing = EXPECTED_ICNS_BLOCKS.filter((type) => !types.includes(type));
+  if (missing.length > 0) fail(`${appLabel}: missing blocks ${missing.join(", ")}`);
+  const unexpected = types.filter((type) => type !== "info" && !EXPECTED_ICNS_BLOCKS.includes(type));
+  if (unexpected.length > 0) fail(`${appLabel}: unexpected blocks ${unexpected.join(", ")}`);
+  if (!appBytes.equals(volumeBytes)) {
+    fail("AppIcon.icns and VolumeIcon.icns are not byte-identical");
+  }
+  process.stdout.write(
+    `committed .icns: ${types.join(", ")} (${appBytes.length} bytes); ` +
+      "AppIcon.icns == VolumeIcon.icns by cmp\n",
+  );
+
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), "appicon-extract-"));
   try {
-    const iconset = path.join(extracted, "AppIcon.iconset");
-    execFileSync("iconutil", ["-c", "iconset", APP_ICON_PATH, "-o", iconset], { stdio: "inherit" });
+    const iconset = path.join(work, "AppIcon.iconset");
+    execFileSync("iconutil", ["-c", "iconset", APP_ICON_PATH, "-o", iconset]);
+    const extractedNames = fs.readdirSync(iconset).sort();
+    const expectedNames = ICONSET_ENTRIES.map(([fileName]) => fileName).sort();
+    if (extractedNames.join("\n") !== expectedNames.join("\n")) {
+      fail(
+        `iconutil extracted ${extractedNames.length} representations ` +
+          `(${extractedNames.join(", ")}) instead of ${expectedNames.length}`,
+      );
+    }
+
+    // The iconset that would be handed to iconutil, rebuilt from one canonical
+    // file per pixel size, then compared with `cmp`.
+    const input = path.join(work, `${profile}.iconset`);
+    fs.mkdirSync(input, { recursive: true });
     const stats = [];
     // Ascending size, so assertStats reports them in a predictable order.
     for (const size of [...CANONICAL_BY_SIZE.keys()].sort((a, b) => a - b)) {
-      const candidate = path.join(iconset, CANONICAL_BY_SIZE.get(size));
-      if (!fs.existsSync(candidate)) fail(`AppIcon.icns has no ${CANONICAL_BY_SIZE.get(size)}`);
-      stats.push(...readPixelStats(python, [candidate]));
+      const canonical = path.join(iconset, CANONICAL_BY_SIZE.get(size));
+      if (!fs.existsSync(canonical)) fail(`AppIcon.icns has no ${CANONICAL_BY_SIZE.get(size)}`);
+      fs.copyFileSync(canonical, path.join(input, CANONICAL_BY_SIZE.get(size)));
+      stats.push(...readPixelStats(python, [canonical]));
     }
-    assertStats(DEFAULT_PROFILE, stats, "committed AppIcon.icns");
+    for (const [fileName, size] of ICONSET_ENTRIES) {
+      fs.copyFileSync(path.join(input, CANONICAL_BY_SIZE.get(size)), path.join(input, fileName));
+    }
+    assertSharedSizesByteIdentical(input, "iconset input (what iconutil receives)");
+
+    assertStats(profile, stats, "committed AppIcon.icns");
+
+    const audit = auditIcns(python, APP_ICON_PATH, iconset);
+    for (const entry of audit.shared) {
+      const detail = `${String(entry.size).padStart(4)}px  ${entry.blocks.join(", ")}`;
+      if (entry.pixel_diff !== 0 || !entry.alpha_equal) {
+        fail(
+          `container ${detail}: shared-size representations differ ` +
+            `(${entry.pixel_diff} px, max Δrgb ${entry.max_rgb_delta})`,
+        );
+      }
+      process.stdout.write(`  container ${detail}: identical pixels inside the .icns\n`);
+    }
+
+    const whites = Object.entries(audit.extracted)
+      .filter(([, info]) => info.whitish_semitransparent > 0)
+      .map(([name, info]) => `${name}=${info.whitish_semitransparent}`);
+    process.stdout.write(
+      "  whitish semi-transparent pixels in the extracted reps: " +
+        `${whites.length > 0 ? whites.join(", ") : "none"}\n`,
+    );
+
+    const diverging = audit.pairs.filter((pair) => !pair.bytes_equal);
+    if (diverging.length === 0) {
+      process.stdout.write("  extracted iconset pairs are byte-identical by cmp\n");
+    } else {
+      process.stdout.write(
+        "  NOTE: `iconutil -c iconset` rewrites these shared-size pairs, so their bytes\n" +
+          "  differ even though the iconset handed to iconutil was byte-identical and the\n" +
+          "  .icns itself stores identical pixels. iconutil writes the 16px/32px 1x blocks as\n" +
+          "  `ARGB` RLE (unpremultiplied) and unpremultiplies them again when extracting.\n",
+      );
+      for (const pair of diverging) {
+        const origins = Object.entries(pair.against_container)
+          .map(([name, origin]) => `${name}=${origin ?? "UNEXPLAINED"}`)
+          .join(", ");
+        process.stdout.write(
+          `    ${String(pair.size).padStart(4)}px  ${pair.names.join(" vs ")}: ` +
+            `${pair.rgb_diff_pixels} px differ, max Δrgb ${pair.max_rgb_delta}, ` +
+            `alpha identical=${pair.alpha_equal} [${origins}]\n`,
+        );
+        const unexplained = Object.values(pair.against_container).some(
+          (origin) => origin === null,
+        );
+        if (!pair.alpha_equal || unexplained) {
+          fail(
+            `${pair.size}px extraction divergence is not explained by iconutil's ARGB ` +
+              `handling: ${JSON.stringify(pair.against_container)}`,
+          );
+        }
+      }
+    }
   } finally {
-    fs.rmSync(extracted, { recursive: true, force: true });
+    fs.rmSync(work, { recursive: true, force: true });
   }
 }
 
@@ -449,8 +877,11 @@ async function main() {
 
   const python = resolvePython();
 
-  if (argv.includes("--check-only")) {
-    checkOnly(python);
+  // `--check` and `--check-only` are the same offline verification: they parse
+  // the committed .icns, re-extract it with iconutil, assert the shared pixel
+  // sizes are one byte-identical image, and re-run the pixel floors. No render.
+  if (argv.includes("--check") || argv.includes("--check-only")) {
+    checkOnly(python, profile);
     return 0;
   }
 
