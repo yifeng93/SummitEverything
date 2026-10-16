@@ -200,22 +200,72 @@ workflow 文件，而 workflow 注册记录（Actions 侧的 workflow 条目）�
 `src/components/ProjectsView.tsx:62:26` 与 `src/App.tsx:124:26`（effect 内同步 setState），
 以及一条 macOS arm64 runner 排队容量提示；二者都不是失败，run 结论仍为 success。）
 
-## 5 · 结论声明
+## 5 · 后续 docs-only 提交同样触发了一次 run（实测反例，纠正原假设）
 
-- 上述 run `38831085564` 的 `headSha` = `af65f049a12caebbcb932a86e610282702e1ffc3`，
+任务原假设是：「第二个 commit 只改 `docs/**`，按 workflow 自身的 `paths` 过滤器**不会**再触发一次 run」。
+**实测结果与该假设相反**：本 README 推上去后，同一个 workflow 又起了一次 `pull_request` run。
+
+命令：`gh run list --branch codex/frontend-ux-20261015 --limit 4 --json databaseId,headSha,status,conclusion,event,createdAt,workflowName`（在该次 push 后约 25s 实测）
+
+新 run 的实测字段：
+
+| 字段 | 实测值 |
+| --- | --- |
+| `databaseId` | `38831643643` |
+| `headSha` | `68c36399c3ecc02b35be3fa2110c97fae3fcde0d`（= 提交 `chore(cleanup): record the real CI result on the cleaned tip`） |
+| `event` | `pull_request` |
+| `status` | `completed` |
+| `conclusion` | `success` |
+| `createdAt` / `updatedAt` | `2026-10-16T00:49:07Z` / `2026-10-16T00:53:15Z`，墙钟 `4m08s` |
+| job | `offline-arm64`（job id `116751537130`），`2026-10-16T00:49:14Z` → `00:53:15Z`，即 `4m01s` |
+| run `name` | `offline-arm64 checks (python, web, native, DMG)` |
+| URL | https://github.com/yifeng93/SummitEverything/actions/runs/38831643643 |
+
+四个步骤结论同为 `completed / success`：`Guarded Python checks`、`Web checks and API types`、
+`Native upload policy tests`、`Build and verify internal App and DMG`。
+`gh run view 38831643643 --log-failed` 为 0 字节，未重跑。
+
+`gh pr checks 21` 实测：
+
+```
+offline-arm64	pass	4m1s	https://github.com/yifeng93/SummitEverything/actions/runs/38831643643/job/116751537130
+```
+
+**原因（观测与推断分开写，不混同）**：
+
+- 观测事实：该提交只动了 `docs/quality/reports/evidence/2026-10-15-cleanup-ci/README.md`
+  （`git show --stat HEAD` 实测 1 个文件、221 行新增，**不含** `paths` 列表中的任何一项），
+  却仍然触发了 run。
+- 推断（本轮未逐条复核 GitHub 文档，仅作机制解释）：`pull_request` 事件的 `paths` 过滤器按
+  **PR 相对 base 的整体 diff** 判定，而不是只按本次 push 的提交判定。PR #21 相对 base 已包含
+  `.github/workflows/m41-internal-app.yml` 的改动，因此此后**每次**推送到该 PR 都会命中 `paths`，
+  workflow 会再跑一次。
+- **可得结论：在本 PR 上，任何 push（含 docs-only）都会触发该 workflow。**
+
+因此「docs-only 提交不改变 CI 相关树」这一句只能按「不改变 workflow 语义与触发面」（§2 逐字节证明）
+理解，**不能**理解成「不会再触发 run」。
+
+## 6 · 结论声明
+
+- run `38831085564` 的 `headSha` = `af65f049a12caebbcb932a86e610282702e1ffc3`，
   **就是清理后的 tip**（即 §1 显示名提交后的分支 HEAD，也是本地 HEAD 与远端 ref 的同一 SHA）。
   该 run 的 `success` 对应清理后的 tip，对应显示名改动后的 workflow 文本。
-- **CI 运行于 commit `af65f04` 的 tip；其后的 docs-only 提交不改变 CI 相关树。**
-  本 README 及后续只改 `docs/**` 的提交，按该 workflow 自身的 `paths` 过滤器（无 `docs/**`
-  条目）不会再次触发 run——这是预期行为，不是漏跑。
-- 判定规则满足：`status=completed`、`conclusion=success`、`headSha` == 清理后 tip；
-  Python / Web / native / DMG 四个步骤全部 success，无需要重跑的抖动失败。
+- run `38831643643` 的 `headSha` = `68c36399c3ecc02b35be3fa2110c97fae3fcde0d`，
+  即加入本证据文件后的**新 tip**；该 run 同样 `success`。即清理后 tip 与其后 docs-only 提交的
+  tip **两次 run 均为绿**。
+- 判定规则满足：两次 run 均 `status=completed`、`conclusion=success`，且首次 run 的
+  `headSha` == 清理后 tip；Python / Web / native / DMG 四个步骤在两次 run 中全部 success，
+  无需要重跑的抖动失败（未出现 `hdiutil: create failed - Resource busy`）。
+- 承接 §5：写入本节的这次纠正提交本身还会再触发一次 run。该收尾 run 的结果记在 C6 交接回报里，
+  **不再回写本文件**，以免形成「改文档 → 又触发 run」的无限循环。
 
-## 6 · 原始证据留存
+## 7 · 原始证据留存
 
 原始大 JSON / 日志仅留在本机被 Git 忽略的 `.local/`（不提交）：
 
-- `.local/dev/cleanup-c6/run.json`（`gh run view --json` 原件）
+- `.local/dev/cleanup-c6/run.json`（run 38831085564 的 `gh run view --json` 原件）
 - `.local/dev/cleanup-c6/failed.log`（0 字节，无失败步骤日志）
 - `.local/dev/cleanup-c6/pr-checks.txt`
 - `.local/dev/cleanup-c6/name-diff.patch`、`.local/dev/cleanup-c6/sed-3-27.txt`
+- `.local/dev/cleanup-c6/run-second.json`、`failed-second.log`（run 38831643643 原件，`failed-second.log` 为 0 字节）
+- `.local/dev/cleanup-c6/watch-second-run.txt`（`gh run watch 38831643643 --exit-status` 输出）
