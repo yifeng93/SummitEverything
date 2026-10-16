@@ -136,6 +136,9 @@ git push origin --delete codex/internal-candidate-20261014
 `frontend-d-build-repair2`、`frontend-d-build-repair3`）的 `.local` 内只有 `.app`/`.dmg` 二进制，
 不满足复制规则、无复制件可复核；其身份由 MANIFEST 的 `TREE` 行与整文件 SHA-256 覆盖。
 
+> **审计提示（QA Nit 4）**：`git diff --diff-filter=D e8e1dba 7a448c3` 在默认 rename 检测下为**空**，
+> 因为本轮 C3 的删除被识别为 rename（R100）。做删除审计必须加 `--no-renames`。
+
 ## 7 · 三个 D 候选 DMG 实测 SHA-256（删除前独立复算）
 
 | 候选 | DMG 路径（相对对应 worktree 的 `.local`） | 整文件 SHA-256 |
@@ -232,6 +235,10 @@ e84e9e5a56475a19f68ca1a684366fba7f9fee83	refs/heads/main
 结论：本地只剩 `codex/frontend-ux-20261015` + `main`；远端只剩 `codex/frontend-ux-20261015` + `main`
 （`origin/HEAD -> origin/main` 是符号引用，非分支）。保留项 `main` 与
 `codex/frontend-ux-20261015` 均未删除（本地或远端）。
+
+> **后续变化（2026-10-16 补记）**：本节的 `origin/codex/frontend-ux-20261015` = `e76244e` 是 **C4 时刻**
+> 的快照；其后 C6 的 push 已把它推进到 `ebb6b6f0`（C7/C7b 的 docs 提交尚未 push）。分支名的集合未变
+> （仍只有 `main` 与 `codex/frontend-ux-20261015`）。
 
 ## C5 · worktree 清退实测输出
 

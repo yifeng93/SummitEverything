@@ -9,16 +9,18 @@
 | 项 | 实测值 |
 |---|---|
 | 分支 | `codex/frontend-ux-20261015`（worktree clean） |
-| 清理后 tip（报告前） | `ebb6b6f0c9a8c57d7eb5108e497661b7d50e11f5`（`docs(cleanup): correct the CI retrigger note and record the follow-up run`） |
-| 清理提交链 | `8973b5a`（C0）→ `9a9aba8`（C1）→ `9d6e097`（C3）→ `207b8f9`（C2）→ `32aa10c`（C4+C5）→ `af65f04`（C6 显示名）→ `68c3639`（C6 CI 证据）→ `ebb6b6f0`（C6 更正） |
+| 清理提交链（按时间序） | `8973b5a`（C0 计划）→ `9a9aba8`（C1 文档收敛）→ `9d6e097`（C3 孤儿）→ `207b8f9`（C2 归档）→ `32aa10c`（C4+C5 清退）→ `af65f04`（C6 显示名）→ `68c3639`（C6 CI 证据）→ `ebb6b6f0`（C6 更正）→ `412e0fd`（C7 交接与清理报告）→ `7a448c3`（C7b 链接与索引修正）→ `904a38d`（QA 独立验收报告） |
 | **受测产品 SHA** | **`e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374`**（D 最终候选；本轮清理**未改动产品面**，冻结面 pathspec → exit 0 空 diff） |
+| 独立验收 | 全新 QA 在独立 checkout `qa-cleanup-verify` 对受测 SHA `7a448c39092b81d0afcb15ce4dc57d91faaa7e5e` 全项 PASS（A–H），报告见 [QA 报告](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-QA.md) |
 | `main` | `e84e9e5a56475a19f68ca1a684366fba7f9fee83`（主仓库 `/Users/yifengstudio/Documents/GitHub/SummitEverything`） |
 | 远端分支 | 只剩 `refs/heads/codex/frontend-ux-20261015` 与 `refs/heads/main`（`git ls-remote --heads origin`，exit 0） |
 | worktree | **只剩 2 个**：主仓库（`main`）+ `frontend-ux-20261015`（`git worktree list \| wc -l` = 2） |
 | worktree 目录 | `/Users/yifengstudio/.codex/worktrees` = **1 条 / 804 M**（唯一保留 `frontend-ux-20261015`） |
-| 真实 CI | run [`38831085564`](https://github.com/yifeng93/SummitEverything/actions/runs/38831085564)（`headSha=af65f049…`，清理后 tip）**completed / success，4m45s**；run [`38831643643`](https://github.com/yifeng93/SummitEverything/actions/runs/38831643643)（`headSha=68c36399…`）**completed / success，4m08s**。两次四步骤全 success |
+| 真实 CI | run [`38831085564`](https://github.com/yifeng93/SummitEverything/actions/runs/38831085564)（`headSha=af65f049…`，清理后 tip）**completed / success，4m45s**；run [`38831643643`](https://github.com/yifeng93/SummitEverything/actions/runs/38831643643)（`headSha=68c36399…`）**completed / success，4m08s**。两次四步骤全 success。**边界**：run `38831085564` 的 headSha 是 `af65f04`；受测 SHA `7a448c3` 当时尚未 push，因此该 SHA 上还没有 CI run——最终 tip push 后会补跑并回填。 |
 | PR #21 | **OPEN**，`mergeable=MERGEABLE`，head `codex/frontend-ux-20261015` → base `main`。**合并待用户明确批准** |
 | 前端指纹 | `784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0`（清理前后不变） |
+
+本页之后仅剩 Sol 最终门判断与其 CI 证据为新增 docs 提交；精确 tip 以 `git log --oneline codex/frontend-ux-20261015` 为准。
 
 清理结论、逐项证据与退出码见
 [2026-10-15-PRE-PR21-CLEANUP-DEV.md](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-DEV.md)，
@@ -113,9 +115,12 @@
 - **真实门**：真实 provider / 飞书 OAuth / Keychain 生命周期 / 真实业务材料 / 已安装 App /
   Developer ID 与公证 / 五日 / 双机 / 生产与发布，全部 **NOT_RUN**，各自需用户按准备卡单独授权。
 - **合并本身**：PR #21 仍未合并，需用户明确批准；**Sol 不 merge**。
-- **本片上报的待裁决残留**（见 DEV 报告 §11）：`DELETIONS.md` 内 2 条
-  `../DELETED-PATHS-INDEX.md` 相对路径（应为 `../../`）、`docs/quality/reports/README.md` 索引缺口、
-  以及范围外删除条数「34 vs 实测 36」的措辞差异。
+- **原「本片上报的待裁决残留」（见 DEV 报告 §11）已全部收口**：`DELETIONS.md` 内 2 条
+  `../DELETED-PATHS-INDEX.md` 相对路径错字**已由 `7a448c3` 修为 `../../`**；
+  `docs/quality/reports/README.md` 索引缺口 **0/121**（QA 报告入库后 121/0）；
+  范围外删除条数以**实测 36** 为准。
+  细节见 [QA 报告](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-QA.md) 与
+  [DEV 报告](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-DEV.md) §11 的收口记录。
 
 ## 5 · 边界
 

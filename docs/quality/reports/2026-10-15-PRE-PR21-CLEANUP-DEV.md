@@ -42,10 +42,13 @@
 | `af65f04` | C6 | workflow `name:` 改名（恰好 1 行） | Luna |
 | `68c3639` | C6 | CI 证据 `docs/quality/reports/evidence/2026-10-15-cleanup-ci/README.md` | Luna |
 | `ebb6b6f0` | C6 | **Sol 追加**：纠正「docs-only 不再触发 run」的假设，并记录第二次真实 run | Luna（Sol 指令） |
+| `412e0fd` | C7 | 本报告 + [NEXT-STAGE-2026-10-16.md](../../handoff/NEXT-STAGE-2026-10-16.md) 起点交接（4 files changed, 636 insertions(+)） | Luna |
+| `7a448c3` | C7b | 修 `DELETIONS.md` 内 2 条 `../DELETED-PATHS-INDEX.md` 链接笔误；`reports/README.md` + `DELETED-PATHS-INDEX.md` 补全索引（3 files changed, 19 insertions(+), 2 deletions(-)） | Luna |
+| `904a38d` | QA | 独立 QA 报告 `docs/quality/reports/2026-10-15-PRE-PR21-CLEANUP-QA.md` 及其证据（19 files changed, 1411 insertions(+)） | 全新 QA |
 
-> **与任务书基线的偏差（如实登记）**：任务书写的分支 tip 是 `68c3639`。本报告写作期间分支 tip 已推进到
-> **`ebb6b6f0c9a8c57d7eb5108e497661b7d50e11f5`**（Sol 的 CI 证据纠正提交，已 push）。本报告以
-> `ebb6b6f0` 为**报告前 tip**；本报告自身的提交在其之后。
+> **与任务书基线的偏差（如实登记）**：任务书写的分支 tip 是 `68c3639`。本报告的写作 tip 为
+> **`ebb6b6f0c9a8c57d7eb5108e497661b7d50e11f5`**（Sol 的 CI 证据纠正提交，已 push）；其后
+> `412e0fd` / `7a448c3` 为本轮后续 docs 提交，`904a38d` 是 QA 的独立验收报告。
 
 验证：
 
@@ -75,7 +78,7 @@ git status --porcelain      # 空
 
 即 **C1 时点的直接层报告缺口为 0**；C6 后变成 1，因为 C2 在 C1 之后新增了
 `docs/quality/reports/DELETED-PATHS-INDEX.md`（它是索引文件，不是报告），而 `reports/README.md`
-不在本片允许面内，未再补行。**此项列入需 Sol 裁决的残留**（见 §11 第 3 条）。
+不在本片允许面内，未再补行。**此项已列入上报项（见 §11 第 2 条），并已由 `7a448c3` 收口。**
 
 **相对链接失效 8 → 7（实测）**
 
@@ -330,7 +333,7 @@ git diff -U0 af65f04^ af65f04 -- .github/workflows/m41-internal-app.yml
 | typecheck / lint / build | **exit 0 / exit 0（2 条既存 warning）/ exit 0** | 同上 |
 | `ruff check` / `ruff format --check` / `mypy` / `uv lock --check` / `uv build` | **全 exit 0**（mypy 47 files） | 同上 |
 | `api:types` 后生成文件稳定 | `git diff --exit-code -- web/src/api/generated.ts` → **0** | 同上 |
-| 相对链接失效 | **8 → 7**（C1 口径，见 §2） | `python3 /tmp/linkcheck.py`：`e76244e` = 8 → `9a9aba8` = 7。全仓口径在 `ebb6b6f0` 为 **25**（差额 18 的来源见 §11 第 1 条）；本片新增/修改的 4 个文件自身 **0 条失效相对链接** |
+| 相对链接失效 | **C1 口径 8 → 7**（见 §2）；**全仓 broken = 23**（`904a38d` 实测，`7a448c3` 已修 2 条后） | C1 脚本口径（所有 tracked `*.md`）：`e76244e` = 8 → `9a9aba8` = 7。**全仓 broken = 23**，分解为 **7** 条历史报告正文的 `/Users/…` 绝对路径快照 + **16** 条位于 `evidence/2026-10-15-worktree-archive/` 下被 `MANIFEST.sha256` 固定的逐字归档副本内部 + **其它 0**。C1 的「8 → 7」口径指的是**非归档、自撰文档**的失效率，与全仓口径不同，**不可混用** |
 | `docs/quality/reports/**` markdown 数 | **268**（只增不减；计划阈值 ≥ 209） | `git ls-files -- 'docs/quality/reports/**' \| grep -c '\.md$'` |
 | 归档完整性 | MANIFEST **1671** 文件行逐条重算 → **0 缺失 / 0 不符**；复制件 **395** → **0 不一致** | `/tmp/sol-verify-archive.py`（删除前，Sol 脚本） |
 | 凭据泄漏 | 395 个复制件 × 7 类形态 → **命中 0** | 本报告 §3.2 的独立重跑 |
@@ -353,7 +356,10 @@ git diff -U0 af65f04^ af65f04 -- .github/workflows/m41-internal-app.yml
 - **D-5（P3，用户已决议接受）** 与 **D-2（P3，dev 专属）**：按既有表述记录，本片不改。
 - **合并本身**：**Sol 未 merge，也不会 merge**；PR #21 仍未合并，需用户明确批准。
 
-## 11 · 需 Sol 裁决的残留（如实上报）
+## 11 · 上报项及其处置（已收口）
+
+本节原文写于写作 tip `ebb6b6f0`，标题原为「需 Sol 裁决的残留（如实上报）」。其中第 1、2、3 条
+**已由 C7b `7a448c3`（及 QA 报告入库）处置完毕**；下列**原文保留以便追溯**，每条后加一行「处置：」。
 
 1. **链接口径**：C1 口径（所有 tracked `*.md`）在 `9a9aba8` 时是 7。到 `ebb6b6f0` 时，同一脚本给出
    **25**，差额 18 全部由 C2/C5 引入：**2** 条是
@@ -362,13 +368,19 @@ git diff -U0 af65f04^ af65f04 -- .github/workflows/m41-internal-app.yml
    `docs/quality/reports/DELETED-PATHS-INDEX.md`）；**16** 条在逐字归档的 QA 报告副本内部，
    指向未被复制的兄弟证据文件（归档为逐字复制，按设计不改写）。
    本片允许面只包含该文件的**末尾追加**，故**未修**这 2 条；如 Sol 认为该修，请扩面或由 Sol 直接改 2 个字符。
+   **处置：已由 `7a448c3` 处置** —— `DELETIONS.md` 的 2 条链接已改为 `../../`；全仓 broken
+   25 → **23**（= 7 条历史报告 `/Users/…` 快照 + 16 条逐字归档副本内部 + 其它 0，见 §9）。
 2. **索引缺口**：C1 后新增了 `docs/quality/reports/DELETED-PATHS-INDEX.md`（C2）与本 DEV 报告（C7），
    `docs/quality/reports/README.md` 的索引未再补行（不在允许面内）。**建议 Sol 决定**是补索引行还是
    接受「索引文件与小节本身不计缺口」的口径。
+   **处置：已由 `7a448c3` 补全** —— `reports/README.md` 补入缺失索引行，缺口 **0/121**；
+   QA 报告入库后为 **121/0**（索引缺口 0）。
 3. **范围外清理条数**：任务书写「34 个范围外历史孤立目录」，**实测为 36**（19 个壳 + 36 = 55 条删除）。
    36 = 32 个 0B + `m1-close` 8.0K + 3 个 venv。逐条清单以 [DELETIONS.md](evidence/2026-10-15-worktree-archive/DELETIONS.md) §C5.5 为准。
+   **处置：以实测 36 为准**（任务书的 34 为口径差异，已按 36 记录，不再改动数据）。
 4. **「唯一 tracked 引用」措辞**：准确表述见 §7——`qa-stage-a-final-env-2` 是 venv 三件套中唯一被
    tracked 报告按路径提及者；范围外项中唯一被 **Markdown 链接**指向的是 `m3-package-1-qa`（3 条，已在索引）。
+   **处置：已按 §7 的准确表述记录**，无待裁决项。
 
 ## 12 · 边界与自测声明
 
