@@ -1,5 +1,16 @@
 # 最新实现交接
 
+## PR #22 已合入 main：App 与 DMG 图标（2026-10-16）
+
+- **已合并**：PR [#22](https://github.com/yifeng93/SummitEverything/pull/22) 于 **2026-10-16T03:25:16Z** 合入 `main`，**merge commit `143468180825aca3efe8c88f4c65ee77fad5c843`**，父提交 `8c882ed`（原 main）与 `d031e5cffabc3ee077ac3e4531d316f03fabb4a3`（被合并的 PR tip）——**真正的 merge commit，非 squash**。受测代码 tip 是 `d031e5c`；本 PR 的 6 个提交：`051dbf0`（品牌素材入库）→ `3f2a8dc`（生成 `.icns`）→ `deed704`（接入打包）→ `baa0f2b`（独立 QA 报告）→ `b77b814`（按 QA 修复）→ `d031e5c`（Sol 门判断）。
+- **三次真实 CI 全 success**：run [`38838074701`](https://github.com/yifeng93/SummitEverything/actions/runs/38838074701) @ `deed704`、run [`38840793621`](https://github.com/yifeng93/SummitEverything/actions/runs/38840793621) @ `b77b814`、run [`38841209634`](https://github.com/yifeng93/SummitEverything/actions/runs/38841209634) @ `d031e5c`，均 completed / success。**合并后的 main 没有新 run**——该 workflow 的 `push` 触发只覆盖 `codex/m41-internal-app-*`。
+- **「PR head ≠ 受测产品 SHA」**：受测产品 SHA 仍是 **`e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374`**。本轮只新增图标资产与打包集成，`git diff --stat 8c882ed 1434681 -- web src pyproject.toml uv.lock` **为空**：`web/`、`src/` 与依赖锁零改动，**前端指纹 `784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0` 未变**。自动检查：pytest **712 passed**、vitest **222 / 26 files**、`test:e2e` **2**、`test:e2e:integration` **1**、typecheck / lint（2 条既存 warning）/ build / ruff check / ruff format / mypy 全 exit 0。
+- **实现要点**：品牌素材（`logo-mark.svg`、`favicon.svg`）从个人品牌库**逐字节复制入库并记录 provenance**；配色全部取自品牌库 `variables.css` 的 `.deep-mode` token（不自创色值）；保真档 **T3**（≥64px 与品牌原件逐像素一致，仅 16/32px 施加 0.90px 最小描边）；App 图标 = `native/Resources/AppIcon.icns`（SHA-256 `f34b3ef6e86e92d92f036dfef2adffaee44a429aec0f7898adac4403a6c61b00`，与 `VolumeIcon.icns` 字节相同）+ `Info.plist` 的 `CFBundleIconFile=AppIcon`；DMG 卷图标走 UDRW 中间体 → `SetFile -a C` → UDZO 只读压缩；打包脚本新增 **icns 块表 fail-closed 校验**（Sol 8/8、QA 14/14 对抗输入全部按预期失败，失败后不产出包）。
+- **两条必须记录的结论**：① **DMG SHA-256 不可复现**——`build-info.json` 的 `build_id` 含 UTC 时间戳，每次构建必变，它是构建实例指纹，**不得作为可追溯身份**；② QA 报的「两个 32px representation 不一致」经 Sol 容器层复核**不是缺陷**：`ic04`/`ic05` 用 ARGB/RLE 容器、`ic11` 用 PNG，差异由 `iconutil -c iconset` 的**有损往返**产生，**该往返不能用于字节级验收**。
+- **已知缺口 G-1（用户 2026-10-16 决定：记录而不修）**：**CI 不重新生成 `.icns`，也不校验 `.icns` 与 `assets/branding/{logo-mark,favicon}.svg` 的一致性**；若改了 SVG 忘记重新生成，现有检查不会发现。当前防线是「`.icns` 入库 + 单元测试断言其存在 / 合法 / 两文件一致」，只能证明产物未损坏，不能证明产物与 SVG 一致。
+- **品牌架构豁免（用户本人批准）**：品牌库 README 原声明「个人品牌与项目品牌各自独立」；该边界由**用户本人豁免**，用于 SummitEverything 的 App 图标 + DMG 卷图标，记录在 [品牌资产说明](../../assets/branding/README.md)。
+- 依据：[Sol 门判断](../quality/reports/2026-10-16-APP-ICON-SOL-GATE.md)、[独立 QA 报告](../quality/reports/2026-10-16-APP-ICON-QA.md)、[品牌资产说明](../../assets/branding/README.md)。
+
 ## PR #21 已合入 main（2026-10-16）
 
 - **已合并**：PR [#21](https://github.com/yifeng93/SummitEverything/pull/21) 于 **2026-10-16T01:27:08Z** 合入 `main`，**merge commit `12280ec1893f8f526b9b73a84b98416545254f42`**，父提交 `e84e9e5`（原 main）与 `8ded0d9d276ce6170ce97f090ad1eff7d2679156`（被合并的 PR tip）——**真正的 merge commit，非 squash**。规模 47 commits / 671 files / +35264 −1757，含整条前端 UX 线 A→D 与合并前仓库清理。

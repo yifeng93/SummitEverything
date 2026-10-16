@@ -10,7 +10,7 @@
 | 项 | 实测值 |
 |---|---|
 | 分支 | `codex/frontend-ux-20261015`（worktree clean） |
-| 清理提交链（按时间序） | `8973b5a`（C0 计划）→ `9a9aba8`（C1 文档收敛）→ `9d6e097`（C3 孤儿）→ `207b8f9`（C2 归档）→ `32aa10c`（C4+C5 清退）→ `af65f04`（C6 显示名）→ `68c3639`（C6 CI 证据）→ `ebb6b6f0`（C6 更正）→ `412e0fd`（C7 交接与清理报告）→ `7a448c3`（C7b 链接与索引修正）→ `904a38d`（QA 独立验收报告） |
+| 清理提交链（按时间序） | `8973b5a`（C0 计划）→ `9a9aba8`（C1 文档收敛）→ `9d6e097`（C3 孤儿）→ `207b8f9`（C2 归档）→ `32aa10c`（C4+C5 清退）→ `af65f04`（C6 显示名）→ `68c3639`（C6 CI 证据）→ `ebb6b6f0`（C6 更正）→ `412e0fd`（C7 交接与清理报告）→ `7a448c3`（C7b 链接与索引修正）→ `904a38d`（QA 独立验收报告）；**PR #22 图标线**：`051dbf0` → `3f2a8dc` → `deed704` → `baa0f2b` → `b77b814` → `d031e5c` |
 | **受测产品 SHA** | **`e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374`**（D 最终候选；本轮清理**未改动产品面**，冻结面 pathspec → exit 0 空 diff） |
 | 独立验收 | 全新 QA 在独立 checkout `qa-cleanup-verify` 对受测 SHA `7a448c39092b81d0afcb15ce4dc57d91faaa7e5e` 全项 PASS（A–H），报告见 [QA 报告](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-QA.md) |
 | `main` | `e84e9e5a56475a19f68ca1a684366fba7f9fee83`（主仓库 `/Users/yifengstudio/Documents/GitHub/SummitEverything`） |
@@ -21,6 +21,7 @@
 | 真实 CI | run [`38831085564`](https://github.com/yifeng93/SummitEverything/actions/runs/38831085564)（`headSha=af65f049…`，清理后 tip）**completed / success，4m45s**；run [`38831643643`](https://github.com/yifeng93/SummitEverything/actions/runs/38831643643)（`headSha=68c36399…`）**completed / success，4m08s**。两次四步骤全 success。**边界**：run `38831085564` 的 headSha 是 `af65f04`；受测 SHA `7a448c3` 当时尚未 push，因此该 SHA 上还没有 CI run——最终 tip push 后会补跑并回填。 |
 | PR #21 | **已合入 main**：merge commit `12280ec1893f8f526b9b73a84b98416545254f42`（2026-10-16T01:27:08Z，真 merge 非 squash），head `codex/frontend-ux-20261015` → base `main`，被合并 tip `8ded0d9`；分支将删除 |
 | 前端指纹 | `784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0`（清理前后不变） |
+| 图标 | **已在 main**（PR #22，merge commit `143468180825aca3efe8c88f4c65ee77fad5c843`，2026-10-16T03:25:16Z）；见 [品牌资产说明](../../assets/branding/README.md) |
 | Sol 最终门判断 | **本轮清理限「仓库整理」范围 PASS，可随 PR #21 一起合入**；PR #21 已于 2026-10-16 按用户批准合入（见上「合并」行）；见 [Sol 最终门判断](../quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md) |
 
 本页之后仅新增 Sol 最终门判断（`docs/quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md`）
@@ -112,6 +113,12 @@
 
 ## 4 · 仍未关闭项
 
+- **G-1（记录，不修；用户 2026-10-16 决定）**：**CI 不重新生成 `.icns`，也不校验 `.icns` 与
+  `assets/branding/{logo-mark,favicon}.svg` 的一致性**——改了 SVG 忘记重新生成时，现有检查不会发现。
+  当前防线 = 「`.icns` 入库 + 单元测试断言其存在 / 合法 / 两个文件逐字节一致」，
+  它只能证明**产物未损坏**，**不能证明产物与 SVG 一致**；一致性目前只能靠
+  `node assets/branding/make-appicon.mjs` 重新生成后 `git diff --exit-code native/Resources` 人工确认。
+  见 [品牌资产说明](../../assets/branding/README.md)、[独立 QA 报告](../quality/reports/2026-10-16-APP-ICON-QA.md)。
 - **D-3（INFO）**：`GET/PUT /api/v1/first-use/progress` 的 OpenAPI 只声明 200/422，未声明实际存在的
   401/404/503；前端依赖 404 `first_use_progress_absent` 做控制流。小切片。
 - **D-5（P3，用户已决议接受）**：新建工作库后未推进就 reload/重启会落到今日并给非阻塞提示
