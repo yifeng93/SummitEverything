@@ -42,7 +42,7 @@
 
 `frontend-ux-20261015`（本 worktree）与 `main`（`/Users/yifengstudio/Documents/GitHub/SummitEverything`）
 **不在删除集**；`m3-package-1-qa` 等其他目录名不在本轮 19 个之中（更早已移除，见
-[DELETED-PATHS-INDEX.md](../DELETED-PATHS-INDEX.md)）。
+[DELETED-PATHS-INDEX.md](../../DELETED-PATHS-INDEX.md)）。
 
 ## 2 · 6 个待删分支（4 本地 + 2 远端）
 
@@ -310,7 +310,7 @@ git worktree prune            # PRUNE_EXIT=0
    `git worktree remove` 删的是 `<name>/SummitEverything`，计划未授权删除父目录，故保留。
 2. **约 25 个更早期的孤立目录**（`m1-close`、`m2-*`、`m3-*`、`m42-*`、`qa-stage-*`、
    `stage-b-*`、`summit-m2`、`8c6c` 等）**不在本轮 19 个删除集内**，其来源见
-   [DELETED-PATHS-INDEX.md](../DELETED-PATHS-INDEX.md)，其中 3 个目录
+   [DELETED-PATHS-INDEX.md](../../DELETED-PATHS-INDEX.md)，其中 3 个目录
    （`qa-stage-a-final-env` 113M、`qa-stage-a-final-env-2` 113M、`qa-stage-a-final-venv` 108M）
    共约 334M 是残留体积的主要来源，另有 8.0K 的 `m1-close`。这些目录既非本轮授权删除项，
    也无 `.git` checkout（全目录仅 `frontend-ux-20261015` 保有 checkout），故**保留不动**。

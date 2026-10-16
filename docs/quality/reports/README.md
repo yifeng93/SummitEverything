@@ -145,6 +145,8 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 | [前端 UX 里程碑 A · 修复轮 1 开发报告](2026-10-15-FRONTEND-A-DEV-REPAIR1.md) | 历史报告（标签取自该文件 H1 原文） |
 | [前端 UX 里程碑 A：开发交接](2026-10-15-FRONTEND-A-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
 | [前端 UX 里程碑 D 开发自测与候选交接](2026-10-15-FRONTEND-D-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [PR #21 合并前仓库清理 · Developer 报告（2026-10-15）](2026-10-15-PRE-PR21-CLEANUP-DEV.md) | 本轮清理 DEV 报告（2026-10-15 仓库清理） |
+| [已删路径 → 归档索引（2026-10-15 清理）](DELETED-PATHS-INDEX.md) | 已删路径 → 归档索引（本轮清理） |
 
 | [Stage B / C 当前工作计划](../../handoff/history/2026-10-11-STAGE-B-C-PLAN.md) | 历史归档（Stage B/C 计划） |
 | [Stage B / C 当前检查单](../../handoff/history/2026-10-11-STAGE-B-C-TODO.md) | 历史归档（Stage B/C 检查单） |
