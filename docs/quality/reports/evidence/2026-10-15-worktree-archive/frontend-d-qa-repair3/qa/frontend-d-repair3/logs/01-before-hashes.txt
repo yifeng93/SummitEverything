@@ -1,0 +1,2 @@
+212b61448d61b6a2ea9472c88c77ca6ed5700cf0  web/openapi.json
+4ea30efbcff0dc6ec15325ed94172721b2e458ad  web/src/api/generated.ts

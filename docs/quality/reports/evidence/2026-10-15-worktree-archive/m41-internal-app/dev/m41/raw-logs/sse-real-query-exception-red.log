@@ -1,0 +1,152 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_live_http_sse_cancel_disconnect_and_reopen ________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-915/test_live_http_sse_cancel_disc0')
+
+    def test_live_http_sse_cancel_disconnect_and_reopen(tmp_path: Path) -> None:
+        token = "synthetic-http-session-token"
+        provider = BlockingFakeAnswerProvider()
+        profile = tmp_path / "profile"
+        query = QueryService(IndexStore(profile / "index.sqlite3"), answer_provider=provider)
+        app = create_app(session_token=token, profile_root=profile, query_service=query)
+        loop_errors: Queue[str] = Queue()
+        app.add_middleware(CaptureLoopExceptions, errors=loop_errors)
+        server_socket = socket.socket()
+        server_socket.bind(("127.0.0.1", 0))
+        port = server_socket.getsockname()[1]
+        server_socket.close()
+        server = uvicorn.Server(
+            uvicorn.Config(app, host="127.0.0.1", port=port, log_level="critical", access_log=False)
+        )
+        thread = threading.Thread(target=server.run, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{port}"
+        headers = {"Authorization": f"Bearer {token}"}
+        try:
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                if server.started:
+                    break
+                time.sleep(0.01)
+            assert server.started, "local HTTP test server did not become ready"
+            with httpx.Client(base_url=base, headers=headers, timeout=5) as client:
+                opened = client.post(
+                    "/api/v1/workspaces",
+                    json={
+                        "root": str(tmp_path / "workspace"),
+                        "mode": "create",
+                        "name": "HTTP SSE 隔离库",
+                        "operation_id": "http-sse-workspace",
+                    },
+                )
+                assert opened.status_code == 201, opened.text
+                line = client.post(
+                    "/api/v1/lines", json={"name": "合成主线", "operation_id": "line"}
+                ).json()
+                project = client.post(
+                    "/api/v1/projects",
+                    json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+                ).json()
+                page = client.post(
+                    "/api/v1/pages",
+                    json={
+                        "metadata": {
+                            "id": str(uuid4()),
+                            "title": "橡果预算",
+                            "role": "knowledge",
+                            "kind": "topic",
+                            "line_id": line["id"],
+                            "project_id": project["id"],
+                        },
+                        "body": "橡果计划预算为 120 元。",
+                        "confirmation_id": "approve-http-sse",
+                        "operation_id": "page-http-sse",
+                    },
+                )
+                assert page.status_code == 201, page.text
+                plan = client.post(
+                    "/api/v1/index/plans",
+                    json={"mode": "initial", "fingerprint": "summit-fake-embedding-v1"},
+                )
+                assert plan.status_code == 200, plan.text
+                indexed = client.post("/api/v1/index/jobs", json=plan.json())
+                assert indexed.status_code == 200, indexed.text
+                assert indexed.json()["indexed_pages"] == 1
+    
+                cancel_id = str(uuid4())
+                with client.stream(
+                    "POST",
+                    "/api/v1/queries",
+                    json={
+                        "request_id": cancel_id,
+                        "question": "橡果计划预算是多少？",
+                        "fingerprint": "summit-fake-embedding-v1",
+                        "purpose": "current",
+                    },
+                ) as response:
+                    assert response.status_code == 200
+                    assert response.headers["content-type"].startswith("text/event-stream")
+                    lines = response.iter_lines()
+                    first = _first_event(lines)
+                    assert first["type"] == "status"
+                    release = provider.started.get(timeout=3)
+                    cancelled = client.delete(f"/api/v1/queries/{cancel_id}")
+                    assert cancelled.status_code == 202, cancelled.text
+                    release.set()
+                    rest = [line for line in lines if line.startswith("data: ")]
+                    terminal = [json.loads(line.removeprefix("data: ")) for line in rest]
+                    assert terminal[-1]["data"]["code"] == "cancelled"
+                    conversation_id = response.headers["x-conversation-id"]
+    
+                reopened = client.post(f"/api/v1/conversations/{conversation_id}/reopen", json={})
+                assert reopened.status_code == 200
+                assert reopened.json()["messages"][-1]["state"] == "cancelled"
+    
+                disconnect_id = str(uuid4())
+                with client.stream(
+                    "POST",
+                    "/api/v1/queries",
+                    json={
+                        "request_id": disconnect_id,
+                        "question": "橡果计划预算是多少？",
+                        "fingerprint": "summit-fake-embedding-v1",
+                        "purpose": "current",
+                    },
+                ) as response:
+                    assert response.status_code == 200
+                    lines = response.iter_lines()
+                    first = _first_event(lines)
+                    assert first["type"] == "status"
+                    release = provider.started.get(timeout=3)
+                    conversation_id = response.headers["x-conversation-id"]
+                    response.close()
+                time.sleep(0.1)
+                release.set()
+                for _ in range(100):
+                    detail = client.get(f"/api/v1/conversations/{conversation_id}")
+                    if (
+                        detail.status_code == 200
+                        and detail.json()["messages"][-1]["state"] == "interrupted"
+                    ):
+                        break
+                    time.sleep(0.02)
+                assert detail.status_code == 200
+                assert detail.json()["messages"][-1]["state"] == "interrupted"
+        finally:
+            server.should_exit = True
+            thread.join(timeout=5)
+            assert not thread.is_alive(), "local HTTP test server did not stop"
+            gc.collect()
+>       assert loop_errors.empty(), list(loop_errors.queue)
+E       AssertionError: ['Task exception was never retrieved']
+E       assert False
+E        +  where False = empty()
+E        +    where empty = <queue.Queue object at 0x108e5abd0>.empty
+
+tests/integration/test_http_sse_lifecycle.py:189: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_http_sse_lifecycle.py::test_live_http_sse_cancel_disconnect_and_reopen
+1 failed in 0.74s
+
+COMMAND_EXIT_CODE=1

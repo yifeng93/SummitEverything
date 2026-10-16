@@ -1,0 +1,4 @@
+8a34b0579ff71863a693c1741ff7097b87e1dd863e3f36397ffab5d006dba657  web/dist/assets/index-CJV7PXqW.js
+7a602cf662286f3cf653b6aa79919e0c73f771f6d1afa423afd68f37fc2180b8  web/dist/assets/index-lgEUmbbh.css
+d46f172df9292b029ddb06f24097f443b41accc35da4fdbdf92fe14d303ea43a  web/dist/favicon.svg
+dc0192d2ba9368aa50419b7b1ab0a7bd72afda4ada08fb5be085f5e52e6fc8c6  web/dist/index.html

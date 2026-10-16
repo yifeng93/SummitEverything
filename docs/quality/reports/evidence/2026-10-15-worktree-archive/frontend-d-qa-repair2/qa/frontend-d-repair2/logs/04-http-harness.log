@@ -1,0 +1,72 @@
+
+=== A: auth + contract surface ===
+[PASS] A1 no session token -> 401 (progress is not world-readable)  :: status=401
+[PASS] A2 wrong session token -> 401  :: status=401
+[PASS] A3 no active workspace -> 409 with code workspace_not_open  :: status=409 code=workspace_not_open body={'error': {'code': 'workspace_not_open', 'message': 'Open a workspace first', 'request_id': '21abc8c6d8819b09'}}
+
+=== B: D-4 float / type rejection matrix (no record exists yet) ===
+[PASS] B0 a workspace could be created over real HTTP  :: status=201 body={"workspace_id":"cd93343b-f1c2-4ad7-a7eb-ba5cffad7213","root":"/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-http/workspaces/qa-ws-alpha"
+[PASS] B1 a brand-new workspace has NO record: 404 first_use_progress_absent  :: status=404 code=first_use_progress_absent body={'error': {'code': 'first_use_progress_absent', 'message': '本机还没有保存首次配置进度。', 'request_id': '07ca134e448f0581'}}
+[PASS] B2 no progress file was written  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-http/profile/cd93343b-f1c2-4ad7-a7eb-ba5cffad7213/first-use-progress.json
+[PASS] B3 D-4 integral JSON float step=3.0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"7f7b9a8d5721ff5a"}}
+[PASS] B3 D-4 integral JSON float step=2.0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"f9c1458bd80246ea"}}
+[PASS] B3 D-4 integral JSON float step=4.0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"b1b34f572b78b9d0"}}
+[PASS] B3 D-4 integral JSON float step=5.0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"55bfe90489c2c1b8"}}
+[PASS] B3 D-4 integral JSON float step=2e0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"19f1b1846e48ce11"}}
+[PASS] B3 D-4 integral JSON float step=3e0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"4cf74ff63bc637dd"}}
+[PASS] B3 D-4 integral JSON float step=5.0e0 -> 422 (was accepted before repair2)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"c806a1cb1e6fbfd4"}}
+[PASS] B4 step=3.5 (non-integral float) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"e81da009ed9f1cfb"}}
+[PASS] B4 step=2.5 (non-integral float) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"2d7983abe3169ab0"}}
+[PASS] B4 step=4.5 (non-integral float) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"609c882ec5047415"}}
+[PASS] B4 step=-4.0 (negative float) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"abf0e6b060e41cfa"}}
+[PASS] B4 step=true (boolean (bool is an int subclass)) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"28278694ee2a2156"}}
+[PASS] B4 step=false (boolean) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"978cff1bb8ac5542"}}
+[PASS] B4 step="3" (numeric string) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"85b3645f5b087474"}}
+[PASS] B4 step="3.0" (float-looking string) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"bbc9f0a32c8bbc94"}}
+[PASS] B4 step=null (null) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"02f927cf7b7175f9"}}
+[PASS] B4 step=6 (out-of-range integer) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"bd68e435c4344806"}}
+[PASS] B4 step=1 (below-range integer) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"15fe52d3f462a074"}}
+[PASS] B4 step=0 (zero) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"031e82516df796e7"}}
+[PASS] B4 step=-1 (negative integer) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"ef11fe381ddbe6a1"}}
+[PASS] B4 step=[] (array) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"21c5c8b213853d29"}}
+[PASS] B4 step={} (object) -> 422  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"49a2952f562128b7"}}
+[PASS] B5 nothing was persisted by any rejected payload (fail-closed)  :: exists=False
+[PASS] B6 the record endpoint still answers 404 after the rejected batch  :: status=404
+[PASS] B7 extra/secret field rejected -> 422 :: true, "secret": "sk-QA-R2-LEAK"}  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"119c30473a7822a8"}}
+[PASS] B7 extra/secret field rejected -> 422 :: true, "api_key": "sk-QA-R2-LEAK"}  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"1e96c9d5cf218eb4"}}
+[PASS] B7 extra/secret field rejected -> 422 :: true, "path": "/tmp/x"}  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"e2a71a59a2466c32"}}
+[PASS] B8 the rejected secret never reached disk  :: exists=False
+
+=== C: D-4 accepted set is exactly the true integers 2/3/4/5 ===
+[PASS] C1 step=2 (true integer) -> 200 and echoed as an integer  :: status=200 body={"step":2,"completed":false,"open":true}
+[PASS] C1 step=3 (true integer) -> 200 and echoed as an integer  :: status=200 body={"step":3,"completed":false,"open":true}
+[PASS] C1 step=4 (true integer) -> 200 and echoed as an integer  :: status=200 body={"step":4,"completed":false,"open":true}
+[PASS] C1 step=5 (true integer) -> 200 and echoed as an integer  :: status=200 body={"step":5,"completed":false,"open":true}
+[PASS] C2 the last accepted write is durable and integer-typed  :: status=200 body={'step': 5, 'completed': False, 'open': True}
+[PASS] C3 the on-disk document holds a JSON integer (no '5.0', no quoting)  :: {   "step": 5,   "completed": false,   "open": true }
+
+=== D: a hand-corrupted float document fails closed (not silently normalised) ===
+[PASS] D1 a stored 3.0 is refused with 503 progress_unavailable (fail-closed)  :: status=503 code=progress_unavailable body={'error': {'code': 'progress_unavailable', 'message': '首次配置进度无法读写，请检查本机 profile 后重试。', 'request_id': '732ecd0b3236018c'}}
+[PASS] D2 a non-boolean 'open' in the stored document is also refused (503)  :: status=503 body={'error': {'code': 'progress_unavailable', 'message': '首次配置进度无法读写，请检查本机 profile 后重试。', 'request_id': '18a34c7124dce853'}}
+
+=== E: OpenAPI still describes step as integer enum [2,3,4,5] ===
+[PASS] E1 FirstUseProgress.step is type=integer  :: {"type": "integer", "enum": [2, 3, 4, 5], "title": "Step"}
+[PASS] E2 FirstUseProgress.step enum is exactly [2,3,4,5]  :: {"type": "integer", "enum": [2, 3, 4, 5], "title": "Step"}
+[PASS] E3 no float/number/anyOf shape leaked into the step schema  :: {"type": "integer", "enum": [2, 3, 4, 5], "title": "Step"}
+[PASS] E4 required is exactly [step, completed, open]  :: ["step", "completed", "open"]
+[PASS] E5 additionalProperties stays false (extra=forbid)  :: false
+
+=== F: D-1 HTTP half — 'open' with no record never fabricates completion ===
+[PASS] F1 the existing library is genuinely configured (mode=real) yet has no record  :: patch=200 mode=real record_status=404
+[PASS] F2 opening the existing library succeeds (201) and keeps the same workspace_id  :: status=201 id=cd93343b-f1c2-4ad7-a7eb-ba5cffad7213 expected=cd93343b-f1c2-4ad7-a7eb-ba5cffad7213
+[PASS] F3 after 'open' with real settings the backend still reports NO record (no inference from credentials)  :: status=404 body={'error': {'code': 'first_use_progress_absent', 'message': '本机还没有保存首次配置进度。', 'request_id': 'aa85efaea14b95e9'}}
+[PASS] F4 no record file was fabricated by the open  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-http/profile/cd93343b-f1c2-4ad7-a7eb-ba5cffad7213/first-use-progress.json
+
+=== G: profile / workspace isolation of the record ===
+[PASS] G1 the second workspace's record does not leak into the first  :: status=404 body={'error': {'code': 'first_use_progress_absent', 'message': '本机还没有保存首次配置进度。', 'request_id': '5b7b1f8801806d3c'}} ws_b=894a02e8-949f-4c0b-8727-b9b54dc38821
+[PASS] G2 the two workspaces really have distinct profile dirs  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-http/profile/894a02e8-949f-4c0b-8727-b9b54dc38821 vs /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-http/profile/cd93343b-f1c2-4ad7-a7eb-ba5cffad7213
+[PASS] G3 the second workspace's own record is intact on disk  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-http/profile/894a02e8-949f-4c0b-8727-b9b54dc38821/first-use-progress.json
+
+========================================================================================
+QA R2 HTTP HARNESS TOTAL: 54 checks, 54 passed, 0 failed
+========================================================================================

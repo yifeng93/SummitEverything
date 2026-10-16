@@ -1,0 +1,14 @@
+{
+  "app_build_id": "20261015T132109Z-8a0917f72e08",
+  "app_path": "/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/SummitEverything-D-876008e.app",
+  "app_version": "0.1.0",
+  "build_id": "20261015T132109Z-8a0917f72e08",
+  "bundle_id": "com.summiteverything.internal",
+  "defaults_resource_present": true,
+  "dependencies_sha256": "cab274716d93a5485155114bd25f3a65722eede97c4487d11262d8b73728c7d7",
+  "dirty": false,
+  "dmg_path": "/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/SummitEverything-D-876008e.dmg",
+  "dmg_sha256": "8bd387bac1c942da3640952da2b334ed53776f12dd04adf2f1eed343989d8fa9",
+  "frontend_sha256": "8a0917f72e0833727fa90a4f827e70be8835db6711eb9e24b167df16087fab62",
+  "source_sha": "876008e1d33420f57fb31772c76e471379e6b98d"
+}

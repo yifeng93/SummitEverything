@@ -1,0 +1,19 @@
+== tracked hashes before ==
+87248b307b51ef1ece6a83664f94c2dce449272ff0640fb201bb9cd69ed6d98b  web/openapi.json
+396613c3915639dd2c8385818148aa35ddaed065d8e96fd11085030d262fb80d  web/src/api/generated.ts
+== uv run python scripts/export_openapi.py ==
+Wrote web/openapi.json
+EXPORT_EXIT=0
+== cmp regenerated openapi.json vs tracked ==
+OPENAPI_IDENTICAL=YES
+== regenerate generated.ts via openapi-typescript ==
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → /tmp/qa-r2-generated.ts [79.7ms]
+TYPES_EXIT=0
+/tmp/qa-r2-generated.ts src/api/generated.ts differ: char 49594, line 1756
+GENERATED_IDENTICAL=NO
+== hashes after ==
+87248b307b51ef1ece6a83664f94c2dce449272ff0640fb201bb9cd69ed6d98b  openapi.json
+396613c3915639dd2c8385818148aa35ddaed065d8e96fd11085030d262fb80d  src/api/generated.ts
+== git status --porcelain ==
+GIT_STATUS_LINES=0

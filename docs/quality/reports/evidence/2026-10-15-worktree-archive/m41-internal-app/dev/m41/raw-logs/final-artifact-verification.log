@@ -1,0 +1,46 @@
+
+===== app-codesign =====
+COMMAND=codesign --verify --deep --strict /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything\ Internal\ M4.1\ b9321d6.app 
+COMMAND_EXIT_CODE=0
+
+===== dmg-verify =====
+COMMAND=hdiutil verify /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg 
+正在检查“Protective Master Boot Record（MBR：0）”的校验和…
+Protective Master Boot Record（MBR：0）：已验证CRC32 $360AEE1B
+正在检查“GPT Header（Primary GPT Header：1）”的校验和…
+    GPT Header（Primary GPT Header：1）：已验证CRC32 $53366435
+正在检查“GPT Partition Data（Primary GPT Table：2）”的校验和…
+GPT Partition Data（Primary GPT Table：已验证CRC32 $D9FF44D1
+正在检查“（Apple_Free：3）”的校验和…
+                      （Apple_Free：3）：已验证CRC32 $00000000
+正在检查“disk image（Apple_APFS：4）”的校验和…
+            disk image（Apple_APFS：4）：已验证CRC32 $DDC1BE42
+正在检查“（Apple_Free：5）”的校验和…
+                      （Apple_Free：5）：已验证CRC32 $00000000
+正在检查“GPT Partition Data（Backup GPT Table：6）”的校验和…
+GPT Partition Data（Backup GPT Table：：已验证CRC32 $D9FF44D1
+正在检查“GPT Header（Backup GPT Header：7）”的校验和…
+     GPT Header（Backup GPT Header：7）：已验证CRC32 $E7828AE9
+已验证CRC32 $28335A85
+hdiutil: verify: checksum of "/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg" is VALID
+COMMAND_EXIT_CODE=0
+
+===== app-architecture =====
+COMMAND=lipo -archs /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything\ Internal\ M4.1\ b9321d6.app/Contents/MacOS/SummitEverything 
+arm64
+COMMAND_EXIT_CODE=0
+
+===== plist-bundle-version =====
+COMMAND=/usr/libexec/PlistBuddy -c Print\ :CFBundleVersion /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything\ Internal\ M4.1\ b9321d6.app/Contents/Info.plist 
+227.0.0
+COMMAND_EXIT_CODE=0
+
+===== plist-build-id =====
+COMMAND=/usr/libexec/PlistBuddy -c Print\ :SummitBuildID /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything\ Internal\ M4.1\ b9321d6.app/Contents/Info.plist 
+20261013T052105Z-577f0cc805f2
+COMMAND_EXIT_CODE=0
+
+===== dmg-sha =====
+COMMAND=shasum -a 256 /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg 
+1822e655836d591dcc612f6de4dfeda095dc16bd8e194e87e33cf5b5894c72fd  /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/artifacts/SummitEverything-Internal-M4.1-b9321d6.dmg
+COMMAND_EXIT_CODE=0

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything/scripts/smoke_packaged_app.py", line 39, in main
+    probe.bind(("127.0.0.1", port))
+OSError: [Errno 48] Address already in use
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything/scripts/smoke_packaged_app.py", line 157, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything/scripts/smoke_packaged_app.py", line 41, in main
+    raise RuntimeError("smoke port is occupied before the test") from exc
+RuntimeError: smoke port is occupied before the test

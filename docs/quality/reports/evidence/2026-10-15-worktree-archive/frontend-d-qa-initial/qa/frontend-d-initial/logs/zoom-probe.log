@@ -1,0 +1,112 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1 --host 127.0.0.1 --port 5192
+
+
+  VITE v8.3.4  ready in 81 ms
+
+  ➜  Local:   http://127.0.0.1:5192/
+{
+  "before": {
+    "innerWidth": 1280,
+    "clientWidth": 1280,
+    "documentWidth": 1280,
+    "bodyWidth": 1280,
+    "content": {
+      "rect": {
+        "x": 200,
+        "y": 62,
+        "width": 1080,
+        "height": 1149.109375,
+        "top": 62,
+        "right": 1280,
+        "bottom": 1211.109375,
+        "left": 200
+      },
+      "clientWidth": 1080,
+      "scrollWidth": 1080
+    },
+    "heading": {
+      "x": 242,
+      "y": 127.1875,
+      "width": 285,
+      "height": 28.59375,
+      "top": 127.1875,
+      "right": 527,
+      "bottom": 155.78125,
+      "left": 242
+    },
+    "font": "15px",
+    "focus": {
+      "x": 14,
+      "y": 120.1875,
+      "width": 172,
+      "height": 44,
+      "top": 120.1875,
+      "right": 186,
+      "bottom": 164.1875,
+      "left": 14
+    }
+  },
+  "rootCssZoom2": {
+    "innerWidth": 1280,
+    "clientWidth": 1280,
+    "documentWidth": 1400,
+    "bodyWidth": 700,
+    "content": {
+      "rect": {
+        "x": 400,
+        "y": 124,
+        "width": 880,
+        "height": 2731.265625,
+        "top": 124,
+        "right": 1280,
+        "bottom": 2855.265625,
+        "left": 400
+      },
+      "clientWidth": 440,
+      "scrollWidth": 500
+    },
+    "heading": {
+      "x": 484,
+      "y": 254.390625,
+      "width": 447.546875,
+      "height": 57.1875,
+      "top": 254.390625,
+      "right": 931.546875,
+      "bottom": 311.578125,
+      "left": 484
+    },
+    "font": "15px",
+    "focus": {
+      "x": 28,
+      "y": 240.390625,
+      "width": 344,
+      "height": 88,
+      "top": 240.390625,
+      "right": 372,
+      "bottom": 328.390625,
+      "left": 28
+    },
+    "activeTag": "BUTTON",
+    "activeLabel": "今日",
+    "focusedVisible": true
+  },
+  "bodyCssZoom2": {
+    "htmlZoom": "1",
+    "bodyZoom": "2",
+    "innerWidth": 1280,
+    "documentWidth": 1400,
+    "bodyWidth": 700,
+    "heading": {
+      "x": 484,
+      "y": 254.390625,
+      "width": 447.546875,
+      "height": 57.1875,
+      "top": 254.390625,
+      "right": 931.546875,
+      "bottom": 311.578125,
+      "left": 484
+    }
+  }
+}

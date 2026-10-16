@@ -1,0 +1,16 @@
+.                                                                        [100%]Task exception was never retrieved
+future: <Task finished name='Task-21' coro=<to_thread() done, defined at /Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/threads.py:12> exception=QueryCancelled()>
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/tests/integration/test_http_sse_lifecycle.py", line 28, in query
+    raise QueryCancelled()
+summit_everything.retrieval.query.QueryCancelled
+
+1 passed in 0.61s
+
+COMMAND_EXIT_CODE=0

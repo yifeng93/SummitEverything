@@ -1,0 +1,122 @@
+QA MODE: prod (production bundle, no React StrictMode double-invoke)
+
+=== S1: reproduce the P1 scenario (finish setup -> restart -> reopen) ===
+[PASS] S1.1 fresh app shows the workspace gate, not Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod/01-s1-1-gate.png
+[PASS] S1.2 creating a workspace lands on wizard step 2  :: landing=wizard step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S1.3 advanced to step 3 and the write landed  :: step={"raw":"第 3 步 · 检查连接","step":3}
+[PASS] S1.4 advanced to step 4
+[PASS] S1.5 advanced to step 5
+[PASS] S1.6 finishing the wizard reaches Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod/03-s1-6-today.png
+[FAIL] S1.7 backend holds the completed record {step:5,completed:true,open:false}  :: status=404 body={"detail":"Not Found"}
+[FAIL] S1.8 record file lives inside the isolated profile dir  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/run-prod/profile/163630af-3b07-4565-8d53-cc24a1500db8/first-use-progress.json
+[PASS] S1.9 after a backend restart no workspace is auto-opened (409): no "auto-open last workspace" regression  :: status=409
+[PASS] S1.10 restarted app shows the workspace gate  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod/04-s1-10-gate-after-restart.png
+[PASS] S1.11 the restarted browser context really has empty storage (models the packaged non-persistent WKWebView)  :: keys=[]
+[FAIL] S1.12 ***P1 CORE*** reopening an already-configured workspace after restart lands on Today  :: wizard={"raw":"第 2 步 · 模型与密钥","step":2} today=false
+[FAIL] S1.13 ***P1 CORE*** the wizard is NOT shown on open  :: wizard={"raw":"第 2 步 · 模型与密钥","step":2}
+[FAIL] S1.14 no "第 2 步 · 模型与密钥" heading exists anywhere after reopening
+[PASS] S1.15 no first-use key is written into browser storage  :: keys=[]
+
+=== S2: explicit close (open:false) does not auto-reopen; settings resumes it ===
+[PASS] S2.1 new workspace starts at step 2
+[PASS] S2.2 moved to step 3
+[FAIL] S2.3 closing durably wrote {step:3,completed:false,open:false} and reached Today  :: record={"detail":"Not Found"} today=true
+[FAIL] S2.4 restart + reopen of an explicitly-closed workspace shows Today with no wizard  :: today=false wizard={"raw":"第 2 步 · 模型与密钥","step":2}
+HARNESS ERROR: locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: '设置' })
+    - locator resolved to <button title="设置" aria-label="设置" aria-current="page" class="nav-item active">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+    at main (/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/harness/qa_p1_restart.mjs:405:50)
+    at async file:///Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/harness/qa_p1_restart.mjs:748:3 {
+  log: [
+    "  - waiting for getByRole('button', { name: '设置' })",
+    '    - locator resolved to <button title="设置" aria-label="设置" aria-current="page" class="nav-item active">…</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    58 × waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+==========================================================================================
+QA BROWSER HARNESS TOTAL: 20 checks, 12 passed, 8 failed
+  FAILED: S1.7 backend holds the completed record {step:5,completed:true,open:false} :: status=404 body={"detail":"Not Found"}
+  FAILED: S1.8 record file lives inside the isolated profile dir :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/run-prod/profile/163630af-3b07-4565-8d53-cc24a1500db8/first-use-progress.json
+  FAILED: S1.12 ***P1 CORE*** reopening an already-configured workspace after restart lands on Today :: wizard={"raw":"第 2 步 · 模型与密钥","step":2} today=false
+  FAILED: S1.13 ***P1 CORE*** the wizard is NOT shown on open :: wizard={"raw":"第 2 步 · 模型与密钥","step":2}
+  FAILED: S1.14 no "第 2 步 · 模型与密钥" heading exists anywhere after reopening :: 
+  FAILED: S2.3 closing durably wrote {step:3,completed:false,open:false} and reached Today :: record={"detail":"Not Found"} today=true
+  FAILED: S2.4 restart + reopen of an explicitly-closed workspace shows Today with no wizard :: today=false wizard={"raw":"第 2 步 · 模型与密钥","step":2}
+  FAILED: harness completed without an internal error :: TimeoutError: locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: '设置' })
+    - locator resolved to <button title="设置" aria-label="设置" aria-current="page" class="nav-item active">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+screenshots: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod
+results:     /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything/.local/qa/frontend-d-repair1/run-prod/results.json
+==========================================================================================
+EXIT=1

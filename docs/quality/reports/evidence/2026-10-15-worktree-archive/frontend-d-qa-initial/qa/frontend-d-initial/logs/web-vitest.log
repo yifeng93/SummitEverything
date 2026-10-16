@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-d-qa-initial/SummitEverything/web
+
+
+ Test Files  25 passed (25)
+      Tests  204 passed (204)
+   Start at  21:28:58
+   Duration  2.00s (environment 55%, tests 24%, import 11%, transform 10%)
+

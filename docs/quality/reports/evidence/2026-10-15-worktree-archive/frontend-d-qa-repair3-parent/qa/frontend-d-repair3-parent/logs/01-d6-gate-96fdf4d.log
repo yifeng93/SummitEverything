@@ -1,0 +1,64 @@
+## D-6 gate at parent 96fdf4d
+--- exit code expected 1 ---
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [76ms]
+api:types EXIT=0
+diff --git a/web/src/api/generated.ts b/web/src/api/generated.ts
+index 264f7d1..2ae3933 100644
+--- a/web/src/api/generated.ts
++++ b/web/src/api/generated.ts
+@@ -1753,6 +1753,11 @@ export interface components {
+          *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+          *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+          *     rejected instead of having it silently stored on disk.
++         *
++         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
++         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
++         *     out-of-contract payload would look accepted; the validator below closes that
++         *     (independent QA finding D-4).
+          */
+         FirstUseProgress: {
+             /**
+DIFF_GENERATED_EXIT=1
+diff --git a/web/src/api/generated.ts b/web/src/api/generated.ts
+index 264f7d1..2ae3933 100644
+--- a/web/src/api/generated.ts
++++ b/web/src/api/generated.ts
+@@ -1753,6 +1753,11 @@ export interface components {
+          *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+          *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+          *     rejected instead of having it silently stored on disk.
++         *
++         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
++         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
++         *     out-of-contract payload would look accepted; the validator below closes that
++         *     (independent QA finding D-4).
+          */
+         FirstUseProgress: {
+             /**
+DIFF_BOTH_EXIT=1
+--- raw diff (generated.ts) ---
+diff --git a/web/src/api/generated.ts b/web/src/api/generated.ts
+index 264f7d1..2ae3933 100644
+--- a/web/src/api/generated.ts
++++ b/web/src/api/generated.ts
+@@ -1753,6 +1753,11 @@ export interface components {
+          *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+          *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+          *     rejected instead of having it silently stored on disk.
++         *
++         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
++         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
++         *     out-of-contract payload would look accepted; the validator below closes that
++         *     (independent QA finding D-4).
+          */
+         FirstUseProgress: {
+             /**
+--- raw diff (openapi.json) ---
+--- status ---
+ M web/src/api/generated.ts

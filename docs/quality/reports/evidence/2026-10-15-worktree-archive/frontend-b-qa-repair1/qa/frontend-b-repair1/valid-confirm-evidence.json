@@ -1,0 +1,63 @@
+{
+  "previewScope": {
+    "item_ids": [
+      "d7fadb0c-5379-5aac-a1a7-202ec43b8e8e"
+    ],
+    "operation_id": "42054d60-7f5d-4b0e-9fd2-a6d1340b51bc",
+    "line_id": "560170ac-08aa-57d1-88f0-447976c9d3b1",
+    "project_id": "de8a0052-808c-5637-9656-b0455e328d77",
+    "reprocess": false,
+    "max_output_tokens": 2048,
+    "outgoing_inputs": [
+      {
+        "item_id": "d7fadb0c-5379-5aac-a1a7-202ec43b8e8e",
+        "source_id": "fe64722c-2139-509e-aec5-75269b944daa",
+        "text": "SYNTHETIC-ORIGINAL-ONLY: 仅用于离线 QA 的原件正文。预算标记 73。\n第二行原文仍应完整呈现。\n"
+      }
+    ]
+  },
+  "confirmBody": {
+    "scope_sha256": "fb01776f7a699ec0c60d6f30bea32fa1b9c6502d114f6e7936e7ee48b7a8fa02",
+    "scope": {
+      "item_ids": [
+        "d7fadb0c-5379-5aac-a1a7-202ec43b8e8e"
+      ],
+      "operation_id": "42054d60-7f5d-4b0e-9fd2-a6d1340b51bc",
+      "line_id": "560170ac-08aa-57d1-88f0-447976c9d3b1",
+      "project_id": "de8a0052-808c-5637-9656-b0455e328d77",
+      "reprocess": false,
+      "max_output_tokens": 2048,
+      "outgoing_inputs": [
+        {
+          "item_id": "d7fadb0c-5379-5aac-a1a7-202ec43b8e8e",
+          "source_id": "fe64722c-2139-509e-aec5-75269b944daa",
+          "text": "SYNTHETIC-ORIGINAL-ONLY: 仅用于离线 QA 的原件正文。预算标记 73。\n第二行原文仍应完整呈现。\n"
+        }
+      ]
+    }
+  },
+  "interceptedJobs": [
+    {
+      "item_ids": [
+        "d7fadb0c-5379-5aac-a1a7-202ec43b8e8e"
+      ],
+      "line_id": "560170ac-08aa-57d1-88f0-447976c9d3b1",
+      "project_id": "de8a0052-808c-5637-9656-b0455e328d77",
+      "operation_id": "42054d60-7f5d-4b0e-9fd2-a6d1340b51bc",
+      "reprocess": false,
+      "acceptance_plan_id": "d20acd64-be51-4059-bd2a-aae5f3e1ab87"
+    }
+  ],
+  "writes": [
+    "POST /api/v1/workspaces",
+    "POST /api/v1/lines",
+    "POST /api/v1/projects",
+    "POST /api/v1/lines",
+    "POST /api/v1/projects",
+    "POST /api/v1/intake/items",
+    "PATCH /api/v1/settings",
+    "POST /api/v1/acceptance-plans",
+    "DELETE /api/v1/acceptance-plans/aad79b9e-b6c8-45f6-9532-3450960295b3"
+  ],
+  "externalAttempts": []
+}

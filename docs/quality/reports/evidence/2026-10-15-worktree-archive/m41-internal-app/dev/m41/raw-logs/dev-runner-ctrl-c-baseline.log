@@ -1,0 +1,8 @@
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+BASELINE_SOURCE=2c4e479:scripts/run_dev.py
+API_PORT=63223 WEB_PORT=63224
+COMMAND_EXIT_CODE=241

@@ -1,0 +1,343 @@
+
+===== guarded-pytest =====
+COMMAND=env PYTHONPATH=/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/scripts/offline_guard:/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/src uv run --locked pytest -q 
+......FF..FF............................................................ [ 14%]
+........................................................................ [ 28%]
+.................F...................................................... [ 43%]
+........................................................................ [ 57%]
+........................................................................ [ 72%]
+........................................................................ [ 86%]
+..................................................................       [100%]
+=================================== FAILURES ===================================
+_____________ test_nonempty_line_and_project_deletion_is_rejected ______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-917/test_nonempty_line_and_project0')
+
+    def test_nonempty_line_and_project_deletion_is_rejected(tmp_path: Path) -> None:
+        api = client()
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        open_new_workspace(api, tmp_path / "new")
+        line = api.post("/api/v1/lines", json={"name": "线甲", "operation_id": "line-create"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "项目甲", "operation_id": "project-create"},
+        ).json()
+        project_dir = tmp_path / "new" / project["directory"]
+        (project_dir / "page.md").write_text("retained content", encoding="utf-8")
+        original_page = (project_dir / "page.md").read_bytes()
+    
+        archived = api.patch(
+            f"/api/v1/projects/{project['id']}",
+            json={"archived": True, "operation_id": "project-archive"},
+        )
+        assert archived.status_code == 200, archived.text
+        manifest_path = tmp_path / "new" / ".summit-everything" / "manifest.json"
+        original_manifest = manifest_path.read_bytes()
+    
+        line_delete = api.delete(f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"})
+        assert line_delete.status_code == 409
+        assert line_delete.json()["error"]["code"] == "workspace_error"
+        assert isinstance(line_delete.json()["error"]["request_id"], str)
+>       assert "仍有项目" in line_delete.json()["error"]["message"]
+E       AssertionError: assert '仍有项目' in '工作库请求未能完成。'
+
+tests/contract/test_workspace_api.py:174: AssertionError
+_________ test_line_with_files_and_empty_organizations_can_be_deleted __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-917/test_line_with_files_and_empty0')
+
+    def test_line_with_files_and_empty_organizations_can_be_deleted(tmp_path: Path) -> None:
+        api = client()
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        open_new_workspace(api, tmp_path / "new")
+        line = api.post("/api/v1/lines", json={"name": "线甲", "operation_id": "line-create"}).json()
+        line_dir = tmp_path / "new" / line["directory"]
+        (line_dir / "retained.txt").write_text("retained line content", encoding="utf-8")
+        manifest_path = tmp_path / "new" / ".summit-everything" / "manifest.json"
+        original_manifest = manifest_path.read_bytes()
+    
+        line_delete = api.delete(f"/api/v1/lines/{line['id']}", params={"operation_id": "line-delete"})
+        assert line_delete.status_code == 409
+        assert line_delete.json()["error"]["code"] == "workspace_error"
+        assert isinstance(line_delete.json()["error"]["request_id"], str)
+>       assert "目录仍有内容" in line_delete.json()["error"]["message"]
+E       AssertionError: assert '目录仍有内容' in '工作库请求未能完成。'
+
+tests/contract/test_workspace_api.py:205: AssertionError
+_________________ test_page_reader_rejects_duplicate_page_ids __________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-917/test_page_reader_rejects_dupli1')
+
+    def test_page_reader_rejects_duplicate_page_ids(tmp_path: Path) -> None:
+        api = client()
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        open_new_workspace(api, tmp_path / "new")
+        line = api.post("/api/v1/lines", json={"name": "线", "operation_id": "line"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "项目", "operation_id": "project"},
+        ).json()
+        page_id = "00000000-0000-4000-8000-000000000077"
+        for filename in ("first.md", "second.md"):
+            (tmp_path / "new" / project["directory"] / filename).write_text(
+                "---\n"
+                f"id: {page_id}\ntitle: {filename}\nrole: knowledge\nkind: object\n"
+                f"line_id: {line['id']}\nproject_id: {project['id']}\n---\ntext\n",
+                encoding="utf-8",
+            )
+    
+        response = api.get("/api/v1/pages")
+    
+        assert response.status_code == 422
+>       assert "duplicate page IDs" in response.json()["error"]["message"]
+E       AssertionError: assert 'duplicate page IDs' in '工作库请求未能完成。'
+
+tests/contract/test_workspace_api.py:311: AssertionError
+_________ test_page_reader_rejects_markdown_symlink_outside_workspace __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-917/test_page_reader_rejects_markd0')
+
+    def test_page_reader_rejects_markdown_symlink_outside_workspace(tmp_path: Path) -> None:
+        api = client()
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        open_new_workspace(api, tmp_path / "new")
+        line = api.post("/api/v1/lines", json={"name": "路径线", "operation_id": "line"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "路径项目", "operation_id": "project"},
+        ).json()
+        outside = tmp_path / "outside.md"
+        outside.write_text(
+            "---\n"
+            "id: 00000000-0000-4000-8000-000000000999\ntitle: 外部页面\n"
+            "role: knowledge\nkind: object\n"
+            f"line_id: {line['id']}\nproject_id: {project['id']}\n---\nprivate canary\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "new" / project["directory"] / "linked.md").symlink_to(outside)
+    
+        response = api.get("/api/v1/pages")
+    
+        assert response.status_code == 422
+>       assert "symlink" in response.json()["error"]["message"]
+E       AssertionError: assert 'symlink' in '工作库请求未能完成。'
+
+tests/contract/test_workspace_api.py:336: AssertionError
+_____ test_stale_review_target_can_be_rebased_only_after_explicit_conflict _____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-917/test_stale_review_target_can_b0')
+
+    def test_stale_review_target_can_be_rebased_only_after_explicit_conflict(tmp_path: Path) -> None:
+        token = "stale-review-token"
+        review = IntakeReviewService(FakeLLM())
+        api = TestClient(
+            create_app(
+                session_token=token,
+                profile_root=tmp_path / "profiles",
+                review_service=review,
+            )
+        )
+        api.headers.update({"Authorization": f"Bearer {token}"})
+        root = tmp_path / "workspace"
+        assert (
+            api.post(
+                "/api/v1/workspaces",
+                json={
+                    "root": str(root),
+                    "mode": "create",
+                    "name": "冲突模拟库",
+                    "operation_id": "workspace",
+                },
+            ).status_code
+            == 201
+        )
+        line = api.post("/api/v1/lines", json={"name": "模拟线", "operation_id": "line"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "模拟项目", "operation_id": "project"},
+        ).json()
+        page_id = "00000000-0000-4000-8000-000000000901"
+        created = api.post(
+            "/api/v1/pages",
+            json={
+                "metadata": {
+                    "id": page_id,
+                    "title": "权威事实",
+                    "role": "knowledge",
+                    "kind": "topic",
+                    "line_id": line["id"],
+                    "project_id": project["id"],
+                },
+                "body": "合同金额是 123 元。",
+                "confirmation_id": "confirm-original",
+                "operation_id": "create-original",
+            },
+        )
+        assert created.status_code == 201, created.text
+        original = api.get(f"/api/v1/pages/{page_id}").json()
+        item = api.post(
+            "/api/v1/intake/items",
+            json={"text": "合同金额更新为 456 元。", "filename": "update.txt", "operation_id": "input"},
+        ).json()
+        job = api.post(
+            "/api/v1/intake/jobs",
+            json={
+                "item_ids": [item["item_id"]],
+                "line_id": line["id"],
+                "project_id": project["id"],
+                "operation_id": "organize",
+            },
+        ).json()
+        draft_id = job["draft_ids"][0]
+        draft = api.get(f"/api/v1/drafts/{draft_id}").json()
+        assert (
+            api.patch(
+                f"/api/v1/drafts/{draft_id}",
+                json={
+                    "expected_version": draft["version"],
+                    "title": draft["metadata"]["title"],
+                    "body": "合同金额更新为 456 元。",
+                    "target_page_id": page_id,
+                    "expected_base_sha256": original["content_sha256"],
+                },
+            ).status_code
+            == 200
+        )
+        page_path = root / original["relative_path"]
+        external_text = page_path.read_text(encoding="utf-8").replace("123 元", "999 元")
+        page_path.write_text(external_text, encoding="utf-8")
+        current = api.get(f"/api/v1/pages/{page_id}").json()
+    
+        stale_edit = api.patch(
+            f"/api/v1/drafts/{draft_id}",
+            json={
+                "expected_version": draft["version"] + 1,
+                "title": "审核后的权威事实",
+                "body": "合同金额更新为 456 元。",
+                "target_page_id": page_id,
+                "expected_base_sha256": original["content_sha256"],
+            },
+        )
+    
+        assert stale_edit.status_code == 409
+>       assert "页面已变化" in stale_edit.json()["error"]["message"]
+E       AssertionError: assert '页面已变化' in '工作库内容已发生变化，请刷新后重试。'
+
+tests/integration/test_intake_review.py:1229: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/contract/test_workspace_api.py::test_nonempty_line_and_project_deletion_is_rejected
+FAILED tests/contract/test_workspace_api.py::test_line_with_files_and_empty_organizations_can_be_deleted
+FAILED tests/contract/test_workspace_api.py::test_page_reader_rejects_duplicate_page_ids
+FAILED tests/contract/test_workspace_api.py::test_page_reader_rejects_markdown_symlink_outside_workspace
+FAILED tests/integration/test_intake_review.py::test_stale_review_target_can_be_rebased_only_after_explicit_conflict
+5 failed, 493 passed, 1 warning in 72.55s (0:01:12)
+COMMAND_EXIT_CODE=1
+
+===== ruff-check =====
+COMMAND=uv run --locked ruff check src tests 
+All checks passed!
+COMMAND_EXIT_CODE=0
+
+===== ruff-format =====
+COMMAND=uv run --locked ruff format --check src tests 
+82 files already formatted
+COMMAND_EXIT_CODE=0
+
+===== mypy =====
+COMMAND=uv run --locked mypy src 
+Success: no issues found in 44 source files
+COMMAND_EXIT_CODE=0
+
+===== uv-lock-check =====
+COMMAND=uv lock --check 
+Resolved 48 packages in 3ms
+COMMAND_EXIT_CODE=0
+
+===== uv-build =====
+COMMAND=uv build 
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/summit_everything-0.1.0.tar.gz
+Successfully built dist/summit_everything-0.1.0-py3-none-any.whl
+COMMAND_EXIT_CODE=0
+
+===== api-types =====
+COMMAND=npm --prefix web run api:types 
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [67.5ms]
+COMMAND_EXIT_CODE=0
+
+===== api-types-diff =====
+COMMAND=git diff --exit-code -- web/src/api/generated.ts 
+COMMAND_EXIT_CODE=0
+
+===== web-tests =====
+COMMAND=npm --prefix web test 
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/web
+
+
+ Test Files  12 passed (12)
+      Tests  56 passed (56)
+   Start at  13:07:48
+   Duration  1.47s (environment 48%, tests 35%, import 10%, transform 7%)
+
+COMMAND_EXIT_CODE=0
+
+===== web-typecheck =====
+COMMAND=npm --prefix web run typecheck 
+
+> web@0.0.0 typecheck
+> tsc -b --pretty
+
+COMMAND_EXIT_CODE=0
+
+===== web-lint =====
+COMMAND=npm --prefix web run lint 
+
+> web@0.0.0 lint
+> oxlint
+
+src/components/TodayView.tsx:70:26: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/components/ProjectsView.tsx:40:26: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+COMMAND_EXIT_CODE=0
+
+===== web-build =====
+COMMAND=npm --prefix web run build 
+
+> web@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 28 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.62 kB │ gzip:  0.39 kB
+dist/assets/index-B3KNOB32.css   28.63 kB │ gzip:  6.26 kB
+dist/assets/index-MZuh_RlO.js   319.42 kB │ gzip: 94.64 kB
+
+✓ built in 66ms
+COMMAND_EXIT_CODE=0
+
+===== swift-build =====
+COMMAND=env MACOSX_DEPLOYMENT_TARGET=13.0 swift build -c release --package-path native 
+Building for production...
+[1 / 2] SummitEverything-product
+Build complete! (0.23秒)
+COMMAND_EXIT_CODE=0

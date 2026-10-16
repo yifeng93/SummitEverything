@@ -1,0 +1,19 @@
+### sha256 of tracked artifacts (before)
+6b4a0e95dcea557abfc346530e8c70714ab770c4ad0293ae3b2aba1ab9b0c5e4  web/openapi.json
+396613c3915639dd2c8385818148aa35ddaed065d8e96fd11085030d262fb80d  web/src/api/generated.ts
+
+### running: uv run python scripts/export_openapi.py
+Wrote web/openapi.json
+EXIT=0
+
+### cmp tracked-openapi vs regenerated
+IDENTICAL bytes
+
+### git status after regeneration (must be clean)
+
+### regenerate browser types to a temp file and compare
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/tmp.ZYtcL2hrMF/generated.new.ts [75.8ms]
+EXIT=0
+generated.ts IDENTICAL bytes
+### post-restore git status

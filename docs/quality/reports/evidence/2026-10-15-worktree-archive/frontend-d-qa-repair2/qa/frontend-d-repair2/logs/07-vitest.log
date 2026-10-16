@@ -1,0 +1,85 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/web
+
+stdout | src/theme.test.ts > 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） > 浅色 tokens 的 10 组对比度达标（并打印真实比值）
+[守卫⑦] 浅色主题对比度（GUIDE §6.2） · 门禁组
+  组名                          前景        背景        比值
+  ink/paper                    #242a2c     #f4f5f2     13.30 PASS
+  muted/paper                  #666f6e     #f4f5f2     4.72 PASS
+  ink/surface                  #242a2c     #ffffff     14.56 PASS
+  muted/surface                #666f6e     #ffffff     5.17 PASS
+  on-accent/accent             #ffffff     #a04d2c     5.85 PASS
+  accent/accent-wash           #a04d2c     #f7ebe5     5.00 PASS
+  green/green-wash             #3e7258     #eaf2ed     4.91 PASS
+  danger/danger-wash           #a53a2a     #fbeae6     5.56 PASS
+  warn/warn-wash               #7a5a12     #fbf4e8     5.82 PASS
+  control-border/surface       #8d948f     #ffffff     3.10 PASS
+[守卫⑦] 浅色主题对比度（GUIDE §6.2） · 仅打印
+  组名                          前景        背景        比值
+  quiet/surface                #6f7876     #ffffff     4.54 --
+  accent-dark/accent-wash      #8a3f22     #f7ebe5     6.38 --
+  danger-ink/danger-wash       #7f2c1f     #fbeae6     7.89 --
+  warn-ink/warn-wash           #5f4409     #fbf4e8     8.29 --
+  sidebar-muted/sidebar        #9ca9a3     #202928     6.12 --
+  sidebar-fg/sidebar           #edf2ee     #202928     13.15 --
+
+stdout | src/theme.test.ts > 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） > 深色 tokens 的 10 组对比度达标（并打印真实比值）
+[守卫⑦] 深色主题对比度（GUIDE §6.2） · 门禁组
+  组名                          前景        背景        比值
+  ink/paper                    #e7ebe7     #171d1b     14.20 PASS
+  muted/paper                  #abb5af     #171d1b     8.11 PASS
+  ink/surface                  #e7ebe7     #222a27     12.21 PASS
+  muted/surface                #abb5af     #222a27     6.97 PASS
+  on-accent/accent             #1c1512     #e09170     7.25 PASS
+  accent/accent-wash           #e09170     #3a2b25     5.45 PASS
+  green/green-wash             #9ac5a9     #253b2e     6.27 PASS
+  danger/danger-wash           #f0a08c     #43241d     6.70 PASS
+  warn/warn-wash               #e0b872     #3d3220     6.73 PASS
+  control-border/surface       #6d7a74     #222a27     3.28 PASS
+[守卫⑦] 深色主题对比度（GUIDE §6.2） · 仅打印
+  组名                          前景        背景        比值
+  quiet/surface                #96a09a     #222a27     5.45 --
+  accent-dark/accent-wash      #efaa8d     #3a2b25     6.96 --
+  danger-ink/danger-wash       #f4b6a4     #43241d     8.00 --
+  warn-ink/warn-wash           #e8c98d     #3d3220     7.86 --
+  sidebar-muted/sidebar        #9ca9a3     #111715     7.45 --
+  sidebar-fg/sidebar           #e7ebe7     #111715     15.07 --
+
+ ✓ src/theme.test.ts (8 tests) 5ms
+ ✓ src/components/firstUseProgress.test.ts (9 tests) 7ms
+ ✓ src/ui-contract.test.ts (10 tests) 108ms
+ ✓ src/components/ToastHost.test.tsx (8 tests) 108ms
+ ✓ src/components/ConfirmDialog.test.tsx (3 tests) 138ms
+ ✓ src/components/WorkspaceGate.test.tsx (3 tests) 189ms
+ ✓ src/components/JournalView.test.tsx (4 tests) 248ms
+ ✓ src/components/MarkdownText.test.tsx (8 tests) 175ms
+ ✓ src/components/SourceOrganizer.test.tsx (4 tests) 209ms
+ ✓ src/components/AppShell.test.tsx (10 tests) 187ms
+ ✓ src/components/DraftReview.test.tsx (2 tests) 199ms
+ ✓ src/components/SettingsView.test.tsx (2 tests) 233ms
+ ✓ src/components/PageReader.test.tsx (5 tests) 183ms
+ ✓ src/components/TodayView.test.tsx (13 tests) 513ms
+ ✓ src/App.test.tsx (1 test) 312ms
+   ✓ keeps the updated citation version warning visible after navigating to the page 311ms
+ ✓ src/components/SettingsView.cards.test.tsx (15 tests) 569ms
+ ✓ src/components/FeishuPanel.test.tsx (16 tests) 602ms
+ ✓ src/components/SettingsView.regressions.test.tsx (6 tests) 626ms
+ ✓ src/components/ApprovalView.test.tsx (9 tests) 441ms
+ ✓ src/components/TasksPanel.test.tsx (12 tests) 652ms
+ ✓ src/components/FirstUseWizard.test.tsx (19 tests) 686ms
+ ✓ src/components/ProjectsView.test.tsx (10 tests) 509ms
+ ✓ src/App.shell.test.tsx (10 tests) 468ms
+ ✓ src/ui-contract.render.test.tsx (10 tests) 598ms
+ ✓ src/components/AskView.test.tsx (17 tests) 692ms
+ ✓ src/App.firstUseProgress.test.tsx (8 tests) 744ms
+
+ Test Files  26 passed (26)
+      Tests  222 passed (222)
+   Start at  22:36:53
+   Duration  2.13s (environment 54%, tests 25%, import 10%, transform 10%)
+
+EXIT=0

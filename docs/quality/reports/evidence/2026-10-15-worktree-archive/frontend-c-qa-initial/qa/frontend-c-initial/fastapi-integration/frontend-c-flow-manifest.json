@@ -1,0 +1,264 @@
+{
+  "seeded": {
+    "line": {
+      "id": "1597012c-9999-5d69-972b-7c7c2ef0c724",
+      "name": "C 合成主线",
+      "directory": "C-合成主线"
+    },
+    "project": {
+      "id": "829155ef-b707-5298-b869-0bf62d6c2ff5",
+      "line_id": "1597012c-9999-5d69-972b-7c7c2ef0c724",
+      "name": "C 合成项目",
+      "directory": "C-合成主线/C-合成项目",
+      "overview_id": "c2a6f8a9-1c40-5500-b7fc-53e558e749a0",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    },
+    "pageId": "8dd79b53-e413-4437-b2cd-cc0ef76be8b3"
+  },
+  "apiCalls": [
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/lines"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/index/plans"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/index/jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/memory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/memory/candidates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/queries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/conversations/76aff444-1f83-4e31-9c86-84ff93145c57/reopen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/8dd79b53-e413-4437-b2cd-cc0ef76be8b3"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/8dd79b53-e413-4437-b2cd-cc0ef76be8b3"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages/8dd79b53-e413-4437-b2cd-cc0ef76be8b3/confirmations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/8dd79b53-e413-4437-b2cd-cc0ef76be8b3"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/8dd79b53-e413-4437-b2cd-cc0ef76be8b3"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    }
+  ],
+  "externalAttempts": []
+}

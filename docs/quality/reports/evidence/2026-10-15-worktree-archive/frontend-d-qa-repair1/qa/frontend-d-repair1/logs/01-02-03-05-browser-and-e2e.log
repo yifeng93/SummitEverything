@@ -1,0 +1,209 @@
+### PROD BUNDLE RUN (web/dist served by QA static+proxy server)
+QA MODE: prod (production bundle, no React StrictMode double-invoke)
+
+=== S1: reproduce the P1 scenario (finish setup -> restart -> reopen) ===
+[PASS] S1.1 fresh app shows the workspace gate, not Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod/01-s1-1-gate.png
+[PASS] S1.2 creating a workspace lands on wizard step 2  :: landing=wizard step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S1.3 advanced to step 3 and the write landed  :: step={"raw":"第 3 步 · 检查连接","step":3}
+[PASS] S1.4 advanced to step 4
+[PASS] S1.5 advanced to step 5
+[PASS] S1.6 finishing the wizard reaches Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod/03-s1-6-today.png
+[PASS] S1.7 backend holds the completed record {step:5,completed:true,open:false}  :: status=200 body={"step":5,"completed":true,"open":false}
+[PASS] S1.8 record file lives inside the isolated profile dir  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/run-prod/profile/64b67d6c-4216-4b18-b7a7-38321a0571da/first-use-progress.json
+[PASS] S1.9 after a backend restart no workspace is auto-opened (409): no "auto-open last workspace" regression  :: status=409
+[PASS] S1.10 restarted app shows the workspace gate  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod/04-s1-10-gate-after-restart.png
+[PASS] S1.11 the restarted browser context really has empty storage (models the packaged non-persistent WKWebView)  :: keys=[]
+[PASS] S1.12 ***P1 CORE*** reopening an already-configured workspace after restart lands on Today  :: wizard=null today=true
+[PASS] S1.13 ***P1 CORE*** the wizard is NOT shown on open  :: wizard=null
+[PASS] S1.14 no "第 2 步 · 模型与密钥" heading exists anywhere after reopening
+[PASS] S1.15 no first-use key is written into browser storage  :: keys=[]
+
+=== S2: explicit close (open:false) does not auto-reopen; settings resumes it ===
+[PASS] S2.1 new workspace starts at step 2
+[PASS] S2.2 moved to step 3
+[PASS] S2.3 closing durably wrote {step:3,completed:false,open:false} and reached Today  :: record={"step":3,"completed":false,"open":false} today=true
+[PASS] S2.4 restart + reopen of an explicitly-closed workspace shows Today with no wizard  :: today=true wizard=null
+[PASS] S2.5 settings "打开连接向导" manually resumes the recorded step 3  :: step={"raw":"第 3 步 · 检查连接","step":3}
+
+=== S3: unfinished + open:true resumes the same step after restart ===
+[PASS] S3.1 advanced to step 4 (open:true written)
+[PASS] S3.2 ***unfinished resume*** restart + reopen returns to the saved step 4  :: step={"raw":"第 4 步 · 飞书","step":4}
+
+=== S4: "连接 / 重新授权飞书" goes straight to step 4 ===
+[PASS] S4.1 feishu re-authorize opens the wizard directly at step 4  :: step={"raw":"第 4 步 · 飞书","step":4}
+
+=== S5/S6: legacy localStorage migration (one shot, then dropped) ===
+[PASS] S5.1 brand-new workspace with no record starts at step 2  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S5.2 the brand-new workspace really has no backend record  :: status=404
+[PASS] S6.1 the legacy browser record is migrated once and the wizard resumes its step  :: step={"raw":"第 4 步 · 飞书","step":4}
+[PASS] S6.2 the migrated value became the backend record  :: record={"step":4,"completed":false,"open":true}
+[PASS] S6.3 the migration was written once (production bundle: exactly one PUT)  :: puts=1 distinct=1 trace=["-> GET","<- 404","-> PUT","<- 200"]
+[PASS] S6.4 the browser copy was deleted after a successful migration  :: value=null
+[PASS] S6.5 later progress changes write no localStorage copy back (no long-term double write)  :: keys=[] puts=1
+
+=== S7: invalid legacy shape is not migrated ===
+[PASS] S7.1 an invalid legacy shape (secret-shaped extra field) is NOT migrated  :: status=404 body={"error":{"code":"first_use_progress_absent","message":"本机还没有保存首次配置进度。","request_id":"5b2503201c252630"}}
+[PASS] S7.2 the UI therefore treats it as a new workspace and shows step 2  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S7.3 the rejected secret never appears in the main UI  :: no sk-QA-LEAK in body text
+
+=== S8: migration never overwrites an existing backend record ===
+[PASS] S8.0 reopened WS4 resumes its recorded wizard step (open:true)  :: step={"raw":"第 5 步 · 完成","step":5}
+[PASS] S8.1 a legacy browser copy never overwrites an existing backend record  :: record={"step":2,"completed":false,"open":true}
+[PASS] S8.2 the backend record wins and is what the wizard resumes  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S8.3 the unused legacy copy is left untouched (not deleted, not applied)
+
+=== S9: durable write failure stays put, is visible, and is retryable ===
+[PASS] S9.1 new workspace at step 2
+[PASS] S9.2 a failed durable write keeps the wizard on the ORIGINAL step (still step 2)  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S9.3 the failure is visible to the user  :: alert="这一步还没有保存到本机，界面停留在当前步骤。请重试。"
+[PASS] S9.4 a retry affordance is offered
+[PASS] S9.5 no success notice is shown for the failed transition  :: notice=""
+[PASS] S9.6 the failed transition wrote nothing to the backend  :: status=404 body={"error":{"code":"first_use_progress_absent","message":"本机还没有保存首次配置进度。","request_id":"f546b12297fb1be6"}}
+[PASS] S9.7 retry after the failure succeeds and advances to step 3  :: step={"raw":"第 3 步 · 检查连接","step":3}
+[PASS] S9.8 the retried write is durable on the backend  :: {"step":3,"completed":false,"open":true}
+[PASS] S9.9 a failed close does NOT close the wizard and does NOT reach Today (no false success)  :: step={"raw":"第 3 步 · 检查连接","step":3} today=false alert="这一步还没有保存到本机，界面停留在当前步骤。请重试。"
+[PASS] S9.10 the failed close did not write open:false  :: {"step":3,"completed":false,"open":true}
+[PASS] S9.11 retry of the close succeeds and reaches Today  :: today=true wizard=null
+[PASS] S9.12 the closed state is durable  :: {"step":3,"completed":false,"open":false}
+
+=== S10: durable READ failure stays on Today and never claims completion ===
+[PASS] S10.1 a corrupt backend record leaves the user on Today  :: today=true wizard=null
+[PASS] S10.2 the read failure is explained to the user  :: 跳到主内容 | S | SummitEverything | 个人知识工作台 | 今日 | 审批 | 项目 | 知识问答 | 设置 | Q | QA 独立工作库己 | 切换… | 仅本机运行 | 今日 | 已保存 | 跟随系统 | 浅色 | 深色 | 工作节奏 | 今日 |  | 先看今天的安排，再把新材料放进收件箱。 |  | 2026年10月15日星期四 | 会议 |  | 只读日历；刷新真实日历前会先预览并确认范围。 |  | 日
+[PASS] S10.3 the app does NOT claim first-use is already completed  :: no false completion claim
+[PASS] S10.4 the read failure is a danger toast (role=alert), not a silent state  :: role=alert corruptBytes=43
+[PASS] S10.5 settings are still reachable after a read failure
+[PASS] S10.6 the wizard can still be opened manually after a read failure  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+
+=== S12 (adversarial): a workspace configured BEFORE repair1 has no record ===
+[PASS] S12.1 new workspace at step 2
+[PASS] S12.2 the workspace is genuinely configured (mode real) before the record check  :: patch=200 status=200 mode=real
+[PASS] S12.3 OBSERVATION: the configured workspace still has NO progress record  :: status=404
+[PASS] S12.4 OBSERVATION: a configured workspace with no record is treated as brand-new — the wizard auto-opens at step 2 (a pre-repair1 user sees the old symptom once)  :: step={"raw":"第 2 步 · 模型与密钥","step":2} today=false
+[PASS] S12.5 OBSERVATION: while the wizard is open the modal backdrop covers the main nav, so Today is NOT reachable without closing the wizard  :: navClickIntercepted=true wizard={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S12.6 mitigation: closing the wizard reaches Today and durably records open:false  :: today=true record={"step":2,"completed":false,"open":false}
+[PASS] S12.7 the symptom does not recur: reopening after that explicit close lands on Today  :: today=true wizard=null
+
+=== S11: no secret / absolute path / raw JSON leakage into the main UI ===
+[PASS] S11.1 main UI exposes no secret, absolute profile path, raw progress JSON or token  :: findings=[]
+[PASS] S11.2 browser storage holds no secret and no first-use copy  :: []
+
+==========================================================================================
+QA BROWSER HARNESS TOTAL: 64 checks, 64 passed, 0 failed
+screenshots: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-prod
+results:     /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/run-prod/results.json
+==========================================================================================
+EXIT=0
+
+### DEV SERVER RUN (vite dev, React StrictMode)
+QA MODE: dev (vite dev server, React StrictMode)
+
+=== S1: reproduce the P1 scenario (finish setup -> restart -> reopen) ===
+[PASS] S1.1 fresh app shows the workspace gate, not Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-dev/01-s1-1-gate.png
+[PASS] S1.2 creating a workspace lands on wizard step 2  :: landing=wizard step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S1.3 advanced to step 3 and the write landed  :: step={"raw":"第 3 步 · 检查连接","step":3}
+[PASS] S1.4 advanced to step 4
+[PASS] S1.5 advanced to step 5
+[PASS] S1.6 finishing the wizard reaches Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-dev/03-s1-6-today.png
+[PASS] S1.7 backend holds the completed record {step:5,completed:true,open:false}  :: status=200 body={"step":5,"completed":true,"open":false}
+[PASS] S1.8 record file lives inside the isolated profile dir  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/run-dev/profile/afef4daf-8fe5-4d53-a844-5af1c03d0311/first-use-progress.json
+[PASS] S1.9 after a backend restart no workspace is auto-opened (409): no "auto-open last workspace" regression  :: status=409
+[PASS] S1.10 restarted app shows the workspace gate  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-dev/04-s1-10-gate-after-restart.png
+[PASS] S1.11 the restarted browser context really has empty storage (models the packaged non-persistent WKWebView)  :: keys=[]
+[PASS] S1.12 ***P1 CORE*** reopening an already-configured workspace after restart lands on Today  :: wizard=null today=true
+[PASS] S1.13 ***P1 CORE*** the wizard is NOT shown on open  :: wizard=null
+[PASS] S1.14 no "第 2 步 · 模型与密钥" heading exists anywhere after reopening
+[PASS] S1.15 no first-use key is written into browser storage  :: keys=[]
+
+=== S2: explicit close (open:false) does not auto-reopen; settings resumes it ===
+[PASS] S2.1 new workspace starts at step 2
+[PASS] S2.2 moved to step 3
+[PASS] S2.3 closing durably wrote {step:3,completed:false,open:false} and reached Today  :: record={"step":3,"completed":false,"open":false} today=true
+[PASS] S2.4 restart + reopen of an explicitly-closed workspace shows Today with no wizard  :: today=true wizard=null
+[PASS] S2.5 settings "打开连接向导" manually resumes the recorded step 3  :: step={"raw":"第 3 步 · 检查连接","step":3}
+
+=== S3: unfinished + open:true resumes the same step after restart ===
+[PASS] S3.1 advanced to step 4 (open:true written)
+[PASS] S3.2 ***unfinished resume*** restart + reopen returns to the saved step 4  :: step={"raw":"第 4 步 · 飞书","step":4}
+
+=== S4: "连接 / 重新授权飞书" goes straight to step 4 ===
+[PASS] S4.1 feishu re-authorize opens the wizard directly at step 4  :: step={"raw":"第 4 步 · 飞书","step":4}
+
+=== S5/S6: legacy localStorage migration (one shot, then dropped) ===
+[PASS] S5.1 brand-new workspace with no record starts at step 2  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S5.2 the brand-new workspace really has no backend record  :: status=404
+[PASS] S6.1 the legacy browser record is migrated once and the wizard resumes its step  :: step={"raw":"第 4 步 · 飞书","step":4}
+[PASS] S6.2 the migrated value became the backend record  :: record={"step":4,"completed":false,"open":true}
+[PASS] S6.3 the migration was written once (dev StrictMode may double-invoke the mount effect: at most two identical PUTs)  :: puts=2 distinct=1 trace=["-> GET","-> GET","<- 404","-> PUT","<- 404","-> PUT","<- 200","<- 200"]
+[PASS] S6.4 the browser copy was deleted after a successful migration  :: value=null
+[PASS] S6.5 later progress changes write no localStorage copy back (no long-term double write)  :: keys=[] puts=1
+
+=== S7: invalid legacy shape is not migrated ===
+[PASS] S7.1 an invalid legacy shape (secret-shaped extra field) is NOT migrated  :: status=404 body={"error":{"code":"first_use_progress_absent","message":"本机还没有保存首次配置进度。","request_id":"d20d253b66a12389"}}
+[PASS] S7.2 the UI therefore treats it as a new workspace and shows step 2  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S7.3 the rejected secret never appears in the main UI  :: no sk-QA-LEAK in body text
+
+=== S8: migration never overwrites an existing backend record ===
+[PASS] S8.0 reopened WS4 resumes its recorded wizard step (open:true)  :: step={"raw":"第 5 步 · 完成","step":5}
+[PASS] S8.1 a legacy browser copy never overwrites an existing backend record  :: record={"step":2,"completed":false,"open":true}
+[PASS] S8.2 the backend record wins and is what the wizard resumes  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S8.3 the unused legacy copy is left untouched (not deleted, not applied)
+
+=== S9: durable write failure stays put, is visible, and is retryable ===
+[PASS] S9.1 new workspace at step 2
+[PASS] S9.2 a failed durable write keeps the wizard on the ORIGINAL step (still step 2)  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S9.3 the failure is visible to the user  :: alert="这一步还没有保存到本机，界面停留在当前步骤。请重试。"
+[PASS] S9.4 a retry affordance is offered
+[PASS] S9.5 no success notice is shown for the failed transition  :: notice=""
+[PASS] S9.6 the failed transition wrote nothing to the backend  :: status=404 body={"error":{"code":"first_use_progress_absent","message":"本机还没有保存首次配置进度。","request_id":"c08746e034ab0e12"}}
+[PASS] S9.7 retry after the failure succeeds and advances to step 3  :: step={"raw":"第 3 步 · 检查连接","step":3}
+[PASS] S9.8 the retried write is durable on the backend  :: {"step":3,"completed":false,"open":true}
+[PASS] S9.9 a failed close does NOT close the wizard and does NOT reach Today (no false success)  :: step={"raw":"第 3 步 · 检查连接","step":3} today=false alert="这一步还没有保存到本机，界面停留在当前步骤。请重试。"
+[PASS] S9.10 the failed close did not write open:false  :: {"step":3,"completed":false,"open":true}
+[PASS] S9.11 retry of the close succeeds and reaches Today  :: today=true wizard=null
+[PASS] S9.12 the closed state is durable  :: {"step":3,"completed":false,"open":false}
+
+=== S10: durable READ failure stays on Today and never claims completion ===
+[PASS] S10.1 a corrupt backend record leaves the user on Today  :: today=true wizard=null
+[PASS] S10.2 the read failure is explained to the user  :: 跳到主内容 | S | SummitEverything | 个人知识工作台 | 今日 | 审批 | 项目 | 知识问答 | 设置 | Q | QA 独立工作库己 | 切换… | 仅本机运行 | 今日 | 已保存 | 跟随系统 | 浅色 | 深色 | 工作节奏 | 今日 |  | 先看今天的安排，再把新材料放进收件箱。 |  | 2026年10月15日星期四 | 会议 |  | 只读日历；刷新真实日历前会先预览并确认范围。 |  | 日
+[PASS] S10.3 the app does NOT claim first-use is already completed  :: no false completion claim
+[PASS] S10.4 the read failure is a danger toast (role=alert), not a silent state  :: role=alert corruptBytes=43
+[PASS] S10.5 settings are still reachable after a read failure
+[PASS] S10.6 the wizard can still be opened manually after a read failure  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+
+=== S12 (adversarial): a workspace configured BEFORE repair1 has no record ===
+[PASS] S12.1 new workspace at step 2
+[PASS] S12.2 the workspace is genuinely configured (mode real) before the record check  :: patch=200 status=200 mode=real
+[PASS] S12.3 OBSERVATION: the configured workspace still has NO progress record  :: status=404
+[PASS] S12.4 OBSERVATION: a configured workspace with no record is treated as brand-new — the wizard auto-opens at step 2 (a pre-repair1 user sees the old symptom once)  :: step={"raw":"第 2 步 · 模型与密钥","step":2} today=false
+[PASS] S12.5 OBSERVATION: while the wizard is open the modal backdrop covers the main nav, so Today is NOT reachable without closing the wizard  :: navClickIntercepted=true wizard={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] S12.6 mitigation: closing the wizard reaches Today and durably records open:false  :: today=true record={"step":2,"completed":false,"open":false}
+[PASS] S12.7 the symptom does not recur: reopening after that explicit close lands on Today  :: today=true wizard=null
+
+=== S11: no secret / absolute path / raw JSON leakage into the main UI ===
+[PASS] S11.1 main UI exposes no secret, absolute profile path, raw progress JSON or token  :: findings=[]
+[PASS] S11.2 browser storage holds no secret and no first-use copy  :: []
+
+==========================================================================================
+QA BROWSER HARNESS TOTAL: 64 checks, 64 passed, 0 failed
+screenshots: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/screenshots-dev
+results:     /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.local/qa/frontend-d-repair1/run-dev/results.json
+==========================================================================================
+EXIT=0
+
+### REPO E2E GATE: npm --prefix web run test:e2e
+
+> web@0.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:13674) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:13675) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (1.7s)
+  ✓  2 e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings (10.1s)
+
+  2 passed (12.5s)
+EXIT=0

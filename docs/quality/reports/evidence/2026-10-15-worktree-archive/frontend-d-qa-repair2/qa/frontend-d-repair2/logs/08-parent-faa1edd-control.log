@@ -1,0 +1,123 @@
+QA R2 MODE: prod (production bundle, no React StrictMode)
+
+=== G1: positive control — a CREATED workspace still onboards at step 2 ===
+[PASS] G1.1 a fresh app shows the workspace gate, not Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/screenshots-prod/01-g1-1-gate.png
+[PASS] G1.2 create intent still opens the wizard at step 2 (D-1 positive control)  :: landing=wizard step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] G1.3 the brand-new workspace has no record yet  :: status=404
+[PASS] G1.4 the create intent was not persisted anywhere in browser storage  :: []
+
+=== G2: P1 regression — finish setup -> restart -> open existing -> Today ===
+[PASS] G2.1 the wizard walked 2 -> 3 -> 4 -> 5 -> Today through the real UI  :: [3,4,5,"today"]
+[PASS] G2.2 the backend holds {step:5, completed:true, open:false}  :: status=200 body={"step":5,"completed":true,"open":false}
+[PASS] G2.3 the record is a real file inside the isolated profile dir  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/run-prod/profile/4675ce9f-374f-4fff-b672-7d8aa18bcba3/first-use-progress.json
+[PASS] G2.4 after a backend restart nothing is auto-opened (409 workspace_not_open)
+[PASS] G2.5 the restarted context really has empty storage (models non-persistent WKWebView)
+[PASS] G2.6 the restarted app shows the gate  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/screenshots-prod/04-g2-6-gate-after-restart.png
+[PASS] G2.7 ***P1 CORE*** reopening the already-configured workspace lands on Today  :: landing=today wizard=null today=true
+[PASS] G2.8 ***P1 CORE*** no wizard and no wizard backdrop after the reopen  :: wizard=null backdrop=0
+[PASS] G2.9 no "第 2 步 · 模型与密钥" heading exists anywhere
+[PASS] G2.10 the record-exists path shows NO "no record" pointer (it is not a false report)  :: []
+
+=== G3: D-1 core — an OLDER configured library with NO record is not blocked ===
+[PASS] G3.1 the older library was created through the real API  :: status=201
+[PASS] G3.2 it is genuinely configured (mode=real) — credentials/settings exist — but has no record  :: mode=real record=404
+[FAIL] G3.3 ***D-1 CORE*** "open" with no local record lands on Today, not the wizard  :: wizard={"raw":"第 2 步 · 模型与密钥","step":2} today=false
+[FAIL] G3.4 ***D-1 CORE*** no .wizard-backdrop covers Today  :: backdrop=1
+[PASS] G3.5 the app does NOT claim first use is already completed (no inference from credentials)
+[FAIL] G3.6 a non-blocking pointer is shown (neutral toast, role=status, not an error)  :: []
+[PASS] G3.7 the pointer text names no internal id, path, or raw JSON  :: []
+[FAIL] G3.8 the main navigation is NOT intercepted while the pointer is up  :: navClickIntercepted=true
+HARNESS ERROR: locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: '今日' })
+    - locator resolved to <button title="今日" aria-label="今日" class="nav-item">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+    at main (/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/harness/qa_r2_browser.mjs:484:50)
+    at async file:///Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/harness/qa_r2_browser.mjs:698:3 {
+  log: [
+    "  - waiting for getByRole('button', { name: '今日' })",
+    '    - locator resolved to <button title="今日" aria-label="今日" class="nav-item">…</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    58 × waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+============================================================================================
+QA R2 BROWSER HARNESS (prod) TOTAL: 23 checks, 18 passed, 5 failed
+  FAILED: G3.3 ***D-1 CORE*** "open" with no local record lands on Today, not the wizard :: wizard={"raw":"第 2 步 · 模型与密钥","step":2} today=false
+  FAILED: G3.4 ***D-1 CORE*** no .wizard-backdrop covers Today :: backdrop=1
+  FAILED: G3.6 a non-blocking pointer is shown (neutral toast, role=status, not an error) :: []
+  FAILED: G3.8 the main navigation is NOT intercepted while the pointer is up :: navClickIntercepted=true
+  FAILED: harness completed without an internal error :: TimeoutError: locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: '今日' })
+    - locator resolved to <button title="今日" aria-label="今日" class="nav-item">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="wizard-backdrop">…</div> from <div class="main-shell">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+screenshots: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/screenshots-prod
+results:     /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything/.local/qa/frontend-d-repair2/run-prod/results.json
+============================================================================================
