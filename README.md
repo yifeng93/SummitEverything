@@ -2,9 +2,13 @@
 
 SummitEverything 是个人工作知识整理与检索应用。首版目标是每台 Mac 独立运行的 DMG，使用 FastAPI、React/TypeScript 与薄 macOS 壳；工作知识由用户确认后保存为可迁移的 Markdown 页面。
 
-## 当前状态
+## 当前开发分支（未合入 main）
 
-当前主线状态（2026-10-16 收口）：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
+- **今日/审批可用性（2026-10-16；独立 QA 待开始）**：固定产品源码 `0957df2b871970d626fb2745048a6e79bad4defb`（父 `431fc95`；文档更新另成 docs-only commit，QA 尚未开始）。今日宽屏并排提供会议/任务与记录/导入，默认显示 3 场会议和 5 项任务；保存结果按精确材料 ID 接续。审批进入单项专注阅读，保护未保存编辑，空组可展开；已有确认正式内容而首次索引未建时提示并展开独立索引确认。Web 单测 235/235、typecheck、lint、build、Playwright 2/2、Fake API 集成 1/1 和 API types 当前开发检查通过；lint 保留 2 条原有 warning，build 有 602 KB 主包提示。独立 QA 尚未运行，不能视为验收通过。见[开发交接](docs/handoff/DEV-FRONTEND-USABILITY-20261016.md)和[决策 ADR 0012](docs/decisions/0012-today-approval-focused-usability.md)。
+
+## main 当前状态（截至 2026-10-16）
+
+当前主线状态（不包含上方未合入的今日/审批可用性分支）：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
 
 - **设置与首配**：设置页三卡主区 + 状态徽章 + 高级折叠；5 步向导；非秘密接入值由构建时注入包内 `Resources/first-use-defaults.json`，用户只需在本机录入三把密钥一次（存 Keychain，不打入包或仓库）。
 - **错误可见**：provider 失败带 code/message/request_id（embedding/rerank/LLM 统一 502）；`GroundedAnswer` 容错对象形式 `source_statements` 与多余键；密钥写入前做形状校验；问答/assist/索引失败的原因写进本地记录与客户端文案；诊断事件不再因清洗被丢弃。真实链路已实测：飞书授权与任务读取成功、embedding 200（1024 维）、rerank 200、DeepSeek 正常返回。

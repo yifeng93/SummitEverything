@@ -7,6 +7,7 @@
 1. README.md 和 docs/implementation/PROGRESS.md：确认实际完成情况。
 2. docs/product/PRODUCT-SPEC.md：用户已经决定什么。
 3. docs/product/FRONTEND-GUIDE.md 和 docs/product/FRONTEND-PAGE-SPECS.md：界面口径。用户已于 2026-10-14 以三轮选择题确认导航结构（5 栏）、信息分级、白话文案、Markdown 流式渲染、深色、字号尺度、首次配置合并与 10 条 UI 契约守卫；逐页区块顺序是规格，改了要同步文件。决策记录见 docs/decisions/0011-frontend-ux-baseline.md。
+   - 涉及今日和审批布局、折叠组或专注页行为时，还要读 docs/decisions/0012-today-approval-focused-usability.md（2026-10-16 用户补充裁定）。
 4. docs/architecture/ARCHITECTURE.md、docs/contracts/WORKSPACE-v1.md、docs/contracts/API-v1.md：实现边界。
 5. 执行者读 docs/handoff/IMPLEMENTER.md 和全 v1 计划；测试者读 docs/handoff/TESTER.md 和 docs/quality/ACCEPTANCE.md。
 6. 需要旧代码时，按 docs/architecture/REUSE-MAP.md 的提交和模块查证。

@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "milestone": "frontend-usability-2026-10-16",
+  "branch": "codex/frontend-usability-20261016",
+  "tested_product_sha": "0957df2b871970d626fb2745048a6e79bad4defb",
+  "tested_product_commit_message": "feat(web): improve today and approval usability",
+  "documentation_changes": "docs-only commits follow this tested product SHA; report final repository HEAD separately from tested_product_sha",
+  "evidence_root": ".local/dev/2026-10-16-frontend-usability",
+  "checks": [
+    {
+      "name": "vitest",
+      "command": "cd web && npm test",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "235 passed across 26 files",
+      "log": "final/unit-final-3.log"
+    },
+    {
+      "name": "typecheck",
+      "command": "cd web && npm run typecheck",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "final/typecheck-final-2.log"
+    },
+    {
+      "name": "lint",
+      "command": "cd web && npm run lint",
+      "status": "PASS_WITH_WARNINGS",
+      "exit_code": 0,
+      "summary": "2 existing react(set-state-in-effect) warnings in App.tsx and ProjectsView.tsx; no new ApprovalView warnings",
+      "log": "final/lint-final-2.log"
+    },
+    {
+      "name": "production_build",
+      "command": "cd web && npm run build",
+      "status": "PASS_WITH_WARNING",
+      "exit_code": 0,
+      "summary": "Vite warns that the 602.45 KB main JS chunk exceeds its 500 KB advisory size",
+      "log": "final/build-final-2.log"
+    },
+    {
+      "name": "api_types",
+      "command": "cd web && npm run api:types",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "OpenAPI exported and TypeScript generated; no resulting tracked diff",
+      "log": "final/api-types-final.log"
+    },
+    {
+      "name": "playwright_offline",
+      "command": "cd web && SUMMIT_E2E_EVIDENCE_DIR=../.local/dev/2026-10-16-frontend-usability/browser/viewport-final npm run test:e2e",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "2/2 tests; includes full viewport/theme baseline and 1280x800 non-empty Today first-fold evidence",
+      "log": "final/e2e-final-2.log"
+    },
+    {
+      "name": "fastapi_fake_integration",
+      "command": "cd web && SUMMIT_E2E_EVIDENCE_DIR=../.local/dev/2026-10-16-frontend-usability/browser/integration-final npm run test:e2e:integration",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "1/1 end-to-end flow with local FastAPI Fake and isolated synthetic workspace; no external origin or external writes",
+      "log": "final/integration-rerun-8.log"
+    },
+    {
+      "name": "repository_checks",
+      "command": "git diff --check && python3 -m json.tool web/src/ui-contract.allowlist.json && verify empty-first-use-defaults.json is {}",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "final/repo-check-final-3.log"
+    }
+  ],
+  "retained_failed_runs": [
+    { "log": "final/unit-final.log", "exit_code": 1, "note": "three initial assertions; corrected coverage passes in unit-final-3.log" },
+    { "log": "final/viewport-final-2.log", "exit_code": 1, "note": "initial full-schedule-within-800px geometric assertion exceeded approved first-fold scope" },
+    { "log": "final/viewport-final-3.log", "exit_code": 1, "note": "same initial full-schedule-within-800px assertion" },
+    { "log": "final/viewport-final-4.log", "exit_code": 1, "note": "task first row initially below first fold; compact layout subsequently fixed" },
+    { "log": "final/integration-final.log", "exit_code": 1, "note": "test still expected confirmed formal group to be expanded by default" },
+    { "log": "final/integration-rerun-6.log", "exit_code": 1, "note": "test did not expand empty actions group before asserting contents" },
+    { "log": "final/integration-rerun-7.log", "exit_code": 1, "note": "test had not clicked the index preview action before checking preview result" }
+  ],
+  "red_green_evidence": [
+    { "red_log": "phase-1-focused.log", "red_exit_code": 1, "green_log": "phase-1-green.log", "green_exit_code": 0 },
+    { "red_log": "phase-2-followup-focused.log", "red_exit_code": 1, "green_log": "phase-2-followup-focused-green-2.log", "green_exit_code": 0 }
+  ],
+  "screenshots": [
+    "browser/viewport-final/today-1280-800-nonempty.png",
+    "integration/approval-after-fake-flow.png",
+    "integration/today-nonempty-capture.png"
+  ],
+  "independent_qa": "NOT_RUN",
+  "sol_gate": "NOT_RUN"
+}
