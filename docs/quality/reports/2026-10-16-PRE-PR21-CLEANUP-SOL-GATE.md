@@ -90,7 +90,8 @@
 
 1. **是否合并 PR #21**（AGENTS：重要里程碑合并需用户批准）。
 2. **合并后的收尾顺序**（见 [NEXT-STAGE-2026-10-16.md](../../handoff/NEXT-STAGE-2026-10-16.md) §2）：
-   核对 main 产品树、记录 merge commit 与 CI run、并把 `NEXT-AFTER-FRONTEND-D.md` 移入 history。
+   已于 2026-10-16 执行完毕：核对 main 产品树（与 `e8e1dba` 空 diff）、记录 merge commit `12280ec` 与 CI run `38834559855`，
+   并把 `NEXT-AFTER-FRONTEND-D.md` 移入 `docs/handoff/history/2026-10-15-NEXT-AFTER-FRONTEND-D.md`。
 3. **D 候选二进制已按用户决定删除**：`e8e1dba`/`876008e`/`96fdf4d` 的 `.app`/`.dmg` 本机不再保留，
    仅存 SHA-256 与 `build-info.json`；日后如需复验必须重建。
 4. **下一个阶段的方向选择**：D-3 契约补全 / 前端剩余守卫与页面切片 / 工作包 B-C 真实授权准备 /

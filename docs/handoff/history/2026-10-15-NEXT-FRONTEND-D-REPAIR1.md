@@ -1,6 +1,6 @@
 # 历史：前端 D repair1 执行与验收交接（已执行完毕）
 
-> 本文件是 2026-10-15 D repair1 阶段的历史交接，其中的执行项**均已落地**：repair1 `faa1edd`、repair2 `96fdf4d`、repair3 `e8e1dba` 依次固定，D 门已由 Sol 判「离线 + 内部候选」范围 PASS，native 同 profile 重启已在实机验证。当前状态请看 [README](../../../README.md)、[进展账本](../../implementation/PROGRESS.md)、[最新交接](../LATEST-IMPLEMENTATION.md)与[当前下一步交接](../NEXT-AFTER-FRONTEND-D.md)。下文保留原样，仅用于追溯 repair1 当时的约束、候选构建流程与安全边界。
+> 本文件是 2026-10-15 D repair1 阶段的历史交接，其中的执行项**均已落地**：repair1 `faa1edd`、repair2 `96fdf4d`、repair3 `e8e1dba` 依次固定，D 门已由 Sol 判「离线 + 内部候选」范围 PASS，native 同 profile 重启已在实机验证。当前状态请看 [README](../../../README.md)、[进展账本](../../implementation/PROGRESS.md)、[最新交接](../LATEST-IMPLEMENTATION.md)与[当前下一步交接](2026-10-15-NEXT-AFTER-FRONTEND-D.md)。下文保留原样，仅用于追溯 repair1 当时的约束、候选构建流程与安全边界。
 
 ---
 

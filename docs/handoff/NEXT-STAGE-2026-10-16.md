@@ -1,8 +1,9 @@
 # 下一阶段起点（2026-10-16）
 
 本文件是 2026-10-15 PR #21 合并前清理收口后的**当前起点页**。它取代
-[NEXT-AFTER-FRONTEND-D.md](NEXT-AFTER-FRONTEND-D.md) 的「下一步」职能，但**本文件不移动任何文件**：
-`NEXT-AFTER-FRONTEND-D.md` 仍是当前页，其归档动作留给合并后的收尾（见 §2）。
+[NEXT-AFTER-FRONTEND-D.md](history/2026-10-15-NEXT-AFTER-FRONTEND-D.md) 的「下一步」职能：
+该文件已于 2026-10-16（PR #21 合入 main 之后）**移入 `docs/handoff/history/`**，不再是当前页；
+该归档动作就是 §2 第 3 条的收尾（已执行完毕）。
 
 ## 1 · 干净基线
 
@@ -13,13 +14,14 @@
 | **受测产品 SHA** | **`e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374`**（D 最终候选；本轮清理**未改动产品面**，冻结面 pathspec → exit 0 空 diff） |
 | 独立验收 | 全新 QA 在独立 checkout `qa-cleanup-verify` 对受测 SHA `7a448c39092b81d0afcb15ce4dc57d91faaa7e5e` 全项 PASS（A–H），报告见 [QA 报告](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-QA.md) |
 | `main` | `e84e9e5a56475a19f68ca1a684366fba7f9fee83`（主仓库 `/Users/yifengstudio/Documents/GitHub/SummitEverything`） |
+| 合并 | **`main` 现为 merge commit `12280ec1893f8f526b9b73a84b98416545254f42`**（2026-10-16T01:27:08Z；真 merge 非 squash，父 `e84e9e5` + `8ded0d9`） |
 | 远端分支 | 只剩 `refs/heads/codex/frontend-ux-20261015` 与 `refs/heads/main`（`git ls-remote --heads origin`，exit 0） |
 | worktree | **只剩 2 个**：主仓库（`main`）+ `frontend-ux-20261015`（`git worktree list \| wc -l` = 2） |
 | worktree 目录 | `/Users/yifengstudio/.codex/worktrees` = **1 条 / 804 M**（唯一保留 `frontend-ux-20261015`） |
 | 真实 CI | run [`38831085564`](https://github.com/yifeng93/SummitEverything/actions/runs/38831085564)（`headSha=af65f049…`，清理后 tip）**completed / success，4m45s**；run [`38831643643`](https://github.com/yifeng93/SummitEverything/actions/runs/38831643643)（`headSha=68c36399…`）**completed / success，4m08s**。两次四步骤全 success。**边界**：run `38831085564` 的 headSha 是 `af65f04`；受测 SHA `7a448c3` 当时尚未 push，因此该 SHA 上还没有 CI run——最终 tip push 后会补跑并回填。 |
-| PR #21 | **OPEN**，`mergeable=MERGEABLE`，head `codex/frontend-ux-20261015` → base `main`。**合并待用户明确批准** |
+| PR #21 | **已合入 main**：merge commit `12280ec1893f8f526b9b73a84b98416545254f42`（2026-10-16T01:27:08Z，真 merge 非 squash），head `codex/frontend-ux-20261015` → base `main`，被合并 tip `8ded0d9`；分支将删除 |
 | 前端指纹 | `784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0`（清理前后不变） |
-| Sol 最终门判断 | **本轮清理限「仓库整理」范围 PASS，可随 PR #21 一起合入（合并仍待用户批准）**；见 [Sol 最终门判断](../quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md) |
+| Sol 最终门判断 | **本轮清理限「仓库整理」范围 PASS，可随 PR #21 一起合入**；PR #21 已于 2026-10-16 按用户批准合入（见上「合并」行）；见 [Sol 最终门判断](../quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md) |
 
 本页之后仅新增 Sol 最终门判断（`docs/quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md`）
 与其在交付回报中给出的最终 CI run；精确 tip 以 `git log --oneline codex/frontend-ux-20261015` 为准。
@@ -28,12 +30,13 @@
 [2026-10-15-PRE-PR21-CLEANUP-DEV.md](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-DEV.md)，
 分片计划见 [2026-10-15-PRE-PR21-CLEANUP-PLAN.md](2026-10-15-PRE-PR21-CLEANUP-PLAN.md)。
 
-## 2 · 合并后应立即做的收尾（顺序固定）
+## 2 · 合并后收尾（2026-10-16 已执行）
 
 1. **核对产品树未被合并改变**：合并后对 `main` 重跑冻结面比对——`main` 的
    `src/`、`web/src/`（排除 `*.test.ts(x)`）、`web/package.json`、`web/package-lock.json`、
    `pyproject.toml`、`uv.lock`、`native/` 必须与 **`e8e1dba`** 一致（`git diff e8e1dba <merge-commit> -- …` → exit 0，空 diff）。
    同时 `python -c "from summit_everything.release import fingerprint_web_dist; …"` 应为 `784ae1ee…`。
+   **结果（2026-10-16）：** ✅ 产品树等价性实测通过——`git diff --stat e8e1dba 12280ec -- src tests web/src web/package.json web/package-lock.json pyproject.toml uv.lock native` **输出为空（空 diff / exit 0）**。
 2. **记录合并事实，并区分两个 SHA**：
    - 记录 merge commit SHA、其触发的真实 CI run id 与 conclusion；
    - 明确写出 **「PR head ≠ 受测产品 SHA」**：受测产品 SHA 是 `e8e1dba`，而 PR head 是清理后的
@@ -41,10 +44,14 @@
      **不改变产品树**，因此 `e8e1dba` 的离线门结论仍然适用，但**不能**把「PR head 绿」当作产品面新证据。
    - 在 [PROGRESS](../implementation/PROGRESS.md) / `docs/handoff/LATEST-IMPLEMENTATION.md` /
      `README.md` 的**当前正文**里直接纠正合入事实（按 AGENTS：不在顶部叠加互相覆盖的状态段）。
-3. **把被取代的当前页移入历史**：[NEXT-AFTER-FRONTEND-D.md](NEXT-AFTER-FRONTEND-D.md) 移入
+   **结果（2026-10-16）：** ✅ merge commit `12280ec1893f8f526b9b73a84b98416545254f42` 与 CI run [`38834559855`](https://github.com/yifeng93/SummitEverything/actions/runs/38834559855)（`headSha=8ded0d9`，success，3m25s）已记录于 [LATEST-IMPLEMENTATION.md](LATEST-IMPLEMENTATION.md) 新节，并同步更正 [README](../../README.md) 与 [PROGRESS](../implementation/PROGRESS.md) 的当前正文；**「PR head ≠ 受测产品 SHA」**已写明（受测产品 `e8e1dba`、清理 QA 受测 `7a448c3`、被合并 tip `8ded0d9`）；`main` 的 merge commit 本身未触发新 run。
+3. **把被取代的当前页移入历史**：`NEXT-AFTER-FRONTEND-D.md` 移入
    `docs/handoff/history/` 并加历史归档声明（正文保留原样），随后由本文件接续「下一步」入口。
    **本文件落盘时不要执行这个移动**——它现在仍是当前页。
    `FRONTEND-EXECUTION-PLAN.md` 已在顶部加状态块指向本文件，正文保留为历史执行序，**同样不移动**。
+   **结果（2026-10-16）：** ✅ 已执行——`NEXT-AFTER-FRONTEND-D.md` 已 `git mv` 为
+   [history/2026-10-15-NEXT-AFTER-FRONTEND-D.md](history/2026-10-15-NEXT-AFTER-FRONTEND-D.md)，
+   顶部已加历史归档声明（正文原样保留），「下一步」入口由本文件接续。
 4. 合并后如再改产品，必须重跑真实 CI；CI 已实测「本 PR 上任何 push 都会触发该 workflow」，
    合并后该行为可能改变，需重新观察而不是沿用假设。
 
@@ -116,7 +123,7 @@
   QA 无 GUI 能力、**未独立复现**。
 - **真实门**：真实 provider / 飞书 OAuth / Keychain 生命周期 / 真实业务材料 / 已安装 App /
   Developer ID 与公证 / 五日 / 双机 / 生产与发布，全部 **NOT_RUN**，各自需用户按准备卡单独授权。
-- **合并本身**：PR #21 仍未合并，需用户明确批准；**Sol 不 merge**。
+- **合并本身**：**已关闭**——PR #21 已于 2026-10-16T01:27:08Z 按用户明确批准合入，merge commit `12280ec`；Sol 未自行 merge，「Sol 不 merge」原则保持。
 - **原「本片上报的待裁决残留」（见 DEV 报告 §11）已全部收口**：`DELETIONS.md` 内 2 条
   `../DELETED-PATHS-INDEX.md` 相对路径错字**已由 `7a448c3` 修为 `../../`**；
   `docs/quality/reports/README.md` 索引缺口 **0/121**（QA 报告入库后 121/0）；
