@@ -19,8 +19,10 @@
 | 真实 CI | run [`38831085564`](https://github.com/yifeng93/SummitEverything/actions/runs/38831085564)（`headSha=af65f049…`，清理后 tip）**completed / success，4m45s**；run [`38831643643`](https://github.com/yifeng93/SummitEverything/actions/runs/38831643643)（`headSha=68c36399…`）**completed / success，4m08s**。两次四步骤全 success。**边界**：run `38831085564` 的 headSha 是 `af65f04`；受测 SHA `7a448c3` 当时尚未 push，因此该 SHA 上还没有 CI run——最终 tip push 后会补跑并回填。 |
 | PR #21 | **OPEN**，`mergeable=MERGEABLE`，head `codex/frontend-ux-20261015` → base `main`。**合并待用户明确批准** |
 | 前端指纹 | `784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0`（清理前后不变） |
+| Sol 最终门判断 | **本轮清理限「仓库整理」范围 PASS，可随 PR #21 一起合入（合并仍待用户批准）**；见 [Sol 最终门判断](../quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md) |
 
-本页之后仅剩 Sol 最终门判断与其 CI 证据为新增 docs 提交；精确 tip 以 `git log --oneline codex/frontend-ux-20261015` 为准。
+本页之后仅新增 Sol 最终门判断（`docs/quality/reports/2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md`）
+与其在交付回报中给出的最终 CI run；精确 tip 以 `git log --oneline codex/frontend-ux-20261015` 为准。
 
 清理结论、逐项证据与退出码见
 [2026-10-15-PRE-PR21-CLEANUP-DEV.md](../quality/reports/2026-10-15-PRE-PR21-CLEANUP-DEV.md)，
