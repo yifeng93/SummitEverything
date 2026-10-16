@@ -1,0 +1,34 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ApprovalView.test.tsx -t 来源尚未读取
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/ApprovalView.test.tsx (8 tests | 1 failed | 7 skipped) 75ms
+   × 来源尚未读取时显示加载而非空态，成功读取后才显示空态 75ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ApprovalView.test.tsx > 来源尚未读取时显示加载而非空态，成功读取后才显示空态
+AssertionError: expected '没有待整理的来源' to contain '正在读取'
+
+Expected: "正在读取"
+Received: "没有待整理的来源"
+
+ ❯ src/components/ApprovalView.test.tsx:66:63
+     64|   render(<ApprovalView onPendingCount={vi.fn()} onError={vi.fn()} />)
+     65|   const sourceGroup = screen.getByRole('region', { name: /1 · 来源/ })
+     66|   expect(within(sourceGroup).getByRole('status').textContent).toContai…
+       |                                                               ^
+     67|   expect(within(sourceGroup).queryByText('没有待整理的来源')).toBeNull()
+     68|   finishRead?.(Response.json([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  16:34:45
+   Duration  560ms (environment 51%, import 19%, tests 15%, transform 15%)
+

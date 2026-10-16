@@ -1,0 +1,10 @@
+[WebServer] (node:28137) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:28138) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:66:1 › required secret is guided before submit; secret stays password-only and fails closed without Keychain (464ms)
+
+  1 passed (1.2s)

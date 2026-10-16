@@ -1,0 +1,39 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (9 tests | 1 failed) 263ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (6)
+     × 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识 48ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识
+AssertionError: expected '知识目录项目这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做…' not to match /line-internal-123|project-inter…/中文业务项目
+
+- Expected:
+/line-internal-123|project-internal-456|overview-internal-789|page-internal-abc|f{64}|中文业务主线\/中文业务项目/
+
++ Received:
+"知识目录项目这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做什么。＋ 新建项目共 1 条 · 在推进 1 · 待建档 0 · 已归档 0主线管理 · 1选择主线中文业务主线重命名主线删除空主线＋ 新建主线搜索项目主线全部主线中文业务主线筛选状态全部状态在推进待建档已归档默认排序：在推进 → 待建档 → 已归档在推进中文业务项目 project-internal-456已经启动 · 中文业务主线"
+
+ ❯ noIdentifiers src/ui-contract.render.test.tsx:240:24
+    238|     const noIdentifiers = (text: string, expectBusinessName = true) =>…
+    239|       if (expectBusinessName) expect(text).toContain('中文')
+    240|       expect(text).not.toMatch(/line-internal-123|project-internal-456…
+       |                        ^
+    241|     }
+    242|     noIdentifiers(document.querySelector('.projects-view')?.textConten…
+ ❯ src/ui-contract.render.test.tsx:242:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  18:53:21
+   Duration  817ms (tests 35%, environment 30%, transform 22%, import 13%)
+

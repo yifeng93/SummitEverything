@@ -1,0 +1,30 @@
+[WebServer] (node:94282) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:94288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/frontend-c-view.spec.ts:31:1 › C project, reader and question-first views fit required widths and themes (551ms)
+
+
+  1) e2e/frontend-c-view.spec.ts:31:1 › C project, reader and question-first views fit required widths and themes 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      94 |       await expect(askForm).toBeVisible()
+      95 |       const questionFirst = await askForm.evaluate((element) => element.getBoundingClientRect().top < element.parentElement!.querySelector('.ask-secondary')!.getBoundingClientRect().top)
+    > 96 |       expect(questionFirst).toBe(true)
+         |                             ^
+      97 |       const askMetrics = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }))
+      98 |       expect(askMetrics.document, `ask overflow ${width}/${theme}`).toBe(askMetrics.viewport)
+      99 |       expect(askMetrics.body, `ask body overflow ${width}/${theme}`).toBe(askMetrics.viewport)
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/frontend-c-view.spec.ts:96:29
+
+    Error Context: ../.local/dev/frontend-c/view-94288-d8facbce-907d-416c-8ce9-23817d297d59/playwright-output/frontend-c-view-C-project--9850c--required-widths-and-themes/error-context.md
+
+  1 failed
+    e2e/frontend-c-view.spec.ts:31:1 › C project, reader and question-first views fit required widths and themes 

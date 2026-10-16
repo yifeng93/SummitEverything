@@ -1,0 +1,35 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (9 tests | 1 failed) 260ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (6)
+     × 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识 49ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识
+AssertionError: expected 'Progressing中文业务项目已经启动 · 中文业务主线' to contain '在推进'
+
+Expected: "在推进"
+Received: "Progressing中文业务项目已经启动 · 中文业务主线"
+
+ ❯ src/ui-contract.render.test.tsx:237:29
+    235|     fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+    236|     const row = await screen.findByRole('button', { name: /中文业务项目/ })
+    237|     expect(row.textContent).toContain('在推进')
+       |                             ^
+    238|     const noIdentifiers = (text: string, expectBusinessName = true) =>…
+    239|       if (expectBusinessName) expect(text).toContain('中文')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  18:53:22
+   Duration  802ms (tests 35%, environment 30%, transform 21%, import 13%)
+

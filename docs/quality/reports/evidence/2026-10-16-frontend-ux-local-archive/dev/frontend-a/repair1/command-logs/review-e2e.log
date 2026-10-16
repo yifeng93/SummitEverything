@@ -1,0 +1,12 @@
+[WebServer] (node:28794) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:28795) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:20:1 › settings reads are local, destructive action is confirmed, and AI results stay per capability (924ms)
+  ✓  2 ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:108:1 › Feishu status refresh retains the last successful value and reports that it may be stale (433ms)
+  ✓  3 ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:144:1 › confirmed removal of the Feishu app credential invalidates the cached authorization summary (418ms)
+
+  3 passed (2.6s)

@@ -1,0 +1,37 @@
+$ npm test -- --run src/components/SettingsView.cards.test.tsx -t keeps internal identifiers
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx -t keeps internal identifiers
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (13 tests | 1 failed | 12 skipped) 99ms
+   × keeps internal identifiers, hashes, paths, and raw JSON out of the three visible settings cards 98ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > keeps internal identifiers, hashes, paths, and raw JSON out of the three visible settings cards
+AssertionError: expected '工作库已连接synthetic-internal-hash当前工作库模拟工…' not to contain 'synthetic-internal-hash'
+
+Expected: "synthetic-internal-hash"
+Received: "工作库已连接synthetic-internal-hash当前工作库模拟工作库运行方式本机 API + WebUI切换工作库AI 模型未配置按业务能力查看状态。模型名称、账户与密钥放在高级配置中；密钥只保存在本机钥匙串，页面不会回显。整理与问答模型未启用知识索引向量化未启用检索结果排序未启用配置 AI 模型与密钥飞书未配置状态来自本机授权记录。材料、日历与任务仍只读，并按已确认范围访问。还没有可用的飞书应用配置与授权。填入飞书应用 App ID 与应用密钥并保存，随后在「今日 / 飞书日常」完成授权。读取已选择的飞书材料未启用读取飞书日历未启用读取飞书任务未启用创建或更改飞书任务未启用飞书任务写回仍不可用；本页不提供任何修改飞书任务的入口。连接 / 重新授权飞书"
+
+ ❯ src/components/SettingsView.cards.test.tsx:137:28
+    135|   await waitForSettings()
+    136|   const visibleCards = container.querySelector('.settings-cards')?.tex…
+    137|   expect(visibleCards).not.toContain('synthetic-internal-hash')
+       |                            ^
+    138|   expect(visibleCards).not.toContain('synthetic-internal-account')
+    139|   expect(visibleCards).not.toContain('/tmp/')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  10:27:14
+   Duration  471ms (environment 52%, tests 24%, transform 14%, import 10%)
+

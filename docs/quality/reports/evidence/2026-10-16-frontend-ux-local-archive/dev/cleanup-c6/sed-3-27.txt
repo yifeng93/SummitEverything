@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - codex/m41-internal-app-*
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "web/**"
+      - "native/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/m41-internal-app.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "web/**"
+      - "native/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/m41-internal-app.yml"
+  workflow_dispatch:
+

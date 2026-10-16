@@ -1,0 +1,9 @@
+guard-1-internal-details: exit=1, mutation_caught=True
+guard-3-font-floor: exit=1, mutation_caught=True
+guard-4-error-not-empty: exit=1, mutation_caught=True
+guard-5-cancel-is-not-confirm: exit=1, mutation_caught=True
+guard-6-stream-hides-open-syntax: exit=1, mutation_caught=True
+guard-7-dark-contrast: exit=1, mutation_caught=True
+guard-8-three-settings-cards: exit=1, mutation_caught=True
+guard-9-save-does-not-smoke: exit=1, mutation_caught=True
+guard-10-responsive-overflow: exit=1, mutation_caught=True

@@ -1,0 +1,37 @@
+$ npm test -- --run src/components/MarkdownText.test.tsx -t holds unfinished syntax
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/components/MarkdownText.test.tsx -t holds unfinished syntax
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/MarkdownText.test.tsx (5 tests | 1 failed | 4 skipped) 14ms
+   × holds unfinished syntax while streaming and matches complete Markdown at the terminal state 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/MarkdownText.test.tsx > holds unfinished syntax while streaming and matches complete Markdown at the terminal state
+AssertionError: expected '答案已完成。**还没结束' not to contain '**'
+
+Expected: "**"
+Received: "答案已完成。**还没结束"
+
+ ❯ src/components/MarkdownText.test.tsx:34:47
+     32|   const streaming = render(<StreamingMarkdown content={text} />)
+     33|   expect(streaming.container.textContent).toContain('答案已完成。')
+     34|   expect(streaming.container.textContent).not.toContain('**')
+       |                                               ^
+     35|   expect(streaming.container.textContent).not.toContain('还没结束')
+     36|   streaming.rerender(<StreamingMarkdown content={'答案已完成。**完整强调**'} com…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 skipped (5)
+   Start at  10:27:16
+   Duration  376ms (environment 66%, import 23%, transform 6%, tests 4%, worker 1%)
+

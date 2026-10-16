@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  21:13:41
+   Duration  1.04s (tests 50%, environment 23%, transform 16%, import 10%)
+

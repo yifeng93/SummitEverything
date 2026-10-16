@@ -1,0 +1,57 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/FirstUseWizard.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/FirstUseWizard.test.tsx (16 tests | 2 failed) 374ms
+   × disables save with field guidance for a selected capability that has no stored key 15ms
+   × blocks step 2 entirely when the keychain is unavailable 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/FirstUseWizard.test.tsx > disables save with field guidance for a selected capability that has no stored key
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/components/FirstUseWizard.test.tsx:198:25
+    196|   fireEvent.click(screen.getByRole('checkbox', { name: /整理与问答/ }))
+    197|   const save = screen.getByRole('button', { name: '保存密钥并继续' }) as HTML…
+    198|   expect(save.disabled).toBe(true)
+       |                         ^
+    199|   expect(save.title).toContain('DeepSeek API Key')
+    200|   expect(screen.getByText(/选择此能力后需要填写 DeepSeek API Key/)).toBeTruthy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/FirstUseWizard.test.tsx > blocks step 2 entirely when the keychain is unavailable
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/components/FirstUseWizard.test.tsx:271:25
+    269|   const save = screen.getByRole('button', { name: '保存密钥并继续' }) as HTML…
+    270|
+    271|   expect(save.disabled).toBe(true)
+       |                         ^
+    272|   expect(save.title).toContain('钥匙串')
+    273|   expect(screen.getByRole('status').textContent).toContain('失败关闭')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  11:06:25
+   Duration  746ms (tests 54%, environment 31%, transform 8%, import 6%)
+

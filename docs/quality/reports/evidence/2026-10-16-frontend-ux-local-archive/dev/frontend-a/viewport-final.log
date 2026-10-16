@@ -1,0 +1,16 @@
+
+> web@0.0.0 test:e2e
+> playwright test --reporter=line e2e/viewport.spec.ts
+
+[WebServer] (node:21994) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 1 test using 1 worker
+
+(node:22001) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today and settings
+  1 passed (3.9s)

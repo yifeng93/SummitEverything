@@ -1,0 +1,5 @@
+Command: SUMMIT_E2E_EVIDENCE_DIR="$PWD/.local/dev/frontend-d/zoom-debug" npm --prefix web run test:e2e -- --grep "offline viewport and theme baseline"
+Result: FAIL (intentional probe; removed from final spec because browser zoom was not applied)
+Captured measurement:
+{"before":{"x":14,"y":120.1875,"width":172,"height":44},"zoom":{"width":172,"height":44,"fontSize":"14px","bodyZoom":"1","bodyInlineZoom":"2","supportsZoom":true,"htmlZoom":"1","viewport":1280,"document":1280,"body":1280,"visualViewport":1}}
+Interpretation: body.style.zoom retained inline text "2", but computed zoom, element geometry, font size and visual viewport remained unchanged in this Playwright runtime. This does not demonstrate 200% zoom and is excluded from PASS evidence. The final test labels 640 CSS px only as an effective-width reflow check.

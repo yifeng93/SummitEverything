@@ -1,0 +1,255 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx src/ui-contract.test.ts src/components/ProjectsView.test.tsx src/components/PageReader.test.tsx src/components/MarkdownText.test.tsx src/components/AskView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (9 tests | 1 failed) 339ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (6)
+     × 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识 107ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识
+TestingLibraryElementError: Found multiple elements with the text: 本机历史
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<summary>[39m
+  [0m本机历史[0m
+[36m</summary>[39m
+
+Ignored nodes: comments, script, style
+[36m<h2>[39m
+  [0m本机历史[0m
+[36m</h2>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app-frame"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"skip-link"[39m
+        [33mhref[39m=[32m"#main-content"[39m
+      [36m>[39m
+        [0m跳到主内容[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"sidebar"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"brand-mark"[39m
+          [36m>[39m
+            [0mS[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<strong>[39m
+              [0mSummitEverything[0m
+            [36m</strong>[39m
+            [36m<span>[39m
+              [0m个人知识工作台[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"主导航"[39m
+          [33mclass[39m=[32m"primary-nav"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"今日"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"今日"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-today"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m今日[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"审批"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"审批"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-approval"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m审批[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"项目"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"项目"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-projects"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m项目[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-current[39m=[32m"page"[39m
+            [33maria-label[39m=[32m"知识问答"[39m
+            [33mclass[39m=[32m"nav-item active"[39m
+            [33mtitle[39m=[32m"知识问答"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-ask"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m知识问答[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"设置"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"设置"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-settings"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sidebar-bottom"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"切换工作库"[39m
+            [33mclass[39m=[32m"workspace-name"[39m
+            [33mtitle[39m=[32m"切换工作库"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"workspace-avatar"[39m
+            [36m>[39m
+              [0m测[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"workspace-name-text"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m测试工作库[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m切换…[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"local-indicator is-online"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"local-dot"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"local-indicator-text"[39m
+            [36m>[39m
+              [0m仅本机运行[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"main-shell"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"topbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"crumbs"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m知识问答[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"topbar-right"[39m
+          [36m>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"主题"[39m
+              [33mclass[39m=[32m"theme-select"[39m
+              [33mtitle[39m=[32m"主题：跟随系统 / 浅色 / 深色"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"system"[39m
+              [36m>[39m
+                [0m跟随系统[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"light"[39m
+              [36m>[39m
+                [0m浅色[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"dark"[39m
+              [36m>[39m
+                [0m深色[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"main-content"[39m
+          [33mid[39m=[32m"main-content"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mhidden[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"项目详情"[39m
+              [33mclass[39m=[32m"co...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35
+ ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/ui-contract.render.test.tsx:252:28
+    250|     const question = await screen.findByLabelText('你的问题')
+    251|     const form = question.closest('form')!
+    252|     const history = screen.getByText('本机历史').closest('details')!
+       |                            ^
+    253|     expect(form.compareDocumentPosition(history) & Node.DOCUMENT_POSIT…
+    254|     noIdentifiers(document.querySelector('.ask-view')?.textContent ?? …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 49 passed (50)
+   Start at  18:51:41
+   Duration  1.05s (environment 39%, tests 35%, import 14%, transform 12%)
+

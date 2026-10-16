@@ -1,0 +1,18 @@
+[PASS] P1 packaged identity matches the embedded manifest  :: source_sha=e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374 dirty=False build_id=20261015T144744Z-784ae1ee176a
+[PASS] P2 packaged frontend bundle ships the new progress endpoint
+[PASS] P3 static WebUI entry point is served
+[PASS] P4 unauthenticated progress read is rejected
+[PASS] P5 packaged backend opens an isolated workspace  :: status=201
+[PASS] P6 workspace profile dir is inside the isolated profile root  :: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-packaged-repair2-lkh5cmj0/profile/2fd534d0-75c6-4da7-800c-dca05c486db0
+[PASS] P7 no record yet is reported as absent, not as a default  :: status=404
+[PASS] P8 completed progress is accepted  :: status=200
+[PASS] P9 store file lives in the workspace profile dir with exactly the three keys  :: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-packaged-repair2-lkh5cmj0/profile/2fd534d0-75c6-4da7-800c-dca05c486db0/first-use-progress.json
+[PASS] P10 integral float step is rejected (D-4)  :: status=422
+[PASS] P11 secret-shaped field is rejected  :: status=422
+[PASS] P12 the rejected secret never reached the disk
+[PASS] P13 rejected writes left the durable record untouched  :: {'step': 5, 'completed': True, 'open': False}
+[PASS] P14 the same workspace reopens with the same profile dir after restart  :: status=201
+[PASS] P15 ***P1 CORE*** completed progress survives a real packaged backend restart  :: status=200 record={'step': 5, 'completed': True, 'open': False}
+==============================================================================
+PACKAGED REPAIR2 HARNESS TOTAL: 15 checks, 15 passed, 0 failed
+EXIT=0

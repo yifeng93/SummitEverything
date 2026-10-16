@@ -1,0 +1,1108 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ApprovalView.test.tsx -t 来源归属下拉优先显示中文名
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/ApprovalView.test.tsx (9 tests | 1 failed | 8 skipped) 1112ms
+   × 来源归属下拉优先显示中文名，内部英文ID只留在title属性 1111ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ApprovalView.test.tsx > 来源归属下拉优先显示中文名，内部英文ID只留在title属性
+TestingLibraryElementError: Unable to find role="option" and name "中文主线"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap approval-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m需要你点一下才算数[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m审批[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"approval-toolbar"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"hint"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0m5 项待处理 · 共 4 类[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"approval-toolbar-actions"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"compact-field"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m显示[0m
+            [36m</span>[39m
+            [36m<select>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"all"[39m
+              [36m>[39m
+                [0m全部[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"pending"[39m
+              [36m>[39m
+                [0m待处理[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"complete"[39m
+              [36m>[39m
+                [0m已完成[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m检查并应用[0m
+            [0m · 1[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"how-to-read"[39m
+      [36m>[39m
+        [0m原件只供整理和追溯，不进入检索；稿件和正式页点击确认时会保存当前版本。索引计划与外部动作各有单独的预览和确认。来源类型来自可信入口，旧材料显示“类型未知”时不会按文件名猜。[0m
+      [36m</p>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-sources-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-sources"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-sources-heading"[39m
+            [36m>[39m
+              [0m1 · 来源[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"source-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"source-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"file-glyph"[39m
+              [36m>[39m
+                [0m文[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"source-title"[39m
+              [36m>[39m
+                [36m<strong>[39m
+                  [0m合成速记[0m
+                [36m</strong>[39m
+                [36m<small>[39m
+                  [0m记一句[0m
+                  [0m · [0m
+                  [0m随手记.md[0m
+                  [0m · [0m
+                  [0m2026/10/14[0m
+                [36m</small>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"status-label"[39m
+              [36m>[39m
+                [0m待整理[0m
+              [36m</span>[39m
+            [36m</label>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"source-organizer"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"organize-row"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"compact-field"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m主线[0m
+              [36m</span>[39m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0m选择主线[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mtitle[39m=[32m"huoman-logistics"[39m
+                  [33mvalue[39m=[32m"huoman-logistics"[39m
+                [36m>[39m
+                  [0mhuoman-logistics[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"compact-field"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m项目[0m
+              [36m</span>[39m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0m选择项目[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mtitle[39m=[32m"project-internal-42"[39m
+                  [33mvalue[39m=[32m"project-internal-42"[39m
+                [36m>[39m
+                  [0m中文项目[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button primary"[39m
+            [36m>[39m
+              [0m整理所选[0m
+              [0m · [0m
+              [0m1[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-drafts-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-drafts"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-drafts-heading"[39m
+            [36m>[39m
+              [0m2 · 稿件[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"draft-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"选择稿件 合成稿件"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"source-title"[39m
+              [36m>[39m
+                [36m<strong>[39m
+                  [0m合成稿件[0m
+                [36m</strong>[39m
+                [36m<small>[39m
+                  [0m1[0m
+                  [0m 个来源 · [0m
+                  [0m0[0m
+                  [0m 项重要冲突[0m
+                [36m</small>[39m
+              [36m</span>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m打开复核[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-formal-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-formal"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-formal-heading"[39m
+            [36m>[39m
+              [0m3 · 正式内容[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"knowledge-page-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"formal-page-row"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m正式页[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m业务决定[0m
+                    [0m · [0m
+                    [0m待确认[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<details>[39m
+                [36m<summary>[39m
+                  [0m查看完整正文[0m
+                [36m</summary>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"markdown-content"[39m
+                [36m>[39m
+                  [36m<p>[39m
+                    [0m当前正式正文 [0m
+                    [36m<strong>[39m
+                      [0m内容[0m
+                    [36m</strong>[39m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</details>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button primary"[39m
+              [36m>[39m
+                [0m确认并保存当前版本[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-index-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-index"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-index-heading"[39m
+            [36m>[39m
+              [0m4 · 索引[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0mFake 活跃索引会在正式内容确认后自动增量；首次建立、Real、模型变更、重建或服务要求手动确认时，需预览独立计划。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"review-actions"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"inline-select"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"选择索引事项进行检查"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m加入检查清单[0m
+            [36m</label>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"index-status-panel"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"index-state"[39m
+            [36m>[39m
+              [0m当前状态：[0m
+              [0m尚未建立[0m
+            [36m</strong>[39m
+            [36m<p>[39m
+              [0m当前纳入 [0m
+              [0m0[0m
+              [0m 页 · 待更新 [0m
+              [0m1[0m
+              [0m 页 · 共 [0m
+              [0m1[0m
+              [0m 页[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+          [36m>[39m
+            [0m预览首次索引[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-actions-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-actions"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-actions-heading"[39m
+            [36m>[39m
+              [0m5 · 外部动作[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m候选建议、已保存动作和执行回执分开显示。未知结果只能核对或记录，不能自动重发。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m2[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"action-intent-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<input[39m
+              [33maria-label[39m=[32m"选择项目进度动作"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<div>[39m
+              [36m<strong>[39m
+                [0m更新项目进度[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m待确认[0m
+              [36m</small>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m查看与处理[0m
+            [36m</button>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"action-candidate-panel"[39m
+        [36m>[39m
+          [36m<h3>[39m
+            [0m尚未转成动作的建议[0m
+          [36m</h3>[39m
+          [36m<section[39m
+            [33maria-busy[39m=[32m"false"[39m
+            [33mclass[39m=[32m"panel tasks-panel"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"panel-heading"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h2>[39m
+                  [0m飞书任务与独立动作[0m
+                [36m</h2>[39m
+                [36m<p>[39m
+                  [0mFake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"button-row"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m刷新飞书任务[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m新建飞书任务[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m拟定项目进度变化[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m查看动作记录[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"action-candidates"[39m
+            [36m>[39m
+              [36m<h3>[39m
+                [0m审阅行动建议[0m
+              [36m</h3>[39m
+              [36m<div>[39m
+                [36m<p>[39m
+                  [0m合成任务建议[0m
+                [36m</p>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m将建议填写为待确认动作[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<small[39m
+            [33mclass[39m=[32m"last-success"[39m
+          [36m>[39m
+            [0m最近读取：[0m
+            [0m2026/10/15 16:40:20[0m
+          [36m</small>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap approval-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m需要你点一下才算数[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m审批[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"approval-toolbar"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"hint"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0m5 项待处理 · 共 4 类[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"approval-toolbar-actions"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"compact-field"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m显示[0m
+            [36m</span>[39m
+            [36m<select>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"all"[39m
+              [36m>[39m
+                [0m全部[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"pending"[39m
+              [36m>[39m
+                [0m待处理[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"complete"[39m
+              [36m>[39m
+                [0m已完成[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m检查并应用[0m
+            [0m · 1[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"how-to-read"[39m
+      [36m>[39m
+        [0m原件只供整理和追溯，不进入检索；稿件和正式页点击确认时会保存当前版本。索引计划与外部动作各有单独的预览和确认。来源类型来自可信入口，旧材料显示“类型未知”时不会按文件名猜。[0m
+      [36m</p>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-sources-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-sources"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-sources-heading"[39m
+            [36m>[39m
+              [0m1 · 来源[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"source-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"source-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"file-glyph"[39m
+              [36m>[39m
+                [0m文[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"source-title"[39m
+              [36m>[39m
+                [36m<strong>[39m
+                  [0m合成速记[0m
+                [36m</strong>[39m
+                [36m<small>[39m
+                  [0m记一句[0m
+                  [0m · [0m
+                  [0m随手记.md[0m
+                  [0m · [0m
+                  [0m2026/10/14[0m
+                [36m</small>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"status-label"[39m
+              [36m>[39m
+                [0m待整理[0m
+              [36m</span>[39m
+            [36m</label>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"source-organizer"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"organize-row"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"compact-field"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m主线[0m
+              [36m</span>[39m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0m选择主线[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mtitle[39m=[32m"huoman-logistics"[39m
+                  [33mvalue[39m=[32m"huoman-logistics"[39m
+                [36m>[39m
+                  [0mhuoman-logistics[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"compact-field"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m项目[0m
+              [36m</span>[39m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0m选择项目[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mtitle[39m=[32m"project-internal-42"[39m
+                  [33mvalue[39m=[32m"project-internal-42"[39m
+                [36m>[39m
+                  [0m中文项目[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button primary"[39m
+            [36m>[39m
+              [0m整理所选[0m
+              [0m · [0m
+              [0m1[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-drafts-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-drafts"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-drafts-heading"[39m
+            [36m>[39m
+              [0m2 · 稿件[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"draft-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-row"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"选择稿件 合成稿件"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"source-title"[39m
+              [36m>[39m
+                [36m<strong>[39m
+                  [0m合成稿件[0m
+                [36m</strong>[39m
+                [36m<small>[39m
+                  [0m1[0m
+                  [0m 个来源 · [0m
+                  [0m0[0m
+                  [0m 项重要冲突[0m
+                [36m</small>[39m
+              [36m</span>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m打开复核[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-formal-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-formal"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-formal-heading"[39m
+            [36m>[39m
+              [0m3 · 正式内容[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"knowledge-page-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"formal-page-row"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m正式页[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m业务决定[0m
+                    [0m · [0m
+                    [0m待确认[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<details>[39m
+                [36m<summary>[39m
+                  [0m查看完整正文[0m
+                [36m</summary>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"markdown-content"[39m
+                [36m>[39m
+                  [36m<p>[39m
+                    [0m当前正式正文 [0m
+                    [36m<strong>[39m
+                      [0m内容[0m
+                    [36m</strong>[39m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</details>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button primary"[39m
+              [36m>[39m
+                [0m确认并保存当前版本[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-index-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-index"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-index-heading"[39m
+            [36m>[39m
+              [0m4 · 索引[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0mFake 活跃索引会在正式内容确认后自动增量；首次建立、Real、模型变更、重建或服务要求手动确认时，需预览独立计划。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"review-actions"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"inline-select"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"选择索引事项进行检查"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m加入检查清单[0m
+            [36m</label>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"index-status-panel"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"index-state"[39m
+            [36m>[39m
+              [0m当前状态：[0m
+              [0m尚未建立[0m
+            [36m</strong>[39m
+            [36m<p>[39m
+              [0m当前纳入 [0m
+              [0m0[0m
+              [0m 页 · 待更新 [0m
+              [0m1[0m
+              [0m 页 · 共 [0m
+              [0m1[0m
+              [0m 页[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+          [36m>[39m
+            [0m预览首次索引[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"approval-actions-heading"[39m
+        [33mclass[39m=[32m"panel approval-group"[39m
+        [33mid[39m=[32m"approval-actions"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"panel-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mid[39m=[32m"approval-actions-heading"[39m
+            [36m>[39m
+              [0m5 · 外部动作[0m
+            [36m</h2>[39m
+            [36m<p>[39m
+              [0m候选建议、已保存动作和执行回执分开显示。未知结果只能核对或记录，不能自动重发。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"count-badge"[39m
+          [36m>[39m
+            [0m2[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"action-intent-list"[39m
+        [36m>[39m
+          [36m<li>[39m
+            [36m<input[39m
+              [33maria-label[39m=[32m"选择项目进度动作"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<div>[39m
+              [36m<strong>[39m
+                [0m更新项目进度[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m待确认[0m
+              [36m</small>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m查看与处理[0m
+            [36m</button>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+        [36m<small[39m
+          [33mclass[39m=[32m"last-success"[39m
+        [36m>[39m
+          [0m最近读取：[0m
+          [0m2026/10/15 16:40:20[0m
+        [36m</small>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"action-candidate-panel"[39m
+        [36m>[39m
+          [36m<h3>[39m
+            [0m尚未转成动作的建议[0m
+          [36m</h3>[39m
+          [36m<section[39m
+            [33maria-busy[39m=[32m"false"[39m
+            [33mclass[39m=[32m"panel tasks-panel"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"panel-heading"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h2>[39m
+                  [0m飞书任务与独立动作[0m
+                [36m</h2>[39m
+                [36m<p>[39m
+                  [0mFake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"button-row"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m刷新飞书任务[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m新建飞书任务[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m拟定项目进度变化[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m查看动作记录[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"action-candidates"[39m
+            [36m>[39m
+              [36m<h3>[39m
+                [0m审阅行动建议[0m
+              [36m</h3>[39m
+              [36m<div>[39m
+                [36m<p>[39m
+                  [0m合成任务建议[0m
+                [36m</p>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m将建议填写为待确认动作[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<small[39m
+            [33mclass[39m=[32m"last-success"[39m
+          [36m>[39m
+            [0m最近读取：[0m
+            [0m2026/10/15 16:40:20[0m
+          [36m</small>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/ApprovalView.test.tsx:90:29
+     88|   await screen.findByText('合成速记')
+     89|   fireEvent.click(within(screen.getByRole('region', { name: /1 · 来源/ }…
+     90|   const line = await screen.findByRole('option', { name: '中文主线' })
+       |                             ^
+     91|   const projectOption = await screen.findByRole('option', { name: '中文项…
+     92|   expect(line.getAttribute('title')).toBe('huoman-logistics')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  16:40:19
+   Duration  1.58s (tests 73%, environment 16%, import 6%, transform 5%)
+

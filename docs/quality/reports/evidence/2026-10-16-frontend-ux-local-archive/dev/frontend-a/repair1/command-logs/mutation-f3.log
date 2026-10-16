@@ -1,0 +1,50 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (15 tests | 1 failed) 413ms
+   × retains only a previous successful Feishu read on refresh failure 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > retains only a previous successful Feishu read on refresh failure
+AssertionError: expected { state: 'unreadable' } to deeply equal { state: 'stale', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "readAt": "2026-10-15T00:00:00.000Z",
+-   "state": "stale",
+-   "status": {
+-     "app_configured": false,
+-     "authorized": true,
+-     "credential_error": null,
+-     "identity": "app",
+-     "mode": "real",
+-     "scopes": [],
+-     "token_type": "user",
+-     "user_identity_verified": false,
+-   },
++   "state": "unreadable",
+  }
+
+ ❯ src/components/SettingsView.cards.test.tsx:300:44
+    298| it('retains only a previous successful Feishu read on refresh failure'…
+    299|   const previous = { state: 'loaded' as const, status: feishuStatus({ …
+    300|   expect(failedFeishuStatusRead(previous)).toEqual({ ...previous, stat…
+       |                                            ^
+    301|   expect(failedFeishuStatusRead({ state: 'unreadable' })).toEqual({ st…
+    302|   expect(feishuCardBadge({ keychainAvailable: true, read: { ...previou…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  11:06:42
+   Duration  781ms (tests 57%, environment 29%, transform 8%, import 6%)
+

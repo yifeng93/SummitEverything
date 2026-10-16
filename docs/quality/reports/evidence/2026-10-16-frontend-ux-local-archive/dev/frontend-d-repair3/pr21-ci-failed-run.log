@@ -1,0 +1,207 @@
+offline-arm64	Build and verify internal App and DMG	﻿2026-10-15T15:06:38.3097230Z ##[group]Run output="$RUNNER_TEMP/summit-m41"
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3098700Z ^[[36;1moutput="$RUNNER_TEMP/summit-m41"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3099620Z ^[[36;1mmkdir -p "$output"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3100830Z ^[[36;1mscripts/release-macos.sh "$output/SummitEverything Internal.app" "$output/SummitEverything-Internal.dmg"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3102510Z ^[[36;1mcodesign --verify --deep --strict "$output/SummitEverything Internal.app"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3103740Z ^[[36;1mhdiutil verify "$output/SummitEverything-Internal.dmg"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3105260Z ^[[36;1mSUMMIT_APP="$output/SummitEverything Internal.app" uv run --locked python scripts/smoke_packaged_app.py^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3426870Z shell: /bin/bash -e {0}
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3427160Z env:
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3428040Z   UV_PYTHON_INSTALL_DIR: /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3428850Z   UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:38.3429100Z ##[endgroup]
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:39.8198680Z 
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:39.8211040Z > web@0.0.0 build
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:39.8211640Z > tsc -b && vite build
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:39.8211970Z 
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:45.9303640Z ^[[36mvite v8.3.4 ^[[32mbuilding client environment for production...^[[36m^[[39m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:45.9390440Z transforming...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.0433170Z ✓ 303 modules transformed.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1267380Z rendering chunks...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1855870Z computing gzip size...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1946420Z dist/index.html                   1.90 kB │ gzip:   1.09 kB
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1947590Z dist/assets/index-lgEUmbbh.css   57.18 kB │ gzip:  10.50 kB
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1948360Z dist/assets/index-CJV7PXqW.js   591.47 kB │ gzip: 173.27 kB
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1948770Z 
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1957020Z ^[[33m[plugin builtin:vite-reporter] 
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1958580Z ^[[32m✓ built in 266ms^[[39m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1960880Z (!) Some chunks are larger than 500 kB after minification. Consider:
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1962670Z - Using dynamic import() to code-split the application
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1965620Z - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.1978220Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.^[[39m
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.2510010Z Resolved 48 packages in 8ms
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.2736560Z Checked 45 packages in 14ms
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.8649860Z 256 INFO: PyInstaller: 6.22.3, contrib hooks: 2026.8
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.8651880Z 256 INFO: Python: 3.14.7
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.8809430Z 271 INFO: Platform: macOS-14.8.9-arm64-arm-64bit-Mach-O
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.8811080Z 272 INFO: Python environment: /Users/runner/work/SummitEverything/SummitEverything/.venv
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.8813440Z 272 INFO: wrote /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/summit-backend.spec
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:46.8865010Z 277 INFO: Removing temporary files and cleaning cache in /Users/runner/Library/Application Support/pyinstaller
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2198770Z 610 INFO: Module search paths (PYTHONPATH):
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2200950Z ['/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python314.zip',
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2202780Z  '/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14',
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2204870Z  '/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload',
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2206830Z  '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages',
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2208280Z  '/Users/runner/work/SummitEverything/SummitEverything/src',
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2209610Z  '/Users/runner/work/SummitEverything/SummitEverything/scripts',
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.2211040Z  '/Users/runner/work/SummitEverything/SummitEverything/src']
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3525310Z 743 INFO: Appending 'datas' from .spec
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3532420Z 744 INFO: checking Analysis
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3534070Z 744 INFO: Building Analysis because Analysis-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3538070Z 744 INFO: Looking for Python shared library...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3643220Z 755 INFO: Using Python shared library: /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3646850Z 755 INFO: Running Analysis Analysis-00.toc
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3647930Z 755 INFO: Target bytecode optimization level: 0
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3649570Z 755 INFO: Initializing module dependency graph...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3683320Z 759 INFO: Initializing module graph hook caches...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:47.3879740Z 779 INFO: Analyzing modules for base_library.zip ...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:48.4769670Z 1868 INFO: Processing standard module hook 'hook-encodings.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:48.6936340Z 2083 INFO: Processing standard module hook 'hook-pickle.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:49.0909090Z 2481 INFO: Processing standard module hook 'hook-math.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:49.2124110Z 2603 INFO: Processing standard module hook 'hook-difflib.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:49.2237110Z 2614 INFO: Processing standard module hook 'hook-heapq.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:51.3429390Z 4733 INFO: Caching module dependency graph...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:51.3617890Z 4752 INFO: Analyzing /Users/runner/work/SummitEverything/SummitEverything/scripts/packaged_server.py
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:51.3648580Z 4756 INFO: Processing standard module hook 'hook-uvicorn.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:51.8487470Z 5239 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:51.9349090Z 5326 INFO: Processing standard module hook 'hook-xml.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:52.2054410Z 5596 INFO: Processing standard module hook 'hook-sysconfig.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:52.2186590Z 5609 INFO: Processing standard module hook 'hook-_osx_support.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:52.2250390Z 5616 INFO: Processing standard module hook 'hook-_ctypes.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:52.8215680Z 6212 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:52.8264450Z 6217 INFO: SetuptoolsInfo: initializing cached setuptools info...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:53.8570620Z 7247 INFO: Processing standard module hook 'hook-platform.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:54.2194830Z 7610 INFO: Processing standard module hook 'hook-webbrowser.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:55.0322430Z 8421 INFO: Processing standard module hook 'hook-anyio.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:55.7498540Z 9140 INFO: Processing standard module hook 'hook-pydantic.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:56.4443570Z 9835 INFO: Processing standard module hook 'hook-zoneinfo.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:57.8371100Z 11228 INFO: Processing standard module hook 'hook-opentelemetry.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.2350340Z 11626 INFO: Processing standard module hook 'hook-keyring.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6112470Z 12002 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6128970Z 12003 INFO: Setuptools: 'jaraco' appears to be a partial setuptools-vendored copy - extending search paths to ['/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/jaraco', '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/setuptools/_vendor/jaraco']!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6140340Z 12004 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6247930Z 12016 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6262320Z 12017 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6324410Z 12023 INFO: Processing standard module hook 'hook-setuptools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6452170Z 12036 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6856550Z 12076 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.6956220Z 12086 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:58.8422830Z 12233 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:59.1519850Z 12542 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:59.1621990Z 12543 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:59.1725690Z 12557 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:59.1830390Z 12559 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:59.6389170Z 13030 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:06:59.6397240Z 13030 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.3617880Z 13752 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.3627200Z 13753 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.5072740Z 13898 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.5080320Z 13899 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.5326010Z 13923 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.5514840Z 13942 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:00.5522650Z 13943 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:01.0515040Z 14442 INFO: Processing standard module hook 'hook-certifi.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:01.4179400Z 14808 INFO: Processing standard module hook 'hook-pygments.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.3341700Z 15725 INFO: Processing standard module hook 'hook-sqlite3.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.6783700Z 16069 INFO: Analyzing hidden import 'keyring.__main__'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.6928850Z 16083 INFO: Analyzing hidden import 'keyring.backends.SecretService'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7027300Z 16093 INFO: Analyzing hidden import 'keyring.backends.Windows'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7075990Z 16098 INFO: Analyzing hidden import 'keyring.backends.chainer'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7098600Z 16101 INFO: Analyzing hidden import 'keyring.backends.kwallet'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7178420Z 16109 INFO: Analyzing hidden import 'keyring.backends.libsecret'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7231170Z 16114 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7244330Z 16115 INFO: Analyzing hidden import 'keyring.backends.null'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7253770Z 16116 INFO: Analyzing hidden import 'keyring.devpi_client'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7839810Z 16175 INFO: Analyzing hidden import 'keyring.http'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7853020Z 16176 INFO: Analyzing hidden import 'keyring.testing'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7854520Z 16176 INFO: Analyzing hidden import 'keyring.testing.backend'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:02.7969770Z 16188 INFO: Processing standard module hook 'hook-pytest.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:03.0238120Z 16414 INFO: Processing standard module hook 'hook-py.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:04.8567360Z 18247 INFO: Processing module hooks (post-graph stage)...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:07.9546040Z 21345 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.0375270Z 24428 INFO: Performing binary vs. data reclassification (58 entries)
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.0503470Z 24441 INFO: Looking for ctypes DLLs
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.0974770Z 24488 INFO: Analyzing run-time hooks ...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.1016660Z 24492 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.1086040Z 24499 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.1110830Z 24502 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.1134930Z 24504 INFO: Including run-time hook 'pyi_rth_setuptools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.1304120Z 24521 INFO: Creating base_library.zip...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.1443770Z 24535 INFO: Looking for dynamic libraries
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.4718170Z 24862 INFO: Warnings written to /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/work/summit-backend/warn-summit-backend.txt
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.5222370Z 24913 INFO: Graph cross-reference written to /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/work/summit-backend/xref-summit-backend.html
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.6715990Z 25059 INFO: checking PYZ
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.6719730Z 25059 INFO: Building PYZ because PYZ-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:11.6722150Z 25059 INFO: Building PYZ (ZlibArchive) /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/work/summit-backend/PYZ-00.pyz
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8276780Z 26215 INFO: Building PYZ (ZlibArchive) /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/work/summit-backend/PYZ-00.pyz completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8408590Z 26231 INFO: EXE target arch: arm64
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8409560Z 26232 INFO: Code signing identity: None
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8424390Z 26233 INFO: checking PKG
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8425760Z 26233 INFO: Building PKG because PKG-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8427100Z 26233 INFO: Building PKG (CArchive) summit-backend.pkg
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8551350Z 26246 INFO: Building PKG (CArchive) summit-backend.pkg completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8557840Z 26247 INFO: Bootloader /Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/bootloader/Darwin-64bit/run
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8559540Z 26247 INFO: checking EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8560400Z 26247 INFO: Building EXE because EXE-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8560920Z 26247 INFO: Building EXE from EXE-00.toc
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8561810Z 26247 INFO: Copying bootloader EXE to /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/work/summit-backend/summit-backend
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:12.8572180Z 26248 INFO: Converting EXE to target arch (arm64)
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.8331630Z 27223 INFO: Removing signature(s) from EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.8563300Z 27247 INFO: Modifying Mach-O image UUID(s) in EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.8652610Z 27256 INFO: Appending PKG archive to EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.8711040Z 27262 INFO: Fixing EXE headers for code signing
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.8908550Z 27281 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (14.5.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.8925090Z 27283 INFO: Re-signing the EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.9480370Z 27338 INFO: Building EXE from EXE-00.toc completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.9502580Z 27341 INFO: checking COLLECT
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.9504140Z 27341 INFO: Building COLLECT because COLLECT-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:13.9505320Z 27341 INFO: Building COLLECT COLLECT-00.toc
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:18.7390600Z 32129 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:18.7424270Z 32133 INFO: Build complete! The results are available in: /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/dist
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:19.7306100Z Building for production...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:19.7332610Z [0/5] Write sources
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:19.8373660Z [2/5] Write swift-version-76B232A4806BA581.txt
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:22.2024550Z [4/6] Compiling NativeUploadPolicy NativeUploadPolicy.swift
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:26.1138100Z [5/7] Compiling SummitEverythingApp App.swift
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:26.1170730Z [5/7] Write Objects.LinkFileList
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:26.4801570Z [6/7] Linking SummitEverything
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:26.4815620Z Build complete! (7.21s)
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:26.4945320Z /Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/SummitEverything Internal.app: replacing existing signature
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0309830Z hdiutil: create failed - Resource busy
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0688110Z No local first-use defaults file; building without injected defaults
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0849970Z Traceback (most recent call last):
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0860540Z   File "/Users/runner/work/SummitEverything/SummitEverything/scripts/build_macos_app.py", line 263, in <module>
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0861820Z     raise SystemExit(main())
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0862370Z                      ~~~~^^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0863050Z   File "/Users/runner/work/SummitEverything/SummitEverything/scripts/build_macos_app.py", line 254, in main
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0863680Z     build(
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0902080Z     ~~~~~^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0902650Z         args.output.expanduser().resolve(),
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0903130Z         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0903720Z         allow_dirty=os.environ.get("SUMMIT_ALLOW_DIRTY") == "1",
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0904330Z         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0904850Z         dmg=args.dmg.expanduser().resolve() if args.dmg else None,
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0905610Z         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0906010Z     )
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0906230Z     ^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0906900Z   File "/Users/runner/work/SummitEverything/SummitEverything/scripts/build_macos_app.py", line 239, in build
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0907420Z     create_dmg(app, staged_dmg)
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0907730Z     ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0908300Z   File "/Users/runner/work/SummitEverything/SummitEverything/scripts/build_macos_app.py", line 70, in create_dmg
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0908770Z     run(
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0908940Z     ~~~^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0909230Z         [
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0909390Z         ^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0909630Z     ...<9 lines>...
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0909820Z         ]
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0910030Z         ^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0910250Z     )
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0910490Z     ^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0911040Z   File "/Users/runner/work/SummitEverything/SummitEverything/scripts/build_macos_app.py", line 30, in run
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0911700Z     subprocess.run(args, cwd=ROOT, env=env, check=True)
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0912140Z     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0912830Z   File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0913580Z     raise CalledProcessError(retcode, process.args,
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0913970Z                              output=stdout, stderr=stderr)
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.0915850Z subprocess.CalledProcessError: Command '['hdiutil', 'create', '-volname', 'SummitEverything Internal', '-srcfolder', '/Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/SummitEverything Internal.app', '-format', 'UDZO', '/Users/runner/work/_temp/summit-m41/.summit-internal-build-s82v88zg/summit-dmg-_o2jsau4/SummitEverything-Internal.dmg']' returned non-zero exit status 1.
+offline-arm64	Build and verify internal App and DMG	2026-10-15T15:07:32.1270700Z ##[error]Process completed with exit code 1.

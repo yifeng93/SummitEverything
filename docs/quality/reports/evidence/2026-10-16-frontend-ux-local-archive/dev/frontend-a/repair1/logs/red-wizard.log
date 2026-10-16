@@ -1,0 +1,30 @@
+[WebServer] (node:27642) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:27643) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:66:1 › required secret is guided before submit; secret stays password-only and fails closed without Keychain (314ms)
+
+
+  1) ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:66:1 › required secret is guided before submit; secret stays password-only and fails closed without Keychain 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      90 |   await page.getByRole('checkbox', { name: /整理与问答/ }).check()
+      91 |   const saveButton = page.getByRole('button', { name: '保存密钥并继续' })
+    > 92 |   expect(await saveButton.isEnabled()).toBe(false)
+         |                                        ^
+      93 |   expect(await saveButton.getAttribute('title')).toContain('DeepSeek')
+      94 |   await expect(page.getByText('选择此能力后需要填写 DeepSeek API Key', { exact: true })).toBeVisible()
+      95 |   await secretInput.fill(secret)
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:92:40
+
+    Error Context: ../.local/dev/frontend-a/repair1/red-harness/playwright-wizard-results/wizard-viewport-required-s-e75f6-ils-closed-without-Keychain/error-context.md
+
+  1 failed
+    ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:66:1 › required secret is guided before submit; secret stays password-only and fails closed without Keychain 

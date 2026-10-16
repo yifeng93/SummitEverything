@@ -1,0 +1,47 @@
+$ npm run test:e2e -- --grep offline viewport
+EXIT=1
+
+
+> web@0.0.0 test:e2e
+> playwright test --grep offline viewport
+
+[WebServer] (node:23998) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:24008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today and settings (427ms)
+
+
+  1) e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today and settings ────────
+
+    Error: settings horizontal overflow at 320px/light
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 320
+    Received: 375
+
+      77 |         }),
+      78 |       }))
+    > 79 |       expect(settingsMetrics.document, `settings horizontal overflow at ${width}px/${theme}`).toBe(settingsMetrics.viewport)
+         |                                                                                               ^
+      80 |       expect(settingsMetrics.body, `settings body overflow at ${width}px/${theme}`).toBe(settingsMetrics.viewport)
+      81 |       measurements.push({ width, theme, today: todayMetrics, settings: settingsMetrics, apiCalls: apiCalls.slice() })
+      82 |       await page.screenshot({ path: resolve(evidenceDir, `settings-${width}-${theme}.png`), fullPage: true })
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/viewport.spec.ts:79:95
+
+    Error Context: test-results/viewport-offline-viewport--25d00-line-for-today-and-settings/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/viewport-offline-viewport--25d00-line-for-today-and-settings/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/viewport-offline-viewport--25d00-line-for-today-and-settings/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today and settings ─────────

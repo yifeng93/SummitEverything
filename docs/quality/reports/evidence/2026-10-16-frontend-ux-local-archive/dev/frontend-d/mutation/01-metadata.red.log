@@ -1,0 +1,33 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (10 tests | 1 failed) 471ms
+   × ① 全站普通详情、标题与可访问名称不泄漏元数据并逐字保留用户代码 135ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  21:13:39
+   Duration  1.09s (tests 46%, environment 25%, transform 18%, import 11%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > ① 全站普通详情、标题与可访问名称不泄漏元数据并逐字保留用户代码
+AssertionError: expected '本机 profile设置常用连接在下面三张卡里完成，技术字段默认收在「高级…' not to match /…/|\{"(?:id|page_id|project_id|source_id)"
+
+- Expected:
+/line-internal-123|project-internal-456|overview-internal-789|page-internal-abc|source-internal-34|item-internal-12|draft-internal-56|account-internal-789|model-internal-123|fp-internal-456|[a-f0-9]{64}|私密目录\/|\{"(?:id|page_id|project_id|source_id)"/i
+
++ Received:
+"本机 profile设置常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。当前运行模式：Fake · 离线（默认）真实调用仍需一次性范围预览与独立确认。打开连接向导按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。本机设置最近读取于 10/15/2026, 9:13:41 PM工作库已连接知识正文保存在这个工作库；索引、聊天历史、凭据与诊断记录按本机 profile 管理。当前工作库测试工作库运行方式本机 API + WebUI切换工作库AI 模型未配置按业务能力查看状态。模型名称、账户与密钥放在高级配置中；密钥只保存在本机钥匙串，页面不会回显。整理与问答模型未启用知识索引向量化未启用检索结果排序未启用配置 AI 模型与密钥飞书钥匙串不可用状态来自本机授权记录。材料、日历与任务仍只读，并按已确认范围访问。当前运行环境无法访问 macOS 钥匙串，读不到本机凭据；这不等同于需要重新授权。密钥保存会失败关闭。读取已选择的飞书材料未启用读取飞书日历未启用读取飞书任务未启用创建或更改飞书任务未启用飞书任务写回仍不可用；本页不提供任何修改飞书任务的入口。连接 / 重新授权飞书高级与自定义（模型配置、密钥、端点、账户标识、检查额度与诊断）AI 模型与密钥仅保存在本机当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。整理与问答模型Fake · 离线DeepSeek · deepseek-flashDeepSeek API Key用于整理与问答。已保存的密钥不会显示，留空表示不修改。本机钥匙串：未配置知识索引向量化模型Fake · 离线阿里云 Model Studio · qwen3.7-text-embedding检索结果排序模型Fake · 离线阿里云 Model Studio · qwen3.7-text-rerank阿里云 Model Studio API Key向量化与排序共用此密钥。已保存的密钥不会显示，留空表示不修改。本机钥匙串：未配置保存 AI 模型设置飞书应用设置钥匙串不可用重新读取只检查本机保存状态，不连接飞书，也不占用连接检查额度。重新读取授权状态当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。飞书应用 App ID飞书应用密钥App Secret，仅保存在本机钥匙串。已保存的密钥不会显示，留空表示不修改。本机钥匙串：未配置保存飞书设置受限合成连接检查每项需单独确认先用固定短合成 payload 检查接口连通与响应结构，不发送工作库材料。每项最多一次，失败、超时与未知结果同样计数且不会自动重发；点击后需确认本次范围才会发出请求。DeepSeek Chat（剩余 …）Embedding（剩余 …）Rerank（剩余 …）运行模式与账户标识离线模式运行模式Fake · 离线Real · 显式启用DeepSeek 账户标识Model Studio 账户标识Model Studio 区域中国大陆（当前已核对 endpoint）Embedding Base URLRerank API Base URL注册 callback URI问答输出预算回答长度上限（生成 token）回答推理预算低 · 默认高整理固定关闭思考；此设置只影响问答。上限会进入真实操作预览与配置绑定。飞书 callback 必须与开发者后台完全一致且使用本机 loopback。Model Studio 只接受其 HTTPS 域名。请勿在聊天中发送密钥。保存 provider 设置受限合成连接检查的额度细节跨运行不重置暂时无法读取本机调用记录；在恢复读取前不要假设额度仍可用。DeepSeek 检查最多输出 64 tokens；按当前官方高峰价估算，三项合计低于 ¥0.01（实际账单待服务方核对）。CNY 5 是提示词建议上限，不是用户设定预算。诊断信息只读当前工作库测试工作库运行方式本机 API + WebUI运行模式Fake · 离线macOS 钥匙串不可用（密钥保存失败关闭）Embedding 配置fp-internal-456危险操作仅影响所选应用密钥删除后无法从本机恢复；对应能力需要重新录入密钥才能使用。删除 DeepSeek 密钥删除 Model Studio 密钥删除飞书应用密钥"
+
+ ❯ scan src/ui-contract.render.test.tsx:302:35
+
+ ❯ src/ui-contract.render.test.tsx:330:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

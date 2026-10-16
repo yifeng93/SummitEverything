@@ -1,0 +1,76 @@
+{
+  "widths": [
+    320,
+    390,
+    768,
+    960,
+    1280
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "scenarios": {
+    "today": [
+      "today-320-light.png",
+      "today-320-dark.png",
+      "today-390-light.png",
+      "today-390-dark.png",
+      "today-768-light.png",
+      "today-768-dark.png",
+      "today-960-light.png",
+      "today-960-dark.png",
+      "today-1280-light.png",
+      "today-1280-dark.png"
+    ],
+    "approval": [
+      "approval-320-light.png",
+      "approval-320-dark.png",
+      "approval-390-light.png",
+      "approval-390-dark.png",
+      "approval-768-light.png",
+      "approval-768-dark.png",
+      "approval-960-light.png",
+      "approval-960-dark.png",
+      "approval-1280-light.png",
+      "approval-1280-dark.png"
+    ],
+    "import_drawer": [
+      "import-drawer-320-light.png",
+      "import-drawer-320-dark.png",
+      "import-drawer-390-light.png",
+      "import-drawer-390-dark.png",
+      "import-drawer-768-light.png",
+      "import-drawer-768-dark.png",
+      "import-drawer-960-light.png",
+      "import-drawer-960-dark.png",
+      "import-drawer-1280-light.png",
+      "import-drawer-1280-dark.png"
+    ],
+    "journal_dialog": [
+      "journal-dialog-320-light.png",
+      "journal-dialog-320-dark.png",
+      "journal-dialog-390-light.png",
+      "journal-dialog-390-dark.png",
+      "journal-dialog-768-light.png",
+      "journal-dialog-768-dark.png",
+      "journal-dialog-960-light.png",
+      "journal-dialog-960-dark.png",
+      "journal-dialog-1280-light.png",
+      "journal-dialog-1280-dark.png"
+    ],
+    "approval_selection_summary": [
+      "approval-selection-summary-320-light.png",
+      "approval-selection-summary-320-dark.png",
+      "approval-selection-summary-390-light.png",
+      "approval-selection-summary-390-dark.png",
+      "approval-selection-summary-768-light.png",
+      "approval-selection-summary-768-dark.png",
+      "approval-selection-summary-960-light.png",
+      "approval-selection-summary-960-dark.png",
+      "approval-selection-summary-1280-light.png",
+      "approval-selection-summary-1280-dark.png"
+    ]
+  },
+  "all_screenshots_manually_reviewed": true
+}

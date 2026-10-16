@@ -1,0 +1,102 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ProjectsView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/ProjectsView.test.tsx (8 tests | 1 failed) 1361ms
+   × keeps the project loading state distinct from a confirmed empty directory 1005ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ProjectsView.test.tsx > keeps the project loading state distinct from a confirmed empty directory
+TestingLibraryElementError: Unable to find an element with the text: 正在读取项目目录…. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap projects-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m知识目录[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m项目[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做什么。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"loading-state"[39m
+        [33mrole[39m=[32m"status"[39m
+      [36m>[39m
+        [0m还没有项目。先建一条主线，再建项目。[0m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap projects-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m知识目录[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m项目[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m这里的每一条线是一个业务方向。点进去看它现在到哪一步、下一步做什么。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"loading-state"[39m
+        [33mrole[39m=[32m"status"[39m
+      [36m>[39m
+        [0m还没有项目。先建一条主线，再建项目。[0m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/ProjectsView.test.tsx:216:23
+    214|   render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+    215|
+    216|   expect(await screen.findByText('正在读取项目目录…')).toBeTruthy()
+       |                       ^
+    217|   expect(screen.queryByText('还没有项目。先建一条主线，再建项目。')).toBeNull()
+    218|   resolveLines(Response.json([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  18:53:23
+   Duration  1.81s (tests 78%, environment 13%, import 5%, transform 4%)
+

@@ -1,0 +1,100 @@
+........FF...F..............F..                                          [100%]
+=================================== FAILURES ===================================
+_________ test_rejects_values_outside_the_whitelisted_shape[payload5] __________
+
+payload = {'step': 3.0, 'completed': False, 'open': True}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"step": 1, "completed": False, "open": True},
+            {"step": 6, "completed": False, "open": True},
+            {"step": "3", "completed": False, "open": True},
+            {"step": 3, "completed": "yes", "open": True},
+            {"step": 3, "completed": False},
+            # QA D-4：整数值 JSON 浮点不是合法 step；只有真整数才被接受。
+            {"step": 3.0, "completed": False, "open": True},
+            {"step": 2.0, "completed": False, "open": True},
+            {"step": -1, "completed": False, "open": True},
+            {"step": 4.5, "completed": False, "open": True},
+            {"step": True, "completed": False, "open": True},
+        ],
+    )
+    def test_rejects_values_outside_the_whitelisted_shape(payload: dict[str, object]) -> None:
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValidationError
+
+tests/unit/test_first_use_progress_store.py:80: Failed
+_________ test_rejects_values_outside_the_whitelisted_shape[payload6] __________
+
+payload = {'step': 2.0, 'completed': False, 'open': True}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"step": 1, "completed": False, "open": True},
+            {"step": 6, "completed": False, "open": True},
+            {"step": "3", "completed": False, "open": True},
+            {"step": 3, "completed": "yes", "open": True},
+            {"step": 3, "completed": False},
+            # QA D-4：整数值 JSON 浮点不是合法 step；只有真整数才被接受。
+            {"step": 3.0, "completed": False, "open": True},
+            {"step": 2.0, "completed": False, "open": True},
+            {"step": -1, "completed": False, "open": True},
+            {"step": 4.5, "completed": False, "open": True},
+            {"step": True, "completed": False, "open": True},
+        ],
+    )
+    def test_rejects_values_outside_the_whitelisted_shape(payload: dict[str, object]) -> None:
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValidationError
+
+tests/unit/test_first_use_progress_store.py:80: Failed
+________ test_integral_float_step_is_never_normalised_into_a_valid_step ________
+
+    def test_integral_float_step_is_never_normalised_into_a_valid_step() -> None:
+        """`3.0` must not be silently coerced into step 3 (QA D-4)."""
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValidationError
+
+tests/unit/test_first_use_progress_store.py:86: Failed
+___________ test_rejects_illegal_steps_and_unknown_or_secret_fields ____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1167/test_rejects_illegal_steps_and0')
+
+    def test_rejects_illegal_steps_and_unknown_or_secret_fields(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        open_workspace(client, tmp_path / "workspace", "模拟库", "open-progress-invalid")
+    
+        for payload in (
+            {"step": 1, "completed": False, "open": True},
+            {"step": 6, "completed": False, "open": True},
+            # QA D-4：整数值 JSON 浮点曾被 Literal 归一化接受，现在必须 422。
+            {"step": 3.0, "completed": False, "open": True},
+            {"step": 4.5, "completed": False, "open": True},
+            {"step": True, "completed": False, "open": True},
+            {"step": 3, "completed": False, "open": True, "secret": "sk-synthetic-00000000"},
+            {"step": 3, "completed": False, "open": True, "api_key": "sk-synthetic-00000000"},
+        ):
+            response = client.put("/api/v1/first-use/progress", headers=HEADERS, json=payload)
+>           assert response.status_code == 422, payload
+E           AssertionError: {'step': 3.0, 'completed': False, 'open': True}
+E           assert 200 == 422
+E            +  where 200 = <Response [200 OK]>.status_code
+
+tests/integration/test_first_use_progress_api.py:149: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/test_first_use_progress_store.py::test_rejects_values_outside_the_whitelisted_shape[payload5]
+FAILED tests/unit/test_first_use_progress_store.py::test_rejects_values_outside_the_whitelisted_shape[payload6]
+FAILED tests/unit/test_first_use_progress_store.py::test_integral_float_step_is_never_normalised_into_a_valid_step
+FAILED tests/integration/test_first_use_progress_api.py::test_rejects_illegal_steps_and_unknown_or_secret_fields
+4 failed, 27 passed, 1 warning in 0.63s

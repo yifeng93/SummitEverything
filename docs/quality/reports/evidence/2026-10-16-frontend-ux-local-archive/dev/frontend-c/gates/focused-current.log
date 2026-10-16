@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ProjectsView.test.tsx src/App.test.tsx src/components/AskView.test.tsx src/components/MarkdownText.test.tsx src/components/PageReader.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  5 passed (5)
+      Tests  31 passed (31)
+   Start at  18:42:18
+   Duration  1.05s (tests 36%, environment 36%, import 14%, transform 14%)
+

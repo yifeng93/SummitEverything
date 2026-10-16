@@ -1,0 +1,39 @@
+$ npm test -- --run src/components/SettingsView.cards.test.tsx -t does not start any provider check
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx -t does not start any provider check
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (13 tests | 1 failed | 12 skipped) 124ms
+   × does not start any provider check after saving a secret 124ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > does not start any provider check after saving a secret
+AssertionError: expected 'synthetic-secret' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ synthetic-secret
+
+ ❯ src/components/SettingsView.cards.test.tsx:356:26
+    354|
+    355|   await waitFor(() => expect(saved.credential_status.deepseek).toBe(tr…
+    356|   expect(password.value).toBe('')
+       |                          ^
+    357|   expect(smokePosts(fetchMock)).toHaveLength(0)
+    358|   // 提交成功后密钥立即清空，且没有进入任何浏览器持久存储。
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  10:27:18
+   Duration  506ms (environment 50%, tests 28%, transform 13%, import 10%)
+

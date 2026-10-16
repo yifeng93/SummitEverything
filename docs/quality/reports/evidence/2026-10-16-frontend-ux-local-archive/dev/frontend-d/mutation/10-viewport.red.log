@@ -1,0 +1,46 @@
+
+> web@0.0.0 test:e2e
+> playwright test --config playwright.config.ts
+
+
+Running 2 tests using 1 worker
+
+  ✓  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (1.8s)
+  ✘  2 e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings (327ms)
+
+
+  1) e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+
+    Error: today horizontal overflow at 320px/light
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 320
+    Received: 1200
+
+      75 |         body: document.body.scrollWidth,
+      76 |       }))
+    > 77 |       expect(todayMetrics.document, `today horizontal overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
+         |                                                                                         ^
+      78 |       expect(todayMetrics.body, `today body overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
+      79 |       await page.screenshot({ path: resolve(evidenceDir, `today-${width}-${theme}.png`), fullPage: true })
+      80 |
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/viewport.spec.ts:77:89
+
+    Error Context: test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+  1 passed (2.9s)
+[WebServer] (node:4455) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+(node:4456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

@@ -1,0 +1,284 @@
+{
+  "seeded": {
+    "line": {
+      "id": "4cc54de9-5706-5877-9962-5edc46e6ba8c",
+      "name": "C 合成主线",
+      "directory": "C-合成主线"
+    },
+    "project": {
+      "id": "5f67bea5-9cbd-542c-9d3f-8792056defee",
+      "line_id": "4cc54de9-5706-5877-9962-5edc46e6ba8c",
+      "name": "C 合成项目",
+      "directory": "C-合成主线/C-合成项目",
+      "overview_id": "1571fbf3-82ba-5665-a050-bdbf69945939",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    },
+    "pageId": "93fbd125-9828-448b-82d7-aa184c9acad1"
+  },
+  "apiCalls": [
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/first-use/progress"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/lines"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/index/plans"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/index/jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/memory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/memory/candidates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/queries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/conversations/1c0c5015-293c-441e-af80-ac880f391b72/reopen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/93fbd125-9828-448b-82d7-aa184c9acad1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/93fbd125-9828-448b-82d7-aa184c9acad1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages/93fbd125-9828-448b-82d7-aa184c9acad1/confirmations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/93fbd125-9828-448b-82d7-aa184c9acad1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/93fbd125-9828-448b-82d7-aa184c9acad1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    }
+  ],
+  "externalAttempts": []
+}

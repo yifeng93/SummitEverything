@@ -1,0 +1,6 @@
+[WebServer] INFO:     Started server process [93166]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8796 (Press CTRL+C to quit)
+Error: http://127.0.0.1:5176 is already used, make sure that nothing is running on the port/url or set reuseExistingServer:true in config.webServer.
+

@@ -1,0 +1,81 @@
+$ npm test -- --run src/components/SettingsView.regressions.test.tsx -t does not delete a credential
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.regressions.test.tsx -t does not delete a credential
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.regressions.test.tsx (4 tests | 1 failed | 3 skipped) 110ms
+   × does not delete a credential until the destructive confirmation is accepted 109ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > does not delete a credential until the destructive confirmation is accepted
+AssertionError: expected <section …(6)>…(4)</section> to be null
+
+- Expected:
+null
+
++ Received:
+<section
+  aria-describedby="confirm-dialog-description"
+  aria-labelledby="confirm-dialog-title"
+  aria-modal="true"
+  class="confirm-dialog"
+  role="dialog"
+  tabindex="-1"
+>
+  <h2
+    id="confirm-dialog-title"
+  >
+    删除所选本机密钥？
+  </h2>
+  <p
+    id="confirm-dialog-description"
+  >
+    只会删除这张设置卡上所选应用的密钥。
+  </p>
+  <p
+    class="confirm-consequence"
+  >
+    删除后无法从本机恢复；对应能力需要重新录入密钥才能使用。
+  </p>
+  <div
+    class="confirm-actions"
+  >
+    <button
+      class="button secondary"
+      disabled=""
+      type="button"
+    >
+      取消
+    </button>
+    <button
+      class="button danger"
+      disabled=""
+      type="button"
+    >
+      正在删除…
+    </button>
+  </div>
+</section>
+
+ ❯ src/components/SettingsView.regressions.test.tsx:128:40
+    126|   expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DEL…
+    127|   fireEvent.click(within(dialog).getByRole('button', { name: '取消' }))
+    128|   expect(screen.queryByRole('dialog')).toBeNull()
+       |                                        ^
+    129|   expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DEL…
+    130|   fireEvent.click(screen.getByRole('button', { name: '删除 DeepSeek 密钥' …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  10:27:16
+   Duration  486ms (environment 52%, tests 25%, transform 13%, import 10%)
+

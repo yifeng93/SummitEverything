@@ -1,0 +1,1 @@
+PASS: onedir backend starts with empty PATH; identity, static UI, unauthorized reads/writes, port conflicts, and parent-pipe cleanup verified

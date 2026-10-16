@@ -1,0 +1,49 @@
+[WebServer] INFO:     Started server process [82611]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8794 (Press CTRL+C to quit)
+[WebServer] (node:82635) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:82641) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 .local/qa/frontend-b-repair1/harness/source-scope.spec.ts:6:1 › Real source preview shows the exact synthetic scope before any organize call (1.2s)
+
+
+  1) .local/qa/frontend-b-repair1/harness/source-scope.spec.ts:6:1 › Real source preview shows the exact synthetic scope before any organize call 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "originalText": true,
+    +   "originalText": false,
+        "requestBudget": true,
+    -   "selectedProject": true,
+    +   "selectedProject": false,
+      }
+
+      119 |   expect(previewRequestScope.line_id).toBe(seeded.line.id)
+      120 |   expect(previewRequestScope.project_id).toBe(seeded.project.id)
+    > 121 |   expect(visibility).toEqual({ originalText: true, selectedProject: true, requestBudget: true })
+          |                      ^
+      122 | })
+      123 |
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/.local/qa/frontend-b-repair1/harness/source-scope.spec.ts:121:22
+
+    Error Context: ../.local/qa/frontend-b-repair1/integration-results/source-scope-Real-source-p-7a110-pe-before-any-organize-call/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../.local/qa/frontend-b-repair1/integration-results/source-scope-Real-source-p-7a110-pe-before-any-organize-call/trace.zip
+    Usage:
+
+        npx playwright show-trace ../.local/qa/frontend-b-repair1/integration-results/source-scope-Real-source-p-7a110-pe-before-any-organize-call/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    .local/qa/frontend-b-repair1/harness/source-scope.spec.ts:6:1 › Real source preview shows the exact synthetic scope before any organize call 

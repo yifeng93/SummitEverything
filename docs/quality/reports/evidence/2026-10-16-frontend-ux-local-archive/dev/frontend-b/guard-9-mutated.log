@@ -1,0 +1,63 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx -t 今日主内容按会议
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (13 tests | 1 failed | 12 skipped) 122ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (5)
+     × 今日主内容按会议、任务、行动、收件箱排列，只提供两个主工具并且默认不发送 122ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 今日主内容按会议、任务、行动、收件箱排列，只提供两个主工具并且默认不发送
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/ui-contract.render.test.tsx:209:142
+    207|     expect(screen.queryByRole('heading', { name: '需要行动' })).toBeNull()
+    208|     const paths = fetchMock.mock.calls.map(([input]) => String(input))
+    209|     expect(paths.some((path) => /\/acceptance-plans|\/intake\/jobs|\/i…
+       |                                                                                                                                              ^
+    210|   })
+    211| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+ApiError: 本机没有这个接口。
+ ❯ readResponse src/api/client.ts:46:11
+     44|   if (!response.ok) {
+     45|     const payload = (await response.json().catch(() => ({}))) as Error…
+     46|     throw new ApiError(payload.error?.message ?? 'Request failed: ' + …
+       |           ^
+     47|   }
+     48|   if (response.status === 204) return undefined as T
+ ❯ request src/api/client.ts:88:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'not_found', status: 404 }
+This error originated in "src/ui-contract.render.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "今日主内容按会议、任务、行动、收件箱排列，只提供两个主工具并且默认不发送". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+     Errors  1 error
+   Start at  16:36:59
+   Duration  700ms (environment 40%, transform 25%, tests 19%, import 16%)
+

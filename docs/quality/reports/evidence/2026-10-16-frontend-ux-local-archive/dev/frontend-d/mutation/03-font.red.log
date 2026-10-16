@@ -1,0 +1,69 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.test.ts
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.test.ts (10 tests | 1 failed) 100ms
+   ❯ 守卫③ 字号下限（GUIDE §11 ③、§6.1） (2)
+     × web/src 下没有低于 12px 的 font-size 声明，且 9/10/11px 出现次数为 0 47ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  21:13:44
+   Duration  462ms (environment 58%, tests 25%, import 12%, transform 4%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.test.ts > 守卫③ 字号下限（GUIDE §11 ③、§6.1） > web/src 下没有低于 12px 的 font-size 声明，且 9/10/11px 出现次数为 0
+AssertionError: 守卫③ 字号下限（FRONTEND-GUIDE §11 ③ 与 §6.1）：web/src 下的 font-size 不得低于 12px；.sr-only 白名单: expected [ …(30) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "web/src/App.css:21 「.nav-badge」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:53 「.theme-select」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:57 「.eyebrow」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:98 「.status-details code」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:114 「.page-metadata dd」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:124 「.panel-index」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:131 「.count-badge」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:136 「.file-glyph, .page-type-mark」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:138 「.status-label」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:143 「.diff-view span」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:143 「.diff-view pre」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:144 「.source-chip」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:145 「.original-source pre」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:148 「.rail-heading > span」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:149 「.workflow-steps b」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:150 「.candidate-dot」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:151 「.rail-note > span」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:154 「.project-status-badge」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:155 「.directory-title > span」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:156 「.line-mark」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:161 「.page-type-mark」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:165 「.answer-mark」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:165 「.citation-number」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:171 「.privacy-note span」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:189 「.nav-item, .nav-item:not(.active)」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:221 「.action-detail pre」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:303 「.conn-badge」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:317 「.wizard-step span」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:328 「.wizard-endpoint code」 font-size: var(--text-caption) → 11px",
++   "web/src/App.css:329 「.wizard-endpoint span」 font-size: var(--text-caption) → 11px",
++ ]
+
+ ❯ src/ui-contract.test.ts:216:63
+    214|
+    215|     expect(sightings.length, '字号扫描没有命中任何声明，说明扫描逻辑坏了（见 GUIDE §11 ③）').t…
+    216|     expect(belowFloor.map(describeSighting), RULE_FONT_FLOOR).toEqual(…
+       |                                                               ^
+    217|     expect(nineToEleven.map(describeSighting), `${RULE_FONT_FLOOR}；9/1…
+    218|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

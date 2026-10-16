@@ -1,0 +1,153 @@
+{
+  "apiCalls": [
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status"
+    }
+  ],
+  "externalAttempts": []
+}

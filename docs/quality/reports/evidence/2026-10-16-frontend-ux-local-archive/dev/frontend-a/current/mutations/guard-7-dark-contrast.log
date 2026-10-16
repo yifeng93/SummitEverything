@@ -1,0 +1,66 @@
+$ npm test -- --run src/theme.test.ts -t 深色 tokens 的 10 组对比度
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/theme.test.ts -t 深色 tokens 的 10 组对比度
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+stdout | src/theme.test.ts > 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） > 深色 tokens 的 10 组对比度达标（并打印真实比值）
+[守卫⑦] 深色主题对比度（GUIDE §6.2） · 门禁组
+  组名                          前景        背景        比值
+  ink/paper                    #222a27     #171d1b     1.16 FAIL
+  muted/paper                  #abb5af     #171d1b     8.11 PASS
+  ink/surface                  #222a27     #222a27     1.00 FAIL
+  muted/surface                #abb5af     #222a27     6.97 PASS
+  on-accent/accent             #1c1512     #e09170     7.25 PASS
+  accent/accent-wash           #e09170     #3a2b25     5.45 PASS
+  green/green-wash             #9ac5a9     #253b2e     6.27 PASS
+  danger/danger-wash           #f0a08c     #43241d     6.70 PASS
+  warn/warn-wash               #e0b872     #3d3220     6.73 PASS
+  control-border/surface       #6d7a74     #222a27     3.28 PASS
+[守卫⑦] 深色主题对比度（GUIDE §6.2） · 仅打印
+  组名                          前景        背景        比值
+  quiet/surface                #96a09a     #222a27     5.45 --
+  accent-dark/accent-wash      #efaa8d     #3a2b25     6.96 --
+  danger-ink/danger-wash       #f4b6a4     #43241d     8.00 --
+  warn-ink/warn-wash           #e8c98d     #3d3220     7.86 --
+  sidebar-muted/sidebar        #9ca9a3     #111715     7.45 --
+  sidebar-fg/sidebar           #e7ebe7     #111715     15.07 --
+
+ ❯ src/theme.test.ts (8 tests | 1 failed | 7 skipped) 5ms
+   ❯ 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） (2)
+     × 深色 tokens 的 10 组对比度达标（并打印真实比值） 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/theme.test.ts > 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） > 深色 tokens 的 10 组对比度达标（并打印真实比值）
+AssertionError: 守卫⑦ 深色对比度（GUIDE §6.2 与 §11 ⑦）：正文/背景与正文/表面 ≥4.5:1，控件边框/表面 ≥3.0:1: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "深色ink/paper: #222a27 / #171d1b = 1.16 < 4.5",
++   "深色ink/surface: #222a27 / #222a27 = 1.00 < 4.5",
++ ]
+
+ ❯ src/theme.test.ts:155:59
+    153|     printRatios('深色', DARK, CONTRAST_PAIRS, true)
+    154|     printRatios('深色', DARK, DIAGNOSTIC_PAIRS.map((pair) => ({ ...pair,…
+    155|     expect(gatedFailures('深色', DARK), RULE_DARK_CONTRAST).toEqual([])
+       |                                                           ^
+    156|   })
+    157| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  10:27:17
+   Duration  300ms (environment 87%, transform 7%, import 3%, tests 2%, worker 1%)
+

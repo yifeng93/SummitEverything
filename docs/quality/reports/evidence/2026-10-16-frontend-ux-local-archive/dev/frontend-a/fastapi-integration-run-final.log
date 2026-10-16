@@ -1,0 +1,22 @@
+
+> web@0.0.0 test:e2e:integration
+> playwright test --config playwright.integration.config.ts --reporter=line
+
+[WebServer] INFO:     Started server process [22977]
+
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8794 (Press CTRL+C to quit)
+
+[WebServer] (node:23001) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 1 test using 1 worker
+
+(node:23004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] e2e/first-use-real.spec.ts:5:1 › first use completes with real FastAPI and isolated Fake workspace
+  1 passed (1.7s)

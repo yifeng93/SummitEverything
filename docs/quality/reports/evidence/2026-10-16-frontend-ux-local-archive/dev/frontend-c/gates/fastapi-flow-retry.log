@@ -1,0 +1,49 @@
+[WebServer] INFO:     Started server process [93231]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8797 (Press CTRL+C to quit)
+[WebServer] (node:93255) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:93256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/frontend-c-flow.spec.ts:5:1 › confirmed synthetic page indexes, answers, opens citation, then warns on its updated version (6.3s)
+
+
+  1) e2e/frontend-c-flow.spec.ts:5:1 › confirmed synthetic page indexes, answers, opens citation, then warns on its updated version 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: '页面阅读' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: '页面阅读' }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '页面阅读' })
+
+
+      68 |   await expect(citation).toBeVisible()
+      69 |   await citation.click()
+    > 70 |   await expect(page.getByRole('region', { name: '页面阅读' })).toBeVisible()
+         |                                                            ^
+      71 |   await expect(page.getByText('会议在北馆举行。')).toBeVisible()
+      72 |   await page.getByRole('button', { name: '← 返回知识问答' }).click()
+      73 |   await expect(page.getByRole('heading', { name: '引用依据' })).toBeVisible()
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/frontend-c-flow.spec.ts:70:60
+
+    Error Context: ../.local/dev/frontend-c/fastapi-integration/playwright-output-93256-36ff095b-642f-4ee0-b871-af2a027f7a65/frontend-c-flow-confirmed--b9567-arns-on-its-updated-version/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../.local/dev/frontend-c/fastapi-integration/playwright-output-93256-36ff095b-642f-4ee0-b871-af2a027f7a65/frontend-c-flow-confirmed--b9567-arns-on-its-updated-version/trace.zip
+    Usage:
+
+        npx playwright show-trace ../.local/dev/frontend-c/fastapi-integration/playwright-output-93256-36ff095b-642f-4ee0-b871-af2a027f7a65/frontend-c-flow-confirmed--b9567-arns-on-its-updated-version/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/frontend-c-flow.spec.ts:5:1 › confirmed synthetic page indexes, answers, opens citation, then warns on its updated version 

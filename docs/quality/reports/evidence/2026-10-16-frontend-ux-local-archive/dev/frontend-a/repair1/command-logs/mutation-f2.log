@@ -1,0 +1,34 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (15 tests | 1 failed) 412ms
+   × maps AI model badges only when all three current capability checks pass 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > maps AI model badges only when all three current capability checks pass
+AssertionError: expected '三项检查通过' to be '部分已检查' // Object.is equality
+
+Expected: "部分已检查"
+Received: "三项检查通过"
+
+ ❯ src/components/SettingsView.cards.test.tsx:214:25
+    212|     checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embeddin…
+    213|   })
+    214|   expect(partial.label).toBe('部分已检查')
+       |                         ^
+    215|   expect(partial.kind).not.toBe('verified')
+    216|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  11:06:33
+   Duration  792ms (tests 56%, environment 30%, transform 8%, import 6%)
+

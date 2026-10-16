@@ -1,0 +1,51 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/MarkdownText.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/MarkdownText.test.tsx (5 tests | 2 failed) 104ms
+   × renders GFM, resolves only real unique page links, and secures external links 79ms
+   × resolves reference-style internal links and keeps external references safe 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/MarkdownText.test.tsx > renders GFM, resolves only real unique page links, and secures external links
+AssertionError: expected 'noreferrer' to contain 'noopener'
+
+Expected: "noopener"
+Received: "noreferrer"
+
+ ❯ src/components/MarkdownText.test.tsx:34:40
+     32|   const external = screen.getByRole('link', { name: '外部说明' })
+     33|   expect(external.getAttribute('target')).toBe('_blank')
+     34|   expect(external.getAttribute('rel')).toContain('noopener')
+       |                                        ^
+     35|   expect(screen.queryByRole('link', { name: '危险链接' })).toBeNull()
+     36|   expect(onOpenPage).toHaveBeenCalledTimes(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/MarkdownText.test.tsx > resolves reference-style internal links and keeps external references safe
+AssertionError: expected 'noreferrer' to contain 'noopener'
+
+Expected: "noopener"
+Received: "noreferrer"
+
+ ❯ src/components/MarkdownText.test.tsx:55:40
+     53|   const external = screen.getByRole('link', { name: '外部说明' })
+     54|   expect(external.getAttribute('href')).toBe('https://example.com/docs…
+     55|   expect(external.getAttribute('rel')).toContain('noopener')
+       |                                        ^
+     56|   expect(screen.getByText('危险链接')).toBeTruthy()
+     57|   expect(screen.queryByRole('link', { name: '危险链接' })).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  18:53:26
+   Duration  501ms (environment 52%, tests 24%, import 18%, transform 5%)
+

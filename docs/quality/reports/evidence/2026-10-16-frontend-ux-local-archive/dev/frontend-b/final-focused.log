@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ApprovalView.test.tsx src/components/TodayView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  16:41:54
+   Duration  902ms (tests 47%, environment 33%, transform 10%, import 10%)
+

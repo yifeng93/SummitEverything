@@ -1,0 +1,169 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_absent_progress_is_reported_as_absent_not_as_a_default __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_absent_progress_is_report0')
+
+    def test_absent_progress_is_reported_as_absent_not_as_a_default(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        open_workspace(client, tmp_path / "workspace", "模拟库", "open-progress-absent")
+    
+        response = client.get("/api/v1/first-use/progress", headers=HEADERS)
+    
+        assert response.status_code == 404
+>       assert response.json()["error"]["code"] == "first_use_progress_absent"
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'error'
+
+tests/integration/test_first_use_progress_api.py:48: KeyError
+____________ test_progress_round_trips_and_survives_a_restarted_app ____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_progress_round_trips_and_0')
+
+    def test_progress_round_trips_and_survives_a_restarted_app(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        open_workspace(client, tmp_path / "workspace", "模拟库", "open-progress-write")
+    
+        written = client.put(
+            "/api/v1/first-use/progress",
+            headers=HEADERS,
+            json={"step": 4, "completed": False, "open": True},
+        )
+>       assert written.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/integration/test_first_use_progress_api.py:60: AssertionError
+______________________ test_completed_progress_is_durable ______________________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_completed_progress_is_dur0')
+
+    def test_completed_progress_is_durable(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        open_workspace(client, tmp_path / "workspace", "模拟库", "open-progress-complete")
+    
+        client.put(
+            "/api/v1/first-use/progress",
+            headers=HEADERS,
+            json={"step": 5, "completed": True, "open": False},
+        )
+    
+>       assert client.get("/api/v1/first-use/progress", headers=HEADERS).json() == {
+            "step": 5,
+            "completed": True,
+            "open": False,
+        }
+E       AssertionError: assert {'detail': 'Not Found'} == {'step': 5, '...'open': False}
+E         
+E         Left contains 1 more item:
+E         {'detail': 'Not Found'}
+E         Right contains 3 more items:
+E         {'completed': True, 'open': False, 'step': 5}
+E         Use -v to get more diff
+
+tests/integration/test_first_use_progress_api.py:89: AssertionError
+__________ test_progress_is_isolated_between_workspaces_and_profiles ___________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_progress_is_isolated_betw0')
+
+    def test_progress_is_isolated_between_workspaces_and_profiles(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        first = open_workspace(client, tmp_path / "workspace-a", "甲库", "open-progress-a")
+        client.put(
+            "/api/v1/first-use/progress",
+            headers=HEADERS,
+            json={"step": 3, "completed": False, "open": True},
+        )
+    
+        open_workspace(client, tmp_path / "workspace-b", "乙库", "open-progress-b")
+        assert client.get("/api/v1/first-use/progress", headers=HEADERS).status_code == 404
+    
+>       open_workspace(client, tmp_path / "workspace-a", "甲库", "reopen-progress-a")
+
+tests/integration/test_first_use_progress_api.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <starlette.testclient.TestClient object at 0x10c795e50>
+root = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_progress_is_isolated_betw0/workspace-a')
+name = '甲库', operation = 'reopen-progress-a'
+
+    def open_workspace(client: TestClient, root: Path, name: str, operation: str) -> dict[str, object]:
+        response = client.post(
+            "/api/v1/workspaces",
+            headers=HEADERS,
+            json={"root": str(root), "mode": "create", "name": name, "operation_id": operation},
+        )
+>       assert response.status_code == 201
+E       assert 409 == 201
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/integration/test_first_use_progress_api.py:37: AssertionError
+___________ test_rejects_illegal_steps_and_unknown_or_secret_fields ____________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_rejects_illegal_steps_and0')
+
+    def test_rejects_illegal_steps_and_unknown_or_secret_fields(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        open_workspace(client, tmp_path / "workspace", "模拟库", "open-progress-invalid")
+    
+        for payload in (
+            {"step": 1, "completed": False, "open": True},
+            {"step": 6, "completed": False, "open": True},
+            {"step": 3, "completed": False, "open": True, "secret": "sk-synthetic-00000000"},
+            {"step": 3, "completed": False, "open": True, "api_key": "sk-synthetic-00000000"},
+        ):
+            response = client.put("/api/v1/first-use/progress", headers=HEADERS, json=payload)
+>           assert response.status_code == 422, payload
+E           AssertionError: {'step': 1, 'completed': False, 'open': True}
+E           assert 404 == 422
+E            +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/integration/test_first_use_progress_api.py:141: AssertionError
+_____________ test_requires_a_session_token_and_an_open_workspace ______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_requires_a_session_token_0')
+
+    def test_requires_a_session_token_and_an_open_workspace(tmp_path: Path) -> None:
+        client = build(tmp_path)
+>       assert client.get("/api/v1/first-use/progress").status_code == 401
+E       AssertionError: assert 404 == 401
+E        +  where 404 = <Response [404 Not Found]>.status_code
+E        +    where <Response [404 Not Found]> = get('/api/v1/first-use/progress')
+E        +      where get = <starlette.testclient.TestClient object at 0x10ca09790>.get
+
+tests/integration/test_first_use_progress_api.py:150: AssertionError
+_____ test_an_unwritable_store_fails_visibly_instead_of_pretending_to_save _____
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-1160/test_an_unwritable_store_fails0')
+
+    def test_an_unwritable_store_fails_visibly_instead_of_pretending_to_save(tmp_path: Path) -> None:
+        client = build(tmp_path)
+        opened = open_workspace(client, tmp_path / "workspace", "模拟库", "open-progress-failure")
+        # Occupy the store path with a directory: the atomic replace can never land.
+        Path(str(opened["local_profile_dir"]), "first-use-progress.json").mkdir(parents=True)
+    
+        written = client.put(
+            "/api/v1/first-use/progress",
+            headers=HEADERS,
+            json={"step": 3, "completed": False, "open": True},
+        )
+>       assert written.status_code == 503
+E       assert 404 == 503
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/integration/test_first_use_progress_api.py:173: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_first_use_progress_api.py::test_absent_progress_is_reported_as_absent_not_as_a_default
+FAILED tests/integration/test_first_use_progress_api.py::test_progress_round_trips_and_survives_a_restarted_app
+FAILED tests/integration/test_first_use_progress_api.py::test_completed_progress_is_durable
+FAILED tests/integration/test_first_use_progress_api.py::test_progress_is_isolated_between_workspaces_and_profiles
+FAILED tests/integration/test_first_use_progress_api.py::test_rejects_illegal_steps_and_unknown_or_secret_fields
+FAILED tests/integration/test_first_use_progress_api.py::test_requires_a_session_token_and_an_open_workspace
+FAILED tests/integration/test_first_use_progress_api.py::test_an_unwritable_store_fails_visibly_instead_of_pretending_to_save
+7 failed, 1 warning in 0.94s

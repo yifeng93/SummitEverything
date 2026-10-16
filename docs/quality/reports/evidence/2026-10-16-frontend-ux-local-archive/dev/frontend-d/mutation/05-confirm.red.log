@@ -1,0 +1,275 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/FeishuPanel.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/FeishuPanel.test.tsx (16 tests | 1 failed) 406ms
+   × clears the local authorization when the user disconnects Feishu 32ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  21:13:48
+   Duration  826ms (tests 53%, environment 33%, transform 7%, import 6%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/FeishuPanel.test.tsx > clears the local authorization when the user disconnects Feishu
+TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "断开飞书用户授权？"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "飞书日常":
+  [36m<h2 />[39m
+
+  Name "材料":
+  [36m<h3 />[39m
+
+  Name "日历":
+  [36m<h3 />[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"quiet-empty"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "模拟授权飞书":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "断开飞书授权":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "搜索 / 刷新材料":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "刷新日历":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "搜索材料":
+  [36m<input[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "可见范围":
+  [36m<select />[39m
+
+  Name "时区":
+  [36m<select />[39m
+
+  --------------------------------------------------
+  option:
+
+  Name "全部可见":
+  [36m<option[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "我拥有的":
+  [36m<option[39m
+    [33mvalue[39m=[32m"owner"[39m
+  [36m/>[39m
+
+  Name "共享给我的":
+  [36m<option[39m
+    [33mvalue[39m=[32m"shared"[39m
+  [36m/>[39m
+
+  Name "Asia/Shanghai":
+  [36m<option />[39m
+
+  Name "UTC":
+  [36m<option />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"panel feishu-panel"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"panel-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2>[39m
+            [0m飞书日常[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0m模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"status-label"[39m
+        [36m>[39m
+          [0m用户已授权[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"button-row"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0m模拟授权飞书[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0m断开飞书授权[0m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<h3>[39m
+        [0m材料[0m
+      [36m</h3>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"organize-row"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"compact-field"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m搜索材料[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"compact-field"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m可见范围[0m
+          [36m</span>[39m
+          [36m<select>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部可见[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"owner"[39m
+            [36m>[39m
+              [0m我拥有的[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"shared"[39m
+            [36m>[39m
+              [0m共享给我的[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</label>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0m搜索 / 刷新材料[0m
+        [36m</button>[39m
+      [36m</form>[39m
+      [36m<h3>[39m
+        [0m日历[0m
+      [36m</h3>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"organize-row"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"compact-field"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m开始日期[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mrequired[39m=[32m""[39m
+            [33mtype[39m=[32m"date"[39m
+            [33mvalue[39m=[32m"2026-10-15"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"compact-field"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m结束日期（不含）[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mrequired[39m=[32m""[39m
+            [33mtype[39m=[32m"date"[39m
+            [33mvalue[39m=[32m"2026-10-16"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"compact-field"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m时区[0m
+          [36m</span>[39m
+          [36m<select>[39m
+            [36m<option>[39m
+              [0mAsia/Shanghai[0m
+            [36m</option>[39m
+            [36m<option>[39m
+              [0mUTC[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</label>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0m刷新日历[0m
+        [36m</button>[39m
+      [36m</form>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"quiet-empty"[39m
+      [36m>[39m
+        [0m尚未读取日历。[0m
+      [36m</p>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/FeishuPanel.test.tsx:45:17
+     43|
+     44|   fireEvent.click(screen.getByRole('button', { name: '断开飞书授权' }))
+     45|   expect(screen.getByRole('dialog', { name: '断开飞书用户授权？' })).toBeTruthy…
+       |                 ^
+     46|   expect(deleteCalls).toBe(0)
+     47|   fireEvent.click(screen.getByRole('button', { name: '取消' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -1,0 +1,44 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx -t 主导航恰好 5 项
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (13 tests | 1 failed | 12 skipped) 90ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (5)
+     × 主导航恰好 5 项、标签精确、顺序固定，当前项 aria-current="page" 90ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 主导航恰好 5 项、标签精确、顺序固定，当前项 aria-current="page"
+AssertionError: 守卫⑧ 导航（GUIDE §11 ⑧ 与逐页规格 §0.1）：主导航恰好 5 项、标签精确、顺序固定、当前项 aria-current="page"；D1 定的是 5 栏，不加第 6 项: expected [ '审批', '今日', '项目', '知识问答', '设置' ] to deeply equal [ '今日', '审批', '项目', '知识问答', '设置' ]
+
+- Expected
++ Received
+
+  [
+-   "今日",
+    "审批",
++   "今日",
+    "项目",
+    "知识问答",
+    "设置",
+  ]
+
+ ❯ src/ui-contract.render.test.tsx:142:54
+    140|     const labels = buttons.map((button) => button.querySelector('.nav-…
+    141|
+    142|     expect(labels, `${RULE_NAV}；D1 定的是 5 栏，不加第 6 项`).toEqual(['今日', '审…
+       |                                                      ^
+    143|     expect(buttons, RULE_NAV).toHaveLength(5)
+    144|     for (const button of buttons) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  16:36:27
+   Duration  647ms (environment 40%, transform 27%, import 18%, tests 15%)
+

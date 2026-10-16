@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "workspace_id": "df321dbe-f716-4a5b-9572-648d04209ef5",
+  "name": "QA 合成范围库",
+  "created_at": "2026-10-15T09:25:34.134270Z",
+  "lines": [
+    {
+      "id": "e19c3280-0f45-5245-bf8f-8d7b2ac9f512",
+      "name": "QA 合成主线",
+      "directory": "QA-合成主线"
+    }
+  ],
+  "projects": [
+    {
+      "id": "cb549920-af80-5dd3-b4e8-9388f5c73edf",
+      "line_id": "e19c3280-0f45-5245-bf8f-8d7b2ac9f512",
+      "name": "QA 合成项目",
+      "directory": "QA-合成主线/QA-合成项目",
+      "overview_id": "6dedacae-7807-5d1a-b10b-77e8945852c9",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  10:24:36
+   Duration  785ms (tests 57%, environment 29%, transform 8%, import 6%)
+

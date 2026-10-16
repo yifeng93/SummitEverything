@@ -1,0 +1,76 @@
+
+> web@0.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:71191) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:71197) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 4:27:57 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of undefined (reading 'filter')
+[WebServer]  > ApprovalView src/components/ApprovalView.tsx:77:45
+[WebServer]     75 |    const pendingDraftList = drafts.data?.filter(draftNeedsAttention) ?? []
+[WebServer]     76 |    const pendingPages = pages.data?.filter(formalNeedsAttention) ?? []
+[WebServer]     77 |    const pendingActions = intents.data?.items.filter(actionableAction) ?? []
+[WebServer]        |                                               ^
+[WebServer]     78 |    const pendingIndex = index.data && (index.data.state === 'manual_required' || settingsMode === 'real' && index.data...
+[WebServer]     79 |    const needsCount = pendingSources.length + pendingDraftList.length + pendingPages.length + pendingIndex + pendingAc...
+[WebServer]  > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:28571:19
+[WebServer]  > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:8030:21
+[WebServer]  > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10569:18
+[WebServer]  > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:12205:17
+[WebServer]  > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1045:29
+[WebServer]  > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:19176:21
+[WebServer]  > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:19004:40
+[WebServer]  > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:18985:10
+[WebServer]  > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18094:34
+[WebServer] 
+[WebServer] 4:27:57 PM [vite] (client) [console.warn] An error occurred in the <ApprovalView> component.
+[WebServer] 
+[WebServer] Consider adding an error boundary to your tree to customize error handling behavior.
+[WebServer] Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+[WebServer] 
+  ✘  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (5.5s)
+(node:71214) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today, approvals, tools and settings (5.8s)
+
+
+  1) e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '第 2 步 · 模型与密钥' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: '第 2 步 · 模型与密钥' }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: '第 2 步 · 模型与密钥' })
+
+
+      58 |   await page.getByRole('button', { name: '创建本地工作库' }).click()
+      59 |
+    > 60 |   await expect(page.getByRole('heading', { name: '第 2 步 · 模型与密钥' })).toBeVisible()
+         |                                                                      ^
+      61 |   await expect(page.getByRole('heading', { name: '设置' })).toHaveCount(0)
+      62 |   await expect(page.getByRole('checkbox', { name: /整理与问答/ })).not.toBeChecked()
+      63 |   await page.screenshot({ path: resolve(evidenceDir, 'onboarding-step-2.png'), fullPage: true })
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/first-use.spec.ts:60:70
+
+    Error Context: test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step 
+  1 passed (12.4s)

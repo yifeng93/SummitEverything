@@ -1,0 +1,36 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.render.test.tsx src/ui-contract.test.ts src/components/ProjectsView.test.tsx src/components/PageReader.test.tsx src/components/MarkdownText.test.tsx src/components/AskView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.render.test.tsx (9 tests | 1 failed) 334ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (6)
+     × 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识 102ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识
+AssertionError: expected '仅使用已确认知识知识问答每条依据都会回到回答当时的页面版本复核。没有资料时…' to contain '中文'
+
+Expected: "中文"
+Received: "仅使用已确认知识知识问答每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。新建对话你的问题开始检索回答与历史仅保存在本机；不会自动写入知识页。资料范围与回答方式资料范围当前有效资料包含历史版本回答方式查找事实跨材料比较提出工作方案本次使用角色不使用角色本机历史本机历史只保存在此 profile 和工作库还没有问答历史。本机索引与更新还没有本机索引建立或更新索引需要先检查范围，再单独确认。前往审批查看索引索引范围预览、真实服务授权和执行记录都在审批页的「索引」类别中处理。问答角色与记忆问答角色与记忆只调整表达与指代理解，不改变证据或权限使用角色不使用角色角色名称表达偏好角色说明预算（字节）保存角色待确认记忆没有待确认记忆。已确认记忆目前没有已确认记忆。"
+
+ ❯ noIdentifiers src/ui-contract.render.test.tsx:239:20
+    237|     expect(row.textContent).toContain('在推进')
+    238|     const noIdentifiers = (text: string) => {
+    239|       expect(text).toContain('中文')
+       |                    ^
+    240|       expect(text).not.toMatch(/line-internal-123|project-internal-456…
+    241|     }
+ ❯ src/ui-contract.render.test.tsx:254:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 49 passed (50)
+   Start at  18:51:53
+   Duration  1.06s (environment 39%, tests 34%, import 14%, transform 12%)
+

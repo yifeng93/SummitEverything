@@ -1,0 +1,5 @@
+window=11-after-reopen-final.txt
+今日=True
+向导=False
+第2步=False
+PASS — native reopen lands on Today with no wizard

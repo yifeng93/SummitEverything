@@ -1,0 +1,785 @@
+$ npm test -- --run src/components/SettingsView.cards.test.tsx -t renders the three main cards
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx -t renders the three main cards
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (13 tests | 1 failed | 12 skipped) 164ms
+   × renders the three main cards and keeps technical fields inside the collapsed advanced block 163ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > renders the three main cards and keeps technical fields inside the collapsed advanced block
+TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "飞书"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "设置":
+  [36m<h1 />[39m
+
+  Name "工作库":
+  [36m<h2 />[39m
+
+  Name "AI 模型":
+  [36m<h2 />[39m
+
+  Name "飞书":
+  [36m<h2 />[39m
+
+  Name "AI 模型与密钥":
+  [36m<h2[39m
+    [33mid[39m=[32m"model-config-heading"[39m
+  [36m/>[39m
+
+  Name "飞书应用设置":
+  [36m<h2[39m
+    [33mid[39m=[32m"feishu-config-heading"[39m
+  [36m/>[39m
+
+  Name "受限合成连接检查":
+  [36m<h2 />[39m
+
+  Name "运行模式与账户标识":
+  [36m<h2 />[39m
+
+  Name "受限合成连接检查的额度细节":
+  [36m<h2[39m
+    [33mid[39m=[32m"smoke-quota-heading"[39m
+  [36m/>[39m
+
+  Name "诊断信息":
+  [36m<h2[39m
+    [33mid[39m=[32m"diagnostics-heading"[39m
+  [36m/>[39m
+
+  Name "危险操作":
+  [36m<h2[39m
+    [33mid[39m=[32m"danger-zone-heading"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"lede"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-mode-line"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-card-desc"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-card-desc"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-card-desc"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-card-next"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-card-next"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "打开连接向导":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "切换工作库":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "配置 AI 模型与密钥":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "连接 / 重新授权飞书":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "保存 AI 模型设置":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+  [36m/>[39m
+
+  Name "重新读取授权状态":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "保存飞书设置":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+  [36m/>[39m
+
+  Name "DeepSeek Chat（剩余 1）":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Embedding（剩余 1）":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Rerank（剩余 1）":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "保存 provider 设置":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+  [36m/>[39m
+
+  Name "删除 DeepSeek 密钥":
+  [36m<button[39m
+    [33mclass[39m=[32m"button danger-secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "删除 Model Studio 密钥":
+  [36m<button[39m
+    [33mclass[39m=[32m"button danger-secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "删除飞书应用密钥":
+  [36m<button[39m
+    [33mclass[39m=[32m"button danger-secondary"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "工作库":
+  [36m<section[39m
+    [33maria-label[39m=[32m"工作库"[39m
+    [33mclass[39m=[32m"settings-card"[39m
+  [36m/>[39m
+
+  Name "AI 模型":
+  [36m<section[39m
+    [33maria-label[39m=[32m"AI 模型"[39m
+    [33mclass[39m=[32m"settings-card"[39m
+  [36m/>[39m
+
+  Name "飞书连接":
+  [36m<section[39m
+    [33maria-label[39m=[32m"飞书连接"[39m
+    [33mclass[39m=[32m"settings-card"[39m
+  [36m/>[39m
+
+  Name "AI 模型与密钥":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"model-config-heading"[39m
+    [33mclass[39m=[32m"provider-settings"[39m
+  [36m/>[39m
+
+  Name "飞书应用设置":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"feishu-config-heading"[39m
+    [33mclass[39m=[32m"provider-settings"[39m
+  [36m/>[39m
+
+  Name "受限合成连接检查的额度细节":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"smoke-quota-heading"[39m
+    [33mclass[39m=[32m"provider-settings"[39m
+  [36m/>[39m
+
+  Name "诊断信息":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"diagnostics-heading"[39m
+    [33mclass[39m=[32m"provider-settings"[39m
+  [36m/>[39m
+
+  Name "危险操作":
+  [36m<section[39m
+    [33maria-labelledby[39m=[32m"danger-zone-heading"[39m
+    [33mclass[39m=[32m"provider-settings settings-danger-zone"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  group:
+
+  Name "":
+  [36m<details[39m
+    [33mclass[39m=[32m"settings-advanced-block"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<details[39m
+    [33mclass[39m=[32m"settings-help"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "整理与问答模型":
+  [36m<select />[39m
+
+  Name "知识索引向量化模型":
+  [36m<select />[39m
+
+  Name "检索结果排序模型":
+  [36m<select />[39m
+
+  Name "运行模式":
+  [36m<select />[39m
+
+  Name "回答推理预算":
+  [36m<select />[39m
+
+  --------------------------------------------------
+  option:
+
+  Name "Fake · 离线":
+  [36m<option[39m
+    [33mvalue[39m=[32m"fake"[39m
+  [36m/>[39m
+
+  Name "DeepSeek · deepseek-flash":
+  [36m<option[39m
+    [33mvalue[39m=[32m"deepseek"[39m
+  [36m/>[39m
+
+  Name "Fake · 离线":
+  [36m<option[39m
+    [33mvalue[39m=[32m"fake"[39m
+  [36m/>[39m
+
+  Name "阿里云 Model Studio · qwen3.7-text-embedding":
+  [36m<option[39m
+    [33mvalue[39m=[32m"dashscope"[39m
+  [36m/>[39m
+
+  Name "Fake · 离线":
+  [36m<option[39m
+    [33mvalue[39m=[32m"fake"[39m
+  [36m/>[39m
+
+  Name "阿里云 Model Studio · qwen3.7-text-rerank":
+  [36m<option[39m
+    [33mvalue[39m=[32m"dashscope"[39m
+  [36m/>[39m
+
+  Name "Fake · 离线":
+  [36m<option[39m
+    [33mvalue[39m=[32m"fake"[39m
+  [36m/>[39m
+
+  Name "Real · 显式启用":
+  [36m<option[39m
+    [33mvalue[39m=[32m"real"[39m
+  [36m/>[39m
+
+  Name "低 · 默认":
+  [36m<option[39m
+    [33mvalue[39m=[32m"low"[39m
+  [36m/>[39m
+
+  Name "高":
+  [36m<option[39m
+    [33mvalue[39m=[32m"high"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "飞书应用 App ID":
+  [36m<input[39m
+    [33mmaxlength[39m=[32m"200"[39m
+    [33mplaceholder[39m=[32m"cli_…（非秘密，用于本机凭据槽）"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "DeepSeek 账户标识":
+  [36m<input[39m
+    [33mmaxlength[39m=[32m"200"[39m
+    [33mvalue[39m=[32m"default"[39m
+  [36m/>[39m
+
+  Name "Model Studio 账户标识":
+  [36m<input[39m
+    [33mmaxlength[39m=[32m"200"[39m
+    [33mvalue[39m=[32m"studio-default"[39m
+  [36m/>[39m
+
+  Name "Embedding Base URL":
+  [36m<input[39m
+    [33mtype[39m=[32m"url"[39m
+    [33mvalue[39m=[32m"https://example.aliyuncs.com/compatible-mode/v1"[39m
+  [36m/>[39m
+
+  Name "Rerank API Base URL":
+  [36m<input[39m
+    [33mtype[39m=[32m"url"[39m
+    [33mvalue[39m=[32m"https://example.aliyuncs.com/api/v1"[39m
+  [36m/>[39m
+
+  Name "注册 callback URI":
+  [36m<input[39m
+    [33mplaceholder[39m=[32m"http://127.0.0.1:5173/api/v1/integrations/feishu/callback"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "回答长度上限（生成 token）":
+  [36m<input[39m
+    [33mmax[39m=[32m"16384"[39m
+    [33mmin[39m=[32m"256"[39m
+    [33mstep[39m=[32m"256"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m"2048"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  table:
+
+  Name "":
+  [36m<table[39m
+    [33mclass[39m=[32m"smoke-quota"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  rowgroup:
+
+  Name "":
+  [36m<thead />[39m
+
+  Name "":
+  [36m<tbody />[39m
+
+  --------------------------------------------------
+  row:
+
+  Name "检查 累计已用 上限 剩余":
+  [36m<tr />[39m
+
+  Name "DeepSeek Chat 0 1 1":
+  [36m<tr />[39m
+
+  Name "Embedding 0 1 1":
+  [36m<tr />[39m
+
+  Name "Rerank 0 1 1":
+  [36m<tr />[39m
+
+  --------------------------------------------------
+  columnheader:
+
+  Name "检查":
+  [36m<th />[39m
+
+  Name "累计已用":
+  [36m<th />[39m
+
+  Name "上限":
+  [36m<th />[39m
+
+  Name "剩余":
+  [36m<th />[39m
+
+  --------------------------------------------------
+  cell:
+
+  Name "DeepSeek Chat":
+  [36m<td />[39m
+
+  Name "0":
+  [36m<td />[39m
+
+  Name "1":
+  [36m<td />[39m
+
+  Name "1":
+  [36m<td />[39m
+
+  Name "Embedding":
+  [36m<td />[39m
+
+  Name "0":
+  [36m<td />[39m
+
+  Name "1":
+  [36m<td />[39m
+
+  Name "1":
+  [36m<td />[39m
+
+  Name "Rerank":
+  [36m<td />[39m
+
+  Name "0":
+  [36m<td />[39m
+
+  Name "1":
+  [36m<td />[39m
+
+  Name "1":
+  [36m<td />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap settings-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"eyebrow"[39m
+      [36m>[39m
+        [0m本机 profile[0m
+      [36m</div>[39m
+      [36m<h1>[39m
+        [0m设置[0m
+      [36m</h1>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"lede"[39m
+      [36m>[39m
+        [0m常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。[0m
+      [36m</p>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"settings-mode-line"[39m
+      [36m>[39m
+        [0m当前运行模式：[0m
+        [36m<strong>[39m
+          [0mFake · 离线（默认）[0m
+        [36m</strong>[39m
+        [36m<span>[39m
+          [0m真实调用仍需一次性范围预览与独立确认。[0m
+        [36m</span>[39m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"settings-wizard-entry"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m打开连接向导[0m
+        [36m</button>[39m
+        [36m<span>[39m
+          [0m按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"settings-help"[39m
+      [36m>[39m
+        [0m本机设置最近读取于 [0m
+        [0m10/15/2026, 10:27:18 AM[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"settings-cards"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"工作库"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m工作库[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge ok"[39m
+            [36m>[39m
+              [0m已连接[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m知识正文保存在这个工作库；索引、聊天历史、凭据与诊断记录按本机 profile 管理。[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-list"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<span>[39m
+                [0m当前工作库[0m
+              [36m</span>[39m
+              [36m<strong>[39m
+                [0mSynthetic[0m
+              [36m</strong>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<span>[39m
+                [0m运行方式[0m
+              [36m</span>[39m
+              [36m<strong>[39m
+                [0m本机 API + WebUI[0m
+              [36m</strong>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m切换工作库[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"AI 模型"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mAI 模型[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge off"[39m
+            [36m>[39m
+              [0m未配置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m按业务能力查看状态。模型名称、账户与密钥放在高级配置中；密钥只保存在本机钥匙串，页面不会回显。[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-capability-summary"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"settings-capability-item"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m整理与问答模型[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"settings-capability-item"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m知识索引向量化[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"settings-capability-item"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m检索结果排序[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m配置 AI 模型与密钥[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"飞书连接"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m飞书[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge off"[39m
+            [36m>[39m
+              [0m未配置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m状态来自本机授权记录。材料、日历与任务仍只读，并按已确认范围访问。[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-next"[39m
+          [36m>[39m
+            [0m还没有可用的飞书应用配置与授权。填入飞书应用 App ID 与应用密钥并保存，随后在「今日 / 飞书日常」完成授权。[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-capability-summary"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"settings-capability-item"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取已选择的飞书材料[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"settings-capability-item"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取飞书日历[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m未启用...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/SettingsView.cards.test.tsx:97:29
+     95|   const workspaceCard = await screen.findByRole('region', { name: '工作库…
+     96|   const modelCard = screen.getByRole('region', { name: 'AI 模型' })
+     97|   const feishuCard = screen.getByRole('region', { name: '飞书' })
+       |                             ^
+     98|   expect(await within(workspaceCard).findByText('Synthetic')).toBeTrut…
+     99|   expect(within(feishuCard).getByRole('button', { name: '连接 / 重新授权飞书' …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  10:27:18
+   Duration  531ms (environment 45%, tests 35%, transform 12%, import 9%)
+

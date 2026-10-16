@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/AppShell.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  21:13:43
+   Duration  490ms (environment 54%, tests 28%, import 10%, transform 7%)
+

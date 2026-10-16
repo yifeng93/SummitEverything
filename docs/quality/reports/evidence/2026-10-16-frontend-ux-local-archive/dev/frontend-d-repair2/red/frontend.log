@@ -1,0 +1,445 @@
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/App.firstUseProgress.test.tsx (8 tests | 1 failed) 1631ms
+   ✓ 已完成的首次配置：打开同一工作库直接进入今日，不再弹向导 119ms
+   ✓ 未完成但向导仍开着的记录：恢复到保存的步骤 45ms
+   ✓ 用户明确关闭过向导：重启不自动出现，设置里仍能手动续接原步骤 77ms
+   ✓ 本机没有记录：新建工作库仍从第 2 步开始首次配置 33ms
+   × 打开已有工作库但没有本机记录：落到今日并给出非阻塞提示，不遮挡今日（QA D-1） 1011ms
+   ✓ 旧的浏览器副本迁移一次后，后端成为唯一真源 27ms
+   ✓ durable 写入失败时停在当前步骤并给出重试，重试成功后继续 106ms
+   ✓ 完成向导会先把 completed 写进本机，再进入今日 214ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.firstUseProgress.test.tsx > 打开已有工作库但没有本机记录：落到今日并给出非阻塞提示，不遮挡今日（QA D-1）
+TestingLibraryElementError: Unable to find role="heading" and name "今日"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app-frame"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"skip-link"[39m
+        [33mhref[39m=[32m"#main-content"[39m
+      [36m>[39m
+        [0m跳到主内容[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"sidebar"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"brand-mark"[39m
+          [36m>[39m
+            [0mS[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<strong>[39m
+              [0mSummitEverything[0m
+            [36m</strong>[39m
+            [36m<span>[39m
+              [0m个人知识工作台[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"主导航"[39m
+          [33mclass[39m=[32m"primary-nav"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"今日"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"今日"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-today"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m今日[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"审批"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"审批"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-approval"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m审批[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"项目"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"项目"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-projects"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m项目[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"知识问答"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"知识问答"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-ask"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m知识问答[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-current[39m=[32m"page"[39m
+            [33maria-label[39m=[32m"设置"[39m
+            [33mclass[39m=[32m"nav-item active"[39m
+            [33mtitle[39m=[32m"设置"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-settings"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sidebar-bottom"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"切换工作库"[39m
+            [33mclass[39m=[32m"workspace-name"[39m
+            [33mtitle[39m=[32m"切换工作库"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"workspace-avatar"[39m
+            [36m>[39m
+              [0m模[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"workspace-name-text"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m模拟工作库[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m切换…[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"local-indicator is-online"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"local-dot"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"local-indicator-text"[39m
+            [36m>[39m
+              [0m仅本机运行[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"main-shell"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"topbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"crumbs"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"topbar-right"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+              [33mclass[39m=[32m"save-state is-saved"[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m>[39m
+              [0m已保存[0m
+            [36m</div>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"主题"[39m
+              [33mclass[39m=[32m"theme-select"[39m
+              [33mtitle[39m=[32m"主题：跟随系统 / 浅色 / 深色"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"system"[39m
+              [36m>[39m
+                [0m跟随系统[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"light"[39m
+              [36m>[39m
+                [0m浅色[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"dark"[39m
+              [36m>[39m
+                [0m深色[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"main-content"[39m
+          [33mid[39m=[32m"main-content"[39m
+   ...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app-frame"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"skip-link"[39m
+        [33mhref[39m=[32m"#main-content"[39m
+      [36m>[39m
+        [0m跳到主内容[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"sidebar"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"brand-mark"[39m
+          [36m>[39m
+            [0mS[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<strong>[39m
+              [0mSummitEverything[0m
+            [36m</strong>[39m
+            [36m<span>[39m
+              [0m个人知识工作台[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"主导航"[39m
+          [33mclass[39m=[32m"primary-nav"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"今日"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"今日"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-today"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m今日[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"审批"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"审批"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-approval"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m审批[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"项目"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"项目"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-projects"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m项目[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"知识问答"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"知识问答"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-ask"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m知识问答[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-current[39m=[32m"page"[39m
+            [33maria-label[39m=[32m"设置"[39m
+            [33mclass[39m=[32m"nav-item active"[39m
+            [33mtitle[39m=[32m"设置"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-settings"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sidebar-bottom"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"切换工作库"[39m
+            [33mclass[39m=[32m"workspace-name"[39m
+            [33mtitle[39m=[32m"切换工作库"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"workspace-avatar"[39m
+            [36m>[39m
+              [0m模[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"workspace-name-text"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m模拟工作库[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m切换…[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"local-indicator is-online"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"local-dot"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"local-indicator-text"[39m
+            [36m>[39m
+              [0m仅本机运行[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"main-shell"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"topbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"crumbs"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"topbar-right"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+              [33mclass[39m=[32m"save-state is-saved"[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m>[39m
+              [0m已保存[0m
+            [36m</div>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"主题"[39m
+              [33mclass[39m=[32m"theme-select"[39m
+              [33mtitle[39m=[32m"主题：跟随系统 / 浅色 / 深色"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"system"[39m
+              [36m>[39m
+                [0m跟随系统[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"light"[39m
+              [36m>[39m
+                [0m浅色[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"dark"[39m
+              [36m>[39m
+                [0m深色[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"main-content"[39m
+          [33mid[39m=[32m"main-content"[39m
+   ...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/App.firstUseProgress.test.tsx:186:23
+    184|
+    185|   // 旧版本配好的工作库在本机没有记录时不再被 onboarding 挡住：今日直接可达。
+    186|   expect(await screen.findByRole('heading', { name: '今日' })).toBeTruth…
+       |                       ^
+    187|   expect(wizard()).toBeNull()
+    188|   expect(await screen.findByText(/还没有首次配置记录/)).toBeTruthy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  22:25:37
+   Duration  2.30s (tests 73%, environment 11%, transform 8%, import 7%)
+

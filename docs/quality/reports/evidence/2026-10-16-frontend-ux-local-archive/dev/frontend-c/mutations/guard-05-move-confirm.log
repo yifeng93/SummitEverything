@@ -1,0 +1,37 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/PageReader.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/PageReader.test.tsx (5 tests | 1 failed) 119ms
+   × moves a confirmed page into the selected project and records cross-project confirmation 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/PageReader.test.tsx > moves a confirmed page into the selected project and records cross-project confirmation
+AssertionError: expected [ Array(1) ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/components/PageReader.test.tsx:56:22
+     54|   fireEvent.change(await screen.findByLabelText('移动到项目'), { target: { …
+     55|   fireEvent.click(screen.getByRole('button', { name: '移动页面' }))
+     56|   expect(moveBodies).toHaveLength(0)
+       |                      ^
+     57|   expect(screen.getByRole('dialog', { name: '将页面移动到“Project B”？' })).t…
+     58|   fireEvent.click(screen.getByRole('button', { name: '取消' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  18:53:25
+   Duration  528ms (environment 48%, tests 25%, import 18%, transform 8%)
+

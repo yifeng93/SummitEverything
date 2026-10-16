@@ -1,0 +1,24 @@
+[WebServer] (node:28847) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:28848) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 320px/light (386ms)
+  ✓   2 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 320px/dark (372ms)
+  ✓   3 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 390px/light (357ms)
+  ✓   4 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 390px/dark (359ms)
+  ✓   5 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 768px/light (370ms)
+  ✓   6 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 768px/dark (375ms)
+  ✓   7 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 960px/light (342ms)
+  ✓   8 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 960px/dark (352ms)
+  ✓   9 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 1280px/light (353ms)
+  ✓  10 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:15:57 › wizard no-overflow at 1280px/dark (358ms)
+  ✓  11 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:66:1 › required secret is guided before submit; secret stays password-only and fails closed without Keychain (459ms)
+[WebServer] 11:06:09 AM [vite] http proxy error: /api/v1/workspaces/current
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:8793
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1705:16)
+  ✓  12 ../.local/dev/frontend-a/repair1/red-harness/wizard-viewport.spec.cjs:112:1 › connecting, no-workspace, and unreachable are distinct first-screen states (173ms)
+
+  12 passed (5.0s)

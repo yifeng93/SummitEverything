@@ -1,0 +1,66 @@
+[WebServer] (node:27589) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:27590) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:20:1 › settings reads are local, destructive action is confirmed, and AI results stay per capability (5.4s)
+(node:27596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:103:1 › Feishu status refresh retains the last successful value and reports that it may be stale (5.3s)
+
+
+  1) ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:20:1 › settings reads are local, destructive action is confirmed, and AI results stay per capability 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: 'AI 模型' }).getByText('有检查失败', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: 'AI 模型' }).getByText('有检查失败', { exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'AI 模型' }).getByText('有检查失败', { exact: true })
+
+
+      73 |   await page.getByRole('button', { name: /Rerank（剩余 1）/ }).click()
+      74 |   await page.getByRole('dialog').getByRole('button', { name: '确认发送本次检查' }).click()
+    > 75 |   await expect(aiCard.getByText('有检查失败', { exact: true })).toBeVisible()
+         |                                                            ^
+      76 |   await expect(aiCard.locator('.settings-capability-item').nth(2)).toContainText('本次检查失败')
+      77 |   expect(calls.filter((call) => call.method === 'POST' && call.path.endsWith('/provider-smoke/model-studio-rerank'))).toHaveLength(1)
+      78 |
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:75:60
+
+    Error Context: ../.local/dev/frontend-a/repair1/red-harness/playwright-review-results/settings-review-settings-r-33fab-results-stay-per-capability/error-context.md
+
+  2) ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:103:1 › Feishu status refresh retains the last successful value and reports that it may be stale 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('region', { name: '飞书' }).getByRole('alert')
+    Expected substring: "本次读取失败"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('region', { name: '飞书' }).getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('region', { name: '飞书' }).getByRole('alert')
+
+
+      129 |   await page.getByRole('button', { name: '重新读取授权状态' }).click()
+      130 |   await expect(feishuCard.locator('.conn-badge').getByText('已授权', { exact: true })).toBeVisible()
+    > 131 |   await expect(feishuCard.getByRole('alert')).toContainText('本次读取失败')
+          |                                               ^
+      132 |   await expect(feishuCard.getByRole('alert')).toContainText('可能已过时')
+      133 |   await expect(feishuCard.getByRole('alert').getByRole('button', { name: '重试读取' })).toBeVisible()
+      134 |   await testInfo.attach('observed-state.json', { body: JSON.stringify({ successfulState: '已授权', afterFailedRefresh: 'retained with stale warning', reads: feishuReads }, null, 2), contentType: 'application/json' })
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:131:47
+
+    Error Context: ../.local/dev/frontend-a/repair1/red-harness/playwright-review-results/settings-review-Feishu-sta-9d62a-eports-that-it-may-be-stale/error-context.md
+
+  2 failed
+    ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:20:1 › settings reads are local, destructive action is confirmed, and AI results stay per capability 
+    ../.local/dev/frontend-a/repair1/red-harness/settings-review.spec.cjs:103:1 › Feishu status refresh retains the last successful value and reports that it may be stale 

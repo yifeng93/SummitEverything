@@ -1,0 +1,318 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (13 tests | 1 failed) 1529ms
+   × shows settings read failure as an error state with per-card fallbacks and retry 1013ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > shows settings read failure as an error state with per-card fallbacks and retry
+TestingLibraryElementError: Unable to find role="heading" and name "暂时无法读取本机设置"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap settings-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"eyebrow"[39m
+      [36m>[39m
+        [0m本机 profile[0m
+      [36m</div>[39m
+      [36m<h1>[39m
+        [0m设置[0m
+      [36m</h1>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"lede"[39m
+      [36m>[39m
+        [0m常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。[0m
+      [36m</p>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"settings-mode-line"[39m
+      [36m>[39m
+        [0m当前运行模式：[0m
+        [36m<strong>[39m
+          [0mFake · 离线（默认）[0m
+        [36m</strong>[39m
+        [36m<span>[39m
+          [0m真实调用仍需一次性范围预览与独立确认。[0m
+        [36m</span>[39m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"settings-wizard-entry"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mdisabled[39m=[32m""[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m打开连接向导[0m
+        [36m</button>[39m
+        [36m<span>[39m
+          [0m按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"form-error"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0msynthetic read failure[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"设置读取状态"[39m
+        [33mclass[39m=[32m"settings-cards"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"工作库"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m工作库[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge unreadable"[39m
+            [36m>[39m
+              [0m暂时无法读取[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新读取本机设置[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"AI 模型"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mAI 模型[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge unreadable"[39m
+            [36m>[39m
+              [0m暂时无法读取[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新读取本机设置[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"飞书"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m飞书[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge unreadable"[39m
+            [36m>[39m
+              [0m暂时无法读取[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新读取本机设置[0m
+          [36m</button>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap settings-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"eyebrow"[39m
+      [36m>[39m
+        [0m本机 profile[0m
+      [36m</div>[39m
+      [36m<h1>[39m
+        [0m设置[0m
+      [36m</h1>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"lede"[39m
+      [36m>[39m
+        [0m常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。[0m
+      [36m</p>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"settings-mode-line"[39m
+      [36m>[39m
+        [0m当前运行模式：[0m
+        [36m<strong>[39m
+          [0mFake · 离线（默认）[0m
+        [36m</strong>[39m
+        [36m<span>[39m
+          [0m真实调用仍需一次性范围预览与独立确认。[0m
+        [36m</span>[39m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"settings-wizard-entry"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+          [33mdisabled[39m=[32m""[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m打开连接向导[0m
+        [36m</button>[39m
+        [36m<span>[39m
+          [0m按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"form-error"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0msynthetic read failure[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"设置读取状态"[39m
+        [33mclass[39m=[32m"settings-cards"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"工作库"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m工作库[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge unreadable"[39m
+            [36m>[39m
+              [0m暂时无法读取[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新读取本机设置[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"AI 模型"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mAI 模型[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge unreadable"[39m
+            [36m>[39m
+              [0m暂时无法读取[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新读取本机设置[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"飞书"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m飞书[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge unreadable"[39m
+            [36m>[39m
+              [0m暂时无法读取[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"settings-card-desc"[39m
+          [36m>[39m
+            [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新读取本机设置[0m
+          [36m</button>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/SettingsView.cards.test.tsx:157:23
+    155|   vi.stubGlobal('fetch', fetchMock)
+    156|   render(<SettingsView workspaceName="模拟工作库" onSwitchWorkspace={vi.fn(…
+    157|   expect(await screen.findByRole('heading', { name: '暂时无法读取本机设置' })).t…
+       |                       ^
+    158|   const cards = screen.getByLabelText('设置读取状态')
+    159|   expect(within(cards).getAllByText('暂时无法读取')).toHaveLength(3)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 23 passed (24)
+      Tests  1 failed | 159 passed | 8 todo (168)
+   Start at  10:23:35
+   Duration  2.60s (environment 57%, tests 26%, transform 8%, import 8%)
+

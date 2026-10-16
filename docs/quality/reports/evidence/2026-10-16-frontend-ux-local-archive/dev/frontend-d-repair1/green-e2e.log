@@ -1,0 +1,15 @@
+
+> web@0.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:10700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:10701) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (1.7s)
+  ✓  2 e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings (10.2s)
+
+  2 passed (12.7s)

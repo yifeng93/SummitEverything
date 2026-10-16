@@ -1,0 +1,35 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.test.ts
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.test.ts (10 tests | 1 failed) 104ms
+   ❯ 守卫⑧ 外壳几何与响应式（逐页规格 §0、GUIDE §8.1） (4)
+     × 桌面：侧栏 200px、顶栏 62px、主内容 max-width 1200px、导航项高 44px 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  21:13:56
+   Duration  490ms (environment 59%, tests 24%, import 12%, transform 4%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.test.ts > 守卫⑧ 外壳几何与响应式（逐页规格 §0、GUIDE §8.1） > 桌面：侧栏 200px、顶栏 62px、主内容 max-width 1200px、导航项高 44px
+AssertionError: 守卫⑧ 外壳几何（逐页规格 §0 与 GUIDE §8.1）：侧栏 200px、≤800px 64px 图标栏、≤560px 底部 5 栏每项 ≥44px、粗指针 ≥44px；侧栏必须是 200px: expected '201px' to be '200px' // Object.is equality
+
+Expected: "200px"
+Received: "201px"
+
+ ❯ src/ui-contract.test.ts:328:97
+    326|
+    327|   it('桌面：侧栏 200px、顶栏 62px、主内容 max-width 1200px、导航项高 44px', () => {
+    328|     expect(declarationValue(appCss, '.sidebar', 'width'), `${RULE_SHEL…
+       |                                                                                                 ^
+    329|     expect(declarationValue(appCss, '.sidebar', 'flex'), `${RULE_SHELL…
+    330|     expect(declarationValue(appCss, '.topbar', 'height'), `${RULE_SHEL…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

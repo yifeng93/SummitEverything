@@ -1,0 +1,63 @@
+
+> web@0.0.0 test
+> vitest run --run src/theme.test.ts
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+stdout | src/theme.test.ts > 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） > 浅色 tokens 的 10 组对比度达标（并打印真实比值）
+[守卫⑦] 浅色主题对比度（GUIDE §6.2） · 门禁组
+  组名                          前景        背景        比值
+  ink/paper                    #242a2c     #f4f5f2     13.30 PASS
+  muted/paper                  #ffffff     #f4f5f2     1.09 FAIL
+  ink/surface                  #242a2c     #ffffff     14.56 PASS
+  muted/surface                #ffffff     #ffffff     1.00 FAIL
+  on-accent/accent             #ffffff     #a04d2c     5.85 PASS
+  accent/accent-wash           #a04d2c     #f7ebe5     5.00 PASS
+  green/green-wash             #3e7258     #eaf2ed     4.91 PASS
+  danger/danger-wash           #a53a2a     #fbeae6     5.56 PASS
+  warn/warn-wash               #7a5a12     #fbf4e8     5.82 PASS
+  control-border/surface       #8d948f     #ffffff     3.10 PASS
+[守卫⑦] 浅色主题对比度（GUIDE §6.2） · 仅打印
+  组名                          前景        背景        比值
+  quiet/surface                #6f7876     #ffffff     4.54 --
+  accent-dark/accent-wash      #8a3f22     #f7ebe5     6.38 --
+  danger-ink/danger-wash       #7f2c1f     #fbeae6     7.89 --
+  warn-ink/warn-wash           #5f4409     #fbf4e8     8.29 --
+  sidebar-muted/sidebar        #9ca9a3     #202928     6.12 --
+  sidebar-fg/sidebar           #edf2ee     #202928     13.15 --
+
+ ❯ src/theme.test.ts (8 tests | 1 failed) 6ms
+   ❯ 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） (2)
+     × 浅色 tokens 的 10 组对比度达标（并打印真实比值） 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  21:13:55
+   Duration  318ms (environment 87%, transform 7%, import 3%, tests 2%, worker 1%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/theme.test.ts > 守卫⑦ 深色对比度（GUIDE §6.2、§11 ⑦） > 浅色 tokens 的 10 组对比度达标（并打印真实比值）
+AssertionError: 守卫⑦ 深色对比度（GUIDE §6.2 与 §11 ⑦）：正文/背景与正文/表面 ≥4.5:1，控件边框/表面 ≥3.0:1: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "浅色muted/paper: #ffffff / #f4f5f2 = 1.09 < 4.5",
++   "浅色muted/surface: #ffffff / #ffffff = 1.00 < 4.5",
++ ]
+
+ ❯ src/theme.test.ts:149:60
+    147|     printRatios('浅色', LIGHT, CONTRAST_PAIRS, true)
+    148|     printRatios('浅色', LIGHT, DIAGNOSTIC_PAIRS.map((pair) => ({ ...pair…
+    149|     expect(gatedFailures('浅色', LIGHT), RULE_DARK_CONTRAST).toEqual([])
+       |                                                            ^
+    150|   })
+    151|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

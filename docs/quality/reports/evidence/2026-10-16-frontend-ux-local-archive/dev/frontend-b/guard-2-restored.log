@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ApprovalView.test.tsx -t 来源归属下拉优先显示中文名
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 8 skipped (9)
+   Start at  16:40:38
+   Duration  705ms (environment 41%, import 20%, tests 20%, transform 18%, worker 1%)
+

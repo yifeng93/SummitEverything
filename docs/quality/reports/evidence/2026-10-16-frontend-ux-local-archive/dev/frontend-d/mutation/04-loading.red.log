@@ -1,0 +1,562 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/TodayView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/TodayView.test.tsx (13 tests | 1 failed) 1372ms
+   × keeps the initial Today inbox pending until its first successful read 1011ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  21:13:45
+   Duration  1.78s (tests 80%, environment 14%, transform 4%, import 3%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/TodayView.test.tsx > keeps the initial Today inbox pending until its first successful read
+TestingLibraryElementError: Unable to find an element with the text: 正在读取收件箱…. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap today-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m工作节奏[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m今日[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m先看今天的安排，再把新材料放进收件箱。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"date-label"[39m
+        [36m>[39m
+          [0m2026年10月15日星期四[0m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"today-stack"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"panel today-section"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2>[39m
+                [0m会议[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m只读日历；刷新真实日历前会先预览并确认范围。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel feishu-panel"[39m
+          [36m>[39m
+            [36m<h3>[39m
+              [0m日历[0m
+            [36m</h3>[39m
+            [36m<form[39m
+              [33mclass[39m=[32m"organize-row"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"compact-field"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0m开始日期[0m
+                [36m</span>[39m
+                [36m<input[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"date"[39m
+                  [33mvalue[39m=[32m"2026-10-15"[39m
+                [36m/>[39m
+              [36m</label>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"compact-field"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0m结束日期（不含）[0m
+                [36m</span>[39m
+                [36m<input[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"date"[39m
+                  [33mvalue[39m=[32m"2026-10-16"[39m
+                [36m/>[39m
+              [36m</label>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"compact-field"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0m时区[0m
+                [36m</span>[39m
+                [36m<select>[39m
+                  [36m<option>[39m
+                    [0mAsia/Shanghai[0m
+                  [36m</option>[39m
+                  [36m<option>[39m
+                    [0mUTC[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</label>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+              [36m>[39m
+                [0m刷新日历[0m
+              [36m</button>[39m
+            [36m</form>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"quiet-empty"[39m
+            [36m>[39m
+              [0m尚未读取日历。[0m
+            [36m</p>[39m
+          [36m</section>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"helper-line"[39m
+          [36m>[39m
+            [0m需要授权时，请到设置向导第 4 步处理。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"panel today-section"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2>[39m
+                [0m待办任务[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m任务事实来自飞书；这里仅供查看，真实任务修改请在飞书处理。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33maria-busy[39m=[32m"false"[39m
+            [33mclass[39m=[32m"panel tasks-panel"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"button-row"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m刷新飞书任务[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"helper-line"[39m
+            [36m>[39m
+              [0m尚未读取任务；读取失败不表示没有任务。[0m
+            [36m</p>[39m
+          [36m</section>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"helper-line"[39m
+          [36m>[39m
+            [0m模拟环境中的完整动作复演可在“审批”中查看；项目进度变化仍需单独确认。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"panel today-section capture-panel"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2>[39m
+                [0m收件箱[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m记一句只保存原文；导入会议用于本机文件或飞书材料。两者都会先进入待整理。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"review-actions"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"count-badge"[39m
+              [36m>[39m
+                [0m…[0m
+              [36m</span>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-button"[39m
+              [36m>[39m
+                [0m刷新收件箱[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"today-tools"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m记一句[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m导入会议[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"sr-only"[39m
+            [33mfor[39m=[32m"today-quick-note"[39m
+          [36m>[39m
+            [0m记下一句话[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"today-quick-note"[39m
+            [33mplaceholder[39m=[32m"写下一句话…"[39m
+            [33mrows[39m=[32m"3"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button primary"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m保存到收件箱[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m工作日志 / 思考[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"helper-line"[39m
+          [36m>[39m
+            [0m尚未成功读取[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mrole[39m=[32m"status"[39m
+          [36m>[39m
+            [0m收件箱目前没有内容。[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"收件箱来源分类"[39m
+            [33mclass[39m=[32m"inbox-counts"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m记一句[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m本机文件[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m飞书材料[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m待核实[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap today-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m工作节奏[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m今日[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m先看今天的安排，再把新材料放进收件箱。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"date-label"[39m
+        [36m>[39m
+          [0m2026年10月15日星期四[0m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"today-stack"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"panel today-section"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2>[39m
+                [0m会议[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m只读日历；刷新真实日历前会先预览并确认范围。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"panel feishu-panel"[39m
+          [36m>[39m
+            [36m<h3>[39m
+              [0m日历[0m
+            [36m</h3>[39m
+            [36m<form[39m
+              [33mclass[39m=[32m"organize-row"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"compact-field"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0m开始日期[0m
+                [36m</span>[39m
+                [36m<input[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"date"[39m
+                  [33mvalue[39m=[32m"2026-10-15"[39m
+                [36m/>[39m
+              [36m</label>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"compact-field"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0m结束日期（不含）[0m
+                [36m</span>[39m
+                [36m<input[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"date"[39m
+                  [33mvalue[39m=[32m"2026-10-16"[39m
+                [36m/>[39m
+              [36m</label>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"compact-field"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0m时区[0m
+                [36m</span>[39m
+                [36m<select>[39m
+                  [36m<option>[39m
+                    [0mAsia/Shanghai[0m
+                  [36m</option>[39m
+                  [36m<option>[39m
+                    [0mUTC[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</label>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+              [36m>[39m
+                [0m刷新日历[0m
+              [36m</button>[39m
+            [36m</form>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"quiet-empty"[39m
+            [36m>[39m
+              [0m尚未读取日历。[0m
+            [36m</p>[39m
+          [36m</section>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"helper-line"[39m
+          [36m>[39m
+            [0m需要授权时，请到设置向导第 4 步处理。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"panel today-section"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2>[39m
+                [0m待办任务[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m任务事实来自飞书；这里仅供查看，真实任务修改请在飞书处理。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33maria-busy[39m=[32m"false"[39m
+            [33mclass[39m=[32m"panel tasks-panel"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"button-row"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+              [36m>[39m
+                [0m刷新飞书任务[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"helper-line"[39m
+            [36m>[39m
+              [0m尚未读取任务；读取失败不表示没有任务。[0m
+            [36m</p>[39m
+          [36m</section>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"helper-line"[39m
+          [36m>[39m
+            [0m模拟环境中的完整动作复演可在“审批”中查看；项目进度变化仍需单独确认。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"panel today-section capture-panel"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2>[39m
+                [0m收件箱[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m记一句只保存原文；导入会议用于本机文件或飞书材料。两者都会先进入待整理。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"review-actions"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"count-badge"[39m
+              [36m>[39m
+                [0m…[0m
+              [36m</span>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-button"[39m
+              [36m>[39m
+                [0m刷新收件箱[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"today-tools"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m记一句[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m导入会议[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"sr-only"[39m
+            [33mfor[39m=[32m"today-quick-note"[39m
+          [36m>[39m
+            [0m记下一句话[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"today-quick-note"[39m
+            [33mplaceholder[39m=[32m"写下一句话…"[39m
+            [33mrows[39m=[32m"3"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button primary"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m保存到收件箱[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m工作日志 / 思考[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"helper-line"[39m
+          [36m>[39m
+            [0m尚未成功读取[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mrole[39m=[32m"status"[39m
+          [36m>[39m
+            [0m收件箱目前没有内容。[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"收件箱来源分类"[39m
+            [33mclass[39m=[32m"inbox-counts"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m记一句[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m本机文件[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m飞书材料[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m待核实[0m
+              [0m [0m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/TodayView.test.tsx:229:23
+    227|   }))
+    228|   render(<TodayView onError={vi.fn()} />)
+    229|   expect(await screen.findByText('正在读取收件箱…')).toBeTruthy()
+       |                       ^
+    230|   expect(screen.queryByText('收件箱目前没有内容。')).toBeNull()
+    231|   finishRead?.(Response.json([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

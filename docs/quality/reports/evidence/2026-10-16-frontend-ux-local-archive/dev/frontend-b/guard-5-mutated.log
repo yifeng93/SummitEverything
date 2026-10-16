@@ -1,0 +1,46 @@
+
+> web@0.0.0 test:e2e:integration
+> playwright test --config playwright.integration.config.ts
+
+[WebServer] INFO:     Started server process [73067]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8794 (Press CTRL+C to quit)
+[WebServer] (node:73090) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:73093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/approval-today.spec.ts:6:1 › FastAPI Fake flow keeps intake, knowledge confirmation, indexing and actions separate (1.2s)
+
+
+  1) e2e/approval-today.spec.ts:6:1 › FastAPI Fake flow keeps intake, knowledge confirmation, indexing and actions separate 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      86 |   const beforeCancel = writes.length
+      87 |   await organizeDialog.getByRole('button', { name: '取消' }).click()
+    > 88 |   expect(writes.slice(beforeCancel).some((entry) => entry.includes('/intake/jobs'))).toBe(false)
+         |                                                                                      ^
+      89 |
+      90 |   await noteRow.getByRole('checkbox').check()
+      91 |   await sourceGroup.getByRole('button', { name: /整理所选/ }).click()
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/approval-today.spec.ts:88:86
+
+    Error Context: test-results/approval-today-FastAPI-Fak-59ae2-dexing-and-actions-separate/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/approval-today-FastAPI-Fak-59ae2-dexing-and-actions-separate/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/approval-today-FastAPI-Fak-59ae2-dexing-and-actions-separate/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/approval-today.spec.ts:6:1 › FastAPI Fake flow keeps intake, knowledge confirmation, indexing and actions separate 

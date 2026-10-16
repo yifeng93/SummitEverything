@@ -1,0 +1,127 @@
+$ npm test -- --run src/components/SettingsView.cards.test.tsx -t settings read failure
+EXIT=1
+
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx -t settings read failure
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (13 tests | 1 failed | 12 skipped) 63ms
+   × shows settings read failure as an error state with per-card fallbacks and retry 62ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > shows settings read failure as an error state with per-card fallbacks and retry
+TestingLibraryElementError: Unable to find an element with the text: 暂时无法读取. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div[39m
+  [33maria-label[39m=[32m"设置读取状态"[39m
+  [33mclass[39m=[32m"settings-cards"[39m
+[36m>[39m
+  [36m<section[39m
+    [33maria-label[39m=[32m"工作库"[39m
+    [33mclass[39m=[32m"settings-card"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"settings-card-head"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0m工作库[0m
+      [36m</h2>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"conn-badge unreadable"[39m
+      [36m>[39m
+        [0m没有待处理[0m
+      [36m</span>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"settings-card-desc"[39m
+    [36m>[39m
+      [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+    [36m</p>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"button secondary"[39m
+      [33mtype[39m=[32m"button"[39m
+    [36m>[39m
+      [0m重新读取本机设置[0m
+    [36m</button>[39m
+  [36m</section>[39m
+  [36m<section[39m
+    [33maria-label[39m=[32m"AI 模型"[39m
+    [33mclass[39m=[32m"settings-card"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"settings-card-head"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0mAI 模型[0m
+      [36m</h2>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"conn-badge unreadable"[39m
+      [36m>[39m
+        [0m没有待处理[0m
+      [36m</span>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"settings-card-desc"[39m
+    [36m>[39m
+      [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+    [36m</p>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"button secondary"[39m
+      [33mtype[39m=[32m"button"[39m
+    [36m>[39m
+      [0m重新读取本机设置[0m
+    [36m</button>[39m
+  [36m</section>[39m
+  [36m<section[39m
+    [33maria-label[39m=[32m"飞书"[39m
+    [33mclass[39m=[32m"settings-card"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"settings-card-head"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0m飞书[0m
+      [36m</h2>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"conn-badge unreadable"[39m
+      [36m>[39m
+        [0m没有待处理[0m
+      [36m</span>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"settings-card-desc"[39m
+    [36m>[39m
+      [0m本机没有返回可用状态；此处不会推测已连接或可用。[0m
+    [36m</p>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"button secondary"[39m
+      [33mtype[39m=[32m"button"[39m
+    [36m>[39m
+      [0m重新读取本机设置[0m
+    [36m</button>[39m
+  [36m</section>[39m
+[36m</div>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ src/components/SettingsView.cards.test.tsx:159:24
+    157|   expect((await screen.findByRole('alert')).textContent).toContain('sy…
+    158|   const cards = screen.getByLabelText('设置读取状态')
+    159|   expect(within(cards).getAllByText('暂时无法读取')).toHaveLength(3)
+       |                        ^
+    160|   expect(within(cards).queryByText('已连接')).toBeNull()
+    161|   const retries = screen.getAllByRole('button', { name: '重新读取本机设置' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  10:27:15
+   Duration  438ms (environment 57%, tests 17%, transform 15%, import 11%)
+

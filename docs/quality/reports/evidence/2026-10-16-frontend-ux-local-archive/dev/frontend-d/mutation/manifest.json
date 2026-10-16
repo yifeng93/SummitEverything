@@ -1,0 +1,52 @@
+[
+  {
+    "guard": "01-metadata",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "02-chinese",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "03-font",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "04-loading",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "05-confirm",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "06-streaming",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "07-contrast",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "08-geometry",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "09-no-plan",
+    "red_exit": 1,
+    "green_exit": 0
+  },
+  {
+    "guard": "10-viewport",
+    "red_exit": 1,
+    "green_exit": 0
+  }
+]

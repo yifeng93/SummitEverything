@@ -1,0 +1,820 @@
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request less than a minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request less than a minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request less than a minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request less than a minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 1 minute ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  * Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  * Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 2 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  * Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 4 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  * Build and verify internal App and DMG
+  * Post Install uv
+  * Post Install Node.js
+  * Post Checkout
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 4 minutes ago
+
+JOBS
+* offline-arm64 (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  ✓ Build and verify internal App and DMG
+  ✓ Post Install uv
+  ✓ Post Install Node.js
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! src/components/ProjectsView.tsx:62:26: Calling setState synchronously within an effect can trigger cascading renders
+offline-arm64: src/components/ProjectsView.tsx#62
+
+! src/App.tsx:124:26: Calling setState synchronously within an effect can trigger cascading renders
+offline-arm64: src/App.tsx#124
+
+- Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times.
+offline-arm64: .github#1
+
+✓ codex/frontend-ux-20261015 M4.1 internal macOS app yifeng93/SummitEverything#21 · 38831643643
+Triggered via pull_request about 4 minutes ago
+
+JOBS
+✓ offline-arm64 in 4m1s (ID 116751537130)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Install Node.js
+  ✓ Install uv
+  ✓ Install locked Python and Web dependencies
+  ✓ Guarded Python checks
+  ✓ Web checks and API types
+  ✓ Native upload policy tests
+  ✓ Build and verify internal App and DMG
+  ✓ Post Install uv
+  ✓ Post Install Node.js
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! src/components/ProjectsView.tsx:62:26: Calling setState synchronously within an effect can trigger cascading renders
+offline-arm64: src/components/ProjectsView.tsx#62
+
+! src/App.tsx:124:26: Calling setState synchronously within an effect can trigger cascading renders
+offline-arm64: src/App.tsx#124
+
+- Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times.
+offline-arm64: .github#1
+

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "workspace_id": "fe4fd4f1-95ba-4970-b33e-c2a7f30df342",
+  "name": "C 合成验收库",
+  "created_at": "2026-10-15T10:44:39.079740Z",
+  "lines": [
+    {
+      "id": "ba11ea07-0dc1-51a3-a81b-72006881e345",
+      "name": "C 合成主线",
+      "directory": "C-合成主线"
+    }
+  ],
+  "projects": [
+    {
+      "id": "1f51f513-d9c6-53e1-afe5-6245455672c3",
+      "line_id": "ba11ea07-0dc1-51a3-a81b-72006881e345",
+      "name": "C 合成项目",
+      "directory": "C-合成主线/C-合成项目",
+      "overview_id": "b23a045c-33cd-59f2-8f70-17af8488a00d",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    }
+  ]
+}

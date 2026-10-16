@@ -1,0 +1,19 @@
+{
+  "writes": [
+    "POST /api/v1/workspaces",
+    "PUT /api/v1/first-use/progress",
+    "PUT /api/v1/first-use/progress",
+    "PUT /api/v1/first-use/progress",
+    "PUT /api/v1/first-use/progress",
+    "POST /api/v1/lines",
+    "POST /api/v1/projects",
+    "POST /api/v1/intake/items",
+    "POST /api/v1/intake/files",
+    "POST /api/v1/intake/jobs",
+    "POST /api/v1/drafts/dd63c957-9016-5644-bf6c-79b1b9c1466f/confirmations",
+    "POST /api/v1/pages/dd63c957-9016-5644-bf6c-79b1b9c1466f/confirmations",
+    "POST /api/v1/index/plans",
+    "POST /api/v1/index/jobs"
+  ],
+  "externalAttempts": []
+}

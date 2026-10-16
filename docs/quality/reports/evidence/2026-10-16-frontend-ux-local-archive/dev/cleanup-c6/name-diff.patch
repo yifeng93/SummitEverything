@@ -1,0 +1,10 @@
+diff --git a/.github/workflows/m41-internal-app.yml b/.github/workflows/m41-internal-app.yml
+index f73f459..1ef142c 100644
+--- a/.github/workflows/m41-internal-app.yml
++++ b/.github/workflows/m41-internal-app.yml
+@@ -1,4 +1,4 @@
+-name: M4.1 internal macOS app
++name: offline-arm64 checks (python, web, native, DMG)
+ 
+ on:
+   push:

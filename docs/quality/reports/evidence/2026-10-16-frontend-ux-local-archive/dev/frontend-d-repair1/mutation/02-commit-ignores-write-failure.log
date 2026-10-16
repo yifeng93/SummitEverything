@@ -1,0 +1,1304 @@
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/App.firstUseProgress.test.tsx (7 tests | 1 failed) 1564ms
+   ✓ 已完成的首次配置：打开同一工作库直接进入今日，不再弹向导 120ms
+   ✓ 未完成但向导仍开着的记录：恢复到保存的步骤 43ms
+   ✓ 用户明确关闭过向导：重启不自动出现，设置里仍能手动续接原步骤 72ms
+   ✓ 本机没有记录：新工作库仍从第 2 步开始首次配置 34ms
+   ✓ 旧的浏览器副本迁移一次后，后端成为唯一真源 30ms
+   × durable 写入失败时停在当前步骤并给出重试，重试成功后继续 1039ms
+   ✓ 完成向导会先把 completed 写进本机，再进入今日 225ms
+ ❯ src/components/FirstUseWizard.test.tsx (19 tests | 2 failed) 2502ms
+   ✓ leaves wizard opening under the app host and reports the requested step 104ms
+   ✓ does not open automatically for configured credentials and requests step 4 for Feishu 22ms
+   ✓ moves forward, backward and skips steps without any request 50ms
+   ✓ 步骤变化先写本机：写入成功才前进，载荷只有白名单字段 14ms
+   × 写入失败时停在原步骤并给出重试，重试成功后才前进 1010ms
+   × 关闭向导要等写入成功才收起，失败时不报告已关闭 1009ms
+   ✓ shows built-in read-only addresses together with secrets on step 2 6ms
+   ✓ disables save with field guidance for a selected capability that has no stored key 15ms
+   ✓ does not ask again when the selected capability already has a server-stored key 17ms
+   ✓ saves settings before credentials, uses the persisted account ids, and clears the secret fields 44ms
+   ✓ keeps Fake offline and makes no request when no model or key is selected 12ms
+   ✓ blocks step 2 entirely when the keychain is unavailable 8ms
+   ✓ requires an explicit confirmation before the connection check, and cancel sends nothing 27ms
+   ✓ sends exactly the confirmed check and nothing when the step is skipped 34ms
+   ✓ saves the feishu app secret, clears it, and never starts OAuth on its own 43ms
+   ✓ routes the authorization button through the injected callback instead of doing OAuth itself 30ms
+   ✓ summarizes saved and skipped items with the remaining unverified boundaries 30ms
+   ✓ only ever calls local settings, smoke-status and credential routes 24ms
+   ✓ parses the injected feishu status helper the same way the cards do 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.firstUseProgress.test.tsx > durable 写入失败时停在当前步骤并给出重试，重试成功后继续
+TestingLibraryElementError: Unable to find an element with the text: /还没有保存到本机/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app-frame"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"skip-link"[39m
+        [33mhref[39m=[32m"#main-content"[39m
+      [36m>[39m
+        [0m跳到主内容[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"sidebar"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"brand-mark"[39m
+          [36m>[39m
+            [0mS[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<strong>[39m
+              [0mSummitEverything[0m
+            [36m</strong>[39m
+            [36m<span>[39m
+              [0m个人知识工作台[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"主导航"[39m
+          [33mclass[39m=[32m"primary-nav"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"今日"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"今日"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-today"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m今日[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"审批"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"审批"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-approval"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m审批[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"项目"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"项目"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-projects"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m项目[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"知识问答"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"知识问答"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-ask"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m知识问答[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-current[39m=[32m"page"[39m
+            [33maria-label[39m=[32m"设置"[39m
+            [33mclass[39m=[32m"nav-item active"[39m
+            [33mtitle[39m=[32m"设置"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-settings"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sidebar-bottom"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"切换工作库"[39m
+            [33mclass[39m=[32m"workspace-name"[39m
+            [33mtitle[39m=[32m"切换工作库"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"workspace-avatar"[39m
+            [36m>[39m
+              [0m模[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"workspace-name-text"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m模拟工作库[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m切换…[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"local-indicator is-online"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"local-dot"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"local-indicator-text"[39m
+            [36m>[39m
+              [0m仅本机运行[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"main-shell"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"topbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"crumbs"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"topbar-right"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+              [33mclass[39m=[32m"save-state is-failed"[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-button save-retry"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m保存失败，点击重试[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"主题"[39m
+              [33mclass[39m=[32m"theme-select"[39m
+              [33mtitle[39m=[32m"主题：跟随系统 / 浅色 / 深色"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"system"[39m
+              [36m>[39m
+                [0m跟随系统[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"light"[39m
+              [36m>[39m
+                [0m浅色[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"dark"[39m
+              [36m>[39m
+                [0m深色[0m
+              [36m</option>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app-frame"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"skip-link"[39m
+        [33mhref[39m=[32m"#main-content"[39m
+      [36m>[39m
+        [0m跳到主内容[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"sidebar"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"brand-mark"[39m
+          [36m>[39m
+            [0mS[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<strong>[39m
+              [0mSummitEverything[0m
+            [36m</strong>[39m
+            [36m<span>[39m
+              [0m个人知识工作台[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"主导航"[39m
+          [33mclass[39m=[32m"primary-nav"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"今日"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"今日"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-today"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m今日[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"审批"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"审批"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-approval"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m审批[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"项目"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"项目"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-projects"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m项目[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"知识问答"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"知识问答"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-ask"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m知识问答[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-current[39m=[32m"page"[39m
+            [33maria-label[39m=[32m"设置"[39m
+            [33mclass[39m=[32m"nav-item active"[39m
+            [33mtitle[39m=[32m"设置"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"nav-symbol nav-settings"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sidebar-bottom"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"切换工作库"[39m
+            [33mclass[39m=[32m"workspace-name"[39m
+            [33mtitle[39m=[32m"切换工作库"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"workspace-avatar"[39m
+            [36m>[39m
+              [0m模[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"workspace-name-text"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m模拟工作库[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0m切换…[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"local-indicator is-online"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"local-dot"[39m
+            [36m/>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"local-indicator-text"[39m
+            [36m>[39m
+              [0m仅本机运行[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</aside>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"main-shell"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"topbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"crumbs"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m设置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"topbar-right"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+              [33mclass[39m=[32m"save-state is-failed"[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-button save-retry"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m保存失败，点击重试[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"主题"[39m
+              [33mclass[39m=[32m"theme-select"[39m
+              [33mtitle[39m=[32m"主题：跟随系统 / 浅色 / 深色"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"system"[39m
+              [36m>[39m
+                [0m跟随系统[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"light"[39m
+              [36m>[39m
+                [0m浅色[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"dark"[39m
+              [36m>[39m
+                [0m深色[0m
+              [36m</option>...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/App.firstUseProgress.test.tsx:196:23
+    194|
+    195|   // 没有写成功就不能假装前进。
+    196|   expect(await screen.findByText(/还没有保存到本机/)).toBeTruthy()
+       |                       ^
+    197|   expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeT…
+    198|   expect(screen.queryByRole('heading', { name: /第 3 步 · 检查连接/ })).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/components/FirstUseWizard.test.tsx > 写入失败时停在原步骤并给出重试，重试成功后才前进
+TestingLibraryElementError: Unable to find an element with the text: /还没有保存到本机/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"wizard-backdrop"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"首次配置向导"[39m
+        [33maria-modal[39m=[32m"false"[39m
+        [33mclass[39m=[32m"wizard-panel"[39m
+        [33mrole[39m=[32m"dialog"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"wizard-head"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"eyebrow"[39m
+            [36m>[39m
+              [0m首次配置[0m
+            [36m</div>[39m
+            [36m<h2>[39m
+              [0m连接向导[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-button"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m关闭向导[0m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"wizard-steps"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+            [0m工作库[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m2[0m
+            [36m</span>[39m
+            [0m模型与密钥[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33maria-current[39m=[32m"step"[39m
+            [33mclass[39m=[32m"wizard-step active"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m3[0m
+            [36m</span>[39m
+            [0m检查连接[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m4[0m
+            [36m</span>[39m
+            [0m飞书[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m5[0m
+            [36m</span>[39m
+            [0m完成[0m
+          [36m</li>[39m
+        [36m</ol>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"wizard-body"[39m
+        [36m>[39m
+          [36m<h3>[39m
+            [0m第 [0m
+            [0m3[0m
+            [0m 步 · [0m
+            [0m检查连接[0m
+          [36m</h3>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"wizard-section"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"settings-card-desc"[39m
+            [36m>[39m
+              [0m每项最多一次合成检查，用于确认接口连通与响应结构；不发送工作库材料。点击后需确认本次范围才会联网，失败或超时同样计数且不会自动重发。[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"button-row"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m检查 [0m
+                [0mDeepSeek Chat[0m
+                [0m（剩余 [0m
+                [0m1[0m
+                [0m）[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m检查 [0m
+                [0mEmbedding[0m
+                [0m（剩余 [0m
+                [0m1[0m
+                [0m）[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m检查 [0m
+                [0mRerank[0m
+                [0m（剩余 [0m
+                [0m1[0m
+                [0m）[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m上一步[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m稍后再说[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button primary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m下一步[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"wizard-backdrop"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"首次配置向导"[39m
+        [33maria-modal[39m=[32m"false"[39m
+        [33mclass[39m=[32m"wizard-panel"[39m
+        [33mrole[39m=[32m"dialog"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"wizard-head"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"eyebrow"[39m
+            [36m>[39m
+              [0m首次配置[0m
+            [36m</div>[39m
+            [36m<h2>[39m
+              [0m连接向导[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-button"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m关闭向导[0m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"wizard-steps"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+            [0m工作库[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m2[0m
+            [36m</span>[39m
+            [0m模型与密钥[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33maria-current[39m=[32m"step"[39m
+            [33mclass[39m=[32m"wizard-step active"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m3[0m
+            [36m</span>[39m
+            [0m检查连接[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m4[0m
+            [36m</span>[39m
+            [0m飞书[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m5[0m
+            [36m</span>[39m
+            [0m完成[0m
+          [36m</li>[39m
+        [36m</ol>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"wizard-body"[39m
+        [36m>[39m
+          [36m<h3>[39m
+            [0m第 [0m
+            [0m3[0m
+            [0m 步 · [0m
+            [0m检查连接[0m
+          [36m</h3>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"wizard-section"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"settings-card-desc"[39m
+            [36m>[39m
+              [0m每项最多一次合成检查，用于确认接口连通与响应结构；不发送工作库材料。点击后需确认本次范围才会联网，失败或超时同样计数且不会自动重发。[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"button-row"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m检查 [0m
+                [0mDeepSeek Chat[0m
+                [0m（剩余 [0m
+                [0m1[0m
+                [0m）[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m检查 [0m
+                [0mEmbedding[0m
+                [0m（剩余 [0m
+                [0m1[0m
+                [0m）[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m检查 [0m
+                [0mRerank[0m
+                [0m（剩余 [0m
+                [0m1[0m
+                [0m）[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m上一步[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m稍后再说[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button primary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m下一步[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/FirstUseWizard.test.tsx:205:23
+    203|
+    204|   // 没有落地就不能假装前进。
+    205|   expect(await screen.findByText(/还没有保存到本机/)).toBeTruthy()
+       |                       ^
+    206|   expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeT…
+    207|   expect(screen.queryByRole('heading', { name: /第 3 步 · 检查连接/ })).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/components/FirstUseWizard.test.tsx > 关闭向导要等写入成功才收起，失败时不报告已关闭
+TestingLibraryElementError: Unable to find an element with the text: /还没有保存到本机/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"wizard-backdrop"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"首次配置向导"[39m
+        [33maria-modal[39m=[32m"false"[39m
+        [33mclass[39m=[32m"wizard-panel"[39m
+        [33mrole[39m=[32m"dialog"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"wizard-head"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"eyebrow"[39m
+            [36m>[39m
+              [0m首次配置[0m
+            [36m</div>[39m
+            [36m<h2>[39m
+              [0m连接向导[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-button"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m关闭向导[0m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"wizard-steps"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+            [0m工作库[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33maria-current[39m=[32m"step"[39m
+            [33mclass[39m=[32m"wizard-step active"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m2[0m
+            [36m</span>[39m
+            [0m模型与密钥[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m3[0m
+            [36m</span>[39m
+            [0m检查连接[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m4[0m
+            [36m</span>[39m
+            [0m飞书[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m5[0m
+            [36m</span>[39m
+            [0m完成[0m
+          [36m</li>[39m
+        [36m</ol>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"wizard-body"[39m
+        [36m>[39m
+          [36m<h3>[39m
+            [0m第 [0m
+            [0m2[0m
+            [0m 步 · [0m
+            [0m模型与密钥[0m
+          [36m</h3>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"wizard-section"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"settings-card-desc"[39m
+            [36m>[39m
+              [0m先选择要启用的能力，再录入对应密钥。选择 Real 能力会明确切换运行模式；保存仅写入本机设置，不会联网检查。[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"settings-card-next"[39m
+            [36m>[39m
+              [0m工作库：已连接。知识正文保存在工作库；索引、凭据与诊断记录按本机 profile 管理。[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-capability"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m整理与问答[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0mDeepSeek · deepseek-flash[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"wizard-endpoint"[39m
+              [36m>[39m
+                [36m<code>[39m
+                  [0mhttps://api.deepseek.com/chat/completions[0m
+                [36m</code>[39m
+                [36m<span>[39m
+                  [0m已内置，无需填写[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-capability"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m知识索引向量化[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m阿里云 Model Studio · qwen3.7-text-embedding[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"wizard-endpoint"[39m
+              [36m>[39m
+                [36m<code>[39m
+                  [0mhttps://ws-demo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1[0m
+                [36m</code>[39m
+                [36m<span>[39m
+                  [0m已内置，无需填写[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-capability"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m检索结果排序[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m阿里云 Model Studio · qwen3.7-text-rerank[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"wizard-endpoint"[39m
+              [36m>[39m
+                [36m<code>[39m
+                  [0mhttps://ws-demo.cn-beijing.maas.aliyuncs.com/api/v1[0m
+                [36m</code>[39m
+                [36m<span>[39m
+                  [0m已内置，无需填写[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"secret-slot"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mfor[39m=[32m"wizard-secret-deepseek"[39m
+              [36m>[39m
+                [0mDeepSeek API Key[0m
+                [36m<span>[39m
+                  [0m用于整理与问答。只保存在本机钥匙串，页面不会回显。[0m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mautocomplete[39m=[32m"new-password"[39m
+                [33mid[39m=[32m"wizard-secret-deepseek"[39m
+                [33mmaxlength[39m=[32m"20000"[39m
+                [33mtype[39m=[32m"password"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"secret-slot"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mfor[39m=[32m"wizard-secret-dashscope"[39m
+              [36m>[39m
+                [0m阿里云 Model Studio API Key[0m
+                [36m<span>[39m
+                  [0mEmbedding 与 Rerank 共用。只保存在本机钥匙串，页面不会回显。[0m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mautocomplete[39m=[32m"new-password"[39m
+                [33mid[39m=[32m"wizard-secret-dashscope"[39m
+                [33mmaxlength[39m=[32m"20000"[39m
+                [33mtype[39m=[32m"password"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m上一步：工作库[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m稍后再说[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button primary"[39m
+              [36m>[39m
+                [0m保存密钥并继续[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</form>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"wizard-backdrop"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"首次配置向导"[39m
+        [33maria-modal[39m=[32m"false"[39m
+        [33mclass[39m=[32m"wizard-panel"[39m
+        [33mrole[39m=[32m"dialog"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"wizard-head"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"eyebrow"[39m
+            [36m>[39m
+              [0m首次配置[0m
+            [36m</div>[39m
+            [36m<h2>[39m
+              [0m连接向导[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-button"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m关闭向导[0m
+          [36m</button>[39m
+        [36m</header>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"wizard-steps"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m1[0m
+            [36m</span>[39m
+            [0m工作库[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33maria-current[39m=[32m"step"[39m
+            [33mclass[39m=[32m"wizard-step active"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m2[0m
+            [36m</span>[39m
+            [0m模型与密钥[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m3[0m
+            [36m</span>[39m
+            [0m检查连接[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m4[0m
+            [36m</span>[39m
+            [0m飞书[0m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"wizard-step"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m5[0m
+            [36m</span>[39m
+            [0m完成[0m
+          [36m</li>[39m
+        [36m</ol>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"wizard-body"[39m
+        [36m>[39m
+          [36m<h3>[39m
+            [0m第 [0m
+            [0m2[0m
+            [0m 步 · [0m
+            [0m模型与密钥[0m
+          [36m</h3>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"wizard-section"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"settings-card-desc"[39m
+            [36m>[39m
+              [0m先选择要启用的能力，再录入对应密钥。选择 Real 能力会明确切换运行模式；保存仅写入本机设置，不会联网检查。[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"settings-card-next"[39m
+            [36m>[39m
+              [0m工作库：已连接。知识正文保存在工作库；索引、凭据与诊断记录按本机 profile 管理。[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-capability"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m整理与问答[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0mDeepSeek · deepseek-flash[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"wizard-endpoint"[39m
+              [36m>[39m
+                [36m<code>[39m
+                  [0mhttps://api.deepseek.com/chat/completions[0m
+                [36m</code>[39m
+                [36m<span>[39m
+                  [0m已内置，无需填写[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-capability"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m知识索引向量化[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m阿里云 Model Studio · qwen3.7-text-embedding[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"wizard-endpoint"[39m
+              [36m>[39m
+                [36m<code>[39m
+                  [0mhttps://ws-demo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1[0m
+                [36m</code>[39m
+                [36m<span>[39m
+                  [0m已内置，无需填写[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-capability"[39m
+            [36m>[39m
+              [36m<label>[39m
+                [36m<input[39m
+                  [33mtype[39m=[32m"checkbox"[39m
+                [36m/>[39m
+                [36m<span>[39m
+                  [36m<strong>[39m
+                    [0m检索结果排序[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m阿里云 Model Studio · qwen3.7-text-rerank[0m
+                  [36m</small>[39m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"wizard-endpoint"[39m
+              [36m>[39m
+                [36m<code>[39m
+                  [0mhttps://ws-demo.cn-beijing.maas.aliyuncs.com/api/v1[0m
+                [36m</code>[39m
+                [36m<span>[39m
+                  [0m已内置，无需填写[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"secret-slot"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mfor[39m=[32m"wizard-secret-deepseek"[39m
+              [36m>[39m
+                [0mDeepSeek API Key[0m
+                [36m<span>[39m
+                  [0m用于整理与问答。只保存在本机钥匙串，页面不会回显。[0m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mautocomplete[39m=[32m"new-password"[39m
+                [33mid[39m=[32m"wizard-secret-deepseek"[39m
+                [33mmaxlength[39m=[32m"20000"[39m
+                [33mtype[39m=[32m"password"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"secret-slot"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mfor[39m=[32m"wizard-secret-dashscope"[39m
+              [36m>[39m
+                [0m阿里云 Model Studio API Key[0m
+                [36m<span>[39m
+                  [0mEmbedding 与 Rerank 共用。只保存在本机钥匙串，页面不会回显。[0m
+                [36m</span>[39m
+              [36m</label>[39m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mautocomplete[39m=[32m"new-password"[39m
+                [33mid[39m=[32m"wizard-secret-dashscope"[39m
+                [33mmaxlength[39m=[32m"20000"[39m
+                [33mtype[39m=[32m"password"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"wizard-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m上一步：工作库[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m稍后再说[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button primary"[39m
+              [36m>[39m
+                [0m保存密钥并继续[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</form>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/FirstUseWizard.test.tsx:226:23
+    224|   fireEvent.click(screen.getByRole('button', { name: '关闭向导' }))
+    225|
+    226|   expect(await screen.findByText(/还没有保存到本机/)).toBeTruthy()
+       |                       ^
+    227|   expect(onClose).not.toHaveBeenCalled()
+    228|   expect(screen.getByRole('dialog', { name: '首次配置向导' })).toBeTruthy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 23 passed (26)
+   Start at  22:00:25
+   Duration  2.96s (tests 81%, environment 11%, transform 5%, import 3%)
+

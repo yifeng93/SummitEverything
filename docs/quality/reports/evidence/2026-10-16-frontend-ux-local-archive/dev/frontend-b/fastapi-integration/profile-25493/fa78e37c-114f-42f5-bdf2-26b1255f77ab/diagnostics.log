@@ -1,0 +1,4 @@
+{"at":"2026-10-15T15:29:36.943165+00:00","event":"intake_saved","record_id":"2dc488c4-f158-5315-91d2-0d1c61aa9f22","state":"pending"}
+{"at":"2026-10-15T15:29:37.067194+00:00","event":"intake_saved","record_id":"243a3d0c-12d5-5405-ab8f-23f3c31729a1","state":"pending"}
+{"at":"2026-10-15T15:29:37.434098+00:00","count":1,"event":"intake_job","record_id":"c0ef37bc-d741-5bb7-9c6b-89122fd02b7c","state":"completed"}
+{"at":"2026-10-15T15:29:37.638051+00:00","event":"draft_confirmed","record_id":"427b2e15-ca19-50e4-acbc-b43b539c775f","state":"succeeded"}

@@ -1,0 +1,46 @@
+
+> web@0.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:73652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:73653) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (1.7s)
+  ✘  2 e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today, approvals, tools and settings (333ms)
+
+
+  1) e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+
+    Error: today horizontal overflow at 320px/light
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 320
+    Received: 415
+
+      57 |         body: document.body.scrollWidth,
+      58 |       }))
+    > 59 |       expect(todayMetrics.document, `today horizontal overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
+         |                                                                                         ^
+      60 |       expect(todayMetrics.body, `today body overflow at ${width}px/${theme}`).toBe(todayMetrics.viewport)
+      61 |       await page.screenshot({ path: resolve(evidenceDir, `today-${width}-${theme}.png`), fullPage: true })
+      62 |
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/viewport.spec.ts:59:89
+
+    Error Context: test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/viewport.spec.ts:19:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+  1 passed (2.8s)

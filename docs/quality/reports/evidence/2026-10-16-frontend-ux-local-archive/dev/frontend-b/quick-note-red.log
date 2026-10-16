@@ -1,0 +1,40 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/TodayView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/TodayView.test.tsx (8 tests | 1 failed) 262ms
+   × saves a quick note from Enter as source bytes without starting drafting or model work 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/TodayView.test.tsx > saves a quick note from Enter as source bytes without starting drafting or model work
+AssertionError: expected { text: '合成的一句话', filename: '快速记录.md' } to match object { text: '合成的一句话', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "operation_id": Any<String>,
+    "text": "合成的一句话",
+  }
+
+ ❯ src/components/TodayView.test.tsx:53:21
+     51|   await waitFor(() => expect(requests.some((item) => item.path.endsWit…
+     52|   const save = requests.find((item) => item.path.endsWith('/intake/ite…
+     53|   expect(save.body).toMatchObject({ text: '合成的一句话', operation_id: expe…
+       |                     ^
+     54|   expect(requests.some((item) => item.path.endsWith('/drafts') || item…
+     55| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  12:16:04
+   Duration  630ms (tests 45%, environment 37%, transform 10%, import 7%)
+

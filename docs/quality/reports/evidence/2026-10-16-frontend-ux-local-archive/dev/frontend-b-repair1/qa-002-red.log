@@ -1,0 +1,51 @@
+
+> web@0.0.0 test:e2e
+> playwright test --grep offline viewport
+
+[WebServer] (node:82555) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:82556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings (5.5s)
+
+
+  1) e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+
+    Error: expect(locator).toHaveCSS(expected) failed
+
+    Locator:  getByRole('dialog', { name: '导入会议与材料' }).locator('input[type="file"]').first().locator('..')
+    Expected: "solid"
+    Received: "none"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCSS" getByRole('dialog', { name: '导入会议与材料' }).locator('input[type="file"]').first().locator('..') with timeout 5000ms
+      - waiting for getByRole('dialog', { name: '导入会议与材料' }).locator('input[type="file"]').first().locator('..')
+        14 × locator resolved to <label class="button secondary file-button">…</label>
+           - unexpected value "none"
+
+
+      93 |         await expect(filesInput).toBeFocused()
+      94 |         const filesLabel = filesInput.locator('..')
+    > 95 |         await expect(filesLabel).toHaveCSS('outline-style', 'solid')
+         |                                  ^
+      96 |         await page.screenshot({ path: resolve(evidenceDir, `import-focus-files-${width}-${theme}.png`) })
+      97 |         const filesChooserPromise = page.waitForEvent('filechooser')
+      98 |         await page.keyboard.press('Enter')
+        at /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web/e2e/viewport.spec.ts:95:34
+
+    Error Context: test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings 

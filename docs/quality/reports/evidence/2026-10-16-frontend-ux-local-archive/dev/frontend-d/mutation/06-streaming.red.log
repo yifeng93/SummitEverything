@@ -1,0 +1,1426 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/MarkdownText.test.tsx src/components/AskView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/MarkdownText.test.tsx (8 tests | 3 failed) 110ms
+   × keeps unfinished Markdown markers out of every streaming frame without losing source text 3ms
+   × closes only actual trailing syntax while preserving code, escaped markers, and inert partial links 1ms
+   × keeps unfinished wiki targets and labels readable but non-clickable until the link closes 1ms
+ ❯ src/components/AskView.test.tsx (17 tests | 2 failed) 2601ms
+   × does not turn a cancelled partial answer into visible Markdown delimiters 1025ms
+   × renders actual SSE delta frames with stable syntax and matches the terminal static DOM 1026ms
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 20 passed (25)
+   Start at  21:13:50
+   Duration  3.07s (tests 77%, environment 14%, import 5%, transform 3%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/AskView.test.tsx > does not turn a cancelled partial answer into visible Markdown delimiters
+TestingLibraryElementError: Unable to find an element with the text: 半句尚未结束. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap ask-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m仅使用已确认知识[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m知识问答[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+        [36m>[39m
+          [0m新建对话[0m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"query-form"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mfor[39m=[32m"knowledge-question"[39m
+        [36m>[39m
+          [0m你的问题[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"query-input-wrap"[39m
+        [36m>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"knowledge-question"[39m
+            [33mplaceholder[39m=[32m"例如：这个项目已经确认的地点和联系人有哪些？"[39m
+            [33mrows[39m=[32m"3"[39m
+          [36m>[39m
+            [0m合成问题[0m
+          [36m</textarea>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+          [36m>[39m
+            [0m开始检索[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<small>[39m
+          [0m回答与历史仅保存在本机；不会自动写入知识页。[0m
+        [36m</small>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"query-options"[39m
+        [36m>[39m
+          [36m<summary>[39m
+            [0m资料范围与回答方式[0m
+          [36m</summary>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [0m资料范围[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"current"[39m
+            [36m>[39m
+              [0m当前有效资料[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"history"[39m
+            [36m>[39m
+              [0m包含历史版本[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [0m回答方式[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"fact"[39m
+            [36m>[39m
+              [0m查找事实[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"comparison"[39m
+            [36m>[39m
+              [0m跨材料比较[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"plan"[39m
+            [36m>[39m
+              [0m提出工作方案[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"query-role"[39m
+          [36m>[39m
+            [0m本次使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"query-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</details>[39m
+      [36m</form>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答历史"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机历史[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m本机历史[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只保存在此 profile 和工作库[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m还没有问答历史。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33mclass[39m=[32m"ask-secondary ask-index"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机索引与更新[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"index-status-panel"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-status-copy"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"index-state"[39m
+            [36m>[39m
+              [0m还没有本机索引[0m
+            [36m</span>[39m
+            [36m<p>[39m
+              [0m建立或更新索引需要先检查范围，再单独确认。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m前往审批查看索引[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"muted"[39m
+        [36m>[39m
+          [0m索引范围预览、真实服务授权和执行记录都在审批页的「索引」类别中处理。[0m
+        [36m</p>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答偏好与记忆"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m问答角色与记忆[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m问答角色与记忆[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只调整表达与指代理解，不改变证据或权限[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [0m使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-name"[39m
+          [36m>[39m
+            [0m角色名称[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-name"[39m
+            [33mmaxlength[39m=[32m"80"[39m
+            [33mplaceholder[39m=[32m"例如：简明分析"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-guidance"[39m
+          [36m>[39m
+            [0m表达偏好[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"role-guidance"[39m
+            [33mmaxlength[39m=[32m"4000"[39m
+            [33mplaceholder[39m=[32m"只调整表达方式；不能改变证据标准或执行权限。"[39m
+            [33mrows[39m=[32m"2"[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-budget"[39m
+          [36m>[39m
+            [0m角色说明预算（字节）[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-budget"[39m
+            [33mmax[39m=[32m"6000"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mtype[39m=[32m"number"[39m
+            [33mvalue[39m=[32m"2000"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m保存角色[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<h3>[39m
+            [0m待确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m没有待确认记忆。[0m
+          [36m</p>[39m
+          [36m<h3>[39m
+            [0m已确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m目前没有已确认记忆。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"对话内容"[39m
+        [33mclass[39m=[32m"conversation-thread"[39m
+      [36m>[39m
+        [36m<h2>[39m
+          [0m合成问题[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"conversation-turn"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"user-question"[39m
+          [36m>[39m
+            [36m<strong>[39m
+              [0m你[0m
+            [36m</strong>[39m
+            [36m<p>[39m
+              [0m合成问题[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"assistant-answer"[39m
+          [36m>[39m
+            [36m<strong>[39m
+              [0m回答 · [0m
+              [0m事实问答[0m
+              [0m · [0m
+              [0m已取消[0m
+            [36m</strong>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"markdown-content answer-text"[39m
+            [36m>[39m
+              [36m<p>[39m
+                [0m**半句尚未结束[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"answer-details"[39m
+            [36m/>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"memory-attestation"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用[0m
+            [36m</label>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-button"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m创建待确认记忆候选[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap ask-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m仅使用已确认知识[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m知识问答[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+        [36m>[39m
+          [0m新建对话[0m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"query-form"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mfor[39m=[32m"knowledge-question"[39m
+        [36m>[39m
+          [0m你的问题[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"query-input-wrap"[39m
+        [36m>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"knowledge-question"[39m
+            [33mplaceholder[39m=[32m"例如：这个项目已经确认的地点和联系人有哪些？"[39m
+            [33mrows[39m=[32m"3"[39m
+          [36m>[39m
+            [0m合成问题[0m
+          [36m</textarea>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+          [36m>[39m
+            [0m开始检索[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<small>[39m
+          [0m回答与历史仅保存在本机；不会自动写入知识页。[0m
+        [36m</small>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"query-options"[39m
+        [36m>[39m
+          [36m<summary>[39m
+            [0m资料范围与回答方式[0m
+          [36m</summary>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [0m资料范围[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"current"[39m
+            [36m>[39m
+              [0m当前有效资料[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"history"[39m
+            [36m>[39m
+              [0m包含历史版本[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [0m回答方式[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"fact"[39m
+            [36m>[39m
+              [0m查找事实[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"comparison"[39m
+            [36m>[39m
+              [0m跨材料比较[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"plan"[39m
+            [36m>[39m
+              [0m提出工作方案[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"query-role"[39m
+          [36m>[39m
+            [0m本次使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"query-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</details>[39m
+      [36m</form>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答历史"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机历史[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m本机历史[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只保存在此 profile 和工作库[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m还没有问答历史。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33mclass[39m=[32m"ask-secondary ask-index"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机索引与更新[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"index-status-panel"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-status-copy"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"index-state"[39m
+            [36m>[39m
+              [0m还没有本机索引[0m
+            [36m</span>[39m
+            [36m<p>[39m
+              [0m建立或更新索引需要先检查范围，再单独确认。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m前往审批查看索引[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"muted"[39m
+        [36m>[39m
+          [0m索引范围预览、真实服务授权和执行记录都在审批页的「索引」类别中处理。[0m
+        [36m</p>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答偏好与记忆"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m问答角色与记忆[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m问答角色与记忆[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只调整表达与指代理解，不改变证据或权限[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [0m使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-name"[39m
+          [36m>[39m
+            [0m角色名称[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-name"[39m
+            [33mmaxlength[39m=[32m"80"[39m
+            [33mplaceholder[39m=[32m"例如：简明分析"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-guidance"[39m
+          [36m>[39m
+            [0m表达偏好[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"role-guidance"[39m
+            [33mmaxlength[39m=[32m"4000"[39m
+            [33mplaceholder[39m=[32m"只调整表达方式；不能改变证据标准或执行权限。"[39m
+            [33mrows[39m=[32m"2"[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-budget"[39m
+          [36m>[39m
+            [0m角色说明预算（字节）[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-budget"[39m
+            [33mmax[39m=[32m"6000"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mtype[39m=[32m"number"[39m
+            [33mvalue[39m=[32m"2000"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m保存角色[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<h3>[39m
+            [0m待确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m没有待确认记忆。[0m
+          [36m</p>[39m
+          [36m<h3>[39m
+            [0m已确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m目前没有已确认记忆。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"对话内容"[39m
+        [33mclass[39m=[32m"conversation-thread"[39m
+      [36m>[39m
+        [36m<h2>[39m
+          [0m合成问题[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"conversation-turn"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"user-question"[39m
+          [36m>[39m
+            [36m<strong>[39m
+              [0m你[0m
+            [36m</strong>[39m
+            [36m<p>[39m
+              [0m合成问题[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"assistant-answer"[39m
+          [36m>[39m
+            [36m<strong>[39m
+              [0m回答 · [0m
+              [0m事实问答[0m
+              [0m · [0m
+              [0m已取消[0m
+            [36m</strong>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"markdown-content answer-text"[39m
+            [36m>[39m
+              [36m<p>[39m
+                [0m**半句尚未结束[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"answer-details"[39m
+            [36m/>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"memory-attestation"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用[0m
+            [36m</label>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-button"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m创建待确认记忆候选[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/AskView.test.tsx:168:16
+    166|   fireEvent.change(await screen.findByLabelText('你的问题'), { target: { v…
+    167|   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+    168|   await screen.findByText('半句尚未结束')
+       |                ^
+    169|   expect(document.querySelector('.ask-view')?.textContent).not.toConta…
+    170|   expect(document.querySelector('.ask-view')?.textContent).toContain('…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/components/AskView.test.tsx > renders actual SSE delta frames with stable syntax and matches the terminal static DOM
+TestingLibraryElementError: Unable to find an element with the text: hello, which matches selector '.answer-panel strong'. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap ask-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m仅使用已确认知识[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m知识问答[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+        [36m>[39m
+          [0m新建对话[0m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"query-form"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mfor[39m=[32m"knowledge-question"[39m
+        [36m>[39m
+          [0m你的问题[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"query-input-wrap"[39m
+        [36m>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"knowledge-question"[39m
+            [33mplaceholder[39m=[32m"例如：这个项目已经确认的地点和联系人有哪些？"[39m
+            [33mrows[39m=[32m"3"[39m
+          [36m>[39m
+            [0m合成问题[0m
+          [36m</textarea>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m停止回答[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<small>[39m
+          [0m回答与历史仅保存在本机；不会自动写入知识页。[0m
+        [36m</small>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"query-options"[39m
+        [36m>[39m
+          [36m<summary>[39m
+            [0m资料范围与回答方式[0m
+          [36m</summary>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [0m资料范围[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"current"[39m
+            [36m>[39m
+              [0m当前有效资料[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"history"[39m
+            [36m>[39m
+              [0m包含历史版本[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [0m回答方式[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"fact"[39m
+            [36m>[39m
+              [0m查找事实[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"comparison"[39m
+            [36m>[39m
+              [0m跨材料比较[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"plan"[39m
+            [36m>[39m
+              [0m提出工作方案[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"query-role"[39m
+          [36m>[39m
+            [0m本次使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"query-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</details>[39m
+      [36m</form>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答历史"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机历史[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m本机历史[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只保存在此 profile 和工作库[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m还没有问答历史。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33mclass[39m=[32m"ask-secondary ask-index"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机索引与更新[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"index-status-panel"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-status-copy"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"index-state"[39m
+            [36m>[39m
+              [0m还没有本机索引[0m
+            [36m</span>[39m
+            [36m<p>[39m
+              [0m建立或更新索引需要先检查范围，再单独确认。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m前往审批查看索引[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"muted"[39m
+        [36m>[39m
+          [0m索引范围预览、真实服务授权和执行记录都在审批页的「索引」类别中处理。[0m
+        [36m</p>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答偏好与记忆"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m问答角色与记忆[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m问答角色与记忆[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只调整表达与指代理解，不改变证据或权限[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [0m使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-name"[39m
+          [36m>[39m
+            [0m角色名称[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-name"[39m
+            [33mmaxlength[39m=[32m"80"[39m
+            [33mplaceholder[39m=[32m"例如：简明分析"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-guidance"[39m
+          [36m>[39m
+            [0m表达偏好[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"role-guidance"[39m
+            [33mmaxlength[39m=[32m"4000"[39m
+            [33mplaceholder[39m=[32m"只调整表达方式；不能改变证据标准或执行权限。"[39m
+            [33mrows[39m=[32m"2"[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-budget"[39m
+          [36m>[39m
+            [0m角色说明预算（字节）[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-budget"[39m
+            [33mmax[39m=[32m"6000"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mtype[39m=[32m"number"[39m
+            [33mvalue[39m=[32m"2000"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m保存角色[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<h3>[39m
+            [0m待确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m没有待确认记忆。[0m
+          [36m</p>[39m
+          [36m<h3>[39m
+            [0m已确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m目前没有已确认记忆。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"answer-panel"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"answer-heading"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"answer-mark"[39m
+          [36m>[39m
+            [0m答[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<h2>[39m
+              [0m本次回答 · [0m
+              [36m<span[39m
+                [33mrole[39m=[32m"status"[39m
+              [36m>[39m
+                [0m正在回答[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m正在读取当前页面…[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"markdown-content answer-text"[39m
+        [36m>[39m
+          [36m<p>[39m
+            [0m**hello[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap ask-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m仅使用已确认知识[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m知识问答[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m每条依据都会回到回答当时的页面版本复核。没有资料时会明确说明。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"button secondary"[39m
+        [36m>[39m
+          [0m新建对话[0m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"query-form"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mfor[39m=[32m"knowledge-question"[39m
+        [36m>[39m
+          [0m你的问题[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"query-input-wrap"[39m
+        [36m>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"knowledge-question"[39m
+            [33mplaceholder[39m=[32m"例如：这个项目已经确认的地点和联系人有哪些？"[39m
+            [33mrows[39m=[32m"3"[39m
+          [36m>[39m
+            [0m合成问题[0m
+          [36m</textarea>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m停止回答[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<small>[39m
+          [0m回答与历史仅保存在本机；不会自动写入知识页。[0m
+        [36m</small>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"query-options"[39m
+        [36m>[39m
+          [36m<summary>[39m
+            [0m资料范围与回答方式[0m
+          [36m</summary>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [0m资料范围[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"retrieval-purpose"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"current"[39m
+            [36m>[39m
+              [0m当前有效资料[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"history"[39m
+            [36m>[39m
+              [0m包含历史版本[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [0m回答方式[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-mode"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"fact"[39m
+            [36m>[39m
+              [0m查找事实[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"comparison"[39m
+            [36m>[39m
+              [0m跨材料比较[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"plan"[39m
+            [36m>[39m
+              [0m提出工作方案[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"query-role"[39m
+          [36m>[39m
+            [0m本次使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"query-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</details>[39m
+      [36m</form>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答历史"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机历史[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m本机历史[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只保存在此 profile 和工作库[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m还没有问答历史。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33mclass[39m=[32m"ask-secondary ask-index"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m本机索引与更新[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"index-status-panel"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-status-copy"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"index-state"[39m
+            [36m>[39m
+              [0m还没有本机索引[0m
+            [36m</span>[39m
+            [36m<p>[39m
+              [0m建立或更新索引需要先检查范围，再单独确认。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"index-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m前往审批查看索引[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"muted"[39m
+        [36m>[39m
+          [0m索引范围预览、真实服务授权和执行记录都在审批页的「索引」类别中处理。[0m
+        [36m</p>[39m
+      [36m</details>[39m
+      [36m<details[39m
+        [33maria-label[39m=[32m"本机问答偏好与记忆"[39m
+        [33mclass[39m=[32m"ask-secondary"[39m
+      [36m>[39m
+        [36m<summary>[39m
+          [0m问答角色与记忆[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"conversation-history"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-title-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m问答角色与记忆[0m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m只调整表达与指代理解，不改变证据或权限[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [0m使用角色[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mid[39m=[32m"answer-role"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m不使用角色[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-name"[39m
+          [36m>[39m
+            [0m角色名称[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-name"[39m
+            [33mmaxlength[39m=[32m"80"[39m
+            [33mplaceholder[39m=[32m"例如：简明分析"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-guidance"[39m
+          [36m>[39m
+            [0m表达偏好[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mid[39m=[32m"role-guidance"[39m
+            [33mmaxlength[39m=[32m"4000"[39m
+            [33mplaceholder[39m=[32m"只调整表达方式；不能改变证据标准或执行权限。"[39m
+            [33mrows[39m=[32m"2"[39m
+          [36m/>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"role-budget"[39m
+          [36m>[39m
+            [0m角色说明预算（字节）[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mid[39m=[32m"role-budget"[39m
+            [33mmax[39m=[32m"6000"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mtype[39m=[32m"number"[39m
+            [33mvalue[39m=[32m"2000"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0m保存角色[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<h3>[39m
+            [0m待确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m没有待确认记忆。[0m
+          [36m</p>[39m
+          [36m<h3>[39m
+            [0m已确认记忆[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"empty-state"[39m
+          [36m>[39m
+            [0m目前没有已确认记忆。[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</details>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"answer-panel"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"answer-heading"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"answer-mark"[39m
+          [36m>[39m
+            [0m答[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<h2>[39m
+              [0m本次回答 · [0m
+              [36m<span[39m
+                [33mrole[39m=[32m"status"[39m
+              [36m>[39m
+                [0m正在回答[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<span>[39m
+              [0m正在读取当前页面…[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"markdown-content answer-text"[39m
+        [36m>[39m
+          [36m<p>[39m
+            [0m**hello[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/AskView.test.tsx:199:16
+    197|   const send = (seq: number, type: string, data: Record<string, unknow…
+    198|   send(1, 'delta', { text: '**hello' })
+    199|   await screen.findByText('hello', { selector: '.answer-panel strong' …
+       |                ^
+    200|   expect(container.querySelector('.answer-panel .answer-text')?.textCo…
+    201|   expect(container.querySelector('.answer-panel .answer-text')?.textCo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/components/MarkdownText.test.tsx > keeps unfinished Markdown markers out of every streaming frame without losing source text
+AssertionError: expected 'ordinary_name **加' not to match /\*\*|~~|\[\[|\]\]|^\s*~~~|\|/m
+
+- Expected:
+/\*\*|~~|\[\[|\]\]|^\s*~~~|\|/m
+
++ Received:
+"ordinary_name **加"
+
+ ❯ src/components/MarkdownText.test.tsx:123:37
+    121|     expect(content.textContent).toContain('ordinary_name')
+    122|     expect(content.querySelector('code')?.textContent ?? '').not.toCon…
+    123|     expect(content.textContent).not.toMatch(/\*\*|~~|\[\[|\]\]|^\s*~~~…
+       |                                     ^
+    124|   }
+    125|   expect(container.querySelector('strong')?.textContent).toBe('加粗文本')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/components/MarkdownText.test.tsx > closes only actual trailing syntax while preserving code, escaped markers, and inert partial links
+AssertionError: expected '**hello' not to contain '**'
+
+Expected: "**"
+Received: "**hello"
+
+ ❯ src/components/MarkdownText.test.tsx:137:37
+    135|   const { container, rerender } = render(<StreamingMarkdown content="*…
+    136|   expect(container.textContent).toContain('hello')
+    137|   expect(container.textContent).not.toContain('**')
+       |                                     ^
+    138|   expect(container.querySelector('strong')?.textContent).toBe('hello')
+    139|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/components/MarkdownText.test.tsx > keeps unfinished wiki targets and labels readable but non-clickable until the link closes
+AssertionError: expected '[[安全说明' not to contain '[['
+
+Expected: "[["
+Received: "[[安全说明"
+
+ ❯ src/components/MarkdownText.test.tsx:164:37
+    162|   expect(container.querySelector('a')).toBeNull()
+    163|   expect(container.textContent).toContain('安全说明')
+    164|   expect(container.textContent).not.toContain('[[')
+       |                                     ^
+    165|
+    166|   rerender(<StreamingMarkdown content="[[page-1|安全说明" pageIndex={pages…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+

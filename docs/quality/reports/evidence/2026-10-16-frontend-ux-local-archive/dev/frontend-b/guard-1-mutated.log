@@ -1,0 +1,34 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ApprovalView.test.tsx -t 审批业务正文不暴露
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/components/ApprovalView.test.tsx (8 tests | 1 failed | 7 skipped) 51ms
+   × 审批业务正文不暴露来源ID、文件路径、hash或原始JSON 51ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ApprovalView.test.tsx > 审批业务正文不暴露来源ID、文件路径、hash或原始JSON
+AssertionError: expected '需要你点一下才算数审批来源、稿件、正式内容、索引与外部动作分开处理；每次确…' not to contain 'source-1'
+
+Expected: "source-1"
+Received: "需要你点一下才算数审批来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。5 项待处理 · 共 4 类显示全部待处理已完成检查并应用原件只供整理和追溯，不进入检索；稿件和正式页点击确认时会保存当前版本。索引计划与外部动作各有单独的预览和确认。来源类型来自可信入口，旧材料显示“类型未知”时不会按文件名猜。1 · 来源选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。1文合成速记记一句 · 随手记.md · source-1 · 2026/10/14待整理最近读取：2026/10/15 16:38:282 · 稿件查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。1合成稿件1 个来源 · 0 项重要冲突打开复核最近读取：2026/10/15 16:38:283 · 正式内容仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。1正式页业务决定 · 待确认查看完整正文当前正式正文 内容确认并保存当前版本最近读取：2026/10/15 16:38:284 · 索引Fake 活跃索引会在正式内容确认后自动增量；首次建立、Real、模型变更、重建或服务要求手动确认时，需预览独立计划。加入检查清单0当前状态：尚未建立当前纳入 0 页 · 待更新 1 页 · 共 1 页预览首次索引最近读取：2026/10/15 16:38:285 · 外部动作候选建议、已保存动作和执行回执分开显示。未知结果只能核对或记录，不能自动重发。2更新项目进度待确认查看与处理最近读取：2026/10/15 16:38:28尚未转成动作的建议飞书任务与独立动作Fake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。刷新飞书任务新建飞书任务拟定项目进度变化查看动作记录审阅行动建议合成任务建议将建议填写为待确认动作最近读取：2026/10/15 16:38:28"
+
+ ❯ src/components/ApprovalView.test.tsx:77:23
+     75|   const visible = document.querySelector('.approval-view')?.textConten…
+     76|   expect(visible).toContain('合成速记')
+     77|   expect(visible).not.toContain('source-1')
+       |                       ^
+     78|   expect(visible).not.toContain('原件/secret-path.md')
+     79|   expect(visible).not.toMatch(/[a-f0-9]{64}/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  16:38:28
+   Duration  515ms (environment 52%, import 20%, transform 16%, tests 11%)
+
