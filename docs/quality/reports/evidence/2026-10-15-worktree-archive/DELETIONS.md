@@ -318,3 +318,123 @@ git worktree prune            # PRUNE_EXIT=0
 
 因此：**worktree 清退本身完成（登记 21 → 2，19/19 checkout 删除，`prune` 退出码 0）**，
 残留仅为父目录壳与 scope 外的历史孤立目录。
+
+## C5.5 · 范围外残留目录清理（用户 2026-10-15 另授权）
+
+执行者：Developer **Luna（High）**，2026-10-15 / 2026-10-16（UTC），在同一 worktree
+`codex/frontend-ux-20261015`。本节是 §C5.4 登记的残留的**后续清理实测**。
+
+### C5.5.1 授权来源与范围
+
+- **授权来源**：用户在 2026-10-15 **单独授权**（就「是否清理父目录壳与范围外历史孤立目录」
+  的两项询问均选 A）。这两个集合**都不在原清理计划 §二 C5 的 19 个 worktree 删除集内**，
+  按 AGENTS「不得未经授权删除 branch 或 worktree」，必须有这次单独授权才能删。
+- **范围**：`/Users/yifengstudio/.codex/worktrees` 下两集合共 **55 条**：
+  1. **19 个 0B 父目录壳**——C5 的 `git worktree remove` 只删 `<name>/SummitEverything`，
+     计划未授权删父目录，故留下 19 个壳（每个 0B，`find -mindepth 1` 只剩工具生成的
+     `.codex-worktree-name` 标记文件，或完全为空）。这 19 个名字与 §1 的 19 个待删 worktree 一一对应。
+  2. **36 个范围外历史孤立目录**——更早期的孤立目录，均**无 `.git` checkout**
+     （全目录只有 `frontend-ux-20261015` 保有 checkout）。构成：32 个 0B 目录、
+     `m1-close`（8.0K），以及 3 个 Python venv 共 **334 MB**
+     （`qa-stage-a-final-env` 113M、`qa-stage-a-final-env-2` 113M、`qa-stage-a-final-venv` 108M）。
+- **口径差异登记**：本轮交接任务书写「34 个范围外历史孤立目录」，**实测为 36**
+  （19 + 36 = 55 条删除，与删除前后快照 56 → 1 完全吻合）。以本节的逐条清单为准。
+
+### C5.5.2 守卫条件（只删满足全部三项的条目）
+
+1. 绝对路径位于 `/Users/yifengstudio/.codex/worktrees/` **之下**（不做任何通配到该目录之外）；
+2. **不是**保留项（保留项只有 `frontend-ux-20261015`）；
+3. **不在** `git worktree list` registry 中（即已不是任何已登记 worktree 的路径）。
+
+### C5.5.3 55 条逐条清单（体积取自 `/tmp/sol-worktrees-dir-before.txt`）
+
+类别列标明「C5 壳（19 之一）」与「范围外」。体积为删除前 `du -sh` 实测值。
+
+| # | 目录 | 类别 | 删除前体积 | 说明 |
+|---|---|---|---|---|
+| 1 | `8c6c` | 范围外 · 历史孤立目录 | 0B | 工具生成的短名目录 |
+| 2 | `frontend-a-qa-initial` | C5 壳（19 之一） | 0B | |
+| 3 | `frontend-a-qa-repair1` | C5 壳（19 之一） | 0B | |
+| 4 | `frontend-b-qa-initial` | C5 壳（19 之一） | 0B | |
+| 5 | `frontend-b-qa-repair1` | C5 壳（19 之一） | 0B | |
+| 6 | `frontend-c-qa-initial` | C5 壳（19 之一） | 0B | |
+| 7 | `frontend-d-build` | C5 壳（19 之一） | 0B | |
+| 8 | `frontend-d-build-repair2` | C5 壳（19 之一） | 0B | |
+| 9 | `frontend-d-build-repair3` | C5 壳（19 之一） | 0B | |
+| 10 | `frontend-d-final` | C5 壳（19 之一） | 0B | |
+| 11 | `frontend-d-qa-initial` | C5 壳（19 之一） | 0B | |
+| 12 | `frontend-d-qa-repair1` | C5 壳（19 之一） | 0B | |
+| 13 | `frontend-d-qa-repair1-parent` | C5 壳（19 之一） | 0B | |
+| 14 | `frontend-d-qa-repair2` | C5 壳（19 之一） | 0B | |
+| 15 | `frontend-d-qa-repair2-parent` | C5 壳（19 之一） | 0B | |
+| 16 | `frontend-d-qa-repair3` | C5 壳（19 之一） | 0B | |
+| 17 | `frontend-d-qa-repair3-parent` | C5 壳（19 之一） | 0B | |
+| 18 | `m1-close` | 范围外 · 历史孤立目录 | 8.0K | 范围外唯一非 0B 的小目录 |
+| 19 | `m2-stage-a-evidence-postmerge` | 范围外 · 历史孤立目录 | 0B | |
+| 20 | `m2-stage-a-postmerge` | 范围外 · 历史孤立目录 | 0B | |
+| 21 | `m2-stage-a-recovery-ui-ledger` | 范围外 · 历史孤立目录 | 0B | |
+| 22 | `m3-c19-unified-qa` | 范围外 · 历史孤立目录 | 0B | |
+| 23 | `m3-c19-unified-qa-r1` | 范围外 · 历史孤立目录 | 0B | |
+| 24 | `m3-c19-unified-qa-r2` | 范围外 · 历史孤立目录 | 0B | |
+| 25 | `m3-package-1-qa` | 范围外 · 历史孤立目录 | 0B | 2026-10-15 之前即已移除；3 条历史绝对路径快照见 [DELETED-PATHS-INDEX.md](../../DELETED-PATHS-INDEX.md) |
+| 26 | `m3-package-1-qa-r1` | 范围外 · 历史孤立目录 | 0B | |
+| 27 | `m3-package-2-qa` | 范围外 · 历史孤立目录 | 0B | |
+| 28 | `m3-package-2-qa-extra1` | 范围外 · 历史孤立目录 | 0B | |
+| 29 | `m3-package-2-qa-extra2` | 范围外 · 历史孤立目录 | 0B | |
+| 30 | `m3-package-2-qa-r1` | 范围外 · 历史孤立目录 | 0B | |
+| 31 | `m3-package-2-qa-r2` | 范围外 · 历史孤立目录 | 0B | |
+| 32 | `m3-package-3-qa` | 范围外 · 历史孤立目录 | 0B | |
+| 33 | `m3-package-3-qa-r1` | 范围外 · 历史孤立目录 | 0B | |
+| 34 | `m41-internal-app` | C5 壳（19 之一） | 0B | |
+| 35 | `m41-qa-b9321d6` | C5 壳（19 之一） | 0B | |
+| 36 | `m41-qa-repair1-3f6eaa4` | C5 壳（19 之一） | 0B | |
+| 37 | `m42-package-a-qa` | 范围外 · 历史孤立目录 | 0B | |
+| 38 | `m42-package-a-qa-repair1` | 范围外 · 历史孤立目录 | 0B | |
+| 39 | `m42-readiness` | 范围外 · 历史孤立目录 | 0B | |
+| 40 | `qa-m1-f364c01` | 范围外 · 历史孤立目录 | 0B | |
+| 41 | `qa-stage-a-evidence` | 范围外 · 历史孤立目录 | 0B | |
+| 42 | `qa-stage-a-final` | 范围外 · 历史孤立目录 | 0B | |
+| 43 | `qa-stage-a-final-env` | 范围外 · Python venv | 113M | venv，3 个合计 334 MB |
+| 44 | `qa-stage-a-final-env-2` | 范围外 · Python venv | 113M | venv；唯一被 tracked 报告按路径提及的项，见 C5.5.5 |
+| 45 | `qa-stage-a-final-venv` | 范围外 · Python venv | 108M | venv |
+| 46 | `qa-stage-b-luna-backend-576895f` | 范围外 · 历史孤立目录 | 0B | |
+| 47 | `qa-stage-b-luna-final-backend` | 范围外 · 历史孤立目录 | 0B | |
+| 48 | `qa-stage-b-luna-final-ui` | 范围外 · 历史孤立目录 | 0B | |
+| 49 | `qa-stage-b-luna-ui-retest-576895f` | 范围外 · 历史孤立目录 | 0B | |
+| 50 | `qa-stage-b-refresh-final` | 范围外 · 历史孤立目录 | 0B | |
+| 51 | `qa-stage-b-sol-backend` | 范围外 · 历史孤立目录 | 0B | |
+| 52 | `qa-stage-b-sol-ui` | 范围外 · 历史孤立目录 | 0B | |
+| 53 | `qa-stage-b-ui-retest` | 范围外 · 历史孤立目录 | 0B | |
+| 54 | `stage-b-real-providers` | 范围外 · 历史孤立目录 | 0B | |
+| 55 | `summit-m2` | 范围外 · 历史孤立目录 | 0B | |
+
+### C5.5.4 删除后结果（实测）
+
+| 项 | 删除前 | 删除后 |
+|---|---|---|
+| `ls /Users/yifengstudio/.codex/worktrees` | **56 条 / 1.1 G** | **1 条 / 804 M** |
+
+删除后唯一保留项为 `frontend-ux-20261015`（804M，即本 worktree）。
+`git worktree list` 仍为 **2** 行；主仓库 `/Users/yifengstudio/Documents/GitHub/SummitEverything`
+及其 `.local/internal-builds/` 四个目录**未删**。删除后 `git status --porcelain`（本 worktree）为空。
+
+### C5.5.5 唯一被 tracked 文档提及的范围外项
+
+3 个 venv 中只有 **`qa-stage-a-final-env-2`** 被 tracked 报告按路径提及：
+`docs/quality/reports/2026-10-10-M2-stage-a-final-qa.md` **第 14 行**记为
+「Runtime dependencies were installed in an external isolated environment at
+`/Users/yifengstudio/.codex/worktrees/qa-stage-a-final-env-2`」。
+该句是**历史陈述**，描述当时确实存在的隔离环境，删除该目录**不使该句失真**；
+且该目录**不是证据原件**（venv 不入 MANIFEST、不复制），故无「被 tracked 文档引用却未归档的原件」问题。
+
+补充实测：36 个范围外项中，被 tracked 文档以 **Markdown 链接**形式指向的只有 `m3-package-1-qa`
+（3 条，已在 [DELETED-PATHS-INDEX.md](../../DELETED-PATHS-INDEX.md) §0/§1 登记）；其余提及都出现在
+历史报告正文的行内代码或原始日志里，是路径快照、**不是链接**，本轮按 AGENTS 逐字保留、未改写。
+
+### C5.5.6 快照与不可逆声明
+
+删除前后的逐条体积快照保存在 **`/tmp/sol-worktrees-dir-before.txt`（56 行）** 与
+**`/tmp/sol-worktrees-dir-after.txt`（1 行）**——两者均为**主机级、未入库**；55 条的删除清单
+另存于 `/tmp/sol-worktrees-dir-delete.txt`。`/tmp` 内容会由 macOS periodic cleaner 清理，
+因此**长期追溯以本节的 55 行表为准**。删除不可逆：这些目录既不在 Git 中，也无归档副本
+（3 个 venv 按设计不入库；其余为 0B/8K 空壳或历史目录，其内容在更早轮次的 evidence 中另有记录）。
