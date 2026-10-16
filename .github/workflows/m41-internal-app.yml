@@ -1,4 +1,4 @@
-name: M4.1 internal macOS app
+name: offline-arm64 checks (python, web, native, DMG)
 
 on:
   push:
