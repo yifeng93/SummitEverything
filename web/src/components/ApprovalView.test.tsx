@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApprovalView } from './ApprovalView'
+import type { ApprovalTarget } from '../approvalTarget'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
@@ -10,7 +11,7 @@ const page = { page_id: 'page-1', relative_path: '项目/页面.md', metadata: {
 const candidate = { action_id: 'candidate-1', kind: 'todo', description: '合成任务建议', related_project_id: null, state: 'proposed', source_draft_id: 'draft-1', created_at: '2026-10-14T00:00:00Z' }
 const intent = { action_id: 'action-1', kind: 'project_progress', payload: { progress: '合成' }, payload_sha256: 'b'.repeat(64), state: 'proposed', confirmation_id: null, created_at: '2026-10-14T00:00:00Z' }
 
-function setup(overrides: Record<string, unknown> = {}) {
+function setup(overrides: Record<string, unknown> = {}, props: { target?: ApprovalTarget | null; onTargetHandled?: () => void; refreshEpoch?: number } = {}) {
   const calls: Array<{ path: string; method: string; body?: Record<string, unknown> }> = []
   const onError = vi.fn()
   const responses: Record<string, unknown> = {
@@ -18,6 +19,7 @@ function setup(overrides: Record<string, unknown> = {}) {
     '/api/v1/index/status': { state: 'not_ready', fingerprint: 'fake-fingerprint', pages: 1, chunks: 0, current_pages: 0, stale_pages: 1 },
     '/api/v1/actions': [candidate], '/api/v1/action-intents?limit=20': { items: [intent], next_cursor: null },
     '/api/v1/projects': [],
+    '/api/v1/lines': [],
     '/api/v1/settings': { mode: 'fake', embedding_fingerprint: 'fake-fingerprint' },
     ...overrides,
   }
@@ -36,9 +38,36 @@ function setup(overrides: Record<string, unknown> = {}) {
     return Response.json(value ?? {})
   }))
   const onPendingCount = vi.fn()
-  render(<ApprovalView onPendingCount={onPendingCount} onError={onError} />)
+  render(<ApprovalView {...props} onPendingCount={onPendingCount} onError={onError} />)
   return { calls, onPendingCount, onError }
 }
+
+it('continues with returned source IDs when titles collide and preselects only those exact items', async () => {
+  const onTargetHandled = vi.fn()
+  const first = { ...source, item_id: 'same-title-old', source_id: 'source-old', title: '同名会议记录' }
+  const second = { ...source, item_id: 'returned-item-a', source_id: 'source-a', title: '同名会议记录' }
+  const third = { ...source, item_id: 'returned-item-b', source_id: 'source-b', title: '另一条会议记录' }
+  const { calls } = setup({ '/api/v1/intake/items': [first, second, third], '/api/v1/drafts': [] }, { target: { kind: 'source', itemIds: ['returned-item-a', 'returned-item-b'] }, onTargetHandled })
+  await screen.findByText('已定位到本次成功保存的 2 项材料。选择归属后可继续整理。')
+  const sourceGroup = screen.getByRole('region', { name: /1 · 来源/ })
+  expect((sourceGroup.querySelector('[data-item-id="same-title-old"] input') as HTMLInputElement).checked).toBe(false)
+  expect((sourceGroup.querySelector('[data-item-id="returned-item-a"] input') as HTMLInputElement).checked).toBe(true)
+  expect((sourceGroup.querySelector('[data-item-id="returned-item-b"] input') as HTMLInputElement).checked).toBe(true)
+  expect(onTargetHandled).toHaveBeenCalledTimes(1)
+  expect(calls.some(({ path }) => path.includes('/intake/jobs'))).toBe(false)
+})
+
+it('opens one draft in a focused reading view and returns to its compact list', async () => {
+  setup()
+  await screen.findByText('合成稿件')
+  fireEvent.click(screen.getByRole('button', { name: '打开稿件：合成稿件' }))
+  const focus = await screen.findByRole('region', { name: '稿件审核：合成稿件' })
+  expect(within(focus).getByText('稿件正文')).toBeTruthy()
+  expect(focus.querySelector('.draft-edit-details')?.hasAttribute('open')).toBe(false)
+  fireEvent.click(within(focus).getByRole('button', { name: '返回审批清单' }))
+  expect(await screen.findByRole('region', { name: '审批清单' })).toBeTruthy()
+  expect(screen.getByText('合成稿件')).toBeTruthy()
+})
 
 it('五类固定顺序独立读取，局部失败不会把其他分组画成空态', async () => {
   setup({ '/api/v1/pages': new Error('本地读取暂不可用') })
@@ -97,33 +126,13 @@ it('来源归属下拉显示中文名称，内部英文ID不进入业务文案�
   expect(projectOption.textContent).not.toContain('project-internal-42')
 })
 
-it('顶部检查并应用只汇总已选类别，不写入、不确认，也不建计划', async () => {
+it('移除只汇总选中类别的检查清单，保留各项自己的确认入口', async () => {
   const { calls } = setup()
   await screen.findByText('正式页')
-  const formal = screen.getByRole('region', { name: /3 · 正式内容/ })
-  fireEvent.click(within(formal).getByRole('checkbox'))
-  fireEvent.click(screen.getByRole('checkbox', { name: '选择索引事项进行检查' }))
-  fireEvent.click(screen.getByRole('button', { name: /检查并应用/ }))
-  expect(screen.getByRole('dialog').textContent).toContain('正式内容：1 项')
-  expect(screen.getByRole('dialog').textContent).toContain('索引：1 项')
+  expect(screen.queryByRole('button', { name: /检查并应用/ })).toBeNull()
+  expect(screen.queryByRole('checkbox', { name: '选择索引事项进行检查' })).toBeNull()
+  expect(screen.getByRole('button', { name: '确认并保存当前版本' })).toBeTruthy()
   expect(calls.filter(({ method }) => method === 'POST')).toHaveLength(0)
-})
-
-it('检查并应用弹窗捕获 Tab、Escape 关闭并归还焦点', async () => {
-  setup()
-  await screen.findByText('正式页')
-  fireEvent.click(within(screen.getByRole('region', { name: /3 · 正式内容/ })).getByRole('checkbox'))
-  const trigger = screen.getByRole('button', { name: /检查并应用/ })
-  trigger.focus()
-  fireEvent.click(trigger)
-  const dialog = screen.getByRole('dialog', { name: '检查所选事项' })
-  const first = within(dialog).getByRole('button', { name: '去查看' })
-  first.focus()
-  fireEvent.keyDown(first, { key: 'Tab', shiftKey: true })
-  expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: '完成检查' }))
-  fireEvent.keyDown(dialog, { key: 'Escape' })
-  await waitFor(() => expect(screen.queryByRole('dialog', { name: '检查所选事项' })).toBeNull())
-  expect(document.activeElement).toBe(trigger)
 })
 
 it('正式页面点击确认前先预览，确认后原子保存当前metadata/body/hash', async () => {

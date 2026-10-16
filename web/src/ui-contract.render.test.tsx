@@ -203,15 +203,16 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     expect(within(approval).getByText('3'), '徽章显示待处理总数（来源 + 稿件）').toBeTruthy()
   })
 
-  it('今日主内容按会议、任务、行动、收件箱排列，只提供两个主工具并且默认不发送', async () => {
+  it('今日把会议任务与记录导入并列展示，且默认不发送', async () => {
     const fetchMock = stubShell()
     render(<App />)
-    await screen.findByText('收件箱目前没有内容。')
+    await screen.findByText('还没有最近材料。')
     const today = document.querySelector('.today-view') as HTMLElement
-    const stack = today.querySelector('.today-stack') as HTMLElement
-    const headings = Array.from(stack.children).map((section) => section.querySelector('h2')?.textContent).filter(Boolean)
-    expect(headings).toEqual(['会议', '待办任务', '收件箱'])
-    expect(today.querySelectorAll('.today-tools button')).toHaveLength(2)
+    expect(today.querySelector('.today-columns')).toBeTruthy()
+    expect(today.querySelector('.today-schedule')?.textContent).toContain('会议')
+    expect(today.querySelector('.today-schedule')?.textContent).toContain('待办任务')
+    expect(today.querySelector('.capture-panel')?.textContent).toContain('最近材料')
+    expect(today.querySelectorAll('.today-tools button')).toHaveLength(3)
     expect(today.querySelector('.queue-panel, .review-panel, .today-rail')).toBeNull()
     expect(within(today).queryByRole('button', { name: /授权飞书/ })).toBeNull()
     expect(screen.queryByRole('heading', { name: '需要行动' })).toBeNull()

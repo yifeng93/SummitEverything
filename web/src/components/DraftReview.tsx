@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, indexUpdateMessage, newOperationId, type Draft, type MutationResult, type Page, type SourceDetail } from '../api/client'
 import { MarkdownText } from './MarkdownText'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -10,9 +10,10 @@ type Props = {
   onError: (message: string) => void
   onConfirmed: (indexStatus: string) => Promise<void>
   onUpdated: () => Promise<void>
+  onDirtyChange?: (dirty: boolean) => void
 }
 
-export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: Props) {
+export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated, onDirtyChange }: Props) {
   const conflicts = (draft.important_conflicts ?? []) as Conflict[]
   const [title, setTitle] = useState(String(draft.metadata.title ?? ''))
   const [body, setBody] = useState(draft.body)
@@ -24,6 +25,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
   const [source, setSource] = useState<SourceDetail | null>(null)
   const [indexNotice, setIndexNotice] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [versionConflict, setVersionConflict] = useState(false)
   const operationIds = useRef<Record<string, string>>({})
   const target = pages.find((page) => page.page_id === targetId)
   const staleBase = Boolean(target && target.content_sha256 !== baseHash)
@@ -38,6 +40,19 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
   )
   const dirty = title !== String(draft.metadata.title ?? '') || body !== draft.body
     || targetId !== (draft.target_page_id ?? '') || baseHash !== (draft.expected_base_sha256 ?? '')
+    || JSON.stringify(resolutions) !== JSON.stringify(draft.conflict_resolutions ?? {})
+
+  useEffect(() => { onDirtyChange?.(dirty) }, [dirty, onDirtyChange])
+
+  function reloadLatestDraft() {
+    setTitle(String(draft.metadata.title ?? ''))
+    setBody(draft.body)
+    setTargetId(draft.target_page_id ?? '')
+    setBaseHash(draft.expected_base_sha256 ?? '')
+    setVersion(draft.version)
+    setResolutions(draft.conflict_resolutions ?? {})
+    setVersionConflict(false)
+  }
 
   function op(key: string) {
     operationIds.current[key] ??= newOperationId()
@@ -91,6 +106,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
       const message = cause instanceof Error ? cause.message : '无法确认稿件'
       if (message.includes('页面已变化') || message.includes('changed since it was reviewed')) {
         await onUpdated()
+        setVersionConflict(true)
       }
       onError(message)
     } finally {
@@ -99,23 +115,17 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
   }
 
   return (
-    <section className="draft-review" aria-label="审核稿编辑">
+    <section className="draft-review" aria-label="审核稿阅读与确认">
       {indexNotice && <p role="status" className={indexNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{indexNotice}</p>}
       <div className="review-topline"><span>完整审核稿</span><span>{draft.source_ids.length} 个原始来源</span></div>
-      <label className="field"><span>页面标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-      <label className="compact-field target-select"><span>整理到</span>
-        <select value={targetId} onChange={(event) => void selectTarget(event.target.value)}>
-          <option value="">新建知识页</option>
-          {candidates.map((page) => <option key={page.page_id} value={page.page_id}>
-            {String(page.metadata.title ?? '未命名页面')}{page.approval_state === 'invalid' ? ' · 需要重新确认' : ''}
-          </option>)}
-        </select>
-      </label>
+      <header className="draft-reading-heading"><h2>{title || '未命名稿件'}</h2><span>{draft.source_ids.length} 个来源 · 第 {version} 版</span></header>
+      <article className="draft-reading-body"><MarkdownText content={body} /></article>
+      {versionConflict && <div className="form-error" role="alert"><p>稿件在你审核期间发生变化，当前编辑仍保留。确认前请核对最新版本。</p><button className="button secondary" disabled={busy} onClick={reloadLatestDraft}>放弃当前编辑并载入最新版本</button></div>}
       {target && (
         <>
           {(staleBase || targetNeedsConfirmation) && (
             <div className="form-error" role="status">
-              <p>目标页面已变化或需要重新确认。当前正文尚未被覆盖，请检查下方版本对比。</p>
+              <p>目标页面已变化或需要重新确认。当前正文尚未被覆盖；展开编辑后可查看版本对比。</p>
               {staleBase ? (
                 <button className="text-button" disabled={busy} onClick={() => setBaseHash(target.content_sha256)}>
                   采用当前页面作为比较基准
@@ -129,11 +139,21 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
           </div>
         </>
       )}
-      <label className="field"><span>正文</span><textarea value={body} rows={9} onChange={(event) => setBody(event.target.value)} /></label>
-      <div className="source-reference">
-        <span>来源</span>
-        {draft.source_ids.map((sourceId, index) => <button key={sourceId} className="source-chip" onClick={() => api.get<SourceDetail>('/sources/' + sourceId).then(setSource).catch((cause) => onError(cause instanceof Error ? cause.message : '无法读取来源'))}>打开来源 {index + 1}</button>)}
-      </div>
+      <details className="draft-edit-details"><summary>编辑稿件、归属与来源</summary>
+        <label className="field"><span>页面标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+        <label className="compact-field target-select"><span>整理到</span>
+          <select value={targetId} onChange={(event) => void selectTarget(event.target.value)}>
+            <option value="">新建知识页</option>
+            {candidates.map((page) => <option key={page.page_id} value={page.page_id}>
+              {String(page.metadata.title ?? '未命名页面')}{page.approval_state === 'invalid' ? ' · 需要重新确认' : ''}
+            </option>)}
+          </select>
+        </label>
+        <label className="field"><span>正文</span><textarea value={body} rows={12} onChange={(event) => setBody(event.target.value)} /></label>
+        <div className="source-reference"><span>来源</span>
+          {draft.source_ids.map((sourceId, index) => <button key={sourceId} className="source-chip" onClick={() => api.get<SourceDetail>('/sources/' + sourceId).then(setSource).catch((cause) => onError(cause instanceof Error ? cause.message : '无法读取来源'))}>打开来源 {index + 1}</button>)}
+        </div>
+      </details>
       {source && <section className="original-source"><div><strong>{source.source.filename}</strong><button className="text-button" onClick={() => setSource(null)}>收起</button></div><MarkdownText content={source.text} /></section>}
       {conflicts.length > 0 && (
         <div className="conflict-list">
@@ -164,7 +184,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated }: P
       <div className="review-actions">
         <span>{dirty ? '有尚未保存的修改' : '来源与稿件保持关联'}</span>
         <div className="button-row">
-          <button className="button secondary" disabled={!dirty || busy} onClick={() => void saveDraft().catch((cause) => onError(cause instanceof Error ? cause.message : '无法保存稿件'))}>保存修改</button>
+          <button className="button secondary" disabled={!dirty || busy} onClick={() => void saveDraft().then(() => setVersionConflict(false)).catch((cause) => onError(cause instanceof Error ? cause.message : '无法保存稿件'))}>保存修改</button>
           <button className="button primary" disabled={busy || staleBase || unresolvedConflicts > 0} title={unresolvedConflicts ? `还有 ${unresolvedConflicts} 项冲突需要选择，或标记为暂时未决。` : undefined} onClick={() => setConfirmOpen(true)}>{busy ? '正在保存…' : '确认并保存当前版本'}</button>
         </div>
       </div>

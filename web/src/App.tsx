@@ -10,6 +10,7 @@ import { SettingsView } from './components/SettingsView'
 import { TodayView } from './components/TodayView'
 import { WorkspaceGate } from './components/WorkspaceGate'
 import type { ShellSection } from './navigation'
+import type { ApprovalTarget } from './approvalTarget'
 import { useThemePreference } from './theme'
 import { useToasts, type ToastKind } from './toast'
 import {
@@ -39,6 +40,9 @@ export default function App() {
   const [profileDir, setProfileDir] = useState<string | undefined>(undefined)
   const [approvalCount, setApprovalCount] = useState(0)
   const [approvalRefreshEpoch, setApprovalRefreshEpoch] = useState(0)
+  const [approvalTarget, setApprovalTarget] = useState<ApprovalTarget | null>(null)
+  const [approvalDirty, setApprovalDirty] = useState(false)
+  const [approvalDiscardEpoch, setApprovalDiscardEpoch] = useState(0)
   const [todayCacheEpoch, setTodayCacheEpoch] = useState(0)
   const [themePreference, setThemePreference] = useThemePreference()
   const { toasts, notify, dismiss } = useToasts()
@@ -132,15 +136,27 @@ export default function App() {
     setWorkspace(opened)
     if (opened.local_profile_dir) setProfileDir(opened.local_profile_dir)
     setPage(null)
+    setApprovalTarget(null)
     setConnection('connecting')
     await resolveFirstUse(opened, mode)
     setConnection('ready')
   }, [resetApproval, resolveFirstUse])
 
   const refreshApprovalAfterIntake = useCallback(() => setApprovalRefreshEpoch((value) => value + 1), [])
+  const openApproval = useCallback((target?: ApprovalTarget) => {
+    setApprovalTarget(target ?? null)
+    setSection('approval')
+    setVisitedSections((current) => new Set(current).add('approval'))
+  }, [])
+  const clearApprovalTarget = useCallback(() => setApprovalTarget(null), [])
   const invalidateTodayAfterAuthorizationChange = useCallback(() => setTodayCacheEpoch((value) => value + 1), [])
 
   async function openPage(pageId: string, expectedHash?: string) {
+    if (section === 'approval' && approvalDirty) {
+      if (!window.confirm('稿件有未保存的修改。离开审批会放弃这些修改，是否继续？')) return
+      setApprovalDirty(false)
+      setApprovalDiscardEpoch((value) => value + 1)
+    }
     if (!page) {
       readerFocusReturn.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
       readerOriginScroll.current = window.scrollY || document.documentElement.scrollTop
@@ -174,8 +190,13 @@ export default function App() {
   }
 
   function switchWorkspace() {
+    if (section === 'approval' && approvalDirty) {
+      if (!window.confirm('稿件有未保存的修改。切换工作库会放弃这些修改，是否继续？')) return
+      setApprovalDirty(false)
+    }
     setFirstUse((current) => ({ ...current, open: false }))
     setPage(null)
+    setApprovalTarget(null)
     setSection('today')
     setWorkspace(null)
     resetApproval()
@@ -193,7 +214,14 @@ export default function App() {
   return (
     <AppShell
       section={section}
-      onSelect={(next) => { setPage(null); setSection(next); setVisitedSections((current) => new Set(current).add(next)) }}
+      onSelect={(next) => {
+        if (section === 'approval' && next !== 'approval' && approvalDirty) {
+          if (!window.confirm('稿件有未保存的修改。离开审批会放弃这些修改，是否继续？')) return
+          setApprovalDirty(false)
+          setApprovalDiscardEpoch((value) => value + 1)
+        }
+        setPage(null); setSection(next); setVisitedSections((current) => new Set(current).add(next))
+      }}
       workspaceName={workspace.name}
       onSwitchWorkspace={switchWorkspace}
       approvalCount={approvalCount}
@@ -234,10 +262,10 @@ export default function App() {
         onAuthorizationChanged={invalidateTodayAfterAuthorizationChange}
         />
       ) : null}
-      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
-      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={() => { setSection('approval'); setVisitedSections((current) => new Set(current).add('approval')) }} />}</div>
-      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={() => setSection('approval')} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
-      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={`${workspace.workspace_id}:${approvalRefreshEpoch}`} onPendingCount={setApprovalCount} onError={report} onOpenPage={(title) => {
+      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView key={workspace.workspace_id} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
+      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView key={workspace.workspace_id} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={openApproval} />}</div>
+      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={openApproval} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} /></div>
+      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={workspace.workspace_id} refreshEpoch={approvalRefreshEpoch} target={approvalTarget} onTargetHandled={clearApprovalTarget} onPendingCount={setApprovalCount} onDirtyChange={setApprovalDirty} discardEpoch={approvalDiscardEpoch} onError={report} onOpenPage={(title) => {
         void api.get<Page[]>('/pages').then((pages) => {
           const match = pages.find((candidate) => String(candidate.metadata.title ?? '') === title)
           if (match) void openPage(match.page_id)

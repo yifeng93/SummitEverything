@@ -164,6 +164,32 @@ it('侧栏审批徽章与审批页共用同一份清单，数量一致', async (
   expect(within(approvalView).queryByText('已确认稿件')).toBeNull()
 })
 
+it('dirty draft blocks sidebar navigation and accepted discard returns to the saved list', async () => {
+  const reviewDraft = { draft_id: 'draft-focus', metadata: { title: '需保护的稿件' }, body: '# 原正文', source_ids: ['source-focus'], important_conflicts: [], state: 'pending', version: 1 }
+  vi.stubGlobal('fetch', shellFetch({ '/api/v1/drafts': [reviewDraft] }))
+  render(<App />)
+  const nav = await screen.findByRole('navigation', { name: '主导航' })
+  fireEvent.click(within(nav).getByRole('button', { name: /^审批/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '打开稿件：需保护的稿件' }))
+  const focus = await screen.findByRole('region', { name: '稿件审核：需保护的稿件' })
+  fireEvent.click(within(focus).getByText('编辑稿件、归属与来源'))
+  const body = within(focus).getByLabelText('正文') as HTMLTextAreaElement
+  fireEvent.change(body, { target: { value: '# 保留这段修改' } })
+
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+  fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+  expect(confirm).toHaveBeenCalledWith('稿件有未保存的修改。离开审批会放弃这些修改，是否继续？')
+  expect(within(nav).getByRole('button', { name: /^审批/ }).getAttribute('aria-current')).toBe('page')
+  expect(body.value).toBe('# 保留这段修改')
+
+  confirm.mockReturnValue(true)
+  fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+  expect(await screen.findByRole('heading', { name: '项目' })).toBeTruthy()
+  fireEvent.click(within(nav).getByRole('button', { name: /^审批/ }))
+  expect(await screen.findByRole('region', { name: '审批清单' })).toBeTruthy()
+  expect(screen.queryByRole('region', { name: '稿件审核：需保护的稿件' })).toBeNull()
+})
+
 it('待处理为 0 时不显示徽章', async () => {
   vi.stubGlobal('fetch', shellFetch())
   render(<App />)
@@ -182,7 +208,7 @@ it('Today→Settings→Today keeps cached inbox; a confirmed authorization chang
   })
   vi.stubGlobal('fetch', fetch)
   render(<App />)
-  await screen.findByText('收件箱目前没有内容。')
+  await screen.findByText('还没有最近材料。')
   const inboxReads = () => fetch.mock.calls.filter(([input]) => String(input) === '/api/v1/intake/items').length
   const initialReads = inboxReads()
 
@@ -206,9 +232,9 @@ it('全局失败提示走 toast（可手关），没有常驻红色横幅', asyn
   }))
   render(<App />)
 
-  await screen.findByText('收件箱目前没有内容。')
+  await screen.findByText('还没有最近材料。')
   fireEvent.change(screen.getByLabelText('记下一句话'), { target: { value: '触发提示的合成记录' } })
-  fireEvent.click(screen.getByRole('button', { name: '保存到收件箱' }))
+  fireEvent.click(screen.getByRole('button', { name: '保存原文' }))
 
   const toast = await screen.findByRole('alert')
   expect(toast.textContent).toContain('本机读取出了点问题。')
