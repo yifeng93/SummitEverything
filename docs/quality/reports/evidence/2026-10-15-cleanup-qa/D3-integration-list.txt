@@ -1,0 +1,7 @@
+
+> web@0.0.0 test:e2e:integration
+> playwright test --config playwright.integration.config.ts --list
+
+Listing tests:
+  approval-today.spec.ts:6:1 › FastAPI Fake flow keeps intake, knowledge confirmation, indexing and actions separate
+Total: 1 test in 1 file

@@ -1,0 +1,23 @@
+frontend-a-qa-initial              ok         file_lines=   47 ok=   4 mismatch=  0 absent=   43 TREE=0
+frontend-a-qa-repair1              ok         file_lines=   72 ok=  12 mismatch=  0 absent=   60 TREE=0
+frontend-b-qa-initial              ok         file_lines=  125 ok=  32 mismatch=  0 absent=   93 TREE=0
+frontend-b-qa-repair1              ok         file_lines=  211 ok=  33 mismatch=  0 absent=  178 TREE=0
+frontend-c-qa-initial              ok         file_lines=   87 ok=  17 mismatch=  0 absent=   70 TREE=0
+frontend-d-build                   ok         file_lines=    0 ok=   0 mismatch=  0 absent=    0 TREE=0
+frontend-d-build-repair2           ok         file_lines=    2 ok=   0 mismatch=  0 absent=    2 TREE=1
+frontend-d-build-repair3           ok         file_lines=    2 ok=   0 mismatch=  0 absent=    2 TREE=1
+frontend-d-final                   ok         file_lines=   20 ok=   8 mismatch=  0 absent=   12 TREE=1
+frontend-d-qa-initial              ok         file_lines=  178 ok=  15 mismatch=  0 absent=  163 TREE=0
+frontend-d-qa-repair1              ok         file_lines=  240 ok=  35 mismatch=  0 absent=  205 TREE=0
+frontend-d-qa-repair1-parent       ok         file_lines=   24 ok=   5 mismatch=  0 absent=   19 TREE=0
+frontend-d-qa-repair2              ok         file_lines=  268 ok=  73 mismatch=  0 absent=  195 TREE=0
+frontend-d-qa-repair2-parent       ok         file_lines=   33 ok=  10 mismatch=  0 absent=   23 TREE=0
+frontend-d-qa-repair3              ok         file_lines=  208 ok=  57 mismatch=  0 absent=  151 TREE=0
+frontend-d-qa-repair3-parent       ok         file_lines=    6 ok=   6 mismatch=  0 absent=    0 TREE=0
+m41-internal-app                   ok         file_lines=   91 ok=  48 mismatch=  0 absent=   43 TREE=5
+m41-qa-b9321d6                     ok         file_lines=   22 ok=  21 mismatch=  0 absent=    1 TREE=0
+m41-qa-repair1-3f6eaa4             ok         file_lines=   35 ok=  19 mismatch=  0 absent=   16 TREE=0
+----------------------------------------------------------------------------------------------------
+TOTAL file_lines=1671 ok=395 mismatch=0 absent=1276 TREE=8
+TOTAL MANIFEST entries = 1671 file lines + 8 TREE lines = 1679
+RESULT: PASS

@@ -1,0 +1,25 @@
+tracked md files scanned: 340   relative-ish link targets: 1049
+TOTAL broken = 23
+BROKEN	docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md	/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/web/src/components/AskView.tsx:148
+BROKEN	docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md	/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/src/summit_everything/local/conversations.py:209
+BROKEN	docs/quality/reports/2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md	/Users/yifengstudio/.codex/worktrees/m3-package-1-qa/SummitEverything/web/src/components/AskView.tsx:243
+BROKEN	docs/quality/reports/2026-10-15-FRONTEND-A-INITIAL/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/FirstUseWizard.tsx:301
+BROKEN	docs/quality/reports/2026-10-15-FRONTEND-A-INITIAL/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/SettingsView.tsx:46
+BROKEN	docs/quality/reports/2026-10-15-FRONTEND-A-INITIAL/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/settingsBadges.ts:195
+BROKEN	docs/quality/reports/2026-10-15-FRONTEND-A-INITIAL/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/SettingsView.tsx:80
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-a-qa-initial/qa/frontend-a-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/FirstUseWizard.tsx:301
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-a-qa-initial/qa/frontend-a-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/SettingsView.tsx:46
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-a-qa-initial/qa/frontend-a-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/settingsBadges.ts:195
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-a-qa-initial/qa/frontend-a-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/web/src/components/SettingsView.tsx:80
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-b-qa-initial/SummitEverything/web/src/components/SourceOrganizer.tsx:74
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	evidence/source-scope-request.json
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	evidence/source-scope-dialog.png
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-b-qa-initial/SummitEverything/web/src/components/useDialogFocus.ts:3
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	/Users/yifengstudio/.codex/worktrees/frontend-b-qa-initial/SummitEverything/web/src/App.css:126
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	evidence/import-focus-walk.json
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-b-qa-initial/qa/frontend-b-initial/QA-REPORT.md	evidence/import-first-file-focus.png
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-d-qa-initial/qa/frontend-d-initial/QA-REPORT.md	candidate-identity.json
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-d-qa-initial/qa/frontend-d-initial/QA-REPORT.md	evidence/workspace-gate/reproduction.json
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-d-qa-initial/qa/frontend-d-initial/QA-REPORT.md	evidence/workspace-gate/completed-workspace-reopened.png
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-d-qa-initial/qa/frontend-d-initial/QA-REPORT.md	evidence/native-restart-repro.json
+BROKEN	docs/quality/reports/evidence/2026-10-15-worktree-archive/frontend-d-qa-initial/qa/frontend-d-initial/QA-REPORT.md	evidence/native-preflight.json

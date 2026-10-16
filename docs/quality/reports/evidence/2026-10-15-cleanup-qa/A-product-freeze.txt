@@ -1,0 +1,14 @@
+$ git diff e8e1dba 7a448c3 -- src 'web/src' ... native
+A1_EXIT=0
+(no lines above = empty diff = product frozen)
+
+$ git diff faa1edd e8e1dba --stat -- <same pathspec>
+ src/summit_everything/local/first_use_progress.py | 15 +++++++-
+ web/src/App.tsx                                   | 47 ++++++++++++++---------
+ web/src/api/generated.ts                          |  5 +++
+ web/src/components/WorkspaceGate.tsx              |  9 ++++-
+ 4 files changed, 55 insertions(+), 21 deletions(-)
+A2_EXIT=0
+
+$ git diff faa1edd e8e1dba --name-only -- web/src | grep -c 'test\.tsx$'
+2

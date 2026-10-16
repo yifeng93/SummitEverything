@@ -146,6 +146,7 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 | [前端 UX 里程碑 A：开发交接](2026-10-15-FRONTEND-A-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
 | [前端 UX 里程碑 D 开发自测与候选交接](2026-10-15-FRONTEND-D-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
 | [PR #21 合并前仓库清理 · Developer 报告（2026-10-15）](2026-10-15-PRE-PR21-CLEANUP-DEV.md) | 本轮清理 DEV 报告（2026-10-15 仓库清理） |
+| [PR #21 合并前仓库清理 · 独立 QA 报告（Luna · High，2026-10-15）](2026-10-15-PRE-PR21-CLEANUP-QA.md) | 全新独立 QA 对固定 `7a448c3` 的清理验收（A–H 全项 PASS；含未覆盖清单与 Nit） |
 | [已删路径 → 归档索引（2026-10-15 清理）](DELETED-PATHS-INDEX.md) | 已删路径 → 归档索引（本轮清理） |
 
 | [Stage B / C 当前工作计划](../../handoff/history/2026-10-11-STAGE-B-C-PLAN.md) | 历史归档（Stage B/C 计划） |

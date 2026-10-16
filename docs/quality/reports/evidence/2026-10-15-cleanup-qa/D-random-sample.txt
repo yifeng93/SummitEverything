@@ -1,0 +1,40 @@
+--- frontend-a-qa-initial ---
+  row found: YES
+  判定理由:  一次性 QA checkout，工作已并入 `9d6e097`；用户选定只保留 main + `frontend-ux-20261015` 
+  归档索引:  [MANIFEST](frontend-a-qa-initial/MANIFEST.sha256) 
+  MANIFEST link: YES
+  archive dir exists: YES (MANIFEST.sha256 qa )
+  MANIFEST non-empty: YES
+  §C5.2 removal row: 4 occurrences
+--- frontend-d-qa-repair3 ---
+  row found: YES
+  判定理由:  最终 QA 已完成并留下结论，checkout 可清退 
+  归档索引:  [MANIFEST](frontend-d-qa-repair3/MANIFEST.sha256) 
+  MANIFEST link: YES
+  archive dir exists: YES (MANIFEST.sha256 dev qa )
+  MANIFEST non-empty: YES
+  §C5.2 removal row: 4 occurrences
+--- m41-qa-b9321d6 ---
+  row found: YES
+  判定理由:  一次性 QA checkout 
+  归档索引:  [MANIFEST](m41-qa-b9321d6/MANIFEST.sha256) 
+  MANIFEST link: YES
+  archive dir exists: YES (MANIFEST.sha256 qa )
+  MANIFEST non-empty: YES
+  §C5.2 removal row: 4 occurrences
+--- m41-internal-app ---
+  row found: YES
+  判定理由:  中间构建，二进制随删（身份见 [CANDIDATE-IDENTITY.md](CANDIDATE-IDENTITY.md) §4） 
+  归档索引:  [MANIFEST](m41-internal-app/MANIFEST.sha256) 
+  MANIFEST link: YES
+  archive dir exists: YES (MANIFEST.sha256 dev sol )
+  MANIFEST non-empty: YES
+  §C5.2 removal row: 4 occurrences
+--- frontend-b-qa-repair1 ---
+  row found: YES
+  判定理由:  同上 
+  归档索引:  [MANIFEST](frontend-b-qa-repair1/MANIFEST.sha256) 
+  MANIFEST link: YES
+  archive dir exists: YES (MANIFEST.sha256 qa )
+  MANIFEST non-empty: YES
+  §C5.2 removal row: 4 occurrences
