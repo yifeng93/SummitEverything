@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApprovalView } from './ApprovalView'
 import type { ApprovalTarget } from '../approvalTarget'
@@ -66,6 +66,118 @@ it('routes formal-page targets by page ID when titles collide', async () => {
   const focus = await screen.findByRole('region', { name: '正式内容：正式页' })
   expect(within(focus).getByText('本次实际页面正文')).toBeTruthy()
   expect(within(focus).queryByText('旧的同名正文')).toBeNull()
+})
+
+it('waits for refreshed target data before handling an exact-ID destination', async () => {
+  let finishSources: ((response: Response) => void) | undefined
+  const onTargetHandled = vi.fn()
+  const targetSource = { ...source, item_id: 'ready-later-item', source_id: 'ready-later-source', title: '稍后到达的材料' }
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input).replace('http://localhost', '')
+    if (path === '/api/v1/intake/items') return await new Promise<Response>((resolve) => { finishSources = resolve })
+    if (path.startsWith('/api/v1/sources/')) return Response.json({ source: { source_id: 'ready-later-source', filename: '稍后到达.md', origin_kind: 'quick_note' }, text: '目标原文已就绪。' })
+    if (path === '/api/v1/index/status') return Response.json({ state: 'not_ready', fingerprint: null, pages: 0, chunks: 0, current_pages: 0, stale_pages: 0 })
+    if (path === '/api/v1/action-intents?limit=20') return Response.json({ items: [], next_cursor: null })
+    if (path === '/api/v1/settings') return Response.json({ mode: 'fake', embedding_fingerprint: null })
+    return Response.json([])
+  }))
+  render(<ApprovalView target={{ kind: 'source', itemIds: ['ready-later-item'] }} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+
+  await waitFor(() => expect(finishSources).toBeTypeOf('function'))
+  expect(onTargetHandled).not.toHaveBeenCalled()
+  finishSources!(Response.json([targetSource]))
+
+  const focus = await screen.findByRole('region', { name: '来源详情：稍后到达的材料' })
+  expect(within(focus).getByText('目标原文已就绪。')).toBeTruthy()
+  expect(onTargetHandled).toHaveBeenCalledTimes(1)
+})
+
+it('ignores an older refresh when a newer exact-ID target arrives first', async () => {
+  let finishFirstSources: ((response: Response) => void) | undefined
+  let sourceReadCount = 0
+  const onTargetHandled = vi.fn()
+  const oldSource = { ...source, item_id: 'old-target-item', source_id: 'old-target-source', title: '旧目标材料' }
+  const latestSource = { ...source, item_id: 'latest-target-item', source_id: 'latest-target-source', title: '最新目标材料' }
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input).replace('http://localhost', '')
+    if (path === '/api/v1/intake/items') {
+      sourceReadCount += 1
+      if (sourceReadCount === 1) return await new Promise<Response>((resolve) => { finishFirstSources = resolve })
+      return Response.json([latestSource])
+    }
+    if (path.startsWith('/api/v1/sources/')) return Response.json({ source: { source_id: path.slice('/api/v1/sources/'.length), filename: '最新材料.md', origin_kind: 'quick_note' }, text: '最新目标原文。' })
+    if (path === '/api/v1/index/status') return Response.json({ state: 'not_ready', fingerprint: null, pages: 0, chunks: 0, current_pages: 0, stale_pages: 0 })
+    if (path === '/api/v1/action-intents?limit=20') return Response.json({ items: [], next_cursor: null })
+    if (path === '/api/v1/settings') return Response.json({ mode: 'fake', embedding_fingerprint: null })
+    return Response.json([])
+  }))
+  const view = render(<ApprovalView target={{ kind: 'source', itemIds: ['old-target-item'] }} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+  await waitFor(() => expect(finishFirstSources).toBeTypeOf('function'))
+
+  view.rerender(<ApprovalView refreshEpoch={1} target={{ kind: 'source', itemIds: ['latest-target-item'] }} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+  const latestFocus = await screen.findByRole('region', { name: '来源详情：最新目标材料' })
+  expect(within(latestFocus).getByText('最新目标原文。')).toBeTruthy()
+  finishFirstSources!(Response.json([oldSource]))
+
+  await waitFor(() => expect(onTargetHandled).toHaveBeenCalledTimes(1))
+  expect(screen.getByRole('region', { name: '来源详情：最新目标材料' })).toBeTruthy()
+  expect(screen.queryByRole('region', { name: '来源详情：旧目标材料' })).toBeNull()
+})
+
+it('ignores an older source-detail response after a newer target takes focus', async () => {
+  let finishOldDetail: ((response: Response) => void) | undefined
+  const first = { ...source, item_id: 'first-target-item', source_id: 'first-target-source', title: '先选材料' }
+  const latest = { ...source, item_id: 'latest-target-item', source_id: 'latest-target-source', title: '后选材料' }
+  const onTargetHandled = vi.fn()
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input).replace('http://localhost', '')
+    if (path === '/api/v1/intake/items') return Response.json([first, latest])
+    if (path === '/api/v1/sources/first-target-source') return await new Promise<Response>((resolve) => { finishOldDetail = resolve })
+    if (path.startsWith('/api/v1/sources/')) return Response.json({ source: { source_id: 'latest-target-source', filename: '后选材料.md', origin_kind: 'quick_note' }, text: '后选材料原文。' })
+    if (path === '/api/v1/index/status') return Response.json({ state: 'not_ready', fingerprint: null, pages: 0, chunks: 0, current_pages: 0, stale_pages: 0 })
+    if (path === '/api/v1/action-intents?limit=20') return Response.json({ items: [], next_cursor: null })
+    if (path === '/api/v1/settings') return Response.json({ mode: 'fake', embedding_fingerprint: null })
+    return Response.json([])
+  }))
+  const view = render(<ApprovalView target={{ kind: 'source', itemIds: ['first-target-item'] }} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+  await waitFor(() => expect(finishOldDetail).toBeTypeOf('function'))
+  view.rerender(<ApprovalView target={{ kind: 'source', itemIds: ['latest-target-item'] }} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+
+  const latestFocus = await screen.findByRole('region', { name: '来源详情：后选材料' })
+  expect(within(latestFocus).getByText('后选材料原文。')).toBeTruthy()
+  await act(async () => {
+    finishOldDetail!(Response.json({ source: { source_id: 'first-target-source', filename: '先选材料.md', origin_kind: 'quick_note' }, text: '过期的先选材料原文。' }))
+    await Promise.resolve()
+  })
+  expect(screen.getByRole('region', { name: '来源详情：后选材料' })).toBeTruthy()
+  expect(screen.queryByText('过期的先选材料原文。')).toBeNull()
+})
+
+it('keeps an in-flight source detail when a handled target is followed by a refresh epoch', async () => {
+  let finishDetail: ((response: Response) => void) | undefined
+  let sourceListReads = 0
+  const onTargetHandled = vi.fn()
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input).replace('http://localhost', '')
+    if (path === '/api/v1/intake/items') { sourceListReads += 1; return Response.json([source]) }
+    if (path === '/api/v1/sources/source-1') return await new Promise<Response>((resolve) => { finishDetail = resolve })
+    if (path === '/api/v1/index/status') return Response.json({ state: 'not_ready', fingerprint: null, pages: 0, chunks: 0, current_pages: 0, stale_pages: 0 })
+    if (path === '/api/v1/action-intents?limit=20') return Response.json({ items: [], next_cursor: null })
+    if (path === '/api/v1/settings') return Response.json({ mode: 'fake', embedding_fingerprint: null })
+    return Response.json([])
+  }))
+  const view = render(<ApprovalView target={{ kind: 'source', itemIds: ['source-1'] }} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+  await waitFor(() => expect(finishDetail).toBeTypeOf('function'))
+  await waitFor(() => expect(onTargetHandled).toHaveBeenCalledTimes(1))
+
+  view.rerender(<ApprovalView target={null} refreshEpoch={1} onTargetHandled={onTargetHandled} onPendingCount={vi.fn()} onError={vi.fn()} />)
+  await waitFor(() => expect(sourceListReads).toBe(2))
+  await act(async () => {
+    finishDetail!(Response.json({ source: { source_id: 'source-1', filename: '随手记.md', origin_kind: 'quick_note' }, text: '刷新期间仍可完成的原文。' }))
+    await Promise.resolve()
+  })
+  const focus = await screen.findByRole('region', { name: '来源详情：合成速记' })
+  expect(within(focus).getByText('刷新期间仍可完成的原文。')).toBeTruthy()
 })
 
 it('shows an existing processing source without starting a second intake job', async () => {
@@ -163,7 +275,8 @@ it('来源尚未读取时显示加载而非空态，成功读取后才显示空�
   const sourceGroup = screen.getByRole('region', { name: /1 · 来源/ })
   expect(within(sourceGroup).getByRole('status').textContent).toContain('正在读取')
   expect(within(sourceGroup).queryByText('没有待整理的来源')).toBeNull()
-  finishRead?.(Response.json([]))
+  await waitFor(() => expect(finishRead).toBeTypeOf('function'))
+  await act(async () => { finishRead?.(Response.json([])) })
   expect(await within(sourceGroup).findByText('没有待整理的来源')).toBeTruthy()
 })
 

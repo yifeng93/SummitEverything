@@ -69,6 +69,8 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const returnFocusRef = useRef<HTMLElement | null>(null)
   const returnScrollRef = useRef(0)
   const previousDiscardEpoch = useRef(discardEpoch)
+  const sourceDetailRequest = useRef(0)
+  const targetRouteRequest = useRef(0)
 
   useEffect(() => { onDirtyChange?.(draftDirty) }, [draftDirty, onDirtyChange])
   useEffect(() => {
@@ -99,10 +101,11 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
     setActiveSource(item.item_id)
     setSelectedSources([item.item_id])
     setSourceDetail(null); setSourceDetailError(''); setSourceDetailLoading(true); setOrganizeResult(null)
+    const requestId = ++sourceDetailRequest.current
     void api.get<SourceDetail>('/sources/' + item.source_id)
-      .then(setSourceDetail)
-      .catch((cause) => setSourceDetailError(cause instanceof Error ? cause.message : '无法读取原文'))
-      .finally(() => setSourceDetailLoading(false))
+      .then((detail) => { if (requestId === sourceDetailRequest.current) setSourceDetail(detail) })
+      .catch((cause) => { if (requestId === sourceDetailRequest.current) setSourceDetailError(cause instanceof Error ? cause.message : '无法读取原文') })
+      .finally(() => { if (requestId === sourceDetailRequest.current) setSourceDetailLoading(false) })
   }
 
   async function refreshOrganizeResult() {
@@ -143,13 +146,49 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const refreshIndex = useCallback(() => load(setIndex, () => api.get<IndexStatus>('/index/status')), [load])
   const refreshCandidates = useCallback(() => load(setCandidates, () => api.get<ActionCandidate[]>('/actions')), [load])
   const refreshIntents = useCallback(() => load(setIntents, () => api.get<ActionPage>('/action-intents?limit=20')), [load])
-  const refreshAll = useCallback(async (epoch = 0) => {
-    await Promise.allSettled([refreshSources(), refreshDrafts(), refreshPages(), refreshIndex(), refreshCandidates(), refreshIntents(), api.get<components['schemas']['SettingsSummary']>('/settings').then((value) => { setSettingsMode(value.mode); setConfiguredFingerprint(value.embedding_fingerprint) }).catch(() => { setSettingsMode(null); setConfiguredFingerprint('') })])
-    setLoadedEpoch(epoch)
-  }, [refreshSources, refreshDrafts, refreshPages, refreshIndex, refreshCandidates, refreshIntents])
-  // This effect synchronizes the visible approval resources with an external refresh epoch.
-  // oxlint-disable-next-line react/set-state-in-effect
-  useEffect(() => { void refreshAll(refreshEpoch) }, [refreshAll, refreshEpoch])
+  useEffect(() => {
+    let current = true
+    targetRouteRequest.current += 1
+    const refresh = async () => {
+      await Promise.resolve()
+      if (!current) return
+      setSources((value) => ({ ...value, loading: true, error: '' }))
+      setDrafts((value) => ({ ...value, loading: true, error: '' }))
+      setPages((value) => ({ ...value, loading: true, error: '' }))
+      setIndex((value) => ({ ...value, loading: true, error: '' }))
+      setCandidates((value) => ({ ...value, loading: true, error: '' }))
+      setIntents((value) => ({ ...value, loading: true, error: '' }))
+      const refreshResource = async <T,>(setter: React.Dispatch<React.SetStateAction<Resource<T>>>, request: () => Promise<T>) => {
+        try {
+          const data = await request()
+          if (current) setter({ data, loading: false, error: '', lastSuccess: new Date().toISOString() })
+        } catch (cause) {
+          if (current) setter((value) => ({ ...value, loading: false, error: cause instanceof Error ? cause.message : '读取失败，请重试。' }))
+        }
+      }
+      const settings = async () => {
+        try {
+          const value = await api.get<components['schemas']['SettingsSummary']>('/settings')
+          if (current) { setSettingsMode(value.mode); setConfiguredFingerprint(value.embedding_fingerprint) }
+        } catch {
+          if (current) { setSettingsMode(null); setConfiguredFingerprint('') }
+        }
+      }
+      await Promise.all([
+        refreshResource(setSources, () => api.get<IntakeItem[]>('/intake/items')),
+        refreshResource(setDrafts, () => api.get<Draft[]>('/drafts')),
+        refreshResource(setPages, async () => (await api.get<Page[]>('/pages')).filter((page) => page.storage_area === 'formal')),
+        refreshResource(setIndex, () => api.get<IndexStatus>('/index/status')),
+        refreshResource(setCandidates, () => api.get<ActionCandidate[]>('/actions')),
+        refreshResource(setIntents, () => api.get<ActionPage>('/action-intents?limit=20')),
+        settings(),
+      ])
+      if (!current) return
+      setLoadedEpoch(refreshEpoch)
+    }
+    void refresh()
+    return () => { current = false }
+  }, [refreshEpoch])
 
   const pendingSources = sources.data?.filter(intakeNeedsAttention) ?? []
   const pendingDraftList = drafts.data?.filter(draftNeedsAttention) ?? []
@@ -180,44 +219,62 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   useEffect(() => {
     if (!target) return
     if (loadedEpoch < refreshEpoch) return
-    const findDestination = (): { element: HTMLElement | null; message: string } | null => {
+    let current = true
+    const routeId = ++targetRouteRequest.current
+    sourceDetailRequest.current += 1
+    const route = async () => {
+      await Promise.resolve()
+      if (!current || routeId !== targetRouteRequest.current) return
+      let message: string
+      let element: HTMLElement | null = null
+      let sourceToLoad: IntakeItem | null = null
       if (target.kind === 'source') {
-        if (!sources.data || !drafts.data) return null
+        if (!sources.data || !drafts.data) return
         const source = sources.data.find((item) => target.itemIds.includes(item.item_id))
-        if (!source) return { element: null, message: '这条材料已不在当前工作库中。请刷新来源列表后重新选择。' }
-        setSelectedSources(target.itemIds.filter((id) => sources.data?.some((item) => item.item_id === id && item.state !== 'processing' && item.state !== 'reviewing')))
-        if (source.state === 'reviewing') {
-          const related = drafts.data.find((draft) => draft.source_ids.includes(source.source_id))
-          if (related) { setActiveDraft(related.draft_id); return { element: findByData('draftId', related.draft_id), message: '这条材料已有待审核稿，已打开现有稿件。' } }
+        if (!source) message = '这条材料已不在当前工作库中。请刷新来源列表后重新选择。'
+        else {
+          setSelectedSources(target.itemIds.filter((id) => sources.data?.some((item) => item.item_id === id && item.state !== 'processing' && item.state !== 'reviewing')))
+          const related = source.state === 'reviewing' ? drafts.data.find((draft) => draft.source_ids.includes(source.source_id)) : null
+          if (related) {
+            setActiveDraft(related.draft_id); setActiveSource(null); setActivePage(null)
+            element = findByData('draftId', related.draft_id)
+            message = '这条材料已有待审核稿，已打开现有稿件。'
+          } else {
+            setActiveSource(source.item_id); setActiveDraft(null); setActivePage(null)
+            setSourceDetail(null); setSourceDetailError(''); setSourceDetailLoading(true); setOrganizeResult(null)
+            sourceToLoad = source
+            message = target.itemIds.length > 1 ? `已定位到本次成功保存的 ${target.itemIds.length} 项材料。选择归属后可继续整理。` : source.state === 'processing' ? '这条材料正在整理中，不会重复发起。' : source.state === 'completed' ? '这条材料已完成整理。' : '已定位到本次保存的材料。选择归属后可继续整理。'
+          }
         }
-        setActiveSource(source.item_id); setActiveDraft(null); setActivePage(null)
-        setSourceDetail(null); setSourceDetailError(''); setSourceDetailLoading(true); setOrganizeResult(null)
-        void api.get<SourceDetail>('/sources/' + source.source_id).then(setSourceDetail).catch((cause) => setSourceDetailError(cause instanceof Error ? cause.message : '无法读取原文')).finally(() => setSourceDetailLoading(false))
-        return { element: null, message: target.itemIds.length > 1 ? `已定位到本次成功保存的 ${target.itemIds.length} 项材料。选择归属后可继续整理。` : source.state === 'processing' ? '这条材料正在整理中，不会重复发起。' : source.state === 'completed' ? '这条材料已完成整理。' : '已定位到本次保存的材料。选择归属后可继续整理。' }
-      }
-      if (target.kind === 'draft') {
-        if (!drafts.data) return null
+      } else if (target.kind === 'draft') {
+        if (!drafts.data) return
         const draft = drafts.data.find((item) => target.draftIds.includes(item.draft_id))
-        if (!draft) return { element: null, message: '这份稿件已不在当前待审核列表中，请刷新后重新选择。' }
-        setActiveDraft(draft.draft_id); setActiveSource(null); setActivePage(null)
-        return { element: null, message: '已打开本次整理生成的稿件。' }
+        if (draft) { setActiveDraft(draft.draft_id); setActiveSource(null); setActivePage(null); message = '已打开本次整理生成的稿件。' }
+        else message = '这份稿件已不在当前待审核列表中，请刷新后重新选择。'
+      } else {
+        if (!pages.data) return
+        const page = pages.data.find((item) => target.pageIds.includes(item.page_id))
+        if (page) { setActivePage(page.page_id); setActiveDraft(null); setActiveSource(null); message = '已定位到这次整理生成的正式页面。' }
+        else message = '这份正式页面已不在当前工作库中，请刷新后重新选择。'
       }
-      if (!pages.data) return null
-      const page = pages.data.find((item) => target.pageIds.includes(item.page_id))
-      if (!page) return { element: null, message: '这份正式页面已不在当前工作库中，请刷新后重新选择。' }
-      setActivePage(page.page_id); setActiveDraft(null); setActiveSource(null)
-      return { element: null, message: '已定位到这次整理生成的正式页面。' }
+      if (!current) return
+      setNotice(message)
+      if (sourceToLoad) {
+        const requestId = ++sourceDetailRequest.current
+        void api.get<SourceDetail>('/sources/' + sourceToLoad.source_id)
+          .then((detail) => { if (requestId === sourceDetailRequest.current) setSourceDetail(detail) })
+          .catch((cause) => { if (requestId === sourceDetailRequest.current) setSourceDetailError(cause instanceof Error ? cause.message : '无法读取原文') })
+          .finally(() => { if (requestId === sourceDetailRequest.current) setSourceDetailLoading(false) })
+      }
+      requestAnimationFrame(() => {
+        if (routeId !== targetRouteRequest.current) return
+        const targetElement = element ?? document.querySelector<HTMLElement>('.source-focus, .draft-focus, .formal-focus')
+        targetElement?.scrollIntoView?.({ block: 'center' }); targetElement?.focus({ preventScroll: true })
+      })
+      onTargetHandled?.()
     }
-    const destination = findDestination()
-    if (!destination) return
-    // Keep the resolved destination feedback with its exact-ID navigation action.
-    // oxlint-disable-next-line react/set-state-in-effect
-    setNotice(destination.message)
-    requestAnimationFrame(() => {
-      const targetElement = destination.element ?? document.querySelector<HTMLElement>('.source-focus, .draft-focus, .formal-focus')
-      targetElement?.scrollIntoView?.({ block: 'center' }); targetElement?.focus({ preventScroll: true })
-    })
-    onTargetHandled?.()
+    void route()
+    return () => { current = false }
   }, [target, sources.data, drafts.data, pages.data, loadedEpoch, refreshEpoch, onTargetHandled])
 
   function toggleSource(id: string) {
