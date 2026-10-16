@@ -1,0 +1,147 @@
+{
+  "tested_sha": "613d453ab1a47e2f0bfe78d685fb90817f70f4cc",
+  "source_manifest_report_sha256": "92ca44e8d1cf4fa05518a71894dbdf997bd1457b133940406de611eaf707b3ad",
+  "note": "Initial independent QA result remains FAIL at the recorded fixed SHA. Archive is limited to the report, command/source manifests, red/green logs, the scope/focus-specific synthetic screenshots and JSON, and sanitized harness. Broad viewport and synthetic workspace snapshots were not needed for the failure record. Playwright trace/error-context copies were excluded because the trace contains an ephemeral session Authorization value; original source evidence remains in the QA worktree .local. The archived harness contains generated-token construction only, not a token value.",
+  "files": [
+    {
+      "path": "QA-REPORT.md",
+      "bytes": 8150,
+      "sha256": "c239b82b48872d4112c875d9eb78a347cbf5335376c877e95b77617b8994ca80"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1087,
+      "sha256": "2dc0119a560a3fe36c00413999ea9b6c192f75f8a199b3de66f882e24aaa414d"
+    },
+    {
+      "path": "command-results.json",
+      "bytes": 2673,
+      "sha256": "4498701a19d4aa071352428440f35d0fb1d3291c689356e8f8d6d62f6b31e709"
+    },
+    {
+      "path": "evidence/fastapi-integration/workflow-manifest.json",
+      "bytes": 448,
+      "sha256": "9c536db71b85e2e38c13e5e2a36a6291115c57d3b3f2dcb2594d6e9e4750398f"
+    },
+    {
+      "path": "evidence/import-first-file-focus.png",
+      "bytes": 102638,
+      "sha256": "3bc7e7e95487fef6bd379b538ce68ac5c97bc26ee4af98b023c15ae7c546c05b"
+    },
+    {
+      "path": "evidence/import-focus-walk.json",
+      "bytes": 2637,
+      "sha256": "2e2a6b9ab5ca49e48c54b4a1fee548d619d3227889e4d4cb154a04a4bde037f1"
+    },
+    {
+      "path": "evidence/source-scope-dialog.png",
+      "bytes": 220865,
+      "sha256": "ec4250c4e882697cf1e5ab03dd4e585fdf79fdba86cf425986ba27923a4d9f2f"
+    },
+    {
+      "path": "evidence/source-scope-dialog.txt",
+      "bytes": 334,
+      "sha256": "16e7898d705e8c6a9124d56b6f9c46e63ad812a3317df7152f6ce6d0f0ac59b7"
+    },
+    {
+      "path": "evidence/source-scope-request.json",
+      "bytes": 929,
+      "sha256": "519aed81ac856ff65e49caaadc163baca75dd3d3377a32943fa79ede49860637"
+    },
+    {
+      "path": "evidence/source-scope-visible-fields.json",
+      "bytes": 80,
+      "sha256": "e0a08b903925217e7cc19a971ff1dfb221488e6ab4a3368f8d41a05875fa3346"
+    },
+    {
+      "path": "harness/approval-today.qa.spec.ts",
+      "bytes": 8636,
+      "sha256": "9af093961ec9a42dcfa3c91ce92e738c5ec6b0cf269f71657c4ef4bce3bc813c"
+    },
+    {
+      "path": "harness/integration.config.ts",
+      "bytes": 1625,
+      "sha256": "cbe620bb5508279e8349568d31f16121fd495735b9a27b259f4979dfbec82bdc"
+    },
+    {
+      "path": "harness/source-scope.spec.ts",
+      "bytes": 7274,
+      "sha256": "d64b13556df204182dd72b626c68ba376afa45f59c7ca302c71e57483dbe8a94"
+    },
+    {
+      "path": "logs/build.log",
+      "bytes": 755,
+      "sha256": "1a1a932ae9135c313b1806dc110e28ea98bce8c1b9a0fbfda917fb18e7c425b6"
+    },
+    {
+      "path": "logs/diff-check.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/e2e-offline-final.log",
+      "bytes": 750,
+      "sha256": "bdef9191c4b81071f066105c75eb840230b5dac7efe6a50bc9f99a7291b5d505"
+    },
+    {
+      "path": "logs/e2e-offline.log",
+      "bytes": 739,
+      "sha256": "b88a6d8b8e21a90d798b45385bc123d7003ac99b877a45a570e64539989d29a2"
+    },
+    {
+      "path": "logs/fastapi-fake-workflow.log",
+      "bytes": 831,
+      "sha256": "914088e81993787ec9da2bef3747ee1a6da39079a56e904ecf5b2bc3cdc3813e"
+    },
+    {
+      "path": "logs/git-status.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/integration-suite.log",
+      "bytes": 3089,
+      "sha256": "b32a9f3394b5b89fb1eb8b248c5fe4369eff5ae55fd931bfc0eedec00bb08d69"
+    },
+    {
+      "path": "logs/lint.log",
+      "bytes": 982,
+      "sha256": "c9529bcbe73909de6aa6d687169d4ba4d9f15acabc3712672e176a156323cfae"
+    },
+    {
+      "path": "logs/python-guarded.log",
+      "bytes": 1375,
+      "sha256": "9517b140caa983ecd7ba06a9d013b5fd0d0eac92004f7b5d234aca48eda97a0e"
+    },
+    {
+      "path": "logs/source-scope-final.log",
+      "bytes": 2820,
+      "sha256": "6870e34da0b058f5e8a6c90506806ebac02e75ece8d743e5e431060f5c14b72a"
+    },
+    {
+      "path": "logs/source-scope.log",
+      "bytes": 4395,
+      "sha256": "4885eef4221be1c3c0e53c10c1b7a4b4faae2097d71a6d4340e70a346c7c55a1"
+    },
+    {
+      "path": "logs/tested-sha.txt",
+      "bytes": 41,
+      "sha256": "eab74161d7c2fe0048d708825ef47011e15643b267f092886134d30a452dfada"
+    },
+    {
+      "path": "logs/typecheck.log",
+      "bytes": 42,
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+    },
+    {
+      "path": "logs/web-unit.log",
+      "bytes": 297,
+      "sha256": "a4e68306a88f52d95937047427d9488aa9f13269815fb442108cefd687f31d6d"
+    },
+    {
+      "path": "source-evidence-manifest.json",
+      "bytes": 16393,
+      "sha256": "f3aba213d396040ff0002f0f298e7c48acda45787fcf4a5740c3748088696611"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "tag": "INPUT",
+    "type": "file",
+    "label": "",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "rect(0px, 0px, 0px, 0px)",
+    "bounds": "{\"x\":186,\"y\":349.59375,\"width\":1,\"height\":1,\"top\":349.59375,\"right\":187,\"bottom\":350.59375,\"left\":186}"
+  },
+  {
+    "tag": "INPUT",
+    "type": "file",
+    "label": "",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "rect(0px, 0px, 0px, 0px)",
+    "bounds": "{\"x\":454.65625,\"y\":349.59375,\"width\":1,\"height\":1,\"top\":349.59375,\"right\":455.65625,\"bottom\":350.59375,\"left\":454.65625}"
+  },
+  {
+    "tag": "INPUT",
+    "type": "text",
+    "label": "",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "auto",
+    "bounds": "{\"x\":192,\"y\":567.484375,\"width\":154,\"height\":26.796875,\"top\":567.484375,\"right\":346,\"bottom\":594.28125,\"left\":192}"
+  },
+  {
+    "tag": "SELECT",
+    "type": "select-one",
+    "label": "全部可见我拥有的共享给我的",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "auto",
+    "bounds": "{\"x\":355,\"y\":559.28125,\"width\":122,\"height\":35,\"top\":559.28125,\"right\":477,\"bottom\":594.28125,\"left\":355}"
+  },
+  {
+    "tag": "BUTTON",
+    "type": "submit",
+    "label": "关闭",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "auto",
+    "bounds": "{\"x\":1051,\"y\":254.90625,\"width\":58,\"height\":36,\"top\":254.90625,\"right\":1109,\"bottom\":290.90625,\"left\":1051}"
+  },
+  {
+    "tag": "INPUT",
+    "type": "file",
+    "label": "",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "rect(0px, 0px, 0px, 0px)",
+    "bounds": "{\"x\":186,\"y\":349.59375,\"width\":1,\"height\":1,\"top\":349.59375,\"right\":187,\"bottom\":350.59375,\"left\":186}"
+  },
+  {
+    "tag": "INPUT",
+    "type": "file",
+    "label": "",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "rect(0px, 0px, 0px, 0px)",
+    "bounds": "{\"x\":454.65625,\"y\":349.59375,\"width\":1,\"height\":1,\"top\":349.59375,\"right\":455.65625,\"bottom\":350.59375,\"left\":454.65625}"
+  },
+  {
+    "tag": "INPUT",
+    "type": "text",
+    "label": "",
+    "dialogContains": "true",
+    "display": "block",
+    "visibility": "visible",
+    "clip": "auto",
+    "bounds": "{\"x\":192,\"y\":567.484375,\"width\":154,\"height\":26.796875,\"top\":567.484375,\"right\":346,\"bottom\":594.28125,\"left\":192}"
+  }
+]

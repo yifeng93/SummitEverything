@@ -1,0 +1,15 @@
+{
+  "writes": [
+    "POST /api/v1/workspaces",
+    "POST /api/v1/lines",
+    "POST /api/v1/projects",
+    "POST /api/v1/intake/items",
+    "POST /api/v1/intake/files",
+    "POST /api/v1/intake/jobs",
+    "POST /api/v1/drafts/63e72050-c3c1-54bf-ad1c-db80840111a9/confirmations",
+    "POST /api/v1/pages/63e72050-c3c1-54bf-ad1c-db80840111a9/confirmations",
+    "POST /api/v1/index/plans",
+    "POST /api/v1/index/jobs"
+  ],
+  "externalAttempts": []
+}

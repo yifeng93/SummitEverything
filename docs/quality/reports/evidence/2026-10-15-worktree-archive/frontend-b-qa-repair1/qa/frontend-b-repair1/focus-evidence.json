@@ -1,0 +1,202 @@
+[
+  {
+    "viewport": 320,
+    "theme": "light",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 320,
+    "theme": "light",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 320,
+    "theme": "dark",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 320,
+    "theme": "dark",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 390,
+    "theme": "light",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 390,
+    "theme": "light",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 390,
+    "theme": "dark",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 390,
+    "theme": "dark",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 768,
+    "theme": "light",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 768,
+    "theme": "light",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 768,
+    "theme": "dark",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 768,
+    "theme": "dark",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 960,
+    "theme": "light",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 960,
+    "theme": "light",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 960,
+    "theme": "dark",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 960,
+    "theme": "dark",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 1280,
+    "theme": "light",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 1280,
+    "theme": "light",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  },
+  {
+    "viewport": 1280,
+    "theme": "dark",
+    "labelText": "选择多个文件",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": false
+  },
+  {
+    "viewport": 1280,
+    "theme": "dark",
+    "labelText": "选择文件夹",
+    "focused": true,
+    "outline": true,
+    "width": "3px",
+    "style": "solid",
+    "directory": true
+  }
+]

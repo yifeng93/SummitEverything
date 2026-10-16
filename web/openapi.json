@@ -863,6 +863,106 @@
         }
       }
     },
+    "/api/v1/first-use/progress": {
+      "get": {
+        "summary": "Get First Use Progress",
+        "operationId": "get_first_use_progress_api_v1_first_use_progress_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirstUseProgress"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Put First Use Progress",
+        "operationId": "put_first_use_progress_api_v1_first_use_progress_put",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FirstUseProgress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirstUseProgress"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/credentials/{provider}": {
       "put": {
         "summary": "Put Credential",
@@ -6343,6 +6443,37 @@
         ],
         "title": "FeishuTask"
       },
+      "FirstUseProgress": {
+        "properties": {
+          "step": {
+            "type": "integer",
+            "enum": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "title": "Step"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "step",
+          "completed",
+          "open"
+        ],
+        "title": "FirstUseProgress",
+        "description": "Exactly the three non-secret fields the wizard is allowed to persist.\n\n``extra=\"forbid\"`` plus strict booleans keep the wire contract honest: a\ncaller that tries to smuggle in a credential, a path or a raw JSON blob is\nrejected instead of having it silently stored on disk.\n\n``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's\nlax mode normalise an integral JSON float (``3.0``) into ``3``, so an\nout-of-contract payload would look accepted; the validator below closes that\n(independent QA finding D-4)."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -6624,6 +6755,17 @@
       },
       "IntakeItem": {
         "properties": {
+          "origin_kind": {
+            "type": "string",
+            "enum": [
+              "quick_note",
+              "file",
+              "feishu_material",
+              "unknown"
+            ],
+            "title": "Origin Kind",
+            "default": "unknown"
+          },
           "item_id": {
             "type": "string",
             "format": "uuid",
@@ -8374,6 +8516,17 @@
       },
       "SourceRecord": {
         "properties": {
+          "origin_kind": {
+            "type": "string",
+            "enum": [
+              "quick_note",
+              "file",
+              "feishu_material",
+              "unknown"
+            ],
+            "title": "Origin Kind",
+            "default": "unknown"
+          },
           "external_identity": {
             "anyOf": [
               {

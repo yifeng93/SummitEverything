@@ -1,244 +1,242 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { TodayView } from './TodayView'
 
-afterEach(() => {
-  cleanup()
-  vi.unstubAllGlobals()
-})
+afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
-it('shows source lifecycle states and requires an explicit reprocess action', async () => {
-  vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
-  const items = [
-    { item_id: 'pending-id', source_id: 'source-1', title: '新来源', filename: 'new.txt', original_relative_path: '原件/new.txt', created_at: '2026-10-09T00:00:00Z', state: 'pending' },
-    { item_id: 'processing-id', source_id: 'source-2', title: '整理中来源', filename: 'processing.txt', original_relative_path: '原件/processing.txt', created_at: '2026-10-09T00:00:00Z', state: 'processing' },
-    { item_id: 'reviewing-id', source_id: 'source-3', title: '待审核来源', filename: 'reviewing.txt', original_relative_path: '原件/reviewing.txt', created_at: '2026-10-09T00:00:00Z', state: 'reviewing' },
-    { item_id: 'completed-id', source_id: 'source-4', title: '已处理来源', filename: 'completed.txt', original_relative_path: '原件/completed.txt', created_at: '2026-10-09T00:00:00Z', state: 'completed' },
-    { item_id: 'failed-id', source_id: 'source-5', title: '失败来源', filename: 'failed.txt', original_relative_path: '原件/failed.txt', created_at: '2026-10-09T00:00:00Z', state: 'failed' },
-  ]
-  const responseData: Record<string, unknown> = {
-    '/api/v1/intake/items': items,
-    '/api/v1/drafts': [],
-    '/api/v1/actions': [],
-    '/api/v1/lines': [{ id: 'line-id', name: '模拟主线', directory: '模拟主线' }],
-    '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '模拟项目', directory: '模拟主线/模拟项目', overview_id: 'overview-id', archived: false }],
-    '/api/v1/pages': [],
-    '/api/v1/intake/jobs': { job_id: 'job-id' },
-    '/api/v1/settings': { mode: 'fake' },
-  }
-  const jobBodies: Record<string, unknown>[] = []
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    if (String(input).endsWith('/intake/jobs')) {
-      const body = JSON.parse(String(init?.body)) as Record<string, unknown>
-      jobBodies.push(body)
-      if (jobBodies.length === 1) {
-        items[0].state = 'failed'
-        return {
-          ok: false,
-          status: 503,
-          json: async () => ({ error: { message: 'Fake provider failed' } }),
-        }
-      }
-      items[0].state = 'reviewing'
-    }
-    return {
-      ok: true,
-      status: 200,
-      json: async () => responseData[String(input)],
-    }
-  })
-  vi.stubGlobal('fetch', fetchMock)
+function mockApi(overrides: Record<string, unknown> = {}) {
+  const requests: { path: string; method: string; body?: unknown }[] = []
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input), method = init?.method ?? 'GET'
+    requests.push({ path, method, body: typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body })
+    let data: unknown = []
+    if (path.endsWith('/integrations/feishu/status')) data = { mode: 'fake', authorized: true, scopes: [], token_type: 'user' }
+    for (const [route, value] of Object.entries(overrides)) if (path.endsWith(route)) data = value
+    if (path.endsWith('/intake/items') && method === 'POST') data = { item_id: 'new', origin_kind: 'quick_note', state: 'pending' }
+    return { ok: true, status: 200, json: async () => data }
+  }))
+  return requests
+}
 
-  const onError = vi.fn()
-  render(<TodayView onError={onError} />)
-  expect(await screen.findByText('新来源')).toBeTruthy()
-  expect(screen.getByText('整理中')).toBeTruthy()
-  expect(screen.getByText('待审核')).toBeTruthy()
-  expect(screen.getByText('已完成')).toBeTruthy()
-  expect(screen.getByText('整理失败')).toBeTruthy()
-
-  const processingRow = screen.getByText('整理中来源').closest('li')
-  const reviewingRow = screen.getByText('待审核来源').closest('li')
-  expect((within(processingRow as HTMLElement).getByRole('checkbox') as HTMLInputElement).disabled).toBe(true)
-  expect((within(reviewingRow as HTMLElement).getByRole('checkbox') as HTMLInputElement).disabled).toBe(true)
-
-  const pendingRow = screen.getByText('新来源').closest('li')
-  fireEvent.click(within(pendingRow as HTMLElement).getByRole('checkbox'))
-  fireEvent.click(screen.getByRole('button', { name: '整理所选 · 1' }))
-  await waitFor(() => expect(screen.getByText('新来源').closest('li')?.textContent).toContain('整理失败'))
-  expect(onError).toHaveBeenLastCalledWith('Fake provider failed')
-  fireEvent.click(screen.getByRole('button', { name: '重新整理所选 · 1' }))
-  await waitFor(() => expect(jobBodies).toHaveLength(2))
-  expect(jobBodies[1]).toMatchObject({ item_ids: ['pending-id'], reprocess: true })
-
-  const completedRow = screen.getByText('已处理来源').closest('li')
-  fireEvent.click(within(completedRow as HTMLElement).getByRole('checkbox'))
-  expect(screen.getByText(/原件与既有稿件会保留/)).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: '重新整理所选 · 1' }))
-  await waitFor(() => {
-    expect(jobBodies).toHaveLength(3)
-  })
-  expect(jobBodies[2]).toMatchObject({ item_ids: ['completed-id'], reprocess: true })
-})
-
-it('keeps unknown attempts visible and warns before an explicit new operation', async () => {
-  vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
-  const items = [
-    { item_id: 'unknown-id', source_id: 'source-unknown', title: '状态未知来源', filename: 'unknown.txt', original_relative_path: '原件/unknown.txt', created_at: '2026-10-09T00:00:00Z', state: 'unknown' },
-  ]
-  const responses: Record<string, unknown> = {
-    '/api/v1/intake/items': items,
-    '/api/v1/drafts': [], '/api/v1/actions': [],
-    '/api/v1/lines': [{ id: 'line-id', name: '模拟主线', directory: '模拟主线' }],
-    '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '模拟项目', directory: '模拟主线/模拟项目', overview_id: 'overview-id', archived: false }],
-    '/api/v1/pages': [],
-    '/api/v1/intake/jobs': { job_id: 'new-job', state: 'completed' },
-    '/api/v1/settings': { mode: 'fake' },
-  }
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => ({
-    ok: true, status: 200, json: async () => responses[String(input)],
-  })))
-
+it('keeps the agreed meeting, task, action and inbox order without fetching remote data on navigation', async () => {
+  const requests = mockApi({ '/actions': [], '/intake/items': [] })
   render(<TodayView onError={vi.fn()} />)
-  expect(await screen.findByText('请求状态未知')).toBeTruthy()
-  const row = screen.getByText('状态未知来源').closest('li')
-  fireEvent.click(within(row as HTMLElement).getByRole('checkbox'))
-  expect(screen.getByText(/不会自动重发.*可能再次调用模型/)).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: '重新整理所选 · 1' }))
-  await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).endsWith('/intake/jobs'))).toBe(true))
+  const headings = screen.getAllByRole('heading', { level: 2 }).map((item) => item.textContent)
+  expect(headings.indexOf('会议')).toBeLessThan(headings.indexOf('待办任务'))
+  expect(headings.indexOf('待办任务')).toBeLessThan(headings.indexOf('收件箱'))
+  expect(screen.queryByRole('heading', { name: '需要行动' })).toBeNull()
+  await waitFor(() => expect(screen.getByText('收件箱目前没有内容。')).toBeTruthy())
+  expect(requests.some((item) => item.path.includes('/calendar?') || item.path.includes('/integrations/feishu/tasks?'))).toBe(false)
+  expect(screen.queryByRole('button', { name: /授权飞书/ })).toBeNull()
 })
 
-it('requires readable plan confirmation for real organize and sends nothing on cancel', async () => {
-  vi.stubGlobal('crypto', { randomUUID: () => 'organize-operation' })
-  const item = { item_id: 'source-id', source_id: 'parent-id', title: '合成会议纪要', filename: 'meeting.txt', original_relative_path: '收件箱/meeting.txt', created_at: '2026-10-09T00:00:00Z', state: 'pending' }
-  const plan = { plan_id: 'plan-id', scope_sha256: 'a'.repeat(64), request_limit: 1 }
-  const scope = { item_ids: ['source-id'], operation_id: 'organize-operation', line_id: 'line-id', project_id: 'project-id', reprocess: false, max_output_tokens: 2048, outgoing_inputs: [{ item_id: 'source-id', source_id: 'parent-id', text: '合成材料全文：报价尚未批准。' }] }
-  const paths: string[] = []
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+it('trusts route-derived source types and keeps legacy unknown unclassified even when filenames look meaningful', async () => {
+  mockApi({ '/actions': [], '/intake/items': [
+    { item_id: 'n', title: '随手想法', filename: 'daily.md', origin_kind: 'quick_note', state: 'pending', created_at: '2026-10-15T00:00:00Z' },
+    { item_id: 'f', title: '本机资料', filename: 'meeting.md', origin_kind: 'file', state: 'pending', created_at: '2026-10-15T00:00:00Z' },
+    { item_id: 'legacy', title: '旧记录', filename: 'meeting.md', state: 'pending', created_at: '2026-10-15T00:00:00Z' },
+  ] })
+  render(<TodayView onError={vi.fn()} />)
+  expect(await screen.findByText(/来源类型待核实/)).toBeTruthy()
+  expect(screen.getByText('本机资料').closest('li')?.textContent).toContain('本机文件')
+  expect(screen.getByText('随手想法').closest('li')?.textContent).toContain('记一句')
+})
+
+it('saves a quick note from Enter as source bytes without starting drafting or model work', async () => {
+  const requests = mockApi({ '/actions': [], '/intake/items': [] })
+  render(<TodayView onError={vi.fn()} />)
+  await screen.findByText('收件箱目前没有内容。')
+  const original = '  合成的一句话  \n'
+  fireEvent.change(screen.getByLabelText('记下一句话'), { target: { value: original } })
+  fireEvent.keyDown(screen.getByLabelText('记下一句话'), { key: 'Enter', shiftKey: false })
+  await waitFor(() => expect(requests.some((item) => item.path.endsWith('/intake/items') && item.method === 'POST')).toBe(true))
+  const save = requests.find((item) => item.path.endsWith('/intake/items') && item.method === 'POST')!
+  expect(save.body).toMatchObject({ text: original, operation_id: expect.any(String) })
+  expect(requests.some((item) => item.path.endsWith('/drafts') || item.path.includes('/intake/jobs') || item.path.includes('/journal/assist'))).toBe(false)
+})
+
+it('does not save Enter used to confirm an IME composition', async () => {
+  const requests = mockApi({ '/actions': [], '/intake/items': [] })
+  render(<TodayView onError={vi.fn()} />)
+  const note = screen.getByLabelText('记下一句话')
+  fireEvent.change(note, { target: { value: '合成中文' } })
+  fireEvent.keyDown(note, { key: 'Enter', shiftKey: false, isComposing: true })
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(requests.some((item) => item.path.endsWith('/intake/items') && item.method === 'POST')).toBe(false)
+})
+
+it('single-flights same-event quick-note submits while the request is pending', async () => {
+  const requests: Record<string, unknown>[] = []
+  let finishSave: ((response: Response) => void) | undefined
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
-    paths.push(path)
-    const method = init?.method ?? 'GET'
-    if (path.endsWith('/acceptance-plans') && method === 'POST') return { ok: true, status: 201, json: async () => ({ plan, scope }) }
-    if (path.endsWith('/intake/jobs')) return { ok: true, status: 201, json: async () => ({ job_id: 'job-id', state: 'completed' }) }
-    if (path.endsWith('/acceptance-plans/plan-id/confirm')) return { ok: true, status: 200, json: async () => ({}) }
-    if (path.endsWith('/acceptance-plans/plan-id')) return { ok: true, status: 204, json: async () => ({}) }
-    const data: Record<string, unknown> = {
-      '/api/v1/intake/items': [item], '/api/v1/drafts': [], '/api/v1/actions': [],
-      '/api/v1/lines': [{ id: 'line-id', name: '合成主线', directory: '合成主线' }],
-      '/api/v1/projects': [{ id: 'project-id', line_id: 'line-id', name: '合成项目', directory: '合成主线/合成项目', overview_id: 'overview-id', archived: false }],
-      '/api/v1/pages': [], '/api/v1/settings': { mode: 'real' },
+    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false })
+    if (path.endsWith('/intake/items') && init?.method === 'POST') {
+      requests.push(JSON.parse(String(init.body)) as Record<string, unknown>)
+      return await new Promise<Response>((resolve) => { finishSave = resolve })
     }
-    return { ok: true, status: 200, json: async () => data[path] }
-  })
-  vi.stubGlobal('fetch', fetchMock)
+    if (path.endsWith('/intake/items')) return Response.json([])
+    return Response.json([])
+  }))
   render(<TodayView onError={vi.fn()} />)
-  const row = (await screen.findByText('合成会议纪要')).closest('li')
-  fireEvent.click(within(row as HTMLElement).getByRole('checkbox'))
-  fireEvent.click(screen.getByRole('button', { name: '整理所选 · 1' }))
-  expect(await screen.findByText('合成材料全文：报价尚未批准。')).toBeTruthy()
-  expect(paths.some((path) => path.endsWith('/intake/jobs'))).toBe(false)
-  fireEvent.click(screen.getByRole('button', { name: '取消，不发送' }))
-  await waitFor(() => expect(paths.some((path) => path.endsWith('/acceptance-plans/plan-id'))).toBe(true))
-  expect(paths.some((path) => path.endsWith('/intake/jobs'))).toBe(false)
+  const note = screen.getByLabelText('记下一句话')
+  fireEvent.change(note, { target: { value: '同一条双击记录' } })
+  fireEvent.keyDown(note, { key: 'Enter', shiftKey: false })
+  fireEvent.keyDown(note, { key: 'Enter', shiftKey: false })
+  await waitFor(() => expect(requests).toHaveLength(1))
+  finishSave?.(Response.json({ item_id: 'saved', origin_kind: 'quick_note', state: 'pending' }, { status: 201 }))
+  expect(requests).toHaveLength(1)
 })
 
-it('stages multi-file intake, shows skipped and per-file results, then retries only the failed item', async () => {
-  let operationAttempt = 0
-  const uploaded: string[] = []
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const path = String(input)
-    if (path.endsWith('/intake/files')) {
-      const form = init?.body as FormData
-      const operation = String(form.get('operation_id'))
-      uploaded.push(operation)
-      operationAttempt += 1
-      if (operationAttempt === 1) return { ok: false, status: 503, json: async () => ({ error: { message: '合成上传故障' } }) }
-      return { ok: true, status: 201, json: async () => ({ item_id: `item-${operation}` }) }
-    }
-    const data: Record<string, unknown> = {
-      '/api/v1/intake/items': [], '/api/v1/drafts': [], '/api/v1/actions': [],
-      '/api/v1/lines': [], '/api/v1/projects': [], '/api/v1/pages': [],
-      '/api/v1/settings': { mode: 'fake' },
-    }
-    return { ok: true, status: 200, json: async () => data[path] }
+it('keeps the import dialog open during an in-flight local file write and restores focus on Escape', async () => {
+  let finishUpload: ((response: Response) => void) | undefined
+  const originalFetch = vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input).endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false })
+    if (String(input).endsWith('/intake/items')) return Response.json([])
+    if (String(input).endsWith('/intake/files')) return await new Promise<Response>((resolve) => { finishUpload = resolve })
+    return Response.json([])
   })
-  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('fetch', originalFetch)
   render(<TodayView onError={vi.fn()} />)
-  const good = new File(['合成正文'], 'notes.md', { type: 'text/markdown' })
-  const fail = new File(['合成正文'], 'minutes.txt', { type: 'text/plain' })
-  const unsupported = new File(['x'], 'image.pdf', { type: 'application/pdf' })
-  Object.defineProperty(unsupported, 'webkitRelativePath', { value: 'sample/image.pdf' })
-  const hidden = new File(['x'], '.secrets/hidden.txt', { type: 'text/plain' })
-  Object.defineProperty(hidden, 'webkitRelativePath', { value: 'sample/.secrets/hidden.txt' })
-  const picker = screen.getByLabelText('选择多个文件') as HTMLInputElement
-  fireEvent.change(picker, { target: { files: [good, fail, unsupported, hidden] } })
-  expect(await screen.findByText('notes.md')).toBeTruthy()
-  expect(screen.getByText(/仅支持 TXT \/ Markdown/)).toBeTruthy()
-  expect(screen.getByText(/隐藏内容或应用包内容已跳过/)).toBeTruthy()
-  expect(uploaded).toEqual([])
-
+  const open = screen.getByRole('button', { name: '导入会议' })
+  open.focus()
+  fireEvent.click(open)
+  const dialog = await screen.findByRole('dialog', { name: '导入会议与材料' })
+  const file = new File(['content'], 'meeting.md', { type: 'text/markdown' })
+  fireEvent.change(screen.getByLabelText('选择多个文件'), { target: { files: [file] } })
   fireEvent.click(screen.getByRole('button', { name: '导入可用文件' }))
-  await waitFor(() => expect(screen.getByText(/导入失败/)).toBeTruthy())
-  expect(screen.getByText(/已导入/)).toBeTruthy()
-  expect(uploaded).toHaveLength(2)
-  const failedOperation = uploaded[0]
-  fireEvent.click(screen.getByRole('button', { name: '只重试此文件' }))
-  await waitFor(() => expect(uploaded).toHaveLength(3))
-  expect(uploaded[2]).toBe(failedOperation)
-  expect(uploaded[1]).not.toBe(failedOperation)
+  await screen.findByText(/正在处理导入/)
+  expect(screen.getByRole('button', { name: '关闭' })).toHaveProperty('disabled', true)
+  finishUpload?.(Response.json({ item_id: 'file', origin_kind: 'file', state: 'pending' }, { status: 201 }))
+  await waitFor(() => expect(screen.getByText('meeting.md').closest('li')?.textContent).toContain('已导入'))
+  fireEvent.keyDown(dialog, { key: 'Escape' })
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: '导入会议与材料' })).toBeNull())
+  expect(document.activeElement).toBe(open)
 })
 
-it('locks the staged batch while an upload is active so selected rows cannot be replaced', async () => {
-  let releaseUpload: (() => void) | undefined
-  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+it('reuses the same quick-note operation after an uncertain failure', async () => {
+  const requests: Record<string, unknown>[] = []
+  let saves = 0
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input)
+    if (path.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => ({ mode: 'fake', authorized: false }) }
+    if (path.endsWith('/intake/items') && init?.method === 'POST') {
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>
+      requests.push(body); saves += 1
+      if (saves === 1) return { ok: false, status: 503, json: async () => ({ error: { message: '请求结果未知' } }) }
+      return { ok: true, status: 201, json: async () => ({ item_id: 'saved', origin_kind: 'quick_note', state: 'pending' }) }
+    }
+    if (path.endsWith('/intake/items')) return { ok: true, status: 200, json: async () => [] }
+    return { ok: true, status: 200, json: async () => [] }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  const note = screen.getByLabelText('记下一句话')
+  fireEvent.change(note, { target: { value: '同一条合成记录' } })
+  fireEvent.keyDown(note, { key: 'Enter', shiftKey: false })
+  await waitFor(() => expect(requests).toHaveLength(1))
+  fireEvent.keyDown(note, { key: 'Enter', shiftKey: false })
+  await waitFor(() => expect(requests).toHaveLength(2))
+  expect(requests[0].operation_id).toBe(requests[1].operation_id)
+  expect(requests[0].text).toBe(requests[1].text)
+})
+
+it('opens the reusable import drawer with file staging and Feishu search but no authorization entry', async () => {
+  const requests = mockApi({ '/actions': [], '/intake/items': [], '/integrations/feishu/materials?query=&limit=20': { items: [{ material_id: 'mat', title: '合成会议材料', visibility: 'owner' }], next_cursor: null } })
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(screen.getByRole('button', { name: '导入会议' }))
+  expect(await screen.findByRole('dialog', { name: '导入会议与材料' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /授权飞书/ })).toBeNull()
+  const file = new File(['meeting notes'], 'meeting.md', { type: 'text/markdown' })
+  fireEvent.change(screen.getByLabelText('选择多个文件'), { target: { files: [file] } })
+  expect(screen.getByText(/meeting.md/)).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
+  expect(await screen.findByText('合成会议材料')).toBeTruthy()
+  expect(requests.some((item) => item.path.includes('/materials?'))).toBe(true)
+})
+
+it('keeps each failed file retryable without repeating successful imports', async () => {
+  let uploads = 0
+  const requests = mockApi({ '/actions': [], '/intake/items': [] })
+  const originalFetch = globalThis.fetch as typeof fetch
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
     if (path.endsWith('/intake/files')) {
-      await new Promise<void>((resolve) => { releaseUpload = resolve })
-      return { ok: true, status: 201, json: async () => ({ item_id: 'item-1' }) }
+      uploads += 1
+      requests.push({ path, method: 'POST' })
+      if (uploads === 1) return { ok: false, status: 422, json: async () => ({ error: { message: '合成失败' } }) }
+      return { ok: true, status: 201, json: async () => ({ item_id: 'file', origin_kind: 'file', state: 'pending' }) }
     }
-    const data: Record<string, unknown> = {
-      '/api/v1/intake/items': [], '/api/v1/drafts': [], '/api/v1/actions': [],
-      '/api/v1/lines': [], '/api/v1/projects': [], '/api/v1/pages': [],
-    }
-    return { ok: true, status: 200, json: async () => data[path] }
-  })
-  vi.stubGlobal('fetch', fetchMock)
+    return originalFetch(input, init)
+  }))
   render(<TodayView onError={vi.fn()} />)
-  const picker = await screen.findByLabelText('选择多个文件') as HTMLInputElement
-  fireEvent.change(picker, { target: { files: [new File(['first'], 'first.txt', { type: 'text/plain' })] } })
-  fireEvent.click(await screen.findByRole('button', { name: '导入可用文件' }))
-  await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/intake/files'))).toBe(true))
-  expect((screen.getByLabelText('选择多个文件') as HTMLInputElement).disabled).toBe(true)
-  expect((screen.getByRole('button', { name: '清空列表' }) as HTMLButtonElement).disabled).toBe(true)
-  fireEvent.change(screen.getByLabelText('选择多个文件'), { target: { files: [new File(['second'], 'second.txt', { type: 'text/plain' })] } })
-  expect(screen.getByText('first.txt')).toBeTruthy()
-  expect(screen.queryByText('second.txt')).toBeNull()
-  releaseUpload?.()
-  await waitFor(() => expect(screen.getByText(/已导入/)).toBeTruthy())
+  fireEvent.click(screen.getByRole('button', { name: '导入会议' }))
+  const first = new File(['a'], 'first.md', { type: 'text/markdown' }), second = new File(['b'], 'second.md', { type: 'text/markdown' })
+  fireEvent.change(screen.getByLabelText('选择多个文件'), { target: { files: [first, second] } })
+  fireEvent.click(screen.getByRole('button', { name: '导入可用文件' }))
+  await waitFor(() => expect(screen.getByText('second.md').closest('li')?.textContent).toContain('已导入'))
+  expect(screen.getByText('first.md').closest('li')?.textContent).toContain('导入失败')
+  fireEvent.click(screen.getByRole('button', { name: '只重试此文件' }))
+  await waitFor(() => expect(uploads).toBe(3))
+  expect(requests.filter((item) => item.path.endsWith('/intake/files'))).toHaveLength(3)
 })
 
-it('blocks batches above the item and per-file limits before any write', async () => {
-  let id = 0
-  vi.stubGlobal('crypto', { randomUUID: () => `operation-${++id}` })
-  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+it('does not resend a file whose upload result is unknown', async () => {
+  let uploads = 0
+  const requests = mockApi({ '/actions': [], '/intake/items': [] })
+  const originalFetch = globalThis.fetch as typeof fetch
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
-    const data: Record<string, unknown> = {
-      '/api/v1/intake/items': [], '/api/v1/drafts': [], '/api/v1/actions': [],
-      '/api/v1/lines': [], '/api/v1/projects': [], '/api/v1/pages': [],
+    if (path.endsWith('/intake/files')) {
+      uploads += 1; requests.push({ path, method: 'POST' })
+      return { ok: false, status: 503, json: async () => ({ error: { message: '结果暂不可知' } }) }
     }
-    return { ok: true, status: 200, json: async () => data[path] }
-  })
-  vi.stubGlobal('fetch', fetchMock)
+    return originalFetch(input, init)
+  }))
   render(<TodayView onError={vi.fn()} />)
-  const picker = await screen.findByLabelText('选择多个文件') as HTMLInputElement
-  const oversized = new File(['x'], 'large.txt', { type: 'text/plain' })
-  Object.defineProperty(oversized, 'size', { value: 20 * 1024 * 1024 + 1 })
-  fireEvent.change(picker, { target: { files: [oversized] } })
-  expect(await screen.findByText(/单个文件超过 20 MB/)).toBeTruthy()
-  expect((screen.getByRole('button', { name: '导入可用文件' }) as HTMLButtonElement).disabled).toBe(true)
-  fireEvent.change(screen.getByLabelText('选择多个文件'), {
-    target: { files: Array.from({ length: 101 }, (_, index) => new File(['x'], `file-${index}.txt`)) },
-  })
-  expect(await screen.findAllByText(/超过 100 个文件或 100 MB/)).toHaveLength(101)
-  expect(fetchMock.mock.calls.some(([input]) => String(input).endsWith('/intake/files'))).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '导入会议' }))
+  fireEvent.change(screen.getByLabelText('选择多个文件'), { target: { files: [new File(['x'], 'uncertain.md', { type: 'text/markdown' })] } })
+  fireEvent.click(screen.getByRole('button', { name: '导入可用文件' }))
+  expect(await screen.findByText(/结果未知；不会自动重发/)).toBeTruthy()
+  expect(screen.queryByRole('button', { name: '只重试此文件' })).toBeNull()
+  expect(uploads).toBe(1)
+})
+
+it('shows a stale inbox after a failed refresh instead of treating it as empty', async () => {
+  let reads = 0
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    if (path.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => ({ mode: 'fake', authorized: true, scopes: [], token_type: 'user' }) }
+    if (path.endsWith('/intake/items')) { reads += 1; return reads === 1 ? { ok: true, status: 200, json: async () => [{ item_id: 'x', title: '保留的内容', filename: 'one.md', state: 'pending', created_at: '2026-10-15T00:00:00Z', origin_kind: 'unknown' }] } : { ok: false, status: 503, json: async () => ({ error: { message: '离线' } }) } }
+    return { ok: true, status: 200, json: async () => [] }
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  expect(await screen.findByText('保留的内容')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '刷新收件箱' }))
+  await waitFor(() => expect(screen.getByText(/上次读取失败：离线；保留已有内容/)).toBeTruthy())
+  expect(screen.queryByText('收件箱目前没有内容。')).toBeNull()
+})
+
+it('keeps the initial Today inbox pending until its first successful read', async () => {
+  let finishRead: ((response: Response) => void) | undefined
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input)
+    if (path.endsWith('/intake/items')) return await new Promise<Response>((resolve) => { finishRead = resolve })
+    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false, scopes: [], token_type: 'user' })
+    if (path.endsWith('/actions') || path.endsWith('/projects')) return Response.json([])
+    return Response.json([])
+  }))
+  render(<TodayView onError={vi.fn()} />)
+  expect(await screen.findByText('正在读取收件箱…')).toBeTruthy()
+  expect(screen.queryByText('收件箱目前没有内容。')).toBeNull()
+  finishRead?.(Response.json([]))
+  expect(await screen.findByText('收件箱目前没有内容。')).toBeTruthy()
+})
+
+it('restores the work journal modal without merging its save workflow into quick notes', async () => {
+  mockApi({ '/actions': [], '/intake/items': [], '/lines': [], '/projects': [], '/pages': [] })
+  render(<TodayView onError={vi.fn()} />)
+  fireEvent.click(screen.getByRole('button', { name: '工作日志 / 思考' }))
+  expect(await screen.findByRole('dialog', { name: '工作日志与思考' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: '工作日志' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: '工作思考' })).toBeTruthy()
 })

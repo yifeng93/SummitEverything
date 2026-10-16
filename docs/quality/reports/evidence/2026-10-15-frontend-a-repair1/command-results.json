@@ -1,0 +1,83 @@
+{
+  "productSha": "9c33a9dde3080fff3e3b3dd8a4193589ef52575f",
+  "baselineSha": "e84e9e5a56475a19f68ca1a684366fba7f9fee83",
+  "initialFailedSha": "9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad",
+  "profile": "development repair 1; synthetic FastAPI/Fake profile path unique to Playwright process under .local/dev/frontend-a/repair1/profile-repair1-<pid>",
+  "commands": [
+    {
+      "command": "npm --prefix web test",
+      "exitCode": 0,
+      "result": "24 files passed; 164 passed, 8 todo (172 total)",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final-npm-test.log"
+    },
+    {
+      "command": "npm --prefix web run typecheck",
+      "exitCode": 0,
+      "result": "tsc -b --pretty",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final-typecheck.log"
+    },
+    {
+      "command": "npm --prefix web run lint",
+      "exitCode": 0,
+      "result": "oxlint completed; 3 existing react(set-state-in-effect) warnings in App.tsx, ProjectsView.tsx, TodayView.tsx",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final2-lint.log"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "exitCode": 0,
+      "result": "tsc build and Vite production build completed",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final2-build.log"
+    },
+    {
+      "command": "SUMMIT_E2E_EVIDENCE_DIR=$PWD/../.local/dev/frontend-a/repair1/mock-evidence npm --prefix web run test:e2e -- --config ../.local/dev/frontend-a/repair1/playwright.offline.config.ts",
+      "exitCode": 0,
+      "result": "2 passed: first use/resume and viewport/theme baseline",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final-mock-e2e.log"
+    },
+    {
+      "command": "cd web && PYTHONPATH=$PWD/../scripts/offline_guard:$PWD/../src UV_PROJECT_ENVIRONMENT=$PWD/../.local/dev/frontend-a/repair1/.venv UV_OFFLINE=1 npx playwright test --config ../.local/dev/frontend-a/repair1/playwright.integration.config.ts",
+      "exitCode": 0,
+      "result": "1 passed: actual local FastAPI with isolated Fake and a synthetic workspace; external attempts=[]; no provider smoke POST",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final-fastapi-fake.log",
+      "requestManifest": ".local/dev/frontend-a/repair1/fastapi-evidence/fastapi-request-manifest.json"
+    },
+    {
+      "command": "cd web && npx playwright test --config ../.local/dev/frontend-a/repair1/red-harness/playwright.review.config.ts",
+      "exitCode": 0,
+      "result": "3 passed: separate capability outcomes, stale Feishu read retains timestamp and warning/retry, successful app-key removal invalidates cached authorization",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/final-review-e2e.log"
+    },
+    {
+      "command": "cd web && npx playwright test --config ../.local/dev/frontend-a/repair1/red-harness/playwright.wizard.config.ts",
+      "exitCode": 0,
+      "result": "12 passed: five wizard viewport widths in light/dark, required-key guidance and Keychain fail-closed, distinct initial service/workspace states",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/wizard-e2e.log"
+    },
+    {
+      "command": "cd web && npm test -- --run src/components/FirstUseWizard.test.tsx",
+      "exitCode": 1,
+      "result": "intentional F1 mutation: removing required-save disabled/title guard was detected (2 failing tests); source restored byte-for-byte",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/mutation-f1.log",
+      "restored": true
+    },
+    {
+      "command": "cd web && npm test -- --run src/components/SettingsView.cards.test.tsx (F2 mutation: all-success predicate changed to any-success)",
+      "exitCode": 1,
+      "result": "intentional F2 mutation was detected (1 failing test); source restored byte-for-byte",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/mutation-f2.log",
+      "restored": true
+    },
+    {
+      "command": "cd web && npm test -- --run src/components/SettingsView.cards.test.tsx (F3 mutation: failed read always returned unreadable)",
+      "exitCode": 1,
+      "result": "intentional F3 mutation was detected (1 failing test); source restored byte-for-byte",
+      "rawLog": ".local/dev/frontend-a/repair1/command-logs/mutation-f3.log",
+      "restored": true
+    }
+  ],
+  "knownNonProductAttempts": [
+    "Initial copied Playwright config pointed at the QA specs/ directory and collected zero tests; corrected config is stored in .local/dev/frontend-a/repair1/red-harness/.",
+    "An intermediate test selector in the Feishu removal black-box test matched two regions; changed to exact region name and final review suite passed.",
+    "One early full unit run flagged new local identifier text under guard ①; local config comparison state is named configStamp. API and existing internal identifiers were not changed. Final suite and dedicated mutations passed."
+  ]
+}

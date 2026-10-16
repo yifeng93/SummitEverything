@@ -1,0 +1,68 @@
+QA R2 MODE: dev (vite dev server)
+
+=== G1: positive control — a CREATED workspace still onboards at step 2 ===
+[PASS] G1.1 a fresh app shows the workspace gate, not Today  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/screenshots-dev/01-g1-1-gate.png
+[PASS] G1.2 create intent still opens the wizard at step 2 (D-1 positive control)  :: landing=wizard step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] G1.3 the brand-new workspace has no record yet  :: status=404
+[PASS] G1.4 the create intent was not persisted anywhere in browser storage  :: []
+
+=== G2: P1 regression — finish setup -> restart -> open existing -> Today ===
+[PASS] G2.1 the wizard walked 2 -> 3 -> 4 -> 5 -> Today through the real UI  :: [3,4,5,"today"]
+[PASS] G2.2 the backend holds {step:5, completed:true, open:false}  :: status=200 body={"step":5,"completed":true,"open":false}
+[PASS] G2.3 the record is a real file inside the isolated profile dir  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-dev/profile/431c78ca-d4fd-440c-b76a-c6b94b27d239/first-use-progress.json
+[PASS] G2.4 after a backend restart nothing is auto-opened (409 workspace_not_open)
+[PASS] G2.5 the restarted context really has empty storage (models non-persistent WKWebView)
+[PASS] G2.6 the restarted app shows the gate  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/screenshots-dev/04-g2-6-gate-after-restart.png
+[PASS] G2.7 ***P1 CORE*** reopening the already-configured workspace lands on Today  :: landing=today wizard=null today=true
+[PASS] G2.8 ***P1 CORE*** no wizard and no wizard backdrop after the reopen  :: wizard=null backdrop=0
+[PASS] G2.9 no "第 2 步 · 模型与密钥" heading exists anywhere
+[PASS] G2.10 the record-exists path shows NO "no record" pointer (it is not a false report)  :: []
+
+=== G3: D-1 core — an OLDER configured library with NO record is not blocked ===
+[PASS] G3.1 the older library was created through the real API  :: status=201
+[PASS] G3.2 it is genuinely configured (mode=real) — credentials/settings exist — but has no record  :: mode=real record=404
+[PASS] G3.3 ***D-1 CORE*** "open" with no local record lands on Today, not the wizard  :: wizard=null today=true
+[PASS] G3.4 ***D-1 CORE*** no .wizard-backdrop covers Today  :: backdrop=0
+[PASS] G3.5 the app does NOT claim first use is already completed (no inference from credentials)
+[PASS] G3.6 a non-blocking pointer is shown (neutral toast, role=status, not an error)  :: [{"text":"这个工作库在本机还没有首次配置记录。需要配置真实模型或飞书时，可从设置里打开连接向导。 ✕","cls":"toast toast-neutral","role":"status"}]
+[PASS] G3.7 the pointer text names no internal id, path, or raw JSON  :: []
+[PASS] G3.8 the main navigation is NOT intercepted while the pointer is up  :: navClickIntercepted=false
+[PASS] G3.9 the user can go back to Today freely  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/screenshots-dev/07-g3-9-today-reachable.png
+[PASS] G3.10 looking at the library fabricated NO record (still 404)  :: status=404
+[PASS] G3.11 no record file was created just by opening the library  :: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-dev/profile/805a5a5e-3e31-415b-952e-ac19f9e75db6/first-use-progress.json
+
+=== G4: recovery — open the wizard from Settings on that library and finish it ===
+[PASS] G4.1 Settings is reachable on the record-less library  :: today=false settings=true
+[PASS] G4.2 the Settings entry point to the wizard is offered
+[PASS] G4.3 the manual wizard opens at step 2 (no record => first-use default)  :: step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] G4.4 the manually started wizard walks to Today  :: [3,4,5,"today"]
+[PASS] G4.5 finishing it records {step:5, completed:true, open:false} for THIS library  :: record={"step":5,"completed":true,"open":false}
+[PASS] G4.6 after the restart the recovered library goes straight to Today with no wizard
+[PASS] G4.7 and no "no record" pointer is shown any more (the record now exists)  :: []
+
+=== G5: adversarial falsification of the change's side effects ===
+[PASS] G5a.1 a created library still opens the wizard at step 2 (create != open)  :: landing=wizard step={"raw":"第 2 步 · 模型与密钥","step":2}
+[PASS] G5b.1 reload with a completed record stays on Today, no wizard  :: today=true wizard=null
+[PASS] G5b.2 reload does NOT emit a false "no record" pointer for a completed record  :: []
+[PASS] G5c.1 an explicit close durably records open:false and lands on Today  :: {"step":3,"completed":false,"open":false}
+[PASS] G5c.2 reload after an explicit close stays on Today with no wizard
+[PASS] G5c.3 the "no record" pointer does NOT misfire when a record exists (open:false)  :: []
+[PASS] G5d.1 mid-onboarding workspace: wizard at step 2 and still no record  :: step={"raw":"第 2 步 · 模型与密钥","step":2} record=404
+[OBSERVE] G5d.2 reload mid-onboarding -> wizard=null today=true
+[PASS] G5d.3 the mid-onboarding reload is not stuck or broken: Today is reachable and usable
+[PASS] G5d.4 the mid-onboarding reload does not claim a completion that never happened
+[PASS] G5d.5 the mid-onboarding reload wrote NO record (no fake progress)  :: status=404
+[PASS] G5d.6 the recovery path stays open: the wizard is still reachable from Settings  :: settingsVisible=true
+[PASS] G5e.1 the settings feishu entry point is present
+[PASS] G5e.2 the feishu entry point still opens the wizard directly at step 4  :: step={"raw":"第 4 步 · 飞书","step":4}
+[PASS] G5f.1 the mid-onboarding library still has no record before the resume test  :: status=404
+[PASS] G5f.2 an unfinished wizard records open:true at the step it reached (4)  :: {"step":4,"completed":false,"open":true}
+[PASS] G5f.3 an unfinished open:true record still resumes the saved step after a restart  :: step={"raw":"第 4 步 · 飞书","step":4}
+[PASS] G5g.1 Today + Settings expose no secret, absolute path, internal id or raw JSON  :: findings=[]
+[PASS] G5g.2 browser storage holds no secret and no first-use copy  :: []
+
+============================================================================================
+QA R2 BROWSER HARNESS (dev) TOTAL: 51 checks, 51 passed, 0 failed
+screenshots: /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/screenshots-dev
+results:     /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything/.local/qa/frontend-d-repair2/run-dev/results.json
+============================================================================================

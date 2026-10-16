@@ -6,7 +6,7 @@
  *   ① allowlist 机制 —— 内部 ID/hash/路径实例的「文件:字段」次数与 ui-contract.allowlist.json 精确相等（§9、§11 ①）
  *   ③ 字号下限 —— web/src/**\/*.css 全部 font-size ≥ 12px，9/10/11px 出现次数为 0（§6.1、§11 ③）
  *   ⑧ 外壳几何 —— 侧栏 200px / ≤800px 64px 图标栏 / ≤560px 底部 5 栏且每项 ≥44px / 粗指针 ≥44px（§0、§8.1）
- * 另有 ① 的位置断言与 ⑩ 视口断言以 it.todo 登记，注明归属切片（不得当成已通过）。
+ * ① 的运行时正文/details/title/aria-label 断言见 ui-contract.render.test.tsx；⑩ 五档浏览器视口由 Playwright 实际执行。
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
@@ -349,10 +349,4 @@ describe('守卫⑧ 外壳几何与响应式（逐页规格 §0、GUIDE §8.1）
     expect(px(declarationValue(appCss, '.toast-close', 'min-width', 'pointer: coarse')), `${RULE_SHELL_GEOMETRY}；粗指针下图标按钮 44×44`).toBeGreaterThanOrEqual(44)
     expect(px(declarationValue(appCss, '.toast-close', 'min-height', 'pointer: coarse'))).toBeGreaterThanOrEqual(44)
   })
-})
-
-// ── 本轮不实现，登记归属切片（禁止当成通过）───────────────────────────────────
-describe('本轮未落地的守卫（GUIDE §11、§14）', () => {
-  it.todo('① 位置断言：内部标识出现在 <details>/title=/aria-label=/诊断模块之外的实例必须为 0 —— 归属各页切片（P1 外壳 / P3 审批 / P4 项目与问答 / P5 首次配置）')
-  it.todo('⑩ 五档无整页横向溢出（320/390/768/960/1280）—— 归属 P6；jsdom 量不到 scrollWidth，需 Playwright（web/e2e/responsive.spec.ts）或人工验收清单逐档记录（GUIDE §8.2）')
 })

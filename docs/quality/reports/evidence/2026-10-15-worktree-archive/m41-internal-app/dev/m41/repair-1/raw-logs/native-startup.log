@@ -1,0 +1,16 @@
+ps: Invalid process id: pid
+app_pid=85980
+app_copy=/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-upload-fix1-c7468d48/SummitEverything Internal fix1 3f6eaa4.app
+profile=/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-upload-fix1-c7468d48/profile
+readiness=PASS
+health_run_id=56B4FF64-973E-4475-BF0D-4290449AB13A
+app_exit=-15
+parent_cleanup=PASS
+Traceback (most recent call last):
+  File "/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything/.local/dev/m41/repair-1/launch_native_candidate.py", line 40, in <module>
+    children = subprocess.check_output(['/bin/ps','-o','pid=','-ppid',str(proc.pid)], text=True).split()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 424, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/bin/ps', '-o', 'pid=', '-ppid', '85980']' returned non-zero exit status 1.

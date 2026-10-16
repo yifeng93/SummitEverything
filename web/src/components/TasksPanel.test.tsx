@@ -1,10 +1,14 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
-import { TodayView } from './TodayView'
+import { TasksPanel } from './TasksPanel'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+let currentMode: 'fake' | 'real' = 'fake'
+function renderTasks() { return render(<TasksPanel projects={[{ id: 'project', line_id: 'line', name: '模拟项目', directory: '模拟项目', archived: false, progress: '准备中', progress_version: 2, overview_id: 'overview' }, { id: 'other-project', line_id: 'line', name: '另一个模拟项目', directory: '模拟项目/另一个', archived: false, progress: '', progress_version: 7, overview_id: 'overview-2' }]} candidates={[]} mode={currentMode} />) }
+
 function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgress = false, mode = 'fake') {
+  currentMode = mode as 'fake' | 'real'
   let action: Record<string, unknown> | null = null
   const requests: { path: string; method: string; body: Record<string, unknown> }[] = []
   let next = 0
@@ -43,7 +47,7 @@ function boundary(state = 'succeeded', loseExecution = false, recoverLocalProgre
 
 it('requires explicit title/date, final values and separate confirmation before execution', async () => {
   const requests = boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '新建飞书任务' }))
   expect(screen.getByRole('button', { name: '审阅任务内容' }).hasAttribute('disabled')).toBe(true)
   fireEvent.change(screen.getByLabelText('任务标题'), { target: { value: '用户填写任务' } })
@@ -60,9 +64,9 @@ it('requires explicit title/date, final values and separate confirmation before 
   expect(requests.filter((item) => item.path.endsWith('/executions'))).toHaveLength(1)
 })
 
-it('refresh/completion only propose and edit clears confirmation', async () => {
+it('refresh/completion only propose; editing a completion retains its selected target and clears confirmation', async () => {
   const requests = boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
   await screen.findByText('远端任务')
   expect(requests.filter((item) => item.method === 'POST')).toHaveLength(0)
@@ -73,7 +77,7 @@ it('refresh/completion only propose and edit clears confirmation', async () => {
   fireEvent.click(screen.getByRole('button', { name: '独立确认此动作' }))
   await screen.findByRole('button', { name: '执行已确认动作' })
   fireEvent.click(screen.getByRole('button', { name: '修改动作内容' }))
-  fireEvent.change(screen.getByLabelText('待完成任务标识'), { target: { value: 'other-task' } })
+  expect(screen.queryByText('remote-task')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '保存修改并重新审阅' }))
   expect(await screen.findByRole('button', { name: '独立确认此动作' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: '执行已确认动作' })).toBeNull()
@@ -83,7 +87,7 @@ it('refresh/completion only propose and edit clears confirmation', async () => {
 
 it('unknown offers read-only lookup evidence without executing again', async () => {
   const requests = boundary('unknown')
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
   await screen.findByText('远端任务')
   fireEvent.click(screen.getByRole('button', { name: '完成远端任务' }))
@@ -98,7 +102,7 @@ it('unknown offers read-only lookup evidence without executing again', async () 
 
 it('clears the stale unknown lookup message when local progress writer evidence resolves success', async () => {
   const requests = boundary('unknown', false, true)
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '拟定项目进度变化' }))
   fireEvent.change(screen.getByLabelText('进度项目'), { target: { value: 'project' } })
   fireEvent.change(screen.getByLabelText('新的项目进度'), { target: { value: '已完成准备' } })
@@ -110,13 +114,12 @@ it('clears the stale unknown lookup message when local progress writer evidence 
   expect(await screen.findByText('动作已成功')).toBeTruthy()
   expect(screen.queryByText('未找到明确执行证据，仍为未知。')).toBeNull()
   expect(screen.getByText('本地项目进度写入凭据已确认成功。')).toBeTruthy()
-  expect(screen.getByText(/"state": "succeeded"/, { selector: 'pre' })).toBeTruthy()
   expect(requests.filter((item) => item.path.endsWith('/executions'))).toHaveLength(1)
 })
 
 it('progress shows exact version and requires its own confirmation', async () => {
   const requests = boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '拟定项目进度变化' }))
   fireEvent.change(screen.getByLabelText('进度项目'), { target: { value: 'project' } })
   fireEvent.change(screen.getByLabelText('新的项目进度'), { target: { value: '已完成准备' } })
@@ -129,7 +132,7 @@ it('progress shows exact version and requires its own confirmation', async () =>
 
 it('completion starts a separate intent while another action is being edited', async () => {
   const requests = boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '新建飞书任务' }))
   fireEvent.change(screen.getByLabelText('任务标题'), { target: { value: '待审标题' } })
   fireEvent.change(screen.getByLabelText('截止日期方式'), { target: { value: 'none' } })
@@ -147,7 +150,7 @@ it('completion starts a separate intent while another action is being edited', a
 
 it('task edits send only selected due semantics and preserve other fields', async () => {
   const requests = boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
   await screen.findByText('远端任务')
   fireEvent.click(screen.getByRole('button', { name: '编辑远端任务' }))
@@ -162,7 +165,7 @@ it('task edits send only selected due semantics and preserve other fields', asyn
 
 it('lost execution response reads the same intent and never posts another execution', async () => {
   const requests = boundary('succeeded', true)
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
   await screen.findByText('远端任务')
   fireEvent.click(screen.getByRole('button', { name: '完成远端任务' }))
@@ -175,23 +178,22 @@ it('lost execution response reads the same intent and never posts another execut
   expect(screen.queryByRole('button', { name: '执行已确认动作' })).toBeNull()
 })
 
-it('completion review reflects edited target rather than a stale task title', async () => {
+it('completion review reflects the selected task title without exposing its internal identifier', async () => {
   boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
   await screen.findByText('远端任务')
   fireEvent.click(screen.getByRole('button', { name: '完成远端任务' }))
   fireEvent.click(await screen.findByRole('button', { name: '修改动作内容' }))
-  fireEvent.change(screen.getByLabelText('待完成任务标识'), { target: { value: 'other-task' } })
   fireEvent.click(screen.getByRole('button', { name: '保存修改并重新审阅' }))
   await screen.findByRole('button', { name: '独立确认此动作' })
-  expect(screen.queryByText('远端任务', { selector: 'dd' })).toBeNull()
-  expect(screen.getByText('other-task', { selector: 'dd' })).toBeTruthy()
+  expect(screen.getByText('远端任务', { selector: 'dd' })).toBeTruthy()
+  expect(screen.queryByText('remote-task')).toBeNull()
 })
 
 it('edit review identifies unchanged task title when only due is selected', async () => {
   boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '刷新飞书任务' }))
   await screen.findByText('远端任务')
   fireEvent.click(screen.getByRole('button', { name: '编辑远端任务' }))
@@ -204,7 +206,7 @@ it('edit review identifies unchanged task title when only due is selected', asyn
 
 it('changing the progress target reviews the selected project version', async () => {
   const requests = boundary()
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   fireEvent.click(await screen.findByRole('button', { name: '拟定项目进度变化' }))
   fireEvent.change(screen.getByLabelText('进度项目'), { target: { value: 'project' } })
   fireEvent.change(screen.getByLabelText('新的项目进度'), { target: { value: '已完成准备' } })
@@ -219,7 +221,7 @@ it('changing the progress target reviews the selected project version', async ()
 
 it('real mode labels task facts correctly and disables remote writes while keeping local progress', async () => {
   const requests = boundary('succeeded', false, false, 'real')
-  render(<TodayView onError={vi.fn()} />)
+  renderTasks()
   await screen.findByText(/真实飞书任务写入尚未启用/)
   expect(screen.getByRole('button', { name: '新建飞书任务' }).hasAttribute('disabled')).toBe(true)
   expect(screen.getByRole('button', { name: '拟定项目进度变化' }).hasAttribute('disabled')).toBe(false)

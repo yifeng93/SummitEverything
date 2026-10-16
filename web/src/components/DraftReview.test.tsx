@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { Draft, Page } from '../api/client'
 import { DraftReview } from './DraftReview'
@@ -57,7 +57,9 @@ it('shows a changed target and requires an explicit current-version baseline bef
   const props = { draft, onError, onUpdated, onConfirmed }
   const view = render(<DraftReview {...props} pages={[page]} />)
 
-  fireEvent.click(screen.getByRole('button', { name: '确认并写入知识库' }))
+  fireEvent.click(within(document.querySelector('.review-actions') as HTMLElement).getByRole('button', { name: '确认并保存当前版本' }))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByRole('button', { name: '确认并保存当前版本' }))
   await waitFor(() => expect(onUpdated).toHaveBeenCalledTimes(1))
   expect(onError).toHaveBeenLastCalledWith(expect.stringContaining('目标页面已变化'))
   view.rerender(<DraftReview {...props} pages={[currentPage]} />)
@@ -65,7 +67,9 @@ it('shows a changed target and requires an explicit current-version baseline bef
   expect(screen.getByText(/目标页面已变化/)).toBeTruthy()
   expect(screen.getByText(/合同金额是 999 元/)).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '采用当前页面作为比较基准' }))
-  fireEvent.click(screen.getByRole('button', { name: '确认并写入知识库' }))
+  fireEvent.click(within(document.querySelector('.review-actions') as HTMLElement).getByRole('button', { name: '确认并保存当前版本' }))
+  const retryDialog = await screen.findByRole('dialog')
+  fireEvent.click(within(retryDialog).getByRole('button', { name: '确认并保存当前版本' }))
   await waitFor(() => expect(onConfirmed).toHaveBeenCalledTimes(1))
   const patchCall = fetchMock.mock.calls[1] as [string, RequestInit]
   expect(patchCall[1].method).toBe('PATCH')

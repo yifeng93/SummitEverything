@@ -8,7 +8,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 - **设置与首配**：设置页三卡主区 + 状态徽章 + 高级折叠；5 步向导；非秘密接入值由构建时注入包内 `Resources/first-use-defaults.json`，用户只需在本机录入三把密钥一次（存 Keychain，不打入包或仓库）。
 - **错误可见**：provider 失败带 code/message/request_id（embedding/rerank/LLM 统一 502）；`GroundedAnswer` 容错对象形式 `source_statements` 与多余键；密钥写入前做形状校验；问答/assist/索引失败的原因写进本地记录与客户端文案；诊断事件不再因清洗被丢弃。真实链路已实测：飞书授权与任务读取成功、embedding 200（1024 维）、rerank 200、DeepSeek 正常返回。
-- **前端基线（ADR 0011）**：切片 1（设计 tokens、字号下限 ≥12px、深色一等公民、守卫基座）与切片 2（5 栏导航、顶栏真实保存三态、三态分离、toast、响应式、审批页最小版）已合入；守卫未实现项以 todo 登记并标注归属切片。后续切片：向导合并 → 审批页完整 → 今日页 → 项目页 → 问答 Markdown 流式 → 阅读渲染 → 设置页对齐 → 守卫收口。
+- **前端 UX（2026-10-15）**：A（`9c33a9d`）、B repair1（`a0ccad8`）、C（`1b1efda`）经 fresh QA / Sol 判定各自适用离线范围 PASS。D 初次固定 SHA `876008e` 经独立 QA 判 **FAIL / P1**（完成首配后同 profile/workspace 重启仍弹 workspace gate 与向导 step 2）。**D 最终固定产品 SHA：`e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374`**（链：`876008e` → repair1 `faa1edd` → repair2 `96fdf4d` → repair3 `e8e1dba`），Sol 判 **D 门限「离线 + 内部候选」范围 PASS**：P1 **已关闭**；首配进度改存本机 profile + workspace 隔离的 typed API（只存非秘密 `step/completed/open`），旧 localStorage 只做一次性迁移；`open` 且无记录落到今日不被遮罩；`step` 严格整数；CI 类型门重新生成。自动检查全绿：pytest **692**、vitest **222 passed / 0 todo**、typecheck/lint（2 条既存 warning）/build/e2e **2**/e2e:integration **1**/ruff/format/mypy/uv lock/uv build 全 exit 0。三轮独立 QA 各自自建 harness 并在父 SHA 做非空性对照；native 候选 `SummitEverything-D-e8e1dba` 包内 runtime **15/15**，实机 WKWebView 三条路径以**机器 OCR** 判读通过；全站视口矩阵已在 `e8e1dba` 重跑（2/2 + 1/1 + 1/1）。**PR [#21](https://github.com/yifeng93/SummitEverything/pull/21) 已开**（含整条前端 UX 线 A→D），其真实远端 CI（run [`38757225760`](https://github.com/yifeng93/SummitEverything/actions/runs/38757225760)，`offline-arm64`，4m42s）**全部步骤 success**，含 `Web checks and API types`、`swift test --package-path native` 与 App/DMG 构建校验；**合并仍需用户批准**。876 的十条变异**未继承**（前端指纹已变），由本轮 5 条定向变异覆盖；D-3（OpenAPI 未声明 401/404/503）仍为 INFO；D-5 经用户决议接受为记录项。见 [D 最终 QA](docs/quality/reports/2026-10-15-FRONTEND-D-QA-FINAL.md)、[Sol 最终门判断](docs/quality/reports/2026-10-15-FRONTEND-D-SOL-GATE-FINAL.md)、[D repair2/3 DEV 报告](docs/quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR2.md)与 [D 交接](docs/handoff/NEXT-AFTER-FRONTEND-D.md)。D 初次 QA 脱敏报告见[此处](docs/quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)，原始 QA 证据仍保留在原 worktree `.local/qa`。C QA 范围与限制见 [C QA 报告](docs/quality/reports/2026-10-15-FRONTEND-C-QA.md)与[证据索引](docs/quality/reports/evidence/2026-10-15-frontend-c-qa/README.md)。真实 provider/OAuth/飞书/Keychain、用户材料、DMG/安装、公证、长期与双机门仍 NOT_RUN。状态见[执行路线图](docs/handoff/FRONTEND-EXECUTION-PLAN.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)与[进展账本](docs/implementation/PROGRESS.md)。
 - 内部候选与证据：`.local/internal-builds/` 下的最新候选；[设置 UX DEV 报告](docs/quality/reports/2026-10-14-SETTINGS-UX-DEV.md)、[真实使用与修复报告](docs/quality/reports/2026-10-14-REAL-FIRST-USE-FINDINGS.md)、[F2 报告](docs/quality/reports/2026-10-14-ORIGIN-GUARD-SETTINGS-ERROR.md)、[前端基线切片 1–2 记录](docs/handoff/LATEST-IMPLEMENTATION.md)。
 - 仍未验证：真实 provider 的进一步质量/账单、OS Keychain 生命周期、正式安装与公证、五日试用、双机与 release 全部 NOT_RUN；`spctl` 对 ad-hoc 包为 rejected（未绕过）。
 
@@ -53,6 +53,20 @@ swift test --package-path native
 guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
 
 这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Package A 固定 SHA 的独立 QA、Sol 判门和合并/CI 收口见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[收口报告](docs/quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。
+
+### Web 前端验证
+
+安装依赖后，以下命令按职责分开执行：
+
+~~~sh
+npm --prefix web test -- --run                 # Vitest 单元与组件测试
+npm --prefix web run typecheck                 # 正式 TypeScript 项目引用检查
+npm --prefix web run lint                      # Oxlint（保留并报告 warning）
+npm --prefix web run test:e2e                  # Playwright 离线浏览器：首配与五档/深浅主题
+npm --prefix web run test:e2e:integration      # 真实 FastAPI + Fake，隔离 profile/工作库
+~~~
+
+首次使用 Playwright 时先运行 `cd web && npx playwright install chromium`。普通 `test:e2e` 仅访问本机 Vite，并拦截外部请求；`test:e2e:integration` 用一次性 session token、全新 profile 与合成 Fake 工作库连本机 FastAPI，仍不调用真实模型、飞书或 Keychain。Vitest 会排除 `web/e2e/**`，因此 `npm test` 不能替代浏览器或真实 API 集成验收；各检查的退出码和原始日志按里程碑记录在 DEV 报告。
 
 ### 构建 Internal 候选
 

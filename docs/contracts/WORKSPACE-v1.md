@@ -34,11 +34,13 @@
       intake-jobs/{YYYY-MM|undated}/summary.json
       transactions/{YYYY-MM|undated}/summary.json
     attempt-leases/{attempt UUID}.lock # 同机运行中的临时 advisory lease
-    sources/YYYY-MM.json    # 来源目录、hash、来源标识
+    sources/YYYY-MM.json    # 来源目录、hash、来源标识与 origin_kind
     history/YYYY-MM.json    # 完成流程与结果汇总
 ~~~
 
 这不是固定项目集合。项目内不强制类型子目录；页面标题可读，重名生成明确不覆盖的文件名。conventions.md 是本契约的人类可读说明，不是自由执行的脚本。
+
+来源目录记录与对应 IntakeItem 保存服务端派生的 `origin_kind`：`quick_note`（快速记录）、`file`（文件导入）、`feishu_material`（飞书材料导入）。旧记录缺字段时读取为 `unknown`，不迁移、不按文件名推断；它表示来源类别未知，不改变原件字节、hash、幂等 operation 或历史回执。来源类别与正式知识页的分类无关。
 
 每条待处理项以 `state` 表达来源到整理作业 / 稿件的当前关系：`pending`（尚未整理）、`processing`（整理作业进行中）、`reviewing`（已有待审核稿）、`completed`（关联稿件均已确认）、`failed`（整理失败）、`cancelled`（用户取消）、`unknown`（进程失效或 provider 结果未知，禁止自动重发）。`latest_job_id` 指向最近一次显式整理；兼容追加字段 `attempt_no`、`revision`、`previous_attempt_sha256`、`finished_at` 用于 CAS 与版本链。只有 `pending` 可直接整理；完成、失败、取消或 unknown 的来源需要用户显式开启新的 reprocess operation；处理中或待审核来源拒绝重复生成。旧库缺少新字段时使用默认值；没有完成时间的旧终态不伪造日期，首次新 attempt 前保存在 `undated` 历史摘要中。
 

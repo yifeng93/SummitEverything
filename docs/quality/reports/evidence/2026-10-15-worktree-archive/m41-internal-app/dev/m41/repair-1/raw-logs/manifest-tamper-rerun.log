@@ -1,0 +1,4 @@
+backend_exit=1
+tamper_rejected=True
+diagnostic_mentions_frontend_mismatch=True
+diagnostic=[PYI-86089:ERROR] Failed to execute script 'packaged_server' due to unhandled exception!

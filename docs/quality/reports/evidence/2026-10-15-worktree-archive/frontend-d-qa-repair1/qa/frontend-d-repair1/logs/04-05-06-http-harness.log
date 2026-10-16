@@ -1,0 +1,64 @@
+/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+==========================================================================================
+QA INDEPENDENT HARNESS — group A: typed contract, auth, status codes
+==========================================================================================
+[PASS] A1 GET without token -> 401 unauthenticated  :: status=401 code=unauthenticated
+[PASS] A2 PUT without token -> 401 unauthenticated  :: status=401 code=unauthenticated
+[PASS] A3 GET with token, no active workspace -> 409 workspace_not_open  :: status=409 code=workspace_not_open
+[PASS] A4 PUT with token, no active workspace -> 409 workspace_not_open  :: status=409 code=workspace_not_open
+[PASS] A5 GET with no record -> 404 first_use_progress_absent  :: status=404 code=first_use_progress_absent body={"error":{"code":"first_use_progress_absent","message":"本机还没有保存首次配置进度。","request_id":"07078b803682a317"}}
+[PASS] A6 PUT valid -> 200 echoes exactly the three whitelisted fields  :: status=200 body={"step":3,"completed":false,"open":true}
+[PASS] A7 GET after PUT -> same document  :: status=200 body={"step":3,"completed":false,"open":true}
+[PASS] A8 on-disk document holds exactly step/completed/open  :: keys=['completed', 'open', 'step']
+[PASS] A9 invalid step values rejected (422) and record untouched  :: after={"step":3,"completed":false,"open":true}
+[PASS] A9b OBSERVATION: integral float 3.0 is accepted by Literal coercion but normalized to the JSON integer 3 on disk (no float reaches storage)  :: status=200 on_disk='{\n  "step": 3,\n  "completed": false,\n  "open": true\n}'
+[PASS] A10 unknown / secret-shaped fields rejected (422)
+[PASS] A11 missing field rejected (422)  :: status=422
+[PASS] A12 non-boolean completed rejected (422, StrictBool)  :: status=422 body={"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"5ef42d8cda05196d"}}
+[PASS] A13 no rejected secret ever reached the disk or the readback  :: disk=b'{\n  "step": 3,\n  "completed": false,\n  "open": true\n}'
+
+==========================================================================================
+QA INDEPENDENT HARNESS — group B: profile / workspace isolation
+==========================================================================================
+[PASS] B1 different profile root yields a different local profile dir  :: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/qa-frontend-d-repair1-wjgpv4zs/profile/17fe080a-7c13-4a3f-8f8b-5f7c2f45b597 vs /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/qa-frontend-d-repair1-wjgpv4zs/profile-2/bbf4d8d0-357c-40fc-a200-4dfa6111177c
+[PASS] B2 record in profile-1 is invisible in profile-2 -> 404 absent  :: status=404 code=first_use_progress_absent
+[PASS] B3 switching the active workspace inside one app keeps profile isolation  :: status=200
+[PASS] B4 same profile, different workspace -> 404 absent (no bleed from ws-a)  :: status=404 code=first_use_progress_absent
+[PASS] B5 both workspaces keep independent on-disk documents  :: ws-a={'step': 5, 'completed': True, 'open': False} ws-b={'step': 2, 'completed': False, 'open': True}
+[PASS] B6 store path is profile_root/<workspace_id>/first-use-progress.json  :: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/qa-frontend-d-repair1-wjgpv4zs/profile/17fe080a-7c13-4a3f-8f8b-5f7c2f45b597/first-use-progress.json
+
+==========================================================================================
+QA INDEPENDENT HARNESS — group C: restart / new app instance re-read
+==========================================================================================
+[PASS] C1 brand-new app instance over same profile re-reads the record  :: status=200 body={"step":2,"completed":false,"open":true}
+[PASS] C2 completed record survives a new app instance  :: status=200 body={"step":5,"completed":true,"open":false}
+
+==========================================================================================
+QA INDEPENDENT HARNESS — group D: corrupted document fails closed (503)
+==========================================================================================
+[PASS] D1 every corrupted / non-whitelisted document -> 503 progress_unavailable (never silently 'absent', never 'completed')
+[PASS] D2 corrupt doc is NOT reported as an already-completed first use  :: status=503 body={"error":{"code":"progress_unavailable","message":"首次配置进度无法读写，请检查本机 profile 后重试。","request_id":"2bca3b601245d3e1"}}
+[PASS] D3 a valid PUT repairs the corrupt document (200 and file becomes valid)  :: status=200 disk={'step': 2, 'completed': False, 'open': True}
+[PASS] D4 unwritable profile dir -> 503 progress_unavailable on PUT  :: status=503 code=progress_unavailable body={"error":{"code":"progress_unavailable","message":"首次配置进度无法读写，请检查本机 profile 后重试。","request_id":"f85c70e5116d997a"}}
+[PASS] D5 unwritable profile dir with no file -> 404 absent (read still honest)  :: status=404 code=first_use_progress_absent
+
+==========================================================================================
+QA INDEPENDENT HARNESS — group E: atomicity and concurrency
+==========================================================================================
+[PASS] E1 concurrent writes never raise and never corrupt  :: errors=[]
+[PASS] E2 no reader ever observed a truncated / half-written document  :: observations=[]
+[PASS] E3 final document after concurrent writes is a valid whitelisted record  :: final=FirstUseProgress(step=4, completed=True, open=True)
+[PASS] E4 no temp-file leftovers in the profile directory  :: leftovers=[]
+[PASS] E5 6 concurrent HTTP writers all succeed and leave one valid record  :: errors=[] final={"step":5,"completed":false,"open":true}
+
+==========================================================================================
+QA INDEPENDENT HARNESS — group F: pre-repair1 upgrade path (adversarial)
+==========================================================================================
+[PASS] F1 a workspace configured before repair1 has no record -> 404 absent (UI consequence must be checked in the browser harness)  :: status=404 code=first_use_progress_absent
+
+==========================================================================================
+QA HARNESS TOTAL: 33 checks, 33 passed, 0 failed
+artifacts kept under: /var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/qa-frontend-d-repair1-wjgpv4zs
+==========================================================================================
+EXIT=0

@@ -1,0 +1,38 @@
+# B · 测试与自动检查真实退出码（QA 独立 checkout，SHA 7a448c39092b81d0afcb15ce4dc57d91faaa7e5e）
+
+依赖：`uv sync --locked --group dev`（exit 0）、`npm --prefix web ci`（exit 0，226 packages）。
+所有命令均在 `/Users/yifengstudio/.codex/worktrees/qa-cleanup-verify` 实测。
+
+| # | 命令 | 期望 | 实测 | 退出码 | 判定 |
+|---|---|---|---|---|---|
+| B1 | `PYTHONPATH=$PWD/scripts/offline_guard:$PWD/src uv run pytest -q` | 692 passed | `692 passed, 1 warning in 81.26s` | 0 | PASS |
+| B2 | `npm --prefix web test -- --run` | 222 passed / 26 files / 0 todo | `Test Files 26 passed (26)` / `Tests 222 passed (222)`；输出无 `todo` 行（无 skipped/todo 计数） | 0 | PASS |
+| B3 | `npm --prefix web run test:e2e` | 2 passed | `2 passed (12.6s)`（`first-use.spec.ts`、`viewport.spec.ts`） | 0 | PASS |
+| B4 | `npm --prefix web run test:e2e:integration` | 1 passed | `1 passed (3.5s)`（`approval-today.spec.ts`） | 0 | PASS |
+| B5 | `npm --prefix web run typecheck` | 0 | `tsc -b --pretty` 无输出 | 0 | PASS |
+| B6 | `npm --prefix web run lint` | 0，恰好 2 条 warning | `Found 2 warnings and 0 errors.` / `Finished in 40ms on 73 files` | 0 | PASS |
+| B7 | `npm --prefix web run build` | 0 | `✓ built in 241ms`（`dist/assets/index-CJV7PXqW.js 591.47 kB`） | 0 | PASS |
+| B8 | `uv run ruff check src tests` | 0 | `All checks passed!` | 0 | PASS |
+| B9 | `uv run ruff format --check src tests` | 0 | `100 files already formatted` | 0 | PASS |
+| B10 | `uv run mypy src` | 0 | `Success: no issues found in 47 source files` | 0 | PASS |
+| B11 | `uv lock --check` | 0 | `Resolved 48 packages in 3ms` | 0 | PASS |
+| B12 | `uv build` | 0 | `Successfully built dist/summit_everything-0.1.0.tar.gz` / `…-py3-none-any.whl` | 0 | PASS |
+| B13 | `npm --prefix web run api:types && git diff --exit-code -- web/src/api/generated.ts` | 0 | 再生成 exit 0；`git diff` 无输出 | 0 | PASS |
+
+补记（B13 附带核查）：`web/openapi.json` 亦为 tracked 文件，再生成后 `git diff --stat -- web/openapi.json`
+同样**无输出（exit 0）**，即 API 契约字节稳定；命令结束后 `git status --porcelain` 为空。
+
+# C · 前端指纹
+
+```sh
+PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run python -c \
+  "from summit_everything.release import fingerprint_web_dist as f; print(f('web/dist'))"
+```
+
+实测输出（exit 0，在 B7 的 `npm run build` 产物上计算）：
+
+```
+784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+```
+
+与期望值**逐字符一致** → PASS。

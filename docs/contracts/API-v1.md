@@ -9,7 +9,8 @@
 - Action：action_id、kind（feishu_task_create / feishu_task_update / feishu_task_complete / project_progress）、payload、payload_sha256、state、confirmation_id、provider_result。
 - MutationResult：operation_id、state、changed_paths、page_versions、saved_locally；正式页确认入口另返回 index_update（not_enabled / updated / update_failed），区分首次索引、成功自动增量和保存后索引失败。没有自动 cloud_synced 字段。
 - Job：job_id、kind、state（queued / running / succeeded / failed / unknown / cancelled）、progress、result、error。进度不虚构百分比，取消不保证远端未计费。
-- IntakeItem：item_id、source_id、title、filename、original_relative_path、state（pending / processing / reviewing / completed / failed / cancelled / unknown）、latest_job_id；新增可选兼容字段 `attempt_no`、`revision`、`previous_attempt_sha256`、`finished_at`。`unknown` 不自动重发；显式 reprocess 要求新 operation_id。
+- SourceRecord：source_id、role、original_relative_path、filename、sha256、created_at；`origin_kind` 为 `quick_note` / `file` / `feishu_material` / `unknown`，老记录缺字段时按 `unknown` 读取。
+- IntakeItem：item_id、source_id、title、filename、original_relative_path、state（pending / processing / reviewing / completed / failed / cancelled / unknown）、latest_job_id；`origin_kind` 由服务端入口写入，值为 `quick_note` / `file` / `feishu_material` / `unknown`。新增可选兼容字段 `attempt_no`、`revision`、`previous_attempt_sha256`、`finished_at`。旧记录默认为 `unknown`，不从文件名推断；`unknown` 不自动重发；显式 reprocess 要求新 operation_id。
 - IntakeJob：job_id、item_ids、request_hash、state（running / provider_calling / completed / failed / cancelled / unknown）、draft_ids、created_at；可选 `finished_at`、`attempt_id`、`revision`、`checkpoint_sha256`。`completed` 表示 provider 输出已保存为本地稿件/候选，不表示稿件已批准。Draft 新增可选 `job_id` 以关联恢复与完成作业。
 - Citation：page_id、content_sha256、chunk_id、heading、excerpt、validity；客户端用稳定页面路由打开，不信任任意文件 URL。
 - Answer：answer_id、question、text、citations、answer_mode、source_statements、inferences、advice、missing_information、purpose、index_status。来源陈述、推断、建议和缺失资料分别展示，不能互相伪装。

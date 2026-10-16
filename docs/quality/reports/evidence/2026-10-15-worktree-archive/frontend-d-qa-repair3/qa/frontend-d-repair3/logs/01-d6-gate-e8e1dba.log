@@ -1,0 +1,12 @@
+## CI-exact form: git diff --exit-code -- web/src/api/generated.ts
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [79.1ms]
+api:types EXIT=0
+DIFF_GENERATED_EXIT=0
+DIFF_BOTH_EXIT=0
+STATUS_AFTER:

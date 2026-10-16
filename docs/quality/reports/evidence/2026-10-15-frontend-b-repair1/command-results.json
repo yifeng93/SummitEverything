@@ -1,0 +1,78 @@
+[
+  {
+    "id": "vitest-discovery-fail",
+    "command": "npm test -- --run",
+    "exit_code": 1,
+    "status": "FAIL",
+    "note": "Initial collection included local Playwright harness and the source-key visibility count changed; corrected by excluding only web/.local/qa/** from Vitest discovery and updating the explicit identifier occurrence attribution."
+  },
+  {
+    "id": "vitest-final",
+    "command": "npm test -- --run",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "25 files; 180 passed; 6 todo."
+  },
+  {
+    "id": "source-unit-final",
+    "command": "npm test -- --run src/components/SourceOrganizer.test.tsx",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "4 focused regression tests."
+  },
+  {
+    "id": "typecheck-final",
+    "command": "npm run typecheck",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "id": "lint-final",
+    "command": "npm run lint",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "Two existing warnings remain."
+  },
+  {
+    "id": "build-final",
+    "command": "npm run build",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "Existing bundle-size warning remains."
+  },
+  {
+    "id": "web-e2e-concurrent-fail",
+    "command": "npm run test:e2e (concurrent with integration)",
+    "exit_code": 1,
+    "status": "FAIL",
+    "note": "Playwright test-results cleanup collided across two simultaneous commands; rerun serially."
+  },
+  {
+    "id": "web-e2e-serial-pass",
+    "command": "npm run test:e2e",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "Serial rerun; 2/2 including full 5-width light/dark viewport matrix."
+  },
+  {
+    "id": "fake-fastapi-pass",
+    "command": "npm run test:e2e:integration",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "1/1 Fake FastAPI workflow."
+  },
+  {
+    "id": "scope-harness-fixture-fail",
+    "command": "npx playwright test --config .local/qa/frontend-b-repair1/integration.config.ts --grep 'Real source preview'",
+    "exit_code": 1,
+    "status": "FAIL",
+    "note": "Local QA stub initially returned a source id unrelated to the synthetic seeded source; corrected the test fixture to carry the actual synthetic source id. No product assertion was weakened."
+  },
+  {
+    "id": "scope-harness-pass",
+    "command": "npx playwright test --config .local/qa/frontend-b-repair1/integration.config.ts --grep 'Real source preview'",
+    "exit_code": 0,
+    "status": "PASS",
+    "note": "Same bounded scope scenario; shows actual frozen text and target; cancel creates zero intake jobs and external attempts."
+  }
+]

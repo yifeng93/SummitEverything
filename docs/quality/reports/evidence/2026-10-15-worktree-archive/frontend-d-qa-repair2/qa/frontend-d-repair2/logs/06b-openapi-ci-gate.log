@@ -1,0 +1,50 @@
+###### CI-equivalent OpenAPI consistency gate on 96fdf4d ######
+== pre-state ==
+pre_status_lines=0
+== run: npm --prefix web run api:types ==
+
+> web@0.0.0 api:types
+> cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+
+Wrote web/openapi.json
+✨ openapi-typescript 7.13.0
+🚀 openapi.json → src/api/generated.ts [74.9ms]
+API_TYPES_EXIT=0
+== CI step: git diff --exit-code -- web/src/api/generated.ts ==
+diff --git a/web/src/api/generated.ts b/web/src/api/generated.ts
+index 264f7d1..2ae3933 100644
+--- a/web/src/api/generated.ts
++++ b/web/src/api/generated.ts
+@@ -1753,6 +1753,11 @@ export interface components {
+          *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+          *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+          *     rejected instead of having it silently stored on disk.
++         *
++         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
++         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
++         *     out-of-contract payload would look accepted; the validator below closes that
++         *     (independent QA finding D-4).
+          */
+         FirstUseProgress: {
+             /**
+GIT_DIFF_EXITCODE=1
+== git diff --stat ==
+ web/src/api/generated.ts | 5 +++++
+ 1 file changed, 5 insertions(+)
+== full diff ==
+diff --git a/web/src/api/generated.ts b/web/src/api/generated.ts
+index 264f7d1..2ae3933 100644
+--- a/web/src/api/generated.ts
++++ b/web/src/api/generated.ts
+@@ -1753,6 +1753,11 @@ export interface components {
+          *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+          *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+          *     rejected instead of having it silently stored on disk.
++         *
++         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
++         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
++         *     out-of-contract payload would look accepted; the validator below closes that
++         *     (independent QA finding D-4).
+          */
+         FirstUseProgress: {
+             /**

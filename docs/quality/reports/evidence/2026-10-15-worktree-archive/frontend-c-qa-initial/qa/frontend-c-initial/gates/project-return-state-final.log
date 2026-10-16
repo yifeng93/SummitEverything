@@ -1,0 +1,10 @@
+[WebServer] (node:96098) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:96099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../.local/qa/frontend-c-initial/e2e/project-state.spec.ts:15:5 › project return restores filtered list scroll and focus (486ms)
+
+  1 passed (1.2s)

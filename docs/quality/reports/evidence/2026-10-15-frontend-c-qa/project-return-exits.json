@@ -1,0 +1,20 @@
+{
+  "product_sha": "1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c",
+  "project_return_state": {
+    "initial_harness_attempt": { "exit": 1, "classification": "QA harness failure; preserved raw log" },
+    "retry_harness_attempt": { "exit": 1, "classification": "QA harness failure; preserved raw log" },
+    "final_corrected_harness_attempt": { "exit": 0, "classification": "PASS" }
+  },
+  "other_gate_exits": {
+    "npm_ci": 0,
+    "web_tests": 0,
+    "web_typecheck": 0,
+    "web_lint": 0,
+    "web_build": 0,
+    "focused_c_tests": 0,
+    "view_matrix": 0,
+    "fastapi_fake_flow": 0,
+    "project_journal_progress": 0
+  },
+  "raw_evidence": "Retained unchanged in ignored .local/qa/frontend-c-initial/ of the independent QA checkout."
+}

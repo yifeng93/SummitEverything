@@ -177,6 +177,24 @@ export interface paths {
         patch: operations["patch_settings_api_v1_settings_patch"];
         trace?: never;
     };
+    "/api/v1/first-use/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get First Use Progress */
+        get: operations["get_first_use_progress_api_v1_first_use_progress_get"];
+        /** Put First Use Progress */
+        put: operations["put_first_use_progress_api_v1_first_use_progress_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/credentials/{provider}": {
         parameters: {
             query?: never;
@@ -1728,6 +1746,30 @@ export interface components {
              */
             completed_at: number;
         };
+        /**
+         * FirstUseProgress
+         * @description Exactly the three non-secret fields the wizard is allowed to persist.
+         *
+         *     ``extra="forbid"`` plus strict booleans keep the wire contract honest: a
+         *     caller that tries to smuggle in a credential, a path or a raw JSON blob is
+         *     rejected instead of having it silently stored on disk.
+         *
+         *     ``step`` is a real integer or nothing. ``Literal`` alone would let Pydantic's
+         *     lax mode normalise an integral JSON float (``3.0``) into ``3``, so an
+         *     out-of-contract payload would look accepted; the validator below closes that
+         *     (independent QA finding D-4).
+         */
+        FirstUseProgress: {
+            /**
+             * Step
+             * @enum {integer}
+             */
+            step: 2 | 3 | 4 | 5;
+            /** Completed */
+            completed: boolean;
+            /** Open */
+            open: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1830,6 +1872,12 @@ export interface components {
         };
         /** IntakeItem */
         IntakeItem: {
+            /**
+             * Origin Kind
+             * @default unknown
+             * @enum {string}
+             */
+            origin_kind: "quick_note" | "file" | "feishu_material" | "unknown";
             /**
              * Item Id
              * Format: uuid
@@ -2486,6 +2534,12 @@ export interface components {
         };
         /** SourceRecord */
         SourceRecord: {
+            /**
+             * Origin Kind
+             * @default unknown
+             * @enum {string}
+             */
+            origin_kind: "quick_note" | "file" | "feishu_material" | "unknown";
             /** External Identity */
             external_identity?: {
                 [key: string]: string;
@@ -3094,6 +3148,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_first_use_progress_api_v1_first_use_progress_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirstUseProgress"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_first_use_progress_api_v1_first_use_progress_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirstUseProgress"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirstUseProgress"];
                 };
             };
             /** @description Validation Error */

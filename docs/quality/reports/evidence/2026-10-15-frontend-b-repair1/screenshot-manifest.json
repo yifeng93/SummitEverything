@@ -1,0 +1,85 @@
+{
+  "product_sha": "a0ccad8bcd46814a23c74d00bbba1d1d5f98699c",
+  "screenshots": [
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 1280,
+      "theme": "dark",
+      "path": "screenshots/import-focus/import-focus-files-1280-dark.png",
+      "bytes": 99250,
+      "sha256": "3d31319fd17ec95c699d07c856c613543862ca3d696c0afc3963157acdf82655"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 1280,
+      "theme": "light",
+      "path": "screenshots/import-focus/import-focus-files-1280-light.png",
+      "bytes": 101800,
+      "sha256": "da4a343bfab92d845d54f390414139f2142eefcde437d22b218f25254f914352"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 320,
+      "theme": "dark",
+      "path": "screenshots/import-focus/import-focus-files-320-dark.png",
+      "bytes": 58647,
+      "sha256": "fb795b64738d32ba280f57973aac909f832eb4743258ff7a696f0e662b0a6973"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 320,
+      "theme": "light",
+      "path": "screenshots/import-focus/import-focus-files-320-light.png",
+      "bytes": 59185,
+      "sha256": "9730582a4caeced4f38f1a55bca6cdcd72dabdfe675661db2330d64cfcc30033"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 390,
+      "theme": "dark",
+      "path": "screenshots/import-focus/import-focus-files-390-dark.png",
+      "bytes": 60116,
+      "sha256": "6719c614252e1ba10988856c7a0bd989f670f12d6afbca4b2a1d21506fc0d383"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 390,
+      "theme": "light",
+      "path": "screenshots/import-focus/import-focus-files-390-light.png",
+      "bytes": 60712,
+      "sha256": "cec4658f40010624a9f159c0b5075763c6b49da74e88a7e89af812fb3ebcc838"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 768,
+      "theme": "dark",
+      "path": "screenshots/import-focus/import-focus-files-768-dark.png",
+      "bytes": 85667,
+      "sha256": "a5b52682beb9205b06975b7ad3cacbe225e5c565a1872b9819fb5a64b293048a"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 768,
+      "theme": "light",
+      "path": "screenshots/import-focus/import-focus-files-768-light.png",
+      "bytes": 87415,
+      "sha256": "36de5f8570f4de6e0ea697f78e4ddc5da75c7801bae0291ccb9f7ff07039ea0b"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 960,
+      "theme": "dark",
+      "path": "screenshots/import-focus/import-focus-files-960-dark.png",
+      "bytes": 90475,
+      "sha256": "024b9b12dfd19bb70ac76ec97ba21b5c4b871e2493deda0613faa3b2d42aa9b9"
+    },
+    {
+      "scenario": "Import Drawer first native file chooser entry focused",
+      "width": 960,
+      "theme": "light",
+      "path": "screenshots/import-focus/import-focus-files-960-light.png",
+      "bytes": 93135,
+      "sha256": "045c61cf09f662c407b3ff84f6065b86f859d23df2a8f338d01812c144f3e6e2"
+    }
+  ]
+}

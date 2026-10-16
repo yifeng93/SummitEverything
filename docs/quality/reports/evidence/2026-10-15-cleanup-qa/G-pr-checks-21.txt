@@ -1,0 +1,1 @@
+offline-arm64	pass	3m42s	https://github.com/yifeng93/SummitEverything/actions/runs/38832106964/job/116752970185	

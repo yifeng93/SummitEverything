@@ -1,0 +1,44 @@
+{
+  "method": "offline representative browser page; documentElement CSS zoom=2 important; simulation, not WKWebView pageZoom",
+  "before": {
+    "viewport": 1280,
+    "paragraph": {
+      "x": 201,
+      "y": 211.875,
+      "width": 878,
+      "height": 24
+    },
+    "button": {
+      "x": 201,
+      "y": 251.875,
+      "width": 131.265625,
+      "height": 44
+    },
+    "rootClientWidth": 1280,
+    "rootScrollWidth": 1280
+  },
+  "after": {
+    "viewport": 1280,
+    "paragraph": {
+      "x": 82,
+      "y": 423.75,
+      "width": 1116,
+      "height": 48
+    },
+    "button": {
+      "x": 82,
+      "y": 503.75,
+      "width": 256.0625,
+      "height": 88,
+      "focused": true
+    },
+    "rootClientWidth": 1280,
+    "rootScrollWidth": 1280
+  },
+  "checks": {
+    "paragraphHeightAbout2x": true,
+    "buttonHeightAbout2x": true,
+    "focusReachable": true,
+    "noRootHorizontalOverflow": true
+  }
+}

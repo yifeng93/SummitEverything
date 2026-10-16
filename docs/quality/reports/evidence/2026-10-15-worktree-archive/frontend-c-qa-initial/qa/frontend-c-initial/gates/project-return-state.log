@@ -1,0 +1,59 @@
+[WebServer] (node:95940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:95941) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:07:11 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of undefined (reading 'filter')
+[WebServer]  > ApprovalView src/components/ApprovalView.tsx:77:45
+[WebServer]     75 |    const pendingDraftList = drafts.data?.filter(draftNeedsAttention) ?? []
+[WebServer]     76 |    const pendingPages = pages.data?.filter(formalNeedsAttention) ?? []
+[WebServer]     77 |    const pendingActions = intents.data?.items.filter(actionableAction) ?? []
+[WebServer]        |                                               ^
+[WebServer]     78 |    const pendingIndex = index.data && (index.data.state === 'manual_required' || settingsMode === 'real' && index.data...
+[WebServer]     79 |    const needsCount = pendingSources.length + pendingDraftList.length + pendingPages.length + pendingIndex + pendingAc...
+[WebServer]  > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:28571:19
+[WebServer]  > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:8030:21
+[WebServer]  > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10569:18
+[WebServer]  > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:12205:17
+[WebServer]  > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1045:29
+[WebServer]  > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:19176:21
+[WebServer]  > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:19004:40
+[WebServer]  > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:18985:10
+[WebServer]  > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18094:34
+[WebServer] 
+[WebServer] 7:07:11 PM [vite] (client) [console.warn] An error occurred in the <ApprovalView> component.
+[WebServer] 
+[WebServer] Consider adding an error boundary to your tree to customize error handling behavior.
+[WebServer] Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+[WebServer] 
+  ✘  1 ../.local/qa/frontend-c-initial/e2e/project-state.spec.ts:15:5 › project return restores filtered list scroll and focus (30.0s)
+
+
+  1) ../.local/qa/frontend-c-initial/e2e/project-state.spec.ts:15:5 › project return restores filtered list scroll and focus 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '项目' })
+        - locator resolved to <button title="项目" aria-label="项目" class="nav-item">…</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+
+
+      29 |   await page.setViewportSize({ width: 390, height: 640 })
+      30 |   await page.goto('/')
+    > 31 |   await page.getByRole('button', { name: '项目' }).click()
+         |                                                  ^
+      32 |   await expect(page.getByRole('button', { name: /目标项目 29/ })).toBeVisible()
+      33 |   await page.getByLabel('搜索项目').fill('目标项目')
+      34 |   await page.getByLabel('筛选状态').selectOption('in_progress')
+        at /Users/yifengstudio/.codex/worktrees/frontend-c-qa-initial/SummitEverything/.local/qa/frontend-c-initial/e2e/project-state.spec.ts:31:50
+
+    Error Context: ../.local/qa/frontend-c-initial/project-state-output/project-state-project-retu-d7153-tered-list-scroll-and-focus/error-context.md
+
+  1 failed
+    ../.local/qa/frontend-c-initial/e2e/project-state.spec.ts:15:5 › project return restores filtered list scroll and focus 

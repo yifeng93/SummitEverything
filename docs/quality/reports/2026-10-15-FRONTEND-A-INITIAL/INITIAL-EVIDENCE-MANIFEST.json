@@ -1,0 +1,245 @@
+{
+  "source": "/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything/.local/qa/frontend-a-initial",
+  "originals_modified": false,
+  "excluded": [
+    ".venv",
+    "runtime profile/workspace outside evidence directories"
+  ],
+  "files": [
+    {
+      "path": "QA-REPORT.md",
+      "bytes": 11412,
+      "sha256": "5084ec95ce6ef23c882741f0066ee77e9add67ed5e74b7a2cdf4f6d337e4d577"
+    },
+    {
+      "path": "specs/settings-review.spec.cjs",
+      "bytes": 10359,
+      "sha256": "2d9e44d14ac7937113b637ec6f4060163093e7ca3ea4bf916387feaf95c84047"
+    },
+    {
+      "path": "specs/wizard-viewport.spec.cjs",
+      "bytes": 9955,
+      "sha256": "2c4179c17c310a7f7c5f08a0b193407147f17562c33b790ecb4f4f6fb636f00f"
+    },
+    {
+      "path": "playwright.integration.config.ts",
+      "bytes": 1667,
+      "sha256": "62e7a5062e27c4ae65a0a924beb07e43a6fc6b067a6da7364ebe54a26cf514d7"
+    },
+    {
+      "path": "playwright.offline.config.ts",
+      "bytes": 853,
+      "sha256": "304762ce7dd5af02bb20b4e04256cc9ccbe2b15880bf36e77de31ebe553ca80a"
+    },
+    {
+      "path": "playwright.review.config.ts",
+      "bytes": 751,
+      "sha256": "50a55c875d1f0d16c16f2c1a7e1123e9b12f903e5df69590c415f0b7c0fc87f9"
+    },
+    {
+      "path": "playwright.wizard.config.ts",
+      "bytes": 751,
+      "sha256": "9d6f067163ce2676e1ecdc058ab835cbbad528fc6eb5ddd0373d1a875881cff1"
+    },
+    {
+      "path": "mock-evidence/measurements.json",
+      "bytes": 58267,
+      "sha256": "fd7b30af50aafebc3609885cc7832eb9fb43a456b44d9d8cfb1fd4784629bd30"
+    },
+    {
+      "path": "mock-evidence/onboarding-reauthorize-step-4.png",
+      "bytes": 75452,
+      "sha256": "fdbe2e06fef8a6a58e3c361aecc19cd41d0f885253a7d95bf4a208055cdbc722"
+    },
+    {
+      "path": "mock-evidence/onboarding-step-2.png",
+      "bytes": 80559,
+      "sha256": "97b48c5affb1d40ae517b01f3c2347b4c9adc8369c2dc65bbcac67466a9fb77d"
+    },
+    {
+      "path": "mock-evidence/onboarding-step-3-manual-resume.png",
+      "bytes": 50950,
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035"
+    },
+    {
+      "path": "mock-evidence/onboarding-step-3-reloaded-open.png",
+      "bytes": 50950,
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035"
+    },
+    {
+      "path": "mock-evidence/onboarding-step-3.png",
+      "bytes": 50950,
+      "sha256": "7405fd8de0001824fdf99729c94ebd96e19a01be7540243b334ce774d4df8035"
+    },
+    {
+      "path": "mock-evidence/onboarding-step-4.png",
+      "bytes": 75452,
+      "sha256": "fdbe2e06fef8a6a58e3c361aecc19cd41d0f885253a7d95bf4a208055cdbc722"
+    },
+    {
+      "path": "mock-evidence/onboarding-step-5.png",
+      "bytes": 75088,
+      "sha256": "f4d704bda25c4a956450f6d530a5b1bf9361d6495ae92ca545e2091f731c873a"
+    },
+    {
+      "path": "mock-evidence/onboarding-workspace-error.png",
+      "bytes": 60770,
+      "sha256": "b8aaae9619e09db5ec81df33730c0f5ff595cc1a84114342d3f601cd7ea955db"
+    },
+    {
+      "path": "mock-evidence/settings-1280-dark.png",
+      "bytes": 188341,
+      "sha256": "0423f424eb8e38f3e9700061107e2b37516587dadc15061667c58a56d9572dfe"
+    },
+    {
+      "path": "mock-evidence/settings-1280-light.png",
+      "bytes": 188683,
+      "sha256": "5fcd45ee3ea05635b994faa162f22895d54390b99f3d79f6eb5b3b502f7dd5a7"
+    },
+    {
+      "path": "mock-evidence/settings-320-dark.png",
+      "bytes": 163074,
+      "sha256": "ed4817f992fe1ee3d3c2063bc970b1054772e404f1b994c51c079316309de595"
+    },
+    {
+      "path": "mock-evidence/settings-320-light.png",
+      "bytes": 162349,
+      "sha256": "ff2ccd358ed989916895806d0a49d84bd93f573a6916abcd0fba70b250f03190"
+    },
+    {
+      "path": "mock-evidence/settings-390-dark.png",
+      "bytes": 164867,
+      "sha256": "89f5602ec4a73b3cc1c951e484b4bd1445ac1a5ef2cfb14261e086e06b75ffdb"
+    },
+    {
+      "path": "mock-evidence/settings-390-light.png",
+      "bytes": 164263,
+      "sha256": "8598c698b903a0c1ed5a673594cd9173267dd46e56c3881f9dfcfd638e3ccb1d"
+    },
+    {
+      "path": "mock-evidence/settings-768-dark.png",
+      "bytes": 170523,
+      "sha256": "3b963ab6940810e7d02c1b26e02fbb0696eab479e4ae5bbfd72fe59af210e10f"
+    },
+    {
+      "path": "mock-evidence/settings-768-light.png",
+      "bytes": 170193,
+      "sha256": "feceaf5ad8a0e99d1a3a21cece99715ec39c64610288d195e27a13a8816e70e2"
+    },
+    {
+      "path": "mock-evidence/settings-960-dark.png",
+      "bytes": 184179,
+      "sha256": "a37597e091e5b605abf1c56a94a0a5b1752233a139fac8ad54ecbabd8251330b"
+    },
+    {
+      "path": "mock-evidence/settings-960-light.png",
+      "bytes": 184453,
+      "sha256": "7d0160398d824d6d9d4651992e0d7491e314b753926a4f4c5493404b764dc0b6"
+    },
+    {
+      "path": "mock-evidence/today-1280-dark.png",
+      "bytes": 161621,
+      "sha256": "98812965dc9854704ca17a00e6194de00abf617cb08ef6fdcdb7bf6a406fe166"
+    },
+    {
+      "path": "mock-evidence/today-1280-light.png",
+      "bytes": 168156,
+      "sha256": "70e6e34b85e185c36ebab7d2f6d7138a12964aa4dc02c49071ef4bfbc6d4a055"
+    },
+    {
+      "path": "mock-evidence/today-320-dark.png",
+      "bytes": 144987,
+      "sha256": "cde1e88fd858bfff9d1278fee077a139644a937292e43eb9479b951046b000a6"
+    },
+    {
+      "path": "mock-evidence/today-320-light.png",
+      "bytes": 146687,
+      "sha256": "51243f913effaffb49fcca5fd81c3d824c492d927d00ef9fa91c8e243b9bb7a9"
+    },
+    {
+      "path": "mock-evidence/today-390-dark.png",
+      "bytes": 131163,
+      "sha256": "90765e7cc18aabbaa004e5003bb73c7cf5568badd82a41615f2710d335e7e961"
+    },
+    {
+      "path": "mock-evidence/today-390-light.png",
+      "bytes": 139239,
+      "sha256": "f39f0df2fe9cc6f7fd03eb681180ad165a148638e77808f3ea19acec7065fcbe"
+    },
+    {
+      "path": "mock-evidence/today-768-dark.png",
+      "bytes": 152745,
+      "sha256": "e482ca0a2830229aff5d1e9e1d11e124bdbf3256c8f48fdb74e48ca9ccdb7eac"
+    },
+    {
+      "path": "mock-evidence/today-768-light.png",
+      "bytes": 152483,
+      "sha256": "41773aff1f25060705dfb928c06f7c42c4cb28c5343bfd68bd71d202e05a3e0e"
+    },
+    {
+      "path": "mock-evidence/today-960-dark.png",
+      "bytes": 160586,
+      "sha256": "f3dfb8cbf7e6753fb7003f49853c247db749568d40364347d3967ada109e2f29"
+    },
+    {
+      "path": "mock-evidence/today-960-light.png",
+      "bytes": 168154,
+      "sha256": "1fcc119ee2f74e3b66508575347b05609a39b30c597e97bc3a5ad78ce53f535b"
+    },
+    {
+      "path": "fastapi-evidence/fastapi-onboarding-complete.png",
+      "bytes": 76450,
+      "sha256": "30cebebbc6fd0614625c77bd3f34c2882d5fb943b5dacd31986e4707131c3e90"
+    },
+    {
+      "path": "fastapi-evidence/fastapi-onboarding-step-2.png",
+      "bytes": 81601,
+      "sha256": "a618b8f2db62fa1f1e61920deae382ef83b9de0154bea996d3f138b2f09f5365"
+    },
+    {
+      "path": "fastapi-evidence/fastapi-request-manifest.json",
+      "bytes": 2334,
+      "sha256": "193305845064612cc1ed809a459a3ef98fe26f6bd154f981ed042b8621155557"
+    },
+    {
+      "path": "playwright-mock-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "playwright-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "playwright-results/first-use-real-first-use-c-d7eb1-and-isolated-Fake-workspace/isolated-fake-workspace/.summit-everything/manifest.json",
+      "bytes": 191,
+      "sha256": "43392f7e23e37872306f0d46f0218c0bd26e9ffd71afa98b8ac4a0565e988981"
+    },
+    {
+      "path": "playwright-results/first-use-real-first-use-c-d7eb1-and-isolated-Fake-workspace/isolated-fake-workspace/.summit-everything/transactions/workspace-create-fb3b942048619f189dceaaa950684ba1d33ab9e34d1dfba65f307ffe721e593e.json",
+      "bytes": 322,
+      "sha256": "a0091c189055b715dc484271982dfbc245d6c1aa4bc8b97ad9bf99d0ee9da159"
+    },
+    {
+      "path": "playwright-results/first-use-real-first-use-c-d7eb1-and-isolated-Fake-workspace/isolated-fake-workspace/.summit-everything/workspace.lock",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "playwright-results/first-use-real-first-use-c-d7eb1-and-isolated-Fake-workspace/isolated-fake-workspace/conventions.md",
+      "bytes": 86,
+      "sha256": "88e356eba73139c01ed51c5eb4bea96efa0d77ac97a24afe3796f3e012c4f873"
+    },
+    {
+      "path": "playwright-review-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "playwright-wizard-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    }
+  ]
+}

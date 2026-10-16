@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { components } from '../api/generated'
-import { feishuCardBadge, modelCardBadge, parseFeishuStatus } from './settingsBadges'
+import { failedFeishuStatusRead, feishuCardBadge, modelCardBadge, parseFeishuStatus, smokeCheckConfigStamp } from './settingsBadges'
 import { SettingsView } from './SettingsView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
@@ -83,23 +83,35 @@ function smokePosts(fetchMock: ReturnType<typeof vi.fn>) {
   ))
 }
 
+async function waitForSettings() {
+  await screen.findByRole('button', { name: '配置 AI 模型与密钥' })
+}
+
 it('renders the three main cards and keeps technical fields inside the collapsed advanced block', async () => {
   stubSettings()
   const { container } = render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
 
   const workspaceCard = await screen.findByRole('region', { name: '工作库' })
   const modelCard = screen.getByRole('region', { name: 'AI 模型' })
   const feishuCard = screen.getByRole('region', { name: '飞书' })
-  expect(within(workspaceCard).getByText('Synthetic')).toBeTruthy()
-  expect(within(feishuCard).getByLabelText(/飞书应用密钥/)).toBeTruthy()
-  expect(within(feishuCard).getByRole('button', { name: '重新读取授权状态' })).toBeTruthy()
-  expect(within(modelCard).getByLabelText(/DeepSeek API Key/)).toBeTruthy()
-  expect(within(modelCard).getByLabelText(/阿里云 Model Studio API Key/)).toBeTruthy()
+  expect(await within(workspaceCard).findByText('Synthetic')).toBeTruthy()
+  expect(within(feishuCard).getByRole('button', { name: '连接 / 重新授权飞书' })).toBeTruthy()
+  expect(within(feishuCard).queryByLabelText('飞书应用 App ID')).toBeNull()
+  expect(within(feishuCard).queryByRole('button', { name: '重新读取授权状态' })).toBeNull()
+  expect(within(modelCard).getByText('整理与问答模型')).toBeTruthy()
+  expect(within(modelCard).getByText('知识索引向量化')).toBeTruthy()
+  expect(within(modelCard).getByRole('button', { name: '配置 AI 模型与密钥' })).toBeTruthy()
+  expect(within(modelCard).queryByLabelText(/DeepSeek API Key/)).toBeNull()
 
   // 技术字段全部在默认收起的「高级与自定义」里，主区不再有全局 Provider 下拉框 + 密钥表单。
   const advanced = container.querySelector('details.settings-advanced-block') as HTMLDetailsElement
   expect(advanced).toBeTruthy()
   expect(advanced.open).toBe(false)
+  expect(within(advanced).getByLabelText(/DeepSeek API Key/)).toBeTruthy()
+  expect(within(advanced).getByLabelText(/阿里云 Model Studio API Key/)).toBeTruthy()
+  expect(within(advanced).getByLabelText('飞书应用 App ID')).toBeTruthy()
+  expect(within(advanced).getByRole('button', { name: '重新读取授权状态' })).toBeTruthy()
   expect(within(advanced).getByLabelText('Embedding Base URL')).toBeTruthy()
   expect(within(advanced).getByLabelText('Rerank API Base URL')).toBeTruthy()
   expect(within(advanced).getByLabelText('Model Studio 账户标识')).toBeTruthy()
@@ -108,8 +120,50 @@ it('renders the three main cards and keeps technical fields inside the collapsed
   expect(within(advanced).getByLabelText('回答推理预算')).toBeTruthy()
   expect(within(advanced).getByText('中国大陆（当前已核对 endpoint）')).toBeTruthy()
   expect(within(advanced).getByRole('table')).toBeTruthy()
-  expect(within(advanced).getByText('Embedding 指纹')).toBeTruthy()
+  expect(within(advanced).getByText('Embedding 配置')).toBeTruthy()
+  expect(within(advanced).getByText('已配置')).toBeTruthy()
+  expect(within(advanced).queryByText('fingerprint')).toBeNull()
   expect(screen.queryByLabelText('Provider')).toBeNull()
+  expect(Array.from(container.querySelectorAll('.settings-cards > .settings-card')).map((card) => card.getAttribute('aria-label')))
+    .toEqual(['工作库', 'AI 模型', '飞书'])
+})
+
+it('keeps internal identifiers, hashes, paths, and raw JSON out of the three visible settings cards', async () => {
+  stubSettings({
+    embedding_fingerprint: 'synthetic-internal-hash',
+    model_studio_account_id: 'synthetic-internal-account',
+  })
+  const { container } = render(<SettingsView workspaceName="模拟工作库" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
+  const visibleCards = container.querySelector('.settings-cards')?.textContent ?? ''
+  expect(visibleCards).not.toContain('synthetic-internal-hash')
+  expect(visibleCards).not.toContain('synthetic-internal-account')
+  expect(visibleCards).not.toContain('/tmp/')
+  expect(visibleCards).not.toContain('{')
+})
+
+it('shows settings read failure as an error state with per-card fallbacks and retry', async () => {
+  let settingsReads = 0
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/settings')) {
+      settingsReads += 1
+      throw new Error('synthetic read failure')
+    }
+    if (url.endsWith('/provider-smoke')) return { ok: true, status: 200, json: async () => smokeStatus }
+    if (url.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => feishuStatus() }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<SettingsView workspaceName="模拟工作库" onSwitchWorkspace={vi.fn()} />)
+  expect((await screen.findByRole('alert')).textContent).toContain('synthetic read failure')
+  const cards = screen.getByLabelText('设置读取状态')
+  expect(within(cards).getAllByText('暂时无法读取')).toHaveLength(3)
+  expect(within(cards).queryByText('已连接')).toBeNull()
+  const retries = screen.getAllByRole('button', { name: '重新读取本机设置' })
+  expect(retries).toHaveLength(3)
+  fireEvent.click(retries[0])
+  await waitFor(() => expect(settingsReads).toBeGreaterThan(1))
 })
 
 it('maps the four backend capability codes to business language with a next action', async () => {
@@ -123,11 +177,12 @@ it('maps the four backend capability codes to business language with a next acti
     },
   })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  expect(await screen.findByText('每次使用前需预览并确认本次范围。')).toBeTruthy()
+  await waitForSettings()
+  expect(await screen.findByText(/每次使用前需预览并确认本次范围/)).toBeTruthy()
   expect(screen.getByText(/下一步：在对应操作中先查看本次范围预览/)).toBeTruthy()
-  expect(screen.getByText('当前使用离线 Fake；此路径不会访问真实 provider。')).toBeTruthy()
-  expect(screen.getByText('已选 provider；真实模式与本机密钥尚未完成配置。')).toBeTruthy()
-  expect(screen.getByText('缺少可独立核实写入结果的方式，飞书任务写回保持关闭。')).toBeTruthy()
+  expect(screen.getByText(/当前使用离线 Fake；此路径不会访问真实 provider/)).toBeTruthy()
+  expect(screen.getByText(/已选 provider；真实模式与本机密钥尚未完成配置/)).toBeTruthy()
+  expect(screen.getByText(/缺少可独立核实写入结果的方式，飞书任务写回保持关闭/)).toBeTruthy()
   expect(screen.getByText(/下一步：写回继续禁用/)).toBeTruthy()
   expect(screen.getByText('已配置，待本次确认')).toBeTruthy()
 })
@@ -135,30 +190,50 @@ it('maps the four backend capability codes to business language with a next acti
 it('falls back to a next-action message for an unknown capability code', async () => {
   stubSettings({ capabilities: { llm: capability({ disabled_reason: 'some_future_code' }) } })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  expect(await screen.findByText('需要单独验证。')).toBeTruthy()
+  await waitForSettings()
+  expect(await screen.findByText(/需要单独验证/)).toBeTruthy()
   expect(screen.getByText(/下一步：先查看能力详情确认门禁原因/)).toBeTruthy()
 })
 
-it('maps AI model card badges for unconfigured, configured, verified and failed states', () => {
-  const empty = { mode: 'fake' as const, credentials: {}, capabilities: {}, lastCheck: 'none' as const }
+it('maps AI model badges only when all three current capability checks pass', () => {
+  const none = { mode: 'fake' as const, credentials: {}, capabilities: {}, checkOutcomes: { deepseek_chat: 'none' as const, model_studio_embedding: 'none' as const, model_studio_rerank: 'none' as const } }
+  const empty = none
   expect(modelCardBadge(empty).kind).toBe('unconfigured')
 
   const configured = modelCardBadge({
     mode: 'real',
     credentials: { deepseek: true },
     capabilities: { llm: capability({ configured: true, disabled_reason: 'acceptance_plan_required' }) },
-    lastCheck: 'none',
+    checkOutcomes: { deepseek_chat: 'none', model_studio_embedding: 'none', model_studio_rerank: 'none' },
   })
   expect(configured.kind).toBe('configured')
   expect(configured.label).toBe('已配置（尚未验证）')
 
-  expect(modelCardBadge({
-    mode: 'real', credentials: { deepseek: true }, capabilities: {}, lastCheck: 'succeeded',
-  }).kind).toBe('verified')
+  const partial = modelCardBadge({
+    mode: 'real', credentials: { deepseek: true }, capabilities: {},
+    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'none', model_studio_rerank: 'none' },
+  })
+  expect(partial.label).toBe('部分已检查')
+  expect(partial.kind).not.toBe('verified')
+
+  const mixed = modelCardBadge({
+    mode: 'real', credentials: { deepseek: true }, capabilities: {},
+    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'none', model_studio_rerank: 'failed' },
+  })
+  expect(mixed.label).toBe('有检查失败')
+  expect(mixed.kind).toBe('failed')
 
   expect(modelCardBadge({
-    mode: 'real', credentials: { deepseek: true }, capabilities: {}, lastCheck: 'failed',
-  }).kind).toBe('failed')
+    mode: 'real', credentials: { deepseek: true }, capabilities: {},
+    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'succeeded', model_studio_rerank: 'succeeded' },
+  }).kind).toBe('verified')
+})
+
+it('ties each local smoke result to its own active settings so edits invalidate stale results', () => {
+  const original = settings({ mode: 'real', credential_status: { feishu_app: false, deepseek: true, dashscope: true } })
+  expect(smokeCheckConfigStamp(original as never, 'deepseek_chat')).not.toBe(smokeCheckConfigStamp({ ...original, llm: { ...original.llm, model: 'changed-model' } } as never, 'deepseek_chat'))
+  expect(smokeCheckConfigStamp(original as never, 'deepseek_chat')).toBe(smokeCheckConfigStamp({ ...original, rerank: { ...original.rerank, model: 'changed-rerank' } } as never, 'deepseek_chat'))
+  expect(smokeCheckConfigStamp(original as never, 'model_studio_rerank')).not.toBe(smokeCheckConfigStamp({ ...original, rerank: { ...original.rerank, model: 'changed-rerank' } } as never, 'model_studio_rerank'))
 })
 
 it('maps the feishu card badge from the local status payload', () => {
@@ -222,9 +297,19 @@ it('maps the feishu card badge from the local status payload', () => {
   expect(parseFeishuStatus({ mode: 'real', authorized: true, app_configured: true })?.authorized).toBe(true)
 })
 
+it('retains only a previous successful Feishu read on refresh failure', () => {
+  const previous = { state: 'loaded' as const, status: feishuStatus({ authorized: true }), readAt: '2026-10-15T00:00:00.000Z' }
+  expect(failedFeishuStatusRead(previous)).toEqual({ ...previous, state: 'stale' })
+  expect(failedFeishuStatusRead({ state: 'unreadable' })).toEqual({ state: 'unreadable' })
+  expect(failedFeishuStatusRead({ state: 'invalidated' })).toEqual({ state: 'invalidated' })
+  expect(feishuCardBadge({ keychainAvailable: true, read: { ...previous, state: 'stale' } }).label).toBe('已授权')
+  expect(feishuCardBadge({ keychainAvailable: true, read: { state: 'invalidated' } }).label).toBe('未配置')
+})
+
 it('shows the authorized feishu badge without claiming identity verification or task write-back', async () => {
   const { fetchMock } = stubSettings({}, { value: feishuStatus({ authorized: true, app_configured: true }) })
   const { container } = render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
   const feishuCard = await screen.findByRole('region', { name: '飞书' })
   expect(await within(feishuCard).findByText('已授权')).toBeTruthy()
   expect(feishuCard.textContent).toContain('不表示身份已核实')
@@ -242,6 +327,7 @@ it('shows the authorized feishu badge without claiming identity verification or 
 it('shows "需重新授权" only for an unreadable credential', async () => {
   stubSettings({}, { value: feishuStatus({ mode: 'real', app_configured: true, credential_error: 'credential_unreadable' }) })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
   const feishuCard = await screen.findByRole('region', { name: '飞书' })
   expect(await within(feishuCard).findByText('需重新授权')).toBeTruthy()
 })
@@ -249,6 +335,7 @@ it('shows "需重新授权" only for an unreadable credential', async () => {
 it('shows an unreadable authorization status when the status request fails, without consuming smoke quota', async () => {
   const { fetchMock } = stubSettings({}, { failure: 'http' })
   const { container } = render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
   const feishuCard = await screen.findByRole('region', { name: '飞书' })
   expect(await within(feishuCard).findByText('授权状态暂时无法读取')).toBeTruthy()
   // 徽章本身不得落在「已授权」状态。
@@ -267,11 +354,13 @@ it('shows an unreadable authorization status when the status request fails, with
 it('treats a rejected status request the same way and keeps the reload affordance', async () => {
   const { fetchMock } = stubSettings({}, { failure: 'reject' })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
   const feishuCard = await screen.findByRole('region', { name: '飞书' })
   expect(await within(feishuCard).findByText('授权状态暂时无法读取')).toBeTruthy()
   const statusCalls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/integrations/feishu/status'))
   expect(statusCalls.length).toBeGreaterThanOrEqual(1)
-  fireEvent.click(within(feishuCard).getByRole('button', { name: '重新读取授权状态' }))
+  fireEvent.click(document.querySelector('.settings-advanced-block > summary')!)
+  fireEvent.click(screen.getByRole('button', { name: '重新读取授权状态' }))
   await waitFor(() => {
     const after = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/integrations/feishu/status'))
     expect(after.length).toBeGreaterThan(statusCalls.length)
@@ -287,6 +376,8 @@ it('does not start any provider check after saving a secret', async () => {
     capabilities: { llm: capability({ configured: false, disabled_reason: 'provider_not_configured' }) },
   })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
+  fireEvent.click(await screen.findByRole('button', { name: '配置 AI 模型与密钥' }))
   const password = await screen.findByLabelText(/DeepSeek API Key/) as HTMLInputElement
   fireEvent.change(password, { target: { value: 'synthetic-secret' } })
   fireEvent.click(screen.getByRole('button', { name: '保存 AI 模型设置' }))
@@ -309,10 +400,12 @@ it('keeps the confirmation dialog open until the user confirms or cancels', asyn
     capabilities: {},
   })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  await waitForSettings()
+  fireEvent.click(document.querySelector('.settings-advanced-block > summary')!)
   const button = await screen.findByRole('button', { name: 'DeepSeek Chat（剩余 1）' })
   fireEvent.click(button)
-  const dialog = await screen.findByRole('dialog', { name: '确认本次连接检查' })
-  expect(dialog.textContent).toContain('不发送工作库材料')
+  const dialog = await screen.findByRole('dialog', { name: /确认本次连接检查/ })
+  expect(dialog.textContent).toContain('不会发送工作库材料')
   expect(dialog.textContent).toContain('累计已用 0/1')
   expect(dialog.textContent).toContain('跨运行不重置')
   expect(dialog.textContent).toContain('不会自动重发')

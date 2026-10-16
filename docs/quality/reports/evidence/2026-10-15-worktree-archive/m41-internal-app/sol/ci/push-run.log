@@ -1,0 +1,668 @@
+offline-arm64	Set up job	﻿2026-10-13T07:34:52.2566850Z Current runner version: '2.337.0'
+offline-arm64	Set up job	2026-10-13T07:34:52.2584180Z ##[group]Runner Image Provisioner
+offline-arm64	Set up job	2026-10-13T07:34:52.2584750Z Hosted Compute Agent
+offline-arm64	Set up job	2026-10-13T07:34:52.2585620Z Version: 20260828.587
+offline-arm64	Set up job	2026-10-13T07:34:52.2586190Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+offline-arm64	Set up job	2026-10-13T07:34:52.2586690Z Build Date: 2026-08-28T16:44:25Z
+offline-arm64	Set up job	2026-10-13T07:34:52.2587160Z Worker ID: {0209c9ce-cd7a-400b-b0a9-b2b0c36e4175}
+offline-arm64	Set up job	2026-10-13T07:34:52.2587720Z Azure Region: westus
+offline-arm64	Set up job	2026-10-13T07:34:52.2588110Z ##[endgroup]
+offline-arm64	Set up job	2026-10-13T07:34:52.2589270Z ##[group]Operating System
+offline-arm64	Set up job	2026-10-13T07:34:52.2589760Z macOS
+offline-arm64	Set up job	2026-10-13T07:34:52.2590110Z 14.8.9
+offline-arm64	Set up job	2026-10-13T07:34:52.2590520Z 23J631
+offline-arm64	Set up job	2026-10-13T07:34:52.2590880Z ##[endgroup]
+offline-arm64	Set up job	2026-10-13T07:34:52.2591240Z ##[group]Runner Image
+offline-arm64	Set up job	2026-10-13T07:34:52.2591630Z Image: macos-14-arm64
+offline-arm64	Set up job	2026-10-13T07:34:52.2592010Z Version: 20260831.0302.1
+offline-arm64	Set up job	2026-10-13T07:34:52.2593100Z Included Software: https://github.com/actions/runner-images/blob/macos-14-arm64/20260831.0302/images/macos/macos-14-arm64-Readme.md
+offline-arm64	Set up job	2026-10-13T07:34:52.2594700Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20260831.0302
+offline-arm64	Set up job	2026-10-13T07:34:52.2595380Z ##[endgroup]
+offline-arm64	Set up job	2026-10-13T07:34:52.2596160Z ##[group]GITHUB_TOKEN Permissions
+offline-arm64	Set up job	2026-10-13T07:34:52.2597630Z Contents: read
+offline-arm64	Set up job	2026-10-13T07:34:52.2598130Z Metadata: read
+offline-arm64	Set up job	2026-10-13T07:34:52.2598590Z ##[endgroup]
+offline-arm64	Set up job	2026-10-13T07:34:52.2600120Z Secret source: Actions
+offline-arm64	Set up job	2026-10-13T07:34:52.2600850Z Cache mode: write
+offline-arm64	Set up job	2026-10-13T07:34:52.2601430Z Prepare workflow directory
+offline-arm64	Set up job	2026-10-13T07:34:52.2838420Z Prepare all required actions
+offline-arm64	Set up job	2026-10-13T07:34:52.2876650Z Getting action download info
+offline-arm64	Set up job	2026-10-13T07:34:52.5510250Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+offline-arm64	Set up job	2026-10-13T07:34:52.8261890Z Download action repository 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+offline-arm64	Set up job	2026-10-13T07:34:53.6442340Z Download action repository 'astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9' (SHA:c771a70e6277c0a99b617c7a806ffedaca235ff9)
+offline-arm64	Set up job	2026-10-13T07:34:54.5131650Z Complete job name: offline-arm64
+offline-arm64	Checkout	﻿2026-10-13T07:34:54.5646110Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+offline-arm64	Checkout	2026-10-13T07:34:54.5647390Z with:
+offline-arm64	Checkout	2026-10-13T07:34:54.5648010Z   persist-credentials: false
+offline-arm64	Checkout	2026-10-13T07:34:54.5648850Z   fetch-depth: 0
+offline-arm64	Checkout	2026-10-13T07:34:54.5649480Z   repository: yifeng93/SummitEverything
+offline-arm64	Checkout	2026-10-13T07:34:54.5655220Z   token: ***
+offline-arm64	Checkout	2026-10-13T07:34:54.5655780Z   ssh-strict: true
+offline-arm64	Checkout	2026-10-13T07:34:54.5656350Z   ssh-user: git
+offline-arm64	Checkout	2026-10-13T07:34:54.5656910Z   clean: true
+offline-arm64	Checkout	2026-10-13T07:34:54.5657500Z   sparse-checkout-cone-mode: true
+offline-arm64	Checkout	2026-10-13T07:34:54.5658200Z   fetch-tags: false
+offline-arm64	Checkout	2026-10-13T07:34:54.5658790Z   show-progress: true
+offline-arm64	Checkout	2026-10-13T07:34:54.5659400Z   lfs: false
+offline-arm64	Checkout	2026-10-13T07:34:54.5659950Z   submodules: false
+offline-arm64	Checkout	2026-10-13T07:34:54.5660550Z   set-safe-directory: true
+offline-arm64	Checkout	2026-10-13T07:34:54.5661220Z   allow-unsafe-pr-checkout: false
+offline-arm64	Checkout	2026-10-13T07:34:54.5662090Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:54.7028960Z Syncing repository: yifeng93/SummitEverything
+offline-arm64	Checkout	2026-10-13T07:34:54.7031790Z ##[group]Getting Git version info
+offline-arm64	Checkout	2026-10-13T07:34:54.7033250Z Working directory is '/Users/runner/work/SummitEverything/SummitEverything'
+offline-arm64	Checkout	2026-10-13T07:34:54.7035820Z [command]/opt/homebrew/bin/git version
+offline-arm64	Checkout	2026-10-13T07:34:54.7197490Z git version 2.55.0
+offline-arm64	Checkout	2026-10-13T07:34:54.7210030Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:54.7216360Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/42d8401f-44a6-49ae-a2ca-43164a70c384/.gitconfig'
+offline-arm64	Checkout	2026-10-13T07:34:54.7230300Z Temporarily overriding HOME='/Users/runner/work/_temp/42d8401f-44a6-49ae-a2ca-43164a70c384' before making global git config changes
+offline-arm64	Checkout	2026-10-13T07:34:54.7232770Z Adding repository directory to the temporary git global config as a safe directory
+offline-arm64	Checkout	2026-10-13T07:34:54.7235420Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/SummitEverything/SummitEverything
+offline-arm64	Checkout	2026-10-13T07:34:54.7361590Z Deleting the contents of '/Users/runner/work/SummitEverything/SummitEverything'
+offline-arm64	Checkout	2026-10-13T07:34:54.7364750Z ##[group]Determining repository object format
+offline-arm64	Checkout	2026-10-13T07:34:54.7366830Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:54.7369190Z ##[group]Initializing the repository
+offline-arm64	Checkout	2026-10-13T07:34:54.7373740Z [command]/opt/homebrew/bin/git init /Users/runner/work/SummitEverything/SummitEverything
+offline-arm64	Checkout	2026-10-13T07:34:54.7552780Z hint: Using 'master' as the name for the initial branch. This default branch name
+offline-arm64	Checkout	2026-10-13T07:34:54.7554300Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+offline-arm64	Checkout	2026-10-13T07:34:54.7555620Z hint: to use in all of your new repositories, which will suppress this warning,
+offline-arm64	Checkout	2026-10-13T07:34:54.7556600Z hint: call:
+offline-arm64	Checkout	2026-10-13T07:34:54.7557180Z hint:
+offline-arm64	Checkout	2026-10-13T07:34:54.7557890Z hint: 	git config --global init.defaultBranch <name>
+offline-arm64	Checkout	2026-10-13T07:34:54.7558810Z hint:
+offline-arm64	Checkout	2026-10-13T07:34:54.7559910Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+offline-arm64	Checkout	2026-10-13T07:34:54.7561300Z hint: 'development'. The just-created branch can be renamed via this command:
+offline-arm64	Checkout	2026-10-13T07:34:54.7562330Z hint:
+offline-arm64	Checkout	2026-10-13T07:34:54.7562900Z hint: 	git branch -m <name>
+offline-arm64	Checkout	2026-10-13T07:34:54.7563710Z hint:
+offline-arm64	Checkout	2026-10-13T07:34:54.7564610Z hint: Disable this message with "git config set advice.defaultBranchName false"
+offline-arm64	Checkout	2026-10-13T07:34:54.7566040Z Initialized empty Git repository in /Users/runner/work/SummitEverything/SummitEverything/.git/
+offline-arm64	Checkout	2026-10-13T07:34:54.7568720Z [command]/opt/homebrew/bin/git remote add origin https://github.com/yifeng93/SummitEverything
+offline-arm64	Checkout	2026-10-13T07:34:54.7616190Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:54.7617370Z ##[group]Disabling automatic garbage collection
+offline-arm64	Checkout	2026-10-13T07:34:54.7618430Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+offline-arm64	Checkout	2026-10-13T07:34:54.7658090Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:54.7659150Z ##[group]Setting up auth
+offline-arm64	Checkout	2026-10-13T07:34:54.7660010Z Removing SSH command configuration
+offline-arm64	Checkout	2026-10-13T07:34:54.7661940Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+offline-arm64	Checkout	2026-10-13T07:34:54.7707370Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+offline-arm64	Checkout	2026-10-13T07:34:54.8628810Z Removing HTTP extra header
+offline-arm64	Checkout	2026-10-13T07:34:54.8631980Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+offline-arm64	Checkout	2026-10-13T07:34:54.8675780Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+offline-arm64	Checkout	2026-10-13T07:34:54.9292480Z Removing includeIf entries pointing to credentials config files
+offline-arm64	Checkout	2026-10-13T07:34:54.9298040Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+offline-arm64	Checkout	2026-10-13T07:34:54.9321030Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+offline-arm64	Checkout	2026-10-13T07:34:55.0059200Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+offline-arm64	Checkout	2026-10-13T07:34:55.0064880Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git.path /Users/runner/work/_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:55.0069160Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:55.0094770Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:55.0139460Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:55.0182550Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:55.0184290Z ##[group]Fetching the repository
+offline-arm64	Checkout	2026-10-13T07:34:55.0186770Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +a7dd07458b07ce14f0327c21f1147ee5cc64fccf:refs/remotes/pull/17/merge
+offline-arm64	Checkout	2026-10-13T07:34:56.4959750Z From https://github.com/yifeng93/SummitEverything
+offline-arm64	Checkout	2026-10-13T07:34:56.4960500Z  * [new branch]      codex/m41-internal-app-20261013          -> origin/codex/m41-internal-app-20261013
+offline-arm64	Checkout	2026-10-13T07:34:56.4961000Z  * [new branch]      main                                     -> origin/main
+offline-arm64	Checkout	2026-10-13T07:34:56.4961450Z  * [new ref]         a7dd07458b07ce14f0327c21f1147ee5cc64fccf -> pull/17/merge
+offline-arm64	Checkout	2026-10-13T07:34:56.4962550Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:56.4963000Z ##[group]Determining the checkout info
+offline-arm64	Checkout	2026-10-13T07:34:56.4963400Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:56.4966380Z [command]/opt/homebrew/bin/git sparse-checkout disable
+offline-arm64	Checkout	2026-10-13T07:34:56.5029430Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+offline-arm64	Checkout	2026-10-13T07:34:56.5077300Z ##[group]Checking out the ref
+offline-arm64	Checkout	2026-10-13T07:34:56.5079830Z [command]/opt/homebrew/bin/git checkout --progress --force refs/remotes/pull/17/merge
+offline-arm64	Checkout	2026-10-13T07:34:56.7566160Z HEAD is now at a7dd074 Merge f7ad5e46a18d256483d5d2b89f464b46a4e10793 into e0ce04fe9f5ad933f2e7a4b2229c61fd9f2076af
+offline-arm64	Checkout	2026-10-13T07:34:56.7572300Z ##[endgroup]
+offline-arm64	Checkout	2026-10-13T07:34:56.7658710Z [command]/opt/homebrew/bin/git log -1 --format=%H
+offline-arm64	Checkout	2026-10-13T07:34:56.7692520Z a7dd07458b07ce14f0327c21f1147ee5cc64fccf
+offline-arm64	Checkout	2026-10-13T07:34:56.7697310Z ##[group]Removing auth
+offline-arm64	Checkout	2026-10-13T07:34:56.7697690Z Removing SSH command configuration
+offline-arm64	Checkout	2026-10-13T07:34:56.7700310Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+offline-arm64	Checkout	2026-10-13T07:34:56.7744510Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+offline-arm64	Checkout	2026-10-13T07:34:56.8281590Z Removing HTTP extra header
+offline-arm64	Checkout	2026-10-13T07:34:56.8283580Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+offline-arm64	Checkout	2026-10-13T07:34:56.8324650Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+offline-arm64	Checkout	2026-10-13T07:34:56.8842050Z Removing includeIf entries pointing to credentials config files
+offline-arm64	Checkout	2026-10-13T07:34:56.8843850Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+offline-arm64	Checkout	2026-10-13T07:34:56.8887520Z includeif.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git.path
+offline-arm64	Checkout	2026-10-13T07:34:56.8988030Z includeif.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git/worktrees/*.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9089450Z includeif.gitdir:/github/workspace/.git.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9190220Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9227820Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9230010Z /Users/runner/work/_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9232260Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-10bc8fbe\-a523\-4349\-806b\-e7d5ec34a49d\.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9236650Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git/worktrees/*.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9239580Z /Users/runner/work/_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9241480Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/SummitEverything/SummitEverything/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-10bc8fbe\-a523\-4349\-806b\-e7d5ec34a49d\.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9244060Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9247210Z /github/runner_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9255010Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-10bc8fbe\-a523\-4349\-806b\-e7d5ec34a49d\.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9297670Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+offline-arm64	Checkout	2026-10-13T07:34:56.9350520Z /github/runner_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9362600Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-10bc8fbe\-a523\-4349\-806b\-e7d5ec34a49d\.config
+offline-arm64	Checkout	2026-10-13T07:34:56.9429060Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+offline-arm64	Checkout	2026-10-13T07:34:57.0202960Z Removing credentials config '/Users/runner/work/_temp/git-credentials-10bc8fbe-a523-4349-806b-e7d5ec34a49d.config'
+offline-arm64	Checkout	2026-10-13T07:34:57.0210570Z ##[endgroup]
+offline-arm64	Install Node.js	﻿2026-10-13T07:34:57.0527210Z ##[group]Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+offline-arm64	Install Node.js	2026-10-13T07:34:57.0527660Z with:
+offline-arm64	Install Node.js	2026-10-13T07:34:57.0527860Z   node-version: 24
+offline-arm64	Install Node.js	2026-10-13T07:34:57.0528140Z   check-latest: false
+offline-arm64	Install Node.js	2026-10-13T07:34:57.0530230Z   token: ***
+offline-arm64	Install Node.js	2026-10-13T07:34:57.0530410Z   package-manager-cache: true
+offline-arm64	Install Node.js	2026-10-13T07:34:57.0530630Z ##[endgroup]
+offline-arm64	Install Node.js	2026-10-13T07:34:57.1718530Z Found in cache @ /Users/runner/hostedtoolcache/node/24.20.0/arm64
+offline-arm64	Install Node.js	2026-10-13T07:34:57.3244350Z ##[group]Environment details
+offline-arm64	Install Node.js	2026-10-13T07:34:57.7205820Z node: v24.20.0
+offline-arm64	Install Node.js	2026-10-13T07:34:57.7206810Z npm: 11.19.0
+offline-arm64	Install Node.js	2026-10-13T07:34:57.7207060Z yarn: 1.22.22
+offline-arm64	Install Node.js	2026-10-13T07:34:57.7207750Z ##[endgroup]
+offline-arm64	Install uv	﻿2026-10-13T07:34:57.7404830Z ##[group]Run astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+offline-arm64	Install uv	2026-10-13T07:34:57.7405310Z with:
+offline-arm64	Install uv	2026-10-13T07:34:57.7405530Z   enable-cache: true
+offline-arm64	Install uv	2026-10-13T07:34:57.7405770Z   activate-environment: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7406170Z   no-project: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7406520Z   working-directory: /Users/runner/work/SummitEverything/SummitEverything
+offline-arm64	Install uv	2026-10-13T07:34:57.7408870Z   github-token: ***
+offline-arm64	Install uv	2026-10-13T07:34:57.7409340Z   cache-dependency-glob: **/*requirements*.txt
+offline-arm64	Install uv	**/*requirements*.in
+offline-arm64	Install uv	**/*constraints*.txt
+offline-arm64	Install uv	**/*constraints*.in
+offline-arm64	Install uv	**/pyproject.toml
+offline-arm64	Install uv	**/uv.lock
+offline-arm64	Install uv	**/*.py.lock
+offline-arm64	Install uv	
+offline-arm64	Install uv	2026-10-13T07:34:57.7409940Z   restore-cache: true
+offline-arm64	Install uv	2026-10-13T07:34:57.7410180Z   save-cache: true
+offline-arm64	Install uv	2026-10-13T07:34:57.7410480Z   prune-cache: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7410670Z   cache-python: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7410950Z   ignore-nothing-to-cache: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7411210Z   ignore-empty-workdir: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7411480Z   download-from-astral-mirror: true
+offline-arm64	Install uv	2026-10-13T07:34:57.7411750Z   add-problem-matchers: true
+offline-arm64	Install uv	2026-10-13T07:34:57.7412480Z   quiet: false
+offline-arm64	Install uv	2026-10-13T07:34:57.7412700Z   resolution-strategy: highest
+offline-arm64	Install uv	2026-10-13T07:34:57.7412950Z ##[endgroup]
+offline-arm64	Install uv	2026-10-13T07:34:57.9139920Z Trying to find version for uv in: /Users/runner/work/SummitEverything/SummitEverything/uv.toml
+offline-arm64	Install uv	2026-10-13T07:34:57.9140970Z Could not find file: /Users/runner/work/SummitEverything/SummitEverything/uv.toml
+offline-arm64	Install uv	2026-10-13T07:34:57.9142780Z Trying to find version for uv in: /Users/runner/work/SummitEverything/SummitEverything/pyproject.toml
+offline-arm64	Install uv	2026-10-13T07:34:57.9143810Z Could not determine uv version from uv.toml or pyproject.toml. Falling back to latest.
+offline-arm64	Install uv	2026-10-13T07:34:57.9145010Z Fetching manifest data from https://raw.githubusercontent.com/astral-sh/versions/main/v1/uv.ndjson ...
+offline-arm64	Install uv	2026-10-13T07:34:57.9953920Z Downloading uv from "https://releases.astral.sh/github/uv/releases/download/0.13.0/uv-aarch64-apple-darwin.tar.gz" ...
+offline-arm64	Install uv	2026-10-13T07:34:58.3496180Z [command]/usr/bin/tar xz -C /Users/runner/work/_temp/b9e511e7-7f0d-475c-808d-acb68084d172 -f /Users/runner/work/_temp/1e4c472f-f434-4aa3-82d9-08c697376af8
+offline-arm64	Install uv	2026-10-13T07:34:58.4739140Z Added /Users/runner/.local/bin to the path
+offline-arm64	Install uv	2026-10-13T07:34:58.4752920Z Added /Users/runner/hostedtoolcache/uv/0.13.0/aarch64 to the path
+offline-arm64	Install uv	2026-10-13T07:34:58.4754880Z Set UV_PYTHON_INSTALL_DIR to /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Install uv	2026-10-13T07:34:58.4763170Z Added /Users/runner/work/_temp/uv-python-dir to the path
+offline-arm64	Install uv	2026-10-13T07:34:58.4777950Z Set UV_CACHE_DIR to /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Install uv	2026-10-13T07:34:58.4778950Z Successfully installed uv version 0.13.0
+offline-arm64	Install uv	2026-10-13T07:34:58.6965030Z Searching files using cache dependency glob: /Users/runner/work/SummitEverything/SummitEverything/**/*requirements*.txt,/Users/runner/work/SummitEverything/SummitEverything/**/*requirements*.in,/Users/runner/work/SummitEverything/SummitEverything/**/*constraints*.txt,/Users/runner/work/SummitEverything/SummitEverything/**/*constraints*.in,/Users/runner/work/SummitEverything/SummitEverything/**/pyproject.toml,/Users/runner/work/SummitEverything/SummitEverything/**/uv.lock,/Users/runner/work/SummitEverything/SummitEverything/**/*.py.lock
+offline-arm64	Install uv	2026-10-13T07:34:58.8906430Z /Users/runner/work/SummitEverything/SummitEverything/pyproject.toml
+offline-arm64	Install uv	2026-10-13T07:34:58.8985380Z /Users/runner/work/SummitEverything/SummitEverything/uv.lock
+offline-arm64	Install uv	2026-10-13T07:34:58.9015790Z Found 2 files to hash.
+offline-arm64	Install uv	2026-10-13T07:34:58.9021440Z Trying to restore cache from GitHub Actions cache with key: setup-uv-2-aarch64-apple-darwin-macos-14-3.14.7-6d8178556332aaa25d0771e790acb725d96763b25fe04848b57e608e43282610
+offline-arm64	Install uv	2026-10-13T07:34:59.0796880Z No GitHub Actions cache found for key: setup-uv-2-aarch64-apple-darwin-macos-14-3.14.7-6d8178556332aaa25d0771e790acb725d96763b25fe04848b57e608e43282610
+offline-arm64	Install locked Python and Web dependencies	﻿2026-10-13T07:34:59.1886150Z ##[group]Run uv sync --locked --group dev --group build
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1887250Z ^[[36;1muv sync --locked --group dev --group build^[[0m
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1888570Z ^[[36;1mnpm --prefix web ci^[[0m
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1997040Z shell: /bin/bash -e {0}
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1997300Z env:
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1997550Z   UV_PYTHON_INSTALL_DIR: /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1997900Z   UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.1998160Z ##[endgroup]
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.2400890Z Using CPython 3.14.7 interpreter at: /opt/homebrew/opt/python@3.14/bin/python3.14
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.2401770Z Creating virtual environment at: .venv
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.2489640Z Resolved 48 packages in 5ms
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.2581010Z    Building summit-everything @ file:///Users/runner/work/SummitEverything/SummitEverything
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.3937730Z Downloading pydantic-core (1.9MiB)
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.3945890Z Downloading mypy (12.7MiB)
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.3948370Z Downloading pyinstaller (1.0MiB)
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.3954080Z Downloading pygments (1.2MiB)
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.3960430Z Downloading ruff (9.3MiB)
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.5793130Z  Downloaded pydantic-core
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.6574290Z  Downloaded pygments
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.6990960Z  Downloaded pyinstaller
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.7369460Z  Downloaded ruff
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:34:59.9742960Z  Downloaded mypy
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.2528670Z       Built summit-everything @ file:///Users/runner/work/SummitEverything/SummitEverything
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.2541240Z Prepared 45 packages in 1.00s
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3336940Z Installed 45 packages in 78ms
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3337630Z  + aiodns==4.0.4
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3349340Z  + altgraph==0.17.5
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3349780Z  + annotated-doc==0.0.5
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3350160Z  + annotated-types==0.8.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3350540Z  + anyio==4.15.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3350890Z  + certifi==2026.7.22
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3352170Z  + cffi==2.1.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3352900Z  + click==8.5.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3353090Z  + fastapi==0.143.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3353250Z  + h11==0.16.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3353400Z  + httpcore==1.0.9
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3353570Z  + httpx==0.28.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3353820Z  + idna==3.20
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3354010Z  + iniconfig==2.3.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3354170Z  + jaraco-classes==3.4.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3354420Z  + jaraco-context==6.1.2
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3354620Z  + jaraco-functools==4.6.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3354810Z  + keyring==25.7.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3355090Z  + librt==0.16.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3355310Z  + macholib==1.16.4
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3355500Z  + more-itertools==11.1.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3355700Z  + mypy==1.20.2
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3355920Z  + mypy-extensions==1.1.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3356120Z  + opentelemetry-api==1.45.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3356360Z  + packaging==26.3
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3356610Z  + pathspec==1.1.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3356770Z  + pluggy==1.6.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3356980Z  + pycares==5.1.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3357140Z  + pycparser==3.11
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3357320Z  + pydantic==2.14.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3357540Z  + pydantic-core==2.50.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3357780Z  + pygments==2.21.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3357980Z  + pyinstaller==6.22.3
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3358230Z  + pyinstaller-hooks-contrib==2026.8
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3358490Z  + pytest==9.1.1
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3358680Z  + python-multipart==0.0.32
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3358860Z  + pyyaml==6.0.3
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3359010Z  + ruff==0.16.10
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3359190Z  + setuptools==84.0.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3359430Z  + starlette==1.7.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3359830Z  + summit-everything==0.1.0 (from file:///Users/runner/work/SummitEverything/SummitEverything)
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3360250Z  + types-pyyaml==6.0.12.20260906
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3360480Z  + typing-extensions==4.16.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3360680Z  + typing-inspection==0.4.4
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:00.3360920Z  + uvicorn==0.54.0
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7876860Z 
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7877640Z added 126 packages, and audited 127 packages in 2s
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7878580Z 
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7878750Z 28 packages are looking for funding
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7878980Z   run `npm fund` for details
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7883770Z 
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7883890Z found 0 vulnerabilities
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7889850Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7890480Z npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7890840Z npm warn install-scripts
+offline-arm64	Install locked Python and Web dependencies	2026-10-13T07:35:02.7891380Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+offline-arm64	Guarded Python checks	﻿2026-10-13T07:35:02.8493150Z ##[group]Run PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --locked pytest -q
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8493780Z ^[[36;1mPYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --locked pytest -q^[[0m
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8494170Z ^[[36;1muv run --locked ruff check src tests^[[0m
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8494600Z ^[[36;1muv run --locked ruff format --check src tests^[[0m
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8494880Z ^[[36;1muv run --locked mypy src^[[0m
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8495120Z ^[[36;1muv lock --check^[[0m
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8495320Z ^[[36;1muv build^[[0m
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8565760Z shell: /bin/bash -e {0}
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8566160Z env:
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8566510Z   UV_PYTHON_INSTALL_DIR: /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8567130Z   UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Guarded Python checks	2026-10-13T07:35:02.8567580Z ##[endgroup]
+offline-arm64	Guarded Python checks	2026-10-13T07:35:14.6720430Z ........................................................................ [ 14%]
+offline-arm64	Guarded Python checks	2026-10-13T07:35:32.1127180Z ........................................................................ [ 28%]
+offline-arm64	Guarded Python checks	2026-10-13T07:35:44.4028020Z ........................................................................ [ 43%]
+offline-arm64	Guarded Python checks	2026-10-13T07:35:54.1234560Z ........................................................................ [ 57%]
+offline-arm64	Guarded Python checks	2026-10-13T07:36:41.5284770Z ........................................................................ [ 72%]
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.0583540Z ........................................................................ [ 86%]
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7261590Z ...................................................................      [100%]
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7327580Z =============================== warnings summary ===============================
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7328580Z .venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7329970Z   /Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7337800Z     from starlette.testclient import TestClient as TestClient  # noqa
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7338980Z 
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7339940Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+offline-arm64	Guarded Python checks	2026-10-13T07:36:43.7344600Z 499 passed, 1 warning in 99.41s (0:01:39)
+offline-arm64	Guarded Python checks	2026-10-13T07:36:45.1597640Z All checks passed!
+offline-arm64	Guarded Python checks	2026-10-13T07:36:45.2054930Z 82 files already formatted
+offline-arm64	Guarded Python checks	2026-10-13T07:36:49.3925510Z Success: no issues found in 44 source files
+offline-arm64	Guarded Python checks	2026-10-13T07:36:49.4176020Z Resolved 48 packages in 4ms
+offline-arm64	Guarded Python checks	2026-10-13T07:36:49.4334350Z Building source distribution...
+offline-arm64	Guarded Python checks	2026-10-13T07:36:52.9515210Z Building wheel from source distribution...
+offline-arm64	Guarded Python checks	2026-10-13T07:36:53.5386590Z Successfully built dist/summit_everything-0.1.0.tar.gz
+offline-arm64	Guarded Python checks	2026-10-13T07:36:53.5392380Z Successfully built dist/summit_everything-0.1.0-py3-none-any.whl
+offline-arm64	Web checks and API types	﻿2026-10-13T07:36:53.5565850Z ##[group]Run npm --prefix web run api:types
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.5566670Z ^[[36;1mnpm --prefix web run api:types^[[0m
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.5567010Z ^[[36;1mgit diff --exit-code -- web/src/api/generated.ts^[[0m
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.5567450Z ^[[36;1mnpm --prefix web test^[[0m
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.5567800Z ^[[36;1mnpm --prefix web run typecheck^[[0m
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.5568170Z ^[[36;1mnpm --prefix web run lint^[[0m
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.5568520Z ^[[36;1mnpm --prefix web run build^[[0m
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.6101240Z shell: /bin/bash -e {0}
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.6101800Z env:
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.6102100Z   UV_PYTHON_INSTALL_DIR: /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.6102620Z   UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Web checks and API types	2026-10-13T07:36:53.6102950Z ##[endgroup]
+offline-arm64	Web checks and API types	2026-10-13T07:36:54.5634090Z 
+offline-arm64	Web checks and API types	2026-10-13T07:36:54.5635950Z > web@0.0.0 api:types
+offline-arm64	Web checks and API types	2026-10-13T07:36:54.5638210Z > cd .. && uv run python scripts/export_openapi.py && cd web && openapi-typescript openapi.json -o src/api/generated.ts
+offline-arm64	Web checks and API types	2026-10-13T07:36:54.5642320Z 
+offline-arm64	Web checks and API types	2026-10-13T07:36:55.4957240Z Wrote web/openapi.json
+offline-arm64	Web checks and API types	2026-10-13T07:36:56.1562240Z ✨ openapi-typescript 7.13.0
+offline-arm64	Web checks and API types	2026-10-13T07:36:56.3246370Z 🚀 openapi.json → src/api/generated.ts [171ms]
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.0914320Z 
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.0915570Z > web@0.0.0 test
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.0916500Z > vitest run
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.0916750Z 
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.4430820Z 
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.4437770Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.3 ^[[39m^[[90m/Users/runner/work/SummitEverything/SummitEverything/web^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:36:57.4438350Z 
+offline-arm64	Web checks and API types	2026-10-13T07:36:59.6996100Z  ^[[32m✓^[[39m src/components/AskView.test.tsx ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 711^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:01.2276490Z  ^[[32m✓^[[39m src/components/TasksPanel.test.tsx ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[33m 2213^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:01.2379440Z    ^[[33m^[[2m✓^[[22m^[[39m requires explicit title/date, final values and separate confirmation before execution^[[33m 524^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:01.6788360Z  ^[[32m✓^[[39m src/components/FeishuPanel.test.tsx ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 1182^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:02.2837720Z  ^[[32m✓^[[39m src/components/ProjectsView.test.tsx ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 471^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:02.4427460Z  ^[[32m✓^[[39m src/components/PageReader.test.tsx ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 176^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:03.3869830Z  ^[[32m✓^[[39m src/components/TodayView.test.tsx ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 452^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:03.3972440Z    ^[[33m^[[2m✓^[[22m^[[39m shows source lifecycle states and requires an explicit reprocess action^[[33m 366^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:03.4774280Z  ^[[32m✓^[[39m src/components/SettingsView.regressions.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 369^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:04.1989450Z  ^[[32m✓^[[39m src/components/DraftReview.test.tsx ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 158^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:04.2298160Z  ^[[32m✓^[[39m src/components/JournalView.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 181^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:04.9078430Z  ^[[32m✓^[[39m src/components/SettingsView.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 167^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.1309850Z  ^[[32m✓^[[39m src/App.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 359^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.1412050Z    ^[[33m^[[2m✓^[[22m^[[39m keeps the updated citation version warning visible after navigating to the page^[[33m 359^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7012430Z  ^[[32m✓^[[39m src/components/WorkspaceGate.test.tsx ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 150^[[2mms^[[22m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7053150Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7056870Z ^[[2m Test Files ^[[22m ^[[1m^[[32m12 passed^[[39m^[[22m^[[90m (12)^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7057810Z ^[[2m      Tests ^[[22m ^[[1m^[[32m56 passed^[[39m^[[22m^[[90m (56)^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7058640Z ^[[2m   Start at ^[[22m 07:36:57
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7059620Z ^[[2m   Duration ^[[22m 8.25s^[[2m (tests 45%, environment 44%, import 7%, transform 4%)^[[22m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7062360Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7063330Z ^[[2mEnvironment ^[[22m ^[[33mjsdom was created 12 times^[[39m^[[2m · 6.53s total, 44% of tracked time^[[22m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7065150Z ^[[2m            ^[[22m ^[[2mcreate it once per worker with ^[[22m^[[33mpool: 'vmThreads'^[[39m^[[2m (keeps per-file isolation) or ^[[22m^[[33misolate: false^[[39m^[[2m (shares it across files)^[[22m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7076580Z ^[[2m            ^[[22m ^[[2mlearn more: https://vitest.dev/guide/improving-performance#test-environments^[[22m
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.7077140Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.9474470Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.9475150Z > web@0.0.0 typecheck
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.9475660Z > tsc -b --pretty
+offline-arm64	Web checks and API types	2026-10-13T07:37:05.9475850Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.6875320Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.6981130Z > web@0.0.0 lint
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.7079060Z > oxlint
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.7180310Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.9423560Z ##[warning]src/components/TodayView.tsx:70:26: Calling setState synchronously within an effect can trigger cascading renders
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.9439760Z ##[warning]src/components/ProjectsView.tsx:40:26: Calling setState synchronously within an effect can trigger cascading renders
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.9440820Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.9441050Z Found 2 warnings and 0 errors.
+offline-arm64	Web checks and API types	2026-10-13T07:37:08.9441600Z Finished in 119ms on 27 files with 116 rules using 3 threads.
+offline-arm64	Web checks and API types	2026-10-13T07:37:09.0557160Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:09.0658060Z > web@0.0.0 build
+offline-arm64	Web checks and API types	2026-10-13T07:37:09.0758260Z > tsc -b && vite build
+offline-arm64	Web checks and API types	2026-10-13T07:37:09.0859140Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:11.8668780Z ^[[36mvite v8.3.4 ^[[32mbuilding client environment for production...^[[36m^[[39m
+offline-arm64	Web checks and API types	2026-10-13T07:37:11.8756980Z transforming...
+offline-arm64	Web checks and API types	2026-10-13T07:37:11.9275520Z ✓ 28 modules transformed.
+offline-arm64	Web checks and API types	2026-10-13T07:37:11.9822430Z rendering chunks...
+offline-arm64	Web checks and API types	2026-10-13T07:37:12.0129790Z computing gzip size...
+offline-arm64	Web checks and API types	2026-10-13T07:37:12.0175280Z dist/index.html                   0.62 kB │ gzip:  0.39 kB
+offline-arm64	Web checks and API types	2026-10-13T07:37:12.0177270Z dist/assets/index-B3KNOB32.css   28.63 kB │ gzip:  6.26 kB
+offline-arm64	Web checks and API types	2026-10-13T07:37:12.0177810Z dist/assets/index-MZuh_RlO.js   319.42 kB │ gzip: 94.64 kB
+offline-arm64	Web checks and API types	2026-10-13T07:37:12.0178110Z 
+offline-arm64	Web checks and API types	2026-10-13T07:37:12.0178700Z ^[[32m✓ built in 150ms^[[39m
+offline-arm64	Native upload policy tests	﻿2026-10-13T07:37:12.0520290Z ##[group]Run swift test --package-path native
+offline-arm64	Native upload policy tests	2026-10-13T07:37:12.0520800Z ^[[36;1mswift test --package-path native^[[0m
+offline-arm64	Native upload policy tests	2026-10-13T07:37:12.0622370Z shell: /bin/bash -e {0}
+offline-arm64	Native upload policy tests	2026-10-13T07:37:12.0623150Z env:
+offline-arm64	Native upload policy tests	2026-10-13T07:37:12.0623570Z   UV_PYTHON_INSTALL_DIR: /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Native upload policy tests	2026-10-13T07:37:12.0623970Z   UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Native upload policy tests	2026-10-13T07:37:12.0624370Z ##[endgroup]
+offline-arm64	Native upload policy tests	2026-10-13T07:37:16.8507000Z Building for debugging...
+offline-arm64	Native upload policy tests	2026-10-13T07:37:16.8544940Z [0/10] Write sources
+offline-arm64	Native upload policy tests	2026-10-13T07:37:16.8545560Z [0/10] Write SummitEverything-entitlement.plist
+offline-arm64	Native upload policy tests	2026-10-13T07:37:16.8546730Z [0/10] Write sources
+offline-arm64	Native upload policy tests	2026-10-13T07:37:16.9436660Z [4/10] Write swift-version-76B232A4806BA581.txt
+offline-arm64	Native upload policy tests	2026-10-13T07:37:21.4606240Z [6/12] Emitting module NativeUploadPolicy
+offline-arm64	Native upload policy tests	2026-10-13T07:37:21.4606980Z [7/12] Compiling NativeUploadPolicy NativeUploadPolicy.swift
+offline-arm64	Native upload policy tests	2026-10-13T07:37:26.6951920Z [8/16] Compiling NativeUploadPolicyTests NativeUploadPolicyTests.swift
+offline-arm64	Native upload policy tests	2026-10-13T07:37:26.7059550Z [9/16] Emitting module NativeUploadPolicyTests
+offline-arm64	Native upload policy tests	2026-10-13T07:37:26.7161030Z [9/16] Write Objects.LinkFileList
+offline-arm64	Native upload policy tests	2026-10-13T07:37:27.2716120Z [10/16] Linking SummitEverythingPackageTests
+offline-arm64	Native upload policy tests	2026-10-13T07:37:27.5647120Z [12/16] Compiling SummitEverythingApp App.swift
+offline-arm64	Native upload policy tests	2026-10-13T07:37:27.5749250Z [13/16] Emitting module SummitEverythingApp
+offline-arm64	Native upload policy tests	2026-10-13T07:37:27.5810620Z [13/16] Write Objects.LinkFileList
+offline-arm64	Native upload policy tests	2026-10-13T07:37:27.9372200Z [14/16] Linking SummitEverything
+offline-arm64	Native upload policy tests	2026-10-13T07:37:27.9984060Z [15/16] Applying SummitEverything
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.0038120Z Build complete! (12.24s)
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3168770Z Test Suite 'All tests' started at 2026-10-13 07:37:28.302.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3184840Z Test Suite 'SummitEverythingPackageTests.xctest' started at 2026-10-13 07:37:28.303.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3188900Z Test Suite 'NativeUploadPolicyTests' started at 2026-10-13 07:37:28.303.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3190070Z Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testOpenPanelTypesAreLimitedToTxtAndMarkdown]' started.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3194550Z Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testOpenPanelTypesAreLimitedToTxtAndMarkdown]' passed (0.007 seconds).
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3195980Z Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testSelectedFilesMatchTxtAndMarkdownAndSelectionCount]' started.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3197500Z Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testSelectedFilesMatchTxtAndMarkdownAndSelectionCount]' passed (0.000 seconds).
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3198980Z Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testUploadRequiresTrustedMainFrameAndRejectsDirectoryPickerRequests]' started.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3200800Z Test Case '-[NativeUploadPolicyTests.NativeUploadPolicyTests testUploadRequiresTrustedMainFrameAndRejectsDirectoryPickerRequests]' passed (0.000 seconds).
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3201870Z Test Suite 'NativeUploadPolicyTests' passed at 2026-10-13 07:37:28.311.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3203060Z 	 Executed 3 tests, with 0 failures (0 unexpected) in 0.007 (0.008) seconds
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3203820Z Test Suite 'SummitEverythingPackageTests.xctest' passed at 2026-10-13 07:37:28.311.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3204560Z 	 Executed 3 tests, with 0 failures (0 unexpected) in 0.007 (0.008) seconds
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3207300Z Test Suite 'All tests' passed at 2026-10-13 07:37:28.311.
+offline-arm64	Native upload policy tests	2026-10-13T07:37:28.3208900Z 	 Executed 3 tests, with 0 failures (0 unexpected) in 0.007 (0.009) seconds
+offline-arm64	Build and verify internal App and DMG	﻿2026-10-13T07:37:28.3404430Z ##[group]Run output="$RUNNER_TEMP/summit-m41"
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3405680Z ^[[36;1moutput="$RUNNER_TEMP/summit-m41"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3406560Z ^[[36;1mmkdir -p "$output"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3407810Z ^[[36;1mscripts/release-macos.sh "$output/SummitEverything Internal.app" "$output/SummitEverything-Internal.dmg"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3409600Z ^[[36;1mcodesign --verify --deep --strict "$output/SummitEverything Internal.app"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3410920Z ^[[36;1mhdiutil verify "$output/SummitEverything-Internal.dmg"^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3412310Z ^[[36;1mSUMMIT_APP="$output/SummitEverything Internal.app" uv run --locked python scripts/smoke_packaged_app.py^[[0m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3530450Z shell: /bin/bash -e {0}
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3530800Z env:
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3532410Z   UV_PYTHON_INSTALL_DIR: /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3533020Z   UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:28.3533310Z ##[endgroup]
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:29.4946770Z 
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:29.4961020Z > web@0.0.0 build
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:29.4962440Z > tsc -b && vite build
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:29.4962960Z 
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:32.8412370Z ^[[36mvite v8.3.4 ^[[32mbuilding client environment for production...^[[36m^[[39m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:32.8557220Z transforming...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:32.9168700Z ✓ 28 modules transformed.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:32.9872160Z rendering chunks...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.0404220Z computing gzip size...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.0469500Z dist/index.html                   0.62 kB │ gzip:  0.39 kB
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.0472510Z dist/assets/index-B3KNOB32.css   28.63 kB │ gzip:  6.26 kB
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.0473510Z dist/assets/index-MZuh_RlO.js   319.42 kB │ gzip: 94.64 kB
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.0473920Z 
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.0474540Z ^[[32m✓ built in 205ms^[[39m
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.1013930Z Resolved 48 packages in 7ms
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.1093360Z Checked 45 packages in 5ms
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.7684260Z 277 INFO: PyInstaller: 6.22.3, contrib hooks: 2026.8
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.7687890Z 278 INFO: Python: 3.14.7
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.7945270Z 303 INFO: Platform: macOS-14.8.9-arm64-arm-64bit-Mach-O
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.7946210Z 304 INFO: Python environment: /Users/runner/work/SummitEverything/SummitEverything/.venv
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.7957160Z 305 INFO: wrote /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/summit-backend.spec
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:33.8025820Z 311 INFO: Removing temporary files and cleaning cache in /Users/runner/Library/Application Support/pyinstaller
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1958850Z 705 INFO: Module search paths (PYTHONPATH):
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1961230Z ['/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python314.zip',
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1963330Z  '/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14',
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1965660Z  '/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload',
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1967800Z  '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages',
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1969370Z  '/Users/runner/work/SummitEverything/SummitEverything/src',
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1970880Z  '/Users/runner/work/SummitEverything/SummitEverything/scripts',
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.1972180Z  '/Users/runner/work/SummitEverything/SummitEverything/src']
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3909000Z 900 INFO: Appending 'datas' from .spec
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3921350Z 901 INFO: checking Analysis
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3923170Z 901 INFO: Building Analysis because Analysis-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3925190Z 901 INFO: Looking for Python shared library...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3994670Z 908 INFO: Using Python shared library: /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Python
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3997340Z 908 INFO: Running Analysis Analysis-00.toc
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3998530Z 908 INFO: Target bytecode optimization level: 0
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.3999120Z 908 INFO: Initializing module dependency graph...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.4020340Z 911 INFO: Initializing module graph hook caches...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:34.4146970Z 923 INFO: Analyzing modules for base_library.zip ...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:35.5074220Z 2016 INFO: Processing standard module hook 'hook-encodings.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:35.7997730Z 2308 INFO: Processing standard module hook 'hook-pickle.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:35.9901210Z 2499 INFO: Processing standard module hook 'hook-math.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:36.0938660Z 2603 INFO: Processing standard module hook 'hook-difflib.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:36.1052350Z 2614 INFO: Processing standard module hook 'hook-heapq.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:38.2204290Z 4729 INFO: Caching module dependency graph...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:38.2477940Z 4757 INFO: Analyzing /Users/runner/work/SummitEverything/SummitEverything/scripts/packaged_server.py
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:38.2512340Z 4760 INFO: Processing standard module hook 'hook-uvicorn.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:38.6714800Z 5180 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:38.7540690Z 5263 INFO: Processing standard module hook 'hook-xml.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:39.0017080Z 5510 INFO: Processing standard module hook 'hook-sysconfig.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:39.0152490Z 5524 INFO: Processing standard module hook 'hook-_osx_support.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:39.0204930Z 5529 INFO: Processing standard module hook 'hook-_ctypes.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:39.5469500Z 6056 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:39.5519220Z 6061 INFO: SetuptoolsInfo: initializing cached setuptools info...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:40.3595800Z 6868 INFO: Processing standard module hook 'hook-platform.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:40.7288740Z 7238 INFO: Processing standard module hook 'hook-webbrowser.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:41.3177700Z 7826 INFO: Processing standard module hook 'hook-anyio.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:41.9452810Z 8454 INFO: Processing standard module hook 'hook-pydantic.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:42.6564170Z 9165 INFO: Processing standard module hook 'hook-zoneinfo.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:43.9550800Z 10464 INFO: Processing standard module hook 'hook-opentelemetry.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.2826300Z 10791 INFO: Processing standard module hook 'hook-keyring.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5646100Z 11073 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5662250Z 11075 INFO: Setuptools: 'jaraco' appears to be a partial setuptools-vendored copy - extending search paths to ['/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/jaraco', '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/setuptools/_vendor/jaraco']!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5667350Z 11075 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5765600Z 11085 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5780950Z 11087 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5850250Z 11094 INFO: Processing standard module hook 'hook-setuptools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.5970560Z 11106 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.6211250Z 11130 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.6314260Z 11140 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:44.7642830Z 11273 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:45.0409220Z 11550 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:45.0422890Z 11551 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:45.0567730Z 11566 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:45.0585280Z 11567 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:45.4930850Z 12002 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:45.4939400Z 12003 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.2059680Z 12715 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.2069600Z 12716 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.3228010Z 12832 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.3235720Z 12832 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.3477180Z 12856 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.3672710Z 12876 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.3681540Z 12877 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:46.8102170Z 13319 INFO: Processing standard module hook 'hook-certifi.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:47.1129990Z 13622 INFO: Processing standard module hook 'hook-pygments.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:47.8736640Z 14382 INFO: Processing standard module hook 'hook-sqlite3.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.1827790Z 14691 INFO: Analyzing hidden import 'keyring.__main__'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.1928720Z 14702 INFO: Analyzing hidden import 'keyring.backends.SecretService'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.1981120Z 14707 INFO: Analyzing hidden import 'keyring.backends.Windows'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2034070Z 14712 INFO: Analyzing hidden import 'keyring.backends.chainer'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2074570Z 14716 INFO: Analyzing hidden import 'keyring.backends.kwallet'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2126970Z 14722 INFO: Analyzing hidden import 'keyring.backends.libsecret'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2185120Z 14727 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/pre_safe_import_module'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2198110Z 14729 INFO: Analyzing hidden import 'keyring.backends.null'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2211310Z 14730 INFO: Analyzing hidden import 'keyring.devpi_client'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2701070Z 14779 INFO: Analyzing hidden import 'keyring.http'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2713110Z 14780 INFO: Analyzing hidden import 'keyring.testing'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2714920Z 14781 INFO: Analyzing hidden import 'keyring.testing.backend'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.2829120Z 14792 INFO: Processing standard module hook 'hook-pytest.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:48.4904820Z 14999 INFO: Processing standard module hook 'hook-py.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:50.0544450Z 16563 INFO: Processing module hooks (post-graph stage)...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:53.5165430Z 20025 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.6509510Z 23159 INFO: Performing binary vs. data reclassification (58 entries)
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.6605180Z 23169 INFO: Looking for ctypes DLLs
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7051370Z 23214 INFO: Analyzing run-time hooks ...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7090970Z 23218 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7120120Z 23221 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7140770Z 23223 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7162790Z 23225 INFO: Including run-time hook 'pyi_rth_setuptools.py' from '/Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/hooks/rthooks'
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7332330Z 23242 INFO: Creating base_library.zip...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:56.7474110Z 23256 INFO: Looking for dynamic libraries
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:57.0516010Z 23560 INFO: Warnings written to /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/work/summit-backend/warn-summit-backend.txt
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:57.1090480Z 23618 INFO: Graph cross-reference written to /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/work/summit-backend/xref-summit-backend.html
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:57.2349180Z 23744 INFO: checking PYZ
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:57.2350850Z 23744 INFO: Building PYZ because PYZ-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:57.2353250Z 23744 INFO: Building PYZ (ZlibArchive) /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/work/summit-backend/PYZ-00.pyz
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.2863780Z 24795 INFO: Building PYZ (ZlibArchive) /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/work/summit-backend/PYZ-00.pyz completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3090290Z 24818 INFO: EXE target arch: arm64
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3090990Z 24818 INFO: Code signing identity: None
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3105820Z 24820 INFO: checking PKG
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3107600Z 24820 INFO: Building PKG because PKG-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3108960Z 24820 INFO: Building PKG (CArchive) summit-backend.pkg
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3286590Z 24837 INFO: Building PKG (CArchive) summit-backend.pkg completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3295250Z 24837 INFO: Bootloader /Users/runner/work/SummitEverything/SummitEverything/.venv/lib/python3.14/site-packages/PyInstaller/bootloader/Darwin-64bit/run
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3296080Z 24837 INFO: checking EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3296530Z 24837 INFO: Building EXE because EXE-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3296950Z 24837 INFO: Building EXE from EXE-00.toc
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3298630Z 24837 INFO: Copying bootloader EXE to /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/work/summit-backend/summit-backend
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:58.3305270Z 24840 INFO: Converting EXE to target arch (arm64)
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.1320020Z 25641 INFO: Removing signature(s) from EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.1502150Z 25659 INFO: Modifying Mach-O image UUID(s) in EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.1584450Z 25667 INFO: Appending PKG archive to EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.1638150Z 25672 INFO: Fixing EXE headers for code signing
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.1789500Z 25688 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (14.5.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.1801500Z 25688 INFO: Re-signing the EXE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.2279990Z 25737 INFO: Building EXE from EXE-00.toc completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.2370410Z 25746 INFO: checking COLLECT
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.2371260Z 25746 INFO: Building COLLECT because COLLECT-00.toc is non existent
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:37:59.2372010Z 25746 INFO: Building COLLECT COLLECT-00.toc
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:03.8702590Z 30379 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:03.8745540Z 30383 INFO: Build complete! The results are available in: /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/dist
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:04.9835110Z Building for production...
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:04.9859290Z [0/5] Write sources
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:05.0806900Z [2/5] Write swift-version-76B232A4806BA581.txt
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:07.2727960Z [4/6] Compiling NativeUploadPolicy NativeUploadPolicy.swift
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:10.6267100Z [5/7] Compiling SummitEverythingApp App.swift
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:10.6311520Z [5/7] Write Objects.LinkFileList
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:10.9982850Z [6/7] Linking SummitEverything
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:11.0000390Z Build complete! (6.47s)
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:11.0138700Z /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/SummitEverything Internal.app: replacing existing signature
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:17.5030430Z created: /Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/summit-dmg-6xpgflqu/SummitEverything-Internal.dmg
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:17.5289360Z Checksumming Protective Master Boot Record (MBR : 0)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:18.0543250Z Protective Master Boot Record (MBR :: verified   CRC32 $30362E87
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:18.0643520Z Checksumming GPT Header (Primary GPT Header : 1)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:19.0144800Z  GPT Header (Primary GPT Header : 1): verified   CRC32 $B5B384E9
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:19.0215300Z Checksumming GPT Partition Data (Primary GPT Table : 2)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:19.0216660Z GPT Partition Data (Primary GPT Tabl: verified   CRC32 $590BF760
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:19.0217540Z Checksumming  (Apple_Free : 3)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:20.0295730Z                     (Apple_Free : 3): verified   CRC32 $00000000
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:20.0297340Z Checksumming disk image (Apple_APFS : 4)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:20.2350500Z          disk image (Apple_APFS : 4): verified   CRC32 $44012711
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:20.2453300Z Checksumming  (Apple_Free : 5)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:21.0541020Z                     (Apple_Free : 5): verified   CRC32 $00000000
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:21.0542340Z Checksumming GPT Partition Data (Backup GPT Table : 6)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:21.0548790Z GPT Partition Data (Backup GPT Table: verified   CRC32 $590BF760
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:21.0549700Z Checksumming GPT Header (Backup GPT Header : 7)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.0387070Z   GPT Header (Backup GPT Header : 7): verified   CRC32 $2A94509E
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.0437820Z hdiutil: verify: checksum of "/Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/summit-dmg-6xpgflqu/SummitEverything-Internal.dmg" is VALID
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.0453200Z verified   CRC32 $CB3649BE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.1195540Z expected   CRC32 $CB3649BE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.1963030Z /dev/disk4          	GUID_partition_scheme          	
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.2101790Z /dev/disk4s1        	Apple_APFS                     	
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.2133310Z /dev/disk5          	EF57347C-0000-11AA-AA11-0030654	
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.2135050Z /dev/disk5s1        	41504653-0000-11AA-AA11-0030654	/Users/runner/work/_temp/summit-m41/.summit-internal-build-w6spibev/summit-dmg-6xpgflqu/mount
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.6334920Z "disk4" ejected.
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.8787980Z Checksumming Protective Master Boot Record (MBR : 0)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.8790600Z Protective Master Boot Record (MBR :: verified   CRC32 $30362E87
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:22.8791480Z Checksumming GPT Header (Primary GPT Header : 1)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:23.0750330Z  GPT Header (Primary GPT Header : 1): verified   CRC32 $B5B384E9
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:23.0752300Z Checksumming GPT Partition Data (Primary GPT Table : 2)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:23.0759950Z GPT Partition Data (Primary GPT Tabl: verified   CRC32 $590BF760
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:23.0761280Z Checksumming  (Apple_Free : 3)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:24.0320290Z                     (Apple_Free : 3): verified   CRC32 $00000000
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:24.0394100Z Checksumming disk image (Apple_APFS : 4)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:24.1417720Z          disk image (Apple_APFS : 4): verified   CRC32 $44012711
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:24.1419610Z Checksumming  (Apple_Free : 5)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0452770Z                     (Apple_Free : 5): verified   CRC32 $00000000
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0455180Z Checksumming GPT Partition Data (Backup GPT Table : 6)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0466750Z GPT Partition Data (Backup GPT Table: verified   CRC32 $590BF760
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0467890Z Checksumming GPT Header (Backup GPT Header : 7)…
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0469810Z   GPT Header (Backup GPT Header : 7): verified   CRC32 $2A94509E
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0482040Z hdiutil: verify: checksum of "/Users/runner/work/_temp/summit-m41/SummitEverything-Internal.dmg" is VALID
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:25.0484050Z verified   CRC32 $CB3649BE
+offline-arm64	Build and verify internal App and DMG	2026-10-13T07:38:27.9756920Z PASS: onedir backend starts with empty PATH; identity, static UI, unauthorized reads/writes, port conflicts, and parent-pipe cleanup verified
+offline-arm64	Post Install uv	﻿2026-10-13T07:38:28.0204670Z Post job cleanup.
+offline-arm64	Post Install uv	2026-10-13T07:38:28.5722690Z UV_CACHE_DIR is already set to /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Post Install uv	2026-10-13T07:38:28.5734930Z UV_PYTHON_INSTALL_DIR is already set to /Users/runner/work/_temp/uv-python-dir
+offline-arm64	Post Install uv	2026-10-13T07:38:28.5735680Z Including uv cache path: /Users/runner/work/_temp/setup-uv-cache
+offline-arm64	Post Install uv	2026-10-13T07:38:28.6419070Z [command]/opt/homebrew/bin/gtar --posix -cf cache.tzst --exclude cache.tzst -P -C /Users/runner/work/SummitEverything/SummitEverything --files-from manifest.txt --delay-directory-restore --use-compress-program zstdmt
+offline-arm64	Post Install uv	2026-10-13T07:38:33.1125800Z Sent 28942924 of 28942924 (100.0%), 27.6 MBs/sec
+offline-arm64	Post Install uv	2026-10-13T07:38:33.5264130Z uv cache saved with key: setup-uv-2-aarch64-apple-darwin-macos-14-3.14.7-6d8178556332aaa25d0771e790acb725d96763b25fe04848b57e608e43282610
+offline-arm64	Post Install Node.js	﻿2026-10-13T07:38:33.6434920Z Post job cleanup.
+offline-arm64	Post Checkout	﻿2026-10-13T07:38:33.8264560Z Post job cleanup.
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9530450Z [command]/opt/homebrew/bin/git version
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9754140Z git version 2.55.0
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9876200Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/305694f6-2a4c-492e-88cc-73ce0d0bc1ac/.gitconfig'
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9877440Z Temporarily overriding HOME='/Users/runner/work/_temp/305694f6-2a4c-492e-88cc-73ce0d0bc1ac' before making global git config changes
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9878220Z Adding repository directory to the temporary git global config as a safe directory
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9879020Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/SummitEverything/SummitEverything
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9959110Z Removing SSH command configuration
+offline-arm64	Post Checkout	2026-10-13T07:38:33.9962490Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+offline-arm64	Post Checkout	2026-10-13T07:38:34.0135860Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+offline-arm64	Post Checkout	2026-10-13T07:38:34.1329240Z Removing HTTP extra header
+offline-arm64	Post Checkout	2026-10-13T07:38:34.1333710Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+offline-arm64	Post Checkout	2026-10-13T07:38:34.1384340Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+offline-arm64	Post Checkout	2026-10-13T07:38:34.2084490Z Removing includeIf entries pointing to credentials config files
+offline-arm64	Post Checkout	2026-10-13T07:38:34.2092630Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+offline-arm64	Post Checkout	2026-10-13T07:38:34.2150320Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+offline-arm64	Complete job	﻿2026-10-13T07:38:34.3478810Z Cleaning up orphan processes

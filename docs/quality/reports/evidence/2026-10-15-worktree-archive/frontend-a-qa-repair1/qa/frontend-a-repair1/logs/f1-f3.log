@@ -1,0 +1,12 @@
+[WebServer] (node:31300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:31301) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../.local/qa/frontend-a-repair1/harness/frontend-a-regressions.spec.ts:101:1 › F1 required credential blocks submission with field guidance; existing credential is reusable and unavailable Keychain fails closed (905ms)
+  ✓  2 ../.local/qa/frontend-a-repair1/harness/frontend-a-regressions.spec.ts:146:1 › F2 per-capability failures remain visible after another check succeeds; changed config expires only its old result (759ms)
+  ✓  3 ../.local/qa/frontend-a-repair1/harness/frontend-a-regressions.spec.ts:190:1 › F3 Feishu read failure retains last success time/value and confirmed credential deletion invalidates it (579ms)
+
+  3 passed (3.0s)

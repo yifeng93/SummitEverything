@@ -1,0 +1,20 @@
+{
+  "tested_sha": "613d453ab1a47e2f0bfe78d685fb90817f70f4cc",
+  "commands": [
+    { "command": "npm ci", "cwd": "web", "exit_code": 0, "result": "226 packages; 0 vulnerabilities; lock unchanged" },
+    { "command": "npm test -- --run", "cwd": "web", "exit_code": 0, "result": "24 files; 176 passed; 6 todo", "log": "logs/web-unit.log" },
+    { "command": "npm run typecheck", "cwd": "web", "exit_code": 0, "log": "logs/typecheck.log" },
+    { "command": "npm run lint", "cwd": "web", "exit_code": 0, "result": "2 warnings", "log": "logs/lint.log" },
+    { "command": "npm run build", "cwd": "web", "exit_code": 0, "result": "568.70 kB JS chunk warning", "log": "logs/build.log" },
+    { "command": "SUMMIT_E2E_EVIDENCE_DIR=../.local/qa/frontend-b-initial/evidence/viewport npm run test:e2e -- --output=../.local/qa/frontend-b-initial/e2e-results-redirected", "cwd": "web", "exit_code": 0, "result": "2 passed", "log": "logs/e2e-offline-final.log" },
+    { "command": "PYTHONPATH=\"$PWD/scripts/offline_guard:$PWD/src\" uv run pytest -q", "cwd": ".", "exit_code": 0, "result": "661 passed; 1 warning", "log": "logs/python-guarded.log" },
+    { "command": "npx playwright test --config .local/qa/frontend-b-initial/integration.config.ts --grep 'isolated FastAPI Fake flow'", "cwd": "web", "exit_code": 0, "result": "1 passed; external attempts 0", "log": "logs/fastapi-fake-workflow.log", "manifest": "evidence/fastapi-integration/workflow-manifest.json" },
+    { "command": "npx playwright test --config .local/qa/frontend-b-initial/integration.config.ts --grep 'Real source preview'", "cwd": "web", "exit_code": 1, "result": "Expected UI to expose synthetic original text, selected target and request limit; actual text and target not visible. Request limit visible. Cancel had no intake write and no external attempt.", "log": "logs/source-scope-final.log", "evidence": "evidence/source-scope-dialog.png" },
+    { "command": "git diff --check", "cwd": ".", "exit_code": 0 },
+    { "command": "git status --short --untracked-files=all", "cwd": ".", "exit_code": 0, "result": "empty" },
+    { "command": "git rev-parse HEAD", "cwd": ".", "exit_code": 0, "result": "613d453ab1a47e2f0bfe78d685fb90817f70f4cc" }
+  ],
+  "diagnostics": [
+    { "command": "npx playwright test --config .local/qa/frontend-b-initial/integration.config.ts", "exit_code": 1, "classification": "HARNESS_ISOLATION_FAILURE", "result": "Two independent scenarios shared one profile; the first scenario left active workspace state and the second could not repeat first use. Each scenario passed/failed as expected when rerun with a fresh per-process profile.", "log": "logs/integration-suite.log" }
+  ]
+}

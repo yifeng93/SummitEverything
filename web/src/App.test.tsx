@@ -23,6 +23,7 @@ it('keeps the updated citation version warning visible after navigating to the p
   const rawFetch = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input)
     if (url === '/api/v1/workspaces/current') return Response.json({ workspace_id: 'workspace-1', root: '/tmp/workspace', local_profile_dir: '/tmp/profile', name: '测试工作库', read_only: false })
+    if (url === '/api/v1/first-use/progress') return Response.json({ step: 5, completed: true, open: false })
     if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
     if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [{ ...conversation, messages: undefined }], next_cursor: null })
     if (url.endsWith('/conversations/conversation-1/reopen')) return Response.json(conversation)
@@ -49,4 +50,7 @@ it('keeps the updated citation version warning visible after navigating to the p
   expect(await screen.findByText('会议地点已改为西馆。')).toBeTruthy()
   expect((await screen.findByRole('alert')).textContent).toContain('该页面已更新')
   await waitFor(() => expect(requestedPageUrls).toEqual([`/api/v1/pages/page-1?expected_content_sha256=${oldHash}`]))
+  fireEvent.click(screen.getByRole('button', { name: '← 返回知识问答' }))
+  expect(await screen.findByRole('button', { name: /会议地点是北馆/ })).toBeTruthy()
+  expect(screen.queryByText('会议地点已改为西馆。')).toBeNull()
 })

@@ -1,0 +1,65 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything/web
+
+ ❯ src/ui-contract.test.ts (11 tests | 1 failed | 1 todo) 92ms
+   ❯ 守卫① 内部标识基线（GUIDE §11 ①、§9） (2)
+     × 每个「文件:字段」的出现次数与 allowlist 精确相等（多一个、少一个都要显式改基线） 8ms
+ ❯ .local/qa/frontend-b-repair1/harness/source-scope.spec.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  .local/qa/frontend-b-repair1/harness/source-scope.spec.ts [ .local/qa/frontend-b-repair1/harness/source-scope.spec.ts ]
+Error: Playwright Test did not expect test() to be called here.
+Most common reasons include:
+- You are calling test() in a configuration file.
+- You are calling test() in a file that is imported by the configuration file.
+- You have two different versions of @playwright/test. This usually happens
+  when one of the dependencies in your package.json depends on @playwright/test.
+- You are calling test() from an async test.describe() block. Only sync ones are supported.
+ ❯ _TestTypeImpl._currentSuite node_modules/playwright/lib/common/index.js:2235:13
+ ❯ _TestTypeImpl._createTest node_modules/playwright/lib/common/index.js:2249:24
+ ❯ node_modules/playwright/lib/common/index.js:1169:12
+ ❯ .local/qa/frontend-b-repair1/harness/source-scope.spec.ts:6:1
+      4| import { expect, test } from '@playwright/test'
+      5|
+      6| test('Real source preview shows the exact synthetic scope before any o…
+       | ^
+      7|   const externalAttempts: string[] = []
+      8|   const intakeJobWrites: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.test.ts > 守卫① 内部标识基线（GUIDE §11 ①、§9） > 每个「文件:字段」的出现次数与 allowlist 精确相等（多一个、少一个都要显式改基线）
+AssertionError: 守卫① 内部标识基线（FRONTEND-GUIDE §11 ① 与 §9）：每个「文件:字段」的出现次数必须与 ui-contract.allowlist.json 精确相等: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "web/src/components/SourceOrganizer.tsx:operation_id: 源码出现 4 次，allowlist 登记 1 次",
++ ]
+
+ ❯ src/ui-contract.test.ts:290:40
+    288|       else if (found !== allowed) mismatches.push(`${key}: 源码出现 ${foun…
+    289|     }
+    290|     expect(mismatches, RULE_ALLOWLIST).toEqual([])
+       |                                        ^
+    291|   })
+    292|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 24 passed (26)
+      Tests  1 failed | 179 passed | 6 todo (186)
+   Start at  17:24:17
+   Duration  1.83s (environment 58%, tests 22%, transform 11%, import 9%)
+

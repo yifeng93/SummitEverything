@@ -1,0 +1,139 @@
+Using CPython 3.12.13
+Creating virtual environment at: .venv
+   Building summit-everything @ file:///Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything
+      Built summit-everything @ file:///Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything
+Installed 40 packages in 81ms
+........................................................................ [ 14%]
+........................F.FF............................................ [ 28%]
+........................................................................ [ 43%]
+........................................................................ [ 57%]
+........................................................................ [ 72%]
+........................................................................ [ 86%]
+...................................................................      [100%]
+=================================== FAILURES ===================================
+_________ test_runner_uses_its_ports_and_stops_only_its_owned_services _________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-922/test_runner_uses_its_ports_and0')
+
+    def test_runner_uses_its_ports_and_stops_only_its_owned_services(tmp_path: Path) -> None:
+        api_port = _free_port()
+        web_port = _free_port()
+        while web_port == api_port:
+            web_port = _free_port()
+        env = os.environ.copy()
+        run_id = "test-" + secrets.token_hex(8)
+        env.update(
+            {
+                "SUMMIT_API_PORT": str(api_port),
+                "SUMMIT_WEB_PORT": str(web_port),
+                "SUMMIT_API_TARGET": f"http://127.0.0.1:{api_port}",
+                "SUMMIT_PROFILE_ROOT": str(tmp_path / "profile"),
+                "SUMMIT_RUN_ID": run_id,
+            }
+        )
+        process = subprocess.Popen(
+            [sys.executable, "scripts/run_dev.py"],
+            cwd=ROOT,
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        api_url = f"http://127.0.0.1:{api_port}/api/v1/health"
+        web_url = f"http://127.0.0.1:{web_port}/"
+        try:
+            deadline = time.monotonic() + 30
+            ready = False
+            while time.monotonic() < deadline:
+                if process.poll() is not None:
+>                   raise AssertionError(f"runner exited before readiness: {process.returncode}")
+E                   AssertionError: runner exited before readiness: 2
+
+tests/integration/test_dev_runner.py:60: AssertionError
+__________ test_runner_ctrl_c_exits_cleanly_and_closes_owned_services __________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-922/test_runner_ctrl_c_exits_clean0')
+
+    def test_runner_ctrl_c_exits_cleanly_and_closes_owned_services(tmp_path: Path) -> None:
+        api_port = _free_port()
+        web_port = _free_port()
+        env = os.environ.copy()
+        run_id = "interrupt-" + secrets.token_hex(8)
+        env.update(
+            {
+                "SUMMIT_API_PORT": str(api_port),
+                "SUMMIT_WEB_PORT": str(web_port),
+                "SUMMIT_API_TARGET": f"http://127.0.0.1:{api_port}",
+                "SUMMIT_PROFILE_ROOT": str(tmp_path / "profile"),
+                "SUMMIT_RUN_ID": run_id,
+            }
+        )
+        process = subprocess.Popen(
+            [sys.executable, "scripts/run_dev.py"],
+            cwd=ROOT,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        try:
+            deadline = time.monotonic() + 30
+            while time.monotonic() < deadline:
+                if process.poll() is not None:
+>                   raise AssertionError(f"runner exited before readiness: {process.returncode}")
+E                   AssertionError: runner exited before readiness: 2
+
+tests/integration/test_dev_runner.py:150: AssertionError
+______________ test_runner_ctrl_c_during_readiness_exits_cleanly _______________
+
+tmp_path = PosixPath('/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/pytest-of-yifengstudio/pytest-922/test_runner_ctrl_c_during_read0')
+
+    def test_runner_ctrl_c_during_readiness_exits_cleanly(tmp_path: Path) -> None:
+        api_port = _free_port()
+        web_port = _free_port()
+        run_id = "startup-interrupt-" + secrets.token_hex(8)
+        shim_dir = tmp_path / "bin"
+        shim_dir.mkdir()
+        npm_shim = shim_dir / "npm"
+        npm_shim.write_text(
+            f"#!{sys.executable}\nimport time\nwhile True: time.sleep(1)\n", encoding="utf-8"
+        )
+        npm_shim.chmod(0o755)
+        env = os.environ.copy()
+        env.update(
+            {
+                "PATH": str(shim_dir),
+                "SUMMIT_API_PORT": str(api_port),
+                "SUMMIT_WEB_PORT": str(web_port),
+                "SUMMIT_API_TARGET": f"http://127.0.0.1:{api_port}",
+                "SUMMIT_PROFILE_ROOT": str(tmp_path / "profile"),
+                "SUMMIT_RUN_ID": run_id,
+            }
+        )
+        process = subprocess.Popen(
+            [sys.executable, "scripts/run_dev.py"],
+            cwd=ROOT,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        try:
+            deadline = time.monotonic() + 30
+            while time.monotonic() < deadline:
+                if process.poll() is not None:
+>                   raise AssertionError(f"runner exited before API readiness: {process.returncode}")
+E                   AssertionError: runner exited before API readiness: 2
+
+tests/integration/test_dev_runner.py:205: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_dev_runner.py::test_runner_uses_its_ports_and_stops_only_its_owned_services
+FAILED tests/integration/test_dev_runner.py::test_runner_ctrl_c_exits_cleanly_and_closes_owned_services
+FAILED tests/integration/test_dev_runner.py::test_runner_ctrl_c_during_readiness_exits_cleanly
+3 failed, 496 passed, 1 warning in 73.37s (0:01:13)

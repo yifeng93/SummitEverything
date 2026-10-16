@@ -1,0 +1,8 @@
+
+> web@0.0.0 test:e2e
+> playwright test --list
+
+Listing tests:
+  first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step
+  viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings
+Total: 2 tests in 2 files

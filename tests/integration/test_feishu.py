@@ -85,6 +85,7 @@ def test_fake_default_authorization_and_selected_only_import(tmp_path: Path) -> 
     raw = (tmp_path / "workspace" / items[0]["original_relative_path"]).read_bytes()
     assert raw == "模拟会议：等待用户确认。\r\n".encode()
     assert source["source"]["sha256"] == hashlib.sha256(raw).hexdigest()
+    assert items[0]["origin_kind"] == source["source"]["origin_kind"] == "feishu_material"
     assert source["source"]["external_identity"]["material_id"] == "minute-1"
     assert c.get("/api/v1/drafts").json() == []
     assert c.get("/api/v1/pages").json() == []

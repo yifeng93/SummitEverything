@@ -6,8 +6,14 @@
     "本轮只落地机制与裸色断言；把内部 ID/hash/路径从可见文案清零在归属切片完成（届时删掉对应条目）。"
   ],
   "scanScope": {
-    "include": ["web/src/**/*.ts", "web/src/**/*.tsx"],
-    "exclude": ["web/src/api/**", "**/*.test.*"],
+    "include": [
+      "web/src/**/*.ts",
+      "web/src/**/*.tsx"
+    ],
+    "exclude": [
+      "web/src/api/**",
+      "**/*.test.*"
+    ],
     "reason": "api/ 是线上字段（OpenAPI）的真源，不作为主界面文案扫描对象；测试夹具不参与基线。"
   },
   "fields": [
@@ -25,60 +31,186 @@
   ],
   "entries": {
     "web/src/App.tsx:content_sha256": 1,
-    "web/src/App.tsx:page_id": 2,
-    "web/src/components/AskView.tsx:fingerprint": 12,
-    "web/src/components/AskView.tsx:content_sha256": 3,
+    "web/src/App.tsx:page_id": 3,
+    "web/src/components/AskView.tsx:fingerprint": 4,
+    "web/src/components/AskView.tsx:content_sha256": 5,
     "web/src/components/AskView.tsx:candidate_id": 7,
-    "web/src/components/AskView.tsx:page_id": 5,
-    "web/src/components/AskView.tsx:request_id": 16,
-    "web/src/components/AskView.tsx:source_message_id": 1,
+    "web/src/components/AskView.tsx:page_id": 6,
+    "web/src/components/AskView.tsx:request_id": 14,
+    "web/src/components/AskView.tsx:relative_path": 2,
     "web/src/components/DraftReview.tsx:content_sha256": 3,
     "web/src/components/DraftReview.tsx:operation_id": 1,
     "web/src/components/DraftReview.tsx:page_id": 5,
-    "web/src/components/DraftReview.tsx:.slice(0, 8)": 1,
     "web/src/components/FeishuPanel.tsx:operation_id": 2,
-    "web/src/components/FeishuPanel.tsx:material_id": 8,
+    "web/src/components/FeishuPanel.tsx:material_id": 7,
     "web/src/components/JournalView.tsx:operation_id": 1,
     "web/src/components/JournalView.tsx:page_id": 2,
-    "web/src/components/PageReader.tsx:content_sha256": 1,
+    "web/src/components/MarkdownText.tsx:content_sha256": 2,
+    "web/src/components/MarkdownText.tsx:page_id": 3,
+    "web/src/components/MarkdownText.tsx:relative_path": 3,
+    "web/src/components/PageReader.tsx:content_sha256": 3,
     "web/src/components/PageReader.tsx:operation_id": 2,
-    "web/src/components/PageReader.tsx:page_id": 8,
-    "web/src/components/PageReader.tsx:relative_path": 5,
-    "web/src/components/ProjectsView.tsx:content_sha256": 2,
+    "web/src/components/PageReader.tsx:page_id": 10,
+    "web/src/components/PageReader.tsx:relative_path": 7,
+    "web/src/components/ProjectsView.tsx:content_sha256": 5,
     "web/src/components/ProjectsView.tsx:operation_id": 8,
-    "web/src/components/ProjectsView.tsx:page_id": 4,
-    "web/src/components/ProjectsView.tsx:relative_path": 1,
+    "web/src/components/ProjectsView.tsx:page_id": 10,
+    "web/src/components/ProjectsView.tsx:relative_path": 5,
     "web/src/components/TasksPanel.tsx:candidate_id": 2,
-    "web/src/components/TodayView.tsx:operation_id": 5,
-    "web/src/components/WorkspaceGate.tsx:operation_id": 1
+    "web/src/components/WorkspaceGate.tsx:operation_id": 1,
+    "web/src/components/ApprovalView.tsx:content_sha256": 1,
+    "web/src/components/ApprovalView.tsx:fingerprint": 10,
+    "web/src/components/ApprovalView.tsx:operation_id": 1,
+    "web/src/components/ApprovalView.tsx:page_id": 4,
+    "web/src/components/ImportDrawer.tsx:operation_id": 1,
+    "web/src/components/SourceOrganizer.tsx:operation_id": 4,
+    "web/src/components/TodayView.tsx:operation_id": 1,
+    "web/src/components/TodayView.tsx:.slice(0, 8)": 1
   },
   "attribution": {
-    "web/src/App.tsx:content_sha256": { "slice": "P2 · 阅读与流式", "reason": "引用版本绑定的 API 参数（openPage），不进入可见文案" },
-    "web/src/App.tsx:page_id": { "slice": "P2 · 阅读与流式", "reason": "阅读页路由参数；页面上显示的是标题不是 ID" },
-    "web/src/components/AskView.tsx:fingerprint": { "slice": "P4 · 项目与问答", "reason": "索引状态写着 64 位 fingerprint（GUIDE §3 点名），按 §9 L3 进诊断导出" },
-    "web/src/components/AskView.tsx:content_sha256": { "slice": "P4 · 项目与问答", "reason": "引用绑定内容版本；完整值只允许出现在「本次详情」/诊断" },
-    "web/src/components/AskView.tsx:candidate_id": { "slice": "P4 · 项目与问答", "reason": "候选动作标识，仅 API 参数" },
-    "web/src/components/AskView.tsx:page_id": { "slice": "P4 · 项目与问答", "reason": "引用与恢复会话的 API 参数" },
-    "web/src/components/AskView.tsx:request_id": { "slice": "P2 · 阅读与流式", "reason": "SSE 完整性与重放校验；按 §9 只进 L3 诊断" },
-    "web/src/components/AskView.tsx:source_message_id": { "slice": "P4 · 项目与问答", "reason": "来源消息标识，仅 API 参数" },
-    "web/src/components/DraftReview.tsx:content_sha256": { "slice": "P3 · 信息架构（审批）", "reason": "审核稿版本绑定；L2「本次详情」以外不得显示" },
-    "web/src/components/DraftReview.tsx:operation_id": { "slice": "P3 · 信息架构（审批）", "reason": "幂等操作编号，仅 API 参数" },
-    "web/src/components/DraftReview.tsx:page_id": { "slice": "P3 · 信息架构（审批）", "reason": "落点页面参数；主界面显示中文显示名" },
-    "web/src/components/DraftReview.tsx:.slice(0, 8)": { "slice": "P3 · 信息架构（审批）", "reason": "短码截断；按 §9 改成 L2 短码 + 完整值进 title" },
-    "web/src/components/FeishuPanel.tsx:operation_id": { "slice": "P3 · 信息架构（审批）", "reason": "幂等操作编号，仅 API 参数（飞书入口迁入审批）" },
-    "web/src/components/FeishuPanel.tsx:material_id": { "slice": "P3 · 信息架构（审批）", "reason": "飞书材料标识，仅 API 参数" },
-    "web/src/components/JournalView.tsx:operation_id": { "slice": "P3 · 信息架构（审批）", "reason": "日志写入的幂等编号，仅 API 参数" },
-    "web/src/components/JournalView.tsx:page_id": { "slice": "P3 · 信息架构（审批）", "reason": "日志关联页面参数" },
-    "web/src/components/PageReader.tsx:content_sha256": { "slice": "P2 · 阅读与流式", "reason": "版本冲突检测参数" },
-    "web/src/components/PageReader.tsx:operation_id": { "slice": "P2 · 阅读与流式", "reason": "确认当前版本的幂等编号，仅 API 参数" },
-    "web/src/components/PageReader.tsx:page_id": { "slice": "P2 · 阅读与流式", "reason": "页面路由与确认参数" },
-    "web/src/components/PageReader.tsx:relative_path": { "slice": "P2 · 阅读与流式", "reason": "GUIDE §7.4：阅读页不显示 relative_path；路径只在 title / 「技术信息」" },
-    "web/src/components/ProjectsView.tsx:content_sha256": { "slice": "P4 · 项目与问答", "reason": "打开页面时的版本绑定参数" },
-    "web/src/components/ProjectsView.tsx:operation_id": { "slice": "P4 · 项目与问答", "reason": "重命名/归档/删除的幂等编号，仅 API 参数" },
-    "web/src/components/ProjectsView.tsx:page_id": { "slice": "P4 · 项目与问答", "reason": "打开页面参数" },
-    "web/src/components/ProjectsView.tsx:relative_path": { "slice": "P4 · 项目与问答", "reason": "页面显示名应为主显中文名；路径进「技术信息」" },
-    "web/src/components/TasksPanel.tsx:candidate_id": { "slice": "P3 · 信息架构（审批）", "reason": "候选任务标识，仅 API 参数" },
-    "web/src/components/TodayView.tsx:operation_id": { "slice": "P3 · 信息架构（审批）", "reason": "随手记/整理/导入的幂等编号，仅 API 参数" },
-    "web/src/components/WorkspaceGate.tsx:operation_id": { "slice": "P5 · 首次配置", "reason": "建库/开库的幂等编号，仅 API 参数" }
+    "web/src/App.tsx:content_sha256": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "引用版本绑定的 API 参数（openPage），不进入可见文案"
+    },
+    "web/src/App.tsx:page_id": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "路由回调打开正式页面；屏幕只展示页面标题。"
+    },
+    "web/src/components/AskView.tsx:fingerprint": {
+      "slice": "P4 · 项目与问答",
+      "reason": "索引状态查询使用配置指纹；不显示到问答界面"
+    },
+    "web/src/components/AskView.tsx:content_sha256": {
+      "slice": "P4 · 项目与问答",
+      "reason": "历史引用绑定答案时的页面版本；界面显示版本有效性，不显示哈希"
+    },
+    "web/src/components/AskView.tsx:candidate_id": {
+      "slice": "P4 · 项目与问答",
+      "reason": "候选动作标识，仅 API 参数"
+    },
+    "web/src/components/AskView.tsx:page_id": {
+      "slice": "P4 · 项目与问答",
+      "reason": "引用与恢复会话的 API 参数"
+    },
+    "web/src/components/AskView.tsx:relative_path": {
+      "slice": "P4 · 项目与问答",
+      "reason": "Markdown 相对页链接解析使用，标题与说明不显示路径"
+    },
+    "web/src/components/AskView.tsx:request_id": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "SSE 完整性与重放校验；按 §9 只进 L3 诊断"
+    },
+    "web/src/components/DraftReview.tsx:content_sha256": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "审核稿版本绑定；L2「本次详情」以外不得显示"
+    },
+    "web/src/components/DraftReview.tsx:operation_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "幂等操作编号，仅 API 参数"
+    },
+    "web/src/components/DraftReview.tsx:page_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "落点页面参数；主界面显示中文显示名"
+    },
+    "web/src/components/FeishuPanel.tsx:operation_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "幂等操作编号，仅 API 参数（飞书入口迁入审批）"
+    },
+    "web/src/components/FeishuPanel.tsx:material_id": {
+      "slice": "P3 · 今日",
+      "reason": "飞书材料标识仅供导入API调用，不显示给用户。"
+    },
+    "web/src/components/JournalView.tsx:operation_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "日志写入的幂等编号，仅 API 参数"
+    },
+    "web/src/components/JournalView.tsx:page_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "日志关联页面参数"
+    },
+    "web/src/components/MarkdownText.tsx:content_sha256": {
+      "slice": "P4 · 项目与问答",
+      "reason": "安全内部链接传递目标页面预期版本，不在可见文案呈现"
+    },
+    "web/src/components/MarkdownText.tsx:page_id": {
+      "slice": "P4 · 项目与问答",
+      "reason": "唯一目标页映射与 Reader 路由参数，不在可见文案呈现"
+    },
+    "web/src/components/MarkdownText.tsx:relative_path": {
+      "slice": "P4 · 项目与问答",
+      "reason": "按 Markdown 来源路径解析相对链接，不在可见文案呈现"
+    },
+    "web/src/components/PageReader.tsx:content_sha256": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "版本冲突检测参数"
+    },
+    "web/src/components/PageReader.tsx:operation_id": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "确认当前版本的幂等编号，仅 API 参数"
+    },
+    "web/src/components/PageReader.tsx:page_id": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "页面路由与确认参数"
+    },
+    "web/src/components/PageReader.tsx:relative_path": {
+      "slice": "P2 · 阅读与流式",
+      "reason": "来源页相对 Markdown 链接解析参数，不显示给用户"
+    },
+    "web/src/components/ProjectsView.tsx:content_sha256": {
+      "slice": "P4 · 项目与问答",
+      "reason": "打开页面时的版本绑定参数"
+    },
+    "web/src/components/ProjectsView.tsx:operation_id": {
+      "slice": "P4 · 项目与问答",
+      "reason": "重命名/归档/删除的幂等编号，仅 API 参数"
+    },
+    "web/src/components/ProjectsView.tsx:page_id": {
+      "slice": "P4 · 项目与问答",
+      "reason": "打开页面参数"
+    },
+    "web/src/components/ProjectsView.tsx:relative_path": {
+      "slice": "P4 · 项目与问答",
+      "reason": "同项目 Markdown 关联页的解析参数，不显示路径"
+    },
+    "web/src/components/TasksPanel.tsx:candidate_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "候选任务标识，仅 API 参数"
+    },
+    "web/src/components/WorkspaceGate.tsx:operation_id": {
+      "slice": "P5 · 首次配置",
+      "reason": "建库/开库的幂等编号，仅 API 参数"
+    },
+    "web/src/components/ApprovalView.tsx:content_sha256": {
+      "slice": "P3 · 审批",
+      "reason": "正式内容确认的版本并发门，仅作为接口参数，不显示哈希。"
+    },
+    "web/src/components/ApprovalView.tsx:fingerprint": {
+      "slice": "P3 · 审批",
+      "reason": "索引计划请求参数；用户可见内容只展示页数和状态。"
+    },
+    "web/src/components/ApprovalView.tsx:operation_id": {
+      "slice": "P3 · 审批",
+      "reason": "正式内容保存的幂等参数，不显示。"
+    },
+    "web/src/components/ApprovalView.tsx:page_id": {
+      "slice": "P3 · 审批",
+      "reason": "正式内容确认和列表关联参数，不显示。"
+    },
+    "web/src/components/ImportDrawer.tsx:operation_id": {
+      "slice": "P3 · 今日",
+      "reason": "上传幂等参数，不显示。"
+    },
+    "web/src/components/SourceOrganizer.tsx:operation_id": {
+      "slice": "P3 · 审批",
+      "reason": "来源整理幂等参数及 Real 冻结范围一致性校验，不显示。"
+    },
+    "web/src/components/TodayView.tsx:operation_id": {
+      "slice": "P3 · 今日",
+      "reason": "随手记提交使用稳定幂等键，不作为可见内容。"
+    },
+    "web/src/components/TodayView.tsx:.slice(0, 8)": {
+      "slice": "P3 · 今日",
+      "reason": "收件箱首页只展示最新八项，数量仍统计同一完整响应。"
+    }
   }
 }

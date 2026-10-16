@@ -1,0 +1,18 @@
+{
+  "backend_offline_guard": "1",
+  "backend_pid": 6919,
+  "backend_profile_match": true,
+  "candidate_build_id": "20261015T132109Z-8a0917f72e08",
+  "candidate_dependencies_sha256": "cab274716d93a5485155114bd25f3a65722eede97c4487d11262d8b73728c7d7",
+  "candidate_frontend_sha256": "8a0917f72e0833727fa90a4f827e70be8835db6711eb9e24b167df16087fab62",
+  "candidate_source_sha": "876008e1d33420f57fb31772c76e471379e6b98d",
+  "health_identity_matches_manifest": true,
+  "health_run_id_present": true,
+  "listener_pid_matches_backend": true,
+  "native_offline_guard": "1",
+  "native_pid": 6917,
+  "native_profile_match": true,
+  "profile_path": "/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-d-876008e.FgPms6",
+  "static_root_content_type": "text/html; charset=utf-8",
+  "static_root_status": 200
+}

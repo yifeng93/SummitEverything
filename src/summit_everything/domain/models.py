@@ -72,6 +72,7 @@ class MutationResult(BaseModel):
 
 
 class SourceRecord(OpenModel):
+    origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown"
     external_identity: dict[str, str] | None = None
     source_id: UUID
     role: Literal["source"] = "source"
@@ -87,6 +88,7 @@ class SourceDetail(BaseModel):
 
 
 class IntakeItem(OpenModel):
+    origin_kind: Literal["quick_note", "file", "feishu_material", "unknown"] = "unknown"
     item_id: UUID
     source_id: UUID
     title: str

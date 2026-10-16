@@ -1,0 +1,12 @@
+[PASS] web/dist
+        qa_reimplementation  784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+        product_helper       784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+        files                4: ['assets/index-CJV7PXqW.js', 'assets/index-lgEUmbbh.css', 'favicon.svg', 'index.html']
+[PASS] /Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair3-parent/SummitEverything/web/dist
+        qa_reimplementation  784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+        product_helper       784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+        files                4: ['assets/index-CJV7PXqW.js', 'assets/index-lgEUmbbh.css', 'favicon.svg', 'index.html']
+[PASS] /Users/yifengstudio/.codex/worktrees/frontend-d-build-repair3/SummitEverything/.local/dev/frontend-d-repair3/SummitEverything-D-e8e1dba.app/Contents/Resources/web
+        qa_reimplementation  784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+        product_helper       784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0
+        files                4: ['assets/index-CJV7PXqW.js', 'assets/index-lgEUmbbh.css', 'favicon.svg', 'index.html']

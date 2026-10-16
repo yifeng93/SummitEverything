@@ -1,0 +1,15 @@
+### uv run ruff check src tests
+All checks passed!
+EXIT=0
+
+### uv run ruff format --check src tests
+100 files already formatted
+EXIT=0
+
+### uv run mypy src
+Success: no issues found in 47 source files
+EXIT=0
+
+### uv lock --check
+Resolved 48 packages in 4ms
+EXIT=0

@@ -1,0 +1,213 @@
+Using CPython 3.12.13
+Creating virtual environment at: .venv
+   Building summit-everything @ file:///Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything
+      Built summit-everything @ file:///Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything
+Installed 40 packages in 45ms
+
+> web@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 303 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.90 kB │ gzip:   1.08 kB
+dist/assets/index-lgEUmbbh.css   57.18 kB │ gzip:  10.50 kB
+dist/assets/index-CgpZ1Fbt.js   589.20 kB │ gzip: 172.53 kB
+
+✓ built in 405ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+Resolved 48 packages in 3ms
+Installed 5 packages in 41ms
+ + altgraph==0.17.5
+ + macholib==1.16.4
+ + pyinstaller==6.22.3
+ + pyinstaller-hooks-contrib==2026.8
+ + setuptools==84.0.0
+102 INFO: PyInstaller: 6.22.3, contrib hooks: 2026.8
+102 INFO: Python: 3.12.13
+116 INFO: Platform: macOS-27.0.1-arm64-arm-64bit
+116 INFO: Python environment: /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv
+116 INFO: wrote /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/summit-backend.spec
+120 INFO: Removing temporary files and cleaning cache in /Users/yifengstudio/Library/Application Support/pyinstaller
+276 INFO: Module search paths (PYTHONPATH):
+['/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python312.zip',
+ '/Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12',
+ '/Users/yifengstudio/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/lib-dynload',
+ '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages',
+ '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/src',
+ '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/scripts',
+ '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/src']
+340 INFO: Appending 'datas' from .spec
+340 INFO: checking Analysis
+341 INFO: Building Analysis because Analysis-00.toc is non existent
+341 INFO: Looking for Python shared library...
+349 INFO: Using Python shared library: /Users/yifengstudio/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/libpython3.12.dylib
+349 INFO: Running Analysis Analysis-00.toc
+349 INFO: Target bytecode optimization level: 0
+349 INFO: Initializing module dependency graph...
+350 INFO: Initializing module graph hook caches...
+353 INFO: Analyzing modules for base_library.zip ...
+696 INFO: Processing standard module hook 'hook-encodings.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+818 INFO: Processing standard module hook 'hook-math.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1282 INFO: Processing standard module hook 'hook-pickle.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1612 INFO: Processing standard module hook 'hook-heapq.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+1803 INFO: Caching module dependency graph...
+1820 INFO: Analyzing /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/scripts/packaged_server.py
+1822 INFO: Processing standard module hook 'hook-uvicorn.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+2030 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2098 INFO: Processing standard module hook 'hook-xml.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2201 INFO: Processing standard module hook 'hook-_ctypes.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2417 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+2419 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2805 INFO: Processing standard module hook 'hook-platform.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2935 INFO: Processing standard module hook 'hook-difflib.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+2993 INFO: Processing standard module hook 'hook-webbrowser.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+3249 INFO: Processing standard module hook 'hook-anyio.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+3552 INFO: Processing standard module hook 'hook-pydantic.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+3867 INFO: Processing standard module hook 'hook-zoneinfo.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+3878 INFO: Processing standard module hook 'hook-sysconfig.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+3884 INFO: Processing standard module hook 'hook-_osx_support.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4410 INFO: Processing standard module hook 'hook-opentelemetry.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+4548 INFO: Processing standard module hook 'hook-keyring.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4692 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4693 INFO: Setuptools: 'jaraco' appears to be a partial setuptools-vendored copy - extending search paths to ['/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/jaraco', '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/setuptools/_vendor/jaraco']!
+4693 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4768 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4769 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+4772 INFO: Processing standard module hook 'hook-setuptools.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4777 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4788 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4793 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4851 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4988 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+4989 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+4993 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+4994 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+5157 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+5157 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+5373 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+5374 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+5425 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+5425 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+5435 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+5443 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+5444 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+5642 INFO: Processing standard module hook 'hook-certifi.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+5760 INFO: Processing standard module hook 'hook-pygments.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+6138 INFO: Processing standard module hook 'hook-sqlite3.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+6277 INFO: Analyzing hidden import 'keyring.__main__'
+6281 INFO: Analyzing hidden import 'keyring.backends.SecretService'
+6284 INFO: Analyzing hidden import 'keyring.backends.Windows'
+6286 INFO: Analyzing hidden import 'keyring.backends.chainer'
+6287 INFO: Analyzing hidden import 'keyring.backends.kwallet'
+6289 INFO: Analyzing hidden import 'keyring.backends.libsecret'
+6292 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+6292 INFO: Analyzing hidden import 'keyring.backends.null'
+6293 INFO: Analyzing hidden import 'keyring.devpi_client'
+6313 INFO: Analyzing hidden import 'keyring.http'
+6313 INFO: Analyzing hidden import 'keyring.testing'
+6313 INFO: Analyzing hidden import 'keyring.testing.backend'
+6318 INFO: Processing standard module hook 'hook-pytest.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+6539 INFO: Processing standard module hook 'hook-py.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+7230 INFO: Processing module hooks (post-graph stage)...
+8376 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks'
+9418 INFO: Performing binary vs. data reclassification (57 entries)
+9426 INFO: Looking for ctypes DLLs
+9442 INFO: Analyzing run-time hooks ...
+9444 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+9446 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+9446 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+9447 INFO: Including run-time hook 'pyi_rth_setuptools.py' from '/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+9457 INFO: Creating base_library.zip...
+9465 INFO: Looking for dynamic libraries
+9743 INFO: Warnings written to /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/work/summit-backend/warn-summit-backend.txt
+9784 INFO: Graph cross-reference written to /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/work/summit-backend/xref-summit-backend.html
+9827 INFO: checking PYZ
+9827 INFO: Building PYZ because PYZ-00.toc is non existent
+9827 INFO: Building PYZ (ZlibArchive) /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/work/summit-backend/PYZ-00.pyz
+10373 INFO: Building PYZ (ZlibArchive) /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/work/summit-backend/PYZ-00.pyz completed successfully.
+10384 INFO: EXE target arch: arm64
+10384 INFO: Code signing identity: None
+10390 INFO: checking PKG
+10390 INFO: Building PKG because PKG-00.toc is non existent
+10390 INFO: Building PKG (CArchive) summit-backend.pkg
+10399 INFO: Building PKG (CArchive) summit-backend.pkg completed successfully.
+10400 INFO: Bootloader /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.venv/lib/python3.12/site-packages/PyInstaller/bootloader/Darwin-64bit/run
+10400 INFO: checking EXE
+10400 INFO: Building EXE because EXE-00.toc is non existent
+10400 INFO: Building EXE from EXE-00.toc
+10400 INFO: Copying bootloader EXE to /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/work/summit-backend/summit-backend
+10403 INFO: Converting EXE to target arch (arm64)
+10424 INFO: Removing signature(s) from EXE
+10440 INFO: Modifying Mach-O image UUID(s) in EXE
+10446 INFO: Appending PKG archive to EXE
+10448 INFO: Fixing EXE headers for code signing
+10451 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (15.0.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+10452 INFO: Re-signing the EXE
+10474 INFO: Building EXE from EXE-00.toc completed successfully.
+10475 INFO: checking COLLECT
+10475 INFO: Building COLLECT because COLLECT-00.toc is non existent
+10475 INFO: Building COLLECT COLLECT-00.toc
+11972 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+11974 INFO: Build complete! The results are available in: /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/dist
+Building for production...
+[Planning deferred tasks]
+[22 / 34]
+[23 / 35] NativeUploadPolicy
+[34 / 71]
+[39 / 71]
+[42 / 71]
+[43 / 71]
+[47 / 71]
+[50 / 71]
+[55 / 71]
+[56 / 71]
+[57 / 71]
+[58 / 71]
+[60 / 71] NativeUploadPolicy
+[67 / 72] SummitEverything-product
+[87 / 108]
+[94 / 108]
+[98 / 108]
+[101 / 108]
+[103 / 108]
+[104 / 108] SummitEverything-product
+[106 / 108] SummitEverything-product
+[107 / 108] SummitEverything-product
+Build complete! (6.47秒)
+/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/SummitEverything-D-876008e.app: replacing existing signature
+created: /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/summit-dmg-m35bzojh/SummitEverything-D-876008e.dmghdiutil: WARNING: 'hdiutil create -volname -format ...' is deprecated. Please use 'diskutil image create from/blank --volumeName --format ...' instead.
+
+正在检查“Protective Master Boot Record（MBR：0）”的校验和…
+Protective Master Boot Record（MBR：0）：已验证CRC32 $62F06455
+正在检查“GPT Header（Primary GPT Header：1）”的校验和…
+    GPT Header（Primary GPT Header：1）：已验证CRC32 $53B5F7EF
+正在检查“GPT Partition Data（Primary GPT Table：2）”的校验和…
+GPT Partition Data（Primary GPT Table：已验证CRC32 $8461A7D6
+正在检查“（Apple_Free：3）”的校验和…
+                      （Apple_Free：3）：已验证CRC32 $00000000
+正在检查“disk image（Apple_APFS：4）”的校验和…
+            disk image（Apple_APFS：4）：已验证CRC32 $CB7F6BE5
+正在检查“（Apple_Free：5）”的校验和…
+                      （Apple_Free：5）：已验证CRC32 $00000000
+正在检查“GPT Partition Data（Backup GPT Table：6）”的校验和…
+GPT Partition Data（Backup GPT Table：：已验证CRC32 $8461A7D6
+正在检查“GPT Header（Backup GPT Header：7）”的校验和…
+     GPT Header（Backup GPT Header：7）：已验证CRC32 $CA8ECB82
+已验证CRC32 $381AC808
+hdiutil: verify: checksum of "/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/summit-dmg-m35bzojh/SummitEverything-D-876008e.dmg" is VALID
+预计CRC32 $381AC808
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
+/dev/disk5          	GUID_partition_scheme          	
+/dev/disk5s1        	Apple_APFS                     	
+/dev/disk6          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk6s1        	41504653-0000-11AA-AA11-0030654	/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/dev/frontend-d-final/.summit-internal-build-40jhm4dz/summit-dmg-m35bzojh/mount
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+"disk5" ejected.
+Embedded non-secret first-use defaults from /Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything/.local/first-use/defaults.json fields=embedding_base_url,feishu_app_id,feishu_redirect_uri,rerank_base_url

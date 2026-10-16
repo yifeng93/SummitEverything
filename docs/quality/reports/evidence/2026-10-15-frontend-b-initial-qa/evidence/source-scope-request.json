@@ -1,0 +1,31 @@
+{
+  "request": {
+    "operation": "model.organize",
+    "scope": {
+      "item_ids": [
+        "1e7681be-4942-5d91-a11f-6799ca687090"
+      ],
+      "line_id": "9e961998-de4e-5472-ab20-c2ff0fcf3b1d",
+      "project_id": "d8f0f3c5-6bb2-545a-a706-fb5064c5beb5",
+      "operation_id": "90cf9006-ddaa-4f77-a55f-6b81f9607e28",
+      "reprocess": false
+    }
+  },
+  "scope": {
+    "item_ids": [
+      "1e7681be-4942-5d91-a11f-6799ca687090"
+    ],
+    "operation_id": "90cf9006-ddaa-4f77-a55f-6b81f9607e28",
+    "line_id": "9e961998-de4e-5472-ab20-c2ff0fcf3b1d",
+    "project_id": "d8f0f3c5-6bb2-545a-a706-fb5064c5beb5",
+    "reprocess": false,
+    "max_output_tokens": 512,
+    "outgoing_inputs": [
+      {
+        "item_id": "1e7681be-4942-5d91-a11f-6799ca687090",
+        "source_id": "synthetic-source",
+        "text": "合成原文哨兵：周五前确认测试场地与酒店，不代表真实业务材料。"
+      }
+    ]
+  }
+}

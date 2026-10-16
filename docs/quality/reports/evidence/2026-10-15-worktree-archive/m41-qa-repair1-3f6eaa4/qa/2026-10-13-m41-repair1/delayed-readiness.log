@@ -1,0 +1,8 @@
+app_pid=90112
+app_copy=/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-delayready-b5f0a939/SummitEverything Internal fix1 3f6eaa4.app
+profile=/private/var/folders/yp/7n9pls2j2rl0sz9vmfdf4z6r0000gn/T/summit-m41-delayready-b5f0a939/profile
+synthetic_backend_delay_seconds=4
+health_seen_before_root=True
+readiness_after_delay=PASS
+request_paths=/api/v1/health,/
+app_exit=-15

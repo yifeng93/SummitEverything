@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "workspace_id": "c90c499f-9119-466f-afe7-46b0da91f414",
+  "name": "QA 合成工作库",
+  "created_at": "2026-10-15T09:43:03.457725Z",
+  "lines": [
+    {
+      "id": "560170ac-08aa-57d1-88f0-447976c9d3b1",
+      "name": "QA 合成主线甲",
+      "directory": "QA-合成主线甲"
+    },
+    {
+      "id": "63b77ab0-593a-5832-b1b4-46fa581050bc",
+      "name": "QA 合成主线乙",
+      "directory": "QA-合成主线乙"
+    }
+  ],
+  "projects": [
+    {
+      "id": "de8a0052-808c-5637-9656-b0455e328d77",
+      "line_id": "560170ac-08aa-57d1-88f0-447976c9d3b1",
+      "name": "QA 合成项目甲",
+      "directory": "QA-合成主线甲/QA-合成项目甲",
+      "overview_id": "508ee85d-fd7e-51f4-ac80-ef2fbc10861d",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    },
+    {
+      "id": "62bc51dd-cc29-5d48-8ab8-5730e9d0bf3b",
+      "line_id": "63b77ab0-593a-5832-b1b4-46fa581050bc",
+      "name": "QA 合成项目乙",
+      "directory": "QA-合成主线乙/QA-合成项目乙",
+      "overview_id": "02a9970a-1467-5b42-a904-cea43564eb07",
+      "archived": false,
+      "progress": "",
+      "progress_version": 0,
+      "progress_confirmation_id": null
+    }
+  ]
+}

@@ -38,6 +38,9 @@ function shellFetch(overrides: Record<string, unknown> = {}, status = 200) {
       return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
     }
     const table: Record<string, unknown> = {
+      // 外壳夹具代表一个已经完成首次配置的工作库：进度记录必须来自本机后端，
+      // 否则 App 会按「新工作库」打开向导。
+      '/api/v1/first-use/progress': { step: 5, completed: true, open: false },
       '/api/v1/intake/items': [],
       '/api/v1/drafts': [],
       '/api/v1/actions': [],
@@ -46,6 +49,17 @@ function shellFetch(overrides: Record<string, unknown> = {}, status = 200) {
       '/api/v1/pages': [],
       '/api/v1/today': { items: [] },
       '/api/v1/journal': { items: [] },
+      '/api/v1/action-intents?limit=20': { items: [], next_cursor: null },
+      '/api/v1/settings': {
+        mode: 'fake', model_studio_account_id: 'studio-default',
+        feishu: { app_id: 'synthetic-app', redirect_uri: '' },
+        llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'team-account', enabled: false },
+        embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, enabled: false },
+        rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, enabled: false },
+        capabilities: { llm: { available: false, configured: false, disabled_reason: 'offline_default' } },
+        credential_status: { feishu_app: false, deepseek: false, dashscope: false }, keychain_available: true,
+        embedding_fingerprint: null,
+      },
       '/api/v1/roles': [],
       '/api/v1/memory': [],
       '/api/v1/memory/candidates': [],
@@ -142,11 +156,12 @@ it('侧栏审批徽章与审批页共用同一份清单，数量一致', async (
   expect(within(approval).getByText('2')).toBeTruthy()
 
   fireEvent.click(approval)
-  expect(await screen.findByText(/待处理 2 项 · 共 2 类/)).toBeTruthy()
-  expect(await screen.findByText('合成会议纪要')).toBeTruthy()
-  expect(screen.getByText('合成稿件')).toBeTruthy()
-  expect(screen.queryByText('已经处理完的材料')).toBeNull()
-  expect(screen.queryByText('已确认稿件')).toBeNull()
+  expect(await screen.findByText(/2 项待处理 · 共 2 类/)).toBeTruthy()
+  const approvalView = document.querySelector('.approval-view') as HTMLElement
+  expect(within(approvalView).getByText('合成会议纪要')).toBeTruthy()
+  expect(within(approvalView).getByText('合成稿件')).toBeTruthy()
+  expect(within(approvalView).queryByText('已经处理完的材料')).toBeNull()
+  expect(within(approvalView).queryByText('已确认稿件')).toBeNull()
 })
 
 it('待处理为 0 时不显示徽章', async () => {
@@ -158,9 +173,42 @@ it('待处理为 0 时不显示徽章', async () => {
   expect(approval.querySelector('.nav-badge')).toBeNull()
 })
 
-it('全局失败提示走 toast（可手关），没有常驻红色横幅', async () => {
-  vi.stubGlobal('fetch', shellFetch({ '/api/v1/intake/items': { error: { message: '本机读取出了点问题。' } } }, 500))
+it('Today→Settings→Today keeps cached inbox; a confirmed authorization change refreshes it', async () => {
+  let authorized = false
+  const baseFetch = shellFetch()
+  const fetch = vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input) === '/api/v1/integrations/feishu/status') return Response.json({ ...feishuStatus, authorized })
+    return baseFetch(input)
+  })
+  vi.stubGlobal('fetch', fetch)
   render(<App />)
+  await screen.findByText('收件箱目前没有内容。')
+  const inboxReads = () => fetch.mock.calls.filter(([input]) => String(input) === '/api/v1/intake/items').length
+  const initialReads = inboxReads()
+
+  fireEvent.click(screen.getByRole('button', { name: '设置' }))
+  expect(await screen.findByRole('heading', { name: '设置' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '今日' }))
+  expect(await screen.findByRole('heading', { name: '今日' })).toBeTruthy()
+  expect(inboxReads()).toBe(initialReads)
+
+  fireEvent.click(screen.getByRole('button', { name: '设置' }))
+  await screen.findByRole('button', { name: '重新读取授权状态' })
+  authorized = true
+  fireEvent.click(screen.getByRole('button', { name: '重新读取授权状态' }))
+  await waitFor(() => expect(inboxReads()).toBe(initialReads + 1))
+})
+
+it('全局失败提示走 toast（可手关），没有常驻红色横幅', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(input) === '/api/v1/intake/items' && init?.method === 'POST') return Response.json({ error: { message: '本机读取出了点问题。' } }, { status: 500 })
+    return shellFetch()(input)
+  }))
+  render(<App />)
+
+  await screen.findByText('收件箱目前没有内容。')
+  fireEvent.change(screen.getByLabelText('记下一句话'), { target: { value: '触发提示的合成记录' } })
+  fireEvent.click(screen.getByRole('button', { name: '保存到收件箱' }))
 
   const toast = await screen.findByRole('alert')
   expect(toast.textContent).toContain('本机读取出了点问题。')
