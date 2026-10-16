@@ -52,3 +52,96 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 ## 保留的独立验收边界
 
 真实 provider / Feishu、真实业务材料、OS Keychain 生命周期、runtime 元数据、正式用户安装/公证、五日试用、双机与发布不因离线 QA 通过而变为 PASS。M4.2 PR #18 的远端 CI run 38550700081 已全步骤成功；其工作流显示名沿用 M4.1。本轮原始压缩日志与校验值见 [M4.2 CI evidence](evidence/2026-10-14-m42-ci/README.md)。完整验收要求见[验收矩阵](../ACCEPTANCE.md)。原始报告、manifest、SHA256SUMS、命令输出和截图不在本索引中重写。
+
+## 历史报告完整索引
+
+本小节由 2026-10-15 仓库清理机械补全：收录 `docs/quality/reports/` 直接层中此前未出现在上方索引里的历史报告，标签一律取该文件自身的 H1 标题原文，未做任何结论概括。历史结论仅对各自固定 SHA 有效。
+
+| 报告 | 范围 |
+|---|---|
+| [SummitEverything 独立验收报告 — M1 收口候选](2026-10-09-M1-close-73ec81a.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M1 收口候选 DEV 自测记录](2026-10-09-M1-close-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [SummitEverything M1 收口独立复验报告](2026-10-09-M1-close-retest-f349fe6.md) | 历史报告（标签取自该文件 H1 原文） |
+| [SummitEverything 独立验收报告 — M1](2026-10-09-M1-f364c01.md) | 历史报告（标签取自该文件 H1 原文） |
+| [SummitEverything M1.1–M1.5 独立验收报告](2026-10-09-M1.1-M1.5-f364c01.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2.1 Feishu authorization, materials and calendar — DEV report](2026-10-09-M2.1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [DeepSeek Stage B DEV R2 — review-finding remediation (2026-10-10)](2026-10-10-DEEPSEEK-STAGE-B-DEV-R2.md) | 历史报告（标签取自该文件 H1 原文） |
+| [DeepSeek Stage B DEV R3 — remediation of the R2 review findings (2026-10-10)](2026-10-10-DEEPSEEK-STAGE-B-DEV-R3.md) | 历史报告（标签取自该文件 H1 原文） |
+| [DeepSeek Stage B DEV R4 — remediation of the R3 final-review findings (2026-10-10)](2026-10-10-DEEPSEEK-STAGE-B-DEV-R4.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2.1–M2.3 开发者自测与固定 SHA 交接](2026-10-10-M2-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A C18 recovery UI retest on fixed repair SHA 30903c4](2026-10-10-M2-stage-a-c18-recovery-ui-retest-30903c4.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A evidence correction and supplemental UI retest](2026-10-10-M2-stage-a-evidence-supplement.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A Final QA follow-up — 2026-10-10](2026-10-10-M2-stage-a-final-followup-qa.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A Final QA — fourth independent follow-up (2026-10-10)](2026-10-10-M2-stage-a-final-fourth-followup-qa.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A Final Independent QA — 2026-10-10](2026-10-10-M2-stage-a-final-qa.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A Final QA — third independent follow-up (2026-10-10)](2026-10-10-M2-stage-a-final-third-followup-qa.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2 阶段 A 修复者 DEV 记录](2026-10-10-M2-stage-a-fix-dev.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2 阶段 A 原始候选定向独立验收](2026-10-10-M2-stage-a-original-qa.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2 Stage A 合并后核验记录（2026-10-10）](2026-10-10-M2-stage-a-postmerge.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage A recovery UI supplement for fixed candidate 409b907](2026-10-10-M2-stage-a-recovery-ui-supplement.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2.2 独立审查修复：核实依据不能为空](2026-10-10-M2.2-review-fix.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M2.3 开发者自测与交接](2026-10-10-M2.3-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B Luna follow-up DEV report — 2026-10-10](2026-10-10-STAGE-B-LUNA-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 独立 DEV 候选评估 — Sol — 2026-10-10](2026-10-10-STAGE-B-SOL-DEV-REVIEW.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B partial DEV report — 2026-10-10](2026-10-10-STAGE-B-partial-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [C03 非空组织删除提示本地化 DEV（2026-10-11）](2026-10-11-C03-DELETE-COPY-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [C03 非空组织删除提示独立 QA（2026-10-11）](2026-10-11-C03-DELETE-COPY-QA-141bd96.md) | 历史报告（标签取自该文件 H1 原文） |
+| [C03 文档整合候选独立 QA（2026-10-11）](2026-10-11-C03-INTEGRATION-QA-75bfe25.md) | 历史报告（标签取自该文件 H1 原文） |
+| [C03 合并后独立核验（2026-10-11）](2026-10-11-C03-POSTMERGE-2f08c76.md) | 历史报告（标签取自该文件 H1 原文） |
+| [DeepSeek Stage B DEV report — 2026-10-10](2026-10-11-DEEPSEEK-STAGE-B-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 功能包 1：会话与历史 — Developer 报告](2026-10-11-M3-PACKAGE-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 1 独立 QA — bc3deab](2026-10-11-M3-PACKAGE-1-QA-bc3deab.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 1 独立验收 — c90fe6e](2026-10-11-M3-PACKAGE-1-QA-c90fe6e.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 1 首轮整改：会话首问与历史引用提示 — Developer 报告](2026-10-11-M3-PACKAGE-1-REPAIR-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [历史报告链接兼容说明](2026-10-11-M3-PACKAGE-1-REPAIR-1-QA-bc3deab.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 Developer 报告：完整问答、角色与记忆](2026-10-11-M3-PACKAGE-2-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 功能包 2 独立验收](2026-10-11-M3-PACKAGE-2-QA-0827447.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 功能包 2 repair 1 Developer 报告](2026-10-11-M3-PACKAGE-2-REPAIR-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 工作区收口与恢复记录](2026-10-11-STAGE-B-CLEANUP.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 独立离线 QA — 7f3119a（2026-10-11）](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-QA.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 独立离线复验 — 8b6259a（中间提交，2026-10-11）](2026-10-11-STAGE-B-INDEPENDENT-OFFLINE-RETEST-8b6259a.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 固定 7f3119a 独立 UI / 原生壳 QA](2026-10-11-STAGE-B-INDEPENDENT-UI-QA.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 8b6259a 独立 UI 复验](2026-10-11-STAGE-B-INDEPENDENT-UI-RETEST-8b6259a.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 最终固定源码离线后端 QA — 2026-10-11](2026-10-11-STAGE-B-LUNA-FINAL-OFFLINE-QA.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Luna High final code review — fd20423](2026-10-11-STAGE-B-LUNA-FINAL-REVIEW.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B independent offline UI/native QA — fd2042385 (FAIL)](2026-10-11-STAGE-B-LUNA-FINAL-UI-QA.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 固定源码后端离线复验 — 576895f（2026-10-11）](2026-10-11-STAGE-B-LUNA-OFFLINE-RETEST-576895f.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B Luna independent UI retest — 576895f](2026-10-11-STAGE-B-LUNA-UI-RETEST-576895f.md) | 历史报告（标签取自该文件 H1 原文） |
+| [原生开发壳双服务就绪修复 DEV（2026-10-11）](2026-10-11-STAGE-B-NATIVE-READINESS-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [原生 readiness 根 URL 修复 DEV](2026-10-11-STAGE-B-NATIVE-URL-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B 离线源码合并后核验与收口](2026-10-11-STAGE-B-POSTMERGE.md) | 历史报告（标签取自该文件 H1 原文） |
+| [QA-B-01 重启刷新防重发 DEV修复（2026-10-11）](2026-10-11-STAGE-B-REFRESH-RESTART-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [Stage B Sol 收口 DEV（2026-10-11）](2026-10-11-STAGE-B-SOL-CLOSURE-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [本地刷新消费标记严格解析 DEV（2026-10-11）](2026-10-11-STAGE-B-STRICT-MARKER-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 C19 统一修复周期：Sol 最终门判断](2026-10-12-M3-C19-UNIFIED-SOL-GATE.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 统一证据范围修复（Developer 交接）](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 统一候选独立初验](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-QA-400dc98.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 统一范围 repair 1 Developer 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 unified repair 1/2 独立 QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-1-QA-04a0239.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 统一范围 repair 2 Developer 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 统一 repair 2/2 独立 QA](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-2-QA-262f4ea.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 统一修复 repair 3（DSH 试修）DEV 报告](2026-10-12-M3-PACKAGE-2-C19-UNIFIED-REPAIR-3-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 extra 1 Developer 报告](2026-10-12-M3-PACKAGE-2-EXTRA-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 Package 2 Extra 1 QA — 2026-10-12](2026-10-12-M3-PACKAGE-2-EXTRA-1-QA-507cc1f.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 extra 2 Developer 报告（2026-10-12，待全新独立 QA）](2026-10-12-M3-PACKAGE-2-EXTRA-2-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 extra 2 独立 QA 报告](2026-10-12-M3-PACKAGE-2-EXTRA-2-QA-d2236c2.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 功能包 2 repair 1 独立 QA](2026-10-12-M3-PACKAGE-2-REPAIR-1-QA-0df323e.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 repair 2 Developer 报告](2026-10-12-M3-PACKAGE-2-REPAIR-2-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 功能包 2 repair 2 独立 QA](2026-10-12-M3-PACKAGE-2-REPAIR-2-QA-94854ba.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 3 Developer 报告：连续状态与归档压缩](2026-10-12-M3-PACKAGE-3-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 开发包 3 独立验收](2026-10-12-M3-PACKAGE-3-QA-22e5ad9.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 3 repair 1 Developer 报告：lease 发布前异常清理](2026-10-12-M3-PACKAGE-3-REPAIR-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 3 repair 1/2 独立复验](2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 3 Sol 门判断](2026-10-12-M3-PACKAGE-3-SOL-GATE.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 extra 1：Sol 门判断与接续](2026-10-12-M3-SOL-EXTRA-1-GATE.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 extra 2：Sol 门判断](2026-10-12-M3-SOL-EXTRA-2-GATE.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 功能包接续与 Sol 门判断](2026-10-12-M3-SOL-GATE.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 / C19 DSH 修复独立验收](2026-10-13-M3-PACKAGE-2-C19-DSH-QA-be4e72f.md) | 历史报告（标签取自该文件 H1 原文） |
+| [M3 包 2 C19 DSH 候选统一返工 1/2：Developer 报告](2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [内测候选记录：`6fe1aa8`（设置 UX + F2 整合）](2026-10-14-INTERNAL-CANDIDATE-6fe1aa8.md) | 历史报告（标签取自该文件 H1 原文） |
+| [F2 修复报告：origin guard 对损坏 profile 的失败形态](2026-10-14-ORIGIN-GUARD-SETTINGS-ERROR.md) | 历史报告（标签取自该文件 H1 原文） |
+| [内测候选首次真实使用：真实故障链与修复](2026-10-14-REAL-FIRST-USE-FINDINGS.md) | 历史报告（标签取自该文件 H1 原文） |
+| [设置 UX 与内置非秘密默认值：DEV 报告](2026-10-14-SETTINGS-UX-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [前端 UX 里程碑 A · 修复轮 1 开发报告](2026-10-15-FRONTEND-A-DEV-REPAIR1.md) | 历史报告（标签取自该文件 H1 原文） |
+| [前端 UX 里程碑 A：开发交接](2026-10-15-FRONTEND-A-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
+| [前端 UX 里程碑 D 开发自测与候选交接](2026-10-15-FRONTEND-D-DEV.md) | 历史报告（标签取自该文件 H1 原文） |
