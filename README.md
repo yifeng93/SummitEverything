@@ -4,7 +4,7 @@ SummitEverything 是个人工作知识整理与检索应用。首版目标是每
 
 ## 当前开发分支（未合入 main）
 
-- **今日/审批可用性（2026-10-16；修复轮 1，等待 fresh QA）**：初验产品 SHA `0957df2b871970d626fb2745048a6e79bad4defb` 的产品行为经 QA 检查通过，但 Sol 门判断因 ApprovalView 两处 suppression 违反已批准的质量门而 FAIL；未披露是额外透明度问题，不能以补充说明豁免门限。见[初验报告](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)。修复轮 1 移除 suppression，以可取消的刷新 epoch 和请求身份保护替代；固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`，fresh QA 尚未运行。已重跑 Web 单测、typecheck、lint、build、Playwright 与 FastAPI Fake 集成，具体退出码和日志见[修复轮 1 DEV 交接](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。既有产品行为仍为今日会议/任务及记录/导入并列、精确材料 ID 接续、审批单项专注与未保存保护。当前工作尚未验收，不代表通过。
+- **今日/审批可用性（2026-10-16；核心离线门 PASS，待合并批准）**：固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 经 fresh Luna QA 独立验收及 Sol 核验。今日并列安排与记录/导入、真实 ID 接续、单项专注审批、Markdown 阅读与未保存保护已交付。独立 Web **239/239**、Playwright 最终 **2/2**、FastAPI/Fake **1/1**、异步反例回归 **5/5**；[CI 38919089638](https://github.com/yifeng93/SummitEverything/actions/runs/38919089638) 全步成功。初验 suppression 质量门 FAIL 已用第 1/2 轮修复关闭，历史证据保留；首次 e2e artifact `ENOENT` 与成功重跑亦保留。两条既有 lint warning、603.32 kB 主包提示仍在。完整证据与未测边界见[Sol 最终门判断](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 未合入 main，等待重要里程碑批准；真实服务、材料、Keychain、用户安装、公证、五日/双机及完整全站 AA 审计未测。
 
 ## main 当前状态（截至 2026-10-16）
 
@@ -30,7 +30,7 @@ M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固�
 - 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 - 验收者：[AGENTS.md](AGENTS.md) → [独立验收手册](docs/handoff/TESTER.md) → [验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 当前进展：[进展账本](docs/implementation/PROGRESS.md)；[报告索引](docs/quality/reports/README.md)；[全部文档](docs/README.md)。
-- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 用户三轮选择题确认）。
+- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 基线）及 [ADR 0012](docs/decisions/0012-today-approval-focused-usability.md)（2026-10-16 三轮选择确认的今日与审批改造）。
 - 内部测试：[安装与启动说明](docs/handoff/M41-INTERNAL-INSTALL.md)；已合入 [PR #17](https://github.com/yifeng93/SummitEverything/pull/17)。
 - 新聊天提示词：[实现者](docs/handoff/PROMPT-IMPLEMENTER.md)、[验收者](docs/handoff/PROMPT-TESTER.md)。
 

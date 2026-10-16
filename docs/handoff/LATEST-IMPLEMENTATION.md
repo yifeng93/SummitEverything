@@ -1,10 +1,12 @@
 # 最新实现交接
 
-## 当前开发分支：今日与审批可用性（2026-10-16；修复轮 1 完成，等待 fresh QA）
+## 当前开发分支：今日与审批可用性（2026-10-16；核心离线门 PASS）
 
-- **初验产品 SHA `0957df2b871970d626fb2745048a6e79bad4defb` 的 Sol 门结果为 FAIL**：独立 QA 的行为检查通过，但两处 `react/set-state-in-effect` suppression 违反已批准的质量门；未披露是额外透明度问题，不是可以靠说明豁免的门限。详见[初验 Sol 报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)与[QA 报告](../quality/reports/evidence/2026-10-16-frontend-usability-initial/REPORT.md)。
-- 修复轮 1 已移除两处 suppression，以可取消的刷新 epoch、精确目标路由异步生命周期和来源详情请求身份保护替代；**修复轮 1 产品 SHA：`d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`**。文档只改动另成 docs-only commit；最终文档 tip 在 DEV 交接时单独列出，不作为受测产品 SHA。本轮重跑单测 239/239、typecheck、lint、build、Playwright 2/2、FastAPI Fake 集成 1/1 均 exit 0。lint 保留 2 条既有 warning（App/Projects）；ApprovalView 无新增 warning。Vite bundle 体积建议提示仍存在，本轮主 JS 603.32 kB（初验为 602.45 kB）。fresh QA 尚未运行，Sol 尚未判门。
-- 今日宽屏并排展示会议/任务与记录/导入，窄屏纵向排列；会议默认 3 条、任务 5 条，展开和既有分页保留。保存回执按真实来源 ID 接续。审批五组支持逐项专注查看、按需编辑/来源/差异、空组折叠和未保存保护。首次索引 `not_ready` 且服务端正式页已有 confirmed 内容时，显示一项待处理并展开。
-- 今日宽屏并列展示会议/任务与记录/导入，窄屏纵向排列；会议默认 3 条、任务 5 条，展开和既有分页保留。保存回执按真实来源 ID 接续。审批五组支持逐项专注查看、按需编辑/来源/差异、空组折叠和未保存保护。首次索引 `not_ready` 且服务端正式页已有 confirmed 内容时，显示一项待处理并展开。
-- 修复轮 1 的代码范围仅为 `ApprovalView.tsx` 的刷新和目标/详情 effect，以及其行为测试；两条新回归覆盖旧 epoch 结果、新目标详情竞态和 refresh epoch 期间来源详情不悬挂。完整命令、原始日志和 manifest 见 [DEV 修复轮 1 报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。截图沿用初验通过检查的 `.local/dev/2026-10-16-frontend-usability/browser/viewport-final/` 和 `.local/dev/2026-10-16-frontend-usability/integration/`；`browser/viewport/` 下同名图片是旧证据。
-- 现有 main 合入史与旧阶段状态已移至[2026-10-16 前的历史交接](history/LATEST-IMPLEMENTATION-2026-10-16-PRE-USABILITY.md)，不能用旧 SHA 的验收结论替代本轮 QA。
+- 固定受测产品 SHA：`d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`。全新 custom Luna QA 在独立 checkout 复验；Sol核对原始退出码、日志、反例、截图、manifest、SHA/clean 后判本轮核心离线源码/浏览器范围 PASS。[最终门判断](../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)、[fresh QA 原报告](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/REPORT.md)与[证据清单](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/manifest.json)。
+- 已交付：今日左侧安排/右侧记录导入（窄屏纵排）、会议3/任务5默认条数与展开；真实返回 ID 继续整理；审批五类紧凑清单→单项专注阅读；Markdown、按需编辑/来源/差异、冲突与未保存保护、准确确认回执及首次索引提醒。后端、API与依赖未改。
+- 初验 `0957df2` 的 Sol 门 FAIL 保留：两处新增 suppression 违反质量门，未披露是额外透明度问题。[初验报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)。修复使用1/2轮，去除禁用并保护 refresh epoch 与详情请求身份；[DEV 修复报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。fresh 异步 harness 5/5，旧版反例2项失败。
+- 独立 Web239/239、typecheck/lint/build/api types、Playwright最终2/2、FastAPI Fake1/1均exit0。首次 Playwright 的 trace/zip ENOENT 根因未确认，保留失败及重跑证据；既有 App/Projects 两条lint warning、603.32kB主包advisory保留。浅/深色代表文字对比度采样最低4.72/6.97，仅是抽样。
+- [CI 38919089638](https://github.com/yifeng93/SummitEverything/actions/runs/38919089638) 对 docs-only `c0f0692` 全13步成功，产品/tests/依赖与受测SHA一致；Python712、native5、内部App/DMG技术构建通过，不能当作用户安装验收。
+- 真实服务/材料/凭据/Keychain、用户安装/公证、五日/双机/发布、其他完整页面业务与全站完整AA审计NOT_RUN；runtime model metadata UNVERIFIED。Chrome DevTools MCP未配置，使用Playwright/Chromium。
+- [PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 未合入 main，待用户重要里程碑合并批准。不删除branch/worktree。下一个执行者先读本页与最终门判断，不重启历史A→D，也不将本轮范围扩大为真实使用/发布PASS。
+- 最新QA非空首屏、深浅审批和部分确认截图见[证据目录](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/manifest.json)。既有main合入史见[历史交接](history/LATEST-IMPLEMENTATION-2026-10-16-PRE-USABILITY.md)。

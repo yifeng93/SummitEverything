@@ -1,0 +1,122 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/intake/files",
+      "name": "good.md",
+      "status": 201,
+      "attempt": 1
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/intake/files",
+      "name": "failed.md",
+      "status": 400,
+      "attempt": 1
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/intake/files",
+      "name": "unknown.md",
+      "status": 503,
+      "attempt": 1
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/intake/files",
+      "name": "retryable.md",
+      "status": 400,
+      "attempt": 1
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/intake/files",
+      "name": "unknown-2.md",
+      "status": 503,
+      "attempt": 1
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/intake/files",
+      "name": "retryable.md",
+      "status": 201,
+      "attempt": 2
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    }
+  ],
+  "counts": {
+    "good.md": 1,
+    "failed.md": 1,
+    "unknown.md": 1,
+    "retryable.md": 2,
+    "unknown-2.md": 1
+  },
+  "items": [
+    {
+      "item_id": "good-item-qa-1",
+      "source_id": "good-source-qa-1",
+      "filename": "good.md"
+    },
+    {
+      "item_id": "retry-item-qa-1",
+      "source_id": "retry-source-qa-1",
+      "filename": "retryable.md"
+    }
+  ],
+  "firstContinueSource": "返回审批清单\n待整理\ngood.md\n\ngood.md · 2026/10/16 10:00:00\n\n合成原文 good.md\n\n主线\n选择主线\n项目\n选择项目\n整理所选 · 1\n\n整理前请先在“项目与知识”建立主线和项目。",
+  "secondContinueSource": "返回审批清单\n待整理\nretryable.md\n\nretryable.md · 2026/10/16 10:00:00\n\n合成原文 retryable.md\n\n主线\n选择主线\n项目\n选择项目\n整理所选 · 1\n\n整理前请先在“项目与知识”建立主线和项目。",
+  "sourceReads": [
+    "good-source-qa-1",
+    "retry-source-qa-1"
+  ],
+  "checked": [
+    "on"
+  ],
+  "externalAttempts": [],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ]
+}

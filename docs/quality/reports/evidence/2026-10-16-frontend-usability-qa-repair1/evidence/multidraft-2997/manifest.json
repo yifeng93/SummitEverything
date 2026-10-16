@@ -1,0 +1,53 @@
+{
+  "workspace": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/evidence/multidraft-2997/workspace",
+  "lineId": "ed8f524e-ea4b-5b23-801e-0563b5d7da1f",
+  "projectId": "d51c5644-60cc-5ce2-b61f-3388bfe8e5ca",
+  "jobId": "d4666ce5-af4f-52a7-babd-85101696d07a",
+  "jobDraftIds": [
+    "b8c1cff4-7a06-519d-8c23-044686a8fb08",
+    "cd2d4153-1ce0-5d39-99e1-1607888b3a6c"
+  ],
+  "sourceItemIds": [
+    "ff762f7e-6db0-5b65-b172-ab36ca314567"
+  ],
+  "remainingPendingDraftIds": [
+    "cd2d4153-1ce0-5d39-99e1-1607888b3a6c"
+  ],
+  "confirmedPageIds": [
+    "b8c1cff4-7a06-519d-8c23-044686a8fb08"
+  ],
+  "actionCandidates": 0,
+  "projectProgressVersion": 0,
+  "taskWrites": [],
+  "externalAttempts": [],
+  "consoleErrors": [],
+  "expectedEmptyWorkspaceBootstrapResponses": [
+    {
+      "status": 409,
+      "method": "GET",
+      "url": "http://127.0.0.1:5175/api/v1/workspaces/current"
+    },
+    {
+      "status": 409,
+      "method": "GET",
+      "url": "http://127.0.0.1:5175/api/v1/workspaces/current"
+    },
+    {
+      "status": 404,
+      "method": "GET",
+      "url": "http://127.0.0.1:5175/api/v1/first-use/progress"
+    }
+  ],
+  "writes": [
+    "POST /api/v1/workspaces",
+    "PUT /api/v1/first-use/progress",
+    "PUT /api/v1/first-use/progress",
+    "PUT /api/v1/first-use/progress",
+    "PUT /api/v1/first-use/progress",
+    "POST /api/v1/lines",
+    "POST /api/v1/projects",
+    "POST /api/v1/intake/items",
+    "POST /api/v1/intake/jobs",
+    "POST /api/v1/drafts/b8c1cff4-7a06-519d-8c23-044686a8fb08/confirmations"
+  ]
+}

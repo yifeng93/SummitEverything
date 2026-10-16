@@ -1,0 +1,444 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ApprovalView.test.tsx
+
+
+ RUN  v5.0.3 /Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/web
+
+ ❯ src/components/ApprovalView.test.tsx (18 tests | 1 failed) 595ms
+   × ignores an older refresh when a newer exact-ID target arrives first 55ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ApprovalView.test.tsx > ignores an older refresh when a newer exact-ID target arrives first
+TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "来源详情：最新目标材料"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "审批":
+  [36m<h1 />[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"lede"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"success-note"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap approval-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"eyebrow"[39m
+          [36m>[39m
+            [0m需要你点一下才算数[0m
+          [36m</div>[39m
+          [36m<h1>[39m
+            [0m审批[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"lede"[39m
+          [36m>[39m
+            [0m来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"approval-toolbar"[39m
+        [33mhidden[39m=[32m""[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"hint"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0m1 项待处理 · 共 1 类[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"approval-toolbar-actions"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"compact-field"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m显示[0m
+            [36m</span>[39m
+            [36m<select>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"all"[39m
+              [36m>[39m
+                [0m全部[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"pending"[39m
+              [36m>[39m
+                [0m待处理[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"complete"[39m
+              [36m>[39m
+                [0m已完成[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"how-to-read"[39m
+        [33mhidden[39m=[32m""[39m
+      [36m>[39m
+        [0m原件只供整理和追溯，不进入检索；稿件和正式页点击确认时会保存当前版本。索引计划与外部动作各有单独的预览和确认。来源类型来自可信入口，旧材料显示“类型未知”时不会按文件名猜。[0m
+      [36m</p>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"success-note"[39m
+        [33mrole[39m=[32m"status"[39m
+      [36m>[39m
+        [0m已定位到本次保存的材料。选择归属后可继续整理。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"审批清单"[39m
+        [33mclass[39m=[32m"approval-list"[39m
+        [33mhidden[39m=[32m""[39m
+        [33mrole[39m=[32m"region"[39m
+      [36m>[39m
+        [36m<details[39m
+          [33maria-labelledby[39m=[32m"approval-sources-heading"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-sources"[39m
+          [33mopen[39m=[32m""[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-sources-heading"[39m
+              [36m>[39m
+                [0m1 · 来源[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</summary>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"source-list"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m""[39m
+                [33mdata-item-id[39m=[32m"old-target-item"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33maria-label[39m=[32m"选择来源 旧目标材料"[39m
+                    [33mtype[39m=[32m"checkbox"[39m
+                  [36m/>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [0m文[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"source-open-button"[39m
+                    [36m>[39m
+                      [0m旧目标材料[0m
+                    [36m</button>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+            [36m<small[39m
+              [33mclass[39m=[32m"last-success"[39m
+            [36m>[39m
+              [0m最近读取：[0m
+              [0m2026/10/16 22:39:10[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</details>[39m
+        [36m<details[39m
+          [33maria-labelledby[39m=[32m"approval-drafts-heading"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-drafts"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-drafts-heading"[39m
+              [36m>[39m
+                [0m2 · 稿件[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</summary>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m没有待复核的稿件[0m
+              [36m</strong>[39m
+            [36m</div>[39m
+            [36m<small[39m
+              [33mclass[39m=[32m"last-success"[39m
+            [36m>[39m
+              [0m最近读取：[0m
+              [0m2026/10/16 22:39:10[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</details>[39m
+        [36m<details[39m
+          [33maria-labelledby[39m=[32m"approval-formal-heading"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-formal"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-formal-heading"[39m
+              [36m>[39m
+                [0m3 · 正式内容[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</summary>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m没有待确认的正式内容[0m
+              [36m</strong>[39m
+            [36m</div>[39m
+            [36m<small[39m
+              [33mclass[39m=[32m"last-success"[39m
+            [36m>[39m
+              [0m最近读取：[0m
+              [0m2026/10/16 22:39:10[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</details>[39m
+        [36m<details[39m
+          [33maria-labelledby[39m=[32m"approval-index-heading"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-index"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-index-heading"[39m
+              [36m>[39m
+                [0m4 · 索引[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0mFake 活跃索引会在正式内容确认后自动增量；首次建立、Real、模型变更、重建或服务要求手动确认时，需预览独立计划。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</summary>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"index-status-panel"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<strong[39m
+                  [33mclass[39m=[32m"index-state"[39m
+                [36m>[39m
+                  [0m当前状态：[0m
+                  [0m尚未建立[0m
+                [36m</strong>[39m
+                [36m<p>[39m
+                  [0m当前纳入 [0m
+                  [0m0[0m
+                  [0m 页 · 待更新 [0m
+                  [0m0[0m
+                  [0m 页 · 共 [0m
+                  [0m0[0m
+                  [0m 页[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"button secondary"[39m
+                [33mdisabled[39m=[32m""[39m
+              [36m>[39m
+                [0m预览首次索引[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<small[39m
+              [33mclass[39m=[32m"last-success"[39m
+            [36m>[39m
+              [0m最近读取：[0m
+              [0m2026/10/16 22:39:10[0m
+            [36m</small>[39m
+          [36m</div>[39m
+        [36m</details>[39m
+        [36m<details[39m
+          [33maria-labelledby[39m=[32m"approval-actions-heading"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-actions"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"panel-heading"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-actions-heading"[39m
+              [36m>[39m
+                [0m5 · 外部动作[0m
+              [36m</h2>[39m
+              [36m<p>[39m
+                [0m候选建议、已保存动作和执行回执分开显示。未知结果只能核对或记录，不能自动重发。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</summary>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m没有已保存的外部动作[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m候选建议会单独列在下方。[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<small[39m
+              [33mclass[39m=[32m"last-success"[39m
+            [36m>[39m
+              [0m最近读取：[0m
+              [0m2026/10/16 22:39:10[0m
+            [36m</small>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"action-candidate-panel"[39m
+            [36m>[39m
+              [36m<h3>[39m
+                [0m尚未转成动作的建议[0m
+              [36m</h3>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"empty-state"[39m
+              [36m>[39m
+                [36m<strong>[39m
+                  [0m没有待处理的动作建议[0m
+                [36m</strong>[39m
+              [36m</div>[39m
+              [36m<small[39m
+                [33mclass[39m=[32m"last-success"[39m
+              [36m>[39m
+                [0m最近读取：[0m
+                [0m2026/10/16 22:39:10[0m
+              [36m</small>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</details>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/ApprovalView.test.tsx:123:17
+    121|
+    122|   await waitFor(() => expect(onTargetHandled).toHaveBeenCalledTimes(1))
+    123|   expect(screen.getByRole('region', { name: '来源详情：最新目标材料' })).toBeTrut…
+       |                 ^
+    124|   expect(screen.queryByRole('region', { name: '来源详情：旧目标材料' })).toBeNul…
+    125| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  22:39:10
+   Duration  1.02s (tests 61%, environment 22%, import 9%, transform 8%)
+

@@ -1,0 +1,233 @@
+{
+  "tested_product_sha": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715",
+  "qa_source_root": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1",
+  "copied_by": "Sol",
+  "selection": "Raw report/status/harness/logs and representative screenshots; full viewport PNG matrix remains at QA source root. Synthetic workspace/profile/db excluded.",
+  "files": [
+    {
+      "file": "REPORT.md",
+      "bytes": 5391,
+      "sha256": "234484aa50415c60b6e235f8d8e6c28d3bf76053fb2f4dd45fffa4484a3d52e9"
+    },
+    {
+      "file": "check-status.json",
+      "bytes": 5957,
+      "sha256": "259e105d60b0ec2f1fec368f0dd3c675faebc320096f77cdd0d02cf1ad2321ea"
+    },
+    {
+      "file": "final-check.json",
+      "bytes": 261,
+      "sha256": "561d52c6c22b5ebf24cbf12922d3761efe10c9eef2c0da7da1d19bb7636a015d"
+    },
+    {
+      "file": "run-checks.py",
+      "bytes": 956,
+      "sha256": "0aab1c88885c18df2861503ba245a761c12fbcad5efba3e746a9f69766b671ce"
+    },
+    {
+      "file": "logs/async-harness-baseline-0957df2.log",
+      "bytes": 54221,
+      "sha256": "5a7600be8b2cd930f528c31acaf19ac3c24157b138189d2b0fb5e927d0867d75"
+    },
+    {
+      "file": "logs/async-harness-current.log",
+      "bytes": 674,
+      "sha256": "6494520181b6c9c110608992fceb8e39679dde8e69a0b053237e33affdae7c97"
+    },
+    {
+      "file": "logs/web-api-types.log",
+      "bytes": 249,
+      "sha256": "a3cf0f302bf7c47fb11e2ae891d01a03dc62eabb7f350e8bf52e9d7405460677"
+    },
+    {
+      "file": "logs/npm-ci.log",
+      "bytes": 144,
+      "sha256": "f578ee267500d174bb47c855b04c687e14fdc7e3dec923b382f551aa4dcbd5f6"
+    },
+    {
+      "file": "logs/web-e2e-final.log",
+      "bytes": 685,
+      "sha256": "dcf01c3c808074297fe227c539b7a930b4cc7f95b028be77684e1741588c9b19"
+    },
+    {
+      "file": "logs/multidraft-fastapi.log",
+      "bytes": 1603,
+      "sha256": "67cfc2c1beff853ed76755b71dba00aca79bf0361a79c1a18f07f0287893951c"
+    },
+    {
+      "file": "logs/web-e2e.log",
+      "bytes": 1517,
+      "sha256": "e28491b8b82b7cc0c11edcfa77c0dfc06f836bb87ac10ce37d6f7fe063e6624a"
+    },
+    {
+      "file": "logs/web-test.log",
+      "bytes": 292,
+      "sha256": "ec883aaeecbec06db326a53eddf239edff4a088d2e1dc5f49af062ab1788f090"
+    },
+    {
+      "file": "logs/file-batch-mock.log",
+      "bytes": 3080,
+      "sha256": "95ee03d38d0dbf9b2d17bc197b97f86d387a47da37d7bf1d2557d3e1aff12cf9"
+    },
+    {
+      "file": "logs/web-build.log",
+      "bytes": 754,
+      "sha256": "31675b3eee1bcd93887f99ee942c63c9985904203d313c8a5642817206156e19"
+    },
+    {
+      "file": "logs/web-typecheck.log",
+      "bytes": 42,
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+    },
+    {
+      "file": "logs/web-lint.log",
+      "bytes": 983,
+      "sha256": "b305352bb99fa62915910fd69237a954d207e22982029b8c84cb780bbaed6156"
+    },
+    {
+      "file": "logs/viewport-independent.log",
+      "bytes": 573,
+      "sha256": "cf3540fc5d21b11ab936e1edb635a04816495393d7c915734b80919b80e5acd3"
+    },
+    {
+      "file": "logs/web-e2e-integration.log",
+      "bytes": 878,
+      "sha256": "5a6de1dd351ce71eced90429acc08dc249db03cc698bcff099f22438a96f4de9"
+    },
+    {
+      "file": "logs/focused-browser.log",
+      "bytes": 1861,
+      "sha256": "6f1f5979aade4ac88ec003b8eca07379d5ffb669f4eea263a890e7aac1c8a1d1"
+    },
+    {
+      "file": "harness/multidraft-fastapi.cjs",
+      "bytes": 9619,
+      "sha256": "41b1ba73bb4bef03300806dd8ca411d0d595272ad6ce29b92a743d6fa886e507"
+    },
+    {
+      "file": "harness/playwright.config.mts",
+      "bytes": 556,
+      "sha256": "70263d674dc838325a048e66452fb7f83bde2527084cf027e090e6cc53dbe52d"
+    },
+    {
+      "file": "harness/approval-async.test.tsx",
+      "bytes": 7133,
+      "sha256": "8fbaa5e391e35eff65459c6207d7143e6528ceb677c4c468187d3d7ea696203a"
+    },
+    {
+      "file": "harness/vitest.baseline.config.ts",
+      "bytes": 360,
+      "sha256": "a14807342502a12ad0346585acbd74d7c61d9ca94c697adc4653c7fe687c48ea"
+    },
+    {
+      "file": "harness/focused-browser.cjs",
+      "bytes": 12346,
+      "sha256": "87d7b04ec2427b2d88c68b1404f1c3866fd072b03d0c9e48ce84abcd52722ea0"
+    },
+    {
+      "file": "harness/viewport-qa.spec.ts",
+      "bytes": 26571,
+      "sha256": "a590de84def11ca9eb3e9abbcce5247c99327c969ce5a563adca61187d247c2e"
+    },
+    {
+      "file": "harness/vitest.config.ts",
+      "bytes": 351,
+      "sha256": "6ac2f0d3ef702abd22bf1ea92c35c1181e96ee6b07298c1f860b9304c8fc1608"
+    },
+    {
+      "file": "harness/file-batch-mock.cjs",
+      "bytes": 8600,
+      "sha256": "3baf8d9668a60e52df29fdce4063fb60e5968445f38c1965a0b949f756eeb4fe"
+    },
+    {
+      "file": "harness/approval-async-baseline.test.tsx",
+      "bytes": 7133,
+      "sha256": "ff0e4c89bc4cf00140744ac9ae82c07ad9fdd213fe0b796e48b319fb7bcbdbaf"
+    },
+    {
+      "file": "evidence/focused/focused-exact-id-initial-index.png",
+      "bytes": 76606,
+      "sha256": "8df40d4337f64c815ec77f762097ca562322925779b1a4e8894dbb6e87d19072"
+    },
+    {
+      "file": "evidence/focused/focused-browser-manifest.json",
+      "bytes": 1860,
+      "sha256": "40116f943c633c0da1d425c7c00939c32c2ea920d42ba8a1e3c31a4557669d25"
+    },
+    {
+      "file": "evidence/batch/file-batch-mock-final.png",
+      "bytes": 78684,
+      "sha256": "b0eb84a68c27f40c6347617a91344c9a7c028f9735f803dc08d1f690b516db77"
+    },
+    {
+      "file": "evidence/batch/file-batch-mock-manifest.json",
+      "bytes": 3079,
+      "sha256": "4b04fd24f1da741e5b9861965529d5bcb26fe49e9147465fbce8076a2c4ab05c"
+    },
+    {
+      "file": "evidence/multidraft-2997/manifest.json",
+      "bytes": 1602,
+      "sha256": "93b9c65c8d65e9f5e2aa8a8bc5b4335181c5004d255e4a5d3329bf22ac5e0c72"
+    },
+    {
+      "file": "evidence/multidraft-2997/one-confirmed-one-pending.png",
+      "bytes": 77770,
+      "sha256": "10d6b7031704cae36c7647cd73598e51dcd68bf78d1488096cab119da6fbdb9e"
+    },
+    {
+      "file": "evidence/viewport-independent/qa-run-manifest.json",
+      "bytes": 19814,
+      "sha256": "23a2cb0720a4e18b3edf8bfa75a3447953972ce3ca7d1fa4facef7260cf6627e"
+    },
+    {
+      "file": "evidence/viewport-independent/measurements.json",
+      "bytes": 162307,
+      "sha256": "f64d67525a19a8b9bd8b45581bc4ccb5f6baab7a0c7b5c05d0ef1599d3eb22f9"
+    },
+    {
+      "file": "evidence/viewport-independent/today-1280-800-nonempty.png",
+      "bytes": 91545,
+      "sha256": "ccae20f8f0bedafc088dc8449d13e6f318f2c7c0466d23da278912f3c82b9890"
+    },
+    {
+      "file": "evidence/viewport-independent/today-1280-dark.png",
+      "bytes": 79148,
+      "sha256": "3ee8bec84b507dd35d4a1b0bfae1935a5d2804b5def56c8f4a263cbf8f045d48"
+    },
+    {
+      "file": "evidence/viewport-independent/approval-1280-light.png",
+      "bytes": 208974,
+      "sha256": "59fe619156503ae7995c78edb2b118e1dd3a2caecc97ac823fd1b99fa1126a7d"
+    },
+    {
+      "file": "evidence/viewport-independent/approval-1280-dark.png",
+      "bytes": 209670,
+      "sha256": "4b9d1921f2ce850783d7d7080ebd35e4733f8a19634902ecf483eefe05a78e15"
+    },
+    {
+      "file": "evidence/viewport-independent/today-320-light.png",
+      "bytes": 57940,
+      "sha256": "373cceda7d1315ff041352c23b64e9657db46670bd597597ca2123a5f934556c"
+    },
+    {
+      "file": "evidence/viewport-independent/approval-320-dark.png",
+      "bytes": 181436,
+      "sha256": "cdfbe08388147e04eb3f494d688c5cd535e7c7e8ec4b535dc3dd5b344fa6bab1"
+    },
+    {
+      "file": "evidence/viewport-independent/import-focus-files-320-light.png",
+      "bytes": 56343,
+      "sha256": "5465273b4c68a8c31f9ec81affe7b5c8889b2677f2454918b6292b9f73026aa1"
+    },
+    {
+      "file": "evidence/viewport-independent/settings-1280-dark.png",
+      "bytes": 189125,
+      "sha256": "5b566bad622fdf1bdf414d5d29bdf8a95132a05383ea4190dd48d2ae1a2f1bb4"
+    },
+    {
+      "file": "ci-repair1.json",
+      "bytes": 2522,
+      "sha256": "b94587009362b1bbb216acc7695df31f48e53bcdab311a70eaa4873a7d8ff8be"
+    }
+  ]
+}

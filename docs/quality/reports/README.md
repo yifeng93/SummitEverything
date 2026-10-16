@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## 最新开发分支（尚未合入 main）
+
+今日与审批可用性固定产品 `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`：fresh QA + Sol 判核心离线范围 PASS，自动修复使用1/2轮；[Sol 最终门判断](2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)、[fresh QA原报告](evidence/2026-10-16-frontend-usability-qa-repair1/REPORT.md)、[DEV修复交接](2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。[初验FAIL](2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)和原始证据保留。PR #23 等待重要里程碑合并批准；真实服务/安装及完整AA审计等未测边界以最终门判断为准。
+
 ## 当前已验收范围
 
 M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 经全新独立 QA 通过；固定 merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2` 的合并后 QA 通过。完整批准范围和未测项见[M3离线验收](2026-10-13-M3-OFFLINE-ACCEPTANCE.md)；逐轮原始报告和 evidence 保持不变。

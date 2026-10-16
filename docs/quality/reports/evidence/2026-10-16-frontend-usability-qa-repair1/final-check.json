@@ -1,0 +1,8 @@
+{
+  "expected_sha": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715",
+  "observed_sha": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715",
+  "sha_matches": true,
+  "tracked_and_untracked_status_porcelain": "",
+  "working_tree_clean": true,
+  "git_diff_check_exit_code": 0
+}

@@ -1,0 +1,632 @@
+{
+  "viewports": [
+    320,
+    390,
+    768,
+    960,
+    1024,
+    1280,
+    1440
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "externalAttempts": [],
+  "contrastSamples": [
+    {
+      "viewport": 1280,
+      "theme": "light",
+      "page": "today",
+      "sample": [
+        {
+          "selector": ".page-heading h1",
+          "text": "今日",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(244,245,242)",
+          "fontSize": "22px",
+          "ratio": 13.3
+        },
+        {
+          "selector": ".page-heading .lede",
+          "text": "查看今天的会与待办，也可以记下原文或导入材料。",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(244,245,242)",
+          "fontSize": "15px",
+          "ratio": 4.72
+        },
+        {
+          "selector": ".today-schedule h2",
+          "text": "会议",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "16px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".today-schedule h2",
+          "text": "待办任务",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "16px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".today-tools button",
+          "text": "记一句",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgb(255, 255, 255)",
+          "ancestorBackgrounds": [
+            "rgb(255, 255, 255)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(255, 255, 255)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "13px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".today-tools button",
+          "text": "导入材料",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgb(255, 255, 255)",
+          "ancestorBackgrounds": [
+            "rgb(255, 255, 255)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(255, 255, 255)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "13px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".today-tools button",
+          "text": "工作日志 / 思考",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgb(255, 255, 255)",
+          "ancestorBackgrounds": [
+            "rgb(255, 255, 255)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(255, 255, 255)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "13px",
+          "ratio": 14.56
+        }
+      ]
+    },
+    {
+      "viewport": 1280,
+      "theme": "light",
+      "page": "approval",
+      "sample": [
+        {
+          "selector": ".page-heading h1",
+          "text": "审批",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(244,245,242)",
+          "fontSize": "22px",
+          "ratio": 13.3
+        },
+        {
+          "selector": ".page-heading .lede",
+          "text": "来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(244,245,242)",
+          "fontSize": "15px",
+          "ratio": 4.72
+        },
+        {
+          "selector": ".approval-group h2",
+          "text": "1 · 来源",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "16px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".approval-group h2",
+          "text": "2 · 稿件",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "16px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".approval-group h2",
+          "text": "3 · 正式内容",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "16px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".approval-group p",
+          "text": "选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "13px",
+          "ratio": 5.17
+        },
+        {
+          "selector": ".approval-group p",
+          "text": "查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "13px",
+          "ratio": 5.17
+        },
+        {
+          "selector": ".approval-group p",
+          "text": "仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "13px",
+          "ratio": 5.17
+        },
+        {
+          "selector": ".approval-group .count-badge",
+          "text": "1",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgb(248, 249, 246)",
+          "ancestorBackgrounds": [
+            "rgb(248, 249, 246)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(255, 255, 255)"
+          ],
+          "background": "rgb(248,249,246)",
+          "fontSize": "12px",
+          "ratio": 4.89
+        },
+        {
+          "selector": ".approval-group .count-badge",
+          "text": "1",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgb(248, 249, 246)",
+          "ancestorBackgrounds": [
+            "rgb(248, 249, 246)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(255, 255, 255)"
+          ],
+          "background": "rgb(248,249,246)",
+          "fontSize": "12px",
+          "ratio": 4.89
+        },
+        {
+          "selector": ".approval-group .count-badge",
+          "text": "1",
+          "foreground": "rgb(102, 111, 110)",
+          "elementBackground": "rgb(248, 249, 246)",
+          "ancestorBackgrounds": [
+            "rgb(248, 249, 246)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(255, 255, 255)"
+          ],
+          "background": "rgb(248,249,246)",
+          "fontSize": "12px",
+          "ratio": 4.89
+        },
+        {
+          "selector": ".approval-group .button",
+          "text": "打开稿件：合成待审核稿",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgb(255, 255, 255)",
+          "ancestorBackgrounds": [
+            "rgb(255, 255, 255)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "14px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".approval-group .button",
+          "text": "确认并保存当前版本",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgb(255, 255, 255)",
+          "ancestorBackgrounds": [
+            "rgb(255, 255, 255)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "14px",
+          "ratio": 14.56
+        },
+        {
+          "selector": ".approval-group .button",
+          "text": "",
+          "foreground": "rgb(36, 42, 44)",
+          "elementBackground": "rgb(255, 255, 255)",
+          "ancestorBackgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(255,255,255)",
+          "fontSize": "14px",
+          "ratio": 14.56
+        }
+      ]
+    },
+    {
+      "viewport": 1280,
+      "theme": "dark",
+      "page": "today",
+      "sample": [
+        {
+          "selector": ".page-heading h1",
+          "text": "今日",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(23,29,27)",
+          "fontSize": "22px",
+          "ratio": 14.2
+        },
+        {
+          "selector": ".page-heading .lede",
+          "text": "查看今天的会与待办，也可以记下原文或导入材料。",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(23,29,27)",
+          "fontSize": "15px",
+          "ratio": 8.11
+        },
+        {
+          "selector": ".today-schedule h2",
+          "text": "会议",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "16px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".today-schedule h2",
+          "text": "待办任务",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "16px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".today-tools button",
+          "text": "记一句",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgb(34, 42, 39)",
+          "ancestorBackgrounds": [
+            "rgb(34, 42, 39)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(34, 42, 39)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "13px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".today-tools button",
+          "text": "导入材料",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgb(34, 42, 39)",
+          "ancestorBackgrounds": [
+            "rgb(34, 42, 39)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(34, 42, 39)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "13px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".today-tools button",
+          "text": "工作日志 / 思考",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgb(34, 42, 39)",
+          "ancestorBackgrounds": [
+            "rgb(34, 42, 39)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(34, 42, 39)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "13px",
+          "ratio": 12.21
+        }
+      ]
+    },
+    {
+      "viewport": 1280,
+      "theme": "dark",
+      "page": "approval",
+      "sample": [
+        {
+          "selector": ".page-heading h1",
+          "text": "审批",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(23,29,27)",
+          "fontSize": "22px",
+          "ratio": 14.2
+        },
+        {
+          "selector": ".page-heading .lede",
+          "text": "来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(23,29,27)",
+          "fontSize": "15px",
+          "ratio": 8.11
+        },
+        {
+          "selector": ".approval-group h2",
+          "text": "1 · 来源",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "16px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".approval-group h2",
+          "text": "2 · 稿件",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "16px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".approval-group h2",
+          "text": "3 · 正式内容",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "16px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".approval-group p",
+          "text": "选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "13px",
+          "ratio": 6.97
+        },
+        {
+          "selector": ".approval-group p",
+          "text": "查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "13px",
+          "ratio": 6.97
+        },
+        {
+          "selector": ".approval-group p",
+          "text": "仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgba(0, 0, 0, 0)",
+          "ancestorBackgrounds": [
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "13px",
+          "ratio": 6.97
+        },
+        {
+          "selector": ".approval-group .count-badge",
+          "text": "1",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgb(29, 37, 34)",
+          "ancestorBackgrounds": [
+            "rgb(29, 37, 34)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(34, 42, 39)"
+          ],
+          "background": "rgb(29,37,34)",
+          "fontSize": "12px",
+          "ratio": 7.43
+        },
+        {
+          "selector": ".approval-group .count-badge",
+          "text": "1",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgb(29, 37, 34)",
+          "ancestorBackgrounds": [
+            "rgb(29, 37, 34)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(34, 42, 39)"
+          ],
+          "background": "rgb(29,37,34)",
+          "fontSize": "12px",
+          "ratio": 7.43
+        },
+        {
+          "selector": ".approval-group .count-badge",
+          "text": "1",
+          "foreground": "rgb(171, 181, 175)",
+          "elementBackground": "rgb(29, 37, 34)",
+          "ancestorBackgrounds": [
+            "rgb(29, 37, 34)",
+            "rgba(0, 0, 0, 0)",
+            "rgb(34, 42, 39)"
+          ],
+          "background": "rgb(29,37,34)",
+          "fontSize": "12px",
+          "ratio": 7.43
+        },
+        {
+          "selector": ".approval-group .button",
+          "text": "打开稿件：合成待审核稿",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgb(34, 42, 39)",
+          "ancestorBackgrounds": [
+            "rgb(34, 42, 39)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "14px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".approval-group .button",
+          "text": "确认并保存当前版本",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgb(34, 42, 39)",
+          "ancestorBackgrounds": [
+            "rgb(34, 42, 39)",
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "14px",
+          "ratio": 12.21
+        },
+        {
+          "selector": ".approval-group .button",
+          "text": "",
+          "foreground": "rgb(231, 235, 231)",
+          "elementBackground": "rgb(34, 42, 39)",
+          "ancestorBackgrounds": [
+            "rgb(34, 42, 39)",
+            "rgb(34, 42, 39)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "background": "rgb(34,42,39)",
+          "fontSize": "14px",
+          "ratio": 12.21
+        }
+      ]
+    }
+  ]
+}
