@@ -1,0 +1,47 @@
+# D. 构建集成 fail-closed（对抗性）
+
+## D1-D3 / D6 QA 独立 harness（importlib 载入 scripts/build_macos_app.py；不复用仓库测试）
+[PASS] D6b resolve_setfile: xcrun absent raises: RuntimeError: SetFile is required to give the DMG a custom volume icon, but xcrun is not available; install the Xcode command line tools
+[PASS] D6b resolve_setfile: xcrun -f fails raises: RuntimeError: SetFile is required to give the DMG a custom volume icon, but `xcrun -f SetFile` failed; install the Xcode command line tools
+[PASS] D6b resolve_setfile: empty path raises: RuntimeError: `xcrun -f SetFile` returned an empty path
+[PASS] D6c resolve_setfile on this host: path=/Applications/Xcode.app/Contents/Developer/usr/bin/SetFile
+
+==== SUMMARY ====
+PASS  D1 missing path raises RuntimeError
+PASS  D1 nothing copied on failure
+PASS  D1b directory as source raises
+PASS  D2 4-byte 'icns' raises RuntimeError
+PASS  D2 3 bytes wrong-header raises
+PASS  D2 0 bytes wrong-header raises
+PASS  D2 7 bytes wrong-header raises
+PASS  D2 wrong magic wrong-header raises
+PASS  D2 png wrong-header raises
+PASS  D3 valid icns copied, returns 'AppIcon'
+PASS  D3b default source == committed icon
+PASS  PROBE header-only 8-byte file is ACCEPTED
+PASS  PROBE truncated real icns ACCEPTED
+PASS  D6 run_hdiutil raises with command + stderr
+PASS  D6b resolve_setfile: xcrun absent raises
+PASS  D6b resolve_setfile: xcrun -f fails raises
+PASS  D6b resolve_setfile: empty path raises
+PASS  D6c resolve_setfile on this host
+total=18 failures=0
+
+## D4 篡改实验（真实 scripts/release-macos.sh 端到端）
+good sha before tamper: f34b3ef6e86e92d92f036dfef2adffaee44a429aec0f7898adac4403a6c61b00
+########## SCENARIO 1: wrong header ##########
+tampered sha: 1a9300f5e465692a182f1b5a62d7aa0e58dbd36da077aa568e0fc584535a9acf
+SCENARIO1_RELEASE_EXIT=1
+app produced? NO
+dmg produced? NO
+########## SCENARIO 2: correct magic, truncated to 4 bytes ##########
+SCENARIO2_RELEASE_EXIT=1
+app produced? NO
+########## SCENARIO 3: missing file ##########
+SCENARIO3_RELEASE_EXIT=1
+app produced? NO
+########## DONE ##########
+
+篡改场景的失败异常（摘录）：
+RuntimeError: Missing app icon: /Users/yifengstudio/.codex/worktrees/qa-appicon/native/Resources/AppIcon.icns
+RuntimeError: Not a valid .icns file (bad header): /Users/yifengstudio/.codex/worktrees/qa-appicon/native/Resources/AppIcon.icns

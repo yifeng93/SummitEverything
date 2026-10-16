@@ -8,6 +8,7 @@ import json
 import os
 import plistlib
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -25,9 +26,108 @@ from summit_everything.integrations.first_use_defaults import (  # noqa: E402
 )
 from summit_everything.release import fingerprint_web_dist  # noqa: E402
 
+APP_ICON_RELATIVE_PATH = Path("native/Resources/AppIcon.icns")
+VOLUME_ICON_RELATIVE_PATH = Path("native/Resources/VolumeIcon.icns")
+BUNDLE_ICON_NAME = "AppIcon.icns"
+BUNDLE_ICON_STEM = "AppIcon"
+DMG_VOLUME_NAME = "SummitEverything Internal"
+
 
 def run(args: list[str], *, env: dict[str, str] | None = None) -> None:
     subprocess.run(args, cwd=ROOT, env=env, check=True)
+
+
+def run_hdiutil(args: list[str]) -> None:
+    """Run hdiutil, surfacing the exact command and stderr when it fails.
+
+    Disk-image commands fail for environment reasons (a busy mount, a stale
+    attach) rather than logic reasons, so the raw stderr is preserved for the
+    operator instead of being reduced to an exit status.
+    """
+    command = ["hdiutil", *args]
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or "no output"
+        raise RuntimeError(f"hdiutil exited {result.returncode}: {' '.join(command)}\n{detail}")
+
+
+def resolve_setfile() -> Path:
+    """Locate SetFile through xcrun, failing loudly when it is unavailable."""
+    try:
+        resolved = subprocess.check_output(["xcrun", "-f", "SetFile"], text=True).strip()
+    except FileNotFoundError as error:
+        raise RuntimeError(
+            "SetFile is required to give the DMG a custom volume icon, but xcrun "
+            "is not available; install the Xcode command line tools"
+        ) from error
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError(
+            "SetFile is required to give the DMG a custom volume icon, but "
+            "`xcrun -f SetFile` failed; install the Xcode command line tools"
+        ) from error
+    if not resolved:
+        raise RuntimeError("`xcrun -f SetFile` returned an empty path")
+    return Path(resolved)
+
+
+def assert_valid_icns(data: bytes, *, path: Path) -> list[tuple[bytes, int]]:
+    """Parse and validate the icns block table of ``data``.
+
+    A file that merely starts with ``b"icns"`` is not enough: the four length
+    bytes after the magic must equal the real file size, every block must
+    declare at least 8 bytes (type + length) and stay inside the file, and the
+    blocks must tile the file exactly with no trailing bytes. Every failure
+    raises ``RuntimeError`` naming the check that failed, so a corrupted
+    committed icon fails the build instead of being copied into the bundle.
+    """
+    if len(data) < 8:
+        raise RuntimeError(f"Not a valid .icns file (shorter than the 8-byte header): {path}")
+    if data[:4] != b"icns":
+        raise RuntimeError(f"Not a valid .icns file (bad header): {path}")
+    declared = struct.unpack(">I", data[4:8])[0]
+    if declared != len(data):
+        raise RuntimeError(
+            f"Not a valid .icns file (header length {declared} != file size {len(data)}): {path}"
+        )
+    blocks: list[tuple[bytes, int]] = []
+    offset = 8
+    while offset < len(data):
+        if offset + 8 > len(data):
+            raise RuntimeError(
+                f"Not a valid .icns file (truncated block header at offset {offset}): {path}"
+            )
+        block_type = data[offset : offset + 4]
+        length = struct.unpack(">I", data[offset + 4 : offset + 8])[0]
+        if length < 8:
+            raise RuntimeError(
+                f"Not a valid .icns file (block {block_type!r} length {length} < 8): {path}"
+            )
+        if offset + length > len(data):
+            raise RuntimeError(
+                f"Not a valid .icns file (block {block_type!r} at offset {offset} overruns "
+                f"the file): {path}"
+            )
+        blocks.append((block_type, length))
+        offset += length
+    if not blocks:
+        raise RuntimeError(f"Not a valid .icns file (no icon blocks): {path}")
+    return blocks
+
+
+def embed_app_icon(resources: Path, *, source: Path | None = None) -> str:
+    """Validate and copy the committed ``.icns`` into Resources.
+
+    Returns the icon stem for ``CFBundleIconFile``. The icon is a committed
+    generated artifact, so a missing, malformed or truncated file fails the
+    build instead of silently shipping a bundle with the generic application
+    icon: the whole icns block table is parsed, not just the magic.
+    """
+    path = source if source is not None else ROOT / APP_ICON_RELATIVE_PATH
+    if not path.is_file():
+        raise RuntimeError(f"Missing app icon: {path}")
+    assert_valid_icns(path.read_bytes(), path=path)
+    shutil.copy2(path, resources / BUNDLE_ICON_NAME)
+    return BUNDLE_ICON_STEM
 
 
 def embed_first_use_defaults(
@@ -63,29 +163,54 @@ def create_dmg(app: Path, dmg: Path) -> None:
     if dmg.exists():
         raise FileExistsError(f"Refusing to overwrite existing DMG: {dmg}")
     dmg.parent.mkdir(parents=True, exist_ok=True)
+    volume_icon = ROOT / VOLUME_ICON_RELATIVE_PATH
+    if not volume_icon.is_file():
+        raise RuntimeError(f"Missing DMG volume icon: {volume_icon}")
+    setfile = resolve_setfile()
     with tempfile.TemporaryDirectory(prefix="summit-dmg-", dir=dmg.parent) as temporary:
-        staged_dmg = Path(temporary) / dmg.name
-        mount = Path(temporary) / "mount"
+        work = Path(temporary)
+        staged_dmg = work / dmg.name
+        readwrite_dmg = work / "readwrite.dmg"
+        staging = work / "staging"
+        mount = work / "mount"
+        staging.mkdir()
         mount.mkdir()
-        run(
+        # 1) Stage the app together with a hidden copy of the volume icon. The
+        #    icon must sit at the image root for Finder to pick it up.
+        shutil.copytree(app, staging / app.name, symlinks=True)
+        shutil.copy2(volume_icon, staging / ".VolumeIcon.icns")
+        # 2) Build a read-write intermediate so the volume can be branded.
+        run_hdiutil(
             [
-                "hdiutil",
                 "create",
                 "-volname",
-                "SummitEverything Internal",
+                DMG_VOLUME_NAME,
                 "-srcfolder",
-                str(app),
+                str(staging),
                 "-format",
-                "UDZO",
-                str(staged_dmg),
+                "UDRW",
+                str(readwrite_dmg),
             ]
         )
-        run(["hdiutil", "verify", str(staged_dmg)])
+        # 3) + 4) Attach writable and flag the volume with a custom icon, hiding
+        #         the icon file itself so the mounted image looks clean.
         mounted = False
         try:
-            run(
+            run_hdiutil(["attach", "-nobrowse", "-mountpoint", str(mount), str(readwrite_dmg)])
+            mounted = True
+            run([str(setfile), "-a", "C", str(mount)])
+            run([str(setfile), "-a", "V", str(mount / ".VolumeIcon.icns")])
+        finally:
+            if mounted:
+                run_hdiutil(["detach", str(mount)])
+        # 5) Compress the branded image into the final read-only DMG.
+        run_hdiutil(["convert", str(readwrite_dmg), "-format", "UDZO", "-o", str(staged_dmg)])
+        # 6) Verify the shipped bytes, then re-check them through a read-only mount.
+        run_hdiutil(["verify", str(staged_dmg)])
+        mounted = False
+        try:
+            run_hdiutil(
                 [
-                    "hdiutil",
                     "attach",
                     "-readonly",
                     "-nobrowse",
@@ -99,9 +224,11 @@ def create_dmg(app: Path, dmg: Path) -> None:
             if not bundled_app.is_dir():
                 raise RuntimeError("Mounted DMG does not contain the internal app")
             run(["codesign", "--verify", "--deep", "--strict", str(bundled_app)])
+            if not (mount / ".VolumeIcon.icns").is_file():
+                raise RuntimeError("Mounted DMG is missing .VolumeIcon.icns")
         finally:
             if mounted:
-                run(["hdiutil", "detach", str(mount)])
+                run_hdiutil(["detach", str(mount)])
         os.replace(staged_dmg, dmg)
 
 
@@ -192,6 +319,10 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
             json.dumps(manifest, sort_keys=True), encoding="utf-8"
         )
         (resources / "dependencies.json").write_bytes(dependency_bytes)
+        # The committed .icns is a build input, not a build product: missing or
+        # malformed bytes fail the build instead of shipping a generic icon.
+        app_icon_name = embed_app_icon(resources)
+        print(f"Embedded app icon {BUNDLE_ICON_NAME} as {app_icon_name}")
         # Optional non-secret first-use defaults from the Git-ignored local file.
         # They are validated (secret-shaped keys fail closed) and copied before
         # signing; a missing file leaves the bundle unchanged.
@@ -224,6 +355,7 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
                     "CFBundleIdentifier": "com.summiteverything.internal",
                     "CFBundleName": "SummitEverything Internal",
                     "CFBundleDisplayName": "SummitEverything Internal",
+                    "CFBundleIconFile": app_icon_name,
                     "CFBundlePackageType": "APPL",
                     "CFBundleVersion": f"{build_number}.0.0",
                     "CFBundleShortVersionString": version,

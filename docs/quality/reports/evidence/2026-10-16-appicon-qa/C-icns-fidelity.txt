@@ -1,0 +1,46 @@
+# C. .icns 保真度独立复算（QA 自写 Pillow 脚本，不复用实现者脚本）
+
+## C1 文件身份
+f34b3ef6e86e92d92f036dfef2adffaee44a429aec0f7898adac4403a6c61b00  native/Resources/AppIcon.icns
+f34b3ef6e86e92d92f036dfef2adffaee44a429aec0f7898adac4403a6c61b00  native/Resources/VolumeIcon.icns
+cmp AppIcon.icns VolumeIcon.icns -> identical (exit 0)
+
+## C3 墨色像素逐档实测  (alpha>140 且与 #8FA0A4/#B4C0C3/#F4F3F0 之一 Chebyshev<=40)
+rep         px        ink(a>140)  ink(a>0)  corners alpha     plate#1C2124
+16          (16, 16)  22          22        [0, 0, 0, 0]      85
+16@2x=32    (32, 32)  52          52        [0, 0, 0, 0]      510
+32          (32, 32)  52          58        [0, 0, 0, 0]      478
+32@2x=64    (64, 64)  43          43        [0, 0, 0, 0]      2267
+128         (128, 128)414         414       [0, 0, 0, 0]      9177
+128@2x=256  (256, 256)1901        1901      [0, 0, 0, 0]      37856
+256         (256, 256)1901        1901      [0, 0, 0, 0]      37856
+256@2x=512  (512, 512)7987        7987      [0, 0, 0, 0]      152713
+512         (512, 512)7987        7987      [0, 0, 0, 0]      152713
+512@2x=1024 (1024, 1024)32668       32668     [0, 0, 0, 0]      613407
+
+## C5 >=64px 逐像素比对 vs QA 独立渲染
+size  icns_rep                diff_px  max_delta
+  64  icon_32x32@2x.png            0          0
+ 128  icon_128x128.png             0          0
+ 256  icon_256x256.png             0          0
+ 256  icon_128x128@2x.png          0          0
+ 512  icon_256x256@2x.png          0          0
+ 512  icon_512x512.png             0          0
+1024  icon_512x512@2x.png          0          0
+
+## C5 参数标定：字面 cover=0.6796 -> 559.9904px 会差 1359 px；真实参数 round(824*0.6796)=560px -> 0
+   literal 559.9904 : sweep/v1_base.png      diff_px=1359 max_delta=39
+   rounded 560.0    : sweep/v3_w560.png      diff_px=0    max_delta=0
+   dpr2 variant     : sweep/v1_base_dpr2.png diff_px=387296
+   rect-last variant: sweep/v4_rectlast.png  diff_px=36627
+
+## C5 iconutil 重编码归因：iconutil 往返无损
+   QA 自渲 1024 -> iconset -> iconutil -c icns -> iconutil -c iconset -> 比对 : 0 differing pixels
+
+## C4 四角 alpha / 底板色
+   四角 alpha = [0,0,0,0]（10/10 representation）
+   精确底板色 #1C2124=(28,33,36) 于 1024 档计数 = 612113
+
+## N-2 定位：唯一存在白色半透明像素的 representation
+   icon_32x32.png : 4 px, 例 (4,4)=(255,255,255,20) vs icon_16x16@2x.png 同位置 (26,26,26,20)
+   其余 9 档：0 个白色半透明像素
