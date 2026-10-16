@@ -152,3 +152,5 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 | [Stage B / C 当前工作计划](../../handoff/history/2026-10-11-STAGE-B-C-PLAN.md) | 历史归档（Stage B/C 计划） |
 | [Stage B / C 当前检查单](../../handoff/history/2026-10-11-STAGE-B-C-TODO.md) | 历史归档（Stage B/C 检查单） |
 | [PR #21 合并前仓库清理 · Sol 最终门判断（2026-10-16）](2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md) | Sol 最终门判断（PR #21 合并前清理） |
+| [App 图标 + DMG 卷图标 · Sol 门判断（PR #22，2026-10-16）](2026-10-16-APP-ICON-SOL-GATE.md) | App 图标 + DMG 卷图标（PR #22）Sol 门判断 |
+| [App 图标 + DMG 卷图标 独立 QA（固定 SHA `deed704`）](2026-10-16-APP-ICON-QA.md) | App 图标 + DMG 卷图标（PR #22）独立 QA 报告 |
