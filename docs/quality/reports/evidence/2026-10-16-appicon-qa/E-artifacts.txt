@@ -1,0 +1,25 @@
+# E. 真实产物构建与验证
+EXIT_UVSYNC=0
+EXIT_NPMCI=0
+Embedded app icon AppIcon.icns as AppIcon
+RELEASE_EXIT=0
+
+CFBundleIconFile = AppIcon
+app/src icon sha256 一致: f34b3ef6e86e92d92f036dfef2adffaee44a429aec0f7898adac4403a6c61b00
+codesign --verify --deep --strict <app> -> exit 0
+hdiutil imageinfo -> Format: UDZO
+hdiutil verify -> exit 0 (checksum is VALID)
+readonly mount: .VolumeIcon.icns 存在且 sha256 == 仓库 VolumeIcon.icns (cmp exit 0)
+GetFileInfo -a <mount> -> avbstClinmedz (含大写 C)
+卷内 app codesign --verify --deep --strict -> exit 0 ; hdiutil detach -> exit 0, disk ejected
+smoke_packaged_app.py -> PASS, exit 0
+
+build-info.json (包内):
+{"app_version": "0.1.0", "build_id": "20261016T020900Z-784ae1ee176a", "dependencies_sha256": "cab274716d93a5485155114bd25f3a65722eede97c4487d11262d8b73728c7d7", "dirty": false, "frontend_sha256": "784ae1ee176a851e1f189f67d1dc84fa239bcff607e94e883e845d98fe28dbf0", "source_sha": "deed704b16f2e7adee56e18136b4290d713912fa"}
+
+## N-1 DMG SHA-256 不可复现（证据）
+2eb89b3742588bf2c1d2dcba56f5c927aab288ea26e032f6d5d9a62c638f12d4  .local/dev/qa-appicon/artifacts/SummitEverything-Internal.dmg
+6feaf73a0cc39a074880e76530db47de8305def0eab5f01b9ee183c42ba5739a  .local/dev/qa-appicon/artifacts/qa-repro.dmg
+两个 DMG 由完全相同的 app 字节构建 -> bytes differ（cmp 报 differ at char 51）
+声称值 390d09dd0aba84e77e32dc491652e8285e0ba8c9e2ef8bec64097f49c48f92ab（未复现）
+实测值 2eb89b3742588bf2c1d2dcba56f5c927aab288ea26e032f6d5d9a62c638f12d4

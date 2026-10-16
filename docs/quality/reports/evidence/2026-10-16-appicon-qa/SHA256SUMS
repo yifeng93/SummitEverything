@@ -1,0 +1,10 @@
+d0a9b0babb4c4b6e368cbcbc813a1db96510bce8b2871a21dde80a9ae797f77c  ./A-no-regression.txt
+193c1a97e813d0de5f50c1333cf43843350d5648a8ec58f843fd3176767a5163  ./C-icns-fidelity.txt
+447af037a29cf14b9aa6c0f51b45f31de17aa1b61bc3eb0f90929515632a1758  ./D-fail-closed.txt
+ae20fa36874fb120b3d8d08a4c89faeebdceda62a0925b2d5180a91e3b10d363  ./E-artifacts.txt
+497513cc3969a86ffa24d70a90a395b2d942ccb96d235605685bbed5a66ae1e9  ./README.md
+63f9d803b10b3f0b2874221aec38cdd7dce6ca5efe61a4e5b7c255dc28eb9ed7  ./ci-run-38838074701.json
+fd6e5e21ce47926d4a4107fe594d2731d5493d8acb36b3dc516198256299d618  ./harness/qa_adversarial.py
+f3665d9af1af2c27bd55e2a1d700ca1c942f82f1fe0d96e42446d08c4a95ab65  ./harness/qa_compose.py
+cf72f3bea678dbb01af9d03d4544ca88a0ec23c1f9fffa34d0f0938dd4d5bc93  ./harness/qa_inkcount.py
+7266b668af54f13135fd56f3fb5ec7e634591274efbe98f4963d794382ae3272  ./harness/qa_tamper.sh

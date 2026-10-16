@@ -1,0 +1,48 @@
+# A. 不回归 — 真实命令 / 退出码 / 计数（脱敏摘录）
+
+## A1 改动面
+$ git diff --stat 8c882ed deed704 -- web src pyproject.toml uv.lock native/Tests
+(无输出 = 空，exit 0)
+
+$ git diff --name-status 8c882ed deed704
+A	assets/branding/README.md
+A	assets/branding/favicon.svg
+A	assets/branding/logo-mark.svg
+A	assets/branding/make-appicon.mjs
+A	native/Resources/AppIcon.icns
+A	native/Resources/VolumeIcon.icns
+M	scripts/build_macos_app.py
+A	tests/unit/test_build_app_icon.py
+
+## A2/A3 自动门实测
+### npm run build
+EXIT_BUILD=0
+### fingerprint
+EXIT_FP=0
+### pytest
+699 passed, 1 warning in 78.55s (0:01:18)
+EXIT_PYTEST=0
+### ruff check
+All checks passed!
+EXIT_RUFFCHECK=0
+### ruff format --check
+EXIT_RUFFFMT=0
+### mypy
+EXIT_MYPY=0
+### web test
+ Test Files  26 passed (26)
+      Tests  222 passed (222)
+EXIT_WEBTEST=0
+### web typecheck
+EXIT_TSC=0
+### web lint
+Found 2 warnings and 0 errors.
+EXIT_LINT=0
+
+## A4 e2e
+### test:e2e
+  2 passed (12.4s)
+EXIT_E2E=0
+### test:e2e:integration
+  1 passed (3.5s)
+EXIT_E2E_INT=0
