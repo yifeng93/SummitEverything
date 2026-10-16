@@ -150,8 +150,171 @@ git push origin --delete codex/internal-candidate-20261014
 
 ## C4 · 分支清退实测输出
 
-（待 C4 追加）
+执行者：Developer **Luna（High）**，2026-10-15，工作目录
+`/Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything`，分支
+`codex/frontend-ux-20261015`（tip `207b8f92a5921f630219323d17deee4735450c14`，删除前 `git status --porcelain` 为空）。
+
+### C4.1 删除前身份与并入判定（实测）
+
+```sh
+git rev-parse <b>; git merge-base --is-ancestor <b> origin/main; echo "  ancestor_exit=$?"
+```
+
+| 分支 | 类型 | 删除前 SHA | `ancestor_exit` |
+|---|---|---|---|
+| `codex/frontend-baseline-20261014` | 本地 | `38986493bfbac24e216663922d6a793fda574cbb` | **0** |
+| `codex/internal-candidate-20261014` | 本地 | `32d9b9e71b447be7ce647a7bdeb54432fe3f1b92` | **0** |
+| `codex/origin-guard-error-20261014` | 本地 | `258f7d820d68673183e62a5b998879ad0d9ca59d` | **0** |
+| `codex/settings-ux-20261014` | 本地 | `6f9191d8b8b62f3957ac5eacb207d34202e69abf` | **0** |
+| `origin/codex/frontend-baseline-20261014` | 远端 | `38986493bfbac24e216663922d6a793fda574cbb` | **0** |
+| `origin/codex/internal-candidate-20261014` | 远端 | `32d9b9e71b447be7ce647a7bdeb54432fe3f1b92` | **0** |
+
+**6/6 `ancestor_exit=0`**（期望值即 0），全部在 `origin/main` 历史中，删除不丢失未合并提交。
+
+### C4.2 本地分支删除（用 `-d`，非 `-D`）
+
+```sh
+git branch -d codex/frontend-baseline-20261014 codex/internal-candidate-20261014 \
+               codex/origin-guard-error-20261014 codex/settings-ux-20261014
+```
+
+实测输出：
+
+```
+Deleted branch codex/frontend-baseline-20261014 (was 3898649).
+Deleted branch codex/internal-candidate-20261014 (was 32d9b9e).
+Deleted branch codex/origin-guard-error-20261014 (was 258f7d8).
+Deleted branch codex/settings-ux-20261014 (was 6f9191d).
+BRANCH_DELETE_EXIT=0
+```
+
+`git branch -d` 未报「not fully merged」，**BRANCH_DELETE_EXIT=0**，与 §2 的并入判定一致。
+
+### C4.3 远端分支删除
+
+```sh
+git push origin --delete codex/frontend-baseline-20261014 codex/internal-candidate-20261014
+```
+
+实测输出（stdout 为空，以下为 stderr；`--delete` 只删分支，**未 push 到 main**）：
+
+```
+To github.com:yifeng93/SummitEverything.git
+ - [deleted]         codex/frontend-baseline-20261014
+ - [deleted]         codex/internal-candidate-20261014
+REMOTE_DELETE_EXIT=0
+```
+
+### C4.4 删除后状态（实测）
+
+`git branch -vv`：
+
+```
+* codex/frontend-ux-20261015 207b8f9 [origin/codex/frontend-ux-20261015: ahead 4] chore(cleanup): archive worktree evidence with manifests and deleted-path index
++ main                       e84e9e5 (/Users/yifengstudio/Documents/GitHub/SummitEverything) [origin/main] docs: add the handoff prompt for the frontend Sol session
+```
+
+`git branch -r`：
+
+```
+  origin/HEAD -> origin/main
+  origin/codex/frontend-ux-20261015
+  origin/main
+```
+
+`git ls-remote --heads origin`（exit 0）：
+
+```
+e76244ebd6d4ff897dd019c77f1a86197017a20f	refs/heads/codex/frontend-ux-20261015
+e84e9e5a56475a19f68ca1a684366fba7f9fee83	refs/heads/main
+```
+
+结论：本地只剩 `codex/frontend-ux-20261015` + `main`；远端只剩 `codex/frontend-ux-20261015` + `main`
+（`origin/HEAD -> origin/main` 是符号引用，非分支）。保留项 `main` 与
+`codex/frontend-ux-20261015` 均未删除（本地或远端）。
 
 ## C5 · worktree 清退实测输出
 
-（待 C5 追加）
+### C5.1 前置：归档清单齐备性（缺一不删）
+
+```sh
+ls -d docs/quality/reports/evidence/2026-10-15-worktree-archive/*/ | wc -l
+```
+
+实测 = **19**（期望 19）。逐个 `MANIFEST.sha256` 非空检查：**18 个非空**，
+`frontend-d-build` 为空清单，属 §1 已登记的已知例外（该 worktree 的 `.local` 内只有
+`.app`/`.dmg` 二进制，不满足复制规则、无复制件）。
+
+### C5.2 删除前逐个 clean 确认 + HEAD 记录
+
+```sh
+git -C "$p" status --porcelain          # 必须为空输出
+git -C "$p" rev-parse HEAD >> /tmp/luna-worktree-heads.txt
+```
+
+**19/19 `status --porcelain` 为空（DIRTY_COUNT=0）**，无一例未提交改动。
+
+| worktree | 路径 | 删除前 HEAD | `status --porcelain` 空？ | 归档索引 | 删除结果 |
+|---|---|---|---|---|---|
+| `frontend-a-qa-initial` | `/Users/yifengstudio/.codex/worktrees/frontend-a-qa-initial/SummitEverything` | `9ed544ab5cfcbf21b6e81290a4bf0c5a9825e9ad` | 空 | [MANIFEST](frontend-a-qa-initial/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-a-qa-repair1` | `/Users/yifengstudio/.codex/worktrees/frontend-a-qa-repair1/SummitEverything` | `9c33a9dde3080fff3e3b3dd8a4193589ef52575f` | 空 | [MANIFEST](frontend-a-qa-repair1/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-b-qa-initial` | `/Users/yifengstudio/.codex/worktrees/frontend-b-qa-initial/SummitEverything` | `613d453ab1a47e2f0bfe78d685fb90817f70f4cc` | 空 | [MANIFEST](frontend-b-qa-initial/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-b-qa-repair1` | `/Users/yifengstudio/.codex/worktrees/frontend-b-qa-repair1/SummitEverything` | `a0ccad8bcd46814a23c74d00bbba1d1d5f98699c` | 空 | [MANIFEST](frontend-b-qa-repair1/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-c-qa-initial` | `/Users/yifengstudio/.codex/worktrees/frontend-c-qa-initial/SummitEverything` | `1b1efda0e2cbfe9df49c1541101d89dc2fd3b60c` | 空 | [MANIFEST](frontend-c-qa-initial/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-build` | `/Users/yifengstudio/.codex/worktrees/frontend-d-build/SummitEverything` | `944634c0795930426b41110052e3ba1eaeebaf52` | 空 | [MANIFEST](frontend-d-build/MANIFEST.sha256)（空清单，已知例外） | removed（exit 0） |
+| `frontend-d-build-repair2` | `/Users/yifengstudio/.codex/worktrees/frontend-d-build-repair2/SummitEverything` | `96fdf4d7cccfd71bd1719d4318e0e399309e8281` | 空 | [MANIFEST](frontend-d-build-repair2/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-build-repair3` | `/Users/yifengstudio/.codex/worktrees/frontend-d-build-repair3/SummitEverything` | `e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374` | 空 | [MANIFEST](frontend-d-build-repair3/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-final` | `/Users/yifengstudio/.codex/worktrees/frontend-d-final/SummitEverything` | `876008e1d33420f57fb31772c76e471379e6b98d` | 空 | [MANIFEST](frontend-d-final/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-initial` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-initial/SummitEverything` | `876008e1d33420f57fb31772c76e471379e6b98d` | 空 | [MANIFEST](frontend-d-qa-initial/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-repair1` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1/SummitEverything` | `faa1edd611a74dcdc26bff234de810bdf47761cb` | 空 | [MANIFEST](frontend-d-qa-repair1/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-repair1-parent` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair1-parent/SummitEverything` | `876008e1d33420f57fb31772c76e471379e6b98d` | 空 | [MANIFEST](frontend-d-qa-repair1-parent/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-repair2` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2/SummitEverything` | `96fdf4d7cccfd71bd1719d4318e0e399309e8281` | 空 | [MANIFEST](frontend-d-qa-repair2/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-repair2-parent` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair2-parent/SummitEverything` | `faa1edd611a74dcdc26bff234de810bdf47761cb` | 空 | [MANIFEST](frontend-d-qa-repair2-parent/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-repair3` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair3/SummitEverything` | `e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374` | 空 | [MANIFEST](frontend-d-qa-repair3/MANIFEST.sha256) | removed（exit 0） |
+| `frontend-d-qa-repair3-parent` | `/Users/yifengstudio/.codex/worktrees/frontend-d-qa-repair3-parent/SummitEverything` | `96fdf4d7cccfd71bd1719d4318e0e399309e8281` | 空 | [MANIFEST](frontend-d-qa-repair3-parent/MANIFEST.sha256) | removed（exit 0） |
+| `m41-internal-app` | `/Users/yifengstudio/.codex/worktrees/m41-internal-app/SummitEverything` | `52d0f3419bf10ad9cb719efed0580256bd059022` | 空 | [MANIFEST](m41-internal-app/MANIFEST.sha256) | removed（exit 0） |
+| `m41-qa-b9321d6` | `/Users/yifengstudio/.codex/worktrees/m41-qa-b9321d6/SummitEverything` | `acd3ef95e199f6af2714df10f548779b6db3aed8` | 空 | [MANIFEST](m41-qa-b9321d6/MANIFEST.sha256) | removed（exit 0） |
+| `m41-qa-repair1-3f6eaa4` | `/Users/yifengstudio/.codex/worktrees/m41-qa-repair1-3f6eaa4/SummitEverything` | `2437f9c771ff7da3aaf2b39a387903654fde5b9d` | 空 | [MANIFEST](m41-qa-repair1-3f6eaa4/MANIFEST.sha256) | removed（exit 0） |
+
+删除命令（逐个执行，实测 19/19 `removed`）：
+
+```sh
+git worktree remove --force "/Users/yifengstudio/.codex/worktrees/$w/SummitEverything"
+git worktree prune            # PRUNE_EXIT=0
+```
+
+### C5.3 删除后状态与体积（实测）
+
+`git worktree list`（`wc -l` = **2**，期望 2）：
+
+```
+/Users/yifengstudio/Documents/GitHub/SummitEverything                      e84e9e5 [main]
+/Users/yifengstudio/.codex/worktrees/frontend-ux-20261015/SummitEverything 207b8f9 [codex/frontend-ux-20261015]
+```
+
+体积：`du -sh /Users/yifengstudio/.codex/worktrees` **删除前 8.8G → 删除后 1.1G**。
+
+保留项核对：主仓库 `/Users/yifengstudio/Documents/GitHub/SummitEverything` 未删，HEAD 仍为
+`e84e9e5a56475a19f68ca1a684366fba7f9fee83`（`main`）；其 `.local/internal-builds/`
+内 `3f6eaa4`、`internal-f40bc39`、`m42-419bb86`、`main-bce8843` **四个目录均保留**；
+`frontend-ux-20261015` 未删（tip `207b8f9`，worktree clean）。
+
+### C5.4 偏差与残留说明（如实登记）
+
+`ls /Users/yifengstudio/.codex/worktrees` **未**达到计划中「只剩 `frontend-ux-20261015`」的形态，
+实测残留两类内容，均**未**由本轮删除：
+
+1. **19 个目标的父目录仍存在，但已空**：每个 0B，`find -mindepth 1` 只剩工具生成的
+   `.codex-worktree-name` 标记文件（或完全为空）。19 个 `SummitEverything` checkout 本体
+   已随 `git worktree remove` 删除，`git worktree list` 已无其登记。
+   `git worktree remove` 删的是 `<name>/SummitEverything`，计划未授权删除父目录，故保留。
+2. **约 25 个更早期的孤立目录**（`m1-close`、`m2-*`、`m3-*`、`m42-*`、`qa-stage-*`、
+   `stage-b-*`、`summit-m2`、`8c6c` 等）**不在本轮 19 个删除集内**，其来源见
+   [DELETED-PATHS-INDEX.md](../DELETED-PATHS-INDEX.md)，其中 3 个目录
+   （`qa-stage-a-final-env` 113M、`qa-stage-a-final-env-2` 113M、`qa-stage-a-final-venv` 108M）
+   共约 334M 是残留体积的主要来源，另有 8.0K 的 `m1-close`。这些目录既非本轮授权删除项，
+   也无 `.git` checkout（全目录仅 `frontend-ux-20261015` 保有 checkout），故**保留不动**。
+   若要收尾到「只剩一个目录」，需用户单独授权删除父目录与这批历史孤立目录。
+
+因此：**worktree 清退本身完成（登记 21 → 2，19/19 checkout 删除，`prune` 退出码 0）**，
+残留仅为父目录壳与 scope 外的历史孤立目录。
