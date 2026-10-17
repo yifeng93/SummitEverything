@@ -27,7 +27,7 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 | native/ | 薄 macOS 壳与生命周期测试 |
 | tests/ | 单元、契约、集成和去标识材料 |
 
-当前 M1/M2 Fake 工作流、M3 三包离线实现与离线模拟验收是各自固定 SHA 的历史结论。2026-10-13 用户授权在独立分支实现 M4.1 内部 macOS App/DMG 候选；本轮 Developer 报告与独立 QA 状态见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)和[DEV 报告](../quality/reports/2026-10-13-M41-INTERNAL-APP-DEV.md)。App 候选采用 arm64 + macOS 13 minimum build setting；本次只在 arm64 macOS 27.0.1 主机自测，Intel 与 macOS 13–26 未实测。M4.2 真实业务、正式安装、Developer ID/公证、五日、双机与发布仍 NOT_RUN；runtime 元数据 UNVERIFIED。M4.1 固定源码 `3f6eaa4` 的适用离线 QA 与 Sol 技术门 PASS；用户已批准离线正式收口，PR #17 已合入 main，整个 M4 不因此通过。见[Sol 门](../quality/reports/2026-10-13-M41-SOL-GATE.md)。不要创建无实际用途的空服务。
+内部 DMG 交付目标为 arm64 macOS 应用；构建设置声明 macOS 13 minimum。实际构建与安装验收范围按对应固定 SHA 的报告记录；本文不维护阶段状态。飞书具有 HTTP adapter，Fake provider 仍供默认离线开发与测试使用；真实 provider、OS Keychain、真实服务和用户交付分别受独立授权与验收门约束。当前状态见[进展账本](../implementation/PROGRESS.md)。不要创建无实际用途的空服务。
 
 工作库 context 至少携带 workspace_id、root、local_profile_dir。API 的活动工作库绑定到服务 context，请求不能提交任意绝对路径跳过 root 边界。
 
@@ -82,20 +82,20 @@ DeepSeek、Qwen embedding 和 Qwen rerank 是独立 provider。Qwen 3.7 重排�
 
 M4 强制构建 WebUI 后打包；包内记录应用版本、build、源码提交 / dirty、前端指纹及必要依赖清单。新 bundle / profile 与旧应用隔离；首次交付内部 DMG，不自动覆盖旧安装或发布更新 feed。
 
-## M2.1 Fake 飞书边界
+## 飞书集成边界
 
-`integrations/feishu/provider.py` 定义配置、user 凭据接口与 DTO；`fake.py` 提供无网络合成分页、文件和日程；`service.py` 实现本机会话 state、权限门禁、响应验证及选择导入。API 通过 create_app 参数注入 provider/store/config，默认 Fake + MemoryCredentialStore；配置 mode 只接受 fake，启动环境不能切换真实实现。不存在真实 OAuth / Feishu HTTP 客户端。
+`integrations/feishu/provider.py` 定义配置、凭据接口与 DTO；`fake.py` 提供无网络合成分页、文件和日程；`service.py` 实现本机会话 state、权限门禁、响应验证及选择导入。API 通过 create_app 参数注入 provider/store/config，默认使用 Fake + MemoryCredentialStore。`http.py` 提供独立 Feishu HTTP adapter；真实调用需满足设置、凭据和一次性确认计划边界。
 
 OAuth state 只在本进程内保存，绑定本次服务会话 token 的身份，超时与消费由锁保护。callback 地址精确匹配配置；不为了开发端口重写用户注册地址。凭据不进入工作库或浏览器。SourceStore 的 optional external_identity 在 source record 与可恢复意图中保留，手写输入继续使用原幂等 hash 规则。
 
 材料导入以规范化 ID 集合 hash 认领 journal；独立导入文件锁串行化同库批次，原件写入仍使用 SourceStore 的库身份锁和原子恢复。已保存 source/item 在恢复时按稳定 ID 复用，不再次拉取正文；每项完成结果随后保存，完成 receipt 重放不依赖授权或网络。工作库保留此业务来源 / 意图证据；token 与 OAuth state 均不同步。
 
-M2.1 初始审查记录（后续实现已扩展）：应用秘密与 user token 分开储存在 CredentialStore 接口；AppCredentials 使用 SecretStr 并校验配置 app_id，默认 Fake 不读取真实秘密。此后已实现 Feishu HTTP adapter、账户配置与 fail-closed macOS Keychain 边界；真实账户请求及 OS Keychain 拒绝 / 锁定 / 重启生命周期仍未验收。前端保留注册 callback 绝对目的地，直接以无凭据、禁止重定向请求本机固定 callback；API 只为 allowlist Origin 的 callback 提供读取 header（含错误），不为其余业务降低 Bearer 门。
+凭据与授权边界：应用秘密和 user token 分开储存在 CredentialStore 接口；AppCredentials 使用 SecretStr 并校验配置 app_id。真实模式使用 fail-closed macOS Keychain adapter；真实账户请求及 OS Keychain 拒绝 / 锁定 / 重启生命周期须独立验收。前端保留注册 callback 绝对目的地，直接以无凭据、禁止重定向请求本机固定 callback；API 只为 allowlist Origin 的 callback 提供读取 header（含错误），不为其余业务降低 Bearer 门。
 
 ## M2.3 日志、思考与项目概览
 
 日志 / 思考通过同一 PageWriter 保存，页面 ID 由 workspace identity 与 operation ID 稳定派生，writer journal 负责相同意图重放和 payload 冲突保护。AI 辅助只在用户显式点击后调用 FakeLLM，建议留在独立编辑状态；保存仍须显式确认。项目概览沿用项目创建时预分配的 overview_id，仅确认后写入；更新需匹配当前 content hash。目录读取、概览批准和日志保存均不触发项目进度 action。
 
-## Stage B 请求边界（2026-10-11）
+## 外部请求边界
 
 外部 HTTP 默认通过请求独立 DeadlineTransport：异步可取消 DNS、连接池和 TCP/TLS stream 每次请求独立持有，同步 facade 返回前等待 runner 结束。provider 业务操作租约防止配置重建关闭在途多请求操作；准入/退役同锁。JSON wire 与 identity 响应有界，非 identity 编码拒绝。设计取舍与依赖见 ADR 0007；真实业务能力仍由服务端门禁控制。

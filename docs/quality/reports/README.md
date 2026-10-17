@@ -1,5 +1,7 @@
 # 开发与独立验收报告索引
 
+本次文档入口精简 DEV 执行记录：[2026-10-17-PONYTAIL-CLEANUP-DEV](2026-10-17-PONYTAIL-CLEANUP-DEV.md)。当前状态见 [PROGRESS](../../implementation/PROGRESS.md)。
+
 ## 最新已合入范围（2026-10-17）
 
 今日与审批可用性固定产品 `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`：fresh QA + Sol 判核心离线范围 PASS，自动修复使用1/2轮；[Sol 最终门判断](2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)、[fresh QA原报告](evidence/2026-10-16-frontend-usability-qa-repair1/REPORT.md)、[DEV修复交接](2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。[初验FAIL](2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)和原始证据保留。用户已批准并合入 PR #23（merge `ee99e78`），[合并收口记录](2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)记录最终 CI 与合并后验证；真实服务/安装及完整AA审计等未测边界以最终门判断为准。

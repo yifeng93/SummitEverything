@@ -1,51 +1,32 @@
 # SummitEverything
 
-SummitEverything 是个人工作知识整理与检索应用。首版目标是每台 Mac 独立运行的 DMG，使用 FastAPI、React/TypeScript 与薄 macOS 壳；工作知识由用户确认后保存为可迁移的 Markdown 页面。
+SummitEverything 是个人工作知识整理与检索应用。它把工作记录整理成经用户确认的 Markdown 页面，并在本机提供检索、问答与引用。首版以独立运行的 macOS 应用交付：薄 Swift 壳、React/TypeScript WebUI 与 FastAPI 服务。
 
-## 当前状态（2026-10-17）
+## 能力
 
-- **今日/审批可用性已由用户批准并合入 main**：[PR #23](https://github.com/yifeng93/SummitEverything/pull/23)，merge commit `ee99e78965201db3a453d301bdb7c573caee79ac`。交付今日安排与记录/导入并列、真实 ID 接续、单项 Markdown 审批与未保存保护。固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 的 fresh QA / Sol 核心离线门 PASS；main 产品/tests/依赖树与它一致。准确 PR tip 的[最终 CI 38921366364](https://github.com/yifeng93/SummitEverything/actions/runs/38921366364) 全步成功，合并后本机 Web **239/239**。见[合并收口记录](docs/quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)与[Sol 最终门判断](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。两条既有 lint warning、603.32 kB 主包提示和首次 e2e artifact ENOENT 后成功重跑记录保留；真实服务、材料、Keychain、用户安装、公证、五日/双机及完整全站 AA 审计未测。
+- 按主线、项目和页面管理知识；导入、随手记、整理草稿、逐项审批和版本更新。
+- 对已确认的当前页面建立本地索引，支持带引用的问答。
+- 提供本地历史、角色和记忆，并集成飞书材料读取入口；任务操作与知识审批分开确认。
+- 将工作库 Markdown 与业务状态保存在用户选择的位置；历史、索引、凭据和诊断数据保留在本机。
 
-## 此前 main 基线（截至 2026-10-16）
+模型输出只是建议。正式页面由用户确认；任务和项目进度也须各自确认。完整范围与非目标见[产品规格](docs/product/PRODUCT-SPEC.md)。
 
-以下为今日/审批可用性改造前已合入的历史基线：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
+## 本地开发
 
-- **设置与首配**：设置页三卡主区 + 状态徽章 + 高级折叠；5 步向导；非秘密接入值由构建时注入包内 `Resources/first-use-defaults.json`，用户只需在本机录入三把密钥一次（存 Keychain，不打入包或仓库）。
-- **错误可见**：provider 失败带 code/message/request_id（embedding/rerank/LLM 统一 502）；`GroundedAnswer` 容错对象形式 `source_statements` 与多余键；密钥写入前做形状校验；问答/assist/索引失败的原因写进本地记录与客户端文案；诊断事件不再因清洗被丢弃。真实链路已实测：飞书授权与任务读取成功、embedding 200（1024 维）、rerank 200、DeepSeek 正常返回。
-- **前端 UX（2026-10-15）**：A（`9c33a9d`）、B repair1（`a0ccad8`）、C（`1b1efda`）经 fresh QA / Sol 判定各自适用离线范围 PASS。D 初次固定 SHA `876008e` 经独立 QA 判 **FAIL / P1**（完成首配后同 profile/workspace 重启仍弹 workspace gate 与向导 step 2）。**D 最终固定产品 SHA：`e8e1dba0c1fed9a5f02babcc29e5d5f67dc1d374`**（链：`876008e` → repair1 `faa1edd` → repair2 `96fdf4d` → repair3 `e8e1dba`），Sol 判 **D 门限「离线 + 内部候选」范围 PASS**：P1 **已关闭**；首配进度改存本机 profile + workspace 隔离的 typed API（只存非秘密 `step/completed/open`），旧 localStorage 只做一次性迁移；`open` 且无记录落到今日不被遮罩；`step` 严格整数；CI 类型门重新生成。自动检查全绿：pytest **692**、vitest **222 passed / 0 todo**、typecheck/lint（2 条既存 warning）/build/e2e **2**/e2e:integration **1**/ruff/format/mypy/uv lock/uv build 全 exit 0。三轮独立 QA 各自自建 harness 并在父 SHA 做非空性对照；native 候选 `SummitEverything-D-e8e1dba` 包内 runtime **15/15**，实机 WKWebView 三条路径以**机器 OCR** 判读通过；全站视口矩阵已在 `e8e1dba` 重跑（2/2 + 1/1 + 1/1）。**PR [#21](https://github.com/yifeng93/SummitEverything/pull/21) 已由用户批准并合入 main**：`mergedAt=2026-10-16T01:27:08Z`，**merge commit `12280ec1893f8f526b9b73a84b98416545254f42`**，父提交 `e84e9e5`（原 main）与 `8ded0d9`（PR tip）——**是真正的 merge commit，非 squash**；PR 规模 47 commits / 671 files / +35264 −1757，含整条前端 UX 线 A→D 与本轮合并前仓库清理。**受测产品 SHA 仍是 `e8e1dba`**：合并后实测 `git diff --stat e8e1dba 12280ec -- src tests web/src web/package.json web/package-lock.json pyproject.toml uv.lock native` **完全为空**，main 的产品面、全部测试与依赖锁与它逐字节一致（合并只带入 `docs/**` 与 workflow 显示名）。被合并内容的 CI 证据是 PR run [`38834559855`](https://github.com/yifeng93/SummitEverything/actions/runs/38834559855)（`headSha=8ded0d9`，即被合并的那个 tip）**completed / success，3m25s**，13 步全部 success；更早的 PR run [`38757225760`](https://github.com/yifeng93/SummitEverything/actions/runs/38757225760)（`offline-arm64`，4m42s）亦全步骤 success，含 `Web checks and API types`、`swift test --package-path native` 与 App/DMG 构建校验。**main 的 merge commit 本身没有触发新的 CI run**——该 workflow 的 `push` 触发只覆盖 `codex/m41-internal-app-*`（`gh run list --branch main` 为空）。分支 `codex/frontend-ux-20261015` 已随之退役。876 的十条变异**未继承**（前端指纹已变），由本轮 5 条定向变异覆盖；D-3（OpenAPI 未声明 401/404/503）仍为 INFO；D-5 经用户决议接受为记录项。见 [D 最终 QA](docs/quality/reports/2026-10-15-FRONTEND-D-QA-FINAL.md)、[Sol 最终门判断](docs/quality/reports/2026-10-15-FRONTEND-D-SOL-GATE-FINAL.md)、[D repair2/3 DEV 报告](docs/quality/reports/2026-10-15-FRONTEND-D-DEV-REPAIR2.md)与 [D 交接（已归档）](docs/handoff/history/2026-10-15-NEXT-AFTER-FRONTEND-D.md)。D 初次 QA 脱敏报告见[此处](docs/quality/reports/2026-10-15-FRONTEND-D-QA-INITIAL.md)，原始 QA 证据仍保留在原 worktree `.local/qa`。C QA 范围与限制见 [C QA 报告](docs/quality/reports/2026-10-15-FRONTEND-C-QA.md)与[证据索引](docs/quality/reports/evidence/2026-10-15-frontend-c-qa/README.md)。真实 provider/OAuth/飞书/Keychain、用户材料、DMG/安装、公证、长期与双机门仍 NOT_RUN。状态见[执行路线图](docs/handoff/FRONTEND-EXECUTION-PLAN.md)、[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)与[进展账本](docs/implementation/PROGRESS.md)。
-- 内部候选与证据：`.local/internal-builds/` 下的最新候选；[设置 UX DEV 报告](docs/quality/reports/2026-10-14-SETTINGS-UX-DEV.md)、[真实使用与修复报告](docs/quality/reports/2026-10-14-REAL-FIRST-USE-FINDINGS.md)、[F2 报告](docs/quality/reports/2026-10-14-ORIGIN-GUARD-SETTINGS-ERROR.md)、[前端基线切片 1–2 记录](docs/handoff/LATEST-IMPLEMENTATION.md)。
-- **品牌图标（2026-10-16，PR #22）**：App 与 DMG 现在有品牌图标——用户个人品牌「峰·等高线」mark，深色底 + 浅色等高线（配色取自品牌库 `variables.css` 的 `.deep-mode` token），范围 = App 图标 + DMG 卷图标；**≥64px 与品牌原件逐像素一致，仅 16/32px 用品牌小变体加最小描边**（保真档 T3）。实现为入库的 `native/Resources/AppIcon.icns`（与 `VolumeIcon.icns` 字节相同，SHA-256 `f34b3ef6…`）+ `Info.plist` 的 `CFBundleIconFile=AppIcon`，打包脚本改为 UDRW → `SetFile -a C` → UDZO 并新增 icns 块表 fail-closed 校验。**受测产品 SHA 仍为 `e8e1dba`，产品面与前端指纹（`784ae1ee…`）均未变**：本轮只新增图标资产与打包集成，`web/`、`src/` 与依赖锁零改动。该 mark 属个人品牌、与项目品牌各自独立的边界由**用户本人豁免**并记录在案；详见 [品牌资产说明](assets/branding/README.md)。
-- 仍未验证：真实 provider 的进一步质量/账单、OS Keychain 生命周期、正式安装与公证、五日试用、双机与 release 全部 NOT_RUN；`spctl` 对 ad-hoc 包为 rejected（未绕过）。
+需要 Python 3.12+、uv、Node.js/npm，以及运行 macOS 壳测试时的 Swift 工具链。默认开发与测试使用合成数据和 Fake provider；真实服务调用需按各自授权门单独确认。
 
-M4.2 工作包 A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终受测产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已通过独立 fresh QA，Sol 判定适用 Package A 离线技术场景 PASS；不代表全 M4.2/C25/Stage C/产品最终 PASS。用户已于 2026-10-14 批准工作包 A 离线正式收口与合入 main；PR #18 已于 2026-10-14 合并，PR head 为 `0e8fc4633d4b1409fb7da0354d4474a4faeef430`，当前 main 产品/tests/lock 树与固定受测 SHA 一致。远端 run 38550700081 全部步骤成功；工作流显示名沿用 M4.1，但该运行针对本 PR。真实用户材料、provider/Feishu、Keychain、正式安装/公证、五日/双机与 release 继续 NOT_RUN。见[离线收口记录](docs/quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)、[QA 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)、[QA evidence archive](docs/quality/reports/evidence/2026-10-14-m42-package-a-qa-repair1/README.md)与[修复轮 1 DEV handoff](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)。
-
-首次配置字段的只读代码审计已完成，具体字段、回调和限制见 [M42 readiness](docs/handoff/M42-PACKAGE-A-READINESS.md) 与 [ADR 0009](docs/decisions/0009-first-use-provider-configuration.md)。审计不代表 OAuth、Keychain 或真实服务通过；密钥仅本机安全输入，不进入仓库、安装包或聊天。四份真实业务材料、入库、付费调用和 Feishu 实际数据操作仍需各自明确授权。
-
-M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 已经全新独立 QA 与 Sol 证据核验，适用离线技术门 PASS；文件导入缺陷 M41-QA-001 已在实际候选复验关闭，自动修复使用 1/2 轮。用户已于 2026-10-13 批准 M4.1 离线正式收口，PR #17 已合入 main；该历史结论不适用于 M4.2，整个 M4 未通过。见[独立 QA](docs/quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)、[Sol 门判断](docs/quality/reports/2026-10-13-M41-SOL-GATE.md)、[内部候选测试说明](docs/handoff/M41-INTERNAL-INSTALL.md)。原候选 `b9321d6` 的初验 FAIL 与完整 DEV / QA 证据均保留。
-
-初始 FAIL SHA 对应的候选仅为历史追溯，不能用于新 QA。首次通过 shell 直接启动的 UI 运行丢失 offline guard，设置显示钥匙串可用；其 Keychain 查询次数与 profile 回退均 UNVERIFIED。该 SHA 的后续正确 `open -n` + 临时 profile 复演已确认 native/backend guard 为 `1`、profile-root 匹配，设置明确显示钥匙串不可用。真实账户、材料、模型/Feishu、费用/质量、Keychain 生命周期、实际用户安装、公证、五日、双机和发布仍为 NOT_RUN；runtime 模型元数据 UNVERIFIED。
-
-## 文档入口
-
-- 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
-- 验收者：[AGENTS.md](AGENTS.md) → [独立验收手册](docs/handoff/TESTER.md) → [验收矩阵](docs/quality/ACCEPTANCE.md)。
-- 当前进展：[进展账本](docs/implementation/PROGRESS.md)；[报告索引](docs/quality/reports/README.md)；[全部文档](docs/README.md)。
-- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 基线）及 [ADR 0012](docs/decisions/0012-today-approval-focused-usability.md)（2026-10-16 三轮选择确认的今日与审批改造）。
-- 内部测试：[安装与启动说明](docs/handoff/M41-INTERNAL-INSTALL.md)；已合入 [PR #17](https://github.com/yifeng93/SummitEverything/pull/17)。
-- 新聊天提示词：[实现者](docs/handoff/PROMPT-IMPLEMENTER.md)、[验收者](docs/handoff/PROMPT-TESTER.md)。
-
-## 产品范围
-
-知识目录由主线、项目和页面组成；已确认且仍为当前版本的页面进入问答语料。原件、待审稿、收件箱状态和辅助状态不作为依据。模型输出只是建议；正式内容以及任务/项目进度动作分别由用户确认。聊天历史、角色、记忆、索引、凭据和诊断日志留在本机。完整已确认范围见[产品规格](docs/product/PRODUCT-SPEC.md)。
-
-## 当前可执行的命令
-
-在本仓库执行；只安装本项目的工具，不同步或改动 SWB / SK 的环境。
-
-Fresh checkout 运行全量 `pytest` 前，先按下方 WebUI 预览步骤安装前端依赖；dev runner 集成测试需要已安装的 Web 依赖。
-
-~~~sh
+```sh
 uv sync --locked --group dev
+cd web && npm ci
+cd ..
+uv run python scripts/run_dev.py
+```
+
+打开 <http://127.0.0.1:5173>，并为工作库选择新的隔离目录。脚本启动本机 FastAPI 和 Vite 服务；退出时只关闭本次启动的服务。详细隔离选项、Internal App/DMG 构建和验收边界见[实现手册](docs/handoff/IMPLEMENTER.md)与[测试手册](docs/handoff/TESTER.md)。
+
+## 常用检查
+
+```sh
 PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q
 uv run ruff check src tests
 uv run ruff format --check src tests
@@ -53,105 +34,19 @@ uv run mypy src
 uv lock --check
 uv build
 swift test --package-path native
-~~~
+npm --prefix web test -- --run
+npm --prefix web run typecheck
+npm --prefix web run lint
+npm --prefix web run build
+```
 
-guard 阻断非 loopback socket、真实 DNS 和 macOS Keychain，允许合成 HTTP 与数字 loopback。生产 HTTP 必须使用请求独立的 DeadlineTransport；完整 JSON wire ≤1MB、identity 响应有界读取、禁止环境代理/重试/重定向。
+首次运行后端集成测试前安装 Web 依赖。Playwright、Fake API 集成与内部应用构建命令和安全边界见实现/测试手册。自动检查通过不等于阶段验收通过。
 
-这些是检查命令，不单独构成阶段通过。M1 / M2 的历史报告见报告索引；当前 M4.2 Package A 固定 SHA 的独立 QA、Sol 判门和合并/CI 收口见[最新交接](docs/handoff/LATEST-IMPLEMENTATION.md)及[收口报告](docs/quality/reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。
+## 文档导航
 
-### Web 前端验证
+- 当前产品和验收状态：[PROGRESS](docs/implementation/PROGRESS.md)；本轮固定候选交接：[LATEST-IMPLEMENTATION](docs/handoff/LATEST-IMPLEMENTATION.md)。
+- 实现/验收入口：[AGENTS.md](AGENTS.md)、[实现手册](docs/handoff/IMPLEMENTER.md)、[测试手册](docs/handoff/TESTER.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)。
+- 规格与实现边界：[产品规格](docs/product/PRODUCT-SPEC.md)、[前端指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[架构](docs/architecture/ARCHITECTURE.md)、[工作库契约](docs/contracts/WORKSPACE-v1.md)、[API 契约](docs/contracts/API-v1.md)。
+- [全部文档索引](docs/README.md)、[开发与 QA 报告索引](docs/quality/reports/README.md)、[完整 v1 实施与验收计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 
-安装依赖后，以下命令按职责分开执行：
-
-~~~sh
-npm --prefix web test -- --run                 # Vitest 单元与组件测试
-npm --prefix web run typecheck                 # 正式 TypeScript 项目引用检查
-npm --prefix web run lint                      # Oxlint（保留并报告 warning）
-npm --prefix web run test:e2e                  # Playwright 离线浏览器：首配与五档/深浅主题
-npm --prefix web run test:e2e:integration      # 真实 FastAPI + Fake，隔离 profile/工作库
-~~~
-
-首次使用 Playwright 时先运行 `cd web && npx playwright install chromium`。普通 `test:e2e` 仅访问本机 Vite，并拦截外部请求；`test:e2e:integration` 用一次性 session token、全新 profile 与合成 Fake 工作库连本机 FastAPI，仍不调用真实模型、飞书或 Keychain。Vitest 会排除 `web/e2e/**`，因此 `npm test` 不能替代浏览器或真实 API 集成验收；各检查的退出码和原始日志按里程碑记录在 DEV 报告。
-
-### 构建 Internal 候选
-
-只在 arm64 macOS 构建机器上运行。输出路径必须是全新路径；脚本先强制构建 WebUI、检查锁定依赖、构建内置 Python onedir 与 Swift 壳、校验 bundle，再创建并验证只读可挂载的未公证 DMG。它不会安装或覆盖应用：
-
-~~~sh
-uv sync --locked --group dev --group build
-npm --prefix web ci
-scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
-~~~
-
-该候选供隔离 QA 使用，不表示用户正式安装、Gatekeeper/公证或 M4 阶段验收已通过。M4.2 QA 使用 fresh temporary profile；macOS LaunchServices 启动时必须显式传递 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT=<temporary child>`。本轮固定候选、启动信息和边界见 [M4.2 修复轮 1 DEV 报告](docs/quality/reports/2026-10-14-M42-PACKAGE-A-DEV-REPAIR1.md)，不使用直接运行 `.app/Contents/MacOS/...` 的 shell 启动方式。
-
-若本机存在 Git 忽略的 `.local/first-use/defaults.json`，构建会校验其中的非秘密接入值并复制进包内 `Resources/first-use-defaults.json`（日志只打印来源路径与字段名）；文件不存在时构建照常成功。在已经处于沙箱内的环境构建时，SwiftPM 无法嵌套自己的 manifest 沙箱，可显式设置 `SUMMIT_SWIFT_DISABLE_SANDBOX=1` 追加 `--disable-sandbox`（默认与 CI 行为不变）。
-
-### 本地 WebUI 开发预览（M1 / M2）
-
-先安装前端依赖，然后在仓库根目录启动 FastAPI 与 Vite。脚本自动生成仅供本次进程使用的本机会话 token 和运行身份，并在退出时只关闭自己启动的服务：
-
-~~~sh
-cd web && npm ci
-cd ..
-uv run python scripts/run_dev.py
-~~~
-
-打开 `http://127.0.0.1:5173`，新建工作库时选一个空的隔离目录。隔离并发复演可通过 `SUMMIT_API_PORT`、`SUMMIT_WEB_PORT` 和 `SUMMIT_PROFILE_ROOT` 指定独立端口与 profile。原生内部候选通过 `scripts/release-macos.sh` 构建；该 `.app` 从自身 bundle Resources 启动后端，不使用 `swift run` 的开发启动方式。实际开发预览继续使用上方的 Web runner。
-
-WebUI 支持主线 / 项目 / 页面浏览与管理、页面移动和链接确认、随手记、文字导入、显式模型整理、多稿审核、单页确认与更新、增量索引及本地 SSE 问答。查询仅使用经确认且仍为当前版本的页面。TXT / Markdown 导入要求 UTF-8，最大 20 MB。首次索引仍需用户在界面确认；Fake 模式已有索引时，批准的新内容和重新确认内容会自动执行同模型 fingerprint 的增量更新。真实 embedding 下审批只提示用户另行查看并确认索引计划。更新失败或中断时，页面版本复核会阻止旧片段作为当前依据。
-
-内部 `.app` readiness 校验通过后显示同一 WebUI，工作库可通过原生目录选择器指定。打包后的 App 内置后端与静态前端；开发预览仍依赖本机 Python / Node 工具。默认仍为 Fake/offline；设置读取和保存不会联网。当前 M4.2 工作包 A 增加真实整理、索引、问答与飞书只读操作的一次性范围预览/独立确认；计划绑定当前来源/页面版本和配置，有界预留调用并在失败或进程中断后禁止重发。真实调用只在用户明确选择 Real 配置、填写凭据并对单次预览确认后发生；本轮开发和验收均只使用 synthetic fixtures、Mock HTTP 和隔离 workspace。账本记录 provider 返回的 token 用量（provider 不回报时保持未知），不表示实际账单。真实账户、真实业务材料、真实 provider、OS Keychain 与安装验收仍未完成。Feishu 真实任务写因缺少可独立核实写结果的协议能力继续禁用；Fake 仍使用进程内凭据存储。
-
-## 与原项目的关系
-
-SummitWorkbench（SWB）提供写入、审批、飞书和 macOS 生命周期的参考；SummitKnowledge（SK）提供分块、检索、重排、引用和会话的参考。SummitEverything 是独立的新实现，运行时不依赖两套旧应用。
-
-详见 [复用地图与源码基线](docs/architecture/REUSE-MAP.md)。旧源码、旧应用和真实 _vault 保留；新项目采用自己的契约和验收规则。
-
-### M2.1 飞书模拟复演
-
-沿用上述 `uv run python scripts/run_dev.py`，新建空的隔离工作库，在“今日 / 飞书日常”点击“模拟授权飞书”。搜索 / 可见范围筛选只读 metadata；选择材料后“导入所选”保存原件与待整理项，必须另行选择整理。日历须指定开始、结束（不含）和时区；模拟日程位于 2026-10-09。分页、导入部分失败与授权失败不会显示虚假成功。
-
-开发默认 callback 为 `http://127.0.0.1:5173/api/v1/integrations/feishu/callback`。隔离端口从 `SUMMIT_WEB_PORT` 构成 Fake 默认地址；显式 `SUMMIT_FEISHU_REDIRECT_URI` 始终原样使用，不重写配置。仅允许 http loopback callback 与配置的本机 Origin；所有业务路由要求 Bearer，callback 只接受本次运行发起、300 秒有效且一次性的 state。模拟登录仅在本进程有效，重启需重新模拟授权；已完成导入凭据重启后仍能重放本地结果。
-
-~~~sh
-uv run pytest -q tests/integration/test_feishu.py
-uv run pytest -q
-uv run ruff check src tests
-uv run ruff format --check src tests
-uv run mypy src
-cd web && npm run api:types && npm test && npm run typecheck && npm run lint && npm run build
-~~~
-
-本轮适用离线技术门状态、固定 `419bb86` 候选和限制见 [Sol gate](docs/quality/reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md) 与 [M4.2 readiness 授权卡](docs/handoff/M42-PACKAGE-A-READINESS.md)。真实 scope、业务材料、provider 质量/账单、OS Keychain 生命周期、任务写和安装验收仍 NOT_RUN；真实任务写入保持禁用。M4.2 PR #18 已合入 main；run 38550700081 对应 PR head `0e8fc46` 且全部步骤成功。该 GitHub Actions 工作流显示名虽沿用 M4.1，本次运行适用于 M4.2 PR。此 CI 与 fixed `419bb86` 的 fresh QA 共同支持工作包 A 离线技术范围，不代表真实 provider、Feishu、Keychain、用户安装、公证或完整产品验收。
-
-M2.1 审查修正：模拟授权严格保留已配置 callback 的 scheme / host / port / path；可跨 Web / API 端口完成本机 callback，浏览器请求不携带 Bearer 或 cookie，不跟随重定向。callback 仅向 allowlist Origin 开放读取并禁止缓存。界面收到 expired / not_authorized 时立即停用读取，missing_scope 单独显示“权限不足”。应用 app_id 属于非秘密配置，app_secret 由独立 AppCredentials / CredentialStore 接口隔离；已有真实 adapter、凭据设置 UI 与 fail-closed Keychain 接口；此段 Fake 复演不能证明真实账户或 OS Keychain 通过。
-
-
-### M2.2 任务与独立动作模拟复演
-
-只用空的隔离工作库与上述 Fake 模拟授权。“今日 / 飞书任务与独立动作”可读取任务、填写创建表单、只选所改字段编辑、拟定完成或项目进度变化。必须先审阅最终值，再点击“独立确认此动作”，随后明确执行；知识确认、列表刷新和建议都不执行动作。任务标题和日期方式由用户填写；没有默认截止日期。日期保留用户原文、全天标志和 IANA 时区；具体时间要求显式时区偏移一致。
-
-结果未知时只读核实或记录用户独立提供的明确结果；不重发未知动作、不按标题猜成功。任务创建 / 编辑 / 完成的回执会核对目标与请求字段，完成必须有非零完成时间。Fake 核实证据绑定当前 client token、动作类型、目标和实际返回字段；普通任务对象不能核实动作。动作记录可分页读取及重启恢复。模拟远端任务文件 `simulated_remote_tasks.json` 位于系统临时目录下明确命名的 `summit-simulated-feishu-remote-*`，不在工作库 / profile 的任务账本；正式任务事实由 provider 返回，本地仅保存提议和执行证据。重启后须重新模拟授权；模拟远端和本地回执仍可读取。
-
-~~~sh
-uv run pytest -q tests/integration/test_actions.py
-uv run pytest -q tests/integration/test_intake_review.py tests/integration/test_feishu.py
-npm --prefix web test -- TasksPanel.test.tsx
-~~~
-
-Task v2 的毫秒 timestamp 与全天日期含义见协议矩阵；账号侧规范化仍需真实证据，Fake 约定不能替代它。Fake `task_result` 是合成动作证据查询，未声称飞书存在按 client_token 查结果的真实端点。没有可验证查询证据时动作保持 unknown。真实任务、账号、凭据 / 钥匙串与协议验收未测。DEV 证据见 [M2.2 任务报告](.superpowers/sdd/2026-10-09-summit-everything-v1/task-M2.2-report.md)。
-
-### M2.3 日志、思考与项目概览
-
-侧栏“日志与思考”提供独立日志 / 思考入口；可不关联、仅关联主线或关联主线与项目。保存按钮明确确认并仅写入本机正式页。浏览列表不会调用模型；Fake 模式的“AI 辅助建议”使用 FakeLLM，将建议留在编辑区，用户可取消或采用；Real 模式必须先审阅本次完整正文预览并显式确认一次性计划，返回建议仍不保存，写入正式页仍需另行点击保存。页面以稳定操作标识防止重试重复写入。
-
-项目详情可显式创建项目概览并从目录重开；修改要求当前页面版本，冲突保留现有正文。概览保存、日志 / 思考保存与项目进度动作分别处理；保存知识不更改进度。验证命令：
-
-~~~sh
-uv run pytest -q tests/integration/test_journal_overviews.py
-npm --prefix web test -- JournalView.test.tsx ProjectsView.test.tsx
-~~~
-
-此切片只用模拟工作库与 FakeLLM；没有执行真实模型、真实材料、真实飞书或任务写入。M2.3 DEV 报告和 [汇总 M2 DEV 报告](docs/quality/reports/2026-10-10-M2-DEV.md)保留开发时的 UI 复演与未测项；阶段 A 当前独立验收结果见上方状态与[验收矩阵](docs/quality/ACCEPTANCE.md)。
+SummitEverything 是独立实现；SummitWorkbench 与 SummitKnowledge 仅作只读参考，运行时不依赖旧应用。

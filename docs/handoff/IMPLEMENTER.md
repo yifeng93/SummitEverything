@@ -1,36 +1,58 @@
 # 实现者手册
 
-你的职责：按已确认规格实现完整 v1 的当前阶段，自测并提交可复验版本。用户已授权通用编码，不需要再问是否开始。
+你的职责：按当前任务和已确认规格实现、自测、固定源码 SHA，并交给 Sol 做独立 QA 调度和最终判门。用户已授权通用代码开发；仍须遵守当前任务的范围与外部操作授权。
 
-## 开始
+## 开始前
 
-C19专项已在固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 经独立QA关闭，M3离线模拟正式验收及合并已获用户批准。产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`，本轮清理前 main 基线为 `879c82464903a7aed91b30955d7355064fa85088`；该历史 QA 不代表后续维护提交已验收。下一位先核对 README、LATEST、PROGRESS 与实际 HEAD；不要再次执行 DSH 旧试修提示。旧冻结基线只作追溯，不在历史基线目录写。真实门和未来阶段按全 v1 计划及实际授权处理。
+1. 读取 [AGENTS.md](../../AGENTS.md)、[PROGRESS](../implementation/PROGRESS.md)、[LATEST-IMPLEMENTATION](LATEST-IMPLEMENTATION.md) 和任务指定的规格、契约与验收标准。
+2. 核对真实 HEAD、分支和工作区；使用任务要求的隔离 worktree。保留他人修改，不覆盖或撤销其工作。
+3. 按需阅读本手册所引用的完整实施计划。已完成阶段的旧提示词、旧 SHA 和历史 QA 结论只供追溯，不能作为当前指令。
 
-读根 AGENTS、README、PROGRESS、产品规格、架构 / 复用地图、两个契约和全 v1 计划。当前 M1 与 M2 阶段 A Fake-only 已收口；Stage B真实adapter已实现，当前固定源码及独立离线QA状态见LATEST-IMPLEMENTATION，不能回退到骨架或重复执行历史提示词。真实账号、OS与发布门仍单独待验。样板未批准不阻塞模拟开发。
+## 实现与自测
 
-先检查工作区和已有进度，保存他人修改，不 reset / checkout 覆盖。使用 codex/ 分支小步提交；从整理后的 main 创建短期功能分支，旧 Foundation / QA 归档引用只作历史参考。当前执行状态以 `docs/implementation/PROGRESS.md` 和 `docs/handoff/LATEST-IMPLEMENTATION.md` 为准。已有候选闭环进入修复或独立验收时，先继续该固定候选，不得因文档旧模板回退到 M1.1 或启动未来阶段。
+- 先验证相关契约与失败路径，再做最小可维护改动。业务、文件和索引路径保持真实，仅在边界处替代外部服务。
+- 使用合成内容、Fake provider 和隔离临时工作库。不得读取或提交未经批准的真实业务材料，不得接触真实凭据、外部服务或安装应用，除非当前任务明确授权。
+- 用户确认是正式知识写入门；任务及项目进度动作各自独立确认。资格判断统一调用 `domain/content.py`。
+- README 提供常用检查入口；详细命令、首次安装和 Internal 构建步骤以本手册为准。新增真实运行命令时同步更新 README 与相关手册。
+- 记录命令、真实退出码、证据位置、模拟/真实边界、未测项与已知问题。测试通过不等于阶段验收通过。
 
-本项目不是 SWB / SK 补丁，不能去旧目录改代码。需要复用时在固定来源版本查证并移植到新 package，记录依据。
+### 本地开发与检查命令
 
-## 实现
+在仓库根目录执行；首次跑 dev runner 前先装 Web 依赖：
 
-- 按任务测试真实行为；业务、文件和索引逻辑不整体 mock，外部网络可 Fake。
-- 统一调用 content.py；完整 schema、StorageArea 路径判定、缓存 version 参数是接入者责任。
-- provider / file / configuration 边界严格解析；AI 只提出稿件和 action，用户确认才写。
-- API 类型生成前端类型；UI 表达业务，不把内部 operation / hash 当审核正文。
-- 使用临时模拟库；初始化旧真实库、全量嵌入和真实 task 不是开发自测。
-- 缺凭据继续 Fake 实现，列未测外部门。遇到真实产品语义歧义再给用户选项，普通库选择 / 分文件 / 测试修复自行完成。
+```sh
+uv sync --locked --group dev
+(cd web && npm ci)
+PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run pytest -q
+uv run ruff check src tests
+uv run ruff format --check src tests
+uv run mypy src
+uv lock --check
+uv build
+swift test --package-path native
+npm --prefix web test -- --run
+npm --prefix web run typecheck
+npm --prefix web run lint
+npm --prefix web run build
+```
 
-## 阶段完成
+启动 WebUI：`uv run python scripts/run_dev.py`，浏览器打开 `http://127.0.0.1:5173`。默认使用 Fake provider 和隔离工作库。
 
-1. 对照任务和 ACCEPTANCE 列覆盖项，不用单元数量宣称完整完成。
-2. 跑适当检查及真实 UI / 打包验证，保存退出码与复演材料。
-3. 提交实现、测试、规格同步，取得完整代码 SHA。
-4. 更新 PROGRESS 与 LATEST-IMPLEMENTATION，列真实 / 模拟、未测、缺陷和启动命令，再提交交接文档。
-5. 将固定 SHA、复演范围、自测退出码、真实 / 模拟边界和未测项交给 Sol。默认由 Sol 自动创建全新的独立 QA handoff；用户无需复制提示词。QA 在隔离 checkout 验收，不得修改源码或已有 tracked tests。
+仅在 arm64 macOS 构建机器上构建 Internal 候选。产物路径必须是全新路径；脚本会强制构建 WebUI、打包并校验 bundle/DMG，不会安装或覆盖应用：
 
-进入后续阶段按计划验收门推进。等待独立 QA 时可以做不跨门的准备，不写“已验收”；收到缺陷按最小复现修复，给新 SHA。最多两轮自动修复，每轮须有新 SHA 和全新 QA；仍未通过时交 Sol 停止并请用户决定。
+```sh
+uv sync --locked --group dev --group build
+npm --prefix web ci
+scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
+```
 
-## 必须持续维护
+## 固定交接
 
-真实启动命令、新增依赖 lock、API / 工作库语义变更、移植记录、进展、构建身份和具体已知问题。不能保留一个已过时框架文件让下一 agent 猜当前行为。
+1. 对照任务和 [ACCEPTANCE](../quality/ACCEPTANCE.md) 检查覆盖项。
+2. 完成自测，检查差异和工作区，提交小逻辑变更，取得完整 clean SHA。
+3. 更新 [PROGRESS](../implementation/PROGRESS.md) 中的当前状态；[LATEST-IMPLEMENTATION](LATEST-IMPLEMENTATION.md) 只写当前任务、固定 SHA、QA 所需指令及状态链接。
+4. 将完整 SHA、范围、命令退出码、复演说明、限制和 DEV 报告交 Sol。由全新 QA 在独立 checkout 对固定 SHA 验收，Developer 不得自判 QA 或阶段通过。
+
+QA 首轮失败后，最多自动修复两轮；每轮使用新 SHA 和 fresh QA。两轮后仍未通过则停止并交 Sol 请用户决定。不得删除测试、降低验收门或把未测项写成通过。
+
+真实 provider、飞书、业务材料、OS Keychain、用户安装/公证、五日试用、双机与发布均按各自授权和证据单独验收。未观察到的 runtime 配置记为 UNVERIFIED；缺授权或凭据时记录 NOT_RUN / BLOCKED 并继续独立工作。

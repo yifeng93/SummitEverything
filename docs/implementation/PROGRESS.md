@@ -15,3 +15,7 @@
 独立 Web 239/239、typecheck/lint/build/api types、Playwright 最终 2/2、Fake integration 1/1 均 exit 0。首次 e2e 的 artifact ENOENT（根因未确认）与成功重跑均保留。CI `38919089638` 全 13 步成功，Python 712、native 5 及内部 App/DMG 技术构建通过。两条既有 lint warning 与 603.32 kB bundle advisory 保留。
 
 用户已明确批准，[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 于 2026-10-17 合入 main，merge commit `ee99e78965201db3a453d301bdb7c573caee79ac`；产品/tests/依赖树与固定受测 SHA 一致。最终 tip CI `38921366364` 全步成功，合并后 Web 239/239；见[合并收口记录](../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。真实服务/材料/凭据/Keychain、用户安装/公证、五日/双机/发布、整站完整业务和 WCAG AA 审计 NOT_RUN；runtime model metadata UNVERIFIED。此范围不等于整个产品或发布 PASS。
+
+### 文档入口精简批次一（2026-10-17；DEV 完成，独立 QA 待执行）
+
+本轮仅整理项目首页、当前交接、状态与文档索引，修正架构/API/验收文档中的过时当前状态表述。产品源码、tests、Web/native 与依赖树不在本轮修改范围。实施记录、文档处置理由、命令与未测项见[DEV 报告](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)；验收仍待 Sol 安排 fresh QA 对固定提交复核。本段不构成 QA PASS。

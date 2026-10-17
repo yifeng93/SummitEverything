@@ -1,8 +1,6 @@
 # 独立验收矩阵
 
-本文件定义验收标准，不用旧报告状态改写门槛。M3 离线模拟正式验收与 2026-10-13 清理维护只适用于各自固定 SHA。M4.1 固定源码 `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 的 fresh QA 与 Sol 适用离线技术门 PASS，用户已于 2026-10-13 批准离线正式收口，PR #17 已合入 main。M4.2 Package A fixed `419bb865b334389d1efd0f4a1a855cd0d5324d28` 经 fresh QA 与 Sol 判定**适用工作包 A 离线技术场景 PASS**；用户已于 2026-10-14 批准离线正式收口与合入 main；PR #18 于 2026-10-14 合并，run 38550700081 全步骤成功（该 workflow 显示名沿用 M4.1，但适用于本 PR）。当前 main 产品/tests/lock 树与 fixed `419bb86` 一致。范围和证据见 [M4.2 QA](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)、[Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。这些均不代表 M4.2 全范围、C25、Stage C 或产品最终 PASS。C01–C31 及真实门要求不变。
-
-完整产品验收仍需覆盖 C01–C31 和用户确认的真实门。本次 QA 结论仅覆盖 QA 报告中实际执行的离线/API/Mock/packaged UI 场景，不代表整行 Must 验收。M4.2 真实材料与真实服务、OS Keychain 生命周期、正式用户安装、Developer ID/公证、五日试用、双机与发布均 NOT_RUN；runtime 元数据 UNVERIFIED。M4.2 PR #18 已合入且远端离线 CI 通过；M4.1 的远端 CI success 是独立历史。完整合并/CI 身份与证据见 [M4.2 closeout](reports/2026-10-14-M42-OFFLINE-CLOSEOUT.md)。旧 SHA 的逐轮执行记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)。
+本文件定义完整验收标准，不以旧报告状态改写门槛。产品验收需覆盖 C01–C31、UI 十条契约守卫及用户确认的真实门。每份报告的结论只适用于其明确列出的固定 SHA、场景和证据；历史报告与逐轮记录见[历史矩阵](ACCEPTANCE-HISTORY-2026-10-13.md)及[报告索引](reports/README.md)。当前产品状态见 [PROGRESS](../implementation/PROGRESS.md)。
 
 ## 验收准备
 
@@ -117,29 +115,29 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 实际账号权限、真实 GET/POST/PATCH、真实全天日期提取 / 时间 normalization、真实 token 查询能力、凭据 / OS Keychain、DMG、真实材料和模型质量均 NOT_RUN。全天 Fake 午夜约定不是真实协议验收。2026-10-10 最终 UI 树复演：独立临时 workspace/profile，创建（显式无日期）→确认→执行→refresh，完成→确认→执行→refresh 已完成；控制台warn/error为0。异常 / 并发 / 子进程路径由真实服务和文件测试覆盖，未声称浏览器全部复演。
 
-> 以下阶段记录中的历史通过/失败只适用于其注明的受测版本；当前M3离线结论见本页开头。真实质量、M4/M5要求仍有效。
+> 以下阶段记录中的历史通过/失败只适用于其注明的受测版本。真实质量和 M4/M5 要求仍有效；当前状态见 PROGRESS。
 
 ## 阶段 B / C 追加门（历史复演范围与仍适用的真实验收标准）
 
-本节是 Stage B 旧固定源码的历史复验记录，不替换 C01–C31、不降低原 MUST。以下 B03/B04 的服务端门控描述仅适用于对应历史固定 SHA，不能作为当前 HEAD 的行为说明。当前 M4.2 工作包 A 固定 `419bb86` 的独立 fresh QA 已完成，其适用离线/API/Mock/packaged UI 列项及 NOT_RUN/UNVERIFIED 限制见 [QA 报告](reports/2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md) 与 [Sol gate](reports/2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。真实/OS/交付门仍 NOT_RUN；DEV 检查不能覆盖这些门。
+本节记录 Stage B 固定源码的历史复验，不替换 C01–C31、不降低原 MUST。B03/B04 的服务端门控只适用于其标明的历史 SHA，不能作为当前 HEAD 的行为说明。表格中的历史结果仅帮助追溯；当前实现状态以 PROGRESS 为准，当前任务验收范围以 LATEST-IMPLEMENTATION 为准。
 
-| ID | 阶段 / 当前结果 | 可观察、可复验的退出标准 |
+| ID | 阶段 / 历史记录 | 可观察、可复验的退出标准 |
 |---|---|---|
 | B01 | 离线QA PASS；真实证据 NOT_RUN | 官方飞书文档可以 `.md` 后缀读取原始 Markdown，authorize、OAuth v2/v3 token 与 refresh 轮换、tenant token、用户身份、妙记搜索/逐字稿/产物、日历日程、task 读/建/改的 endpoint、token 类型、scope、分页、时间与错误码已逐条写入[协议矩阵](../architecture/PROVIDER-PROTOCOL-MATRIX.md)（核对日期 2026-10-10）。仍未知并明确阻断：账号侧 scope 可用性、逐字稿二进制 content-type、按 client_token 证明丢失写结果的 endpoint。DeepSeek / Model Studio 映射与价格同表记录 |
 | B02 | 离线QA PASS；真实证据 NOT_RUN | profile 设置、原子更新与 Web 设置 UI 有实现。Feishu app secret 与 user token 现在共用同一 vault 命名空间并以 app_id 为账户标识（`VaultCredentialStore`），设置 UI 写入的槽就是 adapter 读取的槽；离线测试覆盖轮换、登出、profile/app 隔离、损坏值与同命名空间。此轮未录入任何真实密钥；合成凭据故障/隔离profile离线PASS；OS Keychain 拒绝/锁定/重启及真实多profile仍 NOT_RUN |
 | B03（历史） | 旧 SHA 的离线QA PASS；真实证据 NOT_RUN；真实请求 0 | 固定旧 SHA 的 `FeishuHttpProvider` 协议反例。当时 real data 由 `feishu.real_data_enabled` 门控（默认 409 `stage_c_authorization_required`）。当前包 A 行为见本表后的说明。task 写仍因没有独立结果证明能力而 disabled。真实 OAuth 与读取仍 NOT_RUN |
 | B04（历史） | 旧 SHA 的离线QA PASS；真实证据 NOT_RUN | 固定旧 SHA 的 stub-tested adapters 与有限 smoke；当时真实模型业务由服务端拒绝。当前包 A 行为见本表后的说明。真实维度、服务质量、账单和 R03 用户评定仍 NOT_RUN |
 | B05 | 独立离线QA PASS | 最终受测源码576895f；独立388+25/Web45，实际合成浏览器/原生冷启动/重启/5秒延迟启动和退出清理PASS；见最终独立复验报告。历史R1–R4证据原样保留；OS Keychain和DMG未运行 |
-| B06 | 固定SHA离线QA PASS / 已合入main（历史合并点） | Luna High独立checkout固定576895f；与执行者环境分离，离线完整检查、新增失败路径和实际UI复验。PR #10当时已合并，merge `41207e5` 的产品树与受测SHA一致并通过合并后核验；后续 main 已继续演进，当前范围见本文开头；真实门仍NOT_RUN |
+| B06（历史） | 对固定 SHA 的离线 QA PASS / 历史合并点 | Luna High 独立 checkout 固定 576895f；与执行者环境分离，离线完整检查、新增失败路径和实际 UI 复验。PR #10 当时已合并，merge `41207e5` 的产品树与受测 SHA 一致并通过合并后核验。真实门另行验收 |
 | R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
 | R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
 | R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
 | R04 | 真实任务 / NOT_RUN | 独立确认创建 / 编辑 / 完成；各日期语义与清空、目标 / 字段和 GET 回读证实；journal 核实 / unknown 不重发；遗留测试资源及处理责任明确 |
 | R05 | C 整合 / NOT_RUN | 固定代码 / 文档 / 独立 QA / manifest / PR / main 关系清楚；所有适用必需真实项通过，否则为部分完成或 BLOCKED；代码变更后对应门重新复验 |
 
-### M4.2 工作包 A 现行实现说明
+### 一次性授权计划验收标准
 
-当前实现提供本机一次性 approval plan：真实模型 organize/index/query 和 Feishu read/import 要先预览确切内容范围、显式确认，再在原业务路由提交 plan id。取消、过期、配置/来源/页面/Feishu 授权代次变化、异 workspace/profile 或未确认均不得外发。每次请求先有限预留；中断状态保留为 unknown 且不能释放/重放。provider usage 只保存响应报告的 request id/token 数；缺字段保持未知，真实账单需在服务商侧人工核对。fixed `419bb86` 已通过 fresh QA 与 Sol 适用离线技术门判断；真实范围、Keychain、账单质量和交付门仍按本文件标记 NOT_RUN/UNVERIFIED。本段不替代整行 MUST 验收；旧 B03/B04 描述仅适用于其历史固定 SHA。
+真实模型 organize/index/query 和 Feishu read/import 必须先预览确切内容范围、显式确认，再在原业务路由提交 plan id。取消、过期、配置/来源/页面/Feishu 授权代次变化、异 workspace/profile 或未确认均不得外发。每次请求先有限预留；中断状态保留为 unknown 且不能释放/重放。provider usage 只保存响应报告的 request id/token 数；缺字段保持未知，真实账单需在服务商侧人工核对。本要求不替代整行 MUST 验收。
 
 ### C28 五个实际工作日记录模板
 
@@ -157,9 +155,9 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 
 R03 之外的有限合成连接 smoke 已由用户于 2026-10-10 另行授权：一次 Feishu OAuth code exchange、必要时一次 refresh，以及 DeepSeek chat / Model Studio embedding / rerank 各最多一次短合成请求。它只记录受限连接、协议、用量与实际费用，不能替代本行真实模型质量、预定样例、用户评定或独立 QA。执行前查当日官方价格；CNY 5 是提示词建议的保守操作上限，不是用户指定预算，超出可可靠界定范围时暂停付费调用并只询问额度。
 
-### 2026-10-11 收口范围说明
+### 2026-10-11 历史收口范围说明
 
-本轮用户选择离线源码修复、固定 SHA 独立 QA 后整合；真实 provider、OS Keychain、DMG 和真实质量不进入本轮 PASS。B01–B04 按离线协议/实现验证，B05 包含实际浏览器/原生开发壳与合成 credential 故障，B06 为独立 checkout 对精确 SHA 的离线 QA 与整合。原 C01–C31、R03 真实模型质量及全 v1 MUST 均保持；本次不把这些 NOT_RUN 降为可省略。
+2026-10-11 的用户选择为离线源码修复、固定 SHA 独立 QA 后整合；真实 provider、OS Keychain、DMG 和真实质量不进入当轮 PASS。B01–B04 按离线协议/实现验证，B05 包含实际浏览器/原生开发壳与合成 credential 故障，B06 为独立 checkout 对精确 SHA 的离线 QA 与整合。原 C01–C31、R03 真实模型质量及全 v1 MUST 均保持；不把那些未测项降为可省略。
 
 额外必验失败路径：DNS 暂停取消后不得继续发 HTTP；TLS 握手未完成也关闭 TCP；同 client 请求 A 超时不取消 B；退役准入原子；真实 pycares bytes 地址不重新进入系统 DNS；不安全 HTTPX mount 发出请求前拒绝；完整 JSON wire 计入上限；压缩响应在解压前拒绝；Real 任务写 UI 与后端拒绝一致。测试保留真实内部实现，外部边界只用 HTTP 合成远端和 MemorySecretBackend。原归档 harness 的构造死锁/原因字符串差异与历史 FAIL 保留，修正版不能覆盖原件。
 
