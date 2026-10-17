@@ -395,6 +395,22 @@ class QueryService:
                 ):
                     pairs.update(segment_pairs)
                     supported_segments.append(segment)
+            if not supported_segments and not retrieval_plan.explicit_subjects:
+                # A page title is part of the user-visible topic, but it is not in
+                # the Markdown body chunks. Without this fallback a question that
+                # repeats the page title (or a shorter phrase inside it) is
+                # rejected even though the page is confirmed and indexed. The
+                # body still supplies the excerpt; the title only establishes
+                # that this page is about the requested topic.
+                title = page.metadata.get("title")
+                title_text = title if isinstance(title, str) else ""
+                title_dimensions = supported_dimensions(title_text, retrieval_plan.dimensions)
+                title_pairs = {("", dimension) for dimension in title_dimensions} & set(
+                    retrieval_plan.required_pairs
+                )
+                if title_pairs:
+                    pairs.update(title_pairs)
+                    supported_segments.append(text)
             if not supported_segments:
                 return False
             chunk_id = str(item["chunk_id"])

@@ -147,6 +147,17 @@ def test_unknown_exception_keeps_the_generic_message_and_hides_text(tmp_path):
     ("provider", "secret", "expected_status"),
     [
         ("deepseek", "sk-synthetic-key-0000000000", 200),
+        # Real Model Studio keys carry JWT-style dot separators; they must pass
+        # the shape gate even though the old alphabet rejected them.
+        ("deepseek", "sk-abcdefghijklmnop.qrstuvwx", 200),
+        (
+            "deepseek",
+            "sk-" + "a" * 16 + "." + "b" * 16 + "." + "c" * 16 + "." + "d" * 16,
+            200,
+        ),
+        ("deepseek", "sk-abcdefghijklmnop+/=", 200),
+        ("deepseek", "sk-abcdefghijklmnop\u200b", 422),
+        ("deepseek", 'sk-abcdefghij"klmnop', 422),
         ("deepseek", "synthetic-key", 422),
         ("deepseek", "sk-short", 422),
         ("deepseek", "sk-synthetic\nkey-0000000000", 422),

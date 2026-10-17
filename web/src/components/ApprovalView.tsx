@@ -23,6 +23,19 @@ const initial = <T,>(): Resource<T> => ({ data: null, loading: true, error: '', 
 const formalNeedsAttention = (page: Page) => page.approval_state !== 'confirmed'
 const actionableAction = (action: Action) => ['proposed', 'confirmed', 'running', 'failed', 'unknown'].includes(action.state)
 
+function organizeResultMessage(state: IntakeJob['state']): string {
+  switch (state) {
+    case 'failed':
+      return '整理没有完成。原来源和已有内容仍然保留；可以选中该来源后点「明确重新整理」。'
+    case 'cancelled':
+      return '整理已取消，没有生成稿件。'
+    case 'unknown':
+      return '整理结果待核对，不会自动重发；核对后可再决定是否重新整理。'
+    default:
+      return '正在处理中。不会重复发起。'
+  }
+}
+
 function StatePanel<T>({ resource, retry, children }: { resource: Resource<T>; retry: () => void; children: (data: T) => ReactNode }) {
   if (resource.loading && resource.data === null) return <p className="quiet-empty" role="status">正在读取…</p>
   if (resource.error && resource.data === null) return <div className="resource-error" role="alert"><p>{resource.error}</p><button className="button secondary" onClick={retry}>重试</button></div>
@@ -320,7 +333,7 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
 
     <div className="approval-list" role="region" aria-label="审批清单" hidden={focused}>
     <ApprovalGroup id="approval-sources" headingId="approval-sources-heading" title="1 · 来源" description="选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。" count={sources.data ? visibleSources.length : '—'} open={groupOpen('sources', pendingSources.length > 0)} onToggle={(open) => setGroupOpen('sources', open)}>
-      <StatePanel resource={sources} retry={() => void refreshSources()}>{() => <><SourceList items={visibleSources} selected={selectedSources} onToggle={toggleSource} targetIds={target?.kind === 'source' ? target.itemIds : []} onOpenSource={openSourceFocus} /><SourceOrganizer items={(sources.data ?? []).filter((item) => selectedSources.includes(item.item_id))} onError={onError} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} /></>}</StatePanel>
+      <StatePanel resource={sources} retry={() => void refreshSources()}>{() => <><SourceList items={visibleSources} selected={selectedSources} onToggle={toggleSource} targetIds={target?.kind === 'source' ? target.itemIds : []} onOpenSource={openSourceFocus} /><SourceOrganizer items={(sources.data ?? []).filter((item) => selectedSources.includes(item.item_id))} onError={(message) => { onError(message); void refreshSources() }} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} /></>}</StatePanel>
     </ApprovalGroup>
 
     <ApprovalGroup id="approval-drafts" headingId="approval-drafts-heading" title="2 · 稿件" description="查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。" count={drafts.data ? visibleDrafts.length : '—'} open={groupOpen('drafts', pendingDraftList.length > 0)} onToggle={(open) => setGroupOpen('drafts', open)}>
@@ -353,8 +366,8 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
       <h2>{activeSourceItem.title}</h2>
       <p className="source-focus-meta">{activeSourceItem.filename} · {activeSourceItem.created_at ? new Date(activeSourceItem.created_at).toLocaleString('zh-CN') : ''}</p>
       {sourceDetailLoading ? <p role="status">正在读取原文…</p> : sourceDetailError ? <div className="resource-error" role="alert"><p>{sourceDetailError}</p><button className="button secondary" onClick={() => openSourceFocus(activeSourceItem, document.activeElement as HTMLElement)}>重试</button></div> : sourceDetail && <article className="source-reading-body"><MarkdownText content={sourceDetail.text} /></article>}
-      {activeSourceItem.state === 'processing' || activeSourceItem.state === 'reviewing' ? <><p className="helper-line">这条材料已有整理任务或稿件，不会再次发起整理。</p>{organizeResult && <button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button>}</> : <SourceOrganizer items={(sources.data ?? []).filter((item) => selectedSources.includes(item.item_id))} onError={onError} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} />}
-      {organizeResult && <section className="organize-result" aria-label="本次整理结果"><h3>本次整理结果</h3>{organizeResult.state === 'completed' ? <><p>已完成，生成 {organizeResult.draft_ids?.length ?? 0} 份待审核稿。</p>{organizeResult.draft_ids?.length ? <ul>{organizeResult.draft_ids.map((id) => { const draft = drafts.data?.find((item) => item.draft_id === id); return <li key={id}><span>{draft ? String(draft.metadata.title ?? '未命名稿件') : '稿件载入中'}</span>{draft && <button className="button secondary" onClick={(event) => openDraftFocus(id, event.currentTarget)}>打开这份稿件</button>}</li> })}</ul> : null}</> : <><p>整理任务当前状态：{organizeResult.state === 'unknown' ? '结果待核对' : '正在处理中'}。不会重复发起。</p><button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button></>}</section>}
+      {activeSourceItem.state === 'processing' || activeSourceItem.state === 'reviewing' ? <><p className="helper-line">这条材料已有整理任务或稿件，不会再次发起整理。</p>{organizeResult && <button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button>}</> : <SourceOrganizer items={(sources.data ?? []).filter((item) => selectedSources.includes(item.item_id))} onError={(message) => { onError(message); void refreshSources() }} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} />}
+      {organizeResult && <section className="organize-result" aria-label="本次整理结果"><h3>本次整理结果</h3>{organizeResult.state === 'completed' ? <><p>已完成，生成 {organizeResult.draft_ids?.length ?? 0} 份待审核稿。</p>{organizeResult.draft_ids?.length ? <ul>{organizeResult.draft_ids.map((id) => { const draft = drafts.data?.find((item) => item.draft_id === id); return <li key={id}><span>{draft ? String(draft.metadata.title ?? '未命名稿件') : '稿件载入中'}</span>{draft && <button className="button secondary" onClick={(event) => openDraftFocus(id, event.currentTarget)}>打开这份稿件</button>}</li> })}</ul> : null}</> : <><p>{organizeResultMessage(organizeResult.state)}</p><button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button></>}</section>}
     </section>}
     {activeFormalPage && <section className="panel formal-focus" aria-label={`正式内容：${String(activeFormalPage.metadata.title ?? '未命名页面')}`} tabIndex={-1}>
       <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>{activeFormalPage.approval_state === 'confirmed' ? '已确认' : '待确认'}</span></div>

@@ -63,6 +63,11 @@ def test_deepseek_sends_untrusted_text_as_data_and_validates_output():
     assert sent["thinking"] == {"type": "disabled"}
     assert "Faithfully reorganize" in sent["messages"][0]["content"]
     assert "do not add analysis" in sent["messages"][0]["content"]
+    assert (
+        "kind must be exactly one of: object, case, topic, decision"
+        in sent["messages"][0]["content"]
+    )
+    assert "as distinct kinds" not in sent["messages"][0]["content"]
 
 
 def test_deepseek_grounded_answer_parses_only_answer_fields():

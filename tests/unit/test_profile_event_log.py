@@ -63,6 +63,8 @@ def test_a_sanitized_failure_reason_is_recorded(tmp_path: Path) -> None:
             "Authentication Fails, Your api key: sk-*** is invalid",
         ),
         ("leaked sk-abcdefghijklmnop now", "leaked sk-*** now"),
+        # Dot-separated Model Studio keys must be masked as a whole token.
+        ("leaked sk-abc.def.ghi.jkl now", "leaked sk-*** now"),
         ("y" * 258, "y" * 200),
         # Control bytes are dropped instead of carried into the file; the rule
         # this replaces refused them outright, which lost the event.
@@ -109,6 +111,21 @@ def test_an_unmasked_credential_never_reaches_the_file(tmp_path: Path) -> None:
     )
     text = (tmp_path / "diagnostics.log").read_text(encoding="utf-8")
     assert secret not in text
+    assert "sk-***" in text
+
+
+def test_a_dot_separated_credential_is_masked_whole(tmp_path: Path) -> None:
+    secret = "sk-" + "a" * 16 + "." + "b" * 16 + "." + "c" * 16
+    event_log.profile_event(
+        tmp_path,
+        "assistant_failed",
+        state="failed",
+        reason=f"Authentication Fails, Your api key: {secret} is invalid",
+    )
+    text = (tmp_path / "diagnostics.log").read_text(encoding="utf-8")
+    assert secret not in text
+    assert "a" * 16 not in text
+    assert "b" * 16 not in text
     assert "sk-***" in text
 
 

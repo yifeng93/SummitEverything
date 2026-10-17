@@ -599,3 +599,37 @@ def test_lookup_verb_at_the_start_of_an_unknown_name_does_not_match_shorter_obje
     }
     assert [citation.excerpt for citation in answer.citations] == ["松墨展会预算为八万元。"]
     assert answer.missing_information == ["查看明细项目：缺少预算依据。"]
+
+
+def test_page_title_supports_a_topic_question_without_a_known_object_alias(tmp_path: Path) -> None:
+    """A confirmed page title is part of the topic even when it is absent from the body.
+
+    Real case: the page title is “系统增加学员28号晚住宿需求自动勾选流程”, the body
+    says “28号晚住宿”; a question repeating the title was rejected because the
+    body-only scope match never saw the title. The title fallback must return the
+    body citation, while a vague question without the title still returns none.
+    """
+    root, service, answerer = build_query(
+        tmp_path,
+        [
+            (
+                "IT测试",
+                "系统增加学员28号晚住宿需求自动勾选流程",
+                "目前学员是否需28号晚住宿需告知EC，EC手动写备注再整理给logistic。"
+                "计划在系统中增加流程让学员自动勾选。",
+            )
+        ],
+    )
+
+    answer = ask(service, root, "学员28号晚住宿需求自动勾选流程是什么？", "fact")
+    assert answer.citations, answer.model_dump()
+    assert "28号晚住宿" in excerpts(answer)
+    assert answer.missing_information == []
+    assert answerer.calls
+    assert "28号晚住宿" in passages(answerer)
+
+    calls_before = len(answerer.calls)
+    vague = ask(service, root, "28个学员是什么", "fact")
+    assert vague.citations == []
+    assert vague.missing_information
+    assert len(answerer.calls) == calls_before

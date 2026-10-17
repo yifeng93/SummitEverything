@@ -188,3 +188,53 @@ def test_deepseek_blank_content_is_a_schema_failure():
     with pytest.raises(LLMProviderError) as caught:
         llm.answer("问题", [{"heading": "h", "excerpt": "e"}])
     assert caught.value.reason == "schema"
+
+
+@pytest.mark.parametrize(
+    ("kind", "expected"),
+    [
+        ("fact", "topic"),
+        ("idea", "topic"),
+        ("suggestion", "topic"),
+        ("unresolved", "topic"),
+        ("  OBJECT  ", "object"),
+        ("案例", "case"),
+        ("业务决策", "decision"),
+        ("summary", "topic"),
+    ],
+)
+def test_proposal_kind_aliases_normalize_to_page_kinds(kind: str, expected: str) -> None:
+    from summit_everything.integrations.llm import DraftProposal
+
+    proposal = DraftProposal.model_validate(
+        {"title": "合成标题", "kind": kind, "body": "合成正文", "input_indexes": [0]}
+    )
+    assert proposal.kind == expected
+
+
+def test_proposal_kind_still_rejects_non_string_values() -> None:
+    from summit_everything.integrations.llm import DraftProposal
+
+    with pytest.raises(ValidationError):
+        DraftProposal.model_validate({"title": "合成标题", "kind": ["topic"], "body": "合成正文"})
+
+
+def test_organize_accepts_the_old_prompt_kind_wording() -> None:
+    content = json.dumps(
+        {
+            "proposals": [
+                {
+                    "title": "合成标题",
+                    "kind": "fact",
+                    "body": "合成正文",
+                    "input_indexes": [0],
+                    "important_conflicts": [],
+                    "action_suggestions": [],
+                }
+            ]
+        },
+        ensure_ascii=False,
+    )
+    llm = DeepSeekLLM(KEY, client=client_for(content))
+    proposals = llm.organize([(uuid4(), uuid4(), "## 小节\n正文")])
+    assert proposals[0].kind == "topic"

@@ -22,6 +22,53 @@ class PlanConflict(RuntimeError):
     """A plan is stale, already used, or outside its confirmed scope."""
 
 
+# Provider/plan state machine messages are internal; the WebUI and API detail
+# must stay in the product's Chinese business language. Keep one translation
+# point instead of leaking English ``PlanConflict`` text into the UI.
+_PLAN_CONFLICT_TEXT = {
+    "an executing or completed plan cannot be cancelled": (
+        "这次操作已经提交或结束，不能再取消；请查看本次结果。"
+    ),
+    "plan is not executing": "这次操作已经结束，不能再更新状态。",
+    "acceptance plan was not found": "找不到本次计划，请重新预览。",
+    "acceptance plan expired": "本次计划已过期，请重新预览。",
+    "acceptance plan operation does not match": "本次计划与操作不匹配，请重新预览。",
+    "only an unused preview can be confirmed": "只有尚未使用的预览才能确认，请重新预览。",
+    "plan requires a fresh explicit confirmation": "本次计划需要重新确认，请重新预览。",
+    "acceptance plan belongs to a different workspace or profile": (
+        "本次计划属于其他工作库或本机配置，不能使用。"
+    ),
+    "plan requires explicit confirmation and execution": "本次计划需要先确认再执行，请重新预览。",
+    "acceptance plan expired; reserved requests remain consumed": (
+        "本次计划已过期；已预留的请求仍计入尝试次数，请重新预览。"
+    ),
+    "confirmed provider request limit has been reached": ("本次计划的请求次数已用完，请重新预览。"),
+    "provider usage does not belong to an executing plan": (
+        "本次计划的用量记录与执行状态不匹配，请重新预览。"
+    ),
+    "provider usage exceeds the confirmed request bound": (
+        "本次计划的用量超过已确认的请求上限，请重新预览。"
+    ),
+    "workspace, profile, configuration, or scope changed": (
+        "工作库、本机配置或范围已变化，请重新预览。"
+    ),
+    "operation does not match its approved request bound": (
+        "本次操作的请求范围与计划不一致，请重新预览。"
+    ),
+    "model plan confirmation needs its displayed scope": ("请按预览显示的范围确认本次模型计划。"),
+    "preview scope changed before confirmation": "预览范围在确认前发生变化，请重新预览。",
+    "journal text or provider settings changed": "日志正文或模型设置已变化，请重新预览。",
+    "approved source or provider settings changed": (
+        "已批准的材料或模型设置发生变化，请重新预览。"
+    ),
+}
+
+
+def plan_conflict_message(exc: BaseException) -> str:
+    """A user-facing Chinese sentence for a plan state-machine conflict."""
+    return _PLAN_CONFLICT_TEXT.get(str(exc), "本次计划状态已变化，请重新预览。")
+
+
 class ProviderUsage(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

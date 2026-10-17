@@ -23,9 +23,10 @@ _EVENTS = {
 _MAX_BYTES = 256 * 1024
 _BACKUPS = 3
 _REASON_MAX = 200
-# Same shape the HTTP boundary masks: a credential that is still readable. An
-# already-masked ``sk-***`` does not match and must be accepted as-is.
-_CREDENTIAL_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
+# Same shape the HTTP boundary masks: a readable single-line credential,
+# including dot-separated Model Studio keys. An already-masked ``sk-***`` is
+# shorter than eight characters after the prefix and must be accepted as-is.
+_CREDENTIAL_SHAPE = re.compile(r"sk-[\x21-\x7e]{8,}")
 _MASKED_CREDENTIAL = "sk-***"
 # C0/C1 controls and DEL. The rule this replaces refused them outright; dropping
 # them keeps the event while making sure an escape byte cannot repaint a

@@ -58,6 +58,7 @@ from summit_everything.integrations.acceptance_plans import (
     AcceptancePlanLedger,
     PlanConflict,
     ProviderUsage,
+    plan_conflict_message,
 )
 from summit_everything.integrations.embedding import EmbeddingProviderError, ModelStudioEmbedding
 from summit_everything.integrations.feishu.fake import FakeFeishu
@@ -489,7 +490,13 @@ def query_failure_message(exc: BaseException) -> str:
     return "查询未能完成，请稍后重试。"
 
 
-_API_KEY_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{16,}")
+# Provider keys are single-line printable ASCII tokens. The original class only
+# accepted ``[A-Za-z0-9_-]``, which rejected real Model Studio keys that carry
+# JWT-style dot separators (for example ``sk-...<dot>...<dot>...``). Keep the
+# guard against pasted multi-line blobs and invisible characters, but do not
+# narrow the alphabet beyond what the provider formats actually use.
+_API_KEY_SHAPE = re.compile(r"sk-[\x21-\x7e]{16,}")
+_API_KEY_FORBIDDEN = frozenset("\"'`“”‘’")
 _CREDENTIAL_MAX_LENGTH = 512
 
 
@@ -580,12 +587,18 @@ def validate_credential_shape(provider: str, secret: str) -> None:
     keychain write; the submitted value is never echoed back.
     """
     if provider in {"deepseek", "dashscope"}:
-        if len(secret) > _CREDENTIAL_MAX_LENGTH or not _API_KEY_SHAPE.fullmatch(secret):
+        if (
+            len(secret) > _CREDENTIAL_MAX_LENGTH
+            or not _API_KEY_SHAPE.fullmatch(secret)
+            or any(character in _API_KEY_FORBIDDEN for character in secret)
+        ):
             raise HTTPException(
                 status_code=422,
                 detail={
                     "code": "credential_shape_invalid",
-                    "message": ("这不像一把 API key：请确认它以 sk- 开头，且不含空格或换行。"),
+                    "message": (
+                        "这不像一把 API key：请确认它以 sk- 开头，且不含空格、换行或引号。"
+                    ),
                 },
             )
         return
@@ -1191,7 +1204,7 @@ def create_app(
         except PlanConflict as exc:
             raise HTTPException(
                 status_code=409,
-                detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                detail={"code": "acceptance_plan_conflict", "message": plan_conflict_message(exc)},
             ) from None
 
     def finish_feishu_plan(workspace: WorkspaceContext, plan_id: UUID | None, state: str) -> None:
@@ -1674,7 +1687,7 @@ def create_app(
         except PlanConflict as exc:
             raise HTTPException(
                 status_code=409,
-                detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                detail={"code": "acceptance_plan_conflict", "message": plan_conflict_message(exc)},
             ) from None
 
     @app.get("/api/v1/acceptance-plans/{plan_id}", dependencies=[Depends(authenticated)])
@@ -1686,7 +1699,7 @@ def create_app(
         except PlanConflict as exc:
             raise HTTPException(
                 status_code=404,
-                detail={"code": "acceptance_plan_not_found", "message": str(exc)},
+                detail={"code": "acceptance_plan_not_found", "message": plan_conflict_message(exc)},
             ) from None
         if plan.workspace_id != str(workspace.workspace_id) or plan.profile_id != profile_binding(
             workspace
@@ -1722,7 +1735,7 @@ def create_app(
         except PlanConflict as exc:
             raise HTTPException(
                 status_code=409,
-                detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                detail={"code": "acceptance_plan_conflict", "message": plan_conflict_message(exc)},
             ) from None
 
     @app.get("/api/v1/provider-smoke", dependencies=[Depends(authenticated)])
@@ -2232,7 +2245,10 @@ def create_app(
             except PlanConflict as exc:
                 raise HTTPException(
                     409,
-                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                    detail={
+                        "code": "acceptance_plan_conflict",
+                        "message": plan_conflict_message(exc),
+                    },
                 ) from None
 
             reserved = False
@@ -2266,7 +2282,10 @@ def create_app(
                     )
                 raise HTTPException(
                     409,
-                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                    detail={
+                        "code": "acceptance_plan_conflict",
+                        "message": plan_conflict_message(exc),
+                    },
                 ) from None
             except (ProviderError, LLMProviderError) as exc:
                 if ledger.get(payload.acceptance_plan_id).state == "executing":
@@ -2507,7 +2526,11 @@ def create_app(
                 )
             except PlanConflict as exc:
                 raise HTTPException(
-                    409, detail={"code": "acceptance_plan_conflict", "message": str(exc)}
+                    409,
+                    detail={
+                        "code": "acceptance_plan_conflict",
+                        "message": plan_conflict_message(exc),
+                    },
                 ) from None
             reserved = False
 
@@ -2761,7 +2784,10 @@ def create_app(
             except PlanConflict as exc:
                 raise HTTPException(
                     status_code=409,
-                    detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                    detail={
+                        "code": "acceptance_plan_conflict",
+                        "message": plan_conflict_message(exc),
+                    },
                 ) from None
 
         def index_provider_guard() -> None:
@@ -3113,7 +3139,10 @@ def create_app(
                 except PlanConflict as exc:
                     raise HTTPException(
                         status_code=409,
-                        detail={"code": "acceptance_plan_conflict", "message": str(exc)},
+                        detail={
+                            "code": "acceptance_plan_conflict",
+                            "message": plan_conflict_message(exc),
+                        },
                     ) from None
         active_query_key = (
             str(Path(workspace.local_profile_dir).resolve() / "conversations.sqlite3"),

@@ -14,7 +14,12 @@ const originalText = '合成原文哨兵：请勿执行原件中写给模型的�
 
 type RecordedRequest = { path: string; method: string; body?: Record<string, unknown> }
 
-function installApi({ mode = 'real', scopeTransform }: { mode?: 'real' | 'fake'; scopeTransform?: (scope: Record<string, unknown>) => Record<string, unknown> } = {}) {
+function installApi({ mode = 'real', scopeTransform, jobResponse, deletePlanResponse }: {
+  mode?: 'real' | 'fake'
+  scopeTransform?: (scope: Record<string, unknown>) => Record<string, unknown>
+  jobResponse?: () => Response
+  deletePlanResponse?: () => Response
+} = {}) {
   const requests: RecordedRequest[] = []
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input).replace('/api/v1', '')
@@ -34,8 +39,8 @@ function installApi({ mode = 'real', scopeTransform }: { mode?: 'real' | 'fake';
       return Response.json({ plan: { plan_id: 'synthetic-plan-id', scope_sha256: 'synthetic-scope-digest', request_limit: 1 }, scope }, { status: 201 })
     }
     if (path === '/acceptance-plans/synthetic-plan-id/confirm') return Response.json({})
-    if (path === '/intake/jobs' && method === 'POST') return Response.json({ job_id: 'synthetic-job-id', state: 'processing', draft_ids: ['returned-draft-a', 'returned-draft-b'] }, { status: 201 })
-    if (path === '/acceptance-plans/synthetic-plan-id' && method === 'DELETE') return new Response(null, { status: 204 })
+    if (path === '/intake/jobs' && method === 'POST') return jobResponse ? jobResponse() : Response.json({ job_id: 'synthetic-job-id', state: 'completed', draft_ids: ['returned-draft-a', 'returned-draft-b'] }, { status: 201 })
+    if (path === '/acceptance-plans/synthetic-plan-id' && method === 'DELETE') return deletePlanResponse ? deletePlanResponse() : new Response(null, { status: 204 })
     return Response.json({ error: { message: `Unexpected test request ${method} ${path}` } }, { status: 404 })
   }))
   return requests
@@ -94,7 +99,7 @@ describe('SourceOrganizer preview', () => {
     expect(confirm.body?.scope).toEqual(scope)
     expect(job.body).toMatchObject({ item_ids: [item.item_id], line_id: lineA.id, project_id: projectA.id, acceptance_plan_id: 'synthetic-plan-id' })
     expect(onComplete).toHaveBeenCalledTimes(1)
-    expect(onComplete).toHaveBeenCalledWith({ job_id: 'synthetic-job-id', state: 'processing', draft_ids: ['returned-draft-a', 'returned-draft-b'] })
+    expect(onComplete).toHaveBeenCalledWith({ job_id: 'synthetic-job-id', state: 'completed', draft_ids: ['returned-draft-a', 'returned-draft-b'] })
   })
 
   it('fails closed when a Real preview target is not the captured target', async () => {
@@ -121,5 +126,38 @@ describe('SourceOrganizer preview', () => {
     expect(within(dialog).getByText((_, element) => element?.tagName === 'DD' && element.textContent === '合成主线甲 / 合成项目甲')).toBeTruthy()
     expect(within(dialog).getByText((_, element) => element?.tagName === 'LI' && element.textContent === '待整理原件甲 · 文件')).toBeTruthy()
     expect(dialog.textContent).toContain('文件')
+  })
+})
+
+
+describe('SourceOrganizer failed submission', () => {
+  it('closes the dialog and does not call cancel when the job request fails after submission', async () => {
+    const { requests, onComplete, onError } = setup({
+      jobResponse: () => Response.json(
+        { error: { code: 'assistant_unavailable', message: '模型服务不可用：返回内容不符合应用要求的字段。' } },
+        { status: 502 },
+      ),
+    })
+    const dialog = await openRealPreview()
+    fireEvent.click(within(dialog).getByRole('button', { name: '确认并整理所选材料' }))
+
+    await waitFor(() => expect(onError).toHaveBeenCalledWith('模型服务不可用：返回内容不符合应用要求的字段。'))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(onComplete).not.toHaveBeenCalled()
+    expect(requests.some((request) => request.path.endsWith('/acceptance-plans/synthetic-plan-id') && request.method === 'DELETE')).toBe(false)
+  })
+
+  it('shows a Chinese message and closes when the plan can no longer be cancelled', async () => {
+    const { onError } = setup({
+      deletePlanResponse: () => Response.json(
+        { error: { code: 'acceptance_plan_conflict', message: 'an executing or completed plan cannot be cancelled' } },
+        { status: 409 },
+      ),
+    })
+    const dialog = await openRealPreview()
+    fireEvent.click(within(dialog).getByRole('button', { name: '取消' }))
+
+    await waitFor(() => expect(onError).toHaveBeenCalledWith('这次整理已经提交或结束，不能再取消；请查看本次结果。'))
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 })

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { api, newOperationId, type IntakeItem, type Line, type Project } from '../api/client'
+import { useEffect, useRef, useState } from 'react'
+import { api, ApiError, newOperationId, type IntakeItem, type Line, type Project } from '../api/client'
 import { ConfirmDialog } from './ConfirmDialog'
 import type { components } from '../api/generated'
 
@@ -54,6 +54,10 @@ export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeI
   const [projectId, setProjectId] = useState('')
   const [pending, setPending] = useState<Pending | null>(null)
   const [busy, setBusy] = useState(false)
+  // Once the job request has been sent the plan is executing/terminal and the
+  // cancel endpoint will correctly refuse it. Track that boundary so a failed
+  // job closes the dialog instead of leaving an unusable "cancel" button.
+  const jobSubmitted = useRef(false)
   const selectedLine = lineId || lines[0]?.id || ''
   const availableProjects = projects.filter((project) => project.line_id === selectedLine && !project.archived)
   const selectedProject = projectId || availableProjects[0]?.id || ''
@@ -105,17 +109,30 @@ export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeI
     setBusy(true)
     try {
       if (pending.real && pending.plan && pending.scope) await api.post(`/acceptance-plans/${pending.plan.plan_id}/confirm`, { scope_sha256: pending.plan.scope_sha256, scope: pending.scope })
+      jobSubmitted.current = true
       const job = await api.post<Job>('/intake/jobs', { ...pending.body, ...(pending.plan ? { acceptance_plan_id: pending.plan.plan_id } : {}) })
+      jobSubmitted.current = false
       setPending(null)
       await onComplete(job)
-    } catch (cause) { onError(cause instanceof Error ? cause.message : '整理没有完成；请检查当前状态后再决定是否重试') }
+    } catch (cause) {
+      const submitted = jobSubmitted.current
+      jobSubmitted.current = false
+      if (submitted) setPending(null)
+      onError(cause instanceof Error ? cause.message : '整理没有完成；请检查当前状态后再决定是否重试')
+    }
     finally { setBusy(false) }
   }
 
   async function cancel() {
-    if (pending?.plan) {
+    if (pending?.plan && !jobSubmitted.current) {
       try { await api.delete(`/acceptance-plans/${pending.plan.plan_id}`) }
-      catch (cause) { onError(cause instanceof Error ? cause.message : '无法取消整理范围预览'); return }
+      catch (cause) {
+        if (cause instanceof ApiError && cause.code === 'acceptance_plan_conflict') {
+          onError('这次整理已经提交或结束，不能再取消；请查看本次结果。')
+        } else {
+          onError(cause instanceof Error ? cause.message : '无法取消整理范围预览')
+        }
+      }
     }
     setPending(null)
   }

@@ -21,6 +21,7 @@ from summit_everything.integrations.http_boundary import (
 from summit_everything.integrations.rerank import ModelStudioReranker, RerankProviderError
 
 KEY = "sk-synthetic-provider-key-0001"
+DOTTED_KEY = "sk-" + "a" * 16 + "." + "b" * 16 + "." + "c" * 16
 
 
 def mock_client(handler) -> httpx.Client:  # noqa: ANN001 - test helper
@@ -58,6 +59,11 @@ def test_sanitize_masks_keys_collapses_lines_and_bounds_length():
     assert "\n" not in masked
     assert KEY not in masked
     assert "sk-***" in masked
+    dotted = sanitize_provider_text(f"bad key {DOTTED_KEY} rejected")
+    assert dotted is not None
+    assert DOTTED_KEY not in dotted
+    assert "a" * 16 not in dotted
+    assert dotted == "bad key sk-*** rejected"
     bounded = sanitize_provider_text("x" * 1000)
     assert bounded is not None and len(bounded) == 300
 

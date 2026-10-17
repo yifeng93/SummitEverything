@@ -85,7 +85,9 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
                         "proposals": [
                             {
                                 "title": "访客登记办法",
-                                "kind": "topic",
+                                # The model may follow the old wording; the draft
+                                # must still land as a valid page kind.
+                                "kind": "fact",
                                 "body": (
                                     "## 访客登记\n\n"
                                     "青榆的访客登记须由前台核验姓名并记录来访时间。\n"
@@ -248,6 +250,9 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     )
     assert job.status_code == 201, job.text
     assert job.json()["draft_ids"]
+    draft = client.get(f"/api/v1/drafts/{job.json()['draft_ids'][0]}", headers=HEADERS)
+    assert draft.status_code == 200, draft.text
+    assert draft.json()["metadata"]["kind"] == "topic"
     assert calls[0][0].endswith("/chat/completions")
     assert calls[0][1]["thinking"] == {"type": "disabled"}
     organize_state = client.get(
