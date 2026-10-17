@@ -2,16 +2,16 @@
 
 当前状态只维护在 [PROGRESS](../../implementation/PROGRESS.md)。本页导航各固定 SHA 的报告；历史 PASS/FAIL、合并及 CI 记录不得直接作为当前 HEAD 的结论。
 
-## API key 形状修复（2026-10-17，候选，未合并）
+## API key 形状修复（2026-10-17，已合并）
 
 - [DEV 记录](2026-10-17-API-KEY-SHAPE-FIX-DEV.md)：真实百炼 key 的点分隔格式被旧白名单误拒；校验与两处脱敏同步放宽，定向/全量测试、内部 DMG 构建与 smoke 结果；未独立 QA。
 
-## 整理 kind 与失败取消修复（2026-10-17，候选，未合并）
+## 整理 kind 与失败取消修复（2026-10-17，已合并）
 
 - [DEV 记录](2026-10-17-ORGANIZE-KIND-FIX-DEV.md)：真实整理因提示词与 `kind` schema 冲突失败；提示词对齐、kind 归一化、计划冲突中文文案、失败后关闭不可取消的对话框并刷新失败来源。
 - [独立 QA 与 Sol 门](2026-10-17-ORGANIZE-KIND-FIX-QA.md)：固定 `ad60394` 的 A–E 离线/Mock 验收 PASS；真实 provider retry 与安装/发布门 NOT_RUN；建议合并。
 
-## 检索标题 scope 修复（2026-10-17，候选，未合并）
+## 检索标题 scope 修复（2026-10-17，已合并）
 
 - [DEV + 真实验证](2026-10-17-RETRIEVAL-TITLE-SCOPE-DEV.md)：页面标题参与 scope 兜底；真实 `Test2` 查询从 0 引用变为 1 引用，真实调用 embedding/rerank/DeepSeek；全量 731/241 与 DMG smoke 通过。
 
