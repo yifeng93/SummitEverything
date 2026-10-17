@@ -1,7 +1,7 @@
 # 飞书高级设置与材料筛选修复
 
 日期：2026-10-17
-分支：`codex/feishu-settings-20261017`
+状态：已合入 main（PR #26，merge `f1b990a`）
 产品修复提交：`fe78ba47099f61daf1f4e49f7191eddb9ad544b2`
 基线：`e1cb028`（main）
 DMG：`.local/internal-builds/fe78ba4-20261017/SummitEverything-Internal-fe78ba4.dmg`
