@@ -1,0 +1,25 @@
+check	command	exit	result
+setup	uv sync --locked --group dev --group build	0	installed 45 locked Python packages in isolated .venv
+setup	npm --prefix web ci	0	installed 226 locked packages; audit 0 vulnerabilities
+python	PYTHONPATH="$PWD/scripts/offline_guard:$PWD/src" uv run --locked pytest -q	0	712 passed; 1 Starlette/httpx deprecation warning; 81.05s
+python	uv run --locked ruff check src tests	0	All checks passed
+python	uv run --locked ruff format --check src tests	0	101 files already formatted
+python	uv run --locked mypy src	0	47 source files; no issues
+python	uv lock --check	0	Resolved 48 packages
+python	uv build	0	built source distribution and wheel
+web	npm --prefix web test	0	26 files; 239 passed
+web	npm --prefix web run typecheck	0	tsc project references passed
+web	npm --prefix web run lint	0	2 existing react(set-state-in-effect) warnings in App.tsx and ProjectsView.tsx
+web	npm --prefix web run build	0	built; existing 603.32 kB main chunk advisory
+web	npm --prefix web run api:types	0	generated OpenAPI and generated.ts
+web	git diff --exit-code -- web/src/api/generated.ts uv.lock pyproject.toml web/package.json web/package-lock.json	0	generated source and lockfiles unchanged
+browser	npm --prefix web run test:e2e	0	2 Playwright tests passed; first-use and viewport/theme
+browser	npm --prefix web run test:e2e:integration	0	1 Playwright test passed; FastAPI + Fake on 127.0.0.1:8794
+native	swift test --package-path native	0	5 tests passed
+package	scripts/release-macos.sh "$PWD/.local/qa/ponytail-code/artifacts/SummitEverything Internal.app" "$PWD/.local/qa/ponytail-code/artifacts/SummitEverything-Internal.dmg"	0	arm64 internal App and DMG rebuilt from fixed target; no local first-use defaults present
+package	codesign --verify --deep --strict "$PWD/.local/qa/ponytail-code/artifacts/SummitEverything Internal.app"	0	strict signature verification passed
+package	hdiutil verify "$PWD/.local/qa/ponytail-code/artifacts/SummitEverything-Internal.dmg"	0	checksum VALID
+package	SUMMIT_APP="$PWD/.local/qa/ponytail-code/artifacts/SummitEverything Internal.app" uv run --locked python scripts/smoke_packaged_app.py	0	empty PATH, identity, static UI, auth boundaries, port conflicts and parent-pipe cleanup passed
+scope	git diff --quiet 5ef96375634a963d5961c8636ffec210aae6c9a9 5835faa72b513202e92694f4fa14790afefe1e70 -- src web/src native scripts tests pyproject.toml uv.lock web/package.json web/package-lock.json	1	expected nonzero: reports the single approved 4-line helper deletion
+scope	git diff --quiet 2d90a7e9efc9ed67f6a0260323f9b071d586f7a1 5835faa72b513202e92694f4fa14790afefe1e70 -- src web/src native scripts tests pyproject.toml uv.lock web/package.json web/package-lock.json	0	product source tree equals the code commit
+scope	Python local-link existence scan on DEV/PROGRESS/LATEST	0	10 local markdown targets exist

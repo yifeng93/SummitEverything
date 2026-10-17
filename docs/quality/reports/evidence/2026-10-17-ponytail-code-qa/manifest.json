@@ -1,0 +1,46 @@
+{
+  "tested_sha": "5835faa72b513202e92694f4fa14790afefe1e70",
+  "product_source_commit": "2d90a7e9efc9ed67f6a0260323f9b071d586f7a1",
+  "comparison_base": "5ef96375634a963d5961c8636ffec210aae6c9a9",
+  "initial_worktree_clean": true,
+  "source_tree_matches_product_commit": true,
+  "platform": "arm64 macOS 27.0.1 (26A434)",
+  "python": "3.12.13",
+  "uv": "0.12.3",
+  "node": "24.15.0",
+  "npm": "11.12.1",
+  "swift": "6.4",
+  "results": {
+    "pytest": "712 passed, 1 existing Starlette/httpx deprecation warning",
+    "vitest": "239 passed across 26 files",
+    "playwright_offline": "2 passed",
+    "playwright_fastapi_fake": "1 passed",
+    "swift": "5 passed",
+    "other_python_web_build_gates": "all exit 0; see commands.tsv"
+  },
+  "warnings": [
+    "Oxlint retained 2 react(set-state-in-effect) warnings in src/App.tsx and src/components/ProjectsView.tsx",
+    "Vite retained 603.32 kB main-chunk advisory",
+    "pytest retained 1 Starlette/httpx TestClient deprecation warning"
+  ],
+  "package": {
+    "source_sha": "5835faa72b513202e92694f4fa14790afefe1e70",
+    "dirty": false,
+    "build_id": "20261017T012415Z-09e7e301f26e",
+    "frontend_sha256": "09e7e301f26e2f6f418fb211f4a8c6aeea6f1ef6f84675f5e61b2746a55392d4",
+    "dependencies_sha256": "cab274716d93a5485155114bd25f3a65722eede97c4487d11262d8b73728c7d7",
+    "app_size": "38M",
+    "dmg_size": "20M",
+    "dmg_sha256": "b97594003fc753be16ca455f0681f9e51a8055e4962916f3c06a612d232bee47",
+    "release_script_exit": 0,
+    "codesign_verify_exit": 0,
+    "hdiutil_verify_exit": 0,
+    "packaged_smoke_exit": 0
+  },
+  "limitations": {
+    "real_provider_feishu_business_data_keychain_user_install_notarization_five_day_two_machine_release": "NOT_RUN",
+    "runtime_model_metadata": "UNVERIFIED"
+  },
+  "full_raw_logs": "ignored local checkout path .local/qa/ponytail-code/logs/",
+  "generated_browser_images": "ignored local checkout path .local/dev/frontend-a/current; copied during QA to .local/qa/ponytail-code/browser-artifacts/; source directory left intact"
+}
