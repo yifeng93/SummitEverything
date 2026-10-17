@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { defineConfig, devices } from '@playwright/test'
 
 const repoRoot = resolve(process.cwd(), '..')
-const evidenceRoot = resolve(repoRoot, '.local/dev/frontend-b/fastapi-integration')
+const evidenceRoot = resolve(repoRoot, '.local/dev/2026-10-16-frontend-usability/integration')
 const sessionToken = `playwright-${process.pid}-${randomUUID()}`
 
 export default defineConfig({

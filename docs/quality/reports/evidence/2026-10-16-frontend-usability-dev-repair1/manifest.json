@@ -1,0 +1,54 @@
+{
+  "tested_product_sha": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715",
+  "copied_by": "Sol",
+  "files": [
+    {
+      "file": "repair-1-focused-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-focused-final.log",
+      "bytes": 327,
+      "sha256": "1f75cb553ef49a9fbf68c5e2d695a1f2208bee512bf380578c698e25de933597"
+    },
+    {
+      "file": "repair-1-unit-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-unit-final.log",
+      "bytes": 290,
+      "sha256": "f4ce704a1369f4718375518ea2713a180c89f5d4bbc0518b1773de61a47054e3"
+    },
+    {
+      "file": "repair-1-typecheck-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-typecheck-final.log",
+      "bytes": 42,
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87"
+    },
+    {
+      "file": "repair-1-lint-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-lint-final.log",
+      "bytes": 983,
+      "sha256": "b305352bb99fa62915910fd69237a954d207e22982029b8c84cb780bbaed6156"
+    },
+    {
+      "file": "repair-1-build-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-build-final.log",
+      "bytes": 754,
+      "sha256": "2813bed259b13accc36585f1f73a65df125235d7675edf6745d13f38e3a6215a"
+    },
+    {
+      "file": "repair-1-e2e-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-e2e-final.log",
+      "bytes": 683,
+      "sha256": "6d2dca106d04c9d15868eeeadce1608f90ad97c77546997d690ccdcb08ac106f"
+    },
+    {
+      "file": "repair-1-e2e-integration-final.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-e2e-integration-final.log",
+      "bytes": 875,
+      "sha256": "7b9058ba321ee5566a20c0cef0a544473e358faef5f1679f7f00248700c0bf16"
+    },
+    {
+      "file": "repair-1-focused-red.log",
+      "source": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything/.local/dev/2026-10-16-frontend-usability/repair-1-focused-red.log",
+      "bytes": 16584,
+      "sha256": "f9f0d5e8e9ac51a7eab74435d428caec67272868789810ddc00432a2d4923496"
+    }
+  ]
+}

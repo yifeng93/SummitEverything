@@ -1,0 +1,115 @@
+[
+  {
+    "name": "npm-ci",
+    "command": "cd web && npm ci",
+    "exit_code": 0,
+    "result": "226 packages added; 0 vulnerabilities",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/npm-ci.log"
+  },
+  {
+    "name": "web-test",
+    "command": "cd web && npm test",
+    "exit_code": 0,
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-test.log"
+  },
+  {
+    "name": "web-typecheck",
+    "command": "cd web && npm run typecheck",
+    "exit_code": 0,
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-typecheck.log"
+  },
+  {
+    "name": "web-lint",
+    "command": "cd web && npm run lint",
+    "exit_code": 0,
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-lint.log"
+  },
+  {
+    "name": "web-build",
+    "command": "cd web && npm run build",
+    "exit_code": 0,
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-build.log"
+  },
+  {
+    "name": "web-api-types",
+    "command": "cd web && npm run api:types",
+    "exit_code": 0,
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-api-types.log"
+  },
+  {
+    "name": "web-e2e-integration",
+    "command": "cd web && npm run test:e2e:integration",
+    "exit_code": 0,
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-e2e-integration.log"
+  },
+  {
+    "name": "web-e2e-first-attempt",
+    "command": "cd web && npm run test:e2e",
+    "exit_code": 1,
+    "result": "first-use passed; viewport test teardown failed with missing Playwright trace/zip artifact ENOENT; root cause unconfirmed",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-e2e.log"
+  },
+  {
+    "name": "web-e2e-rerun",
+    "command": "cd web && npm run test:e2e",
+    "exit_code": 0,
+    "result": "2/2 passed on rerun",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-e2e-final.log"
+  },
+  {
+    "name": "web-e2e-integration",
+    "command": "cd web && npm run test:e2e:integration",
+    "exit_code": 0,
+    "result": "1/1 local Fake integration passed",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/web-e2e-integration.log"
+  },
+  {
+    "name": "independent-async-harness-current",
+    "command": "npx vitest run --config ../.local/qa/frontend-usability-d9f49c1/harness/vitest.config.ts ../.local/qa/frontend-usability-d9f49c1/harness/approval-async.test.tsx",
+    "exit_code": 0,
+    "result": "5/5 passed",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/async-harness-current.log"
+  },
+  {
+    "name": "independent-async-harness-initial-baseline-0957df2",
+    "command": "npx vitest run --config ../.local/qa/frontend-usability-d9f49c1/harness/vitest.baseline.config.ts ../.local/qa/frontend-usability-d9f49c1/harness/approval-async-baseline.test.tsx",
+    "exit_code": 1,
+    "result": "expected counterexample: 2 stale-response assertions fail on old behavior; 3 other cases pass",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/async-harness-baseline-0957df2.log"
+  },
+  {
+    "name": "offline-viewport-and-focus",
+    "command": "npx playwright test --config .local/qa/frontend-usability-d9f49c1/harness/playwright.config.mts .local/qa/frontend-usability-d9f49c1/harness/viewport-qa.spec.ts",
+    "exit_code": 0,
+    "result": "1/1 passed; 320/390/768/960/1024/1280/1440 light/dark, focused keyboard and contrast sampling",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/viewport-independent.log"
+  },
+  {
+    "name": "focused-browser-synthetic",
+    "command": "QA_PORT=5192 node .local/qa/frontend-usability-d9f49c1/harness/focused-browser.cjs",
+    "exit_code": 0,
+    "result": "synthetic exact-ID/index/dirty-cancel/focus/Markdown path passed",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/focused-browser.log"
+  },
+  {
+    "name": "file-batch-failure-mock",
+    "command": "node .local/qa/frontend-usability-d9f49c1/harness/file-batch-mock.cjs",
+    "exit_code": 0,
+    "result": "201/400/503 isolated; explicit failed retry only; unknown not retried",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/file-batch-mock.log"
+  },
+  {
+    "name": "local-fastapi-fake-multidraft",
+    "command": "node .local/qa/frontend-usability-d9f49c1/harness/multidraft-fastapi.cjs",
+    "exit_code": 0,
+    "result": "two drafts from one synthetic source; confirm one leaves one pending; no task/progress writes",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/logs/multidraft-fastapi.log"
+  },
+  {
+    "name": "git-diff-check",
+    "command": "git diff --check",
+    "exit_code": 0,
+    "result": "no whitespace errors",
+    "log": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/.local/qa/frontend-usability-d9f49c1/final-check.json"
+  }
+]

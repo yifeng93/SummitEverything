@@ -11,8 +11,9 @@ type Imports = components['schemas']['ImportResult']
 type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: number; state: string }
 type PendingApproval = { plan: AcceptancePlan; operation: string; scope: Record<string, unknown>; execute: (planId: string) => Promise<void> }
 const prefix = '/integrations/feishu'
+const localDate = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
 
-export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusyChange, onClose, view = 'all', showAuthorization = true }: { onImported: () => Promise<void>; onMode?: (mode: "fake" | "real" | null) => void; onAuthorizationChanged?: () => void; onBusyChange?: (busy: boolean) => void; onClose?: () => void; view?: 'all' | 'calendar' | 'materials'; showAuthorization?: boolean }) {
+export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusyChange, onClose, onOpenConnectionWizard, view = 'all', showAuthorization = true }: { onImported: (itemIds?: string[]) => Promise<void>; onMode?: (mode: "fake" | "real" | null) => void; onAuthorizationChanged?: () => void; onBusyChange?: (busy: boolean) => void; onClose?: () => void; onOpenConnectionWizard?: () => void; view?: 'all' | 'calendar' | 'materials'; showAuthorization?: boolean }) {
   const [status, setStatus] = useState<Status | null>(null)
   const [error, setError] = useState('')
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
@@ -27,11 +28,12 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   const [imports, setImports] = useState<Imports | null>(null)
   const [unknownImportKey, setUnknownImportKey] = useState<string | null>(null)
   const [calendar, setCalendar] = useState<Calendar | null>(null)
+  const [calendarExpanded, setCalendarExpanded] = useState(false)
   const [calendarSuccess, setCalendarSuccess] = useState<string | null>(null)
   const [calendarError, setCalendarError] = useState('')
-  const [start, setStart] = useState(() => new Date().toLocaleDateString('en-CA'))
-  const [end, setEnd] = useState(() => new Date(Date.now() + 86400000).toLocaleDateString('en-CA'))
-  const [timezone, setTimezone] = useState('Asia/Shanghai')
+  const [start, setStart] = useState(() => localDate(new Date()))
+  const [end, setEnd] = useState(() => { const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); return localDate(tomorrow) })
+  const [timezone, setTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai')
   const [titles, setTitles] = useState<Record<string, string>>({})
   const [approval, setApproval] = useState<PendingApproval | null>(null)
   const operation = useRef<{ key: string; id: string } | null>(null)
@@ -171,7 +173,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
         }
         setImports(result); setSelected([]); operation.current = null
         for (const outcome of result.outcomes) recordAuthProblem(outcome.error_code ?? undefined)
-        await onImported()
+        await onImported(result.outcomes.filter((outcome) => outcome.state === 'succeeded' && outcome.item_id).map((outcome) => outcome.item_id!))
       }
       if (status?.mode === 'real') {
         await preparePlan('feishu.materials.import', { material_ids: [...selected], operation_id: operation.current.id }, async (planId) => {
@@ -187,16 +189,16 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   async function loadCalendar(event?: FormEvent, cursor?: string) {
     event?.preventDefault(); setBusy(true); setCalendarError('')
     try {
-      const params = new URLSearchParams({ start: start + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00'), end: end + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00'), timezone, limit: '20' })
+      const atStartOfDay = (day: string) => timezone === 'UTC' ? day + 'T00:00:00Z' : new Date(day + 'T00:00:00').toISOString()
+      const startAt = atStartOfDay(start), endAt = atStartOfDay(end)
+      const params = new URLSearchParams({ start: startAt, end: endAt, timezone, limit: '20' })
       if (cursor) params.set('cursor', cursor)
       const execute = async (planId?: string) => {
         const plannedParams = new URLSearchParams(params)
         if (planId) plannedParams.set('plan_id', planId)
-        setCalendar(await api.get<Calendar>(prefix + '/calendar?' + plannedParams)); setCalendarSuccess(new Date().toISOString())
+        setCalendar(await api.get<Calendar>(prefix + '/calendar?' + plannedParams)); setCalendarExpanded(false); setCalendarSuccess(new Date().toISOString())
       }
       if (status?.mode === 'real') {
-        const startAt = start + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00')
-        const endAt = end + 'T00:00:00' + (timezone === 'UTC' ? 'Z' : '+08:00')
         await preparePlan('feishu.calendar.read', { start: startAt, end: endAt, timezone, cursor: cursor ?? null, limit: 20 }, async (planId) => {
           try { await execute(planId) } catch (cause) { recordFailure(cause); setCalendarError(cause instanceof Error ? cause.message : '日历请求结果未知') }
         })
@@ -209,6 +211,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
 
   const calendarReady = status?.mode === 'fake' ? status.authorized : status?.mode === 'real'
     ? status.identity === 'app' ? status.app_configured : status.authorized : false
+  const calendarRows = calendar?.items.slice(0, calendarExpanded ? calendar.items.length : 3) ?? []
 
   return <section className="panel feishu-panel">
     {showAuthorization && <>
@@ -242,15 +245,16 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
       {selected.length > 0 && unknownImportKey === [...selected].sort().join(',') && <div className="resource-error"><p>本次导入结果未知，不会重发。关闭抽屉并刷新收件箱核对是否已保存。</p><button className="button secondary" onClick={() => void onImported().then(() => onClose?.())}>刷新收件箱并关闭</button></div>}
     </>}
     {imports && <div aria-live="polite"><p>{imports.state === 'succeeded' ? '所选材料已保存到待整理。' : imports.state === 'partial' ? '部分材料导入失败，请查看逐项结果。' : '材料导入失败。'}</p><ul>{imports.outcomes.map((row) => <li key={row.material_id}>{titles[row.material_id] ?? '所选材料'}：{row.state === 'succeeded' ? '已保存原件与待整理项' : row.message}</li>)}</ul></div>}</>}
-    {(view === 'all' || view === 'calendar') && <><h3>日历</h3>{calendarSuccess && <p className="helper-line">上次成功读取：{new Date(calendarSuccess).toLocaleString('zh-CN')}{calendarError ? ' · 本次失败，保留上次结果' : ''}</p>}
-    <form className="organize-row" onSubmit={(event) => void loadCalendar(event)}>
+    {(view === 'all' || view === 'calendar') && <><div className="panel-heading calendar-heading"><div>{view !== 'calendar' && <h3>日历</h3>}</div><div className="button-row">{calendarSuccess && <small className="last-success">{new Date(calendarSuccess).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 已读取{calendarError ? ' · 更新失败' : ''}</small>}<button className="button secondary" disabled={!calendarReady || busy} onClick={() => void loadCalendar()}>{busy ? '正在读取…' : '刷新日历'}</button></div></div>
+    <details className="calendar-range"><summary>调整范围</summary><form className="organize-row" onSubmit={(event) => void loadCalendar(event)}>
       <label className="compact-field"><span>开始日期</span><input type="date" required value={start} onChange={(event) => setStart(event.target.value)} /></label>
       <label className="compact-field"><span>结束日期（不含）</span><input type="date" required value={end} onChange={(event) => setEnd(event.target.value)} /></label>
-      <label className="compact-field"><span>时区</span><select value={timezone} onChange={(event) => setTimezone(event.target.value)}><option>Asia/Shanghai</option><option>UTC</option></select></label>
-      <button className="button secondary" disabled={!calendarReady || busy}>刷新日历</button>
-    </form>
+      <label className="compact-field"><span>时区</span><select value={timezone} onChange={(event) => setTimezone(event.target.value)}>{[...new Set([timezone, 'Asia/Shanghai', 'UTC'])].map((value) => <option key={value}>{value}</option>)}</select></label>
+      <button className="button secondary" disabled={!calendarReady || busy}>按此范围刷新</button>
+    </form></details>
     {calendarError && <p role="alert">{calendarError}；保留已有结果，读取失败不表示没有日程。</p>}
+    {view === 'calendar' && status && !calendarReady && <button className="button secondary" onClick={onOpenConnectionWizard}>连接飞书</button>}
     {!calendar && !calendarError && <p className="quiet-empty">尚未读取日历。</p>}
-    {calendar && <>{calendar.items.length === 0 ? <p className="quiet-empty">所选时间内没有日程。</p> : <ul className="source-list">{calendar.items.map((row) => <li key={row.event_id}><div className="source-row"><span className="source-title"><strong>{row.title}</strong><small>{new Date(row.start).toLocaleString('zh-CN', { timeZone: timezone })} — {new Date(row.end).toLocaleString('zh-CN', { timeZone: timezone })}</small></span></div></li>)}</ul>}{calendar.truncated && <p role="status">仅显示部分日程，请缩小时间范围。</p>}{!calendar.truncated && <button className="button secondary" disabled={busy || !calendar.next_cursor} onClick={() => void loadCalendar(undefined, calendar.next_cursor ?? undefined)}>下一页日程</button>}</>}</>}
+    {calendar && <>{calendar.items.length === 0 ? <p className="quiet-empty">所选时间内没有日程。</p> : <ul className="source-list">{calendarRows.map((row) => <li key={row.event_id}><div className="source-row"><span className="source-title"><strong>{row.title}</strong><small>{new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: timezone }).format(new Date(row.start))}–{new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: timezone }).format(new Date(row.end))}</small></span></div></li>)}</ul>}{calendar.items.length > 3 && <button className="button secondary" onClick={() => setCalendarExpanded((value) => !value)}>{calendarExpanded ? '收起日程' : `显示全部日程（${calendar.items.length}）`}</button>}{calendar.truncated && <p role="status">仅显示部分日程，请缩小时间范围。</p>}{!calendar.truncated && <button className="button secondary" disabled={busy || !calendar.next_cursor} onClick={() => void loadCalendar(undefined, calendar.next_cursor ?? undefined)}>下一页日程</button>}</>}</>}
   </section>
 }

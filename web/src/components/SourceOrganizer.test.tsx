@@ -34,7 +34,7 @@ function installApi({ mode = 'real', scopeTransform }: { mode?: 'real' | 'fake';
       return Response.json({ plan: { plan_id: 'synthetic-plan-id', scope_sha256: 'synthetic-scope-digest', request_limit: 1 }, scope }, { status: 201 })
     }
     if (path === '/acceptance-plans/synthetic-plan-id/confirm') return Response.json({})
-    if (path === '/intake/jobs' && method === 'POST') return Response.json({ job_id: 'synthetic-job-id', state: 'processing' }, { status: 201 })
+    if (path === '/intake/jobs' && method === 'POST') return Response.json({ job_id: 'synthetic-job-id', state: 'processing', draft_ids: ['returned-draft-a', 'returned-draft-b'] }, { status: 201 })
     if (path === '/acceptance-plans/synthetic-plan-id' && method === 'DELETE') return new Response(null, { status: 204 })
     return Response.json({ error: { message: `Unexpected test request ${method} ${path}` } }, { status: 404 })
   }))
@@ -94,6 +94,7 @@ describe('SourceOrganizer preview', () => {
     expect(confirm.body?.scope).toEqual(scope)
     expect(job.body).toMatchObject({ item_ids: [item.item_id], line_id: lineA.id, project_id: projectA.id, acceptance_plan_id: 'synthetic-plan-id' })
     expect(onComplete).toHaveBeenCalledTimes(1)
+    expect(onComplete).toHaveBeenCalledWith({ job_id: 'synthetic-job-id', state: 'processing', draft_ids: ['returned-draft-a', 'returned-draft-b'] })
   })
 
   it('fails closed when a Real preview target is not the captured target', async () => {

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "milestone": "frontend-usability-2026-10-16",
+  "repair_round": "1/2",
+  "branch": "codex/frontend-usability-20261016",
+  "tested_product_sha": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715",
+  "documentation_tip": "Docs-only commit follows the tested product SHA; the exact final repository HEAD is reported in the developer handoff and does not change tested_product_sha.",
+  "evidence_root": ".local/dev/2026-10-16-frontend-usability",
+  "checks": [
+    {
+      "name": "approval_view_focused",
+      "command": "cd web && npm test -- --run src/components/ApprovalView.test.tsx",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "20 tests passed, including refresh epoch stale result, stale detail response and in-flight detail across epoch refresh",
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-focused-final.log"
+    },
+    {
+      "name": "vitest",
+      "command": "cd web && npm test",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "239 tests passed across 26 files",
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-unit-final.log"
+    },
+    {
+      "name": "typecheck",
+      "command": "cd web && npm run typecheck",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-typecheck-final.log"
+    },
+    {
+      "name": "lint",
+      "command": "cd web && npm run lint",
+      "status": "PASS_WITH_WARNINGS",
+      "exit_code": 0,
+      "summary": "Two existing react(set-state-in-effect) warnings remain in App.tsx and ProjectsView.tsx; ApprovalView has no warning or suppression",
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-lint-final.log"
+    },
+    {
+      "name": "production_build",
+      "command": "cd web && npm run build",
+      "status": "PASS_WITH_WARNING",
+      "exit_code": 0,
+      "summary": "Vite reports the 603.32 kB main JS chunk exceeds its 500 kB advisory size",
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-build-final.log"
+    },
+    {
+      "name": "playwright_offline",
+      "command": "cd web && npm run test:e2e",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "2/2 tests passed; Playwright emitted local NO_COLOR/FORCE_COLOR environment notices",
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-e2e-final.log"
+    },
+    {
+      "name": "fastapi_fake_integration",
+      "command": "cd web && npm run test:e2e:integration",
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "1/1 test passed using local FastAPI and Fake",
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-e2e-integration-final.log"
+    },
+    {
+      "name": "repository_diff_check",
+      "command": "git diff --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": null
+    },
+    {
+      "name": "api_types",
+      "command": "cd web && npm run api:types",
+      "status": "NOT_RUN",
+      "reason": "No backend or OpenAPI schema changes in repair 1"
+    }
+  ],
+  "retained_red": [
+    {
+      "name": "refresh_epoch_latest_target_regression",
+      "exit_code": 1,
+      "log": ".local/dev/2026-10-16-frontend-usability/repair-1-focused-red.log",
+      "note": "The earlier refresh response replaced the latest exact-ID target data before the lifecycle guard was added"
+    }
+  ],
+  "independent_qa": "PENDING_FRESH_QA",
+  "sol_gate": "PENDING"
+}

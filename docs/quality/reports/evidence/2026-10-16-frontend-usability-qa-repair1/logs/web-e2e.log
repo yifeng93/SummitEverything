@@ -1,0 +1,26 @@
+
+> web@0.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:1668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:1669) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (1.8s)
+  ✘  2 e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings (20.2s)
+
+
+  1) e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+
+    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/web/test-results/.playwright-artifacts-0/traces/24876809b35b098bf297-c420158c12a9a5dce504-recording2.trace'
+
+    Error: ENOENT: no such file or directory, open '/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything/web/test-results/.playwright-artifacts-0/f87c74b6719355ae793608d07cc26168.zip'
+
+    Error Context: test-results/viewport-offline-viewport--58964-pprovals-tools-and-settings/error-context.md
+
+  1 failed
+    e2e/viewport.spec.ts:35:1 › offline viewport and theme baseline for today, approvals, tools and settings 
+  1 passed (22.8s)

@@ -12,6 +12,7 @@
 ## 产品规格与工程契约
 
 - [产品规格](product/PRODUCT-SPEC.md)：用户目标、完整 v1 和非目标。
+- [前端指南](product/FRONTEND-GUIDE.md)、[逐页规格](product/FRONTEND-PAGE-SPECS.md)与[今日/审批改造计划](superpowers/plans/2026-10-16-frontend-usability.md)：三轮选择确认的新界面基线。
 - [架构](architecture/ARCHITECTURE.md)、[工作库契约](contracts/WORKSPACE-v1.md)、[API 契约](contracts/API-v1.md)
 - [全 v1 实施计划](superpowers/plans/2026-10-09-summit-everything-v1.md)：阶段任务、测试与退出门。
 - [Provider 协议矩阵](architecture/PROVIDER-PROTOCOL-MATRIX.md)与[旧项目复用地图](architecture/REUSE-MAP.md)

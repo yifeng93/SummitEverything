@@ -1,0 +1,6 @@
+locator.click: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: '保存原文' })[22m
+
+    at main (/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything/.local/qa/frontend-usability-0957/focused-browser.cjs:66:49)
+exit=1 (expected nonzero: old baseline lacks saved-ID continuation control)

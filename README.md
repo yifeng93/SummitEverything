@@ -2,9 +2,13 @@
 
 SummitEverything 是个人工作知识整理与检索应用。首版目标是每台 Mac 独立运行的 DMG，使用 FastAPI、React/TypeScript 与薄 macOS 壳；工作知识由用户确认后保存为可迁移的 Markdown 页面。
 
-## 当前状态
+## 当前开发分支（未合入 main）
 
-当前主线状态（2026-10-16 收口）：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
+- **今日/审批可用性（2026-10-16；核心离线门 PASS，待合并批准）**：固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 经 fresh Luna QA 独立验收及 Sol 核验。今日并列安排与记录/导入、真实 ID 接续、单项专注审批、Markdown 阅读与未保存保护已交付。独立 Web **239/239**、Playwright 最终 **2/2**、FastAPI/Fake **1/1**、异步反例回归 **5/5**；[CI 38919089638](https://github.com/yifeng93/SummitEverything/actions/runs/38919089638) 全步成功。初验 suppression 质量门 FAIL 已用第 1/2 轮修复关闭，历史证据保留；首次 e2e artifact `ENOENT` 与成功重跑亦保留。两条既有 lint warning、603.32 kB 主包提示仍在。完整证据与未测边界见[Sol 最终门判断](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 未合入 main，等待重要里程碑批准；真实服务、材料、Keychain、用户安装、公证、五日/双机及完整全站 AA 审计未测。
+
+## main 当前状态（截至 2026-10-16）
+
+当前主线状态（不包含上方未合入的今日/审批可用性分支）：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
 
 - **设置与首配**：设置页三卡主区 + 状态徽章 + 高级折叠；5 步向导；非秘密接入值由构建时注入包内 `Resources/first-use-defaults.json`，用户只需在本机录入三把密钥一次（存 Keychain，不打入包或仓库）。
 - **错误可见**：provider 失败带 code/message/request_id（embedding/rerank/LLM 统一 502）；`GroundedAnswer` 容错对象形式 `source_statements` 与多余键；密钥写入前做形状校验；问答/assist/索引失败的原因写进本地记录与客户端文案；诊断事件不再因清洗被丢弃。真实链路已实测：飞书授权与任务读取成功、embedding 200（1024 维）、rerank 200、DeepSeek 正常返回。
@@ -26,7 +30,7 @@ M3 与清理维护维持原固定 SHA 的历史结论。M4.1 修复轮 1 的固�
 - 执行者：[AGENTS.md](AGENTS.md) → [最新交接](docs/handoff/LATEST-IMPLEMENTATION.md) → [执行手册](docs/handoff/IMPLEMENTER.md) → [全 v1 计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 - 验收者：[AGENTS.md](AGENTS.md) → [独立验收手册](docs/handoff/TESTER.md) → [验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 当前进展：[进展账本](docs/implementation/PROGRESS.md)；[报告索引](docs/quality/reports/README.md)；[全部文档](docs/README.md)。
-- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 用户三轮选择题确认）。
+- 界面口径：[前端优化指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[ADR 0011](docs/decisions/0011-frontend-ux-baseline.md)（2026-10-14 基线）及 [ADR 0012](docs/decisions/0012-today-approval-focused-usability.md)（2026-10-16 三轮选择确认的今日与审批改造）。
 - 内部测试：[安装与启动说明](docs/handoff/M41-INTERNAL-INSTALL.md)；已合入 [PR #17](https://github.com/yifeng93/SummitEverything/pull/17)。
 - 新聊天提示词：[实现者](docs/handoff/PROMPT-IMPLEMENTER.md)、[验收者](docs/handoff/PROMPT-TESTER.md)。
 
