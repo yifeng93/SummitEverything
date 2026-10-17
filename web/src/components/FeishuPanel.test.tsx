@@ -326,3 +326,26 @@ it('real OAuth presents an official browser link and refreshes only local status
   expect(screen.getByText(/用户身份尚未验证/)).toBeTruthy()
   expect(screen.queryByRole('link', { name: '打开飞书授权页面' })).toBeNull()
 })
+
+it('hides the unsupported visibility filter in real mode and omits it from the request', async () => {
+  const calls: string[] = []
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input); calls.push(path)
+    if (path.endsWith('/status')) return { ok: true, status: 200, json: async () => ({ mode: 'real', authorized: true, app_configured: true, identity: 'user', scopes: [], token_type: 'user' }) }
+    if (path.endsWith('/acceptance-plans') && init?.method === 'POST') return { ok: true, status: 201, json: async () => ({ plan: { plan_id: 'materials-plan', scope_sha256: 'scope', request_limit: 2, state: 'preview' }, scope: { query: '会议', visibility: null, cursor: null, limit: 20 } }) }
+    if (path.endsWith('/acceptance-plans/materials-plan/confirm')) return { ok: true, status: 200, json: async () => ({}) }
+    if (path.includes('/materials?')) return { ok: true, status: 200, json: async () => ({ items: [], next_cursor: null }) }
+    return { ok: true, status: 200, json: async () => [] }
+  }))
+  renderFeishu()
+  await waitFor(() => expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(false))
+  expect(screen.queryByText('可见范围')).toBeNull()
+  expect(screen.getByText(/只搜索妙记/)).toBeTruthy()
+  fireEvent.change(screen.getByLabelText('搜索材料'), { target: { value: '会议' } })
+  fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
+  await screen.findByRole('button', { name: '确认并执行本次读取' })
+  fireEvent.click(screen.getByRole('button', { name: '确认并执行本次读取' }))
+  await waitFor(() => expect(calls.some((path) => path.includes('/materials?'))).toBe(true))
+  const materialCall = calls.find((path) => path.includes('/materials?'))!
+  expect(materialCall).not.toContain('visibility=')
+})
