@@ -1,20 +1,20 @@
 # 文档索引
 
-新执行或验收任务从 [README](../README.md)、[进展账本](implementation/PROGRESS.md) 和[最新交接](handoff/LATEST-IMPLEMENTATION.md)确认当前状态。历史状态只适用于报告标明的固定 SHA，不作为当前任务入口。
+新执行或验收任务从 [README](../README.md) 进入；当前产品状态只读[进展账本](implementation/PROGRESS.md)。[最新交接](handoff/LATEST-IMPLEMENTATION.md)只提供当前任务的固定候选与验收指令。历史状态只适用于报告标明的固定 SHA。
 
 ## 当前交接与验收
 
 - [实现者手册](handoff/IMPLEMENTER.md)与[实现者提示词](handoff/PROMPT-IMPLEMENTER.md)
 - [独立验收手册](handoff/TESTER.md)与[验收提示词](handoff/PROMPT-TESTER.md)
 - [验收矩阵](quality/ACCEPTANCE.md)、[报告索引](quality/reports/README.md)、[报告模板](quality/REPORT-TEMPLATE.md)
-- [本次清理与恢复记录](handoff/2026-10-13-PRE-NEXT-STAGE-CLEANUP.md)
+- [文档精简方案](superpowers/plans/2026-10-17-ponytail-cleanup.md)与[DEV 执行记录](quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)
 
 ## 产品规格与工程契约
 
 - [产品规格](product/PRODUCT-SPEC.md)：用户目标、完整 v1 和非目标。
 - [前端指南](product/FRONTEND-GUIDE.md)、[逐页规格](product/FRONTEND-PAGE-SPECS.md)与[今日/审批改造计划](superpowers/plans/2026-10-16-frontend-usability.md)：三轮选择确认的新界面基线。
 - [架构](architecture/ARCHITECTURE.md)、[工作库契约](contracts/WORKSPACE-v1.md)、[API 契约](contracts/API-v1.md)
-- [全 v1 实施计划](superpowers/plans/2026-10-09-summit-everything-v1.md)：阶段任务、测试与退出门。
+- [全 v1 实施计划](superpowers/plans/2026-10-09-summit-everything-v1.md)：阶段任务、测试与退出门；完成状态以 PROGRESS 为准。
 - [Provider 协议矩阵](architecture/PROVIDER-PROTOCOL-MATRIX.md)与[旧项目复用地图](architecture/REUSE-MAP.md)
 - [架构与产品决策记录](decisions/)
 

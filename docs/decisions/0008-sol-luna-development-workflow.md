@@ -16,7 +16,7 @@ QA 首次失败后最多两轮自动修复，每轮都要求 Developer 新 SHA �
 
 低风险提交和合并仅在仓库规则、分支保护、实际测试和必要审批均允许时自动进行。重要里程碑合并、真实操作、不可逆操作及验收例外须先获用户明确批准。无授权不删除 branch / worktree。Stage C 真实服务、真实材料、凭据、OS Keychain，以及 DMG、五日、双机均继续作为独立门；有限 smoke 计数不因新 profile 或轮次重置。
 
-权威状态从真实 HEAD 的 README、PROGRESS 和 LATEST-IMPLEMENTATION 读取。历史 Stage B 提示词仅供追溯；不得据其重启已完成阶段。原始安装 overlay 保存在 [历史补丁](../handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch) 以保留来历，不作为当前执行入口。
+当前产品状态只维护在真实 HEAD 的 PROGRESS。README 是项目首页；LATEST-IMPLEMENTATION 只记录当前任务的固定候选 SHA、执行交接和 PROGRESS 链接，不复制状态。历史 Stage B 提示词仅供追溯；不得据其重启已完成阶段。原始安装 overlay 保存在 [历史补丁](../handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch) 以保留来历，不作为当前执行入口。
 
 ## 后果
 

@@ -4,7 +4,7 @@
 
 ## 阅读顺序
 
-1. README.md 和 docs/implementation/PROGRESS.md：确认实际完成情况。
+1. README.md：项目首页与开发入口；docs/implementation/PROGRESS.md：确认当前产品状态和未测门。
 2. docs/product/PRODUCT-SPEC.md：用户已经决定什么。
 3. docs/product/FRONTEND-GUIDE.md 和 docs/product/FRONTEND-PAGE-SPECS.md：界面口径。用户已于 2026-10-14 以三轮选择题确认导航结构（5 栏）、信息分级、白话文案、Markdown 流式渲染、深色、字号尺度、首次配置合并与 10 条 UI 契约守卫；逐页区块顺序是规格，改了要同步文件。决策记录见 docs/decisions/0011-frontend-ux-baseline.md。
    - 涉及今日和审批布局、折叠组或专注页行为时，还要读 docs/decisions/0012-today-approval-focused-usability.md（2026-10-16 用户补充裁定）。
@@ -53,7 +53,7 @@
 
 - 默认源代码分支前缀 codex/；采用小的逻辑提交，源码 Git 与工作库完全分开。
 - 新项目用 uv.lock 锁依赖；修改项目版本或依赖后更新 lock 并验证。
-- 当前可用检查只见 README.md；新增真实运行命令后同步 README 和验收手册。
+- README 是常用开发与检查命令的入口；实现/测试手册维护详细命令与运行边界。新增真实运行命令时同步对应手册与首页入口。
 - 提交可复验状态，禁止秘密、真实业务原件、.venv、node_modules、构建产物进入 Git。
 - 发版时强制重建前端，包内记录源码提交、dirty 标志、前端指纹和构建号；源码测试不能替代安装包验收。
 
@@ -65,10 +65,10 @@
 - Sol 检查真实退出码、日志、SHA、diff 与 QA 证据，逐项判定 PASS / FAIL / BLOCKED / NOT_RUN。配置元数据未实际暴露时 runtime 记 UNVERIFIED，不能从 TOML 配置推断；用户曾观察 Luna High 的 smoke 只作为历史用户观察，不能冒充本轮运行证据。
 - 低风险且可复验的任务可在仓库政策、保护规则、实际测试和所需审批均满足时自动提交及合并。重要里程碑合并、真实服务 / 资料 / 凭据操作、不可逆操作和验收门例外先取得用户明确批准。不得未经授权删除 branch 或 worktree。
 - Stage C 真实连接仍是单独 opt-in；真实凭据、材料、Keychain、DMG、五日和双机继续作为独立未测门。有限 smoke 额度按最新交接记录累计，不因 profile、聊天或轮次重置。
-- 当前权威状态读 README、PROGRESS 与 LATEST-IMPLEMENTATION 的真实 HEAD；Stage B 历史提示只用于追溯，不重启旧阶段。旧安装 overlay 原文归档于 [2026-10-11 历史安装补丁](docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)，仅保留来历，不能作为启动旧 Stage B 的指令。
+- 当前产品状态只维护在 `docs/implementation/PROGRESS.md`。README 是项目首页；LATEST-IMPLEMENTATION 只记录当前任务的固定候选 SHA、执行交接和 PROGRESS 链接，不复制状态。Stage B 历史提示只用于追溯，不重启旧阶段。旧安装 overlay 原文归档于 [2026-10-11 历史安装补丁](docs/handoff/history/2026-10-11-SOL-LUNA-INSTALL-OVERLAY.patch)，仅保留来历，不能作为启动旧 Stage B 的指令。
 
 ## 当前文档入口维护（2026-10-13，补充）
 
-- 当前状态集中维护在 README、`docs/implementation/PROGRESS.md` 与 `docs/handoff/LATEST-IMPLEMENTATION.md`；更新这些页面时直接纠正正文，不在顶部叠加互相覆盖的状态段。
+- 当前状态只在 `docs/implementation/PROGRESS.md` 维护；README 保持项目说明和操作入口，LATEST-IMPLEMENTATION 保持当前任务交接。更新时直接纠正文档正文，不在顶部叠加互相覆盖的状态段。
 - 旧阶段的执行过程、旧 SHA 的 PASS / FAIL 及旧提示词移入明确标为历史的文件，并由当前入口提供链接。历史报告、原始 DEV / QA 证据、manifest 与签名字节保留原样。
 - 文档重排不得改变产品规格、验收场景、用户审批门或未测边界。历史状态只说明对应固定 SHA，不可直接当作当前 HEAD 的结论。

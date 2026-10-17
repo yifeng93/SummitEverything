@@ -1,12 +1,13 @@
 # 最新实现交接
 
-## 当前 main：今日与审批可用性（2026-10-17；核心离线门 PASS，已合入）
+## 固定交付
 
-- 固定受测产品 SHA：`d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`。全新 custom Luna QA 在独立 checkout 复验；Sol核对原始退出码、日志、反例、截图、manifest、SHA/clean 后判本轮核心离线源码/浏览器范围 PASS。[最终门判断](../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)、[fresh QA 原报告](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/REPORT.md)与[证据清单](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/manifest.json)。
-- 已交付：今日左侧安排/右侧记录导入（窄屏纵排）、会议3/任务5默认条数与展开；真实返回 ID 继续整理；审批五类紧凑清单→单项专注阅读；Markdown、按需编辑/来源/差异、冲突与未保存保护、准确确认回执及首次索引提醒。后端、API与依赖未改。
-- 初验 `0957df2` 的 Sol 门 FAIL 保留：两处新增 suppression 违反质量门，未披露是额外透明度问题。[初验报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)。修复使用1/2轮，去除禁用并保护 refresh epoch 与详情请求身份；[DEV 修复报告](../quality/reports/2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。fresh 异步 harness 5/5，旧版反例2项失败。
-- 独立 Web239/239、typecheck/lint/build/api types、Playwright最终2/2、FastAPI Fake1/1均exit0。首次 Playwright 的 trace/zip ENOENT 根因未确认，保留失败及重跑证据；既有 App/Projects 两条lint warning、603.32kB主包advisory保留。浅/深色代表文字对比度采样最低4.72/6.97，仅是抽样。
-- [CI 38919089638](https://github.com/yifeng93/SummitEverything/actions/runs/38919089638) 对 docs-only `c0f0692` 全13步成功，产品/tests/依赖与受测SHA一致；Python712、native5、内部App/DMG技术构建通过，不能当作用户安装验收。
-- 真实服务/材料/凭据/Keychain、用户安装/公证、五日/双机/发布、其他完整页面业务与全站完整AA审计NOT_RUN；runtime model metadata UNVERIFIED。Chrome DevTools MCP未配置，使用Playwright/Chromium。
-- 用户明确批准后，[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 已合入 main：merge commit `ee99e78965201db3a453d301bdb7c573caee79ac`，产品/tests/依赖与固定 QA SHA 一致；最终 PR tip CI `38921366364` 全步成功，合并后本机 Web239/239。见[合并收口](../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。分支/worktree保留。下一个执行者不重启历史A→D，不将本轮范围扩大为真实使用/发布PASS。
-- 最新QA非空首屏、深浅审批和部分确认截图见[证据目录](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/manifest.json)。既有main合入史见[历史交接](history/LATEST-IMPLEMENTATION-2026-10-16-PRE-USABILITY.md)。
+本轮 Ponytail 精简的批准范围见[清理计划](../superpowers/plans/2026-10-17-ponytail-cleanup.md)。产品源码 SHA：`2d90a7e9efc9ed67f6a0260323f9b071d586f7a1`；代码与内部包独立 QA 受测 SHA：`5835faa72b513202e92694f4fa14790afefe1e70`；文档专项受测 SHA：`f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796`。后续报告和交接为纯文档提交，产品树须保持与完整受测候选一致。
+
+当前产品状态唯一来源为[PROGRESS](../implementation/PROGRESS.md)。候选审计和自测见[DEV 记录](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)，逐命令退出码、适用范围与证据见[Sol 门判断](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-SOL-GATE.md)。不要重启旧 Stage B、前端 A–D 或今日/审批改造。
+
+## 后续动作
+
+- 例行维护整合须核对准确 PR tip 的 CI 与受测产品树等同性；不把旧 SHA 的结果称为新源码已验收。
+- 本机清理已按用户对准确八项清单的批准执行，记录见[删除回执](../quality/reports/evidence/2026-10-17-ponytail-local-cleanup/receipt.json)。恢复包在主 checkout 的 `.local/archives/2026-10-17-ponytail-cleanup/`；不要重复删除或扩展范围，分支及当前 worktree 保留。
+- 本次不授权新的真实资料、服务、凭据或安装/发布操作；未测门按 PROGRESS 保留。

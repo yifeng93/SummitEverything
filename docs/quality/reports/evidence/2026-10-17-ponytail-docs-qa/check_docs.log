@@ -1,0 +1,12 @@
+HEAD=f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796; expected=f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796
+initial tracked/untracked status entries=1
+base-to-target changed paths=17
+protected tree changed paths=[]
+protected spec docs/product/PRODUCT-SPEC.md: PASS
+protected spec docs/product/FRONTEND-GUIDE.md: PASS
+protected spec docs/product/FRONTEND-PAGE-SPECS.md: PASS
+pre-existing report/evidence files checked=3348; removed=[]; changed_blobs=[]
+ACCEPTANCE C rows base=31 target=31 byte-equal=True
+ACCEPTANCE R rows base=5 target=5 byte-equal=True
+current-entry local links checked=271; link/anchor errors=0
+RESULT=PASS

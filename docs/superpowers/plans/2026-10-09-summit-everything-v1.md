@@ -8,33 +8,19 @@
 
 **Spec:** [产品规格](../../product/PRODUCT-SPEC.md)、[工作库契约](../../contracts/WORKSPACE-v1.md)、[API](../../contracts/API-v1.md)。
 
-## 当前阶段记录（2026-10-13）
-
-M3 三个离线功能包与离线模拟正式验收均已通过；用户批准的产品合并点为 `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2`。`879c82464903a7aed91b30955d7355064fa85088` 是本轮清理前 main 基线，不是本轮维护验收 SHA。固定 C19 源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 的独立 QA 与合并后复验见[报告索引](../../quality/reports/README.md)。本计划中的验收要求保持有效；各轮旧状态只描述其固定 SHA。
-
-2026-10-13 用户新增授权离线 M4.1 Internal App/DMG 的连续开发、自测、最终 clean SHA 重建及交独立 QA；此授权不包含 M4.2 真实验收或用户安装、Developer ID/公证、五日试用、M5 双机与发布。M4.1 固定源码 `3f6eaa4` 的 fresh QA 和 Sol 适用离线技术门 PASS，用户已批准离线正式收口，PR #17 已合入 main；见[QA](../../quality/reports/2026-10-13-M41-INTERNAL-APP-QA-REPAIR1.md)与[Sol 门](../../quality/reports/2026-10-13-M41-SOL-GATE.md)。真实模型质量、Feishu / 业务材料、OS Keychain 均 NOT_RUN；runtime 元数据 UNVERIFIED。
+本计划描述 v1 阶段目标、实施切片和验收退出条件。已完成状态、当前候选和未测门只维护在[PROGRESS](../../implementation/PROGRESS.md)；旧 SHA 的逐轮证据见[报告索引](../../quality/reports/README.md)。
 
 ## 全局执行规则与验收门
 
-B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。Stage B adapter 已实现，模拟 HTTP / 合成凭据范围经离线 QA；真实账户 / 协议、OS Keychain 与 R03 质量仍未验收。Stage C 的真实连接和质量验收尚未启动，必须逐项取得真实操作授权并验证具体协议和模型质量。M4.1 的用户授权仅覆盖离线 Internal App/DMG 工程实现、自测及独立离线 QA；不能提前标记 M4.2、真实样板、五日或双机完成。下方 M3.1 / M3.2 功能清单现均完成并由 M3 离线正式验收及固定 merge QA 收口；历史逐项 DEV / QA 记录仍只适用于各自 SHA。当前状态见本文顶部与 [M3 验收索引](../../quality/reports/README.md)。
+B/C 是衔接真实 adapter 与受控真实验收的补充顺序，不改写 M0–M5，也不删除任何 MUST。真实账户 / 协议、OS Keychain 与 R03 质量须按独立验收门验证。真实连接、资料和模型质量操作须逐项取得授权。已完成项和未测项见 PROGRESS；阶段固定 SHA 的证据见报告索引。
 
 当前 Sol / Luna 开发与验收分工见 [ADR 0008](../../decisions/0008-sol-luna-development-workflow.md)；这里不重复工作流全文。
 
 每任务顺序：读输入契约 → 添加指定反例并实际看失败 → 最小实现 → 跑任务测试及已有相关检查 → 小逻辑提交 → 更新 PROGRESS。测试必须命中实际行为，不能 mock 掉整个服务；界面行为由独立 QA 用真实浏览器检查。
 
-当前 Python 通用检查：
+Python、前端和打包检查命令及运行边界见[实现手册](../../handoff/IMPLEMENTER.md)与[测试手册](../../handoff/TESTER.md)。新增依赖先核对官方协议 / API，更新 lock；不能引用不存在的命令作为通过证据。
 
-~~~sh
-uv run pytest -q
-uv run ruff check src tests
-uv run ruff format --check src tests
-uv run mypy src
-uv lock --check
-~~~
-
-新增依赖先核对官方协议 / API，更新 lock。M1 已建立 web/package.json 的实际脚本，前端验收使用 README 命令；M4 建立打包脚本。不能引用不存在的命令作为通过证据。
-
-两个门分开：DEV 是实现者自测与交接；QA 是另一 Luna 对固定提交独立复验。M4 / M5 另有真实人工门。无凭据只会使相应外部场景未测，不阻塞模拟实现；未测不得成为通过。
+DEV 是实现者自测与交接；QA 是另一 Luna 对固定提交独立复验。M4 / M5 另有真实人工门。无凭据只会使相应外部场景未测，不阻塞模拟实现；未测不得成为通过。当前职责与轮次规则见 [ADR 0008](../../decisions/0008-sol-luna-development-workflow.md)。
 
 ## M0 — 已建立的框架
 
@@ -107,7 +93,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 
 **M1 DEV 门：** 用隔离库从 UI 新建线 / 项目、导入文字、生成多稿、部分确认、更新权威页、增量索引、问答点击引用；外部修改之后旧内容不再作为依据。构建 / 类型 / 浏览器测试通过。提交固定 SHA 和复演步骤给 QA；模拟链路不记真实模型质量通过。
 
-**当前结果：** M1 DEV 门与模拟范围独立 QA 均通过，固定受测代码 `f349fe6cb5da86c3fdafff11738e2a55335d8874` 已合入 main。见 [独立 QA 报告](../../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。真实模型质量、真实飞书、DMG 与实际试用不包含在此 PASS 中。
+**M1 历史验收记录：** 固定受测代码及其适用范围见 [独立 QA 报告](../../quality/reports/2026-10-09-M1-close-retest-f349fe6.md)。真实模型质量、真实飞书、DMG 与实际试用不包含在该 SHA 的结论中。
 
 ## M2 — 飞书与独立日常入口
 
@@ -120,7 +106,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] 实现可见材料列表 → 明确选择 → 来源 / item；导入不隐式生成或批准正式页。
 - [ ] 账户准备好后验证真实 scope、列表和正文读取；缺失权限给具体指引，保留手动文字入口。
 
-**M2.1 初始开发记录（阶段 A 独立 QA 后重开）：** Fake 模拟范围的 DEV 检查点曾固定于 `09398fcae597b2478001d40aedf580ea91322c11`；该 SHA 后续发现阶段 A 缺陷，当前修复与 QA 状态见本计划顶部、[进展账本](../../implementation/PROGRESS.md) 和 [最新交接](../../handoff/LATEST-IMPLEMENTATION.md)。真实 OAuth / user scope / 钥匙串配置仍属外部验收门，不因 Fake 开发自测勾选真实账户步骤。
+**M2.1 历史开发记录：** Fake 模拟范围的 DEV 检查点 `09398fcae597b2478001d40aedf580ea91322c11` 后续发现阶段 A 缺陷。逐轮报告见[报告索引](../../quality/reports/README.md)；真实 OAuth / user scope / 钥匙串配置属于独立外部验收门。
 
 ### M2.2：正式任务与独立 action
 
@@ -131,7 +117,7 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] UI 独立任务确认卡和日期输入，不猜日期、不用知识确认代替 task / project_progress 确认。
 - [x] 使用模拟 provider 验证跨重启 / 月归档后幂等。真实外部写未测，仍只允许用户明确指定的测试任务。
 
-**M2.2 初始开发记录（阶段 A 独立 QA 后重开）：** 初始代码 `a7f76e4d188dad607ac069047e76ffaa3135707d`，P2 修复 `c552d143f051efe13ebfcdd29815e776147794aa`，当时的整体候选为 `09398fcae597b2478001d40aedf580ea91322c11`；该 SHA 后续发现阶段 A 缺陷。当前修复及新 SHA 独立复验状态见本计划顶部。真实全天 timestamp 规则及真实执行证据查询仍未验证，Fake 映射不得直接用于真实 adapter。
+**M2.2 历史开发记录：** 初始代码、修复 SHA 与最终 QA 记录见[报告索引](../../quality/reports/README.md)。早期候选后续发现阶段 A 缺陷；真实全天 timestamp 规则及真实执行证据查询仍需单独验证，Fake 映射不得直接用于真实 adapter。
 
 ### M2.3：工作日志、思考与项目总览
 
@@ -141,13 +127,13 @@ Foundation 仅自检，不标 M1 / 真实外部能力通过。
 - [x] 提供自由正文、可选关联和显式 AI 辅助；建议独立可编辑 / 可取消，不自动覆盖已保存内容。
 - [x] 项目总览用稳定 overview_id 经明确确认创建 / 版本保护更新，目录可重开导航；具体事实可链接子页，不生成重复总库。
 
-M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选固定于 `09398fcae597b2478001d40aedf580ea91322c11`。该候选的问题已在阶段 A 修复；固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 独立 Fake-only QA、PR #4 合并及合并后核验均通过。原候选与最终复验报告链见[阶段 A QA 报告](../../quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[合并后核验记录](../../quality/reports/2026-10-10-M2-stage-a-postmerge.md)和最新交接。
+M2.3 功能实现与阶段 A 的固定修复、Fake-only QA 及合并后核验均保留为历史记录；详情见[阶段 A QA 报告](../../quality/reports/2026-10-10-M2-stage-a-final-fourth-followup-qa.md)、[合并后核验记录](../../quality/reports/2026-10-10-M2-stage-a-postmerge.md)和报告索引。
 
-**M2 DEV 门（历史开发记录）：** 当时 WebUI Fake 日常流程、任务 unknown 防重与重启恢复通过；原生壳 UI 尚未由执行者完成归属复演。之后阶段 A 独立 QA 已在固定修复代码 `32da67e9c0280e3dae18fd374e30c925565b0b82` 完成 Fake-only 验收，当前合并状态见本计划顶部与最新交接。真实 read / write 仍单独列示。
+**M2 DEV 门（历史开发记录）：** 当时的 WebUI Fake 流程、任务 unknown 防重与重启恢复记录仅适用于对应候选；阶段 A 固定修复验收见报告索引。真实 read / write 仍单独列示。
 
 ## M3 — 完整问答与连续工作
 
-### M3.1：三类问答与本地角色 / 历史 / 记忆（离线验收 PASS）
+### M3.1：三类问答与本地角色 / 历史 / 记忆（历史离线验收）
 
 固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 已通过全新独立 QA；详见[QA 报告](../../quality/reports/2026-10-13-M3-PACKAGE-2-C19-DSH-REPAIR-1-QA-0a1b8dc.md)与[Sol 门](../../quality/reports/2026-10-13-M3-C19-DSH-SOL-GATE.md)。
 
@@ -160,14 +146,14 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 
 ### M3.2：状态可迁移与归档压缩
 
-文件：workspace/state.py、workspace/archives.py、local/event_log.py。包3离线集成PASS，受测源码 `ea11fc5a06bed61c18c1527c0c0db6f4dad36c5f`；[全新独立QA](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)和[Sol核证](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)。
+文件：workspace/state.py、workspace/archives.py、local/event_log.py。包3离线集成的固定源码、QA 与 Sol 核证只适用于历史候选，见[全新独立 QA](../../quality/reports/2026-10-12-M3-PACKAGE-3-REPAIR-1-QA-7fd8a53.md)和[Sol 核证](../../quality/reports/2026-10-12-M3-PACKAGE-3-SOL-GATE.md)。
 
 - [x] 另一profile读取待审流程与部分完成稿；活owner、dead owner unknown/no-resend、checkpoint本地恢复、迟到结果CAS、显式reprocess和旧undated版本链验收通过。
 - [x] 完成intake items/jobs、capture/mutation/SHA write-intent/Feishu import回执的active+月摘要回放；摘要故障及冲突/损坏/非法桶阻断、unknown保留与原件/完整稿保留验收通过。
 - [x] 诊断日志只在本机profile并轮转；120合成流程、四业务月归档及provider重放计数通过；本机两profile存储边界已测，真实双机NOT_RUN。
 - [x] README适用检查、固定SHA整包独立QA与双profile真实浏览器短复演通过；首轮C22 lease异常FAIL经自动返工1/2在新SHA关闭，初验报告和失败日志保留。
 
-**M3门：** 包1、包2、包3离线集成PASS；用户批准的离线模拟正式验收已合入 main 并完成固定 merge QA。历史 FAIL 仍保留在各自报告中，只对应当时受测 SHA。真实样板、外部能力、M4.2 真实流程、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。native/DMG 已由 M4.1 独立开发、固定 SHA QA 和用户批准的离线收口覆盖，PR #17 已合入；历史 M3 QA 不覆盖这些新增行为，真实门仍单独验收。
+**M3 历史验收记录：** 包1、包2、包3的离线 QA 与正式验收仅适用于各自固定 SHA；用户批准的离线模拟范围已合入当时的 main 并完成固定 merge QA。历史 FAIL 保留在原报告中。真实样板、外部能力、M4.2 真实流程、五日试用、双机与发布门仍单独验收，产品规格和完整 MUST 不变。native/DMG 的 M4.1 离线候选验收也有独立固定 SHA；历史报告不覆盖之后的行为，真实门仍单独验收。
 
 ## M4 — 单机交付与实际试用
 
@@ -175,7 +161,7 @@ M2.3 功能提交 `ee1c727412ee1a9a9ea787bb8bec8e990cea26b7`；M2 原始候选�
 
 文件：scripts/build_macos_app.py、scripts/release-macos.sh、native Swift 生命周期模块、CI 配置。
 
-- [x] 实现依赖锁定、强制 WebUI 构建、内部 bundle/DMG 构建和 manifest 身份 / 指纹检查脚本；开发者命令及对应退出码见本轮 DEV 报告。
+- [x] 实现依赖锁定、强制 WebUI 构建、内部 bundle/DMG 构建和 manifest 身份 / 指纹检查脚本；历史开发者命令及退出码见报告索引中对应 DEV 报告。
 - [x] fresh QA 在固定 `3f6eaa4` 实测自包含运行、原生生命周期、启动失败 / 延迟 readiness、真实 TCP SSE 和合成凭据故障反馈；真实 OS Keychain 仍 NOT_RUN。
 - [x] fresh QA 对固定内部候选复验 loopback、合成 Bearer、安全文本与独立包 / profile 的离线边界；真实旧安装比较、用户安装、Developer ID 和公证保持 NOT_RUN。
 
