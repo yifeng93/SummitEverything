@@ -2,7 +2,7 @@
 
 **状态**：用户于 2026-10-16 完成三轮选择并授权实施。Sol 计划、调度、审查和判门；custom Developer Luna 实施；全新 custom QA Luna 独立验证固定 SHA。
 
-**执行结果**：固定产品 `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 经 fresh QA / Sol 判本轮核心离线门 PASS（修复1/2轮）；证据与未测范围见[最终门判断](../../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。PR #23 待合并批准。
+**执行结果**：固定产品 `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 经 fresh QA / Sol 判本轮核心离线门 PASS（修复1/2轮）；证据与未测范围见[最终门判断](../../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。PR #23 已于 2026-10-17 经用户批准合入 main（merge `ee99e78`），见[合并收口](../../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。
 
 **起点**：`6ecfc75f18f3c61154648093830901cd7b8c73d7`。本轮是已有前端的后续改造，不重启历史 A→D。首批覆盖今日→审批与公共样式，不重做项目、问答、设置业务结构。
 

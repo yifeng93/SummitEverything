@@ -1,0 +1,20 @@
+{
+  "scope": "approved PR23 merge closeout, documentation only",
+  "tested_product_sha": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715",
+  "merged_commit": "ee99e78965201db3a453d301bdb7c573caee79ac",
+  "tested_pr_tip": "d182e4a1088dcde1f5ca3dc7a61ca7bbd2218ecb",
+  "merged_at_utc": "2026-10-17T00:53:09Z",
+  "postmerge_web_test": {
+    "command": "npm --prefix web test -- --run",
+    "exit_code": 0,
+    "passed": 239
+  },
+  "full_tree_diff_pr_tip_to_merge": {
+    "exit_code": 0,
+    "empty": true
+  },
+  "product_test_dependency_diff_tested_sha_to_merge": {
+    "exit_code": 0,
+    "empty": true
+  }
+}

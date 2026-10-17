@@ -2,13 +2,13 @@
 
 SummitEverything 是个人工作知识整理与检索应用。首版目标是每台 Mac 独立运行的 DMG，使用 FastAPI、React/TypeScript 与薄 macOS 壳；工作知识由用户确认后保存为可迁移的 Markdown 页面。
 
-## 当前开发分支（未合入 main）
+## 当前状态（2026-10-17）
 
-- **今日/审批可用性（2026-10-16；核心离线门 PASS，待合并批准）**：固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 经 fresh Luna QA 独立验收及 Sol 核验。今日并列安排与记录/导入、真实 ID 接续、单项专注审批、Markdown 阅读与未保存保护已交付。独立 Web **239/239**、Playwright 最终 **2/2**、FastAPI/Fake **1/1**、异步反例回归 **5/5**；[CI 38919089638](https://github.com/yifeng93/SummitEverything/actions/runs/38919089638) 全步成功。初验 suppression 质量门 FAIL 已用第 1/2 轮修复关闭，历史证据保留；首次 e2e artifact `ENOENT` 与成功重跑亦保留。两条既有 lint warning、603.32 kB 主包提示仍在。完整证据与未测边界见[Sol 最终门判断](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 未合入 main，等待重要里程碑批准；真实服务、材料、Keychain、用户安装、公证、五日/双机及完整全站 AA 审计未测。
+- **今日/审批可用性已由用户批准并合入 main**：[PR #23](https://github.com/yifeng93/SummitEverything/pull/23)，merge commit `ee99e78965201db3a453d301bdb7c573caee79ac`。交付今日安排与记录/导入并列、真实 ID 接续、单项 Markdown 审批与未保存保护。固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 的 fresh QA / Sol 核心离线门 PASS；main 产品/tests/依赖树与它一致。准确 PR tip 的[最终 CI 38921366364](https://github.com/yifeng93/SummitEverything/actions/runs/38921366364) 全步成功，合并后本机 Web **239/239**。见[合并收口记录](docs/quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)与[Sol 最终门判断](docs/quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)。两条既有 lint warning、603.32 kB 主包提示和首次 e2e artifact ENOENT 后成功重跑记录保留；真实服务、材料、Keychain、用户安装、公证、五日/双机及完整全站 AA 审计未测。
 
-## main 当前状态（截至 2026-10-16）
+## 此前 main 基线（截至 2026-10-16）
 
-当前主线状态（不包含上方未合入的今日/审批可用性分支）：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
+以下为今日/审批可用性改造前已合入的历史基线：设置 UX 与首次配置、origin guard 失败形态、真实使用驱动的错误可见性修复、前端基线切片 1–2、整条前端 UX 线 A→D、合并前仓库清理与 App/DMG 品牌图标均已合入 main（PR #18 → #19 → #20 → #21 → #22，各自 CI 通过）。
 
 - **设置与首配**：设置页三卡主区 + 状态徽章 + 高级折叠；5 步向导；非秘密接入值由构建时注入包内 `Resources/first-use-defaults.json`，用户只需在本机录入三把密钥一次（存 Keychain，不打入包或仓库）。
 - **错误可见**：provider 失败带 code/message/request_id（embedding/rerank/LLM 统一 502）；`GroundedAnswer` 容错对象形式 `source_statements` 与多余键；密钥写入前做形状校验；问答/assist/索引失败的原因写进本地记录与客户端文案；诊断事件不再因清洗被丢弃。真实链路已实测：飞书授权与任务读取成功、embedding 200（1024 维）、rerank 200、DeepSeek 正常返回。

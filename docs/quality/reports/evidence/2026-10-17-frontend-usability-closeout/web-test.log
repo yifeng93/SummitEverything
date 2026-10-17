@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run
+
+
+ RUN  v5.0.3 /Users/yifengstudio/Documents/GitHub/SummitEverything/web
+
+
+ Test Files  26 passed (26)
+      Tests  239 passed (239)
+   Start at  08:53:44
+   Duration  2.82s (environment 62%, tests 17%, import 13%, transform 8%)
+

@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "file": "checks.json",
+      "bytes": 601,
+      "sha256": "98f462b00ba35087cae58d372576af56c92e82a0461b08051e6203285952862c"
+    },
+    {
+      "file": "ci-final.json",
+      "bytes": 2522,
+      "sha256": "926a259b6e7e79a4bf780a66a7397a7c051f6a7bfd8ee7460f718439acec297e"
+    },
+    {
+      "file": "merged-pr.json",
+      "bytes": 235,
+      "sha256": "67eb342f899f7cfd0ebf859a078dad29efc7ed3d207f3a5a1a5273d62b3bd833"
+    },
+    {
+      "file": "web-test.log",
+      "bytes": 267,
+      "sha256": "031a8266cf2016b6ca56e0a12060a4458d4e2ab4ad430c5c6b50cfd6b0486276"
+    }
+  ]
+}
