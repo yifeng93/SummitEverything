@@ -41,6 +41,135 @@
     "real_provider_feishu_business_data_keychain_user_install_notarization_five_day_two_machine_release": "NOT_RUN",
     "runtime_model_metadata": "UNVERIFIED"
   },
-  "full_raw_logs": "ignored local checkout path .local/qa/ponytail-code/logs/",
-  "generated_browser_images": "ignored local checkout path .local/dev/frontend-a/current; copied during QA to .local/qa/ponytail-code/browser-artifacts/; source directory left intact"
+  "full_raw_logs": "evidence directory logs/ (merged stdout/stderr; 20 files; 92K total)",
+  "generated_browser_images": "ignored local checkout path .local/dev/frontend-a/current; copied during QA to .local/qa/ponytail-code/browser-artifacts/; source directory left intact",
+  "command_exit_table": "commands.tsv",
+  "raw_log_checksums": "logs-sha256.txt",
+  "logs": [
+    {
+      "path": "logs/api-types.log",
+      "sha256": "72b37d292ead07de5a3c1219c2f408b5e210507dfe60dd149f073542a4aa3be0",
+      "bytes": 249,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/codesign.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/dmg-verify.log",
+      "sha256": "e480f167aca459de9963c48ae1ec5676e58e5a254ce18f6c60c2cdce5529fcb9",
+      "bytes": 1311,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/mypy.log",
+      "sha256": "d65cae0083d77ec23a4483dfe03fa5cbfde2ebbad3bc4205bfa20ae5ff3edceb",
+      "bytes": 44,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/npm-ci.log",
+      "sha256": "f578ee267500d174bb47c855b04c687e14fdc7e3dec923b382f551aa4dcbd5f6",
+      "bytes": 144,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/packaged-smoke.log",
+      "sha256": "d24f438dffa34622bbadb40799fdc31a98ccb5116de189ee8c410f98c4d3f599",
+      "bytes": 142,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/pytest.log",
+      "sha256": "2602a5a9fb5fa8af07b5a68e4a2e43d892c60e5bc21c566396a3cc1560cffb9b",
+      "bytes": 1379,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/release-build.log",
+      "sha256": "b1562f2b6c83a29398117cb849c2292dd7c80e207f92da2f7240f08d845ae7c4",
+      "bytes": 18552,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/ruff-check.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/ruff-format.log",
+      "sha256": "4f67f0574bfc78b48a9a812b1229f0c979703e7bf895c82d2d8eb79817aab6f9",
+      "bytes": 28,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/swift-test.log",
+      "sha256": "9e2dbaff3f73517fd25400b5ffbdd6481287c8f1f582425f7bd4643c801cc58c",
+      "bytes": 3023,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/uv-build.log",
+      "sha256": "015278adf4f74a0b8713e1ff810bd2c449f01dc39aca280478cca4d6f8c139b7",
+      "bytes": 195,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/uv-lock.log",
+      "sha256": "8af85ffc22c0e6f40d47b302781230791936bf732b3db1193f2623c1894da505",
+      "bytes": 28,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/uv-sync.log",
+      "sha256": "733398ab26b0ae0df9121442da386e9edf29b8ed4d6b92194c7697081f3b9e38",
+      "bytes": 1446,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/web-build.log",
+      "sha256": "29ba8610e59fea1fd1106fcc74a9fecf0099366bc3331f783dac01083f7d1942",
+      "bytes": 755,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/web-e2e-integration.log",
+      "sha256": "e8eebf099df9c81258f017ea80a210814f7b85c486ae664d9bc20dd18f26cd6b",
+      "bytes": 881,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/web-e2e.log",
+      "sha256": "40a1f096af1937e1ea28713107ac2a648162932060ca7981c3722b5233d85db1",
+      "bytes": 687,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/web-lint.log",
+      "sha256": "b305352bb99fa62915910fd69237a954d207e22982029b8c84cb780bbaed6156",
+      "bytes": 983,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/web-test.log",
+      "sha256": "8bd351f8de116403d19232399383b67723fb9969023416b4448570e51d588b07",
+      "bytes": 287,
+      "streams": "stdout+stderr combined"
+    },
+    {
+      "path": "logs/web-typecheck.log",
+      "sha256": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87",
+      "bytes": 42,
+      "streams": "stdout+stderr combined"
+    }
+  ],
+  "command_count": 24,
+  "command_exit_counts": {
+    "0": 23,
+    "1_expected_scope_diff": 1
+  }
 }
