@@ -4,26 +4,28 @@
 
 ## 本轮修复（2026-10-17，已合入 main）
 
-- PR [#25](https://github.com/yifeng93/SummitEverything/pull/25) 已按正常 merge commit
-  合入，merge `2e76f4c94d1f77e2b7285e93b7ef9ef7526a9bc2`；产品修复提交
-  `c82aecf09b195ddcbae40e3b5c5db31d959aea6e`，基线 `e1bbcee`。合并后 main 产品树与
-  `c82aecf` 完全一致。
-- 修复四组用户可见问题：百炼点分隔 API key 被旧白名单误拒；整理提示词与 `kind` schema
-  冲突导致真实整理失败；已提交计划不可取消时对话框仍提供取消并显示英文；页面标题未参与
-  检索 scope 导致已确认页面 0 引用。详见[检索修复与真实验证](../quality/reports/2026-10-17-RETRIEVAL-TITLE-SCOPE-DEV.md)、[整理 DEV](../quality/reports/2026-10-17-ORGANIZE-KIND-FIX-DEV.md)、[独立 QA](../quality/reports/2026-10-17-ORGANIZE-KIND-FIX-QA.md)。
-- 离线回归：Python **731 passed**、Web **241 passed / 26 files**、Ruff/format/mypy、
+- PR [#25](https://github.com/yifeng93/SummitEverything/pull/25) 已合入，merge
+  `2e76f4c94d1f77e2b7285e93b7ef9ef7526a9bc2`，产品 `c82aecf`；PR
+  [#26](https://github.com/yifeng93/SummitEverything/pull/26) 已合入，merge
+  `f1b990a156e5757ac619f3202c4aefd82c8be2c3`，产品 `fe78ba4`。当前 main 产品树与
+  `fe78ba4` 一致；本地与远端仅保留 `main` 分支。
+- 修复：百炼点分隔 API key 被旧白名单误拒；整理提示词与 `kind` schema 冲突；已提交计划
+  不可取消时的英文提示与残留对话框；页面标题未参与检索 scope；飞书日历缺少身份/日历 ID
+  设置；真实模式暴露了不受支持的可见范围筛选。
+- 离线回归：Python **731 passed**、Web **243 passed / 27 files**、Ruff/format/mypy、
   typecheck/lint/build、内部 App/DMG 构建、codesign、hdiutil verify 与 packaged smoke
-  通过；两条既有 Oxlint warning、Starlette/httpx 弃用提示和 603.86 kB bundle advisory
+  通过；两条既有 Oxlint warning、Starlette/httpx 弃用提示和约 605 kB bundle advisory
   保留。
-- 真实 `Test2` 工作库验证：整理 job `8c79b00d-…` completed，12 份稿，DeepSeek
-  3137 输入 / 1408 输出 tokens；索引 4 chunk，百炼 embedding 299 tokens；问答
-  “学员28号晚住宿需求自动勾选流程是什么？”得到 **1 条引用**，真实调用 embedding
-  28 / rerank 85 / DeepSeek 390+588 tokens，回答忠实于已确认页面。
-- 内部候选 DMG：`.local/internal-builds/c82aecf-20261017/SummitEverything-Internal-c82aecf.dmg`
-  （source `c82aecf`，`dirty=false`，SHA-256 `775d147b…f6c5`）；未公证。
-- 真实飞书 OAuth/读取、已安装 App/公证、五日、双机、发布、整站完整业务和 WCAG AA
-  审计仍 **NOT_RUN**；Keychain 在真实整理/查询中可用，但完整生命周期未单独验收；
-  runtime model metadata **UNVERIFIED**。
+- 真实 `Test2` 工作库：整理 job completed（12 稿，DeepSeek 3137/1408 tokens）；索引
+  4 chunk（embedding 299 tokens）；问答“学员28号晚住宿需求自动勾选流程是什么？”
+  1 条引用，真实调用 embedding 28 / rerank 85 / DeepSeek 390+588 tokens。飞书 OAuth
+  已授权；任务读取正常；`identity=user` 日历读到 3 条日程；妙记查询“会议”返回 20 条
+  （空查询 0 条）。任务写回仍禁用，材料导入未验证。
+- 最新内部候选 DMG：`.local/internal-builds/fe78ba4-20261017/SummitEverything-Internal-fe78ba4.dmg`
+  （source `fe78ba4`，`dirty=false`，SHA-256 `3deb5ddc…c497`）；未公证。
+- 已安装 App/公证、五日、双机、发布、整站完整业务和 WCAG AA 审计仍 **NOT_RUN**；
+  Keychain 在真实整理/查询/飞书读取中可用，但完整生命周期未单独验收；runtime model
+  metadata **UNVERIFIED**。
 
 ## 上一轮精简（2026-10-17）
 
@@ -37,6 +39,6 @@
 
 今日宽屏左侧安排、右侧记录与导入，窄屏纵排，会议/任务默认 3/5 条可展开；保存和导入使用真实返回 ID 接续。审批清单进入单项 Markdown 阅读，按需编辑、来源和差异、未保存离开保护、多稿分别确认及首次索引提醒保持。该能力前轮合入与历史失败/修复证据见[今日/审批收口](../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。
 
-本轮 Python 731、Web 241、Ruff/format/mypy、typecheck/lint/build 及内部 App/DMG 技术构建与 packaged smoke 均通过；真实 `Test2` 的整理、索引与问答已调用真实 provider 并得到正确引用。既有两条 Oxlint warning、Starlette/httpx 弃用提示及 603.86 kB bundle advisory 保留。前轮 Playwright artifact ENOENT 的根因仍未确认；本轮未再现，不宣称已修复。
+本轮 Python 731、Web 243、Ruff/format/mypy、typecheck/lint/build 及内部 App/DMG 技术构建与 packaged smoke 均通过；真实 `Test2` 的整理、索引、问答、飞书任务/日历/妙记搜索已调用真实 provider。既有两条 Oxlint warning、Starlette/httpx 弃用提示及约 605 kB bundle advisory 保留。前轮 Playwright artifact ENOENT 的根因仍未确认；本轮未再现，不宣称已修复。
 
-真实飞书、业务材料、已安装 App/公证、五日/双机/发布、整站完整业务和 WCAG AA 审计仍 **NOT_RUN**；runtime model metadata **UNVERIFIED**。本轮 PASS 不代表完整产品或发布通过。
+真实飞书材料导入、任务写回、业务材料、已安装 App/公证、五日/双机/发布、整站完整业务和 WCAG AA 审计仍 **NOT_RUN**；runtime model metadata **UNVERIFIED**。本轮 PASS 不代表完整产品或发布通过。
