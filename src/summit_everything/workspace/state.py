@@ -236,7 +236,3 @@ def get_job(root: Path, job_id: UUID) -> IntakeJob | None:
         raise WorkspaceError("活动整理任务与归档副本冲突。", 409)
     value = active if active is not None else prior
     return IntakeJob.model_validate(value) if value is not None else None
-
-
-def job_attempt_hash(value: dict[str, Any]) -> str:
-    return hashlib.sha256(_canonical(value)).hexdigest()
