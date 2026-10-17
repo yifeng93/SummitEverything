@@ -160,7 +160,12 @@ export function settingsPatch(settings: Settings): Record<string, unknown> {
   return {
     mode: settings.mode,
     model_studio_account_id: settings.model_studio_account_id,
-    feishu: { app_id: settings.feishu.app_id, redirect_uri: settings.feishu.redirect_uri },
+    feishu: {
+      app_id: settings.feishu.app_id,
+      redirect_uri: settings.feishu.redirect_uri,
+      identity: settings.feishu.identity,
+      calendar_id: settings.feishu.calendar_id,
+    },
     llm: {
       provider: settings.llm.provider,
       model: settings.llm.model ?? null,

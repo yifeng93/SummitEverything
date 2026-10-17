@@ -412,6 +412,9 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
           {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>}
           <form className="settings-card-form" onSubmit={saveFeishuCard}>
             <label className="settings-field"><span>飞书应用 App ID</span><input value={settings.feishu.app_id} maxLength={200} placeholder="cli_…（非秘密，用于本机凭据槽）" onChange={(event) => setSettings({ ...settings, feishu: { ...settings.feishu, app_id: event.target.value } })} /></label>
+            <label className="settings-field"><span>日历读取身份</span><select value={settings.feishu.identity} onChange={(event) => setSettings({ ...settings, feishu: { ...settings.feishu, identity: event.target.value as Settings['feishu']['identity'] } })}><option value="app">应用身份（默认；需要应用有可用主日历）</option><option value="user">用户身份（使用已授权用户的主日历）</option></select></label>
+            <label className="settings-field"><span>日历 ID（可选）</span><input value={settings.feishu.calendar_id} maxLength={200} placeholder="留空则解析主日历；多候选时填写具体 ID" onChange={(event) => setSettings({ ...settings, feishu: { ...settings.feishu, calendar_id: event.target.value } })} /></label>
+            <p className="settings-help">应用身份没有主日历或返回多个候选时，改用用户身份，或填写具体日历 ID。保存后不会被模型设置覆盖。</p>
             <div className="secret-slot">
               <label htmlFor="secret-feishu">飞书应用密钥<span>App Secret，仅保存在本机钥匙串。已保存的密钥不会显示，留空表示不修改。</span></label>
               <input id="secret-feishu" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.feishu_app} onChange={(event) => setSecret('feishu_app', event.target.value)} />

@@ -137,8 +137,9 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   async function loadMaterials(cursor?: string) {
     setBusy(true); setError('')
     try {
+      const effectiveVisibility = status?.mode === 'real' ? '' : visibility
       const params = new URLSearchParams({ query, limit: '20' })
-      if (visibility) params.set('visibility', visibility)
+      if (effectiveVisibility) params.set('visibility', effectiveVisibility)
       if (cursor) params.set('cursor', cursor)
       const execute = async (planId?: string) => {
         const plannedParams = new URLSearchParams(params)
@@ -148,7 +149,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
           setMaterials(value); setMaterialsSuccess(new Date().toISOString())
       }
       if (status?.mode === 'real') {
-        await preparePlan('feishu.materials.read', { query, visibility: visibility || null, cursor: cursor ?? null, limit: 20 }, async (planId) => {
+        await preparePlan('feishu.materials.read', { query, visibility: effectiveVisibility || null, cursor: cursor ?? null, limit: 20 }, async (planId) => {
           try { await execute(planId) } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '无法读取材料') }
         })
         return
@@ -235,7 +236,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
     {(view === 'all' || view === 'materials') && <><h3>材料</h3>{materialsSuccess && <p className="helper-line">上次成功读取：{new Date(materialsSuccess).toLocaleString('zh-CN')}{error ? ' · 本次失败，保留上次结果' : ''}</p>}
     <form className="organize-row" onSubmit={(event) => { event.preventDefault(); setSelected([]); void loadMaterials() }}>
       <label className="compact-field"><span>搜索材料</span><input value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-      <label className="compact-field"><span>可见范围</span><select value={visibility} onChange={(event) => setVisibility(event.target.value)}><option value="">全部可见</option><option value="owner">我拥有的</option><option value="shared">共享给我的</option></select></label>
+      {status?.mode === 'real' ? <span className="helper-line">真实飞书只搜索妙记，不支持可见范围筛选；请用标题关键词搜索。</span> : <label className="compact-field"><span>可见范围</span><select value={visibility} onChange={(event) => setVisibility(event.target.value)}><option value="">全部可见</option><option value="owner">我拥有的</option><option value="shared">共享给我的</option></select></label>}
       <button className="button secondary" disabled={!status?.authorized || busy}>搜索 / 刷新材料</button>
     </form>
     {materials && <>
