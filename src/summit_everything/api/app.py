@@ -489,7 +489,13 @@ def query_failure_message(exc: BaseException) -> str:
     return "查询未能完成，请稍后重试。"
 
 
-_API_KEY_SHAPE = re.compile(r"sk-[A-Za-z0-9_-]{16,}")
+# Provider keys are single-line printable ASCII tokens. The original class only
+# accepted ``[A-Za-z0-9_-]``, which rejected real Model Studio keys that carry
+# JWT-style dot separators (for example ``sk-...<dot>...<dot>...``). Keep the
+# guard against pasted multi-line blobs and invisible characters, but do not
+# narrow the alphabet beyond what the provider formats actually use.
+_API_KEY_SHAPE = re.compile(r"sk-[\x21-\x7e]{16,}")
+_API_KEY_FORBIDDEN = frozenset("\"'`“”‘’")
 _CREDENTIAL_MAX_LENGTH = 512
 
 
@@ -580,12 +586,18 @@ def validate_credential_shape(provider: str, secret: str) -> None:
     keychain write; the submitted value is never echoed back.
     """
     if provider in {"deepseek", "dashscope"}:
-        if len(secret) > _CREDENTIAL_MAX_LENGTH or not _API_KEY_SHAPE.fullmatch(secret):
+        if (
+            len(secret) > _CREDENTIAL_MAX_LENGTH
+            or not _API_KEY_SHAPE.fullmatch(secret)
+            or any(character in _API_KEY_FORBIDDEN for character in secret)
+        ):
             raise HTTPException(
                 status_code=422,
                 detail={
                     "code": "credential_shape_invalid",
-                    "message": ("这不像一把 API key：请确认它以 sk- 开头，且不含空格或换行。"),
+                    "message": (
+                        "这不像一把 API key：请确认它以 sk- 开头，且不含空格、换行或引号。"
+                    ),
                 },
             )
         return

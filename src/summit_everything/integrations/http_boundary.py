@@ -25,10 +25,11 @@ from summit_everything.integrations.transport import live_transfer_workers as li
 DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
 
 # A provider message is shown to the user, so it is bounded and stripped of
-# anything that looks like a credential before it leaves this module.
+# anything that looks like a credential before it leaves this module. The class
+# covers printable ASCII so dot-separated (JWT-style) keys are masked whole.
 PROVIDER_TEXT_LIMIT = 300
 PROVIDER_CODE_LIMIT = 100
-_SECRET_LIKE = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
+_SECRET_LIKE = re.compile(r"sk-[\x21-\x7e]{8,}")
 _IDENTIFIER_SHAPE = re.compile(r"[A-Za-z0-9._:-]{1,200}")
 
 
