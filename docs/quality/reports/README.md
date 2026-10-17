@@ -2,6 +2,10 @@
 
 当前状态只维护在 [PROGRESS](../../implementation/PROGRESS.md)。本页导航各固定 SHA 的报告；历史 PASS/FAIL、合并及 CI 记录不得直接作为当前 HEAD 的结论。
 
+## API key 形状修复（2026-10-17，候选，未合并）
+
+- [DEV 记录](2026-10-17-API-KEY-SHAPE-FIX-DEV.md)：真实百炼 key 的点分隔格式被旧白名单误拒；校验与两处脱敏同步放宽，定向/全量测试、内部 DMG 构建与 smoke 结果；未独立 QA。
+
 ## Ponytail 精简（2026-10-17）
 
 - [集中 DEV 记录](2026-10-17-PONYTAIL-CLEANUP-DEV.md)：文档处置、代码/依赖/测试审计与保留理由。
