@@ -1,21 +1,19 @@
 # 实施进展账本
 
-本页记录当前工作状态；旧阶段合入史、QA 结论和执行过程见[历史进展账本（截至 2026-10-16）](PROGRESS-HISTORY-2026-10-16.md)。验收以固定 SHA 的 Sol 门判断为准。
+本页是当前产品状态的唯一维护处。固定版本的原始报告见[报告索引](../quality/reports/README.md)，执行入口见[最新交接](../handoff/LATEST-IMPLEMENTATION.md)；旧阶段过程见[历史账本](PROGRESS-HISTORY-2026-10-16.md)。
 
-## 当前状态
+## 本轮精简（2026-10-17）
 
-### 今日与审批可用性（2026-10-17；核心离线门 PASS，已合入 main）
+- README 已重构为项目首页；实现、验收和文档入口按职责整理，旧状态不再充当当前指令。
+- 文档固定 SHA `f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796` 的独立文档 QA **PASS**。代码固定 SHA `2d90a7e9efc9ed67f6a0260323f9b071d586f7a1`；完整受测候选 `5835faa72b513202e92694f4fa14790afefe1e70` 的独立离线代码与内部包技术门 **PASS**，Sol 已核验原始证据。两次常规 QA，无产品修复轮；后续交接/证据提交不改变受测产品树。见[Sol 最终门判断](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-SOL-GATE.md)。
+- 产品源码仅删除无调用的 `job_attempt_hash` 四行定义。归档摘要、版本链校验、全部测试与断言、依赖、界面、API 和生成类型保持；没有证据支持进一步删依赖或合并回归测试。候选与保留理由集中在[DEV 记录](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)。
+- 原始历史报告与证据保留；C01–C31、真实门和 UI 守卫未降低。报告索引只提供固定版本导航，不作为第二份当前状态。
+- 本机空间清理尚未执行：三个历史 worktree 的源码恢复 bundle、非再生材料与浏览器原件已归档校验；三个旧 worktree 与五个缓存/输出目录须用户另行批准。清单在主 checkout 的忽略目录 `.local/archives/2026-10-17-ponytail-cleanup/CLEANUP-REQUEST.md`；分支保留。
 
-固定产品 SHA `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715` 经全新独立 Luna QA 与 Sol 原始证据核验，本轮核心离线源码/浏览器门 PASS。[Sol 最终门判断](../quality/reports/2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)列出范围、命令、退出码、初验失败与未测项；[fresh QA](../quality/reports/evidence/2026-10-16-frontend-usability-qa-repair1/REPORT.md)原件及日志已持久归档。
+## 当前产品能力与限制
 
-今日宽屏左侧会议/任务、右侧记录/导入，窄屏纵排，默认 3/5 条可展开；保存/导入按实际返回 ID 接续。审批清单进入单项阅读，默认 Markdown、按需编辑/来源/差异、未保存离开保护；多稿可分别确认，首次索引提醒使用服务端正式页状态。
+今日宽屏左侧安排、右侧记录与导入，窄屏纵排，会议/任务默认 3/5 条可展开；保存和导入使用真实返回 ID 接续。审批清单进入单项 Markdown 阅读，按需编辑、来源和差异、未保存离开保护、多稿分别确认及首次索引提醒保持。该能力前轮合入与历史失败/修复证据见[今日/审批收口](../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。
 
-初验 `0957df2` 因两处新增 lint suppression 违反质量门 FAIL，未披露是额外透明度问题。修复使用 1/2 轮：移除禁用，以可取消刷新 epoch、目标及详情身份保护替代。fresh 独立异步 harness 修复版 5/5、旧版两项预期失败。没有删测、替代 suppression 或弱化门限。
+本轮 Python 712、Web 239、Playwright 2+1、Swift 5、静态/类型检查及内部 App/DMG 技术构建与 packaged smoke 均通过，范围限于合成离线验收。既有两条 Oxlint warning、Starlette/httpx 弃用提示及 603.32 kB bundle advisory 保留。前轮 Playwright artifact ENOENT 的根因仍未确认；本轮未再现，不宣称已修复。
 
-独立 Web 239/239、typecheck/lint/build/api types、Playwright 最终 2/2、Fake integration 1/1 均 exit 0。首次 e2e 的 artifact ENOENT（根因未确认）与成功重跑均保留。CI `38919089638` 全 13 步成功，Python 712、native 5 及内部 App/DMG 技术构建通过。两条既有 lint warning 与 603.32 kB bundle advisory 保留。
-
-用户已明确批准，[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 于 2026-10-17 合入 main，merge commit `ee99e78965201db3a453d301bdb7c573caee79ac`；产品/tests/依赖树与固定受测 SHA 一致。最终 tip CI `38921366364` 全步成功，合并后 Web 239/239；见[合并收口记录](../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。真实服务/材料/凭据/Keychain、用户安装/公证、五日/双机/发布、整站完整业务和 WCAG AA 审计 NOT_RUN；runtime model metadata UNVERIFIED。此范围不等于整个产品或发布 PASS。
-
-### Ponytail 精简（2026-10-17；文档批次一 PASS，代码批次二待 QA）
-
-文档批次一固定 `f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796` 经 fresh QA；Sol 核读日志及原始证据后判该文档专项 PASS。代码批次二由 Developer 固定源码 `2d90a7e9efc9ed67f6a0260323f9b071d586f7a1`：删除全仓无调用、仅在首次实现提交引入的 `job_attempt_hash` helper，归档版本链的 `_canonical` / `hashlib` 保留；本批的独立 QA 尚未执行。范围、依赖/入口审计、自测结果和未测项见[DEV 报告](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)。文档批次结论不覆盖代码批次或整体精简专项。
+真实 provider/飞书、业务材料、凭据/OS Keychain、用户安装/公证、五日/双机/发布、整站完整业务和 WCAG AA 审计仍 **NOT_RUN**；runtime model metadata **UNVERIFIED**。本轮 PASS 不代表完整产品或发布通过。

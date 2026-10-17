@@ -1,20 +1,17 @@
 # 开发与独立验收报告索引
 
-本次文档入口精简 DEV 执行记录：[2026-10-17-PONYTAIL-CLEANUP-DEV](2026-10-17-PONYTAIL-CLEANUP-DEV.md)。当前状态见 [PROGRESS](../../implementation/PROGRESS.md)。
+当前状态只维护在 [PROGRESS](../../implementation/PROGRESS.md)。本页导航各固定 SHA 的报告；历史 PASS/FAIL、合并及 CI 记录不得直接作为当前 HEAD 的结论。
 
-## 最新已合入范围（2026-10-17）
+## Ponytail 精简（2026-10-17）
 
-今日与审批可用性固定产品 `d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715`：fresh QA + Sol 判核心离线范围 PASS，自动修复使用1/2轮；[Sol 最终门判断](2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)、[fresh QA原报告](evidence/2026-10-16-frontend-usability-qa-repair1/REPORT.md)、[DEV修复交接](2026-10-16-FRONTEND-USABILITY-DEV-REPAIR1.md)。[初验FAIL](2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)和原始证据保留。用户已批准并合入 PR #23（merge `ee99e78`），[合并收口记录](2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)记录最终 CI 与合并后验证；真实服务/安装及完整AA审计等未测边界以最终门判断为准。
+- [集中 DEV 记录](2026-10-17-PONYTAIL-CLEANUP-DEV.md)：文档处置、代码/依赖/测试审计与保留理由。
+- [文档专项 QA](2026-10-17-PONYTAIL-CLEANUP-DOCS-QA.md)：固定 `f57c7ed` 的入口、契约和原始证据核验。
+- [代码与内部包 QA](2026-10-17-PONYTAIL-CLEANUP-CODE-QA.md)：固定 `5835faa` 的离线回归、包身份与实际退出码。
+- [Sol 最终门判断](2026-10-17-PONYTAIL-CLEANUP-SOL-GATE.md)：两次验收范围、证据核验与后续门。
 
-## 当前已验收范围
+## 历史固定版本报告
 
-M3 离线模拟范围已获用户批准并合入 main。C19 / 包 2 固定源码 `0a1b8dc94a5d8f797161c38430dccfcb211a9e07` 经全新独立 QA 通过；固定 merge `47a3971ea3dccf6ffbc7107b2d5995043b4e25a2` 的合并后 QA 通过。完整批准范围和未测项见[M3离线验收](2026-10-13-M3-OFFLINE-ACCEPTANCE.md)；逐轮原始报告和 evidence 保持不变。
-
-本轮仓库 / 文档清理的受测产品源码 `6a33259224097167cfdde689da93258fe925964e` 已通过独立离线 QA，并由 PR #15 合入，合并点为 `2238f1b47d4c7ee073e1d420dc86b23d7e75ffb6`；该合并点产品树与固定 QA 源码一致。QA-only 提交 `da76f56b765308a365eafd0927c84e88caec492e` 的 37 项 manifest SHA-256 为 `88a960e757ccd4de719a9574706b8964263f0ff705eaa377f2dd4f34d61ef6e3`，已由 Sol 核验。清理后文档收口未改变产品源码；Git 与远端最终状态以工作结束时实际查询及本机私有回执为准。
-
-M4.1 固定产品 SHA `3f6eaa408a8860ff5a438be8a874a2c3904733e4` 经 fresh QA 与 Sol 核验，适用离线技术门 PASS；用户已批准离线正式收口，PR #17 已合入 main。旧候选 `b9321d6` 的文件面板 FAIL 原件保留，修复使用 1/2 轮；真实安装、签名公证、M4.2、五日、双机和发布未通过。
-
-M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f4148b` 判 FAIL。修复轮 1 最终产品 SHA `419bb865b334389d1efd0f4a1a855cd0d5324d28` 已由独立 fresh QA 验收；Sol 判**适用工作包 A 离线技术场景 PASS**，不是整个 M4.2/C25/Stage C/产品 PASS。`4c6b0bd` 包含 P1/P2 与规格范围实现，`419bb86` 的 Native 修复为有效/零字节混选给出通用拒绝提示并保留 Cancel 无提示。QA 指定 UI/API/自动检查结果和限制见 [QA 报告](2026-10-14-M42-PACKAGE-A-QA-REPAIR1.md)及 [Sol gate](2026-10-14-M42-PACKAGE-A-SOL-GATE.md)。真实服务、材料、Keychain 与人工交付门仍 NOT_RUN 或 UNVERIFIED；用户已批准离线正式收口与合入 main；PR #18 于 2026-10-14T10:42:19Z 合并，run 38550700081 全步骤成功（workflow 显示名沿用 M4.1，但适用于本 PR）。main 产品/tests/lock 树与 fixed `419bb86` 一致。
+今日/审批的前轮结论见[Sol 门](2026-10-16-FRONTEND-USABILITY-SOL-FINAL.md)及[合并收口](2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)，其[初验 FAIL](2026-10-16-FRONTEND-USABILITY-SOL-INITIAL.md)与原件保留。以下均为对应阶段的历史版本导航。
 
 | 报告 | 范围 |
 |---|---|
@@ -57,7 +54,7 @@ M4.2 Package A 初始 QA 对固定源码 `fe473399bbc5dcd001a3bc2e5156fdbbb2f414
 
 ## 保留的独立验收边界
 
-真实 provider / Feishu、真实业务材料、OS Keychain 生命周期、runtime 元数据、正式用户安装/公证、五日试用、双机与发布不因离线 QA 通过而变为 PASS。M4.2 PR #18 的远端 CI run 38550700081 已全步骤成功；其工作流显示名沿用 M4.1。本轮原始压缩日志与校验值见 [M4.2 CI evidence](evidence/2026-10-14-m42-ci/README.md)。完整验收要求见[验收矩阵](../ACCEPTANCE.md)。原始报告、manifest、SHA256SUMS、命令输出和截图不在本索引中重写。
+离线 QA 不替代真实 provider/飞书、业务材料、Keychain、用户安装/公证、五日、双机或发布验收。完整标准见[验收矩阵](../ACCEPTANCE.md)，当前未测项见 PROGRESS。历史 CI 的原始日志示例见 [M4.2 CI evidence](evidence/2026-10-14-m42-ci/README.md)；原始报告、manifest、校验值、命令输出和截图保持原样。
 
 ## 历史报告完整索引
 
