@@ -235,3 +235,16 @@ def test_provider_usage_records_only_reported_counts_and_bounded_request_ids(
                 ),
             ],
         )
+
+
+def test_plan_conflict_messages_never_leak_english_state_machine_text() -> None:
+    from summit_everything.integrations.acceptance_plans import plan_conflict_message
+
+    cancelled = plan_conflict_message(
+        PlanConflict("an executing or completed plan cannot be cancelled")
+    )
+    assert "已经提交" in cancelled and "不能再取消" in cancelled
+    expired = plan_conflict_message(PlanConflict("acceptance plan expired"))
+    assert "已过期" in expired
+    fallback = plan_conflict_message(PlanConflict("some new internal wording"))
+    assert fallback == "本次计划状态已变化，请重新预览。"
