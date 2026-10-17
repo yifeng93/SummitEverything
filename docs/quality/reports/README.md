@@ -11,6 +11,10 @@
 - [DEV 记录](2026-10-17-ORGANIZE-KIND-FIX-DEV.md)：真实整理因提示词与 `kind` schema 冲突失败；提示词对齐、kind 归一化、计划冲突中文文案、失败后关闭不可取消的对话框并刷新失败来源。
 - [独立 QA 与 Sol 门](2026-10-17-ORGANIZE-KIND-FIX-QA.md)：固定 `ad60394` 的 A–E 离线/Mock 验收 PASS；真实 provider retry 与安装/发布门 NOT_RUN；建议合并。
 
+## 检索标题 scope 修复（2026-10-17，候选，未合并）
+
+- [DEV + 真实验证](2026-10-17-RETRIEVAL-TITLE-SCOPE-DEV.md)：页面标题参与 scope 兜底；真实 `Test2` 查询从 0 引用变为 1 引用，真实调用 embedding/rerank/DeepSeek；全量 731/241 与 DMG smoke 通过。
+
 ## Ponytail 精简（2026-10-17）
 
 - [集中 DEV 记录](2026-10-17-PONYTAIL-CLEANUP-DEV.md)：文档处置、代码/依赖/测试审计与保留理由。

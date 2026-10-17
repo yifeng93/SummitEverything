@@ -12,6 +12,13 @@
 （需要用户 key）以及真实百炼/飞书/Keychain/安装/公证/五日/双机/发布仍为
 **NOT_RUN**，本轮结论不能替代它们。
 
+> 后续更新（2026-10-17）：用户已在 `Test2` 完成真实 provider 验证：整理 job completed
+> （12 稿）、索引 4 chunk、问答 1 引用并真实调用 embedding/rerank/DeepSeek。真实
+> DeepSeek/百炼目标场景已 PASS；飞书/安装/公证/五日/双机/发布仍 NOT_RUN。证据见
+> [检索标题 scope 修复与真实 provider 验证](2026-10-17-RETRIEVAL-TITLE-SCOPE-DEV.md)
+> 与 [LATEST](../../handoff/LATEST-IMPLEMENTATION.md)。本报告原来的 NOT_RUN 仅指
+> `ad60394` 离线 QA 当时的状态。
+
 ## 独立验收对象
 
 - 独立 checkout：`.local/qa/organize-fix-qa-20261017`，HEAD 精确为 `ad60394`，
