@@ -1,5 +1,17 @@
 # 最新实现交接
 
+## 当前候选：飞书身份/日历与材料筛选（QA PASS，待推送/CI）
+
+- 分支：`codex/feishu-settings-20261017`；产品提交
+  `fe78ba47099f61daf1f4e49f7191eddb9ad544b2`；基线 `e1cb028`。
+- 修复：设置页新增飞书日历身份（app/user）与日历 ID；真实模式隐藏不受支持的
+  可见范围筛选，材料只按妙记关键词搜索。
+- 验证：Python 731、Web 243、typecheck/lint/build、DMG 构建与 packaged smoke 通过；
+  真实日历（identity=user）3 条，真实妙记查询「会议」20 条。
+- DMG：`.local/internal-builds/fe78ba4-20261017/SummitEverything-Internal-fe78ba4.dmg`
+  （source `fe78ba4`，SHA-256 `3deb5ddc…c497`，未公证）。
+- 详见 [DEV 记录](../quality/reports/2026-10-17-FEISHU-SETTINGS-DEV.md)。
+
 ## 已合并（2026-10-17）
 
 - PR [#25](https://github.com/yifeng93/SummitEverything/pull/25) 已按正常 merge commit
