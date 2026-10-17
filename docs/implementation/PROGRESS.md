@@ -16,6 +16,6 @@
 
 用户已明确批准，[PR #23](https://github.com/yifeng93/SummitEverything/pull/23) 于 2026-10-17 合入 main，merge commit `ee99e78965201db3a453d301bdb7c573caee79ac`；产品/tests/依赖树与固定受测 SHA 一致。最终 tip CI `38921366364` 全步成功，合并后 Web 239/239；见[合并收口记录](../quality/reports/2026-10-17-FRONTEND-USABILITY-MERGE-CLOSEOUT.md)。真实服务/材料/凭据/Keychain、用户安装/公证、五日/双机/发布、整站完整业务和 WCAG AA 审计 NOT_RUN；runtime model metadata UNVERIFIED。此范围不等于整个产品或发布 PASS。
 
-### 文档入口精简批次一（2026-10-17；DEV 完成，独立 QA 待执行）
+### Ponytail 精简（2026-10-17；文档批次一 PASS，代码批次二待 QA）
 
-本轮仅整理项目首页、当前交接、状态与文档索引，修正架构/API/验收文档中的过时当前状态表述。产品源码、tests、Web/native 与依赖树不在本轮修改范围。实施记录、文档处置理由、命令与未测项见[DEV 报告](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)；验收仍待 Sol 安排 fresh QA 对固定提交复核。本段不构成 QA PASS。
+文档批次一固定 `f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796` 经 fresh QA；Sol 核读日志及原始证据后判该文档专项 PASS。代码批次二由 Developer 固定源码 `2d90a7e9efc9ed67f6a0260323f9b071d586f7a1`：删除全仓无调用、仅在首次实现提交引入的 `job_attempt_hash` helper，归档版本链的 `_canonical` / `hashlib` 保留；本批的独立 QA 尚未执行。范围、依赖/入口审计、自测结果和未测项见[DEV 报告](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)。文档批次结论不覆盖代码批次或整体精简专项。
