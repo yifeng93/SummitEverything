@@ -1,6 +1,6 @@
 # 最新实现交接
 
-## 当前候选：API key 形状修复 + 整理 kind 修复（未合并、未独立 QA）
+## 当前候选：API key 形状修复 + 整理 kind 修复（QA PASS，待合并批准）
 
 - 分支：`codex/organize-kind-fix-20261017`；基线 `e1bbcee0f9e3e71e077e813db360cb3b802b57c3`。
 - API key 修复提交：`f1f0982be75aadd9a74021a7ee5641317ddc2113`；整理修复产品提交：
@@ -12,10 +12,13 @@
   内部 App/DMG 构建、strict codesign、hdiutil verify、packaged smoke 通过。
 - DMG：`.local/internal-builds/c59d7a7-20261017/SummitEverything-Internal-c59d7a7.dmg`；
   SHA-256 `9f14c726a0007d24da56b7c52753aee23452e74ba52aa4a1f9e1a82d67bcd540`。
-- 边界：未执行独立 QA，未合并、未推送；真实 provider / 飞书 / Keychain / 安装与公证 /
+- 独立 QA：固定 `ad60394`（产品树等于 `c59d7a7`）A–E PASS；全量 730 / 241、静态检查、DMG 身份与 smoke 通过。见 [QA 报告](../quality/reports/2026-10-17-ORGANIZE-KIND-FIX-QA.md)。
+- 边界：已独立 QA，但**未合并、未推送**；真实 provider / 飞书 / Keychain / 安装与公证 /
   五日 / 双机 / 发布仍为 NOT_RUN。
 - 恢复：旧 `model.organize` 计划为 `unknown` 终态，无法取消且会在 10 分钟后过期；来源为
   `failed`，在审批来源中选中后点“明确重新整理”即可创建新计划，旧失败请求不会自动重发。
+- 合并：离线 QA 建议合并；需用户批准后推送、跑 CI、按正常 PR 合并。真实 DeepSeek retry
+  仍建议在合并后由用户用已安装候选重试一次。
 
 ## 已合入基线
 

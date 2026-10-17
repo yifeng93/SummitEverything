@@ -8,7 +8,8 @@
 
 ## 整理 kind 与失败取消修复（2026-10-17，候选，未合并）
 
-- [DEV 记录](2026-10-17-ORGANIZE-KIND-FIX-DEV.md)：真实整理因提示词与 `kind` schema 冲突失败；提示词对齐、kind 归一化、计划冲突中文文案、失败后关闭不可取消的对话框并刷新失败来源；未独立 QA。
+- [DEV 记录](2026-10-17-ORGANIZE-KIND-FIX-DEV.md)：真实整理因提示词与 `kind` schema 冲突失败；提示词对齐、kind 归一化、计划冲突中文文案、失败后关闭不可取消的对话框并刷新失败来源。
+- [独立 QA 与 Sol 门](2026-10-17-ORGANIZE-KIND-FIX-QA.md)：固定 `ad60394` 的 A–E 离线/Mock 验收 PASS；真实 provider retry 与安装/发布门 NOT_RUN；建议合并。
 
 ## Ponytail 精简（2026-10-17）
 
