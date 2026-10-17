@@ -1,0 +1,79 @@
+{
+  "authorization": "用户明确批准清单内3个历史worktree与5个缓存/输出目录；分支保留",
+  "recovery_directory": "/Users/yifengstudio/Documents/GitHub/SummitEverything/.local/archives/2026-10-17-ponytail-cleanup",
+  "recovery_bundle_sha256": "ce4083294dd44ba087e6c46fe417e477ecb841c86f51fc3afc706ec10d76cb99",
+  "verification": "删除前全量归档摘要、源材料摘要、固定HEAD、clean状态、无占用进程均核实；git bundle verify exit0；8项删除后路径均不存在，全部refs/heads逐字相同",
+  "operations": [
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything",
+      "action": "git worktree remove (no force)",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "allocated_kib_before": 381736,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything",
+      "action": "git worktree remove (no force)",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "allocated_kib_before": 958468,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything",
+      "action": "git worktree remove (no force)",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "allocated_kib_before": 382564,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything/.pytest_cache",
+      "action": "remove approved ignored regenerable directory",
+      "exit": 0,
+      "allocated_kib_before": 20580,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything/.mypy_cache",
+      "action": "remove approved ignored regenerable directory",
+      "exit": 0,
+      "allocated_kib_before": 11336,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything/.ruff_cache",
+      "action": "remove approved ignored regenerable directory",
+      "exit": 0,
+      "allocated_kib_before": 40,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything/web/dist",
+      "action": "remove approved ignored regenerable directory",
+      "exit": 0,
+      "allocated_kib_before": 644,
+      "absent": true
+    },
+    {
+      "path": "/Users/yifengstudio/Documents/GitHub/SummitEverything/native/.build",
+      "action": "remove approved ignored regenerable directory",
+      "exit": 0,
+      "allocated_kib_before": 102092,
+      "absent": true
+    }
+  ],
+  "branches_unchanged": true,
+  "removed_allocated_kib": 1857460,
+  "recovery_payload_entries": 1649,
+  "source_head_by_worktree": {
+    "/Users/yifengstudio/.codex/worktrees/frontend-usability-20261016/SummitEverything": "d182e4a1088dcde1f5ca3dc7a61ca7bbd2218ecb",
+    "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-initial/SummitEverything": "0957df2b871970d626fb2745048a6e79bad4defb",
+    "/Users/yifengstudio/.codex/worktrees/frontend-usability-qa-repair1/SummitEverything": "d9f49c1fc1b2dc787b21e3f2bd47662de3d1e715"
+  },
+  "limitations": "du为删除前目录分配占用之和，不等于APFS即时释放空间；恢复包保留约388MiB，主checkout依赖、.local与当前精简/QA worktree均保留。"
+}

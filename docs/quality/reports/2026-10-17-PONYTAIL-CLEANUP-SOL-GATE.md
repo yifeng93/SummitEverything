@@ -29,4 +29,4 @@ Sol 在验收后将 PROGRESS 改为当前结论、LATEST 改为后续动作，�
 
 既有两条 Oxlint warning、Starlette/httpx 弃用提示与 603.32 kB 主包提示保留；前轮 e2e artifact ENOENT 根因仍未确认，本轮未再现。真实 provider/飞书、业务材料、凭据/OS Keychain、用户安装/公证、五日/双机/发布、完整全站业务和 WCAG AA 审计均 NOT_RUN；runtime model metadata UNVERIFIED。包 smoke 不替代原生 UI、用户安装或发布验收。
 
-本机空间清理只完成恢复包准备与校验，源目录未删；主 checkout 私有清单 `.local/archives/2026-10-17-ponytail-cleanup/CLEANUP-REQUEST.md` 列出三个历史 worktree 与五个缓存/输出目录，执行前须用户另行批准。无权限/范围例外，无测试或验收标准降低。
+用户随后明确批准清单中的八项删除。Sol 删除前重新校验 bundle/归档/源原件、三个固定 HEAD、clean 状态、缓存无 tracked 文件且非 symlink，并确认无进程占用；三个历史 worktree 使用不带 force 的 `git worktree remove`，其余五项仅删除白名单缓存/输出。8/8 动作 exit 0，路径已不存在，所有本地分支 ref 前后完全相同；见[逐项回执](evidence/2026-10-17-ponytail-local-cleanup/receipt.json)。移除目录原分配占用 1,857,460 KiB（约 1.77 GiB）；恢复包约 388 MiB，1,649 项非再生材料/浏览器原件已核验保留。该占用值不是 APFS 即时释放空间承诺。无权限/范围例外，无测试或验收标准降低。

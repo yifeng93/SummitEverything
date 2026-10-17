@@ -9,5 +9,5 @@
 ## 后续动作
 
 - 例行维护整合须核对准确 PR tip 的 CI 与受测产品树等同性；不把旧 SHA 的结果称为新源码已验收。
-- 本机目录删除仍待用户明确批准。先读主 checkout 忽略目录 `.local/archives/2026-10-17-ponytail-cleanup/CLEANUP-REQUEST.md`，执行前复核获批路径、HEAD、clean 状态和恢复包摘要；无批准不删目录或分支。
+- 本机清理已按用户对准确八项清单的批准执行，记录见[删除回执](../quality/reports/evidence/2026-10-17-ponytail-local-cleanup/receipt.json)。恢复包在主 checkout 的 `.local/archives/2026-10-17-ponytail-cleanup/`；不要重复删除或扩展范围，分支及当前 worktree 保留。
 - 本次不授权新的真实资料、服务、凭据或安装/发布操作；未测门按 PROGRESS 保留。

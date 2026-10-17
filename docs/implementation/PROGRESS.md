@@ -8,7 +8,7 @@
 - 文档固定 SHA `f57c7ed3a6d2e6763e1624aa3fd08187f5c4d796` 的独立文档 QA **PASS**。代码固定 SHA `2d90a7e9efc9ed67f6a0260323f9b071d586f7a1`；完整受测候选 `5835faa72b513202e92694f4fa14790afefe1e70` 的独立离线代码与内部包技术门 **PASS**，Sol 已核验原始证据。两次常规 QA，无产品修复轮；后续交接/证据提交不改变受测产品树。见[Sol 最终门判断](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-SOL-GATE.md)。
 - 产品源码仅删除无调用的 `job_attempt_hash` 四行定义。归档摘要、版本链校验、全部测试与断言、依赖、界面、API 和生成类型保持；没有证据支持进一步删依赖或合并回归测试。候选与保留理由集中在[DEV 记录](../quality/reports/2026-10-17-PONYTAIL-CLEANUP-DEV.md)。
 - 原始历史报告与证据保留；C01–C31、真实门和 UI 守卫未降低。报告索引只提供固定版本导航，不作为第二份当前状态。
-- 本机空间清理尚未执行：三个历史 worktree 的源码恢复 bundle、非再生材料与浏览器原件已归档校验；三个旧 worktree 与五个缓存/输出目录须用户另行批准。清单在主 checkout 的忽略目录 `.local/archives/2026-10-17-ponytail-cleanup/CLEANUP-REQUEST.md`；分支保留。
+- 用户已另行批准本机空间清理：三个历史 worktree 与五个缓存/输出目录已删除，8/8 动作 exit 0，全部分支保留。移除目录原分配占用约 1.77 GiB；约 388 MiB 恢复包及 1,649 项非再生材料/浏览器原件校验后保留，未动主工作目录、依赖环境或 `.local` 原件。见[逐项回执](../quality/reports/evidence/2026-10-17-ponytail-local-cleanup/receipt.json)。
 
 ## 当前产品能力与限制
 
