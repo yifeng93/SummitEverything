@@ -1,11 +1,11 @@
 # 最新实现交接
 
-当前任务：将 LanceDB 索引整合到主开发分支（2026-10-28）。
+当前任务：标准 MCP 工具接入（2026-10-29）。
 
 - 目录：`/Users/hanwenbo/ai/SummitEverything`；分支：`codex/mcp-workbench-prototype-20261023`。
-- 固定代码 SHA：`193aa35a33c667a41a9fe125db4f0caf50d62545`，后续提交只归档文档与证据。来源索引候选 `596ddab6b6c1b82ad43f283990f4a1076694fa9a`，非整分支旧 UI 覆盖。
-- 本机 `.venv` 已安装锁定依赖。运行入口和只读检查命令见 [README](../../README.md) 与 [实现手册](IMPLEMENTER.md)。旧 SQLite 向量不迁移，实际重建仍走用户显式确认路径。
-- 主目录原有 UI/native/原型与检索性能修改继续保留未提交；不要 reset/覆盖它们。三个 Python/测试文件的组合复验输入见 [哈希清单](../quality/reports/evidence/2026-10-28-lancedb-integration/qa-input.json)。
-- [Sol 复核与原始 QA](../quality/reports/2026-10-28-LANCEDB-INTEGRATION-SOL.md)提供复验依据；当前状态与未测门只在 [PROGRESS](../implementation/PROGRESS.md) 维护。当前 App/DMG 未因本次源码整合而重建。
+- 固定源码 SHA：`b8699a35d3323942bef2d4355d6eb7d818bd3ddd`，Git tree 等于独立验收候选 `33e73f96a4271be7b2a2260439799f004acfd65a`。后续提交仅归档文档与证据。
+- [MCP 使用与契约](../contracts/MCP-v1.md)提供开发服务 token 文件、stdio 启动、Codex/WorkBuddy 配置方式。README 保持常用命令入口；[实现手册](IMPLEMENTER.md)提供运行边界。
+- 原有 UI/native/原型、检索性能及热更新未提交改动继续保留，不要 reset 或覆盖。[组合输入 manifest](../quality/reports/evidence/2026-10-29-mcp/integration/manifest.json)与[输入 patch](../quality/reports/evidence/2026-10-29-mcp/integration/working-inputs.patch)固定 Python 组合回归的额外输入。
+- [Sol 收口报告](../quality/reports/2026-10-29-MCP-SOL.md)连接原始 DEV、两轮独立 QA 与组合测试证据。当前状态及未测门仅在 [PROGRESS](../implementation/PROGRESS.md)维护。
 
-此前原型交接原文见 [集成前交接快照](history/2026-10-28-pre-lancedb-integration-LATEST-IMPLEMENTATION.md)，仅作历史追溯。
+此前交接保留于[索引集成交接快照](history/2026-10-29-pre-mcp-LATEST-IMPLEMENTATION.md)，仅供追溯。

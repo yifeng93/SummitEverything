@@ -1,0 +1,5 @@
+module/wrong_token: PASS exit=2 stdout_empty=True friendly_message=True no_traceback=True no_token_echo=True
+module/correct_token_without_workspace: PASS exit=2 stdout_empty=True friendly_message=True no_traceback=True no_token_echo=True
+console_script/wrong_token: PASS exit=2 stdout_empty=True friendly_message=True no_traceback=True no_token_echo=True
+console_script/correct_token_without_workspace: PASS exit=2 stdout_empty=True friendly_message=True no_traceback=True no_token_echo=True
+summary: 4/4 passed

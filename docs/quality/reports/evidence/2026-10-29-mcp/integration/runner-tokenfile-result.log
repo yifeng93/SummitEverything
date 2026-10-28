@@ -1,0 +1,2 @@
+PASS: current dev runner reads owner-only token file; correct token authenticated, wrong token 401; owned services closed
+exit_code=0

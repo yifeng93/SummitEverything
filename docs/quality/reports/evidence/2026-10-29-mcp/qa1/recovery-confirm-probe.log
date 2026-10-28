@@ -1,0 +1,5 @@
+after_draft_before_job: visible=1 state=pending job_id=None
+get_before_recovery: visible_state=pending
+confirm_before_recovery: result=succeeded
+replay: idempotent=True state=confirmed version=1
+replay_after_confirmation: preserved=True source_states=['completed']

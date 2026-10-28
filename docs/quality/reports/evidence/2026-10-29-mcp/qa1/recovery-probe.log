@@ -1,0 +1,4 @@
+after_draft_before_job: visible=1 state=pending job_id=None
+get_before_recovery: visible_state=pending
+replay: idempotent=True state=pending version=1
+replay_after_edit: title_preserved=True body_preserved=True

@@ -1,0 +1,45 @@
+{
+  "source_sha": "b8699a35d3323942bef2d4355d6eb7d818bd3ddd",
+  "qa_candidate": "33e73f96a4271be7b2a2260439799f004acfd65a",
+  "committed_tree": "9b7ae5d3699ba3e8f85e60c3906e5d087285acad",
+  "qa_tree": "9b7ae5d3699ba3e8f85e60c3906e5d087285acad",
+  "working_inputs": {
+    "src/summit_everything/api/app.py": "56d99a4315576a6bb111e5f75ee0b0b5190ca904dfd2aef2fbc88c4a6ebc6d53",
+    "src/summit_everything/retrieval/query.py": "b13a81b3546047709b29702728d0ad01bd4dbcdcf045c5793188c79136921940",
+    "tests/integration/test_qualified_retrieval.py": "b4fe89e2ed7c1a312ea4e379763dd47354ee063cfb117536c97a0f951312aefb",
+    "scripts/run_dev.py": "4620341e3718edbc4e4db0f0a378c0a89233348efbbe125d0b1cdc20da332d8a"
+  },
+  "preservation_checks": {
+    "src/summit_everything/retrieval/query.py": true,
+    "tests/integration/test_qualified_retrieval.py": true,
+    "src/summit_everything/api/app.py": true,
+    "README.md": true,
+    "docs/handoff/IMPLEMENTER.md": true,
+    "scripts/run_dev.py": true
+  },
+  "commands": {
+    "offline_full_pytest": {
+      "exit_code": 0,
+      "passed": 769
+    },
+    "ruff_check_src_tests_runner": {
+      "exit_code": 0
+    },
+    "ruff_format_src_tests": {
+      "exit_code": 0
+    },
+    "mypy_src": {
+      "exit_code": 0,
+      "files": 48
+    },
+    "uv_lock_check": {
+      "exit_code": 0
+    },
+    "runner_token_file_and_shutdown_probe": {
+      "exit_code": 0,
+      "valid_token_http": 409,
+      "invalid_token_http": 401,
+      "owned_ports_closed": true
+    }
+  }
+}

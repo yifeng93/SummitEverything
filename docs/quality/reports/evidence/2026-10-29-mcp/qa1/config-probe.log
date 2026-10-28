@@ -1,0 +1,20 @@
+missing_token: PASS exit=2 stdout_empty=True expected_message=True
+bad_token: PASS exit=2 stdout_empty=True expected_message=True
+symlink_token_file: PASS exit=2 stdout_empty=True expected_message=True
+nonloopback_url: FAIL exit=1 stdout_empty=True expected_message=True
+Traceback (most recent call last):
+  File "/Users/hanwenbo/.codex/worktrees/summit-mcp-qa/SummitEverything/src/summit_everything/mcp_server.py", line 64, in _base_url
+    address = ipaddress.ip_address(parsed.hostname or "")
+  File "/Users/hanwenbo/.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/ipaddress.py", line 54, in ip_address
+    raise ValueError(f'{address!r} does not appear to be an IPv4 or IPv6 address')
+ValueError: 'example.com' does not appear to be an IPv4 or
+url_path: FAIL exit=1 stdout_empty=True expected_message=True
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/hanwenbo/.codex/worktrees/summit-mcp-qa/SummitEverything/src/summit_everything/mcp_server.py", line 121, in <module>
+    bridge = Bridge()
+  File "/Users/hanwenbo/.codex/worktrees/summit-mcp-qa/SummitEverything/src/summit_everything/mcp_server.py", line 76, in __init__
+    self.base = _base_url()
+                ~~~~~~~~~^^
+  File "/Users/hanw

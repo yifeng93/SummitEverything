@@ -1,0 +1,26 @@
+INFO:     Will watch for changes in these directories: ['/Users/hanwenbo/ai/SummitEverything/src']
+INFO:     Uvicorn running on http://127.0.0.1:57332 (Press CTRL+C to quit)
+INFO:     Started reloader process [7305] using StatReload
+
+> web@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.4  ready in 473 ms
+
+  ➜  Local:   http://127.0.0.1:57334/
+INFO:     Started server process [7308]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:57357 - "GET /api/v1/health HTTP/1.1" 200 OK
+[dev] API   http://127.0.0.1:57332/api/v1/health
+[dev] WebUI http://127.0.0.1:57334/
+[dev] 前端改动即时生效；后端改动由 uvicorn 自动重载。Ctrl+C 停止。
+INFO:     127.0.0.1:57356 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57356 - "GET /api/v1/workspaces/current HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:57356 - "GET /api/v1/workspaces/current HTTP/1.1" 401 Unauthorized
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [7308]
+INFO:     Stopping reloader process [7305]

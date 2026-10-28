@@ -1,0 +1,19 @@
+module/dns_non_ip: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/non_loopback_ip: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/url_path: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/https: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/missing_token: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/malformed_token: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/missing_token_file: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/malformed_token_file: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+module/insecure_token_file_mode: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/dns_non_ip: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/non_loopback_ip: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/url_path: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/https: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/missing_token: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/malformed_token: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/missing_token_file: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/malformed_token_file: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+console_script/insecure_token_file_mode: PASS exit=2 stdout_empty=True expected_message=True no_traceback=True no_secret=True
+summary: 18/18 passed
