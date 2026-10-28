@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import date
 from typing import Literal
 
 _FOLLOW_UP = re.compile(
@@ -126,6 +127,21 @@ _CONTEXT_TOPIC_ACTION_END = re.compile(r"(?:核对|检查|讨论|确认)(?:时|�
 _DATE_VALUE = re.compile(
     r"(?:[0-9一二三四五六七八九十]+年)?[0-9一二三四五六七八九十]+月"
     r"[0-9一二三四五六七八九十]+日"
+)
+_EXPLICIT_DATE_VALUE = re.compile(
+    r"(?<!\d)(?:(?P<year>\d{4})\s*年\s*)?"
+    r"(?P<month>0?[1-9]|1[0-2])\s*月\s*(?P<day>0?[1-9]|[12]\d|3[01])\s*[日号]|"
+    r"(?<!\d)(?P<iso_year>\d{4})(?P<iso_sep>[-/.])(?P<iso_month>0?[1-9]|1[0-2])"
+    r"(?P=iso_sep)"
+    r"(?P<iso_day>0?[1-9]|[12]\d|3[01])(?!\d)"
+)
+_EXPLICIT_CLOCK_TIME = re.compile(r"(?<!\d)(?:[01]?\d|2[0-3])\s*[:：]\s*[0-5]\d(?!\d)")
+_TEMPORAL_LEAD = re.compile(r"(?:定于|将于|安排于|安排在|于|在|最晚|最迟|不迟于|不晚于)\s*$")
+_IDENTIFIER_LEAD = re.compile(
+    r"(?:编号|序号|代码|标识|项目号|活动号|(?<!\w)ID)[^，,。；;]{0,8}$", re.I
+)
+_UNCERTAIN_SCHEDULE = re.compile(
+    r"(?:是否.{0,12}(?:尚未|未|待定|不确定)|(?:尚未确定|暂未确定|未确定|待定|不确定))"
 )
 _PLAN_REQUEST = re.compile(r"^(?:为|给|针对|制定|提出|给出|安排|拟定)")
 _PLAN_REQUEST_SUFFIX = re.compile(r"(?:下一步)?工作方案$")
@@ -717,10 +733,70 @@ def supported_dimensions(text: str, dimensions: tuple[str, ...]) -> tuple[str, .
     normalized = _normalize(text)
     supported: list[str] = []
     for dimension in dimensions:
-        found = all(_dimension_part_supported(normalized, part) for part in dimension.split("&"))
+        parts = dimension.split("&")
+        found = all(_dimension_part_supported(normalized, part) for part in parts)
+        if not found and "schedule" in parts and any(part.startswith("term:") for part in parts):
+            # Keep the fallback narrow: a valid numeric date/time must be
+            # explicitly introduced as a schedule value and stay close to the
+            # exact requested action. Merely sharing a paragraph with an action
+            # word (or a date-like identifier) is not schedule evidence.
+            required_parts = [part for part in parts if part != "schedule"]
+            terms = [part[5:] for part in required_parts if part.startswith("term:")]
+            found = all(
+                _dimension_part_supported(normalized, part) for part in required_parts
+            ) and any(_explicit_temporal_qualifies_action(text, term) for term in terms)
         if found:
             supported.append(dimension)
     return tuple(supported)
+
+
+def _explicit_temporal_qualifies_action(text: str, action: str) -> bool:
+    action_matches = list(re.finditer(re.escape(action), text))
+    if not action_matches:
+        return False
+    boundaries = [match.start() for match in re.finditer(r"[，,。！？?；;\n]", text)]
+    for action_match in action_matches:
+        clause_start = max(
+            (index + 1 for index in boundaries if index < action_match.start()), default=0
+        )
+        clause_end = min(
+            (index for index in boundaries if index > action_match.start()), default=len(text)
+        )
+        clause = text[clause_start:clause_end]
+        action_start = action_match.start() - clause_start
+        if _UNCERTAIN_SCHEDULE.search(clause):
+            continue
+
+        for temporal_match in _EXPLICIT_DATE_VALUE.finditer(clause):
+            if not _date_match_is_valid(temporal_match):
+                continue
+            if temporal_match.start() > action_start or action_start - temporal_match.end() > 32:
+                continue
+            lead = clause[max(0, temporal_match.start() - 12) : temporal_match.start()]
+            if _IDENTIFIER_LEAD.search(lead) or not _TEMPORAL_LEAD.search(lead):
+                continue
+            return True
+
+        for temporal_match in _EXPLICIT_CLOCK_TIME.finditer(clause):
+            if temporal_match.start() < action_start:
+                if action_start - temporal_match.end() > 12:
+                    continue
+                lead = clause[max(0, temporal_match.start() - 12) : temporal_match.start()]
+                if _IDENTIFIER_LEAD.search(lead) or not _TEMPORAL_LEAD.search(lead):
+                    continue
+                return True
+    return False
+
+
+def _date_match_is_valid(match: re.Match[str]) -> bool:
+    year = match.group("year") or match.group("iso_year") or "2000"
+    month = match.group("month") or match.group("iso_month")
+    day = match.group("day") or match.group("iso_day")
+    try:
+        date(int(year), int(month), int(day))
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 def _dimension_part_supported(normalized_text: str, part: str) -> bool:

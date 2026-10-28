@@ -31,10 +31,15 @@ VOLUME_ICON_RELATIVE_PATH = Path("native/Resources/VolumeIcon.icns")
 BUNDLE_ICON_NAME = "AppIcon.icns"
 BUNDLE_ICON_STEM = "AppIcon"
 DMG_VOLUME_NAME = "SummitEverything Internal"
+MACOS_UV_ARGS = ["--python-platform", "aarch64-apple-darwin"]
+
+
+def build_environment() -> dict[str, str]:
+    return {**os.environ, "MACOSX_DEPLOYMENT_TARGET": "13.0"}
 
 
 def run(args: list[str], *, env: dict[str, str] | None = None) -> None:
-    subprocess.run(args, cwd=ROOT, env=env, check=True)
+    subprocess.run(args, cwd=ROOT, env=env or build_environment(), check=True)
 
 
 def run_hdiutil(args: list[str]) -> None:
@@ -154,7 +159,10 @@ def packages_inventory() -> list[dict[str, str]]:
         "for d in m.distributions()), key=lambda x: x['name'].lower())))"
     )
     result = subprocess.check_output(
-        ["uv", "run", "--group", "build", "python", "-c", source], cwd=ROOT, text=True
+        ["uv", "run", *MACOS_UV_ARGS, "--group", "build", "python", "-c", source],
+        cwd=ROOT,
+        env=build_environment(),
+        text=True,
     )
     return json.loads(result)
 
@@ -248,7 +256,7 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
         )
 
     run(["npm", "--prefix", "web", "run", "build"])
-    run(["uv", "sync", "--locked", "--group", "build"])
+    run(["uv", "sync", "--locked", "--group", "build", *MACOS_UV_ARGS])
     version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"][
         "version"
     ]
@@ -292,6 +300,7 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
             [
                 "uv",
                 "run",
+                *MACOS_UV_ARGS,
                 "--group",
                 "build",
                 "pyinstaller",
@@ -304,6 +313,10 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
                 str(ROOT / "src"),
                 "--collect-all",
                 "keyring",
+                "--collect-all",
+                "lancedb",
+                "--collect-all",
+                "pyarrow",
                 "--distpath",
                 str(work / "dist"),
                 "--workpath",

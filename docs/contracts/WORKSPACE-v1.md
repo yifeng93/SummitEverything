@@ -125,7 +125,7 @@ StorageArea 必须由真实 reader 按路径与记录分类，不能来自前端
 
 索引以 HISTORY 检查所有当前已批准版本，保留效力标记。普通问答以 CURRENT 检查；仅明确历史范围可使用 superseded / invalid，回答必须说明其效力。
 
-**查询最终候选、邻页与引用必须重读当前文件，并把缓存版本传入 expected_content_sha256。** 新内容重新批准也不能证明旧缓存片段有效。失效资格、版本不匹配或无法读取时移除该候选；不得仅相信 SQLite 中的 approved 列。
+**查询最终候选、邻页与引用必须重读当前文件，并把缓存版本传入 expected_content_sha256。** 新内容重新批准也不能证明旧缓存片段有效。失效资格、版本不匹配或无法读取时移除该候选；不得仅相信任何本地索引中的资格标记。
 
 ## 5. 保存、并发与恢复
 
@@ -151,7 +151,7 @@ action_id 表示意图，不是尝试。保存 payload_sha256、确认、状态�
 
 ## 7. 本地状态与同步
 
-profile 保存 workspace_id 对应的本机路径配置、索引 SQLite / 向量、问答历史、角色、记忆、缓存及日志，长期凭据在钥匙串。问答历史 SQLite 位于本机 profile，按 workspace_id 再隔离；其中的用户问题、回答、原引用 hash / excerpt、SSE 序列与 partial 不写入工作库。工作库没有本机绝对路径、秘密或运行中 SQLite。
+profile 保存 workspace_id 对应的本机路径配置、索引控制指针 SQLite 与可重建的 LanceDB 向量 / BM25 数据、问答历史、角色、记忆、缓存及日志，长期凭据在钥匙串。旧 SQLite `vector_json` 索引不自动迁移、读取或复用；只读识别后报告需要重建，旧 chunk 行原样保留。用户经索引预览和执行路径明确建立新索引时，按当前已确认 Markdown 重新生成向量；自动批准增量不会从旧向量格式重建。新 profile 不创建旧 `chunks/vector_json` 表。问答历史 SQLite 位于本机 profile，按 workspace_id 再隔离；其中的用户问题、回答、原引用 hash / excerpt、SSE 序列与 partial 不写入工作库。工作库没有本机绝对路径、秘密或运行中 SQLite。
 
 每个待处理流程只保留当前业务状态，完成后按月归档，诊断事件只写本地轮转日志。同步状态与来源 / 幂等证据不能混称“垃圾日志”直接删除。
 

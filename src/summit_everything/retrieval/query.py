@@ -24,7 +24,7 @@ from summit_everything.domain.models import (
     PageSnapshot,
     WorkspaceManifest,
 )
-from summit_everything.integrations.embedding import FakeEmbedding, cosine_similarity
+from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import FakeReranker
 from summit_everything.local.answer_context import AnswerContext
@@ -131,18 +131,43 @@ class QueryService:
 
     def status(self, root: Path) -> dict[str, int | str | None]:
         manifest = load_manifest(root)
-        status = self.store.status(manifest.workspace_id)
+        with self.store.generation_lease():
+            return self._status_locked(root, manifest.workspace_id)
+
+    def _status_locked(self, root: Path, workspace_id: UUID) -> dict[str, int | str | None]:
+        generation = self.store.active_generation(workspace_id)
+        generation_rows = self.store.generation_chunks(generation) if generation is not None else []
+        status: dict[str, int | str | None] = (
+            {
+                "fingerprint": generation.fingerprint,
+                "pages": len({str(row["page_id"]) for row in generation_rows}),
+                "chunks": len(generation_rows),
+            }
+            if generation is not None
+            else self.store.status(workspace_id)
+        )
         fingerprint = status["fingerprint"]
         if fingerprint is None:
-            return {**status, "state": "not_ready", "current_pages": 0, "stale_pages": 0}
+            result: dict[str, int | str | None] = {
+                **status,
+                "state": "not_ready",
+                "current_pages": 0,
+                "stale_pages": 0,
+            }
+            if self.store.has_legacy_index(workspace_id):
+                result.update(
+                    reason="legacy_vectors_require_rebuild",
+                    message=(
+                        "旧版本地索引需要重建。请从已确认的 Markdown 预览并重新建立索引；"
+                        "旧索引文件会保留，查询不会使用其中的旧向量。"
+                    ),
+                )
+            return result
         current = {
             str(page.page_id): page.content_sha256
             for page in self._eligible_pages(list_pages(root), purpose=RetrievalPurpose.HISTORY)
         }
-        indexed = {
-            str(chunk["page_id"]): str(chunk["content_sha256"])
-            for chunk in self.store.get_chunks(manifest.workspace_id, str(fingerprint))
-        }
+        indexed = {str(chunk["page_id"]): str(chunk["content_sha256"]) for chunk in generation_rows}
         stale = sum(
             current.get(page_id) != indexed.get(page_id)
             for page_id in current.keys() | indexed.keys()
@@ -181,10 +206,20 @@ class QueryService:
 
     def execute_plan(self, root: Path, plan: IndexPlan) -> IndexResult:
         root = root.resolve()
+        with self.store.generation_lease():
+            return self._execute_plan_locked(root, plan)
+
+    def _execute_plan_locked(self, root: Path, plan: IndexPlan) -> IndexResult:
+        root = root.resolve()
         manifest = load_manifest(root)
         if plan.workspace_id != manifest.workspace_id:
             raise WorkspaceError("Index plan belongs to a different workspace")
-        active_fingerprint = self.store.active_fingerprint(manifest.workspace_id)
+        expected_generation = self.store.active_generation(manifest.workspace_id)
+        active_fingerprint = (
+            expected_generation.fingerprint
+            if expected_generation is not None
+            else self.store.active_fingerprint(manifest.workspace_id)
+        )
         if plan.mode == "initial" and active_fingerprint is not None:
             raise WorkspaceError("An index already exists; choose incremental or full")
         if plan.mode == "incremental" and active_fingerprint != plan.fingerprint:
@@ -206,7 +241,12 @@ class QueryService:
             )
         ) or set(current_pages) != set(plan.page_ids):
             raise IndexPlanStale("Workspace pages changed after the index plan was reviewed")
-        existing = self.store.existing_chunks(manifest.workspace_id, plan.fingerprint)
+        existing = (
+            self.store.existing_generation_chunks(expected_generation)
+            if expected_generation is not None
+            and expected_generation.fingerprint == plan.fingerprint
+            else {}
+        )
         prepared: list[tuple[TextChunk, list[float] | None]] = []
         for page in current_pages.values():
             for chunk in chunk_markdown(page.page_id, page.content_sha256, page.body):
@@ -231,7 +271,23 @@ class QueryService:
             for chunk, vector in prepared
         ]
         embedded_count = len(missing)
-        self.store.replace_generation(manifest.workspace_id, plan.fingerprint, embedded)
+        vector_dimension = (
+            len(embedded[0][1])
+            if embedded
+            else (
+                expected_generation.vector_dimension
+                if expected_generation is not None
+                and expected_generation.fingerprint == plan.fingerprint
+                else int(getattr(self.embedding, "dimensions", 0))
+            )
+        )
+        self.store.replace_generation(
+            manifest.workspace_id,
+            plan.fingerprint,
+            embedded,
+            expected_generation=expected_generation,
+            vector_dimension=vector_dimension,
+        )
         return IndexResult(
             indexed_pages=len(current_pages),
             indexed_chunks=len(embedded),
@@ -258,21 +314,55 @@ class QueryService:
         answer_mode: Literal["fact", "comparison", "plan"] = "fact",
         context: AnswerContext | None = None,
     ) -> Answer:
+        root = root.resolve()
+        with self.store.generation_lease():
+            return self._query_locked(
+                root,
+                question,
+                fingerprint=fingerprint,
+                purpose=purpose,
+                limit=limit,
+                cancelled=cancelled,
+                answer_mode=answer_mode,
+                context=context,
+            )
+
+    def _query_locked(
+        self,
+        root: Path,
+        question: str,
+        *,
+        fingerprint: str,
+        purpose: RetrievalPurpose = RetrievalPurpose.CURRENT,
+        limit: int = 5,
+        cancelled: Event | None = None,
+        answer_mode: Literal["fact", "comparison", "plan"] = "fact",
+        context: AnswerContext | None = None,
+    ) -> Answer:
         context = context or AnswerContext(answer_mode=answer_mode)
         self._check_cancelled(cancelled)
         root = root.resolve()
         manifest = load_manifest(root)
-        if self.store.active_fingerprint(manifest.workspace_id) != fingerprint:
+        generation = self.store.active_generation(manifest.workspace_id)
+        if generation is None or generation.fingerprint != fingerprint:
             return Answer(
                 answer_id=uuid4(),
                 question=question,
-                text="本地索引尚未就绪。",
+                text=(
+                    "旧版本地索引需要重建。请从已确认的 Markdown 预览并重新建立索引。"
+                    if self.store.has_legacy_index(manifest.workspace_id)
+                    else "本地索引尚未就绪。"
+                ),
                 purpose=purpose.value,
                 answer_mode=answer_mode,
                 index_status="not_ready",
-                missing_information=["请先完成当前模型版本的索引。"],
+                missing_information=[
+                    "请先从已确认的 Markdown 预览并重新建立本机索引。"
+                    if self.store.has_legacy_index(manifest.workspace_id)
+                    else "请先完成当前模型版本的索引。"
+                ],
             )
-        chunks = self.store.get_chunks(manifest.workspace_id, fingerprint)
+        chunks = self.store.generation_chunks(generation)
         if not chunks:
             return Answer(
                 answer_id=uuid4(),
@@ -283,8 +373,12 @@ class QueryService:
                 index_status="empty",
                 missing_information=["当前索引中没有可引用的知识页。"],
             )
+        workspace_pages = list_pages(root)
+        pages_by_id = {page.page_id: page for page in workspace_pages}
         object_aliases: list[str] = []
-        subject_aliases = self._subject_aliases(root, manifest, object_aliases=object_aliases)
+        subject_aliases = self._subject_aliases(
+            root, manifest, object_aliases=object_aliases, pages=workspace_pages
+        )
         retrieval_plan = plan_retrieval(
             question,
             context.previous_user_questions,
@@ -302,12 +396,32 @@ class QueryService:
             self.provider_guard()
         query_vector = self.embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
         self._check_cancelled(cancelled)
-        dense = sorted(
-            chunks,
-            key=lambda item: cosine_similarity(query_vector, item["vector"]),
-            reverse=True,
+        dense, lexical_candidates = self.store.search(
+            generation,
+            query_vector,
+            retrieval_plan.search_question,
+            # Exact LanceDB scans preserve all planner/scope and comparison
+            # coverage candidates while keeping vectors inside the native engine.
+            limit=len(chunks),
         )
-        qualified, qualification_rejections = self._qualified_chunks(root, dense, purpose=purpose)
+        native_rank: dict[str, float] = {}
+        native_items: dict[str, dict[str, Any]] = {}
+        for source in (dense, lexical_candidates):
+            for rank, item in enumerate(source, start=1):
+                chunk_id = str(item["chunk_id"])
+                native_rank[chunk_id] = native_rank.get(chunk_id, 0) + 1 / (60 + rank)
+                native_items[chunk_id] = item
+        retrieved = sorted(
+            native_items.values(), key=lambda item: native_rank[str(item["chunk_id"])], reverse=True
+        )
+        # Planner aliases may use the pre-embedding snapshot above. Re-read once
+        # after provider work and native search so a page changed during embedding
+        # cannot cross the qualification or reranker boundary on stale approval.
+        workspace_pages = list_pages(root)
+        pages_by_id = {page.page_id: page for page in workspace_pages}
+        qualified, qualification_rejections = self._qualified_chunks(
+            root, retrieved, purpose=purpose, pages_by_id=pages_by_id
+        )
         subject_pages: dict[UUID, PageSnapshot | None] = {}
         scope_pairs_by_chunk: dict[str, set[tuple[str, str]]] = {}
         scope_excerpt_by_chunk: dict[str, str] = {}
@@ -326,15 +440,7 @@ class QueryService:
         def in_scope(item: dict[str, Any]) -> bool:
             page_id = item["page_id"]
             if page_id not in subject_pages:
-                page, eligibility = self._read_page_eligibility(
-                    root,
-                    page_id,
-                    purpose=purpose,
-                    expected_content_sha256=str(item["content_sha256"]),
-                )
-                subject_pages[page_id] = page
-                if page is None:
-                    qualification_rejections[page_id] = eligibility.reason
+                subject_pages[page_id] = pages_by_id.get(page_id)
             page = subject_pages[page_id]
             if page is None:
                 return False
@@ -421,11 +527,11 @@ class QueryService:
         scope_candidates = [item for item in qualified if in_scope(item)]
         if not scope_candidates:
             matching_rejections = self._scope_rejection_reasons(
-                root,
                 manifest,
                 qualification_rejections,
                 retrieval_plan.explicit_subjects,
                 retrieval_plan.dimensions,
+                pages_by_id,
             )
             if matching_rejections:
                 message = self._no_evidence_message(
@@ -484,30 +590,30 @@ class QueryService:
         self._check_cancelled(cancelled)
         if len(reranked) != len(candidates):
             raise ValueError("Reranker returned an incomplete ranking")
-        lexical_scores: dict[str, float] = {}
-        lexical = []
+        reranker_scores: dict[str, float] = {}
+        reranked_items = []
         for index, score in reranked:
             if (
                 index < 0
                 or index >= len(candidates)
-                or candidates[index]["chunk_id"] in lexical_scores
+                or candidates[index]["chunk_id"] in reranker_scores
             ):
                 raise ValueError("Reranker returned an invalid candidate index")
             item = candidates[index]
-            lexical.append(item)
-            lexical_scores[str(item["chunk_id"])] = score
-        ranks: dict[str, float] = {}
-        for rank, item in enumerate(dense, start=1):
-            ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
-        for rank, item in enumerate(lexical, start=1):
-            ranks[item["chunk_id"]] = ranks.get(item["chunk_id"], 0) + 1 / (60 + rank)
-        ranked = sorted(candidates, key=lambda item: ranks[item["chunk_id"]], reverse=True)
+            reranked_items.append(item)
+            reranker_scores[str(item["chunk_id"])] = score
+        ranks = {
+            chunk_id: native_rank.get(chunk_id, 0) + 1 / (60 + rank)
+            for rank, item in enumerate(reranked_items, start=1)
+            for chunk_id in (str(item["chunk_id"]),)
+        }
+        ranked = sorted(candidates, key=lambda item: ranks[str(item["chunk_id"])], reverse=True)
         relevant = (
             ranked
             if retrieval_plan.explicit_subjects or retrieval_plan.dimensions
-            else [item for item in ranked if lexical_scores.get(str(item["chunk_id"]), 0) > 0]
+            else [item for item in ranked if reranker_scores.get(str(item["chunk_id"]), 0) > 0]
         )
-        related_ids = self._related_page_ids(root, relevant[: min(limit, 3)])
+        related_ids = self._related_page_ids(relevant[: min(limit, 3)], pages_by_id=pages_by_id)
         ranked = relevant
         if related_ids:
             seen = {item["chunk_id"] for item in ranked}
@@ -634,6 +740,8 @@ class QueryService:
                     page_id,
                     purpose=purpose,
                     expected_content_sha256=str(item["content_sha256"]),
+                    page_snapshot=pages_by_id.get(page_id),
+                    snapshot_only=True,
                 )
                 eligible_page_cache[page_id] = current_page
             current_page = eligible_page_cache[page_id]
@@ -762,6 +870,7 @@ class QueryService:
         manifest: WorkspaceManifest,
         *,
         object_aliases: list[str] | None = None,
+        pages: list[PageSnapshot] | None = None,
     ) -> tuple[str, ...]:
         """Read temporary subject hints from workspace names and eligible pages."""
         aliases: list[str] = []
@@ -772,7 +881,8 @@ class QueryService:
         for project in manifest.projects:
             aliases.append(project.name)
             object_names.append(project.name)
-        for page in self._eligible_pages(list_pages(root), purpose=RetrievalPurpose.HISTORY):
+        source_pages = pages if pages is not None else list_pages(root)
+        for page in self._eligible_pages(source_pages, purpose=RetrievalPurpose.HISTORY):
             title = page.metadata.get("title")
             if isinstance(title, str):
                 aliases.append(title)
@@ -820,6 +930,7 @@ class QueryService:
         chunks: list[dict[str, Any]],
         *,
         purpose: RetrievalPurpose,
+        pages_by_id: dict[UUID, PageSnapshot],
     ) -> tuple[list[dict[str, Any]], dict[UUID, str]]:
         page_eligibility: dict[UUID, bool] = {}
         rejections: dict[UUID, str] = {}
@@ -834,6 +945,8 @@ class QueryService:
                     page_id,
                     purpose=purpose,
                     expected_content_sha256=str(chunk["content_sha256"]),
+                    page_snapshot=pages_by_id.get(page_id),
+                    snapshot_only=True,
                 )
                 page_eligibility[page_id] = page is not None
                 if page is None:
@@ -844,18 +957,17 @@ class QueryService:
 
     def _scope_rejection_reasons(
         self,
-        root: Path,
         manifest: WorkspaceManifest,
         rejections: dict[UUID, str],
         subjects: tuple[str, ...],
         dimensions: tuple[str, ...],
+        pages_by_id: dict[UUID, PageSnapshot],
     ) -> dict[UUID, str]:
         """Keep version/trust diagnostics only for pages inside this query's scope."""
         matching: dict[UUID, str] = {}
         for page_id, reason in rejections.items():
-            try:
-                page = read_page(root, page_id)
-            except (WorkspaceError, OSError):
+            page = pages_by_id.get(page_id)
+            if page is None:
                 # An unavailable page has no readable content to establish scope.
                 if reason == "unavailable":
                     continue
@@ -903,9 +1015,16 @@ class QueryService:
         *,
         purpose: RetrievalPurpose,
         expected_content_sha256: str | None = None,
+        page_snapshot: PageSnapshot | None = None,
+        snapshot_only: bool = False,
     ) -> tuple[PageSnapshot | None, Eligibility]:
         try:
-            page = read_page(root, page_id)
+            if snapshot_only:
+                if page_snapshot is None:
+                    raise WorkspaceError("Page not found", 404)
+                page = page_snapshot
+            else:
+                page = read_page(root, page_id)
             area = StorageArea(page.storage_area)
         except (WorkspaceError, OSError, ValueError):
             return None, Eligibility(False, "unavailable")
@@ -1018,7 +1137,12 @@ class QueryService:
             + "。可缩小问题范围后重试。"
         )
 
-    def _related_page_ids(self, root: Path, chunks: list[dict[str, object]]) -> set[UUID]:
+    def _related_page_ids(
+        self,
+        chunks: list[dict[str, object]],
+        *,
+        pages_by_id: dict[UUID, PageSnapshot],
+    ) -> set[UUID]:
         related: set[UUID] = set()
         visited: set[UUID] = set()
         for chunk in chunks:
@@ -1026,9 +1150,8 @@ class QueryService:
             if not isinstance(page_id, UUID) or page_id in visited:
                 continue
             visited.add(page_id)
-            try:
-                page = read_page(root, page_id)
-            except (WorkspaceError, OSError):
+            page = pages_by_id.get(page_id)
+            if page is None:
                 continue
             values = page.metadata.get("related_page_ids", [])
             if isinstance(values, list):

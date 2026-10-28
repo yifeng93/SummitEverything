@@ -9,4 +9,6 @@ fi
 
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_root"
-exec uv run --locked python scripts/build_macos_app.py "$1" --dmg "$2"
+export MACOSX_DEPLOYMENT_TARGET=13.0
+uv sync --locked --group dev --group build --python-platform aarch64-apple-darwin
+exec uv run --locked --group dev --group build --python-platform aarch64-apple-darwin python scripts/build_macos_app.py "$1" --dmg "$2"

@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from summit_everything.domain.models import MutationResult
 from summit_everything.workspace.manifest import (
     WorkspaceError,
     create_line,
@@ -195,6 +196,51 @@ def test_same_write_intent_replays_result_and_rejects_different_payload(tmp_path
         )
 
     assert len(list_pages(root)) == 1
+
+
+def test_same_operation_confirmation_race_replays_successful_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, line_id, project_id = make_workspace(tmp_path / "workspace")
+    metadata = page_metadata(line_id, project_id)
+    body = "同一操作的重复确认必须返回已完成回执。"
+    operation_id = "same-intent-operation"
+    confirmation_id = "same-intent-confirmation"
+    writer = WorkspaceWriter()
+    original_lookup = WorkspaceWriter.lookup
+    committed_between_lookup_and_read = False
+
+    def arrange_race(
+        self: WorkspaceWriter, root_path: Path, requested_operation_id: str, intent_hash: str
+    ) -> MutationResult | None:
+        nonlocal committed_between_lookup_and_read
+        prior = original_lookup(self, root_path, requested_operation_id, intent_hash)
+        if not committed_between_lookup_and_read and requested_operation_id == operation_id:
+            committed_between_lookup_and_read = True
+            PageWriter(writer=writer).confirm(
+                root_path,
+                metadata=metadata,
+                body=body,
+                confirmation_id=confirmation_id,
+                operation_id=operation_id,
+            )
+        return prior
+
+    monkeypatch.setattr(WorkspaceWriter, "lookup", arrange_race)
+    result = PageWriter(writer=writer).confirm(
+        root,
+        metadata=metadata,
+        body=body,
+        confirmation_id=confirmation_id,
+        operation_id=operation_id,
+    )
+
+    assert committed_between_lookup_and_read
+    assert result.operation_id == operation_id
+    assert len(result.page_versions) == 1
+    pages = list_pages(root)
+    assert len(pages) == 1
+    assert pages[0].body == body
 
 
 def test_same_project_move_updates_links_and_preserves_confirmed_pages(tmp_path: Path) -> None:

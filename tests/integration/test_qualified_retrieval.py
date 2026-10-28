@@ -147,6 +147,48 @@ def test_unrelated_query_reports_missing_relevance_without_claiming_index_failur
     assert calls == []
 
 
+def test_external_edit_during_embedding_is_rejected_before_reranking(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    page_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="苹果财务规则",
+        body="经确认的苹果财务规则正文。",
+    )
+    store = IndexStore(tmp_path / "profile" / "index.sqlite3")
+    QueryService(store, FakeEmbedding()).rebuild(root, fingerprint="fake-v1")
+
+    class EditingEmbedding(FakeEmbedding):
+        def embed(self, text: str, *, fingerprint: str) -> list[float]:
+            vector = super().embed(text, fingerprint=fingerprint)
+            page = read_page(root, page_id)
+            path = root / page.relative_path
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "经确认的苹果财务规则正文。", "未经确认的苹果财务规则正文。"
+                ),
+                encoding="utf-8",
+            )
+            return vector
+
+    class RecordingReranker:
+        def __init__(self) -> None:
+            self.texts: list[str] = []
+
+        def rank(self, query: str, texts: list[str]) -> list[tuple[int, float]]:
+            self.texts.extend(texts)
+            return [(index, 1.0) for index in range(len(texts))]
+
+    reranker = RecordingReranker()
+    service = QueryService(store, EditingEmbedding(), reranker=reranker)
+    answer = service.query(root, "苹果财务规则是什么？", fingerprint="fake-v1")
+
+    assert answer.citations == []
+    assert "未经确认的苹果财务规则正文。" not in reranker.texts
+    assert "经确认的苹果财务规则正文。" not in reranker.texts
+
+
 def test_current_scope_explains_historical_qualification_without_cache_warning(
     tmp_path: Path,
 ) -> None:

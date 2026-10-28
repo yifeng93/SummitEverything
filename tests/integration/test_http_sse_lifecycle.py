@@ -78,7 +78,7 @@ def test_live_http_sse_cancel_disconnect_and_reopen(tmp_path: Path) -> None:
                 break
             time.sleep(0.01)
         assert server.started, "local HTTP test server did not become ready"
-        with httpx.Client(base_url=base, headers=headers, timeout=5) as client:
+        with httpx.Client(base_url=base, headers=headers, timeout=5, trust_env=False) as client:
             opened = client.post(
                 "/api/v1/workspaces",
                 json={
@@ -121,6 +121,31 @@ def test_live_http_sse_cancel_disconnect_and_reopen(tmp_path: Path) -> None:
             indexed = client.post("/api/v1/index/jobs", json=plan.json())
             assert indexed.status_code == 200, indexed.text
             assert indexed.json()["indexed_pages"] == 1
+
+            complete_id = str(uuid4())
+            with client.stream(
+                "POST",
+                "/api/v1/queries",
+                json={
+                    "request_id": complete_id,
+                    "question": "橡果计划预算是多少？",
+                    "fingerprint": "summit-fake-embedding-v1",
+                    "purpose": "current",
+                },
+            ) as response:
+                assert response.status_code == 200
+                release = provider.started.get(timeout=3)
+                release.set()
+                events = [
+                    json.loads(line.removeprefix("data: "))
+                    for line in response.iter_lines()
+                    if line.startswith("data: ")
+                ]
+                assert events[-1]["type"] == "completed"
+            completed_detail = client.get(
+                f"/api/v1/conversations/{response.headers['x-conversation-id']}"
+            )
+            assert completed_detail.json()["messages"][-1]["state"] == "completed"
 
             cancel_id = str(uuid4())
             with client.stream(

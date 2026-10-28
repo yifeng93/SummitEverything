@@ -81,7 +81,7 @@
 | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
 | POST /acceptance-plans；POST /acceptance-plans/{id}/confirm；GET /acceptance-plans/{id}；DELETE /acceptance-plans/{id} | 真实模型/Feishu 单次动作的本机预览、独立确认、状态/安全用量读取和未执行计划取消；计划绑定 profile、workspace、执行配置与确切 scope digest，有 10 分钟 TTL 和有限 HTTP request 上限。详情不保存 prompt/正文；unknown 消耗额度且无重发接口 |
 | POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
-| POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有索引时，批准 mutation 自动执行同 fingerprint 的 incremental。状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
+| POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有 LanceDB 索引时，批准 mutation 可自动执行同 fingerprint 的 incremental。旧 SQLite `vector_json` 索引状态为 `not_ready`，附 `reason=legacy_vectors_require_rebuild` 与重建说明；不会读取旧向量或自动调用 embedding。用户通过初始索引计划从已确认 Markdown 显式重建。其他状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
 | POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
 | GET /conversations?cursor&limit；GET /conversations/{id}；POST /conversations/{id}/reopen；DELETE /conversations/{id} | 按本地 profile 与当前 workspace 隔离的问答历史；列表默认 20、limit 1–100；历史只读重开可接续提问或删除；不进入工作库语料 |
 | GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机 profile+workspace 角色 CRUD；instructions 最多 4000 字符，角色上下文预算 0–6000 字节且每次查询会校验实际长度。角色只影响表达，不修改批准 / 工具权限 |

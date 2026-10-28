@@ -16,7 +16,7 @@ import pytest
 
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
-from summit_everything.retrieval.planner import plan_retrieval
+from summit_everything.retrieval.planner import plan_retrieval, supported_dimensions
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -97,6 +97,101 @@ def scope(service: QueryService, root: Path, question: str):
     object_aliases: list[str] = []
     aliases = service._subject_aliases(root, load_manifest(root), object_aliases=object_aliases)
     return plan_retrieval(question, [], aliases, object_aliases=tuple(object_aliases))
+
+
+def test_explicit_date_or_clock_value_supports_only_a_co_located_schedule_action() -> None:
+    schedule_action = ("schedule&term:举行",)
+    assert (
+        supported_dimensions(
+            "纸飞机读书会定于 2026 年 10 月 30 日 14:00 至 16:00 举行。",
+            schedule_action,
+        )
+        == schedule_action
+    )
+    assert supported_dimensions("场地最晚 16:30 清场。", ("schedule&term:清场",)) == (
+        "schedule&term:清场",
+    )
+    assert (
+        supported_dimensions(
+            "纸飞机读书会定于2026年10月30日14:00至16:00举行。",
+            ("schedule&term:举行&term:人数",),
+        )
+        == ()
+    )
+    assert supported_dimensions("项目排期确认在十一月开始。", ("schedule",)) == ("schedule",)
+
+    # A date alone cannot establish a missing action or a different topic.
+    assert supported_dimensions("活动编号为 2026 年 10 月 30 日。", schedule_action) == ()
+    assert supported_dimensions("活动是否举行尚未确定。", schedule_action) == ()
+    assert supported_dimensions("项目编号为 2026 年 10 月 30 日。", ("budget",)) == ()
+    assert supported_dimensions("仅有数值 2026 年 10 月 30 日。", ("schedule",)) == ()
+    assert supported_dimensions("活动将在 2026 年 13 月 40 日举行。", schedule_action) == ()
+    assert supported_dimensions("活动定于 2026-10/30 举行。", schedule_action) == ()
+    assert supported_dimensions("活动将在 116:300 举行。", ("schedule&term:举行",)) == ()
+
+
+def test_explicit_date_covers_asked_event_time_without_weakening_topic_gaps(tmp_path: Path) -> None:
+    root, service, _answerer = build_query(
+        tmp_path,
+        [
+            (
+                "纸飞机读书会",
+                "活动安排",
+                "纸飞机读书会定于2026年10月30日14:00至16:00举行，预计参加人数为 24 人。",
+            ),
+            (
+                "纸飞机读书会",
+                "清场规则",
+                "活动结束后由两名志愿者清点六本签到册。场地最晚 16:30 清场。",
+            ),
+        ],
+    )
+    event = ask(service, root, "纸飞机读书会何时举行，人数上限是多少？", "fact")
+    assert len(event.citations) == 1
+    assert event.missing_information == []
+
+    cleanup = ask(service, root, "纸飞机读书会的清场时间和清场志愿者人数是多少？", "fact")
+    assert len(cleanup.citations) == 1
+    assert any("清场志愿者人数" in item for item in cleanup.missing_information)
+    assert not any("清场时间" in item or "清场依据" in item for item in cleanup.missing_information)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "纸飞机读书会活动编号为2026-10-30且活动是否举行尚未确定。",
+        "纸飞机读书会活动编号为2026-02-31且活动是否举行尚未确定。",
+        "纸飞机读书会定于2026-02-31举行。",
+    ],
+)
+def test_identifier_or_impossible_date_does_not_prove_event_schedule(
+    tmp_path: Path, body: str
+) -> None:
+    root, service, answerer = build_query(
+        tmp_path,
+        [("纸飞机读书会", "活动记录", body)],
+    )
+    answer = ask(service, root, "纸飞机读书会何时举行？", "fact")
+    assert answer.citations == []
+    assert any("举行" in item for item in answer.missing_information)
+    assert answerer.calls == []
+
+
+def test_unrelated_date_does_not_cover_an_unconfirmed_schedule_action(tmp_path: Path) -> None:
+    root, service, answerer = build_query(
+        tmp_path,
+        [
+            (
+                "纸飞机读书会",
+                "活动记录",
+                "活动编号为 2026 年 10 月 30 日。活动是否举行尚未确定。",
+            )
+        ],
+    )
+    answer = ask(service, root, "纸飞机读书会何时举行？", "fact")
+    assert answer.citations == []
+    assert any("举行" in item for item in answer.missing_information)
+    assert answerer.calls == []
 
 
 def excerpts(answer) -> str:
@@ -446,7 +541,7 @@ def test_candidate_budget_cap_requires_current_in_scope_support(tmp_path: Path) 
     assert not any("候选" in item and "汀屿计划" in item for item in answer.missing_information)
 
 
-def test_candidate_budget_notice_names_a_pair_with_support_beyond_top_twenty(
+def test_hybrid_fts_can_surface_support_beyond_dense_top_twenty(
     tmp_path: Path,
 ) -> None:
     pages = [
@@ -454,14 +549,27 @@ def test_candidate_budget_notice_names_a_pair_with_support_beyond_top_twenty(
         for i in range(1, 24)
     ] + [("汀屿计划", "排期", "汀屿计划排期为十一月。")]
     root, service, _answerer = build_query(tmp_path, pages)
-    answer = ask(
-        service,
-        root,
-        "比较岚桥计划的预算与汀屿计划的排期",
-        "comparison",
+    question = "比较岚桥计划的预算与汀屿计划的排期"
+    plan = scope(service, root, question)
+    generation = service.store.active_generation(load_manifest(root).workspace_id)
+    assert generation is not None
+    query_vector = service.embedding.embed(plan.search_question, fingerprint=FINGERPRINT)
+    dense, lexical = service.store.search(generation, query_vector, plan.search_question, limit=24)
+    target_page = next(page for page in list_pages(root) if page.metadata["title"] == "排期")
+    target_dense_rank = next(
+        rank for rank, item in enumerate(dense, start=1) if item["page_id"] == target_page.page_id
     )
-    assert "汀屿计划排期" not in excerpts(answer)
-    assert any("汀屿计划" in item and "候选" in item for item in answer.missing_information)
+    assert target_dense_rank > 20
+    assert lexical[0]["page_id"] == target_page.page_id
+    answer = service.query(
+        root,
+        question,
+        fingerprint=FINGERPRINT,
+        answer_mode="comparison",
+        limit=24,
+    )
+    assert "汀屿计划排期" in excerpts(answer)
+    assert not any("汀屿计划" in item and "候选" in item for item in answer.missing_information)
     assert not any("汀屿计划" in item and "缺少" in item for item in answer.missing_information)
 
 

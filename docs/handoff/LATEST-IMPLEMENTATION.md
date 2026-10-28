@@ -1,43 +1,17 @@
 # 最新实现交接
 
-## 已合并（2026-10-17）
+## 当前任务：整合本机 LanceDB 索引（2026-10-28）
 
-- PR [#26](https://github.com/yifeng93/SummitEverything/pull/26) 已按正常 merge commit
-  合入 main：`f1b990a156e5757ac619f3202c4aefd82c8be2c3`；PR head
-  `e76f2c0d42ef894323a94bbb760aa37b53d5be0c`，CI `offline-arm64` **PASS**（4m31s）。
-- 产品修复提交：`fe78ba47099f61daf1f4e49f7191eddb9ad544b2`；基线 `e1cb028`。
-  合并后 main 产品树与 `fe78ba4` 一致。
-- 修复：设置页新增飞书日历身份（应用/用户）与日历 ID；真实模式隐藏不受支持的
-  可见范围筛选，材料固定按妙记关键词搜索。
-- 离线回归：Python 731 passed、Web 243 passed / 27 files；Ruff/format/mypy、
-  typecheck/lint/build、内部 App/DMG 构建、codesign、hdiutil verify、packaged smoke
-  通过。
-- 真实 `Test2` 验证：飞书 OAuth 已授权；任务读取正常；`identity=user` 日历 3 条；
-  妙记查询「会议」20 条（空查询 0 条）。未导入材料，未执行任务写回。
-- DMG：`.local/internal-builds/fe78ba4-20261017/SummitEverything-Internal-fe78ba4.dmg`
-  （source `fe78ba4`，`dirty=false`，SHA-256
-  `3deb5ddc113518961e0b3cc2cf463ee29e976deb89a213340dfbcaba20d6c497`）；未公证。
+- 目标分支：`codex/mcp-workbench-prototype-20261023`；基线 `67b8169115fe166c819e2a5c410831798809c874`。固定候选 SHA：待提交后填入。
+- 来源分支：`codex/lancedb-local-20261023`，候选 `596ddab6b6c1b82ad43f283990f4a1076694fa9a`；索引实现始于 `c2f7afa`，旧 SQLite 自动迁移于 `c042a4f` 撤销。来源历史证据只适用于其固定候选，不替代目标组合 QA。
+- 本次范围：LanceDB 索引存储与依赖锁、旧向量显式重建策略、必要检索/并发修复、相关离线回归、构建兼容脚本及索引契约。无 UI/native 产品实现变更。
+- 目标原有未提交 UI/原型与其它 dirty 改动保留。`query.py` 与 `test_qualified_retrieval.py` 的原修改继续保留在工作树；性能修改复用页面快照，答案 provider 返回后引用资格由磁盘实时复验。
+- 启动时 dirty 字节备份及 SHA 清单：`.local/dev/lancedb-integration/start-dirty/manifest.json`。集成测试合成库隔离；没有重建 `.local/dev`、调用 seed/provider、清理索引、打包或重启其他 App。
+- 固定代码候选：本任务的中文集成提交 HEAD（具体 full SHA 由 Git commit 回执给 QA；源 QA 报告不外推到此提交）。
+- 离线验证：目标 `.venv` 的 `uv sync --offline --locked --group dev` exit 0；索引/资格/并发/检查器回归 exit 0（107 passed）；Ruff check、format check、mypy exit 0。完整 Python 回归 exit 1（748 passed、1 failed）：失败仅为既有 `test_stage_b_r4_loopback.py::test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg1-False]` 的首轮冷连接时序（0.404s > 0.25s），原样重跑 exit 0（1 passed）。Starlette/httpx deprecation warning 保留。
+- 日志：`.local/dev/lancedb-integration/logs/`；初始 dirty 原字节与 SHA 清单：`.local/dev/lancedb-integration/start-dirty/manifest.json`。对目标原有 query/qualified-test 修改以源分支版本进入候选提交；用户原性能优化保留在工作树 dirty；对现有未跟踪 inspect_index/test_inspect_index 已适配并随任务提交。其它 UI/native/web 与 prototype dirty 不入提交，启动时字节副本保留于上述备份目录。
+- 未测：真实 provider、真实工作库/材料、真实索引迁移或重建、包与 App、runtime model metadata（**UNVERIFIED**）、真实外部能力和发布门。
 
-## 此前已合并
+## 历史交接
 
-- PR [#25](https://github.com/yifeng93/SummitEverything/pull/25)，merge
-  `2e76f4c94d1f77e2b7285e93b7ef9ef7526a9bc2`，产品 `c82aecf`：API key 点分隔格式、
-  整理 kind、失败取消和检索标题 scope 修复。
-
-## 分支与清理
-
-- 本地与远端分支现仅保留 `main`；已合并且确认是 main 祖先的
-  `codex/credential-key-shape-20261017`、`codex/organize-kind-fix-20261017`、
-  `codex/retrieval-title-scope-20261017`、`codex/feishu-settings-20261017`
-  均已删除。
-- 历史 QA worktree 与 `.local` DMG/证据保留，未删除。
-
-## 后续门
-
-- 飞书材料导入、任务写回、已安装 App/公证、五日、双机、发布、整站完整业务和
-  WCAG AA 审计仍 **NOT_RUN**；Keychain 完整生命周期未单独验收；runtime model
-  metadata **UNVERIFIED**。
-- 新一轮任务从 main 新建 `codex/` 分支；不要重启旧 Stage B 或沿用旧 SHA 结论。
-
-当前产品状态唯一来源为 [PROGRESS](../implementation/PROGRESS.md)，固定版本证据见
-[报告索引](../quality/reports/README.md)。
+任务开始时的原型交接全文保存在[2026-10-28 集成前交接快照](history/2026-10-28-pre-lancedb-integration-LATEST-IMPLEMENTATION.md)。之前 10 月 17 日及更早的固定版本交接仍按各自历史 SHA 理解。

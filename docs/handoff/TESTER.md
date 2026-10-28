@@ -26,7 +26,7 @@ npm --prefix web run test:e2e
 npm --prefix web run test:e2e:integration
 ```
 
-Fake integration 使用临时 profile、一次性本地 token 与合成工作库，不调用真实模型、飞书或 Keychain。Internal App/DMG 的构建命令与限制见[实现手册](IMPLEMENTER.md)；只有用户指定的固定候选已包含构建产物时，才可在隔离副本上验证包行为。macOS LaunchServices 启动候选时按交接注入 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与临时 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT`，不可用直接 shell 启动替代实际 bundle。
+Fake integration 使用临时 profile、一次性本地 token 与合成工作库，不调用真实模型、飞书或 Keychain。测试本机 HTTP 服务时必须绕过系统代理（Python HTTPX 设 `trust_env=False`；urllib 使用空 `ProxyHandler`），确保 `127.0.0.1` 请求直连；不得通过修改 macOS 系统代理来调整验收环境。Internal App/DMG 的构建命令与限制见[实现手册](IMPLEMENTER.md)；只有用户指定的固定候选已包含构建产物时，才可在隔离副本上验证包行为。macOS LaunchServices 启动候选时按交接注入 `SUMMIT_OFFLINE_GUARD_ACTIVE=1` 与临时 `SUMMIT_INTERNAL_TEST_PROFILE_ROOT`，不可用直接 shell 启动替代实际 bundle。
 
 ## 报告与结论
 

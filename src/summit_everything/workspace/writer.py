@@ -477,6 +477,9 @@ class PageWriter:
         current = next((page for page in current_pages if page.page_id == page_id), None)
         if current is not None:
             if expected_base_sha256 is None or current.content_sha256 != expected_base_sha256:
+                prior = self.writer.lookup(root, operation_id, intent_hash)
+                if prior is not None:
+                    return prior
                 raise WorkspaceWriteConflict("Page changed since it was reviewed")
             if any(
                 clean_metadata.get(key) != current.metadata.get(key)
@@ -487,6 +490,9 @@ class PageWriter:
             expected_file_hash: str | None = current.raw_sha256
         else:
             if expected_base_sha256 is not None:
+                prior = self.writer.lookup(root, operation_id, intent_hash)
+                if prior is not None:
+                    return prior
                 raise WorkspaceWriteConflict("The reviewed page no longer exists")
             relative_path = self._new_page_path(root, manifest, clean_metadata, page_id)
             expected_file_hash = None

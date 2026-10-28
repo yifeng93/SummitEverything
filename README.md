@@ -42,6 +42,14 @@ npm --prefix web run build
 
 首次运行后端集成测试前安装 Web 依赖。Playwright、Fake API 集成与内部应用构建命令和安全边界见实现/测试手册。自动检查通过不等于阶段验收通过。
 
+本地索引由 SQLite 指针与 profile 内嵌入式 LanceDB 组成，`index.sqlite3` 对应独立的 `index.lancedb` 数据目录。查询和索引构建通过 profile 文件锁保留代；旧代会在应用退出后通过下面的维护命令清理。旧 SQLite `vector_json` 索引不会自动迁移或用于查询，状态会要求重建；需从已确认 Markdown 预览并显式建立新索引。旧 SQLite 行会原样保留，新 profile 不再创建 `chunks/vector_json` 表。查询在重建前不会因此触发 embedding。
+
+清理 LanceDB 旧代时先退出应用，再将 `<profile>/index.sqlite3` 替换为对应本机 profile 中的真实文件路径。此命令不会清理旧 SQLite `chunks/vector_json` 残留：
+
+```sh
+uv run python scripts/prune_local_index.py --index-db "/actual/profile/path/index.sqlite3" --app-stopped
+```
+
 ## 文档导航
 
 - 当前产品和验收状态：[PROGRESS](docs/implementation/PROGRESS.md)；本轮固定候选交接：[LATEST-IMPLEMENTATION](docs/handoff/LATEST-IMPLEMENTATION.md)。

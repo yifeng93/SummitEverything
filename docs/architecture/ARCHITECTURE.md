@@ -48,7 +48,7 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 
 工作库：manifest、普通 Markdown、原件、待整理 / 待审业务状态和必要操作结果。普通本地目录可用，OneDrive 是可选存储位置。
 
-本地 profile：macOS Application Support / SummitEverything / workspace_id。保存 SQLite、索引、会话、角色、记忆、缓存和轮转日志。长期凭据存钥匙串，profile 只保存引用。本地 profile 不在工作库里面。
+本地 profile：macOS Application Support / SummitEverything / workspace_id。SQLite 保存业务状态、索引代指针、会话、角色、记忆、缓存和轮转日志；嵌入式 LanceDB 保存可重建的向量与全文索引。长期凭据存钥匙串，profile 只保存引用。本地 profile 不在工作库里面。
 
 同步区不存运行中的 SQLite / WAL，也不按每次状态变更永久写一份小 JSON。待处理项维护当前状态，完成后按月份汇总；来源记录与外部幂等结果仍可追溯，unknown 项不可清除。
 
@@ -66,7 +66,9 @@ DeepSeek、Qwen embedding 和 Qwen rerank 是独立 provider。Qwen 3.7 重排�
 
 官方依据：[DeepSeek](https://api-docs.deepseek.com/quick_start/pricing/)、[Qwen embedding](https://help.aliyun.com/zh/model-studio/text-embedding-synchronous-api)、[Qwen rerank](https://help.aliyun.com/zh/model-studio/text-rerank-api)。实施接入时再核对当前官方协议，验证真实账户支持后才进行明确授权的调用。
 
-索引 fingerprint 包含 provider / 模型 / 维度 / 分块与规范化版本。不同 fingerprint 不混用向量；完整重建先生成新代并验证，再切换。未变的嵌入输入复用本机缓存，不同步向量数据库。
+索引 fingerprint 包含 provider / 模型 / 维度 / 分块与规范化版本。不同 fingerprint 不混用向量；完整重建先写入新的 LanceDB 代，核对行数、模式、维度并建好中文 n-gram BM25 全文索引，再用 SQLite 事务和代号比较交换活动指针。查询固定读取开始时选定的一代；旧代保留供在途查询。未变的嵌入输入复用当前本机代的向量，不同步向量数据库。LanceDB 只执行本地文件模式，不使用云端数据库、模型自动下载或付费 provider。
+
+旧 SQLite `vector_json` 索引不迁移、不读取、不用于检索；状态接口报告需要重建，问答在索引重建前不调用 embedding。用户预览并显式执行一次完整索引后，系统从当前已确认 Markdown 重新生成向量；旧 SQLite chunk 行原样保留但不再作为缓存使用。识别旧格式只读元数据；首次访问不会修改旧索引文件。新 profile 的 SQLite 不创建旧 `chunks/vector_json` 表。旧 LanceDB 代为在途查询保留；应用退出后，可用 `scripts/prune_local_index.py --index-db <profile>/index.sqlite3 --app-stopped` 清理，保留活动代和最近一个旧代。
 
 ## 写入与跨机
 

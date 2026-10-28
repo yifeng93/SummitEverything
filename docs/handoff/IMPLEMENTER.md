@@ -46,6 +46,17 @@ npm --prefix web ci
 scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
 ```
 
+## 本机检索索引
+
+本地索引由 SQLite 状态/活动代指针和 profile 内嵌入式 LanceDB 组成。旧 SQLite `vector_json` 不自动迁移或作为证据；用户通过已确认 Markdown 的索引预览/执行路径显式重建。不要在开发命令中默认清理或重建已有 profile。
+
+```sh
+uv run python scripts/inspect_index.py --json
+uv run python scripts/prune_local_index.py --index-db "/actual/profile/path/index.sqlite3" --app-stopped
+```
+
+检查脚本只读；generation 清理要求应用完全退出，保留活动代和最近一个旧代，不移除旧 SQLite chunk 行。
+
 ## 固定交接
 
 1. 对照任务和 [ACCEPTANCE](../quality/ACCEPTANCE.md) 检查覆盖项。
