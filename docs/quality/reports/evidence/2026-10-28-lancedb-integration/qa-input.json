@@ -1,0 +1,10 @@
+{
+  "fixed_sha": "193aa35a33c667a41a9fe125db4f0caf50d62545",
+  "qa_checkout": "/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/summit-lancedb-integration-qa-0f_mmoxy/checkout",
+  "combined_snapshot": "/Users/hanwenbo/ai/SummitEverything/.local/sol/lancedb-integration/combined-snapshot",
+  "sha256": {
+    "src/summit_everything/retrieval/query.py": "b13a81b3546047709b29702728d0ad01bd4dbcdcf045c5793188c79136921940",
+    "tests/integration/test_qualified_retrieval.py": "b4fe89e2ed7c1a312ea4e379763dd47354ee063cfb117536c97a0f951312aefb",
+    "src/summit_everything/api/app.py": "1253e6ee235939024148c94cc91b76dd3dbea776d25a221496044e6767f091cb"
+  }
+}

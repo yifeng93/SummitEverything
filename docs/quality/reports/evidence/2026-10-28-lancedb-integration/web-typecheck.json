@@ -1,0 +1,7 @@
+{
+  "command": "npm --prefix web run typecheck",
+  "cwd": "/Users/hanwenbo/ai/SummitEverything",
+  "exit_code": 0,
+  "scope": "current dirty UI working tree at time of check; no UI modifications by integration",
+  "checked_at": "2026-10-28T14:57:40.152055+00:00"
+}

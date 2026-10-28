@@ -1,0 +1,102 @@
+{
+  "fixed_sha": "193aa35a33c667a41a9fe125db4f0caf50d62545",
+  "original_entries": 56,
+  "unchanged": [
+    ".gitignore",
+    "docs/product/FRONTEND-GUIDE.md",
+    "docs/product/FRONTEND-PAGE-SPECS.md",
+    "native/Sources/SummitEverythingApp/App.swift",
+    "scripts/run_dev.py",
+    "web/package-lock.json",
+    "web/package.json",
+    "web/src/App.css",
+    "web/src/App.shell.test.tsx",
+    "web/src/App.test.tsx",
+    "web/src/components/AppShell.test.tsx",
+    "web/src/components/AppShell.tsx",
+    "web/src/components/ApprovalView.tsx",
+    "web/src/components/AskView.test.tsx",
+    "web/src/components/AskView.tsx",
+    "web/src/components/FeishuPanel.tsx",
+    "web/src/components/FirstUseWizard.tsx",
+    "web/src/components/ImportDrawer.tsx",
+    "web/src/components/JournalDialog.tsx",
+    "web/src/components/JournalView.tsx",
+    "web/src/components/PageReader.tsx",
+    "web/src/components/ServiceStatus.tsx",
+    "web/src/components/SettingsView.regressions.test.tsx",
+    "web/src/components/SettingsView.tsx",
+    "web/src/components/TasksPanel.tsx",
+    "web/src/components/ToastHost.tsx",
+    "web/src/components/TodayView.tsx",
+    "web/src/components/WorkspaceGate.tsx",
+    "web/src/index.css",
+    "web/src/main.tsx",
+    "web/src/service-status.ts",
+    "web/src/ui-contract.allowlist.json",
+    "web/src/ui-contract.render.test.tsx",
+    "docs/decisions/0013-daily-ui-and-hot-reload.md",
+    "docs/decisions/0014-workspace-gate-minimal.md",
+    "docs/decisions/0015-titles-are-the-description.md",
+    "docs/decisions/0016-lucide-icons.md",
+    "docs/decisions/0017-theme-entry-bottom-left.md",
+    "docs/decisions/0018-compact-workspace-switcher.md",
+    "docs/handoff/history/2026-10-23-pre-prototype-LATEST-IMPLEMENTATION.md",
+    "docs/product/REQUIREMENTS-AT-A-GLANCE.md",
+    "scripts/seed_knowledge.py",
+    "web/src/components/PageHeader.tsx"
+  ],
+  "changed": [
+    {
+      "path": "README.md",
+      "integrated_by_task": true
+    },
+    {
+      "path": "docs/handoff/IMPLEMENTER.md",
+      "integrated_by_task": true
+    },
+    {
+      "path": "docs/handoff/LATEST-IMPLEMENTATION.md",
+      "integrated_by_task": true
+    },
+    {
+      "path": "docs/implementation/PROGRESS.md",
+      "integrated_by_task": true
+    },
+    {
+      "path": "src/summit_everything/retrieval/query.py",
+      "integrated_by_task": true
+    },
+    {
+      "path": "tests/integration/test_qualified_retrieval.py",
+      "integrated_by_task": true
+    },
+    {
+      "path": "web/src/api/client.ts",
+      "integrated_by_task": false
+    },
+    {
+      "path": "web/src/components/ProjectsView.test.tsx",
+      "integrated_by_task": false
+    },
+    {
+      "path": "web/src/components/ProjectsView.tsx",
+      "integrated_by_task": false
+    },
+    {
+      "path": "scripts/inspect_index.py",
+      "integrated_by_task": true
+    },
+    {
+      "path": "tests/unit/test_inspect_index.py",
+      "integrated_by_task": true
+    }
+  ],
+  "missing": [],
+  "directories_without_initial_recursive_hash": [
+    "prototypes/",
+    "web/src/styles/"
+  ],
+  "commit_ui_native_prototype_paths": [],
+  "note": "Changed paths outside integration scope were not edited or committed by this task; retained as observed. No inference about task activity."
+}

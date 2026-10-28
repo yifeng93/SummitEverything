@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## LanceDB 整合到主开发分支（2026-10-28）
+
+- [Sol 复核、固定提交与组合快照 QA](2026-10-28-LANCEDB-INTEGRATION-SOL.md)。
+
 当前状态只维护在 [PROGRESS](../../implementation/PROGRESS.md)。本页导航各固定 SHA 的报告；历史 PASS/FAIL、合并及 CI 记录不得直接作为当前 HEAD 的结论。
 
 ## API key 形状修复（2026-10-17，已合并）

@@ -1,0 +1,46 @@
+{
+  "source_sha": "193aa35a33c667a41a9fe125db4f0caf50d62545",
+  "checks": {
+    "developer_index_regression": {
+      "exit_code": 0,
+      "passed": 107
+    },
+    "developer_full_suite": {
+      "exit_code": 1,
+      "passed": 748,
+      "failed": 1
+    },
+    "developer_deadline_unchanged_retry": {
+      "exit_code": 0,
+      "passed": 1
+    },
+    "qa_fixed": {
+      "exit_code": 0,
+      "passed": 109
+    },
+    "qa_combined_snapshot": {
+      "exit_code": 0,
+      "passed": 110
+    },
+    "ruff_check": {
+      "exit_code": 0
+    },
+    "ruff_format": {
+      "exit_code": 0
+    },
+    "mypy": {
+      "exit_code": 0
+    },
+    "target_venv_sync": {
+      "exit_code": 0
+    },
+    "uv_lock_check": {
+      "exit_code": 0
+    },
+    "target_ui_typecheck": {
+      "exit_code": 0
+    }
+  },
+  "full_suite_clean": false,
+  "code_or_dependency_changes_after_qa": false
+}

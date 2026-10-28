@@ -1,0 +1,66 @@
+........................................................................ [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 28%]
+........................................................................ [ 38%]
+........................................................................ [ 48%]
+.......................................F................................ [ 57%]
+........................................................................ [ 67%]
+........................................................................ [ 76%]
+........................................................................ [ 86%]
+........................................................................ [ 96%]
+.............................                                            [100%]
+=================================== FAILURES ===================================
+__ test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg1-False] ___
+
+loopback = <function loopback.<locals>.make at 0x10f015f80>, deadline = 0.15
+cfg = {'header_delay': 0.5, 'body': b'{}'}, expect_no_further_traffic = False
+
+    @pytest.mark.parametrize(
+        "deadline,cfg,expect_no_further_traffic",
+        [
+            (0.15, {"mode": "incomplete_headers"}, True),
+            (0.15, {"header_delay": 0.5, "body": b"{}"}, False),
+            (0.3, {"mode": "trickle_body", "declared_length": 100_000}, True),
+        ],
+    )
+    def test_r4_02_deadline_cases_hold_over_ten_consecutive_runs(
+        loopback, deadline, cfg, expect_no_further_traffic
+    ):
+        client = _client()
+        timings: list[float] = []
+        try:
+            for _ in range(10):
+                timings.append(
+                    _deadline_case(
+                        loopback,
+                        client,
+                        deadline,
+                        expect_no_further_traffic=expect_no_further_traffic,
+                        **cfg,
+                    )
+                )
+        finally:
+            client.close()
+        worst = max(timings)
+        print(
+            f"R4-02 timings deadline={deadline} cfg={cfg} "
+            f"tolerance={TOLERANCE_SECONDS} worst={worst:.4f} "
+            f"values={[round(value, 4) for value in timings]}"
+        )
+>       assert all(value <= deadline + TOLERANCE_SECONDS for value in timings), timings
+E       AssertionError: [0.40394487499725074, 0.15230925002833828, 0.15453316597267985, 0.15184245799900964, 0.15235987503547221, 0.15205166704254225, ...]
+E       assert False
+E        +  where False = all(<generator object test_r4_02_deadline_cases_hold_over_ten_consecutive_runs.<locals>.<genexpr> at 0x122be1000>)
+
+tests/integration/test_stage_b_r4_loopback.py:391: AssertionError
+----------------------------- Captured stdout call -----------------------------
+R4-02 timings deadline=0.15 cfg={'header_delay': 0.5, 'body': b'{}'} tolerance=0.1 worst=0.4039 values=[0.4039, 0.1523, 0.1545, 0.1518, 0.1524, 0.1521, 0.1526, 0.1541, 0.1558, 0.1524]
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Users/hanwenbo/ai/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_stage_b_r4_loopback.py::test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg1-False]
+1 failed, 748 passed, 1 warning in 104.58s (0:01:44)

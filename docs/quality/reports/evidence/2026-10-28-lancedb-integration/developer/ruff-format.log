@@ -1,0 +1,44 @@
+unformatted: File would be reformatted
+   --> src/summit_everything/retrieval/query.py:949:53
+    |
+948 |         # file reads; with 150+ pages that stalls the query.
+    -         page_map = pages if pages is not None else {
+    -             page.page_id: page for page in list_pages(root)
+    -         }
+949 +         page_map = pages if pages is not None else {page.page_id: page for page in list_pages(root)}
+950 |         page_eligibility: dict[UUID, bool] = {}
+    |
+
+unformatted: File would be reformatted
+   --> tests/integration/test_c19_topic_scope_normalization.py:104:12
+    |
+103 |     schedule_action = ("schedule&term:举行",)
+    -     assert supported_dimensions(
+    -         "纸飞机读书会定于 2026 年 10 月 30 日 14:00 至 16:00 举行。",
+    -         schedule_action,
+    -     ) == schedule_action
+104 +     assert (
+105 +         supported_dimensions(
+106 +             "纸飞机读书会定于 2026 年 10 月 30 日 14:00 至 16:00 举行。",
+107 +             schedule_action,
+108 +         )
+109 +         == schedule_action
+110 +     )
+111 |     assert supported_dimensions("场地最晚 16:30 清场。", ("schedule&term:清场",)) == (
+112 |         "schedule&term:清场",
+113 |     )
+    -     assert supported_dimensions(
+    -         "纸飞机读书会定于2026年10月30日14:00至16:00举行。",
+    -         ("schedule&term:举行&term:人数",),
+    -     ) == ()
+114 +     assert (
+115 +         supported_dimensions(
+116 +             "纸飞机读书会定于2026年10月30日14:00至16:00举行。",
+117 +             ("schedule&term:举行&term:人数",),
+118 +         )
+119 +         == ()
+120 +     )
+121 |     assert supported_dimensions("项目排期确认在十一月开始。", ("schedule",)) == ("schedule",)
+    |
+
+2 files would be reformatted, 102 files already formatted
