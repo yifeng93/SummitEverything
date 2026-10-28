@@ -15,6 +15,7 @@ from uuid import UUID, uuid4, uuid5
 from summit_everything.domain.models import (
     ActionCandidate,
     Draft,
+    IntakeItem,
     IntakeJob,
     MutationResult,
 )
@@ -87,6 +88,202 @@ class IntakeReviewService:
     ) -> None:
         self.provider = provider or FakeLLM()
         self.page_writer = page_writer or PageWriter()
+
+    def create_agent_draft(
+        self,
+        root: Path,
+        *,
+        operation_id: str,
+        item_ids: list[UUID],
+        line_id: UUID,
+        project_id: UUID,
+        title: str,
+        kind: str,
+        body: str,
+        target_page_id: UUID | None = None,
+        expected_base_sha256: str | None = None,
+        workspace_id: UUID,
+    ) -> Draft:
+        """Durably create/replay a reviewable Agent draft without approval."""
+        if not operation_id.strip():
+            raise WorkspaceError("Draft operation ID is required")
+        if not title.strip() or not body.strip():
+            raise WorkspaceError("Draft title and body are required")
+        if kind not in {"object", "case", "topic", "decision", "log", "thought"}:
+            raise WorkspaceError("Unsupported knowledge kind")
+        if (target_page_id is None) != (expected_base_sha256 is None):
+            raise WorkspaceError("Target page and base version must be paired")
+        request = {
+            "operation_id": operation_id,
+            "item_ids": [str(value) for value in item_ids],
+            "line_id": str(line_id),
+            "project_id": str(project_id),
+            "title": title,
+            "kind": kind,
+            "body": body,
+            "target_page_id": str(target_page_id) if target_page_id else None,
+            "expected_base_sha256": expected_base_sha256,
+        }
+        request_hash = hashlib.sha256(
+            json.dumps(request, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        operation_key = hashlib.sha256(operation_id.encode()).hexdigest()
+        transaction_path = _state_root(root) / "transactions" / f"agent-draft-{operation_key}.json"
+        draft_id = uuid5(workspace_id, f"agent-draft:{operation_id}")
+        job_id = uuid5(workspace_id, f"agent-draft-job:{operation_id}")
+        draft_path = _state_root(root) / "drafts" / f"{draft_id}.json"
+        with workspace_lock(root):
+            if transaction_path.exists():
+                intent = json.loads(transaction_path.read_text(encoding="utf-8"))
+                if intent.get("request_hash") != request_hash:
+                    raise WorkspaceWriteConflict(
+                        "operation_id was used for different draft content"
+                    )
+                self._complete_agent_draft_intent(root, intent)
+                result = Draft.model_validate_json(draft_path.read_bytes())
+            else:
+                result = None
+        if result is not None:
+            SourceStore().refresh_items(root, item_ids)
+            return result
+        selected = self.preview_inputs(root, item_ids, line_id=line_id, project_id=project_id)
+        target_snapshot = read_page(root, target_page_id) if target_page_id is not None else None
+        if target_snapshot is not None and (
+            target_snapshot.storage_area != "formal"
+            or target_snapshot.approval_state != "confirmed"
+            or target_snapshot.content_sha256 != expected_base_sha256
+            or target_snapshot.metadata.get("line_id") != str(line_id)
+            or target_snapshot.metadata.get("project_id") != str(project_id)
+        ):
+            raise WorkspaceWriteConflict("Target page or base version does not match")
+        with workspace_lock(root):
+            if transaction_path.exists():
+                intent = json.loads(transaction_path.read_text(encoding="utf-8"))
+                if intent.get("request_hash") != request_hash:
+                    raise WorkspaceWriteConflict(
+                        "operation_id was used for different draft content"
+                    )
+                self._complete_agent_draft_intent(root, intent)
+            else:
+                current_items = {item.item_id: item for item in read_items(root, archive=False)}
+                source_store = SourceStore()
+                if any(
+                    item_id not in current_items
+                    or source_store.derived_state(root, current_items[item_id])
+                    in {"processing", "reviewing"}
+                    for item_id in item_ids
+                ):
+                    raise WorkspaceError("Selected source already has active processing or drafts")
+                manifest = load_manifest(root)
+                project = next((item for item in manifest.projects if item.id == project_id), None)
+                if project is None or project.line_id != line_id or project.archived:
+                    raise WorkspaceError("Choose an active project in the selected line")
+                if target_snapshot is not None:
+                    target_path = (root / target_snapshot.relative_path).resolve()
+                    if (
+                        not target_path.is_relative_to(root.resolve())
+                        or not target_path.is_file()
+                        or hashlib.sha256(target_path.read_bytes()).hexdigest()
+                        != target_snapshot.raw_sha256
+                    ):
+                        raise WorkspaceWriteConflict(
+                            "Target page changed while the draft was submitted"
+                        )
+                snapshot = Draft(
+                    draft_id=draft_id,
+                    input_ids=item_ids,
+                    source_ids=list(dict.fromkeys(source_id for _, source_id, _ in selected)),
+                    metadata={
+                        "id": str(target_page_id or draft_id),
+                        "role": "knowledge",
+                        "kind": kind,
+                        "validity": "current",
+                        "title": title,
+                        "line_id": str(line_id),
+                        "project_id": str(project_id),
+                    },
+                    body=body,
+                    target_page_id=target_page_id,
+                    expected_base_sha256=expected_base_sha256,
+                    state="pending",
+                    created_at=datetime.now(UTC),
+                    version=1,
+                )
+                job = IntakeJob(
+                    job_id=job_id,
+                    item_ids=item_ids,
+                    line_id=line_id,
+                    project_id=project_id,
+                    request_hash=request_hash,
+                    state="completed",
+                    draft_ids=[draft_id],
+                    created_at=snapshot.created_at,
+                )
+                item_updates: dict[str, dict[str, Any]] = {}
+                for item_id in item_ids:
+                    item = current_items[item_id]
+                    item_updates[str(item_id)] = item.model_copy(
+                        update={
+                            "state": "reviewing",
+                            "latest_job_id": job_id,
+                            "revision": item.revision + 1,
+                            "finished_at": None,
+                        }
+                    ).model_dump(mode="json")
+                intent = {
+                    "request_hash": request_hash,
+                    "draft_id": str(draft_id),
+                    "job_id": str(job_id),
+                    "item_ids": [str(item_id) for item_id in item_ids],
+                    "initial_draft": snapshot.model_dump(mode="json"),
+                    "initial_job": job.model_dump(mode="json"),
+                    "item_updates": item_updates,
+                }
+                atomic_write(
+                    transaction_path,
+                    json.dumps(intent, ensure_ascii=False, sort_keys=True).encode("utf-8"),
+                )
+                self._complete_agent_draft_intent(root, intent)
+            if not draft_path.exists():
+                raise WorkspaceError("Agent draft transaction could not be recovered", 409)
+            result = Draft.model_validate_json(draft_path.read_bytes())
+        SourceStore().refresh_items(root, item_ids)
+        return result
+
+    @staticmethod
+    def _complete_agent_draft_intent(root: Path, intent: dict[str, Any]) -> None:
+        """Finish an intent without replacing an edited or confirmed draft."""
+        draft = Draft.model_validate(intent["initial_draft"])
+        job = IntakeJob.model_validate(intent["initial_job"])
+        draft_path = _state_root(root) / "drafts" / f"{draft.draft_id}.json"
+        job_path = _state_root(root) / "intake" / "jobs" / f"{job.job_id}.json"
+        if not draft_path.exists():
+            atomic_write(draft_path, draft.model_dump_json(indent=2).encode())
+        if job_path.exists():
+            existing_job = IntakeJob.model_validate_json(job_path.read_bytes())
+            if (
+                existing_job.request_hash != job.request_hash
+                or existing_job.draft_ids != job.draft_ids
+            ):
+                raise WorkspaceWriteConflict("Agent draft job identity conflicts with stored job")
+        else:
+            atomic_write(job_path, job.model_dump_json(indent=2).encode())
+        items_root = _state_root(root) / "intake" / "items"
+        current_items = {item.item_id: item for item in read_items(root, archive=False)}
+        for item_id_text, raw_update in intent["item_updates"].items():
+            item_path = items_root / f"{item_id_text}.json"
+            item_id = UUID(item_id_text)
+            current = current_items.get(item_id)
+            if current is None:
+                raise WorkspaceError("Agent draft source item is missing", 409)
+            expected = IntakeItem.model_validate(raw_update)
+            if current.latest_job_id == job.job_id:
+                continue
+            if current.latest_job_id is None and current.state == "completed":
+                continue
+            if current.latest_job_id is not None or current.state not in {"pending", "reviewing"}:
+                raise WorkspaceWriteConflict("Agent draft source item changed during recovery")
+            atomic_write(item_path, expected.model_dump_json(indent=2).encode())
 
     def preview_inputs(
         self,

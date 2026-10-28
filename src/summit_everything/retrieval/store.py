@@ -538,6 +538,23 @@ class IndexStore:
         )
         return self._to_chunks(dense), self._to_chunks(lexical, scores=True)
 
+    def search_bm25(
+        self, workspace_id: UUID, query_text: str, *, limit: int
+    ) -> tuple[IndexGeneration | None, list[dict[str, Any]]]:
+        """Search only the active LanceDB generation under its shared lease."""
+        with self.generation_lease():
+            generation = self.active_generation(workspace_id)
+            if generation is None:
+                return None, []
+            table = self._lance_db().open_table(generation.table_name)
+            rows = (
+                table.search(query_text, query_type="fts")
+                .select(["page_id", "content_sha256", "chunk_id", "heading", "text", "_score"])
+                .limit(limit)
+                .to_list()
+            )
+            return generation, self._to_chunks(rows, scores=True)
+
     @staticmethod
     def _to_chunks(rows: list[dict[str, Any]], *, scores: bool = False) -> list[dict[str, Any]]:
         result = [

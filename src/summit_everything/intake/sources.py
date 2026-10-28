@@ -175,6 +175,20 @@ class SourceStore:
 
     def derived_state(self, root: Path, item: IntakeItem) -> str:
         if item.latest_job_id is None:
+            transactions = root / ".summit-everything" / "transactions"
+            for intent_path in transactions.glob("agent-draft-*.json"):
+                try:
+                    intent = json.loads(intent_path.read_bytes())
+                    if str(item.item_id) not in intent.get("item_ids", []):
+                        continue
+                    draft_id = UUID(str(intent["draft_id"]))
+                    draft_path = root / ".summit-everything" / "drafts" / f"{draft_id}.json"
+                    if not draft_path.exists():
+                        return "reviewing"
+                    draft = Draft.model_validate_json(draft_path.read_bytes())
+                    return "reviewing" if draft.state == "pending" else "completed"
+                except (OSError, ValueError, KeyError, TypeError) as exc:
+                    raise WorkspaceError("An Agent draft transaction is damaged", 409) from exc
             return item.state
         latest = read_job(root, item.latest_job_id)
         if latest is None:

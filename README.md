@@ -24,6 +24,8 @@ uv run python scripts/run_dev.py
 
 打开 <http://127.0.0.1:5173>，并为工作库选择新的隔离目录。脚本启动本机 FastAPI 和 Vite 服务；退出时只关闭本次启动的服务。详细隔离选项、Internal App/DMG 构建和验收边界见[实现手册](docs/handoff/IMPLEMENTER.md)与[测试手册](docs/handoff/TESTER.md)。
 
+提供标准 MCP stdio 入口供 Codex / WorkBuddy 连接已运行的本机 API：`uv run --locked --project "$PWD" python -m summit_everything.mcp_server`。先准备当前服务会话的 token 文件（权限 0600），再按[本机 MCP 契约](docs/contracts/MCP-v1.md)配置 `SUMMIT_MCP_TOKEN_FILE`；MCP 不会启动第二个后端。
+
 ## 常用检查
 
 ```sh
@@ -55,6 +57,7 @@ uv run python scripts/prune_local_index.py --index-db "/actual/profile/path/inde
 - 当前产品和验收状态：[PROGRESS](docs/implementation/PROGRESS.md)；本轮固定候选交接：[LATEST-IMPLEMENTATION](docs/handoff/LATEST-IMPLEMENTATION.md)。
 - 实现/验收入口：[AGENTS.md](AGENTS.md)、[实现手册](docs/handoff/IMPLEMENTER.md)、[测试手册](docs/handoff/TESTER.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 规格与实现边界：[产品规格](docs/product/PRODUCT-SPEC.md)、[前端指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[架构](docs/architecture/ARCHITECTURE.md)、[工作库契约](docs/contracts/WORKSPACE-v1.md)、[API 契约](docs/contracts/API-v1.md)。
+- Agent 接入：[MCP v1 契约](docs/contracts/MCP-v1.md)、[ADR 0028](docs/decisions/0028-local-mcp-agent-tools.md)。
 - [全部文档索引](docs/README.md)、[开发与 QA 报告索引](docs/quality/reports/README.md)、[完整 v1 实施与验收计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 
 SummitEverything 是独立实现；SummitWorkbench 与 SummitKnowledge 仅作只读参考，运行时不依赖旧应用。

@@ -38,6 +38,18 @@ npm --prefix web run build
 
 启动 WebUI：`uv run python scripts/run_dev.py`，浏览器打开 `http://127.0.0.1:5173`。默认使用 Fake provider 和隔离工作库。
 
+### 标准 MCP stdio 服务
+
+MCP 只作受限 bridge，连接此开发服务的 loopback FastAPI，不启动第二套后端。工具范围见 [MCP-v1](../contracts/MCP-v1.md) 和 [ADR 0028](../decisions/0028-local-mcp-agent-tools.md)。
+
+将同一 owner-only token 文件同时提供给开发 API (`SUMMIT_SESSION_TOKEN_FILE`) 与 MCP host (`SUMMIT_MCP_TOKEN_FILE`)，权限必须为 0600；启动 `scripts/run_dev.py` 前，在终端导出 `SUMMIT_SESSION_TOKEN_FILE=/path/to/session-token`。MCP 的本机启动命令为：
+
+```sh
+SUMMIT_MCP_TOKEN_FILE=/path/to/session-token uv run --locked --project "$PWD" python -m summit_everything.mcp_server
+```
+
+Host 侧 `SUMMIT_API_URL` 默认 `http://127.0.0.1:8793`；MCP 会话启动时 pin 活动 `workspace_id`，切库后请求会被拒绝。Codex / WorkBuddy 的客户端配置与正式来源确认边界见 MCP 契约。
+
 仅在 arm64 macOS 构建机器上构建 Internal 候选。产物路径必须是全新路径；脚本会强制构建 WebUI、打包并校验 bundle/DMG，不会安装或覆盖应用：
 
 ```sh

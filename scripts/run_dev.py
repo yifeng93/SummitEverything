@@ -6,6 +6,7 @@ import json
 import os
 import secrets
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -15,6 +16,8 @@ from urllib.request import urlopen
 
 from summit_everything.integrations.first_use_defaults import (
     DEFAULTS_ENV_VAR as FIRST_USE_DEFAULTS_ENV_VAR,
+)
+from summit_everything.integrations.first_use_defaults import (
     REPO_DEFAULTS_RELATIVE_PATH,
 )
 
@@ -46,7 +49,28 @@ def main() -> int:
     web_port = int(env.get("SUMMIT_WEB_PORT", "5173"))
     run_id = env.setdefault("SUMMIT_RUN_ID", secrets.token_hex(16))
     env.setdefault("SUMMIT_API_TARGET", f"http://127.0.0.1:{api_port}")
-    env.setdefault("SUMMIT_SESSION_TOKEN", secrets.token_urlsafe(32))
+    token = env.get("SUMMIT_SESSION_TOKEN")
+    token_file = env.get("SUMMIT_SESSION_TOKEN_FILE")
+    if not token and token_file:
+        token_path = Path(token_file)
+        try:
+            token_stat = token_path.lstat()
+            if (
+                not stat.S_ISREG(token_stat.st_mode)
+                or token_stat.st_uid != os.getuid()
+                or stat.S_IMODE(token_stat.st_mode) & 0o077
+            ):
+                raise RuntimeError("SUMMIT_SESSION_TOKEN_FILE must be an owner-only regular file")
+            token = token_path.read_text(encoding="utf-8").rstrip("\r\n")
+        except OSError:
+            raise RuntimeError("Cannot read SUMMIT_SESSION_TOKEN_FILE") from None
+        if not token or any(
+            not (char.isascii() and (char.isalnum() or char in "-_.~")) for char in token
+        ):
+            raise RuntimeError("SUMMIT_SESSION_TOKEN_FILE does not contain a valid token")
+        env["SUMMIT_SESSION_TOKEN"] = token
+    if not token:
+        env["SUMMIT_SESSION_TOKEN"] = secrets.token_urlsafe(32)
     api_url = f"http://127.0.0.1:{api_port}/api/v1/health"
     web_url = f"http://127.0.0.1:{web_port}/"
     children: list[subprocess.Popen[bytes]] = []

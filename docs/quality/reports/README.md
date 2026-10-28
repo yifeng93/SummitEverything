@@ -1,5 +1,10 @@
 # 开发与独立验收报告索引
 
+## 本机 MCP Agent 工具桥（2026-10-29）
+
+- [DEV 自测记录](2026-10-29-MCP-DEV-222b460.md)：固定源码 SHA `222b46062fa9fff0cee52deb202c71698e1365ba`；MCP stdio 与 API 定向 7 项通过，明确记录全量 pytest 尚有一次历史失败以及真实/安装门未测。
+- 独立 QA 尚待执行；结论只适用于 QA 报告实际固定的 SHA 与场景。
+
 ## LanceDB 整合到主开发分支（2026-10-28）
 
 - [Sol 复核、固定提交与组合快照 QA](2026-10-28-LANCEDB-INTEGRATION-SOL.md)。

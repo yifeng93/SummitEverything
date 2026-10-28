@@ -317,6 +317,24 @@ class DraftPatchRequest(RequestModel):
     expected_base_sha256: str | None = Field(default=None, pattern="^[0-9a-f]{64}$")
 
 
+class AgentDraftCreateRequest(RequestModel):
+    operation_id: str = Field(min_length=1)
+    item_ids: list[UUID] = Field(min_length=1)
+    line_id: UUID
+    project_id: UUID
+    title: str = Field(min_length=1)
+    kind: Literal["object", "case", "topic", "decision", "log", "thought"]
+    body: str = Field(min_length=1)
+    target_page_id: UUID | None = None
+    expected_base_sha256: str | None = Field(default=None, pattern="^[0-9a-f]{64}$")
+
+
+class AgentImportRequest(RequestModel):
+    text: str = Field(min_length=1)
+    filename: str = Field(min_length=1)
+    operation_id: str = Field(min_length=1)
+
+
 class DraftConfirmationRequest(RequestModel):
     expected_version: int = Field(ge=1)
     confirmation_id: str = Field(min_length=1)
@@ -766,6 +784,17 @@ def create_app(
             raise HTTPException(
                 status_code=409,
                 detail={"code": "workspace_not_open", "message": "Open a workspace first"},
+            )
+        return workspace
+
+    def agent_workspace(
+        expected_workspace_id: Annotated[UUID, Header(alias="X-Summit-Workspace-Id")],
+    ) -> WorkspaceContext:
+        workspace = active_workspace()
+        if workspace.workspace_id != expected_workspace_id:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "workspace_changed", "message": "当前工作库已变化，请重新连接。"},
             )
         return workspace
 
@@ -2073,6 +2102,227 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> WorkspaceContext:
         return workspace
+
+    @app.get("/api/v1/agent/workspace", dependencies=[Depends(authenticated)])
+    def agent_workspace_info(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> WorkspaceContext:
+        return workspace
+
+    @app.get("/api/v1/agent/workspace/bound", dependencies=[Depends(authenticated)])
+    def agent_workspace_bound(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> WorkspaceContext:
+        return workspace
+
+    @app.get("/api/v1/agent/lines", dependencies=[Depends(authenticated)])
+    def agent_lines(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> list[LineRecord]:
+        return list_lines(Path(workspace.root))
+
+    @app.get("/api/v1/agent/projects", dependencies=[Depends(authenticated)])
+    def agent_projects(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> list[ProjectRecord]:
+        return list_projects(Path(workspace.root))
+
+    @app.get("/api/v1/agent/index", dependencies=[Depends(authenticated)])
+    def agent_index_status(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> dict[str, int | str | None]:
+        return query_for(workspace).status(Path(workspace.root))
+
+    @app.get("/api/v1/agent/pages", dependencies=[Depends(authenticated)])
+    def agent_pages(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> list[dict[str, Any]]:
+        result = []
+        for page in list_pages(Path(workspace.root)):
+            if page.storage_area != "formal" or page.approval_state != "confirmed":
+                continue
+            eligible = retrieval_eligibility(
+                page.metadata,
+                page.body,
+                area=StorageArea.FORMAL,
+                purpose=RetrievalPurpose.CURRENT,
+                expected_content_sha256=page.content_sha256,
+            )
+            if eligible.eligible:
+                result.append(
+                    {
+                        "page_id": page.page_id,
+                        "title": page.metadata.get("title", ""),
+                        "content_sha256": page.content_sha256,
+                    }
+                )
+        return result
+
+    @app.get("/api/v1/agent/search", dependencies=[Depends(authenticated)])
+    def agent_search(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+        q: str = Query(min_length=1, max_length=1000),
+        limit: int = Query(default=10, ge=1, le=30),
+    ) -> list[dict[str, Any]]:
+        store = IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3")
+        generation, rows = store.search_bm25(workspace.workspace_id, q, limit=min(120, limit * 4))
+        if generation is None:
+            legacy = store.has_legacy_index(workspace.workspace_id)
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "index_rebuild_required" if legacy else "index_not_ready",
+                    "message": "旧索引需要显式重建后才能搜索。" if legacy else "本机索引尚未建立。",
+                },
+            )
+        hits: list[dict[str, Any]] = []
+        seen: set[tuple[str, str]] = set()
+        for row in rows:
+            page_id = UUID(str(row["page_id"]))
+            expected_sha = str(row["content_sha256"])
+            key = (str(page_id), expected_sha)
+            if key in seen:
+                continue
+            seen.add(key)
+            try:
+                page = read_page(Path(workspace.root), page_id)
+            except WorkspaceError:
+                continue
+            eligible = retrieval_eligibility(
+                page.metadata,
+                page.body,
+                area=StorageArea(page.storage_area),
+                purpose=RetrievalPurpose.CURRENT,
+                expected_content_sha256=expected_sha,
+            )
+            if not eligible.eligible:
+                continue
+            hits.append(
+                {
+                    "page_id": page_id,
+                    "content_sha256": expected_sha,
+                    "title": page.metadata.get("title", ""),
+                    "heading": str(row["heading"]),
+                    "excerpt": str(row["text"]),
+                    "bm25_score": float(row["bm25_score"]),
+                }
+            )
+            if len(hits) >= limit:
+                break
+        return hits
+
+    @app.get("/api/v1/agent/pages/{page_id}", dependencies=[Depends(authenticated)])
+    def agent_page_get(
+        page_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+        expected_content_sha256: str,
+    ) -> dict[str, Any]:
+        page = read_page(Path(workspace.root), page_id)
+        if page.content_sha256 != expected_content_sha256:
+            raise HTTPException(
+                409, detail={"code": "stale_page", "message": "页面内容已更新，请重新读取。"}
+            )
+        eligible = retrieval_eligibility(
+            page.metadata,
+            page.body,
+            area=StorageArea.FORMAL,
+            purpose=RetrievalPurpose.CURRENT,
+            expected_content_sha256=expected_content_sha256,
+        )
+        if not eligible.eligible:
+            raise HTTPException(
+                404, detail={"code": "not_retrievable", "message": "页面未确认或已失效。"}
+            )
+        return {
+            "page_id": page.page_id,
+            "title": page.metadata.get("title", ""),
+            "content_sha256": page.content_sha256,
+            "body": page.body,
+        }
+
+    @app.get("/api/v1/agent/intake", dependencies=[Depends(authenticated)])
+    def agent_intake_list(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> list[IntakeItem]:
+        return intake_service.list_items(Path(workspace.root))
+
+    @app.get("/api/v1/agent/sources/{source_id}", dependencies=[Depends(authenticated)])
+    def agent_source_get(
+        source_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> dict[str, Any]:
+        detail = intake_service.get_source(Path(workspace.root), source_id)
+        return {
+            "source": detail.source,
+            "text": detail.text,
+            "trust_state": "unconfirmed_source_not_knowledge",
+        }
+
+    @app.get("/api/v1/agent/drafts", dependencies=[Depends(authenticated)])
+    def agent_draft_list(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> list[Draft]:
+        return review.list_drafts(Path(workspace.root), pending_only=True)
+
+    @app.get("/api/v1/agent/drafts/{draft_id}", dependencies=[Depends(authenticated)])
+    def agent_draft_get(
+        draft_id: UUID,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> Draft:
+        return review.get_draft(Path(workspace.root), draft_id)
+
+    @app.patch("/api/v1/agent/drafts/{draft_id}", dependencies=[Depends(authenticated)])
+    def agent_draft_edit(
+        draft_id: UUID,
+        payload: DraftPatchRequest,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> Draft:
+        return review.edit_draft(
+            Path(workspace.root),
+            draft_id,
+            expected_version=payload.expected_version,
+            title=payload.title,
+            body=payload.body,
+            target_page_id=payload.target_page_id,
+            expected_base_sha256=payload.expected_base_sha256,
+        )
+
+    @app.post("/api/v1/agent/import", status_code=201, dependencies=[Depends(authenticated)])
+    def agent_import(
+        payload: AgentImportRequest,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> IntakeItem:
+        return intake_service.add_text(
+            Path(workspace.root),
+            payload.text,
+            filename=payload.filename,
+            operation_id=payload.operation_id,
+            origin_kind="quick_note",
+        )
+
+    @app.post("/api/v1/agent/drafts", status_code=201, dependencies=[Depends(authenticated)])
+    def agent_draft_create(
+        payload: AgentDraftCreateRequest,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+    ) -> Draft:
+        try:
+            return review.create_agent_draft(
+                Path(workspace.root),
+                operation_id=payload.operation_id,
+                item_ids=payload.item_ids,
+                line_id=payload.line_id,
+                project_id=payload.project_id,
+                title=payload.title,
+                kind=payload.kind,
+                body=payload.body,
+                target_page_id=payload.target_page_id,
+                expected_base_sha256=payload.expected_base_sha256,
+                workspace_id=workspace.workspace_id,
+            )
+        except WorkspaceError as exc:
+            raise HTTPException(
+                409, detail={"code": "draft_conflict", "message": str(exc)}
+            ) from None
 
     @app.get("/api/v1/lines", dependencies=[Depends(authenticated)])
     def lines(
@@ -3604,6 +3854,45 @@ def create_app(
             finish_feishu_plan(workspace, plan, "failed")
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"}
+            ) from None
+        except Exception:
+            finish_feishu_plan(workspace, plan, "unknown")
+            raise
+        finish_feishu_plan(workspace, plan, "succeeded")
+        return result
+
+    @app.get("/api/v1/agent/calendar", dependencies=[Depends(authenticated)])
+    def agent_calendar(
+        start: datetime,
+        end: datetime,
+        timezone: str,
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+        cursor: str | None = None,
+        limit: int = 20,
+        plan_id: UUID | None = None,
+    ) -> CalendarPage:
+        if not 1 <= limit <= 30 or (cursor and len(cursor) > 500):
+            raise HTTPException(
+                422, detail={"code": "validation_error", "message": "日历分页无效。"}
+            )
+        scope = normalize_feishu_scope(
+            "feishu.calendar.read",
+            {
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+                "timezone": timezone,
+                "cursor": cursor,
+                "limit": limit,
+            },
+        )
+        plan = require_feishu_data(workspace, "feishu.calendar.read", scope, plan_id, 2)
+        try:
+            result = feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
+        except ValueError:
+            finish_feishu_plan(workspace, plan, "failed")
+            raise HTTPException(
+                422,
+                detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"},
             ) from None
         except Exception:
             finish_feishu_plan(workspace, plan, "unknown")
