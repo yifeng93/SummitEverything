@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "promptPresent": true,
+    "sanitizedOrigin": true,
+    "apiOriginSafety": true,
+    "exactForbiddenAction": true,
+    "notAlteredForbiddenAction": true,
+    "copiedFeedback": true,
+    "noExternalRequests": true,
+    "noConsoleErrors": true
+  },
+  "copiedLength": 2098,
+  "status": "已复制，粘贴到 Codex / WorkBuddy 开始自动配置。",
+  "consoleErrors": [],
+  "blockedExternalRequests": []
+}

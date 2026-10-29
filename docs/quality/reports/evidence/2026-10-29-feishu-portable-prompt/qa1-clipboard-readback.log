@@ -1,0 +1,5 @@
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: '连接飞书' })[22m
+
+    at /Users/hanwenbo/.codex/worktrees/summit-feishu-portable-prompt-qa/SummitEverything/.local/qa/feishu-portable-prompt-71c670e/clipboard-readback.cjs:15:52

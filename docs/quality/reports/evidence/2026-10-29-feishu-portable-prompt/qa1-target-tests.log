@@ -1,0 +1,14 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/feishuAgentSetupPrompt.test.ts src/components/FeishuAgentSetup.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/summit-feishu-portable-prompt-qa/SummitEverything/web
+
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  14:37:14
+   Duration  2.64s (environment 69%, tests 15%, transform 8%, import 8%, worker 1%)
+
+EXIT_CODE=0
