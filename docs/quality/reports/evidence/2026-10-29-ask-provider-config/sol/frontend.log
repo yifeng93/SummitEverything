@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/App.shell.test.tsx src/components/AskView.test.tsx src/components/SettingsView.cards.test.tsx src/components/SettingsView.regressions.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+
+ Test Files  4 passed (4)
+      Tests  57 passed (57)
+   Start at  19:02:01
+   Duration  13.81s (tests 55%, environment 22%, transform 12%, import 12%)
+

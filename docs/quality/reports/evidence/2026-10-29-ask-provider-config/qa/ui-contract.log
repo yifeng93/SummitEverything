@@ -1,0 +1,507 @@
+
+> web@0.0.0 test
+> vitest run --run src/ui-contract.test.ts src/ui-contract.render.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/web
+
+ ❯ src/ui-contract.test.ts (11 tests | 1 failed) 472ms
+   ❯ 守卫① 内部标识基线（GUIDE §11 ①、§9） (2)
+     × 每个「文件:字段」的出现次数与 allowlist 精确相等（多一个、少一个都要显式改基线） 129ms
+ ❯ src/ui-contract.render.test.tsx (10 tests | 2 failed) 3136ms
+   ❯ 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） (6)
+     × 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识 221ms
+   × ① 全站普通详情、标题与可访问名称不泄漏元数据并逐字保留用户代码 686ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/ui-contract.render.test.tsx > 守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1） > 项目、阅读和问答的普通文案使用中文名称且不泄漏内部标识
+AssertionError: expected '暂不可用中文业务项目项目资料暂不可用 · 中文业务主线' to contain '在推进'
+
+Expected: "在推进"
+Received: "暂不可用中文业务项目项目资料暂不可用 · 中文业务主线"
+
+ ❯ src/ui-contract.render.test.tsx:246:29
+    244|     const projectsView = document.querySelector('.projects-view') as H…
+    245|     const row = await within(projectsView).findByRole('button', { name…
+    246|     expect(row.textContent).toContain('在推进')
+       |                             ^
+    247|     const noIdentifiers = (text: string, expectBusinessName = true) =>…
+    248|       if (expectBusinessName) expect(text).toContain('中文')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/ui-contract.render.test.tsx > ① 全站普通详情、标题与可访问名称不泄漏元数据并逐字保留用户代码
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name `/中文事实页面/`
+
+Here are the accessible roles:
+
+  link:
+
+  Name "跳到主内容":
+  [36m<a[39m
+    [33mclass[39m=[32m"skip-link"[39m
+    [33mhref[39m=[32m"#main-content"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"sidebar"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  [36m<strong />[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "主导航":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"主导航"[39m
+    [33mclass[39m=[32m"primary-nav"[39m
+  [36m/>[39m
+
+  Name "文档目录":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"文档目录"[39m
+    [33mclass[39m=[32m"knowledge-tree project-docs-tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "今日":
+  [36m<button[39m
+    [33maria-label[39m=[32m"今日"[39m
+    [33mclass[39m=[32m"nav-item"[39m
+    [33mtitle[39m=[32m"今日"[39m
+  [36m/>[39m
+
+  Name "审批，3 项待处理":
+  [36m<button[39m
+    [33maria-label[39m=[32m"审批，3 项待处理"[39m
+    [33mclass[39m=[32m"nav-item"[39m
+    [33mtitle[39m=[32m"审批"[39m
+  [36m/>[39m
+
+  Name "项目":
+  [36m<button[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33maria-label[39m=[32m"项目"[39m
+    [33mclass[39m=[32m"nav-item active"[39m
+    [33mtitle[39m=[32m"项目"[39m
+  [36m/>[39m
+
+  Name "中文业务项目":
+  [36m<button[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33mclass[39m=[32m"nav-subitem active"[39m
+    [33mtitle[39m=[32m"中文业务项目"[39m
+  [36m/>[39m
+
+  Name "知识问答":
+  [36m<button[39m
+    [33maria-label[39m=[32m"知识问答"[39m
+    [33mclass[39m=[32m"nav-item"[39m
+    [33mtitle[39m=[32m"知识问答"[39m
+  [36m/>[39m
+
+  Name "设置":
+  [36m<button[39m
+    [33maria-label[39m=[32m"设置"[39m
+    [33mclass[39m=[32m"nav-item"[39m
+    [33mtitle[39m=[32m"设置"[39m
+  [36m/>[39m
+
+  Name "工作库：测试工作库，打开菜单":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"dialog"[39m
+    [33maria-label[39m=[32m"工作库：测试工作库，打开菜单"[39m
+    [33mclass[39m=[32m"workspace-switcher"[39m
+    [33mtitle[39m=[32m"切换工作库"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "外观与主题":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"dialog"[39m
+    [33maria-label[39m=[32m"外观与主题"[39m
+    [33mclass[39m=[32m"sidebar-theme"[39m
+    [33mtitle[39m=[32m"外观与主题"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "返回项目列表":
+  [36m<button[39m
+    [33mclass[39m=[32m"back-link"[39m
+  [36m/>[39m
+
+  Name "追加推进日志":
+  [36m<button[39m
+    [33mclass[39m=[32m"button primary"[39m
+  [36m/>[39m
+
+  Name "存产物":
+  [36m<button[39m
+    [33mclass[39m=[32m"button secondary"[39m
+  [36m/>[39m
+
+  Name "重命名项目":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "归档项目":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "删除空项目":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "项目概览":
+  [36m<button[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33mclass[39m=[32m"knowledge-tree-node"[39m
+  [36m/>[39m
+
+  Name "重试":
+  [36m<button[39m
+    [33mclass[39m=[32m"text-button"[39m
+  [36m/>[39m
+
+  Name "关闭这条提示":
+  [36m<button[39m
+    [33maria-label[39m=[32m"关闭这条提示"[39m
+    [33mclass[39m=[32m"toast-close"[39m
+    [33mtitle[39m=[32m"关闭这条提示"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "项目快捷入口":
+  [36m<ul[39m
+    [33maria-label[39m=[32m"项目快捷入口"[39m
+    [33mclass[39m=[32m"nav-submenu"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"knowledge-tree-list"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33mclass[39m=[32m"main-content"[39m
+    [33mid[39m=[32m"main-content"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "项目详情":
+  [36m<div[39m
+    [33maria-label[39m=[32m"项目详情"[39m
+    [33mclass[39m=[32m"content-wrap project-detail"[39m
+    [33mrole[39m=[32m"region"[39m
+  [36m/>[39m
+
+  Name "项目操作":
+  [36m<section[39m
+    [33maria-label[39m=[32m"项目操作"[39m
+    [33mclass[39m=[32m"project-detail-actions"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "中文业务项目":
+  [36m<h1 />[39m
+
+  Name "文档":
+  [36m<h2 />[39m
+
+  Name "项目概览":
+  [36m<h1 />[39m
+
+  --------------------------------------------------
+  group:
+
+  Name "":
+  [36m<details[39m
+    [33mclass[39m=[32m"project-more-actions"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "项目概览":
+  [36m<article[39m
+    [33maria-label[39m=[32m"项目概览"[39m
+    [33mclass[39m=[32m"page-reader project-overview-pane is-empty"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  alert:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"form-error"[39m
+    [33mrole[39m=[32m"alert"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"toast toast-danger"[39m
+    [33mrole[39m=[32m"alert"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"app-frame"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"skip-link"[39m
+        [33mhref[39m=[32m"#main-content"[39m
+      [36m>[39m
+        [0m跳到主内容[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"sidebar"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"brand"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"brand-mark"[39m
+          [36m>[39m
+            [0mS[0m
+          [36m</span>[39m
+          [36m<div>[39m
+            [36m<strong>[39m
+              [0mSummitEverything[0m
+            [36m</strong>[39m
+            [36m<span>[39m
+              [0m个人知识工作台[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"主导航"[39m
+          [33mclass[39m=[32m"primary-nav"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"今日"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"今日"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-sun nav-icon"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"1.75"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m4.93 4.93 1.41 1.41"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m17.66 17.66 1.41 1.41"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6.34 17.66-1.41 1.41"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m19.07 4.93-1.41 1.41"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m今日[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"审批，3 项待处理"[39m
+            [33mclass[39m=[32m"nav-item"[39m
+            [33mtitle[39m=[32m"审批"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-clipboard-check nav-icon"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"1.75"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"4"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mry[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"8"[39m
+                [33mx[39m=[32m"8"[39m
+                [33my[39m=[32m"2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 14 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m审批[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-badge"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-current[39m=[32m"page"[39m
+            [33maria-label[39m=[32m"项目"[39m
+            [33mclass[39m=[32m"nav-item active"[39m
+            [33mtitle[39m=[32m"项目"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-folder-kanban nav-icon"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"18"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"1.75"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 10v4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 10v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 10v6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"nav-label"[39m
+            [36m>[39m
+              [0m项目[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<ul[39m
+            [33maria-label[39m=[32m"项目快捷入口"[39m
+            [33mclass[39m=[32m"nav-submenu"[39m
+          [36m>[39m
+            [36m<li>[39m
+              [36m<button[39m
+                [33maria-current[39m=[32m"page"[...
+ ❯ Object.getElementError ../../../../../ai/SummitEverything/web/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../../../../ai/SummitEverything/web/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../../../../ai/SummitEverything/web/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../../../../ai/SummitEverything/web/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/ui-contract.render.test.tsx:331:26
+    329|   await screen.findByRole('region', { name: '项目详情' })
+    330|   scan(document.querySelector('.project-detail'))
+    331|   fireEvent.click(screen.getByRole('button', { name: /中文事实页面/ }))
+       |                          ^
+    332|   await screen.findByText(/中文业务正文。行内代码/)
+    333|   const reader = document.querySelector('.page-reader')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/ui-contract.test.ts > 守卫① 内部标识基线（GUIDE §11 ①、§9） > 每个「文件:字段」的出现次数与 allowlist 精确相等（多一个、少一个都要显式改基线）
+AssertionError: 守卫① 内部标识基线（FRONTEND-GUIDE §11 ① 与 §9）：每个「文件:字段」的出现次数必须与 ui-contract.allowlist.json 精确相等: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "web/src/components/ProjectsView.tsx:content_sha256: 源码出现 8 次，allowlist 登记 4 次",
++   "web/src/components/ProjectsView.tsx:page_id: 源码出现 18 次，allowlist 登记 14 次",
++ ]
+
+ ❯ src/ui-contract.test.ts:318:40
+    316|       else if (found !== allowed) mismatches.push(`${key}: 源码出现 ${foun…
+    317|     }
+    318|     expect(mismatches, RULE_ALLOWLIST).toEqual([])
+       |                                        ^
+    319|   })
+    320|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 18 passed (21)
+   Start at  18:57:22
+   Duration  9.11s (environment 36%, tests 31%, import 16%, transform 16%, worker 1%)
+

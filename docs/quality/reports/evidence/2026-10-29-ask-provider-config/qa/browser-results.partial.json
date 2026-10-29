@@ -1,0 +1,180 @@
+{
+  "results": [
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "Q5-index-loading",
+      "status": "PASS",
+      "detail": "索引尚在读取时没有显示未建立空态"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "id": "Q5-index-failed",
+      "status": "PASS",
+      "detail": "索引失败显示读取失败而非未建立"
+    },
+    {
+      "id": "Q5-index-retry",
+      "status": "PASS",
+      "detail": "点击重试后 ready；status 请求数=3"
+    },
+    {
+      "id": "Q1-preflight-block",
+      "status": "PASS",
+      "detail": "三项 Fake/禁用在真实模式下提示具体配置缺项；计划=0 查询=0"
+    },
+    {
+      "id": "Q1-no-false-disconnect",
+      "status": "PASS",
+      "detail": "未把配置缺项显示成连接中断或无依据"
+    },
+    {
+      "id": "Q1-retains-question",
+      "status": "PASS",
+      "detail": "配置失败后问题仍在输入框"
+    },
+    {
+      "id": "Q6-settings-language",
+      "status": "PASS",
+      "detail": "设置状态用中文说明配置和逐次确认，移除会误导为已可调用的状态词"
+    },
+    {
+      "id": "Q1-return-retains-question",
+      "status": "PASS",
+      "detail": "从设置返回后原问题仍在输入框"
+    },
+    {
+      "id": "Q2-preview",
+      "status": "PASS",
+      "detail": "完整合成配置产生预览，尚未发查询"
+    },
+    {
+      "id": "Q2-plan-reason-not-blocked",
+      "status": "PASS",
+      "detail": "available=false / acceptance_plan_required 不阻止计划预览"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "id": "Q4-completed-history-fail",
+      "status": "PASS",
+      "detail": "查询仅发一次；completed 后历史读取失败保留完成态和结果"
+    },
+    {
+      "id": "Q2-confirm-once",
+      "status": "PASS",
+      "detail": "独立确认请求数=1"
+    },
+    {
+      "id": "Q4-truncated-no-replay",
+      "status": "PASS",
+      "detail": "SSE 无 completed 后保留部分、显示断流且没有自动重复请求；查询数=2"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "browser-console",
+      "status": "OBSERVED",
+      "detail": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "id": "Q1-keychain-unavailable",
+      "status": "PASS",
+      "detail": "Keychain 不可用不发计划或查询；plans=0, queries=0"
+    }
+  ],
+  "screenshots": [
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/index-loading.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/index-read-failed.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/real-preflight-missing.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/settings-saved.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/real-query-preview.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/real-query-preview.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/completed-history-read-failed.png",
+    "/Users/hanwenbo/.codex/worktrees/summit-ask-provider-config-qa-20261029/SummitEverything/.local/qa/ask-query-provider-config-20261029/truncated-query-partial.png"
+  ],
+  "error": "TimeoutError: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('真实模式保存密钥会失败关闭').first() to be visible\u001b[22m\n\u001b[2m    63 × locator resolved to hidden <p role=\"status\" class=\"settings-help\">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>\u001b[22m\n"
+}

@@ -1,0 +1,20 @@
+{
+  "source_sha": "2e85af7ef580246b10d7d359849f2584a2bad0bb",
+  "baseline_sha": "f39c15b4f1a691757c92c214bf11eb11f5b9ce39",
+  "patch_sha256": "7eb1fa9b48bbaa4b868ad570a27b7eddf8528c54c17041da98b713234e610a07",
+  "files": [
+    "docs/product/FRONTEND-PAGE-SPECS.md",
+    "src/summit_everything/api/app.py",
+    "tests/integration/test_provider_settings_api.py",
+    "web/src/App.tsx",
+    "web/src/components/AskView.test.tsx",
+    "web/src/components/AskView.tsx",
+    "web/src/components/SettingsView.cards.test.tsx",
+    "web/src/components/SettingsView.tsx",
+    "web/src/components/settingsBadges.ts"
+  ],
+  "applied": true,
+  "candidate_product_bytes_match": true,
+  "concurrent_doc_changes": "Kept unrelated approval-search-readiness section; patch applied only Ask section",
+  "qa_status": "pending"
+}

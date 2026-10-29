@@ -1,0 +1,39 @@
+{
+  "attempts": 100,
+  "results": {
+    "PASS": 98,
+    "ERROR": 2
+  },
+  "by_scenario": {
+    "comparison": {
+      "PASS": 10
+    },
+    "fact": {
+      "PASS": 20
+    },
+    "history": {
+      "PASS": 10
+    },
+    "injection": {
+      "PASS": 10
+    },
+    "memory": {
+      "PASS": 10
+    },
+    "missing": {
+      "PASS": 10
+    },
+    "organize": {
+      "PASS": 18,
+      "ERROR": 2
+    },
+    "plan": {
+      "PASS": 10
+    }
+  },
+  "input_tokens": 33319,
+  "output_tokens": 42191,
+  "median_seconds": 2.75,
+  "max_seconds": 9.92,
+  "no_more_real_calls": true
+}

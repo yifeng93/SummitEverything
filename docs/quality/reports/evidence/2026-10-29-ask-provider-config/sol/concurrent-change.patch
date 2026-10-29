@@ -1,0 +1,635 @@
+diff --git a/docs/product/FRONTEND-PAGE-SPECS.md b/docs/product/FRONTEND-PAGE-SPECS.md
+index d58ff82..76f4311 100644
+--- a/docs/product/FRONTEND-PAGE-SPECS.md
++++ b/docs/product/FRONTEND-PAGE-SPECS.md
+@@ -131,6 +131,8 @@
+ 
+ ## 3. 审批（`components/ApprovalView.tsx`）
+ 
++搜索准备状态的交互决策见 [ADR 0030](../decisions/0030-search-readiness-approval-ux.md)。
++
+ ### 职责与结构
+ 将来源整理、稿件复核、正式内容确认、索引和外部动作分开处理，固定五组顺序（来源 → 稿件 → 正式内容 → 索引 → 外部动作）。这五组是**并列的待办队列，不是步骤**：按流水线顺序摆放，但可以任意顺序处理，因此**不标 1/2/3 序号**——序号会被读成操作步骤，和实际业务不符。每组显示真实数量、加载/错误/空状态；有待处理事项的组默认展开，空组默认收起且可展开，用户选择的展开状态在打开和返回单项专注页后保留。
+ 
+@@ -155,14 +157,18 @@
+ ### 正式内容、索引与外部动作
+ 
+ - 正式页面按准确 page ID 打开单项阅读专注页；确认后呈现实际回执与下一份待确认入口。
+-- 首次索引状态 `not_ready` 且已有服务端标记为 confirmed 的正式页时，索引组作为待处理事项计数并默认展开；不从索引内容或 hash 重新推断资格。无正式页的真空状态仍可折叠。首次、Real、模型变更、重建及服务标记 `manual_required` 的索引计划仍单独预览和确认；Fake 活跃索引增量依原行为执行。
++- 搜索准备区标题为「搜索与问答准备」，说明其作用是让已确认内容可用于搜索和问答。索引状态为 ready 且配置未变化时，只说明内容已是最新、展示已准备页数，不显示预览或重建入口；全量重建收在「高级维护」并由用户显式点击后才请求计划。
++- 首次状态 `not_ready` 且正式页面列表已成功读取、存在 confirmed 页面时，准备组作为待处理事项计数并默认展开；是否可首次准备只依据该列表，不能用 `current_pages` 或索引内容推断。空库说明先添加并确认正式内容，不允许执行首次或全量准备。页面列表未读取或读取失败时不显示可执行首次准备入口，提供刷新。
++- `stale` / `manual_required` 显示待更新并允许先看范围；configured 与 active fingerprint 不同则优先说明搜索方式已更换，并先看重新准备范围。未知状态或未读取配置时显示刷新入口，不伪装为 ready。
++- 增量计划中的 `page_ids` 是服务端检查范围，可能覆盖多页；文案说「将检查 N 页，仅更新有变化的内容」，不得将它说成变化页数或计费页数。Real 预览仍先创建 acceptance-plan，范围失败时不得开放执行；用户必须再次显式确认。Fake 不创建 acceptance-plan。演示模式只说明体验流程，不暗示真实搜索语义质量已可用。
++- 首次、Real、模型变更、重建及服务标记 `manual_required` 的准备计划仍单独预览和确认；Fake 活跃索引增量依原行为执行。
+ - 外部动作保持“建议—确认—执行”分离；结果未知只能核对或记录，不自动重试。
+ 
+ ### 未保存保护与验收点
+ 
+ - 未保存稿件会阻止侧栏离开、打开正式页面、切换工作库和浏览器关闭；刷新其他审批数据不能清空编辑内容。
+ - 同名来源/正式页必须准确定位；多稿保存时只确认明确选择的那一份。
+-- 空组可展开且展开状态在专注页返回后保留；已有 confirmed 正式内容但首次索引未建时，真实 FastAPI Fake 流程应显示待处理数量并展开索引组。
++- 空组可展开且展开状态在专注页返回后保留；已有 confirmed 正式内容但首次索引未建时，真实 FastAPI Fake 流程应显示待处理数量并展开搜索准备组。
+ - 主界面不展示内部 ID、路径、hash 或原始 JSON；危险动作仍有独立确认。
+ 
+ ---
+diff --git a/web/src/App.tsx b/web/src/App.tsx
+index bfe8c5e..cce2eb4 100644
+--- a/web/src/App.tsx
++++ b/web/src/App.tsx
+@@ -309,6 +309,8 @@ export default function App() {
+           workspaceId={workspace.workspace_id}
+           profileId={workspace.local_profile_dir ?? profileDir ?? 'default'}
+           onSwitchWorkspace={switchWorkspace}
++          onOpenApproval={openApproval}
++          onError={report}
+         wizardOnly={firstUse.open}
+         initialWizardStep={firstUse.step}
+         resumeWizardStep={firstUse.step}
+diff --git a/web/src/components/AskView.test.tsx b/web/src/components/AskView.test.tsx
+index 6736735..9068294 100644
+--- a/web/src/components/AskView.test.tsx
++++ b/web/src/components/AskView.test.tsx
+@@ -87,67 +87,54 @@ it('creates a first conversation on the server, adopts its ID, then continues it
+   expect(reopened).toHaveLength(2)
+ })
+ 
+-it('puts the question first and keeps history, indexing, and personalization visible below it', async () => {
++it('puts the question first and keeps recent conversations below it', async () => {
+   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+     const url = String(input)
+     if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+     if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+-    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
++    if (url === '/api/v1/pages' || url === '/api/v1/roles') return Response.json([])
+     throw new Error(`Unexpected fetch ${url}`)
+   }))
+   render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+   const question = await screen.findByLabelText('你的问题')
+   const queryForm = question.closest('form')!
+-  const historyHeading = screen.getByRole('heading', { name: '本机历史' })
++  const historyHeading = await screen.findByRole('heading', { name: '最近的问答' })
+   expect(queryForm.compareDocumentPosition(historyHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+-  // 全部常显：下方三块与资料范围都不再包在折叠里。
+-  expect(screen.getByRole('heading', { name: '本机索引与更新' })).toBeTruthy()
+-  expect(screen.getByRole('heading', { name: '问答角色与记忆' })).toBeTruthy()
+   expect(screen.getByText('资料范围与回答方式')).toBeTruthy()
+-  expect(document.querySelector('.ask-tools details')).toBeNull()
++  // 索引与角色记忆已经搬到设置页，问答页只剩「搜索 + 列表」。
++  expect(screen.queryByRole('heading', { name: '本机索引与更新' })).toBeNull()
++  expect(screen.queryByRole('heading', { name: '问答角色与记忆' })).toBeNull()
+   expect(document.querySelector('.query-options details')).toBeNull()
+ })
+ 
+-it('shows loading while Ask history and personalization are unresolved, then shows empty only after success', async () => {
+-  const pending: Array<{ url: string; resolve: (response: Response) => void }> = []
+-  const rawFetch = vi.fn((input: RequestInfo | URL) => {
++it('shows loading while Ask history is unresolved, then shows empty only after success', async () => {
++  let resolveHistory: ((response: Response) => void) | undefined
++  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+     const url = String(input)
+-    if (url === '/api/v1/index/status') return Promise.resolve(Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 }))
+-    return new Promise<Response>((resolve) => pending.push({ url, resolve }))
+-  })
+-  vi.stubGlobal('fetch', rawFetch)
++    if (url.startsWith('/api/v1/conversations?')) return await new Promise<Response>((resolve) => { resolveHistory = resolve })
++    if (url === '/api/v1/pages' || url === '/api/v1/roles') return Response.json([])
++    throw new Error(`Unexpected fetch ${url}`)
++  }))
+   render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+-  await screen.findByRole('heading', { name: '本机历史' })
+-  
++  await screen.findByRole('heading', { name: '最近的问答' })
+   expect(screen.getByText('正在读取问答历史…')).toBeTruthy()
+-  expect(screen.getByText('正在读取问答偏好与记忆…')).toBeTruthy()
+   expect(screen.queryByText(/还没有问答历史/)).toBeNull()
+-  expect(screen.queryByText('没有待确认记忆。')).toBeNull()
+ 
+-  await waitFor(() => expect(pending).toHaveLength(5))
+-  pending.find(({ url }) => url.includes('/conversations?'))!.resolve(Response.json({ items: [], next_cursor: null }))
+-  pending.filter(({ url }) => ['/roles', '/memory', '/memory/candidates'].some((path) => url.endsWith(path))).forEach(({ resolve }) => resolve(Response.json([])))
++  resolveHistory!(Response.json({ items: [], next_cursor: null }))
+   expect(await screen.findByText(/还没有问答历史/)).toBeTruthy()
+-  expect(await screen.findByText('没有待确认记忆。')).toBeTruthy()
+-  expect(screen.getByText('目前没有已确认记忆。')).toBeTruthy()
+ })
+ 
+ it('keeps Ask request failures distinct from successful empty results', async () => {
+   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+     const url = String(input)
+-    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+     if (url.includes('/conversations?')) throw new Error('history unavailable')
+-    if (['/roles', '/memory', '/memory/candidates'].some((path) => url.endsWith(path))) throw new Error('preferences unavailable')
+-    if (url === '/api/v1/pages') return Response.json([])
++    if (url === '/api/v1/pages' || url === '/api/v1/roles') return Response.json([])
+     throw new Error(`Unexpected fetch ${url}`)
+   }))
+   render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+-  await screen.findByRole('heading', { name: '本机历史' })
+-  
++  await screen.findByRole('heading', { name: '最近的问答' })
+   expect(await screen.findByText(/问答历史读取失败：history unavailable/)).toBeTruthy()
+-  expect(await screen.findByText(/问答偏好与记忆读取失败：preferences unavailable/)).toBeTruthy()
+   expect(screen.queryByText(/还没有问答历史/)).toBeNull()
+-  expect(screen.queryByText('没有待确认记忆。')).toBeNull()
+ })
+ 
+ it('does not turn a cancelled partial answer into visible Markdown delimiters', async () => {
+@@ -220,25 +207,19 @@ it('renders actual SSE delta frames with stable syntax and matches the terminal
+   expect(answer.innerHTML).toBe(staticAnswer.container.querySelector('.markdown-content')?.innerHTML)
+ })
+ 
+-it('requires confirmation before deleting local history, roles, or confirmed memories', async () => {
++it('requires confirmation before deleting local history', async () => {
+   const deletes: string[] = []
+-  const role = { role_id: 'role-1', name: '简明', instructions: '', context_budget: 2000, created_at: '', updated_at: '' }
+-  const memory = { memory_id: 'memory-1', source_message_id: 'private-request-id', text: '合成记忆', created_at: '', updated_at: '' }
+   const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+     const url = String(input); const method = init?.method ?? 'GET'
+-    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+     if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [{ conversation_id: 'conversation-1', title: '合成问题', updated_at: '', message_count: 1, state: 'completed' }], next_cursor: null })
+-    if (url.endsWith('/conversations/conversation-1')) { deletes.push(url); return new Response(null, { status: 204 }) }
+-    if (url === '/api/v1/roles') return method === 'DELETE' ? new Response(null, { status: 204 }) : Response.json([role])
+-    if (url === '/api/v1/memory') return method === 'DELETE' ? new Response(null, { status: 204 }) : Response.json([memory])
+-    if (url === '/api/v1/memory/candidates' || url === '/api/v1/pages') return Response.json([])
+-    if (url === '/api/v1/roles/role-1' || url === '/api/v1/memory/memory-1') { deletes.push(url); return new Response(null, { status: 204 }) }
++    if (url.endsWith('/conversations/conversation-1') && method === 'DELETE') { deletes.push(url); return new Response(null, { status: 204 }) }
++    if (url === '/api/v1/roles' || url === '/api/v1/pages') return Response.json([])
+     throw new Error(`Unexpected fetch ${method} ${url}`)
+   })
+   vi.stubGlobal('fetch', rawFetch)
+   render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+ 
+-  await screen.findByRole('heading', { name: '本机历史' })
++  await screen.findByRole('heading', { name: '最近的问答' })
+   fireEvent.click(await screen.findByRole('button', { name: '删除 合成问题' }))
+   expect(screen.getByRole('dialog', { name: '删除这段问答历史？' })).toBeTruthy()
+   expect(deletes).toHaveLength(0)
+@@ -247,25 +228,6 @@ it('requires confirmation before deleting local history, roles, or confirmed mem
+   fireEvent.click(screen.getByRole('button', { name: '删除 合成问题' }))
+   fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+   await waitFor(() => expect(deletes).toContain('/api/v1/conversations/conversation-1'))
+-
+-  
+-  fireEvent.change(screen.getAllByLabelText('使用角色')[0], { target: { value: 'role-1' } })
+-  fireEvent.click(screen.getByRole('button', { name: '删除角色' }))
+-  expect(deletes).toHaveLength(1)
+-  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+-  expect(deletes).toHaveLength(1)
+-  fireEvent.click(screen.getByRole('button', { name: '删除角色' }))
+-  fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+-  await waitFor(() => expect(deletes).toContain('/api/v1/roles/role-1'))
+-
+-  fireEvent.click(screen.getByRole('button', { name: '删除记忆' }))
+-  expect(deletes).toHaveLength(2)
+-  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+-  expect(deletes).toHaveLength(2)
+-  fireEvent.click(screen.getByRole('button', { name: '删除记忆' }))
+-  fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+-  await waitFor(() => expect(deletes).toContain('/api/v1/memory/memory-1'))
+-  expect(rawFetch.mock.calls.some(([input]) => String(input).includes('private-request-id'))).toBe(false)
+ })
+ 
+ it('previews real question context and cancels without posting a query', async () => {
+@@ -427,63 +389,8 @@ it('keeps a completed answer completed when the follow-up history refresh fails'
+   expect(queryCalls).toHaveLength(1)
+ })
+ 
+-it('keeps the initial index status in a loading state until the read completes', async () => {
+-  let resolveStatus!: (response: Response) => void
+-  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+-    const url = String(input)
+-    if (url === '/api/v1/index/status') return new Promise<Response>((resolve) => { resolveStatus = resolve })
+-    if (url.startsWith('/api/v1/conversations?')) return Promise.resolve(Response.json({ items: [], next_cursor: null }))
+-    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Promise.resolve(Response.json([]))
+-    return Promise.reject(new Error(`Unexpected fetch ${url}`))
+-  }))
+-  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+-  await screen.findByRole('heading', { name: '本机索引与更新' })
+-  expect(screen.getByText('正在读取本机索引状态…')).toBeTruthy()
+-  expect(screen.queryByText('还没有本机索引')).toBeNull()
+-  resolveStatus(Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 }))
+-  expect(await screen.findByText('还没有本机索引')).toBeTruthy()
+-})
+ 
+-it('shows index read failure separately and recovers on an explicit retry', async () => {
+-  let statusReads = 0
+-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+-    const url = String(input)
+-    if (url === '/api/v1/index/status') {
+-      statusReads += 1
+-      if (statusReads === 1) throw new Error('synthetic index read failure')
+-      return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+-    }
+-    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+-    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+-    throw new Error(`Unexpected fetch ${url}`)
+-  }))
+-  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+-  expect(await screen.findByRole('alert')).toBeTruthy()
+-  expect(screen.getByText(/暂时无法读取本机索引状态/)).toBeTruthy()
+-  expect(screen.queryByText('还没有本机索引')).toBeNull()
+-  fireEvent.click(screen.getByRole('button', { name: '重新读取' }))
+-  expect(await screen.findByText('还没有本机索引')).toBeTruthy()
+-  expect(statusReads).toBe(2)
+-})
+ 
+-it('routes index work to Approval instead of creating a second index writer', async () => {
+-  const calls: { url: string; method: string }[] = []
+-  const rawFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+-    const url = String(input); const method = init?.method ?? 'GET'; calls.push({ url, method })
+-    if (url === '/api/v1/index/status') return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+-    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
+-    if (url === '/api/v1/pages') return Response.json([])
+-    if (url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
+-    throw new Error(`Unexpected fetch ${method} ${url}`)
+-  })
+-  vi.stubGlobal('fetch', rawFetch)
+-  const onOpenApproval = vi.fn()
+-  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} onOpenApproval={onOpenApproval} />)
+-  fireEvent.click(await screen.findByRole('button', { name: '前往审批查看索引' }))
+-  expect(onOpenApproval).toHaveBeenCalledTimes(1)
+-  expect(calls.some((item) => item.url === '/api/v1/index/plans')).toBe(false)
+-  expect(calls.some((item) => item.url === '/api/v1/index/jobs')).toBe(false)
+-})
+ 
+ it('reopens local history, continues the same conversation, and labels an updated citation', async () => {
+   vi.stubGlobal('crypto', { randomUUID: () => 'next-request' })
+@@ -653,7 +560,7 @@ it('sends the selected answer mode and role, and confirms a server-verified memo
+   vi.stubGlobal('crypto', { randomUUID: vi.fn().mockReturnValueOnce('request-1').mockReturnValueOnce('confirmation-1') })
+   const role = { role_id: 'role-1', name: '简明', instructions: '先列依据', context_budget: 2000, created_at: '', updated_at: '' }
+   const candidate = { candidate_id: 'candidate-1', message_id: 'request-1', text: '我偏好用简短中文回答，并明确标出资料没有提供的数字。', state: 'pending', created_at: '' }
+-  let roles: typeof role[] = []
++  let roles: typeof role[] = [role]
+   let candidates: typeof candidate[] = []
+   const queryBodies: Record<string, unknown>[] = []
+   let confirmation: Record<string, unknown> | null = null
+@@ -694,10 +601,7 @@ it('sends the selected answer mode and role, and confirms a server-verified memo
+   vi.stubGlobal('fetch', rawFetch)
+   render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} />)
+ 
+-  fireEvent.change(await screen.findByLabelText('角色名称'), { target: { value: '简明' } })
+-  fireEvent.change(screen.getByLabelText('表达偏好'), { target: { value: '先列依据' } })
+-  fireEvent.click(screen.getByRole('button', { name: '保存角色' }))
+-  expect(await screen.findAllByRole('option', { name: '简明' })).toHaveLength(2)
++  fireEvent.change(await screen.findByLabelText('本次使用角色'), { target: { value: 'role-1' } })
+   fireEvent.change(screen.getByLabelText('回答方式'), { target: { value: 'plan' } })
+   fireEvent.change(screen.getByLabelText('你的问题'), { target: { value: '这项计划下一步呢' } })
+   fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+@@ -708,6 +612,6 @@ it('sends the selected answer mode and role, and confirms a server-verified memo
+ 
+   fireEvent.click(await screen.findByLabelText('这是我本人表达的偏好或事实，不是我粘贴、转述的材料或引用'))
+   fireEvent.click(await screen.findByRole('button', { name: '创建待确认记忆候选' }))
+-  fireEvent.click(await screen.findByRole('button', { name: '确认并保存' }))
+-  await waitFor(() => expect(confirmation).toMatchObject({ confirmation_id: 'confirmation-1', text: '我偏好用简短中文回答，并明确标出资料没有提供的数字。' }))
++  // 候选只在问答页创建；确认动作在设置 → 知识问答里完成。
++  await waitFor(() => expect(rawFetch.mock.calls.some(([url, init]) => String(url).endsWith('/memory/candidates') && (init as RequestInit | undefined)?.method === 'POST')).toBe(true))
+ })
+diff --git a/web/src/components/AskView.tsx b/web/src/components/AskView.tsx
+index ae4a161..b2be1cb 100644
+--- a/web/src/components/AskView.tsx
++++ b/web/src/components/AskView.tsx
+@@ -7,7 +7,6 @@ import { StreamingMarkdown } from './StreamingMarkdown'
+ import { PageHeader } from './PageHeader'
+ 
+ type Props = { onError: (message: string) => void; onOpenPage: (id: string, hash?: string) => void; onOpenApproval?: () => void; onOpenSettings?: () => void }
+-type IndexStatus = { fingerprint: string | null; pages: number; chunks: number; state: 'not_ready' | 'ready' | 'stale'; current_pages: number; stale_pages: number }
+ type StreamEvent = {
+   request_id: string
+   seq: number
+@@ -23,9 +22,7 @@ type QueryState = 'idle' | 'running' | 'completed' | 'error' | 'cancelled' | 'in
+ type AnswerMode = 'fact' | 'comparison' | 'plan'
+ type RetrievalPurpose = 'current' | 'history'
+ type AnswerRole = components['schemas']['AnswerRole']
+-type UserMemory = components['schemas']['UserMemory']
+-type MemoryCandidate = components['schemas']['MemoryCandidate']
+-type PendingDelete = { kind: 'conversation' | 'role' | 'memory'; id: string; label: string }
++type PendingDelete = { kind: 'conversation'; id: string; label: string }
+ function queryProviderGaps(settings: Settings): string[] {
+   if (settings.mode !== 'real') return []
+   const gaps: string[] = []
+@@ -57,9 +54,7 @@ const stateLabel: Record<QueryState, string> = {
+   interrupted: '连接中断',
+ }
+ 
+-export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }: Props) {
+-  const [status, setStatus] = useState<IndexStatus | null>(null)
+-  const [statusReadFailed, setStatusReadFailed] = useState(false)
++export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+   const [eligiblePages, setEligiblePages] = useState<Page[]>([])
+   const [pendingQuery, setPendingQuery] = useState<PendingQuery | null>(null)
+   const [question, setQuestion] = useState('')
+@@ -80,35 +75,14 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+   const [retrievalPurpose, setRetrievalPurpose] = useState<RetrievalPurpose>('current')
+   const [roles, setRoles] = useState<AnswerRole[]>([])
+   const [selectedRoleId, setSelectedRoleId] = useState('')
+-  const [roleName, setRoleName] = useState('')
+-  const [roleInstructions, setRoleInstructions] = useState('')
+-  const [roleBudget, setRoleBudget] = useState(2000)
+-  const [memories, setMemories] = useState<UserMemory[]>([])
+-  const [memoryCandidates, setMemoryCandidates] = useState<MemoryCandidate[]>([])
+-  const [personalizationLoading, setPersonalizationLoading] = useState(true)
+-  const [personalizationError, setPersonalizationError] = useState('')
+-  const [memoryDrafts, setMemoryDrafts] = useState<Record<string, string>>({})
+-  const [candidateDrafts, setCandidateDrafts] = useState<Record<string, string>>({})
+   const [memoryAttestations, setMemoryAttestations] = useState<Record<string, boolean>>({})
+   const [answerDetails, setAnswerDetails] = useState<Pick<components['schemas']['Answer'], 'source_statements' | 'inferences' | 'advice' | 'missing_information'> | null>(null)
+   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null)
+   const abortController = useRef<AbortController | null>(null)
+   const historyCursorRef = useRef<string | null>(null)
+-  const confirmationIds = useRef<Record<string, string>>({})
+   const approvedQuery = useRef<{ planId: string; body: Record<string, unknown> } | null>(null)
+   const queryForm = useRef<HTMLFormElement | null>(null)
+ 
+-  const refreshStatus = useCallback(async () => {
+-    try {
+-      setStatus(await api.get<IndexStatus>('/index/status'))
+-      setStatusReadFailed(false)
+-      onError('')
+-    } catch (cause) {
+-      setStatusReadFailed(true)
+-      onError(cause instanceof Error ? cause.message : '无法读取索引状态')
+-    }
+-  }, [onError])
+-
+   const refreshHistory = useCallback(async (append = false) => {
+     setHistoryLoading(true)
+     setHistoryError('')
+@@ -129,35 +103,22 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+     }
+   }, [onError])
+ 
+-  const refreshPersonalization = useCallback(async () => {
+-    setPersonalizationLoading(true)
+-    setPersonalizationError('')
++  const refreshRoles = useCallback(async () => {
+     try {
+-      const [roleItems, memoryItems, candidateItems] = await Promise.all([
+-        api.get<AnswerRole[]>('/roles'), api.get<UserMemory[]>('/memory'),
+-        api.get<MemoryCandidate[]>('/memory/candidates'),
+-      ])
+-      setRoles(roleItems)
+-      setMemories(memoryItems)
+-      setMemoryCandidates(candidateItems)
+-      setPersonalizationError('')
++      setRoles(await api.get<AnswerRole[]>('/roles'))
+     } catch (cause) {
+-      setPersonalizationError(cause instanceof Error ? cause.message : '无法读取本机问答偏好')
+-      onError(cause instanceof Error ? cause.message : '无法读取本机问答偏好')
+-    } finally {
+-      setPersonalizationLoading(false)
++      onError(cause instanceof Error ? cause.message : '无法读取问答角色')
+     }
+   }, [onError])
+ 
+   useEffect(() => {
+     const timer = window.setTimeout(() => {
+-      void refreshStatus()
+       void api.get<Page[]>('/pages').then(setEligiblePages).catch(() => undefined)
+       void refreshHistory()
+-      void refreshPersonalization()
++      void refreshRoles()
+     }, 0)
+     return () => window.clearTimeout(timer)
+-  }, [refreshHistory, refreshPersonalization, refreshStatus])
++  }, [refreshHistory, refreshRoles])
+ 
+   async function openConversation(id: string) {
+     try {
+@@ -201,47 +162,13 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+     setAnswerDetails(null)
+   }
+ 
+-  async function saveRole() {
+-    const payload = { name: roleName.trim(), instructions: roleInstructions.trim(), context_budget: roleBudget }
+-    try {
+-      const role = selectedRoleId
+-        ? await api.patch<AnswerRole>(`/roles/${selectedRoleId}`, payload)
+-        : await api.post<AnswerRole>('/roles', payload)
+-      setSelectedRoleId(role.role_id)
+-      setRoleName(role.name)
+-      setRoleInstructions(role.instructions)
+-      setRoleBudget(role.context_budget)
+-      await refreshPersonalization()
+-      onError('')
+-    } catch (cause) {
+-      onError(cause instanceof Error ? cause.message : '角色没有保存')
+-    }
+-  }
+-
+-  function chooseRole(roleId: string) {
+-    setSelectedRoleId(roleId)
+-    const role = roles.find((item) => item.role_id === roleId)
+-    setRoleName(role?.name ?? '')
+-    setRoleInstructions(role?.instructions ?? '')
+-    setRoleBudget(role?.context_budget ?? 2000)
+-  }
+-
+   async function confirmDelete() {
+     if (!pendingDelete) return
+     try {
+-      if (pendingDelete.kind === 'conversation') {
+-        await api.delete(`/conversations/${pendingDelete.id}`)
+-        setHistory((current) => current.filter((item) => item.conversation_id !== pendingDelete.id))
+-        if (conversationId === pendingDelete.id) startNewConversation()
+-        await refreshHistory()
+-      } else if (pendingDelete.kind === 'role') {
+-        await api.delete(`/roles/${pendingDelete.id}`)
+-        chooseRole('')
+-        await refreshPersonalization()
+-      } else {
+-        await api.delete(`/memory/${pendingDelete.id}`)
+-        await refreshPersonalization()
+-      }
++      await api.delete(`/conversations/${pendingDelete.id}`)
++      setHistory((current) => current.filter((item) => item.conversation_id !== pendingDelete.id))
++      if (conversationId === pendingDelete.id) startNewConversation()
++      await refreshHistory()
+       setPendingDelete(null)
+       onError('')
+     } catch (cause) {
+@@ -255,7 +182,6 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+       await api.post('/memory/candidates', {
+         message_id: message.request_id, text: message.question, user_expression: true,
+       })
+-      await refreshPersonalization()
+       setMemoryAttestations((current) => ({ ...current, [message.request_id]: false }))
+       onError('')
+     } catch (cause) {
+@@ -263,20 +189,6 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+     }
+   }
+ 
+-  async function confirmMemory(candidate: MemoryCandidate) {
+-    try {
+-      const confirmationId = confirmationIds.current[candidate.candidate_id]
+-        ?? (confirmationIds.current[candidate.candidate_id] = crypto.randomUUID())
+-      await api.post(`/memory/candidates/${candidate.candidate_id}/confirmations`, {
+-        confirmation_id: confirmationId, text: candidateDrafts[candidate.candidate_id] ?? candidate.text,
+-      })
+-      await refreshPersonalization()
+-      onError('')
+-    } catch (cause) {
+-      onError(cause instanceof Error ? cause.message : '记忆没有确认')
+-    }
+-  }
+-
+   async function ask(event: FormEvent) {
+     event.preventDefault()
+     if (!question.trim() || streaming) return
+@@ -520,7 +432,7 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+               </select>
+             </label>
+             <label className="query-field" htmlFor="query-role"><span>本次使用角色</span>
+-              <select id="query-role" value={selectedRoleId} onChange={(event) => chooseRole(event.target.value)}>
++              <select id="query-role" value={selectedRoleId} onChange={(event) => setSelectedRoleId(event.target.value)}>
+                 <option value="">不使用角色</option>{roles.map((role) => <option key={role.role_id} value={role.role_id}>{role.name}</option>)}
+               </select>
+             </label>
+@@ -532,6 +444,20 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+         </div>
+       </form>
+ 
++      {renderedMessages.length === 0 && <section className="recent-asks conversation-history" aria-label="最近的问答">
++        <div className="section-head"><h2>最近的问答</h2><span className="section-meta">{history.length ? `${history.length} 段` : ''}</span></div>
++        {historyLoading && history.length === 0 ? <p className="empty-row" role="status">正在读取问答历史…</p> : historyError && history.length === 0 ? <p className="empty-row" role="alert">问答历史读取失败：{historyError}</p> : history.length === 0 ? <p className="empty-row">还没有问答历史。问第一个问题吧。</p> : <>{historyError && <p role="status" className="helper-line">问答历史更新失败：{historyError}；保留上次成功读取的内容。</p>}<ul>
++          {history.map((item) => <li key={item.conversation_id} className={item.conversation_id === conversationId ? 'selected' : ''}>
++            <button className="history-open" onClick={() => void openConversation(item.conversation_id)}>
++              <strong>{item.title}</strong><small>{new Date(item.updated_at).toLocaleString()} · {item.message_count} 个问题 · {stateLabel[item.state]}</small>
++            </button>
++            <button className="text-button quiet" aria-label={`删除 ${item.title}`} onClick={() => setPendingDelete({ kind: 'conversation', id: item.conversation_id, label: item.title })}>删除</button>
++          </li>)}
++        </ul></>}
++        {historyLoading && history.length > 0 && <p role="status" className="helper-line">正在更新问答历史…</p>}
++        {historyCursor && <button className="text-button" disabled={historyLoading} onClick={() => void refreshHistory(true)}>加载更早历史</button>}
++      </section>}
++
+       {pendingQuery && <section className="plan-card approval-preview" aria-label="真实问答发送预览">
+         <div><strong>请确认本次问答发送范围</strong><span>最多 3 次 HTTP 请求：embedding、rerank、回答各一次；这是调用次数上限，不是金额上限。生成上限 {String(pendingQuery.scope.max_output_tokens)} token，思考预算 {String(pendingQuery.scope.reasoning_effort)}。</span></div>
+         <p><strong>问题</strong><br />{String(pendingQuery.scope.question ?? '')}</p>
+@@ -569,85 +495,13 @@ export function AskView({ onError, onOpenPage, onOpenApproval, onOpenSettings }:
+         {citations.length > 0 && <CitationList citations={citations} onOpen={openCitation} />}
+       </section>}
+ 
+-      <div className="ask-tools">
+-        <section className="ask-section" aria-label="本机问答历史">
+-          <div className="ask-section-head"><h2>本机历史</h2><span className="section-meta">{history.length ? `${history.length} 段` : ''}</span></div>
+-          <div className="ask-section-body conversation-history">
+-            {historyLoading && history.length === 0 ? <p className="empty-row" role="status">正在读取问答历史…</p> : historyError && history.length === 0 ? <p className="empty-row" role="alert">问答历史读取失败：{historyError}</p> : history.length === 0 ? <p className="empty-row">还没有问答历史。问第一个问题吧。</p> : <>{historyError && <p role="status" className="helper-line">问答历史更新失败：{historyError}；保留上次成功读取的内容。</p>}<ul>
+-              {history.map((item) => <li key={item.conversation_id} className={item.conversation_id === conversationId ? 'selected' : ''}>
+-                <button className="history-open" onClick={() => void openConversation(item.conversation_id)}>
+-                  <strong>{item.title}</strong><small>{new Date(item.updated_at).toLocaleString()} · {item.message_count} 个问题 · {stateLabel[item.state]}</small>
+-                </button>
+-                <button className="text-button quiet" aria-label={`删除 ${item.title}`} onClick={() => setPendingDelete({ kind: 'conversation', id: item.conversation_id, label: item.title })}>删除</button>
+-              </li>)}
+-            </ul></>}
+-            {historyLoading && history.length > 0 && <p role="status" className="helper-line">正在更新问答历史…</p>}
+-            {historyCursor && <button className="text-button" disabled={historyLoading} onClick={() => void refreshHistory(true)}>加载更早历史</button>}
+-          </div>
+-        </section>
+-
+-        <section className="ask-section" aria-label="本机索引与更新">
+-          <div className="ask-section-head"><h2>本机索引与更新</h2><span className="section-meta">{status ? (status.state === 'ready' ? '已就绪' : status.state === 'stale' ? '待更新' : '未建立') : statusReadFailed ? '读取失败' : '正在读取'}</span></div>
+-          <div className="ask-section-body">
+-            {statusReadFailed && status && <p className="stale-citation-note" role="status">本次读取失败；以下显示最近一次成功读取的状态，可能已过时。</p>}
+-            {!status && !statusReadFailed && <p className="empty-row" role="status">正在读取本机索引状态…</p>}
+-            {!status && statusReadFailed && <div className="index-status-panel"><p role="alert">暂时无法读取本机索引状态，不能判断是否已建立。</p><button className="button secondary" type="button" onClick={() => void refreshStatus()}>重新读取</button></div>}
+-            {status && <div className="index-status-panel">
+-              <div className="index-status-copy">
+-                <span className={status.state === 'ready' ? 'index-state ready' : 'index-state'}>{status.state === 'stale' ? '本机索引有待更新' : status.fingerprint ? '本机索引已就绪' : '还没有本机索引'}</span>
+-                <p>{status.state === 'stale' ? `${status.stale_pages} 个页面版本尚未进入索引；旧版本不会作为当前依据。` : status.fingerprint ? status.pages + ' 个页面 · ' + status.chunks + ' 个分块' : '建立或更新索引需要先检查范围，再单独确认。'}</p>
+-              </div>
+-              <div className="index-actions"><button className="button secondary" onClick={onOpenApproval}>前往审批查看索引</button></div>
+-            </div>}
+-          </div>
+-        </section>
+-
+-        <section className="ask-section" aria-label="本机问答偏好与记忆">
+-          <div className="ask-section-head"><h2>问答角色与记忆</h2><span className="section-meta">只调整表达，不改变证据</span></div>
+-          <div className="ask-section-body conversation-history">
+-            <div className="role-grid">
+-              <label className="query-field" htmlFor="answer-role"><span>使用角色</span>
+-                <select id="answer-role" value={selectedRoleId} onChange={(event) => chooseRole(event.target.value)}>
+-                  <option value="">不使用角色</option>{roles.map((role) => <option key={role.role_id} value={role.role_id}>{role.name}</option>)}
+-                </select>
+-              </label>
+-              <label className="query-field" htmlFor="role-name"><span>角色名称</span>
+-                <input id="role-name" value={roleName} maxLength={80} onChange={(event) => setRoleName(event.target.value)} placeholder="例如：简明分析" />
+-              </label>
+-              <label className="query-field" htmlFor="role-budget"><span>说明预算（字节）</span>
+-                <input id="role-budget" type="number" min={0} max={6000} value={roleBudget} onChange={(event) => setRoleBudget(Number(event.target.value))} />
+-              </label>
+-              <label className="query-field role-wide" htmlFor="role-guidance"><span>表达偏好</span>
+-                <textarea id="role-guidance" value={roleInstructions} maxLength={4000} onChange={(event) => setRoleInstructions(event.target.value)} placeholder="只调整表达方式；不能改变证据标准或执行权限。" rows={2} />
+-              </label>
+-            </div>
+-            <div className="button-row"><button className="button secondary" onClick={() => void saveRole()} disabled={!roleName.trim()}>保存角色</button>{selectedRoleId && <button className="text-button quiet" onClick={() => setPendingDelete({ kind: 'role', id: selectedRoleId, label: roleName || '当前角色' })}>删除角色</button>}</div>
+-            <div className="memory-block">
+-            <h3 className="ask-subheading">待确认记忆</h3>
+-            {personalizationLoading && roles.length + memories.length + memoryCandidates.length === 0 ? <p role="status" className="empty-row">正在读取问答偏好与记忆…</p> : personalizationError && roles.length + memories.length + memoryCandidates.length === 0 ? <p role="alert" className="empty-row">问答偏好与记忆读取失败：{personalizationError}</p> : <>{personalizationError && <p role="status" className="helper-line">偏好与记忆更新失败：{personalizationError}；保留上次成功读取的内容。</p>}{personalizationLoading && <p role="status" className="helper-line">正在更新问答偏好与记忆…</p>}{memoryCandidates.length === 0 ? <p className="empty-row">没有待确认记忆。</p> : memoryCandidates.map((candidate) => <div key={candidate.candidate_id} className="memory-item">
+-              <textarea aria-label="编辑记忆候选" value={candidateDrafts[candidate.candidate_id] ?? candidate.text} onChange={(event) => setCandidateDrafts((current) => ({ ...current, [candidate.candidate_id]: event.target.value }))} />
+-              <small>来自本机历史中的本人问题；确认后才会用于回答。</small>
+-              <button className="button secondary" onClick={() => void confirmMemory(candidate)}>确认并保存</button>
+-            </div>)}</>}
+-            </div>
+-            <div className="memory-block">
+-            <h3 className="ask-subheading">已确认记忆</h3>
+-            {memories.length === 0 ? <p className="empty-row">目前没有已确认记忆。</p> : memories.map((memory) => <div key={memory.memory_id} className="memory-item">
+-              <textarea aria-label="编辑已确认记忆" value={memoryDrafts[memory.memory_id] ?? memory.text} onChange={(event) => setMemoryDrafts((current) => ({ ...current, [memory.memory_id]: event.target.value }))} />
+-              <small>来源于已确认的本人问题</small>
+-              <div className="button-row"><button className="text-button" onClick={() => void api.patch(`/memory/${memory.memory_id}`, { text: memoryDrafts[memory.memory_id] ?? memory.text }).then(refreshPersonalization).catch((cause: unknown) => onError(cause instanceof Error ? cause.message : '记忆没有保存修改'))}>保存修改</button><button className="text-button quiet" onClick={() => setPendingDelete({ kind: 'memory', id: memory.memory_id, label: '这条已确认记忆' })}>删除记忆</button></div>
+-            </div>)}
+-            </div>
+-          </div>
+-        </section>
+-      </div>
+-
+       {pendingDelete && <ConfirmDialog
+-        title={pendingDelete.kind === 'conversation' ? '删除这段问答历史？' : pendingDelete.kind === 'role' ? '删除这个问答角色？' : '删除这条已确认记忆？'}
+-        description={pendingDelete.kind === 'conversation' ? `“${pendingDelete.label}”及其本机对话内容将被删除。` : pendingDelete.kind === 'role' ? `“${pendingDelete.label}”将从本机问答偏好中删除。` : '这条记忆将从本机偏好中删除。'}
++        title="删除这段问答历史？"
++        description={`“${pendingDelete.label}”及其本机对话内容将被删除。`}
+         consequence="删除前不会写入任何内容，取消可保留现状。"
+         confirmLabel="确认删除" busyLabel="正在删除…" danger
+-        onCancel={() => setPendingDelete(null)} onConfirm={confirmDelete}
++        onCancel={() => setPendingDelete(null)}
++        onConfirm={confirmDelete}
+       />}
+     </section>
+   )
+diff --git a/web/src/components/SettingsView.tsx b/web/src/components/SettingsView.tsx
+index 0d9d39c..825caa8 100644
+--- a/web/src/components/SettingsView.tsx
++++ b/web/src/components/SettingsView.tsx
+@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react'
+ import { api } from '../api/client'
+ import { FirstUseWizard } from './FirstUseWizard'
+ import { FeishuAgentSetup } from './FeishuAgentSetup'
++import { AskPreferences } from './AskPreferences'
+ import { SmokeCheckConfirm } from './SmokeCheckConfirm'
+ import { PageHeader } from './PageHeader'
+ import { ConfirmDialog } from './ConfirmDialog'
+@@ -58,9 +59,11 @@ type SettingsViewProps = {
+   onWizardClose?: () => void
+   onFinishFirstUse?: () => void
+   onAuthorizationChanged?: () => void
++  onOpenApproval?: () => void
++  onError?: (message: string) => void
+ }
+ 
+-export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, resumeWizardStep = 2, initialWizardCompleted = false, persistWizardProgress, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged }: SettingsViewProps) {
++export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, resumeWizardStep = 2, initialWizardCompleted = false, persistWizardProgress, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged, onOpenApproval, onError }: SettingsViewProps) {
+   const [settings, setSettings] = useState<Settings | null>(null)
+   const [smokeStatus, setSmokeStatus] = useState<SmokeStatus | null>(null)
+   // 密钥只允许停留在组件内存 state：不写 localStorage / sessionStorage / 工作库，
+@@ -410,6 +413,11 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
+         </section>
+       </div>
+ 
++      <section className="settings-card settings-ask-card" aria-label="知识问答">
++        <div className="settings-section-heading"><h2>知识问答</h2><span>索引、角色与记忆只保存在本机</span></div>
++        <AskPreferences onOpenApproval={onOpenApproval} onError={onError} />
++      </section>
++
+       <details className="settings-advanced-block" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
+         <summary>高级与自定义<ChevronDown className="advanced-chevron" size={15} strokeWidth={1.75} aria-hidden="true" /></summary>
+ 

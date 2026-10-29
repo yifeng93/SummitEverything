@@ -1,0 +1,223 @@
+
+> web@0.0.0 test
+> vitest run --run src/App.shell.test.tsx src/components/AskView.test.tsx src/components/SettingsView.cards.test.tsx src/components/SettingsView.regressions.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+stderr | src/components/SettingsView.regressions.test.tsx > asks for an explicit range confirmation before calling the fixed DeepSeek smoke route
+An error occurred in the <AskPreferences> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/components/SettingsView.regressions.test.tsx > does not delete the feishu_app credential until destructive confirmation is accepted
+An error occurred in the <AskPreferences> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+ ❯ src/components/SettingsView.regressions.test.tsx (7 tests | 7 failed) 14804ms
+   × copies the same agent setup prompt from settings without opening the manual wizard 5309ms
+   × persists a changed Model Studio account id through the settings form 3665ms
+   × saves the account id and the matching API key in one card submit 449ms
+   × asks for an explicit range confirmation before calling the fixed DeepSeek smoke route 1618ms
+   × does not delete the deepseek credential until destructive confirmation is accepted 1046ms
+   × does not delete the dashscope credential until destructive confirmation is accepted 1103ms
+   × does not delete the feishu_app credential until destructive confirmation is accepted 1612ms
+ ❯ src/components/SettingsView.cards.test.tsx (15 tests | 1 failed) 15704ms
+   × renders the three main cards and keeps technical fields inside the collapsed advanced block 5350ms
+ ❯ src/components/AskView.test.tsx (20 tests | 1 failed) 15162ms
+   × creates a first conversation on the server, adopts its ID, then continues it 5980ms
+ ❯ src/App.shell.test.tsx (12 tests | 1 failed) 19124ms
+   × dirty draft blocks sidebar navigation and accepted discard returns to the saved list 5345ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.shell.test.tsx > dirty draft blocks sidebar navigation and accepted discard returns to the saved list
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/App.shell.test.tsx:166:1
+    164| })
+    165|
+    166| it('dirty draft blocks sidebar navigation and accepted discard returns…
+       | ^
+    167|   const reviewDraft = { draft_id: 'draft-focus', metadata: { title: '需…
+    168|   vi.stubGlobal('fetch', shellFetch({ '/api/v1/drafts': [reviewDraft] …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/components/AskView.test.tsx > creates a first conversation on the server, adopts its ID, then continues it
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/AskView.test.tsx:26:1
+     24| }
+     25|
+     26| it('creates a first conversation on the server, adopts its ID, then co…
+       | ^
+     27|   vi.stubGlobal('crypto', { randomUUID: vi.fn()
+     28|     .mockReturnValueOnce('first-request')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > renders the three main cards and keeps technical fields inside the collapsed advanced block
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/SettingsView.cards.test.tsx:90:1
+     88| }
+     89|
+     90| it('renders the three main cards and keeps technical fields inside the…
+       | ^
+     91|   stubSettings()
+     92|   const { container } = render(<SettingsView workspaceName="Synthetic"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > copies the same agent setup prompt from settings without opening the manual wizard
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/SettingsView.regressions.test.tsx:7:1
+      5| afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+      6|
+      7| it('copies the same agent setup prompt from settings without opening t…
+       | ^
+      8|   const state = {
+      9|     mode: 'fake', feishu: { app_id: '', redirect_uri: '' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > persists a changed Model Studio account id through the settings form
+ FAIL  src/components/SettingsView.regressions.test.tsx > saves the account id and the matching API key in one card submit
+ FAIL  src/components/SettingsView.regressions.test.tsx > does not delete the deepseek credential until destructive confirmation is accepted
+ FAIL  src/components/SettingsView.regressions.test.tsx > does not delete the dashscope credential until destructive confirmation is accepted
+TypeError: roles.map is not a function
+ ❯ AskPreferences src/components/AskPreferences.tsx:150:51
+    148|         <label className="query-field" htmlFor="answer-role"><span>使用角…
+    149|           <select id="answer-role" value={selectedRoleId} onChange={(e…
+    150|             <option value="">不使用角色</option>{roles.map((role) => <optio…
+       |                                                   ^
+    151|           </select>
+    152|         </label>
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > asks for an explicit range confirmation before calling the fixed DeepSeek smoke route
+TestingLibraryElementError: Unable to find role="dialog" and name "确认本次连接检查：DeepSeek Chat"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/SettingsView.regressions.test.tsx:114:31
+    112|   expect((button as HTMLButtonElement).disabled).toBe(false)
+    113|   fireEvent.click(button)
+    114|   const dialog = await screen.findByRole('dialog', { name: '确认本次连接检查：D…
+       |                               ^
+    115|   expect(dialog.textContent).toContain('累计已用 0/1')
+    116|   expect(dialog.textContent).toContain('不会自动重发')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > does not delete the feishu_app credential until destructive confirmation is accepted
+TestingLibraryElementError: Unable to find role="dialog" and name "删除所选本机密钥？"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/SettingsView.regressions.test.tsx:145:31
+    143|   fireEvent.click(await screen.findByText(/高级与自定义/))
+    144|   fireEvent.click(await screen.findByRole('button', { name: buttonLabe…
+    145|   const dialog = await screen.findByRole('dialog', { name: '删除所选本机密钥？'…
+       |                               ^
+    146|   expect(document.activeElement).toBe(within(dialog).getByRole('button…
+    147|   expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DEL…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 2 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: roles.map is not a function
+ ❯ AskPreferences src/components/AskPreferences.tsx:150:51
+    148|         <label className="query-field" htmlFor="answer-role"><span>使用角…
+    149|           <select id="answer-role" value={selectedRoleId} onChange={(e…
+    150|             <option value="">不使用角色</option>{roles.map((role) => <optio…
+       |                                                   ^
+    151|           </select>
+    152|         </label>
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+This error originated in "src/components/SettingsView.regressions.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "asks for an explicit range confirmation before calling the fixed DeepSeek smoke route". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: roles.map is not a function
+ ❯ AskPreferences src/components/AskPreferences.tsx:150:51
+    148|         <label className="query-field" htmlFor="answer-role"><span>使用角…
+    149|           <select id="answer-role" value={selectedRoleId} onChange={(e…
+    150|             <option value="">不使用角色</option>{roles.map((role) => <optio…
+       |                                                   ^
+    151|           </select>
+    152|         </label>
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+This error originated in "src/components/SettingsView.regressions.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "does not delete the feishu_app credential until destructive confirmation is accepted". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  4 failed (4)
+      Tests  10 failed | 44 passed (54)
+     Errors  2 errors
+   Start at  19:16:07
+   Duration  35.41s (tests 59%, environment 20%, transform 11%, import 10%)
+
