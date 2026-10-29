@@ -153,16 +153,20 @@ it('leaves wizard opening under the app host and reports the requested step', as
   expect(onRequestWizard).toHaveBeenCalledWith(2)
 })
 
-it('does not open automatically for configured credentials and requests step 4 for Feishu', async () => {
+it('copies the Feishu setup prompt without reopening the first-use wizard', async () => {
   settingsStub({ credential_status: { feishu_app: false, deepseek: true, dashscope: false } })
   const onRequestWizard = vi.fn()
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  vi.stubGlobal('navigator', { clipboard: { writeText } })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} onRequestWizard={onRequestWizard} />)
   await screen.findByRole('region', { name: '工作库' })
   expect(screen.queryByRole('dialog', { name: '首次配置向导' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '打开连接向导' }))
   expect(onRequestWizard).toHaveBeenLastCalledWith(2)
-  fireEvent.click(screen.getByRole('button', { name: '连接 / 重新授权飞书' }))
-  expect(onRequestWizard).toHaveBeenLastCalledWith(4)
+  fireEvent.click(screen.getByRole('button', { name: '连接飞书' }))
+  expect((await screen.findByRole('status')).textContent).toContain('已复制')
+  expect(writeText).toHaveBeenCalledTimes(1)
+  expect(onRequestWizard).toHaveBeenCalledTimes(1)
 })
 
 // --- 步骤导航 ---------------------------------------------------------------

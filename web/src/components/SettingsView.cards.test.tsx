@@ -96,7 +96,7 @@ it('renders the three main cards and keeps technical fields inside the collapsed
   const modelCard = screen.getByRole('region', { name: 'AI 模型' })
   const feishuCard = screen.getByRole('region', { name: '飞书' })
   expect(await within(workspaceCard).findByText('Synthetic')).toBeTruthy()
-  expect(within(feishuCard).getByRole('button', { name: '连接 / 重新授权飞书' })).toBeTruthy()
+  expect(within(feishuCard).getByRole('button', { name: '连接飞书' })).toBeTruthy()
   expect(within(feishuCard).queryByLabelText('飞书应用 App ID')).toBeNull()
   expect(within(feishuCard).queryByRole('button', { name: '重新读取授权状态' })).toBeNull()
   expect(within(modelCard).getByText('整理与问答模型')).toBeTruthy()

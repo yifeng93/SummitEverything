@@ -12,7 +12,8 @@ const settings = {
   embedding_fingerprint: 'synthetic-fingerprint',
 }
 
-test('first use stays in one app-owned flow and resumes to a requested step', async ({ page }) => {
+test('first use stays in one app-owned flow and resumes to a requested step', async ({ page, baseURL }) => {
+  const appOrigin = new URL(baseURL!).origin
   const externalAttempts: string[] = []
   const apiCalls: string[] = []
   let workspaceOpened = false
@@ -20,7 +21,7 @@ test('first use stays in one app-owned flow and resumes to a requested step', as
   let storedProgress: { step: number; completed: boolean; open: boolean } | null = null
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url())
-    if (url.origin !== 'http://127.0.0.1:5173') {
+    if (url.origin !== appOrigin) {
       externalAttempts.push(url.origin)
       return route.abort()
     }
@@ -105,14 +106,21 @@ test('first use stays in one app-owned flow and resumes to a requested step', as
   await page.getByRole('button', { name: '设置' }).click()
   await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()
   await expect(page.getByRole('dialog', { name: '首次配置向导' })).toHaveCount(0)
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   const progress = await page.evaluate(() => Object.entries(localStorage).map(([key, value]) => [key, value]))
   expect(JSON.stringify(progress)).not.toContain('synthetic-secret')
 
-  await page.getByRole('button', { name: '连接 / 重新授权飞书' }).click()
-  await expect(page.getByRole('heading', { name: '第 4 步 · 飞书' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '设置' })).toHaveCount(0)
-  await page.screenshot({ path: resolve(evidenceDir, 'onboarding-reauthorize-step-4.png'), fullPage: true })
-  await page.getByRole('button', { name: '关闭向导' }).click()
+  const apiCallsBeforeCopy = apiCalls.length
+  await page.getByRole('button', { name: '连接飞书' }).click()
+  await expect(page.getByRole('status')).toContainText('已复制')
+  await expect(page.getByRole('dialog', { name: '首次配置向导' })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()
+  expect(apiCalls).toHaveLength(apiCallsBeforeCopy)
+  const copiedPrompt = await page.evaluate(() => navigator.clipboard.readText())
+  expect(copiedPrompt).toContain(appOrigin)
+  expect(copiedPrompt).toContain('docs/contracts/MCP-v1.md')
+  expect(copiedPrompt).toContain('PUT /credentials/{provider}')
+  expect(copiedPrompt).not.toContain('synthetic-secret')
+  await page.screenshot({ path: resolve(evidenceDir, 'feishu-agent-setup-prompt-copied.png'), fullPage: true })
   expect(externalAttempts).toEqual([])
 })
