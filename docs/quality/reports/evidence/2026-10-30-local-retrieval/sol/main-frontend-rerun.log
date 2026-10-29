@@ -1,0 +1,17 @@
+
+> web@0.0.0 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+
+ Test Files  33 passed (33)
+      Tests  298 passed (298)
+   Start at  00:12:29
+   Duration  58.68s (tests 51%, environment 35%, import 11%, transform 2%)
+
+Environment  jsdom was created 33 times · 35.39s total, 35% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

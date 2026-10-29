@@ -1,0 +1,23 @@
+[
+  {
+    "path": "docs/contracts/API-v1.md",
+    "merge_exit": 3,
+    "main_before_sha256": "26a0df3fe0219b5c345f3173e98bd038c20d0714add8168970dfb96c5328e7f1",
+    "resolved_sha256": "d926f4799d493cd5ef22f7cba08b5e630d90085f798eaf997812f0330ff3b6d1",
+    "resolution": "preserve concurrent additions and apply local-retrieval delta"
+  },
+  {
+    "path": "web/src/components/AskView.tsx",
+    "merge_exit": 1,
+    "main_before_sha256": "0f93c08048abca7aef2a4befdb6469d7865a398cf32ec92a692a9a92d219ca18",
+    "resolved_sha256": "bd284469ff23f5f2a83aee2dc66aca5626d0430db784d0822f56f0696f654055",
+    "resolution": "preserve concurrent additions and apply local-retrieval delta"
+  },
+  {
+    "path": "web/src/ui-contract.allowlist.json",
+    "merge_exit": 1,
+    "main_before_sha256": "1e04401be62dec67b3b461b1e0f8fe3dce5f8856636336588a6a77ba0b961a53",
+    "resolved_sha256": "7a0a4f9801f95b1b42dac48580745902b375d9875668a8c0dea9a6dc8547c41b",
+    "resolution": "preserve concurrent additions and apply local-retrieval delta"
+  }
+]

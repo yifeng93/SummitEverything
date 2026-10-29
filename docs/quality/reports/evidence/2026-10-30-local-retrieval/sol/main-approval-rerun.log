@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --maxWorkers=1 src/components/ApprovalView.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  33 passed (33)
+   Start at  00:12:06
+   Duration  6.79s (tests 55%, environment 21%, import 13%, transform 11%)
+

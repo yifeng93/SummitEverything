@@ -1,0 +1,117 @@
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 26%]
+....sssss............................................................... [ 35%]
+...................s.................................................... [ 44%]
+..................................................................F..... [ 53%]
+........................................................................ [ 61%]
+........................................................................ [ 70%]
+........................................................................ [ 79%]
+.........................................................F.............. [ 88%]
+........................................................................ [ 97%]
+......................                                                   [100%]
+=================================== FAILURES ===================================
+___ test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.3-cfg2-True] ____
+
+loopback = <function loopback.<locals>.make at 0x123ab53a0>, deadline = 0.3
+cfg = {'mode': 'trickle_body', 'declared_length': 100000}
+expect_no_further_traffic = True
+
+    @pytest.mark.parametrize(
+        "deadline,cfg,expect_no_further_traffic",
+        [
+            (0.15, {"mode": "incomplete_headers"}, True),
+            (0.15, {"header_delay": 0.5, "body": b"{}"}, False),
+            (0.3, {"mode": "trickle_body", "declared_length": 100_000}, True),
+        ],
+    )
+    def test_r4_02_deadline_cases_hold_over_ten_consecutive_runs(
+        loopback, deadline, cfg, expect_no_further_traffic
+    ):
+        client = _client()
+        timings: list[float] = []
+        try:
+            for _ in range(10):
+                timings.append(
+>                   _deadline_case(
+                        loopback,
+                        client,
+                        deadline,
+                        expect_no_further_traffic=expect_no_further_traffic,
+                        **cfg,
+                    )
+                )
+
+../../../../ai/SummitEverything/tests/integration/test_stage_b_r4_loopback.py:375: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../ai/SummitEverything/tests/integration/test_stage_b_r4_loopback.py:234: in _deadline_case
+    _assert_cancelled(server, client, expect_no_further_traffic=expect_no_further_traffic)
+../../../../ai/SummitEverything/tests/integration/test_stage_b_r4_loopback.py:206: in _assert_cancelled
+    _assert_peer_closed(server)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+server = <test_stage_b_r4_loopback.LoopbackServer object at 0x120d19430>
+
+    def _assert_peer_closed(server: LoopbackServer) -> None:
+        """The client side of the connection must terminate shortly after return.
+    
+        A FIN or reset can lag the product call by a few milliseconds, so the check
+        polls within a bounded window; it never treats "no data readable yet" as
+        terminated, and it fails if the connection is still open at the end.
+        """
+        wait_deadline = time.monotonic() + 1.0
+        while not server.cfg["sockets"] and time.monotonic() < wait_deadline:
+            time.sleep(0.01)
+        sockets = list(server.cfg["sockets"])
+        assert sockets, "the synthetic server never accepted a connection"
+        for sock in sockets:
+>           sock.setblocking(False)
+E           OSError: [Errno 9] Bad file descriptor
+
+../../../../ai/SummitEverything/tests/integration/test_stage_b_r4_loopback.py:179: OSError
+____ test_prepare_deadline_fails_cleanly_and_retry_starts_from_empty_stage _____
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-197/test_prepare_deadline_fails_cl0')
+
+    def test_prepare_deadline_fails_cleanly_and_retry_starts_from_empty_stage(tmp_path: Path) -> None:
+        calls = 0
+    
+        def slow_download(*_args, **_kwargs):
+            nonlocal calls
+            calls += 1
+            time.sleep(0.02)
+    
+        store = LocalRetrievalModelStore(
+            tmp_path / "profile" / "retrieval-models",
+            downloader=slow_download,
+            prepare_timeout_seconds=0.005,
+            file_timeout_seconds=1,
+        )
+    
+        store.start_prepare()
+        first = store.wait_for_prepare(timeout=1)
+    
+        assert first["state"] == "failed"
+        assert first["error_code"] == "model_prepare_timeout"
+        assert not list(store.revision_dir.parent.glob(".partial-*"))
+    
+        store.start_prepare()
+        second = store.wait_for_prepare(timeout=1)
+        assert second["state"] == "failed"
+        assert second["error_code"] == "model_prepare_timeout"
+>       assert calls == 2
+E       assert 1 == 2
+
+tests/unit/test_local_retrieval_model.py:81: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Users/hanwenbo/.codex/worktrees/offline-ask-schema/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [5] tests/integration/test_local_retrieval_real_model.py:30: set SUMMIT_LOCAL_RETRIEVAL_MODEL_DIR to run pinned local model probes
+SKIPPED [1] tests/integration/test_real_model_approval_flow.py:33: set SUMMIT_LOCAL_RETRIEVAL_MODEL_DIR to run the local-model approval flow
+FAILED tests/integration/test_stage_b_r4_loopback.py::test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.3-cfg2-True]
+FAILED tests/unit/test_local_retrieval_model.py::test_prepare_deadline_fails_cleanly_and_retry_starts_from_empty_stage
+2 failed, 806 passed, 6 skipped, 1 warning in 124.49s (0:02:04)

@@ -1,0 +1,17 @@
+
+> web@0.0.0 test
+> vitest run --maxWorkers=4
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/qa-local-retrieval-20261029/SummitEverything/web
+
+
+ Test Files  33 passed (33)
+      Tests  295 passed (295)
+   Start at  23:46:56
+   Duration  69.96s (tests 46%, environment 38%, import 12%, transform 4%)
+
+Environment  jsdom was created 33 times · 90.25s total, 38% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

@@ -1,0 +1,8 @@
+/Users/hanwenbo/.codex/worktrees/qa-local-retrieval-20261029/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+[2026-10-29T15:46:07Z WARN  lance::dataset::scanner] Deprecation warning, this behavior will change in the future. This search specified output columns but did not include `_distance`.  Currently the `_distance` column will be included.  In the future it will not.  Call `disable_scoring_autoprojection` to adopt the future behavior and avoid this warning
+Traceback (most recent call last):
+  File "/Users/hanwenbo/.codex/worktrees/qa-local-retrieval-20261029/SummitEverything/.local/qa/http_flow_probe.py", line 126, in <module>
+    assert citations,events
+           ^^^^^^^^^
+AssertionError: [{'request_id': 'ed64cc5c-bde7-4a93-be29-198cc9dfd37f', 'seq': 1, 'type': 'status', 'data': {'state': 'retrieving', 'conversation_id': '545199fd-88fd-47f4-a563-fe18fe47793f'}}, {'request_id': 'ed64cc5c-bde7-4a93-be29-198cc9dfd37f', 'seq': 2, 'type': 'delta', 'data': {'text': '当前已确认资料中没有找到该主题的依据；未限定对象：缺少migration依据。'}}, {'request_id': 'ed64cc5c-bde7-4a93-be29-198cc9dfd37f', 'seq': 3, 'type': 'completed', 'data': {'answer_id': '83cce711-143c-4c55-871c-d4011655b8a9', 'question': '--migration', 'text': '当前已确认资料中没有找到该主题的依据；未限定对象：缺少migration依据。', 'citations': [], 'answer_mode': 'fact', 'source_statements': [], 'inferences': [], 'advice': [], 'missing_information': ['未限定对象：缺少migration依据。'], 'purpose': 'current', 'index_status': 'ready'}}]

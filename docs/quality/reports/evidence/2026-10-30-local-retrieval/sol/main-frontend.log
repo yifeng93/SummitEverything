@@ -1,0 +1,1252 @@
+
+> web@0.0.0 test
+> vitest run --maxWorkers=4
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+ ❯ src/components/ApprovalView.test.tsx (33 tests | 1 failed) 7937ms
+   × continues with returned source IDs when titles collide and opens the exact item 1322ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ApprovalView.test.tsx > continues with returned source IDs when titles collide and opens the exact item
+TestingLibraryElementError: Unable to find an element with the text: 已定位到本次成功保存的 2 项材料。选择归属后可继续整理。. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap approval-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading-copy"[39m
+        [36m>[39m
+          [36m<h1>[39m
+            [0m审批[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"toolbar approval-toolbar"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"hint"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0m6 项待处理 · 共 3 类[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"显示范围"[39m
+          [33mclass[39m=[32m"segmented"[39m
+          [33mrole[39m=[32m"group"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"active"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m待处理[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m全部[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m已完成[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"审批清单"[39m
+        [33mclass[39m=[32m"approval-list"[39m
+        [33mrole[39m=[32m"region"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"来源"[39m
+          [33mclass[39m=[32m"panel approval-group has-pending"[39m
+          [33mid[39m=[32m"approval-sources"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-sources-heading"[39m
+              [36m>[39m
+                [0m来源[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待整理成稿的材料[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge has-items"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"source-list"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m""[39m
+                [33mdata-item-id[39m=[32m"same-title-old"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"1.75"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 9H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 13H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 17H8"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m同名会议记录[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"approval-target"[39m
+                [33mdata-item-id[39m=[32m"returned-item-a"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"1.75"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 9H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 13H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 17H8"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m同名会议记录[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"approval-target"[39m
+                [33mdata-item-id[39m=[32m"returned-item-b"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"1.75"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 9H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 13H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 17H8"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m另一条会议记录[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"稿件"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-drafts"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-drafts-heading"[39m
+              [36m>[39m
+                [0m稿件[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待复核的整理结果[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m没有待复核的稿件[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m整理来源后会生成稿件。[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"正式内容"[39m
+          [33mclass[39m=[32m"panel approval-group has-pending"[39m
+          [33mid[39m=[32m"approval-formal"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-formal-heading"[39m
+              [36m>[39m
+                [0m正式内容[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待确认的页面版本[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge has-items"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"knowledge-page-list"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33mdata-page-id[39m=[32m"page-1"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"formal-page-row"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"formal-open-button"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m正式页[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m业务决定[0m
+                      [0m · [0m
+                      [0m待确认[0m
+                    [36m</small>[39m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m确认并保存当前版本[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"搜索与问答准备"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-index"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-index-heading"[39m
+              [36m>[39m
+                [0m搜索与问答准备[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"index-status-panel search-readiness-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"search-readiness-copy"[39m
+              [36m>[39m
+                [36m<strong[39m
+                  [33mclass[39m=[32m"index-state"[39m
+                [36m>[39m
+                  [0m还没有可准备的内容[0m
+                [36m</strong>[39m
+                [36m<p>[39m
+                  [0m让搜索和问答能找到已确认的内容。内容没变化时，无需重复准备。[0m
+                [36m</p>[39m
+                [36m<p>[39m
+                  [0m先添加并确认正式内容，之后才能为搜索和问答做准备。[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"helper-line"[39m
+                [36m>[39m
+                  [0m演示模式：仅用于体验流程，不调用真实模型。[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"search-readiness-actions"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"外部动作"[39m
+          [33mclass[39m=[32m"panel approval-group has-pending"[39m
+          [33mid[39m=[32m"approval-actions"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-actions-heading"[39m
+              [36m>[39m
+                [0m外部动作[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待确认或待核对的外部动作[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge has-items"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"action-intent-list"[39m
+            [36m>[39m
+              [36m<li>[39m
+                [36m<div>[39m
+                  [36m<strong>[39m
+                    [0m更新项目进度[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m待确认[0m
+                  [36m</small>[39m
+                [36m</div>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m查看与处理[0m
+                [36m</button>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"action-candidate-panel"[39m
+            [36m>[39m
+              [36m<h3>[39m
+                [0m尚未转成动作的建议[0m
+              [36m</h3>[39m
+              [36m<section[39m
+                [33maria-busy[39m=[32m"false"[39m
+                [33mclass[39m=[32m"panel tasks-panel"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"panel-heading"[39m
+                [36m>[39m
+                  [36m<div>[39m
+                    [36m<h2>[39m
+                      [0m飞书任务与独立动作[0m
+                    [36m</h2>[39m
+                    [36m<p>[39m
+                      [0mFake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。[0m
+                    [36m</p>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"button-row"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m刷新飞书任务[0m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m新建飞书任务[0m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m拟定项目进度变化[0m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m查看动作记录[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"action-candidates"[39m
+                [36m>[39m
+                  [36m<h3>[39m
+                    [0m审阅行动建议[0m
+                  [36m</h3>[39m
+                  [36m<div>[39m
+                    [36m<p>[39m
+                      [0m合成任务建议[0m
+                    [36m</p>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"button secondary"[39m
+                    [36m>[39m
+                      [0m将建议填写为待确认动作[0m
+                    [36m</button>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</section>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap approval-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading-copy"[39m
+        [36m>[39m
+          [36m<h1>[39m
+            [0m审批[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"toolbar approval-toolbar"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"hint"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0m6 项待处理 · 共 3 类[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"显示范围"[39m
+          [33mclass[39m=[32m"segmented"[39m
+          [33mrole[39m=[32m"group"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"active"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m待处理[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m全部[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m已完成[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"审批清单"[39m
+        [33mclass[39m=[32m"approval-list"[39m
+        [33mrole[39m=[32m"region"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"来源"[39m
+          [33mclass[39m=[32m"panel approval-group has-pending"[39m
+          [33mid[39m=[32m"approval-sources"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-sources-heading"[39m
+              [36m>[39m
+                [0m来源[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待整理成稿的材料[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge has-items"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"source-list"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m""[39m
+                [33mdata-item-id[39m=[32m"same-title-old"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"1.75"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 9H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 13H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 17H8"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m同名会议记录[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"approval-target"[39m
+                [33mdata-item-id[39m=[32m"returned-item-a"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"1.75"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 9H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 13H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 17H8"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m同名会议记录[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"approval-target"[39m
+                [33mdata-item-id[39m=[32m"returned-item-b"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"source-row"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"file-glyph"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"1.75"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 9H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 13H8"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M16 17H8"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"source-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m另一条会议记录[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m记一句[0m
+                      [0m · [0m
+                      [0m随手记.md[0m
+                      [0m · [0m
+                      [0m2026/10/14[0m
+                    [36m</small>[39m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"status-label"[39m
+                  [36m>[39m
+                    [0m待整理[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"稿件"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-drafts"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-drafts-heading"[39m
+              [36m>[39m
+                [0m稿件[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待复核的整理结果[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m没有待复核的稿件[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0m整理来源后会生成稿件。[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"正式内容"[39m
+          [33mclass[39m=[32m"panel approval-group has-pending"[39m
+          [33mid[39m=[32m"approval-formal"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-formal-heading"[39m
+              [36m>[39m
+                [0m正式内容[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待确认的页面版本[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge has-items"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"knowledge-page-list"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33mdata-page-id[39m=[32m"page-1"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"formal-page-row"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"formal-open-button"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m正式页[0m
+                    [36m</strong>[39m
+                    [36m<small>[39m
+                      [0m业务决定[0m
+                      [0m · [0m
+                      [0m待确认[0m
+                    [36m</small>[39m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m确认并保存当前版本[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"搜索与问答准备"[39m
+          [33mclass[39m=[32m"panel approval-group"[39m
+          [33mid[39m=[32m"approval-index"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-index-heading"[39m
+              [36m>[39m
+                [0m搜索与问答准备[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"index-status-panel search-readiness-panel"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"search-readiness-copy"[39m
+              [36m>[39m
+                [36m<strong[39m
+                  [33mclass[39m=[32m"index-state"[39m
+                [36m>[39m
+                  [0m还没有可准备的内容[0m
+                [36m</strong>[39m
+                [36m<p>[39m
+                  [0m让搜索和问答能找到已确认的内容。内容没变化时，无需重复准备。[0m
+                [36m</p>[39m
+                [36m<p>[39m
+                  [0m先添加并确认正式内容，之后才能为搜索和问答做准备。[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"helper-line"[39m
+                [36m>[39m
+                  [0m演示模式：仅用于体验流程，不调用真实模型。[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"search-readiness-actions"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"外部动作"[39m
+          [33mclass[39m=[32m"panel approval-group has-pending"[39m
+          [33mid[39m=[32m"approval-actions"[39m
+          [33mrole[39m=[32m"region"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-head"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"approval-group-copy"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mid[39m=[32m"approval-actions-heading"[39m
+              [36m>[39m
+                [0m外部动作[0m
+              [36m</h2>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"approval-group-meta"[39m
+              [36m>[39m
+                [36m<p>[39m
+                  [0m待确认或待核对的外部动作[0m
+                [36m</p>[39m
+                [36m<small>[39m
+                  [0m最近读取：[0m
+                  [0m2026/10/30 00:10:37[0m
+                [36m</small>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"count-badge has-items"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"approval-group-content"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"action-intent-list"[39m
+            [36m>[39m
+              [36m<li>[39m
+                [36m<div>[39m
+                  [36m<strong>[39m
+                    [0m更新项目进度[0m
+                  [36m</strong>[39m
+                  [36m<small>[39m
+                    [0m待确认[0m
+                  [36m</small>[39m
+                [36m</div>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"button secondary"[39m
+                [36m>[39m
+                  [0m查看与处理[0m
+                [36m</button>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"action-candidate-panel"[39m
+            [36m>[39m
+              [36m<h3>[39m
+                [0m尚未转成动作的建议[0m
+              [36m</h3>[39m
+              [36m<section[39m
+                [33maria-busy[39m=[32m"false"[39m
+                [33mclass[39m=[32m"panel tasks-panel"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"panel-heading"[39m
+                [36m>[39m
+                  [36m<div>[39m
+                    [36m<h2>[39m
+                      [0m飞书任务与独立动作[0m
+                    [36m</h2>[39m
+                    [36m<p>[39m
+                      [0mFake 模拟远端 · 任务事实由飞书提供。每项任务和进度变化单独确认。[0m
+                    [36m</p>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"button-row"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m刷新飞书任务[0m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m新建飞书任务[0m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m拟定项目进度变化[0m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"button secondary"[39m
+                  [36m>[39m
+                    [0m查看动作记录[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"action-candidates"[39m
+                [36m>[39m
+                  [36m<h3>[39m
+                    [0m审阅行动建议[0m
+                  [36m</h3>[39m
+                  [36m<div>[39m
+                    [36m<p>[39m
+                      [0m合成任务建议[0m
+                    [36m</p>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"button secondary"[39m
+                    [36m>[39m
+                      [0m将建议填写为待确认动作[0m
+                    [36m</button>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</section>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/ApprovalView.test.tsx:63:16
+     61|   const third = { ...source, item_id: 'returned-item-b', source_id: 's…
+     62|   const { calls } = setup({ '/api/v1/intake/items': [first, second, th…
+     63|   await screen.findByText('已定位到本次成功保存的 2 项材料。选择归属后可继续整理。')
+       |                ^
+     64|   const sourceFocus = await screen.findByRole('dialog', { name: '来源详情：…
+     65|   expect(within(sourceFocus).getByText('这是对应ID的合成原文。')).toBeTruthy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 32 passed (33)
+      Tests  1 failed | 297 passed (298)
+   Start at  00:10:30
+   Duration  48.31s (tests 51%, environment 32%, import 12%, transform 5%)
+
+Environment  jsdom was created 33 times · 52.82s total, 32% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

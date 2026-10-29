@@ -1,0 +1,227 @@
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 26%]
+...................................................F.................... [ 35%]
+..........................F............................................. [ 44%]
+........................................................................ [ 53%]
+........................................................................ [ 61%]
+........................................................................ [ 70%]
+........................................................................ [ 79%]
+........................................................................ [ 88%]
+........................................................................ [ 97%]
+......................                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_unprepared_local_embedding_defers_index_but_keeps_approval ________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-194/test_unprepared_local_embeddin0')
+
+    def test_unprepared_local_embedding_defers_index_but_keeps_approval(tmp_path):
+        app = create_app(
+            session_token="synthetic-session",
+            profile_root=tmp_path / "profile",
+            secret_backend=MemorySecretBackend(),
+        )
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer synthetic-session"}
+        opened = client.post(
+            "/api/v1/workspaces",
+            headers=headers,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "模拟索引库",
+                "operation_id": "open-index-settings-test",
+            },
+        )
+        assert opened.status_code == 201
+        line = client.post(
+            "/api/v1/lines", headers=headers, json={"name": "模拟线", "operation_id": "line"}
+        ).json()
+        project = client.post(
+            "/api/v1/projects",
+            headers=headers,
+            json={"line_id": line["id"], "name": "模拟项目", "operation_id": "project"},
+        ).json()
+        page = client.post(
+            "/api/v1/pages",
+            headers=headers,
+            json={
+                "metadata": {
+                    "id": "00000000-0000-4000-8000-000000000111",
+                    "title": "合成页面一",
+                    "role": "knowledge",
+                    "kind": "topic",
+                    "line_id": line["id"],
+                    "project_id": project["id"],
+                },
+                "body": "仅用于离线测试的内容。",
+                "confirmation_id": "confirm-one",
+                "operation_id": "page-one",
+            },
+        )
+        assert page.status_code == 201
+        configured_fake = client.patch(
+            "/api/v1/settings",
+            headers=headers,
+            json={
+                "embedding": {"provider": "fake", "model": None, "enabled": True},
+                "rerank": {"provider": "fake", "model": None, "enabled": True},
+            },
+        )
+        assert configured_fake.status_code == 200
+        fake_fingerprint = "summit-fake-embedding-v1"
+        plan = client.post(
+            "/api/v1/index/plans",
+            headers=headers,
+            json={"mode": "initial", "fingerprint": fake_fingerprint},
+        )
+        assert plan.status_code == 200
+        assert client.post("/api/v1/index/jobs", headers=headers, json=plan.json()).status_code == 200
+    
+        configured = client.patch(
+            "/api/v1/settings",
+            headers=headers,
+            json={
+                "mode": "real",
+                "embedding": {"provider": "local", "model": "BAAI/bge-small-zh-v1.5", "enabled": True},
+                "rerank": {"provider": "local", "model": "BAAI/bge-small-zh-v1.5", "enabled": True},
+                "llm": {
+                    "provider": "deepseek",
+                    "model": "deepseek-flash",
+                    "enabled": True,
+                },
+            },
+        )
+        assert configured.status_code == 200
+        assert (
+            client.put(
+                "/api/v1/credentials/deepseek",
+                headers=headers,
+                json={"account_id": "default", "secret": "sk-synthetic-deepseek-key-00000000"},
+            ).status_code
+            == 200
+        )
+        after_switch = client.get("/api/v1/index/status", headers=headers)
+        assert after_switch.status_code == 200
+        assert after_switch.json()["state"] == "stale"
+        assert after_switch.json()["vector"] == "simulated"
+        stale_plan = client.post(
+            "/api/v1/index/plans",
+            headers=headers,
+            json={"mode": "model_change", "fingerprint": fake_fingerprint},
+        )
+        assert stale_plan.status_code == 409
+        assert stale_plan.json()["error"]["code"] == "local_model_not_ready"
+        stale_query = client.post(
+            "/api/v1/queries",
+            headers=headers,
+            json={
+                "request_id": "00000000-0000-4000-8000-000000000201",
+                "question": "合成页面内容是什么",
+                "fingerprint": fake_fingerprint,
+                "purpose": "current",
+            },
+        )
+        assert stale_query.status_code == 409
+        assert stale_query.json()["error"]["code"] == "local_model_not_ready"
+    
+        query_preview = client.post(
+            "/api/v1/acceptance-plans",
+            headers=headers,
+            json={
+                "operation": "model.query",
+                "scope": {
+                    "request_id": "00000000-0000-4000-8000-000000000202",
+                    "question": "合成页面内容是什么",
+                    "fingerprint": configured.json()["embedding_fingerprint"],
+                    "purpose": "current",
+                    "answer_mode": "fact",
+                },
+            },
+        )
+        assert query_preview.status_code == 409
+        assert query_preview.json()["error"]["code"] == "local_model_not_ready"
+    
+        second_page = client.post(
+            "/api/v1/pages",
+            headers=headers,
+            json={
+                "metadata": {
+                    "id": "00000000-0000-4000-8000-000000000112",
+                    "title": "合成页面二",
+                    "role": "knowledge",
+                    "kind": "topic",
+                    "line_id": line["id"],
+                    "project_id": project["id"],
+                },
+                "body": "新增的合成内容。",
+                "confirmation_id": "confirm-two",
+                "operation_id": "page-two",
+            },
+        )
+        assert second_page.status_code == 201
+>       assert second_page.json()["index_update"] == "update_failed"
+E       AssertionError: assert 'manual_required' == 'update_failed'
+E         
+E         - update_failed
+E         + manual_required
+
+tests/integration/test_provider_settings_api.py:490: AssertionError
+________ test_a01_overview_title_update_preserves_validity_and_metadata ________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-194/test_a01_overview_title_update0')
+
+    def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Path) -> None:
+        api, root, workspace_id = make_workspace(tmp_path)
+        ids = add_project(api)
+        metadata = {
+            "id": ids["overview"],
+            "title": "旧概览标题",
+            "role": "knowledge",
+            "kind": "project_overview",
+            "line_id": ids["line"],
+            "project_id": ids["project"],
+            "validity": "superseded",
+            "tags": ["qa", "保留"],
+            "source_refs": ["synthetic:fixture-1"],
+            "custom_qa_field": {"preserve": True},
+        }
+        original_body = "独特事实：蓝色火车从鲸蓝九七站出发。"
+        PageWriter().confirm(
+            root,
+            metadata=metadata,
+            body=original_body,
+            confirmation_id="initial-overview",
+            operation_id="initial-overview-write",
+        )
+        index = QueryService(IndexStore(tmp_path / "profile" / workspace_id / "index.sqlite3"))
+        index.rebuild(root, fingerprint="fake-qa-v1")
+        before = api.get(f"/api/v1/pages/{ids['overview']}").json()
+        response = api.post(
+            f"/api/v1/projects/{ids['project']}/overview/confirmations",
+            json={
+                "title": "仅改标题",
+                "body": original_body,
+                "confirmation_id": "title-only-confirmation",
+                "operation_id": "title-only-operation",
+                "expected_content_sha256": before["content_sha256"],
+            },
+        )
+        assert response.status_code == 201, response.text
+>       assert response.json()["index_update"] == "updated"
+E       AssertionError: assert 'manual_required' == 'updated'
+E         
+E         - updated
+E         + manual_required
+
+../../../../ai/SummitEverything/tests/integration/test_stage_a_original_qa.py:92: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Users/hanwenbo/.codex/worktrees/offline-ask-schema/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_provider_settings_api.py::test_unprepared_local_embedding_defers_index_but_keeps_approval
+FAILED tests/integration/test_stage_a_original_qa.py::test_a01_overview_title_update_preserves_validity_and_metadata
+2 failed, 812 passed, 1 warning in 156.87s (0:02:36)

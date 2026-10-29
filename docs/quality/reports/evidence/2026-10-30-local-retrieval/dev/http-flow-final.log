@@ -1,0 +1,35 @@
+/Users/hanwenbo/.codex/worktrees/offline-ask-schema/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+[2026-10-29T15:26:54Z WARN  lance::dataset::scanner] Deprecation warning, this behavior will change in the future. This search specified output columns but did not include `_distance`.  Currently the `_distance` column will be included.  In the future it will not.  Call `disable_scoring_autoprojection` to adopt the future behavior and avoid this warning
+{
+  "result": "PASS",
+  "steps": [
+    "import",
+    "mock organize",
+    "explicit formal approval",
+    "real local index",
+    "one-shot query plan",
+    "SSE answer",
+    "current citation validation"
+  ],
+  "index_mode": "initial",
+  "indexed_pages": 1,
+  "indexed_chunks": 1,
+  "mock_calls": [
+    "organize",
+    "answer"
+  ],
+  "socket_attempts": 0,
+  "events": [
+    "status",
+    "citation",
+    "delta",
+    "completed"
+  ],
+  "citation_count": 1,
+  "real_cloud_calls": 0,
+  "runtime_credential_reads": [
+    "deepseek",
+    "deepseek"
+  ]
+}

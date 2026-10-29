@@ -1,0 +1,13 @@
+[WebServer] (node:56603) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:56615) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 .local/qa/ask-browser.spec.cjs:72:1 › AskView real/local512/DeepSeek with DashScope absent reaches confirmation, SSE citation, and desktop viewport (1.3s)
+  ✓  2 .local/qa/ask-browser.spec.cjs:101:1 › missing local model retains the question and provides a settings action (735ms)
+  ✓  3 .local/qa/ask-browser.spec.cjs:114:1 › settings shows failed prepare retry and explicit legacy migration while retaining legacy credential state (998ms)
+  ✓  4 .local/qa/ask-browser.spec.cjs:140:1 › approval confirms local index range without paid acceptance plan (823ms)
+
+  4 passed (7.3s)

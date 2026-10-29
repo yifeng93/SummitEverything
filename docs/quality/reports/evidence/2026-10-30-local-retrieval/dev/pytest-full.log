@@ -1,0 +1,1322 @@
+...........................................F....FF.F..F...F.F........... [  8%]
+...................................F.................................... [ 17%]
+...............FF............F.......................................... [ 26%]
+..F....................................FF............................... [ 35%]
+..................FF........F........................................... [ 44%]
+........................................................................ [ 53%]
+........................................................................ [ 61%]
+............................................................F........... [ 70%]
+.......................................FF............................... [ 79%]
+........................................................................ [ 88%]
+..................................................FF.................... [ 97%]
+.....................                                                    [100%]
+=================================== FAILURES ===================================
+_________ test_api_no_evidence_modes_are_ready_and_never_call_provider _________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_api_no_evidence_modes_are0')
+
+    def test_api_no_evidence_modes_are_ready_and_never_call_provider(
+        tmp_path: Path,
+    ) -> None:
+        profile = tmp_path / "profile"
+        root = tmp_path / "workspace"
+        query = _ready_workspace(root, profile)
+        calls: list[str] = []
+    
+        class CountingAnswerer:
+            def answer(self, question, passages, context=None):
+                calls.append(question)
+                return GroundedAnswer(text="无相关资料时不应调用回答模型。")
+    
+        query.answer_provider = CountingAnswerer()
+        client = TestClient(create_app(session_token=TOKEN, profile_root=profile, query_service=query))
+        client.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        _open(client, root)
+    
+        index_status = client.get("/api/v1/index/status")
+        assert index_status.status_code == 200, index_status.text
+>       assert index_status.json()["state"] == "ready"
+E       AssertionError: assert 'stale' == 'ready'
+E         
+E         - ready
+E         + stale
+
+../../../../ai/SummitEverything/tests/integration/test_answer_context.py:381: AssertionError
+_ test_failed_automatic_incremental_index_is_visible_and_stale_chunks_are_rejected _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_failed_automatic_incremen0')
+caplog = <_pytest.logging.LogCaptureFixture object at 0x110722cf0>
+
+    def test_failed_automatic_incremental_index_is_visible_and_stale_chunks_are_rejected(
+        tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        class FailingEmbedding(FakeEmbedding):
+            fail = False
+    
+            def embed(self, text: str, *, fingerprint: str) -> list[float]:
+                if self.fail:
+                    raise RuntimeError("synthetic-private-probe embedding interruption")
+                return super().embed(text, fingerprint=fingerprint)
+    
+        profile = tmp_path / "profiles"
+        embedding = FailingEmbedding()
+        service = QueryService(IndexStore(profile / "index.sqlite3"), embedding=embedding)
+        api = TestClient(create_app(session_token=TOKEN, profile_root=profile, query_service=service))
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        root = tmp_path / "workspace"
+        opened = api.post(
+            "/api/v1/workspaces",
+            json={"root": str(root), "mode": "create", "name": "索引中断模拟", "operation_id": "ws"},
+        )
+        assert opened.status_code == 201, opened.text
+        line = api.post("/api/v1/lines", json={"name": "合成线", "operation_id": "line"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+        ).json()
+        baseline = api.post(
+            "/api/v1/pages",
+            json={
+                "metadata": {
+                    "id": str(uuid4()),
+                    "title": "基线知识",
+                    "role": "knowledge",
+                    "kind": "topic",
+                    "line_id": line["id"],
+                    "project_id": project["id"],
+                },
+                "body": "稳定内容琥珀四二。",
+                "confirmation_id": "base-confirmation",
+                "operation_id": "base-write",
+            },
+        )
+        assert baseline.status_code == 201
+        assert baseline.json()["index_update"] == "not_enabled"
+        initial = api.post(
+            "/api/v1/index/plans", json={"mode": "initial", "fingerprint": "fake-failure-v1"}
+        ).json()
+>       assert api.post("/api/v1/index/jobs", json=initial).status_code == 200
+E       AssertionError: assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = post('/api/v1/index/jobs', json={'error': {'code': 'local_model_not_ready', 'message': '本地检索模型尚未准备完成；请在设置中下载并校验模型文件。', 'request_id': '5e5efe61cd96a8bf'}})
+E        +      where post = <starlette.testclient.TestClient object at 0x126750670>.post
+
+../../../../ai/SummitEverything/tests/integration/test_app_lifecycle.py:70: AssertionError
+______________ test_api_index_query_and_stale_citation_lifecycle _______________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_api_index_query_and_stale0')
+
+    def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
+        api = TestClient(create_app(session_token=TOKEN, profile_root=tmp_path / "profiles"))
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        root = tmp_path / "workspace"
+        response = api.post(
+            "/api/v1/workspaces",
+            json={
+                "root": str(root),
+                "mode": "create",
+                "name": "隔离验收库",
+                "operation_id": "create",
+            },
+        )
+        assert response.status_code == 201, response.text
+        line = api.post("/api/v1/lines", json={"name": "模拟线", "operation_id": "line"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "模拟项目", "operation_id": "project"},
+        ).json()
+        page_id = str(uuid4())
+        page = api.post(
+            "/api/v1/pages",
+            json={
+                "metadata": {
+                    "id": page_id,
+                    "title": "模拟地点",
+                    "role": "knowledge",
+                    "kind": "topic",
+                    "line_id": line["id"],
+                    "project_id": project["id"],
+                },
+                "body": "银杏项目的会议地点是北馆。",
+                "confirmation_id": "approve-v1",
+                "operation_id": "page-v1",
+            },
+        )
+        assert page.status_code == 201, page.text
+        fingerprint = "fake-embedding-v1"
+        plan = api.post("/api/v1/index/plans", json={"mode": "initial", "fingerprint": fingerprint})
+>       assert plan.status_code == 200, plan.text
+E       AssertionError: {"error":{"code":"local_model_not_ready","message":"本地检索模型尚未准备完成；请在设置中下载并校验模型文件。","request_id":"91a08bf08167381a"}}
+E       assert 409 == 200
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+../../../../ai/SummitEverything/tests/integration/test_app_lifecycle.py:146: AssertionError
+_______ test_external_edit_can_be_reconfirmed_from_current_page_snapshot _______
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_external_edit_can_be_reco0')
+
+    def test_external_edit_can_be_reconfirmed_from_current_page_snapshot(tmp_path: Path) -> None:
+        token = "m1-reconfirm-token"
+        store = IndexStore(tmp_path / "profile" / "index.sqlite3")
+        query_service = QueryService(store)
+        app = create_app(
+            session_token=token,
+            profile_root=tmp_path / "profiles",
+            query_service=query_service,
+        )
+        api = TestClient(app)
+        api.headers.update({"Authorization": f"Bearer {token}"})
+        root = tmp_path / "workspace"
+        assert (
+            api.post(
+                "/api/v1/workspaces",
+                json={
+                    "root": str(root),
+                    "mode": "create",
+                    "name": "重新确认模拟库",
+                    "operation_id": "workspace",
+                },
+            ).status_code
+            == 201
+        )
+        line = api.post("/api/v1/lines", json={"name": "模拟线", "operation_id": "line"}).json()
+        project = api.post(
+            "/api/v1/projects",
+            json={"line_id": line["id"], "name": "模拟项目", "operation_id": "project"},
+        ).json()
+        page_id = "00000000-0000-4000-8000-000000000902"
+        metadata = {
+            "id": page_id,
+            "title": "模拟事实",
+            "role": "knowledge",
+            "kind": "topic",
+            "line_id": line["id"],
+            "project_id": project["id"],
+        }
+        assert (
+            api.post(
+                "/api/v1/pages",
+                json={
+                    "metadata": metadata,
+                    "body": "蓝松项目预算是 123 元。",
+                    "confirmation_id": "approve-v1",
+                    "operation_id": "page-v1",
+                },
+            ).status_code
+            == 201
+        )
+        fingerprint = "fake-reconfirm-v1"
+        plan = api.post(
+            "/api/v1/index/plans", json={"mode": "initial", "fingerprint": fingerprint}
+        ).json()
+>       assert api.post("/api/v1/index/jobs", json=plan).status_code == 200
+E       AssertionError: assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = post('/api/v1/index/jobs', json={'error': {'code': 'local_model_not_ready', 'message': '本地检索模型尚未准备完成；请在设置中下载并校验模型文件。', 'request_id': '2880e6bccadf7ffa'}})
+E        +      where post = <starlette.testclient.TestClient object at 0x126c2a430>.post
+
+../../../../ai/SummitEverything/tests/integration/test_app_lifecycle.py:340: AssertionError
+__________ test_failed_incremental_index_records_a_searchable_reason ___________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_failed_incremental_index_0')
+
+    def test_failed_incremental_index_records_a_searchable_reason(tmp_path: Path) -> None:
+        class FailingEmbedding(FakeEmbedding):
+            fail = False
+    
+            def embed(self, text: str, *, fingerprint: str) -> list[float]:
+                if self.fail:
+                    raise RuntimeError("synthetic-private-probe embedding interruption")
+                return super().embed(text, fingerprint=fingerprint)
+    
+        profile = tmp_path / "profile"
+        embedding = FailingEmbedding()
+        service = QueryService(IndexStore(profile / "index.sqlite3"), embedding=embedding)
+        client = TestClient(
+            create_app(
+                session_token=TOKEN,
+                profile_root=profile,
+                query_service=service,
+                secret_backend=MemorySecretBackend(),
+            )
+        )
+        open_workspace(client, tmp_path / "workspace")
+        line = client.post(
+            "/api/v1/lines", headers=HEADERS, json={"name": "合成线", "operation_id": "line"}
+        ).json()
+        project = client.post(
+            "/api/v1/projects",
+            headers=HEADERS,
+            json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+        ).json()
+        metadata = {
+            "id": str(uuid4()),
+            "title": "基线知识",
+            "role": "knowledge",
+            "kind": "topic",
+            "line_id": line["id"],
+            "project_id": project["id"],
+        }
+        baseline = client.post(
+            "/api/v1/pages",
+            headers=HEADERS,
+            json={
+                "metadata": metadata,
+                "body": "稳定内容琥珀四二。",
+                "confirmation_id": "base-confirmation",
+                "operation_id": "base-write",
+            },
+        )
+        assert baseline.status_code == 201, baseline.text
+        plan = client.post(
+            "/api/v1/index/plans",
+            headers=HEADERS,
+            json={"mode": "initial", "fingerprint": "fake-failure-v1"},
+        ).json()
+>       assert client.post("/api/v1/index/jobs", headers=HEADERS, json=plan).status_code == 200
+E       AssertionError: assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = post('/api/v1/index/jobs', headers={'Authorization': 'Bearer synthetic-record-session'}, json={'error': {'code': 'local_model_not_ready', 'message': '本地检索模型尚未准备完成；请在设置中下载并校验模型文件。', 'request_id': 'a4c1498e8d1fda99'}})
+E        +      where post = <starlette.testclient.TestClient object at 0x122c535b0>.post
+
+../../../../ai/SummitEverything/tests/integration/test_assist_and_index_failure_records.py:163: AssertionError
+_________ test_index_failure_with_a_long_provider_message_is_recorded __________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_index_failure_with_a_long0')
+
+    def test_index_failure_with_a_long_provider_message_is_recorded(tmp_path: Path) -> None:
+        class LongFailingEmbedding(FakeEmbedding):
+            fail = False
+    
+            def embed(self, text: str, *, fingerprint: str) -> list[float]:
+                if self.fail:
+                    raise EmbeddingProviderError(
+                        "向量服务返回错误：invalid_api_key — long",
+                        provider_code="invalid_api_key",
+                        provider_message="Invalid API-key provided. " + "detail " * 36,
+                        reason="provider",
+                    )
+                return super().embed(text, fingerprint=fingerprint)
+    
+        profile = tmp_path / "profile"
+        embedding = LongFailingEmbedding()
+        service = QueryService(IndexStore(profile / "index.sqlite3"), embedding=embedding)
+        client = TestClient(
+            create_app(
+                session_token=TOKEN,
+                profile_root=profile,
+                query_service=service,
+                secret_backend=MemorySecretBackend(),
+            )
+        )
+        open_workspace(client, tmp_path / "workspace")
+        line = client.post(
+            "/api/v1/lines", headers=HEADERS, json={"name": "合成线", "operation_id": "line"}
+        ).json()
+        project = client.post(
+            "/api/v1/projects",
+            headers=HEADERS,
+            json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+        ).json()
+        metadata = {
+            "id": str(uuid4()),
+            "title": "基线知识",
+            "role": "knowledge",
+            "kind": "topic",
+            "line_id": line["id"],
+            "project_id": project["id"],
+        }
+        assert (
+            client.post(
+                "/api/v1/pages",
+                headers=HEADERS,
+                json={
+                    "metadata": metadata,
+                    "body": "稳定内容琥珀四二。",
+                    "confirmation_id": "base-confirmation",
+                    "operation_id": "base-write",
+                },
+            ).status_code
+            == 201
+        )
+        plan = client.post(
+            "/api/v1/index/plans",
+            headers=HEADERS,
+            json={"mode": "initial", "fingerprint": "fake-failure-v1"},
+        ).json()
+>       assert client.post("/api/v1/index/jobs", headers=HEADERS, json=plan).status_code == 200
+E       AssertionError: assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = post('/api/v1/index/jobs', headers={'Authorization': 'Bearer synthetic-record-session'}, json={'error': {'code': 'local_model_not_ready', 'message': '本地检索模型尚未准备完成；请在设置中下载并校验模型文件。', 'request_id': '1ff4815a3ebd3987'}})
+E        +      where post = <starlette.testclient.TestClient object at 0x1222c9390>.post
+
+../../../../ai/SummitEverything/tests/integration/test_assist_and_index_failure_records.py:292: AssertionError
+___ test_explicit_date_covers_asked_event_time_without_weakening_topic_gaps ____
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_explicit_date_covers_aske0')
+
+    def test_explicit_date_covers_asked_event_time_without_weakening_topic_gaps(tmp_path: Path) -> None:
+        root, service, _answerer = build_query(
+            tmp_path,
+            [
+                (
+                    "纸飞机读书会",
+                    "活动安排",
+                    "纸飞机读书会定于2026年10月30日14:00至16:00举行，预计参加人数为 24 人。",
+                ),
+                (
+                    "纸飞机读书会",
+                    "清场规则",
+                    "活动结束后由两名志愿者清点六本签到册。场地最晚 16:30 清场。",
+                ),
+            ],
+        )
+        event = ask(service, root, "纸飞机读书会何时举行，人数上限是多少？", "fact")
+        assert len(event.citations) == 1
+        assert event.missing_information == []
+    
+        cleanup = ask(service, root, "纸飞机读书会的清场时间和清场志愿者人数是多少？", "fact")
+        assert len(cleanup.citations) == 1
+>       assert any("清场志愿者人数" in item for item in cleanup.missing_information)
+E       assert False
+E        +  where False = any(<generator object test_explicit_date_covers_asked_event_time_without_weakening_topic_gaps.<locals>.<genexpr> at 0x1222f4ad0>)
+
+../../../../ai/SummitEverything/tests/integration/test_c19_topic_scope_normalization.py:155: AssertionError
+----------------------------- Captured stderr call -----------------------------
+[2026-10-29T14:17:52Z WARN  lance::dataset::scanner] Deprecation warning, this behavior will change in the future. This search specified output columns but did not include `_distance`.  Currently the `_distance` column will be included.  In the future it will not.  Call `disable_scoring_autoprojection` to adopt the future behavior and avoid this warning
+[2026-10-29T14:17:52Z WARN  lance::dataset::scanner] Deprecation warning, this behavior will change in the future. This search specified output columns but did not include `_distance`.  Currently the `_distance` column will be included.  In the future it will not.  Call `disable_scoring_autoprojection` to adopt the future behavior and avoid this warning
+_ test_first_query_without_conversation_id_creates_and_reopens_server_conversation _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_first_query_without_conve0')
+
+    def test_first_query_without_conversation_id_creates_and_reopens_server_conversation(
+        tmp_path: Path,
+    ) -> None:
+        class CountingQuery(QueryService):
+            calls = 0
+    
+            def query(self, *args: object, **kwargs: object):  # type: ignore[no-untyped-def]
+                self.calls += 1
+                return super().query(*args, **kwargs)  # type: ignore[arg-type]
+    
+        profile = tmp_path / "profile"
+        service = CountingQuery(IndexStore(profile / "index.sqlite3"))
+        api = TestClient(create_app(session_token=TOKEN, profile_root=profile, query_service=service))
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        workspace = tmp_path / "workspace"
+        _open(api, workspace, op="create-ws")
+        request_id = str(uuid4())
+        payload = {
+            "request_id": request_id,
+            "question": "当前索引尚未就绪时会怎样？",
+            "fingerprint": "fake-conversation-v1",
+            "purpose": "current",
+        }
+        assert "conversation_id" not in payload
+    
+        first = api.post("/api/v1/queries", json=payload)
+        first_events = _events(first)
+        assert first.status_code == 200
+        assert first_events[0]["type"] == "status"
+        assert first_events[-1]["type"] == "completed"
+        assert [event["seq"] for event in first_events] == list(range(1, len(first_events) + 1))
+        assert service.calls == 1
+    
+        listed = api.get("/api/v1/conversations?limit=1")
+        assert listed.status_code == 200
+        conversation_id = listed.json()["items"][0]["conversation_id"]
+        assert first.headers["x-conversation-id"] == conversation_id
+        detail = api.post(f"/api/v1/conversations/{conversation_id}/reopen")
+        assert detail.status_code == 200
+        assert detail.json()["messages"][0]["request_id"] == request_id
+        assert detail.json()["messages"][0]["state"] == "completed"
+        assert not list(workspace.rglob("conversations.sqlite3"))
+    
+>       assert (
+            api.patch(
+                "/api/v1/settings",
+                json={
+                    "mode": "real",
+                    "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
+                    "embedding": {
+                        "provider": "dashscope",
+                        "model": "qwen3.7-text-embedding",
+                        "enabled": True,
+                    },
+                    "rerank": {
+                        "provider": "dashscope",
+                        "model": "qwen3.7-text-rerank",
+                        "enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+E       AssertionError: assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = patch('/api/v1/settings', json={'mode': 'real', 'llm': {'provider': 'deepseek', 'model': 'deepseek-flash', 'enabled': True}, 'embedding': {'provider'...ext-embedding', 'enabled': True}, 'rerank': {'provider': 'dashscope', 'model': 'qwen3.7-text-rerank', 'enabled': True}})
+E        +      where patch = <starlette.testclient.TestClient object at 0x12279e970>.patch
+
+../../../../ai/SummitEverything/tests/integration/test_conversations.py:84: AssertionError
+_ test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_real_query_plan_binds_con0')
+
+    def test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt(tmp_path):
+        client = _client(tmp_path)
+        _open(client, tmp_path)
+>       assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
+                    "embedding": {
+                        "provider": "dashscope",
+                        "model": "qwen3.7-text-embedding",
+                        "enabled": True,
+                    },
+                    "rerank": {
+                        "provider": "dashscope",
+                        "model": "qwen3.7-text-rerank",
+                        "enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+E       AssertionError: assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = patch('/api/v1/settings', headers={'Authorization': 'Bearer synthetic-gate-session'}, json={'mode': 'real', 'llm': {'provider': 'deepseek', 'model': 'deepseek-flash', 'enabled': True}, 'embedding': {'provider'...ext-embedding', 'enabled': True}, 'rerank': {'provider': 'dashscope', 'model': 'qwen3.7-text-rerank', 'enabled': True}})
+E        +      where patch = <starlette.testclient.TestClient object at 0x122b06510>.patch
+
+tests/integration/test_feishu_real_gate.py:295: AssertionError
+______ test_injected_defaults_prefill_settings_and_keep_offline_defaults _______
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_injected_defaults_prefill0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x125345630>
+
+    def test_injected_defaults_prefill_settings_and_keep_offline_defaults(tmp_path, monkeypatch):
+        source = write_defaults(
+            tmp_path / "defaults.json",
+            {
+                "feishu_app_id": APP_ID,
+                "feishu_redirect_uri": CALLBACK_URI,
+                "embedding_base_url": EMBEDDING_BASE_URL,
+                "rerank_base_url": RERANK_BASE_URL,
+            },
+        )
+        monkeypatch.setenv(DEFAULTS_ENV_VAR, str(source))
+        app = create_app(
+            session_token=TOKEN,
+            profile_root=tmp_path / "profile",
+            secret_backend=MemorySecretBackend(),
+        )
+        client = TestClient(app)
+        open_workspace(client, tmp_path / "workspace")
+    
+        payload = client.get("/api/v1/settings", headers=HEADERS).json()
+        assert payload["mode"] == "fake"
+        assert payload["llm"]["provider"] == "fake"
+>       assert payload["embedding"]["provider"] == "fake"
+E       AssertionError: assert 'local' == 'fake'
+E         
+E         - fake
+E         + local
+
+../../../../ai/SummitEverything/tests/integration/test_first_use_defaults_api.py:69: AssertionError
+_______________ test_live_http_sse_cancel_disconnect_and_reopen ________________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_live_http_sse_cancel_disc0')
+
+    def test_live_http_sse_cancel_disconnect_and_reopen(tmp_path: Path) -> None:
+        token = "synthetic-http-session-token"
+        provider = BlockingFakeAnswerProvider()
+        profile = tmp_path / "profile"
+        query = QueryService(IndexStore(profile / "index.sqlite3"), answer_provider=provider)
+        app = create_app(session_token=token, profile_root=profile, query_service=query)
+        loop_errors: Queue[str] = Queue()
+        app.add_middleware(CaptureLoopExceptions, errors=loop_errors)
+        server_socket = socket.socket()
+        server_socket.bind(("127.0.0.1", 0))
+        port = server_socket.getsockname()[1]
+        server_socket.close()
+        server = uvicorn.Server(
+            uvicorn.Config(app, host="127.0.0.1", port=port, log_level="critical", access_log=False)
+        )
+        thread = threading.Thread(target=server.run, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{port}"
+        headers = {"Authorization": f"Bearer {token}"}
+        try:
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                if server.started:
+                    break
+                time.sleep(0.01)
+            assert server.started, "local HTTP test server did not become ready"
+            with httpx.Client(base_url=base, headers=headers, timeout=5, trust_env=False) as client:
+                opened = client.post(
+                    "/api/v1/workspaces",
+                    json={
+                        "root": str(tmp_path / "workspace"),
+                        "mode": "create",
+                        "name": "HTTP SSE 隔离库",
+                        "operation_id": "http-sse-workspace",
+                    },
+                )
+                assert opened.status_code == 201, opened.text
+                line = client.post(
+                    "/api/v1/lines", json={"name": "合成主线", "operation_id": "line"}
+                ).json()
+                project = client.post(
+                    "/api/v1/projects",
+                    json={"line_id": line["id"], "name": "合成项目", "operation_id": "project"},
+                ).json()
+                page = client.post(
+                    "/api/v1/pages",
+                    json={
+                        "metadata": {
+                            "id": str(uuid4()),
+                            "title": "橡果预算",
+                            "role": "knowledge",
+                            "kind": "topic",
+                            "line_id": line["id"],
+                            "project_id": project["id"],
+                        },
+                        "body": "橡果计划预算为 120 元。",
+                        "confirmation_id": "approve-http-sse",
+                        "operation_id": "page-http-sse",
+                    },
+                )
+                assert page.status_code == 201, page.text
+                plan = client.post(
+                    "/api/v1/index/plans",
+                    json={"mode": "initial", "fingerprint": "summit-fake-embedding-v1"},
+                )
+>               assert plan.status_code == 200, plan.text
+E               AssertionError: {"error":{"code":"local_model_not_ready","message":"本地检索模型尚未准备完成；请在设置中下载并校验模型文件。","request_id":"b60b5ff14d911877"}}
+E               assert 409 == 200
+E                +  where 409 = <Response [409 Conflict]>.status_code
+
+../../../../ai/SummitEverything/tests/integration/test_http_sse_lifecycle.py:120: AssertionError
+_ test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial_job _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_legacy_index_status_query0')
+
+    def test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial_job(
+        tmp_path: Path,
+    ) -> None:
+        index_path = tmp_path / "profile" / "index.sqlite3"
+        index_path.parent.mkdir(parents=True)
+        old_page_id = uuid4()
+        old_vector = json.dumps([0.25, 0.5, 0.75])
+        with sqlite3.connect(index_path) as connection:
+            connection.execute(
+                """CREATE TABLE active_generations (
+                     workspace_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL
+                   )"""
+            )
+            connection.execute(
+                """CREATE TABLE chunks (
+                     workspace_id TEXT NOT NULL, fingerprint TEXT NOT NULL, page_id TEXT NOT NULL,
+                     content_sha256 TEXT NOT NULL, chunk_id TEXT NOT NULL, heading TEXT NOT NULL,
+                     text TEXT NOT NULL, vector_json TEXT NOT NULL,
+                     PRIMARY KEY (workspace_id, fingerprint, chunk_id))"""
+            )
+            connection.execute(
+                "INSERT INTO active_generations (workspace_id, fingerprint) VALUES (?, ?)",
+                ("workspace-pending", "legacy-fake64"),
+            )
+            connection.execute(
+                """INSERT INTO chunks (workspace_id, fingerprint, page_id, content_sha256,
+                   chunk_id, heading, text, vector_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    "workspace-pending",
+                    "legacy-fake64",
+                    str(old_page_id),
+                    "a" * 64,
+                    "legacy-chunk",
+                    "旧向量样本",
+                    "这段旧文本不得被读取或引用。",
+                    old_vector,
+                ),
+            )
+    
+        embedding = CountingEmbedding()
+        store = IndexStore(index_path)
+        service = QueryService(store, embedding=embedding)
+        api = TestClient(
+            create_app(
+                session_token=TOKEN,
+                profile_root=index_path.parent,
+                query_service=service,
+            )
+        )
+        api.headers.update({"Authorization": f"Bearer {TOKEN}"})
+        root = tmp_path / "workspace"
+        opened = api.post(
+            "/api/v1/workspaces",
+            json={"root": str(root), "mode": "create", "name": "旧索引重建测试", "operation_id": "ws"},
+        )
+        assert opened.status_code == 201, opened.text
+        workspace_id = opened.json()["workspace_id"]
+        with sqlite3.connect(index_path) as connection:
+            connection.execute(
+                "UPDATE active_generations SET workspace_id = ? WHERE workspace_id = ?",
+                (workspace_id, "workspace-pending"),
+            )
+            connection.execute(
+                "UPDATE chunks SET workspace_id = ? WHERE workspace_id = ?",
+                (workspace_id, "workspace-pending"),
+            )
+        configured = api.patch(
+            "/api/v1/settings",
+            json={
+                "mode": "real",
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+            },
+        )
+>       assert configured.status_code == 200, configured.text
+E       AssertionError: {"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"6e1ac754b7290c57"}}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+../../../../ai/SummitEverything/tests/integration/test_legacy_index_rebuild.py:108: AssertionError
+________ test_embedding_smoke_failure_returns_502_with_provider_details ________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_embedding_smoke_failure_r0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1268fcd00>
+
+    def test_embedding_smoke_failure_returns_502_with_provider_details(tmp_path, monkeypatch):
+        def failing_embed_many(self, texts, *, fingerprint=None):  # noqa: ANN001, ANN002, ANN003
+            raise EmbeddingProviderError(
+                "向量服务返回错误：invalid_api_key — Invalid API-key provided.",
+                provider_code="invalid_api_key",
+                provider_message="Invalid API-key provided.",
+                request_id="request-88",
+                reason="provider",
+            )
+    
+        monkeypatch.setattr(ModelStudioEmbedding, "embed_many", failing_embed_many)
+        client = TestClient(
+            create_app(
+                session_token=TOKEN,
+                profile_root=tmp_path / "profile",
+                secret_backend=SyntheticKeychain(),
+            )
+        )
+        open_workspace(client, tmp_path / "workspace")
+        configured = client.patch(
+            "/api/v1/settings",
+            headers=HEADERS,
+            json={
+                "mode": "real",
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+            },
+        )
+>       assert configured.status_code == 200, configured.text
+E       AssertionError: {"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"69bbb6fbe372bccb"}}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+../../../../ai/SummitEverything/tests/integration/test_provider_failure_visibility.py:225: AssertionError
+_________ test_rerank_smoke_failure_returns_502_with_provider_details __________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_rerank_smoke_failure_retu0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12247b850>
+
+    def test_rerank_smoke_failure_returns_502_with_provider_details(tmp_path, monkeypatch):
+        def failing_rank(self, query, texts):  # noqa: ANN001, ANN002, ANN003
+            raise RerankProviderError(
+                "排序服务返回错误：access_denied — Model access denied",
+                provider_code="access_denied",
+                provider_message="Model access denied",
+                request_id="request-99",
+                reason="provider",
+            )
+    
+        monkeypatch.setattr(ModelStudioReranker, "rank", failing_rank)
+        client = TestClient(
+            create_app(
+                session_token=TOKEN,
+                profile_root=tmp_path / "profile",
+                secret_backend=SyntheticKeychain(),
+            )
+        )
+        open_workspace(client, tmp_path / "workspace")
+>       _configure_real(client)
+
+../../../../ai/SummitEverything/tests/integration/test_provider_failure_visibility.py:289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <starlette.testclient.TestClient object at 0x122253070>, llm = False
+
+    def _configure_real(client: TestClient, *, llm: bool = False) -> None:
+        body: dict[str, object] = {"mode": "real"}
+        if llm:
+            body["llm"] = {"provider": "deepseek", "model": "deepseek-flash", "enabled": True}
+        else:
+            body["embedding"] = {
+                "provider": "dashscope",
+                "model": "qwen3.7-text-embedding",
+                "enabled": True,
+            }
+            body["rerank"] = {
+                "provider": "dashscope",
+                "model": "qwen3.7-text-rerank",
+                "enabled": True,
+            }
+        response = client.patch("/api/v1/settings", headers=HEADERS, json=body)
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"af73e731b167e5f3"}}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+../../../../ai/SummitEverything/tests/integration/test_provider_failure_visibility.py:258: AssertionError
+__ test_organize_index_and_query_use_confirmed_plans_and_real_adapters[False] __
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_organize_index_and_query_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x124b010f0>
+usage_write_fails = False
+
+    @pytest.mark.parametrize("usage_write_fails", [False, True])
+    def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
+        tmp_path, monkeypatch, usage_write_fails: bool
+    ):
+        calls: list[tuple[str, dict[str, Any]]] = []
+        closed_clients: list[bool] = []
+        fail_next_chat = [False]
+    
+        class TrackedClient(httpx.Client):
+            def __init__(self) -> None:
+                super().__init__(transport=httpx.MockTransport(handler), trust_env=False)
+    
+            def close(self) -> None:
+                if not self.is_closed:
+                    closed_clients.append(True)
+                super().close()
+    
+        def new_client() -> TrackedClient:
+            return TrackedClient()
+    
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.headers["authorization"] == "Bearer synthetic-adapter-key"
+            payload = json.loads(request.content)
+            calls.append((request.url.path, payload))
+            if request.url.path.endswith("/embeddings"):
+                vectors = [
+                    {"index": index, "embedding": [1.0] + [0.0] * 1023}
+                    for index, _text in enumerate(payload["input"])
+                ]
+                return httpx.Response(
+                    200,
+                    json={
+                        "model": "qwen3.7-text-embedding",
+                        "data": vectors,
+                        "usage": {"total_tokens": 12},
+                    },
+                    headers={"x-request-id": f"synthetic-{len(calls):02d}"},
+                )
+            if request.url.path.endswith("/text-rerank"):
+                documents = payload["input"]["documents"]
+                return httpx.Response(
+                    200,
+                    json={
+                        "output": {
+                            "results": [
+                                {"index": index, "relevance_score": 0.9 - index / 100}
+                                for index in range(len(documents))
+                            ]
+                        },
+                        "usage": {"prompt_tokens": 12, "total_tokens": 12},
+                    },
+                    headers={"x-request-id": f"synthetic-{len(calls):02d}"},
+                )
+            if request.url.path.endswith("/chat/completions"):
+                if fail_next_chat[0]:
+                    fail_next_chat[0] = False
+                    raise httpx.ReadTimeout("synthetic provider timeout")
+                system = payload["messages"][0]["content"]
+                if "Faithfully reorganize" in system:
+                    content = json.dumps(
+                        {
+                            "proposals": [
+                                {
+                                    "title": "访客登记办法",
+                                    # The model may follow the old wording; the draft
+                                    # must still land as a valid page kind.
+                                    "kind": "fact",
+                                    "body": (
+                                        "## 访客登记\n\n"
+                                        "青榆的访客登记须由前台核验姓名并记录来访时间。\n"
+                                    ),
+                                    "input_indexes": [0],
+                                    "important_conflicts": [],
+                                    "action_suggestions": [],
+                                }
+                            ]
+                        },
+                        ensure_ascii=False,
+                    )
+                else:
+                    content = json.dumps(
+                        {
+                            "text": "访客登记由前台核验姓名并记录来访时间。",
+                            "source_statements": ["青榆的访客登记须由前台核验姓名并记录来访时间。"],
+                            "inferences": [],
+                            "advice": [],
+                            "missing_information": [],
+                        },
+                        ensure_ascii=False,
+                    )
+                return httpx.Response(
+                    200,
+                    json={
+                        "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+                        "usage": {
+                            "prompt_tokens": 14,
+                            "completion_tokens": 20,
+                            "total_tokens": 34,
+                            "completion_tokens_details": {"reasoning_tokens": 2},
+                        },
+                    },
+                    headers={"x-request-id": f"synthetic-{len(calls):02d}"},
+                )
+            raise AssertionError(f"unexpected synthetic model request: {request.url}")
+    
+        monkeypatch.setattr(
+            ModelRuntime,
+            "_credential",
+            lambda _self, _provider, _account_id: "synthetic-adapter-key",
+        )
+        monkeypatch.setattr(embedding_module, "create_http_client", new_client)
+        monkeypatch.setattr(llm_module, "create_http_client", new_client)
+        monkeypatch.setattr(rerank_module, "create_http_client", new_client)
+        if usage_write_fails:
+    
+            def fail_record_usage(_ledger: AcceptancePlanLedger, _plan_id: Any, _usage: Any) -> None:
+                raise RuntimeError("synthetic usage ledger failure")
+    
+            monkeypatch.setattr(AcceptancePlanLedger, "record_usage", fail_record_usage)
+    
+        app = app_module.create_app(
+            session_token="synthetic-real-adapter-session",
+            profile_root=tmp_path / "profile",
+            secret_backend=MemorySecretBackend(),
+        )
+        client = TestClient(app, base_url="http://127.0.0.1:5173")
+        opened = client.post(
+            "/api/v1/workspaces",
+            headers=HEADERS,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "合成验收库",
+                "operation_id": "open-workspace",
+            },
+        )
+        assert opened.status_code == 201, opened.text
+        settings = client.patch(
+            "/api/v1/settings",
+            headers=HEADERS,
+            json={
+                "mode": "real",
+                "llm": {
+                    "provider": "deepseek",
+                    "model": "deepseek-flash",
+                    "enabled": True,
+                    "reasoning_effort": "low",
+                    "max_output_tokens": 2048,
+                },
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+                "rerank": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-rerank",
+                    "enabled": True,
+                },
+            },
+        )
+>       assert settings.status_code == 200, settings.text
+E       AssertionError: {"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"ae07489b84125ade"}}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/integration/test_real_model_approval_flow.py:185: AssertionError
+__ test_organize_index_and_query_use_confirmed_plans_and_real_adapters[True] ___
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_organize_index_and_query_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1229ade80>
+usage_write_fails = True
+
+    @pytest.mark.parametrize("usage_write_fails", [False, True])
+    def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
+        tmp_path, monkeypatch, usage_write_fails: bool
+    ):
+        calls: list[tuple[str, dict[str, Any]]] = []
+        closed_clients: list[bool] = []
+        fail_next_chat = [False]
+    
+        class TrackedClient(httpx.Client):
+            def __init__(self) -> None:
+                super().__init__(transport=httpx.MockTransport(handler), trust_env=False)
+    
+            def close(self) -> None:
+                if not self.is_closed:
+                    closed_clients.append(True)
+                super().close()
+    
+        def new_client() -> TrackedClient:
+            return TrackedClient()
+    
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.headers["authorization"] == "Bearer synthetic-adapter-key"
+            payload = json.loads(request.content)
+            calls.append((request.url.path, payload))
+            if request.url.path.endswith("/embeddings"):
+                vectors = [
+                    {"index": index, "embedding": [1.0] + [0.0] * 1023}
+                    for index, _text in enumerate(payload["input"])
+                ]
+                return httpx.Response(
+                    200,
+                    json={
+                        "model": "qwen3.7-text-embedding",
+                        "data": vectors,
+                        "usage": {"total_tokens": 12},
+                    },
+                    headers={"x-request-id": f"synthetic-{len(calls):02d}"},
+                )
+            if request.url.path.endswith("/text-rerank"):
+                documents = payload["input"]["documents"]
+                return httpx.Response(
+                    200,
+                    json={
+                        "output": {
+                            "results": [
+                                {"index": index, "relevance_score": 0.9 - index / 100}
+                                for index in range(len(documents))
+                            ]
+                        },
+                        "usage": {"prompt_tokens": 12, "total_tokens": 12},
+                    },
+                    headers={"x-request-id": f"synthetic-{len(calls):02d}"},
+                )
+            if request.url.path.endswith("/chat/completions"):
+                if fail_next_chat[0]:
+                    fail_next_chat[0] = False
+                    raise httpx.ReadTimeout("synthetic provider timeout")
+                system = payload["messages"][0]["content"]
+                if "Faithfully reorganize" in system:
+                    content = json.dumps(
+                        {
+                            "proposals": [
+                                {
+                                    "title": "访客登记办法",
+                                    # The model may follow the old wording; the draft
+                                    # must still land as a valid page kind.
+                                    "kind": "fact",
+                                    "body": (
+                                        "## 访客登记\n\n"
+                                        "青榆的访客登记须由前台核验姓名并记录来访时间。\n"
+                                    ),
+                                    "input_indexes": [0],
+                                    "important_conflicts": [],
+                                    "action_suggestions": [],
+                                }
+                            ]
+                        },
+                        ensure_ascii=False,
+                    )
+                else:
+                    content = json.dumps(
+                        {
+                            "text": "访客登记由前台核验姓名并记录来访时间。",
+                            "source_statements": ["青榆的访客登记须由前台核验姓名并记录来访时间。"],
+                            "inferences": [],
+                            "advice": [],
+                            "missing_information": [],
+                        },
+                        ensure_ascii=False,
+                    )
+                return httpx.Response(
+                    200,
+                    json={
+                        "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+                        "usage": {
+                            "prompt_tokens": 14,
+                            "completion_tokens": 20,
+                            "total_tokens": 34,
+                            "completion_tokens_details": {"reasoning_tokens": 2},
+                        },
+                    },
+                    headers={"x-request-id": f"synthetic-{len(calls):02d}"},
+                )
+            raise AssertionError(f"unexpected synthetic model request: {request.url}")
+    
+        monkeypatch.setattr(
+            ModelRuntime,
+            "_credential",
+            lambda _self, _provider, _account_id: "synthetic-adapter-key",
+        )
+        monkeypatch.setattr(embedding_module, "create_http_client", new_client)
+        monkeypatch.setattr(llm_module, "create_http_client", new_client)
+        monkeypatch.setattr(rerank_module, "create_http_client", new_client)
+        if usage_write_fails:
+    
+            def fail_record_usage(_ledger: AcceptancePlanLedger, _plan_id: Any, _usage: Any) -> None:
+                raise RuntimeError("synthetic usage ledger failure")
+    
+            monkeypatch.setattr(AcceptancePlanLedger, "record_usage", fail_record_usage)
+    
+        app = app_module.create_app(
+            session_token="synthetic-real-adapter-session",
+            profile_root=tmp_path / "profile",
+            secret_backend=MemorySecretBackend(),
+        )
+        client = TestClient(app, base_url="http://127.0.0.1:5173")
+        opened = client.post(
+            "/api/v1/workspaces",
+            headers=HEADERS,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "合成验收库",
+                "operation_id": "open-workspace",
+            },
+        )
+        assert opened.status_code == 201, opened.text
+        settings = client.patch(
+            "/api/v1/settings",
+            headers=HEADERS,
+            json={
+                "mode": "real",
+                "llm": {
+                    "provider": "deepseek",
+                    "model": "deepseek-flash",
+                    "enabled": True,
+                    "reasoning_effort": "low",
+                    "max_output_tokens": 2048,
+                },
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+                "rerank": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-rerank",
+                    "enabled": True,
+                },
+            },
+        )
+>       assert settings.status_code == 200, settings.text
+E       AssertionError: {"error":{"code":"validation_error","message":"Request contains invalid fields","request_id":"694069214b4cd1ae"}}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/integration/test_real_model_approval_flow.py:185: AssertionError
+____ test_a04_approved_journal_is_incrementally_indexed_without_manual_job _____
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_a04_approved_journal_is_i0')
+
+    def test_a04_approved_journal_is_incrementally_indexed_without_manual_job(tmp_path: Path) -> None:
+        service = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"))
+        api, root, workspace_id = make_workspace(tmp_path, query_service=service)
+        ids = add_project(api)
+        PageWriter().confirm(
+            root,
+            metadata={
+                "id": "c0caa4b6-a099-433e-b3a5-8b48266de207",
+                "title": "基线页",
+                "role": "knowledge",
+                "kind": "topic",
+                "line_id": ids["line"],
+                "project_id": ids["project"],
+            },
+            body="基线合成知识。",
+            confirmation_id="base-confirmation",
+            operation_id="base-operation",
+        )
+        service.rebuild(root, fingerprint="fake-qa-v1")
+        before = service.store.status(UUID(workspace_id))
+        before_embeddings = service.embedding.calls
+        saved = api.post(
+            "/api/v1/journal/log",
+            json={
+                "title": "自动索引独特事实",
+                "body": "蓝色玻璃鲸的代号是独特词鲸蓝九七。",
+                "confirmation_id": "journal-confirmation",
+                "operation_id": "journal-operation",
+            },
+        )
+        assert saved.status_code == 201, saved.text
+        after = service.store.status(UUID(workspace_id))
+>       assert after["pages"] == before["pages"] + 1
+E       assert 1 == (1 + 1)
+
+../../../../ai/SummitEverything/tests/integration/test_stage_a_original_qa.py:275: AssertionError
+_____________ test_saving_the_injected_default_does_not_persist_it _____________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_saving_the_injected_defau0')
+
+    def test_saving_the_injected_default_does_not_persist_it(tmp_path):
+        # Build "A": the injected default.
+        defaults_a = FirstUseDefaults(
+            values={"embedding_base_url": EMBEDDING_BASE_URL}, source=tmp_path / "defaults-a.json"
+        )
+        settings_path = tmp_path / "settings.json"
+        store = SettingsStore(settings_path, defaults=defaults_a)
+    
+        assert store.read().embedding.base_url == EMBEDDING_BASE_URL
+    
+        updated = store.update({"embedding": {"base_url": EMBEDDING_BASE_URL}})
+    
+        assert updated.embedding.base_url == EMBEDDING_BASE_URL
+        persisted = json.loads(settings_path.read_text(encoding="utf-8"))
+        assert "base_url" not in persisted["embedding"]
+>       assert persisted["embedding"]["provider"] == "fake"
+E       AssertionError: assert 'local' == 'fake'
+E         
+E         - fake
+E         + local
+
+../../../../ai/SummitEverything/tests/unit/test_first_use_defaults.py:176: AssertionError
+_ test_invalid_injected_values_are_rejected_by_the_existing_validators[embedding_base_url-https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1] _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_invalid_injected_values_a2')
+key = 'embedding_base_url'
+value = 'https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1'
+
+    @pytest.mark.parametrize(
+        ("key", "value"),
+        [
+            (
+                "embedding_base_url",
+                "http://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+            ),
+            ("embedding_base_url", "https://example.invalid/compatible-mode/v1"),
+            ("embedding_base_url", "https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1"),
+            ("rerank_base_url", "https://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
+            ("rerank_base_url", "https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1?token=1"),
+            ("feishu_redirect_uri", "https://example.invalid/api/v1/integrations/feishu/callback"),
+            ("feishu_redirect_uri", "http://127.0.0.1:18793/not-the-callback"),
+        ],
+    )
+    def test_invalid_injected_values_are_rejected_by_the_existing_validators(tmp_path, key, value):
+        source = write_defaults(tmp_path / "defaults.json", {key: value})
+>       with pytest.raises(FirstUseDefaultsError) as error:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE FirstUseDefaultsError
+
+../../../../ai/SummitEverything/tests/unit/test_first_use_defaults.py:403: Failed
+_ test_invalid_injected_values_are_rejected_by_the_existing_validators[rerank_base_url-https://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1] _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-179/test_invalid_injected_values_a3')
+key = 'rerank_base_url'
+value = 'https://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1'
+
+    @pytest.mark.parametrize(
+        ("key", "value"),
+        [
+            (
+                "embedding_base_url",
+                "http://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+            ),
+            ("embedding_base_url", "https://example.invalid/compatible-mode/v1"),
+            ("embedding_base_url", "https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1"),
+            ("rerank_base_url", "https://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"),
+            ("rerank_base_url", "https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1?token=1"),
+            ("feishu_redirect_uri", "https://example.invalid/api/v1/integrations/feishu/callback"),
+            ("feishu_redirect_uri", "http://127.0.0.1:18793/not-the-callback"),
+        ],
+    )
+    def test_invalid_injected_values_are_rejected_by_the_existing_validators(tmp_path, key, value):
+        source = write_defaults(tmp_path / "defaults.json", {key: value})
+>       with pytest.raises(FirstUseDefaultsError) as error:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE FirstUseDefaultsError
+
+../../../../ai/SummitEverything/tests/unit/test_first_use_defaults.py:403: Failed
+________ test_embedding_fingerprint_changes_with_provider_configuration ________
+
+    def test_embedding_fingerprint_changes_with_provider_configuration():
+        fake = ProviderSettings.model_validate({})
+>       real = ProviderSettings.model_validate(
+            {"embedding": {"provider": "dashscope", "model": "qwen3.7-text-embedding"}}
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ProviderSettings
+E       embedding
+E         Value error, The legacy embedding configuration requires 1024 dimensions [type=value_error, input_value={'provider': 'dashscope',...qwen3.7-text-embedding'}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.14/v/value_error
+
+../../../../ai/SummitEverything/tests/unit/test_provider_settings.py:101: ValidationError
+_ test_model_studio_custom_account_hosts_are_local_settings_and_fingerprint_inputs _
+
+    def test_model_studio_custom_account_hosts_are_local_settings_and_fingerprint_inputs():
+>       settings = ProviderSettings.model_validate(
+            {
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "base_url": "https://workspace.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+                },
+                "rerank": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-rerank",
+                    "base_url": "https://workspace.cn-beijing.maas.aliyuncs.com/api/v1",
+                },
+            }
+        )
+E       pydantic_core._pydantic_core.ValidationError: 2 validation errors for ProviderSettings
+E       embedding
+E         Value error, The legacy embedding configuration requires 1024 dimensions [type=value_error, input_value={'provider': 'dashscope',...com/compatible-mode/v1'}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.14/v/value_error
+E       rerank
+E         Value error, The legacy rerank configuration requires 1024 dimensions [type=value_error, input_value={'provider': 'dashscope',...as.aliyuncs.com/api/v1'}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.14/v/value_error
+
+../../../../ai/SummitEverything/tests/unit/test_provider_settings.py:110: ValidationError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Users/hanwenbo/.codex/worktrees/offline-ask-schema/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_answer_context.py::test_api_no_evidence_modes_are_ready_and_never_call_provider
+FAILED tests/integration/test_app_lifecycle.py::test_failed_automatic_incremental_index_is_visible_and_stale_chunks_are_rejected
+FAILED tests/integration/test_app_lifecycle.py::test_api_index_query_and_stale_citation_lifecycle
+FAILED tests/integration/test_app_lifecycle.py::test_external_edit_can_be_reconfirmed_from_current_page_snapshot
+FAILED tests/integration/test_assist_and_index_failure_records.py::test_failed_incremental_index_records_a_searchable_reason
+FAILED tests/integration/test_assist_and_index_failure_records.py::test_index_failure_with_a_long_provider_message_is_recorded
+FAILED tests/integration/test_c19_topic_scope_normalization.py::test_explicit_date_covers_asked_event_time_without_weakening_topic_gaps
+FAILED tests/integration/test_conversations.py::test_first_query_without_conversation_id_creates_and_reopens_server_conversation
+FAILED tests/integration/test_feishu_real_gate.py::test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt
+FAILED tests/integration/test_first_use_defaults_api.py::test_injected_defaults_prefill_settings_and_keep_offline_defaults
+FAILED tests/integration/test_http_sse_lifecycle.py::test_live_http_sse_cancel_disconnect_and_reopen
+FAILED tests/integration/test_legacy_index_rebuild.py::test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial_job
+FAILED tests/integration/test_provider_failure_visibility.py::test_embedding_smoke_failure_returns_502_with_provider_details
+FAILED tests/integration/test_provider_failure_visibility.py::test_rerank_smoke_failure_returns_502_with_provider_details
+FAILED tests/integration/test_real_model_approval_flow.py::test_organize_index_and_query_use_confirmed_plans_and_real_adapters[False]
+FAILED tests/integration/test_real_model_approval_flow.py::test_organize_index_and_query_use_confirmed_plans_and_real_adapters[True]
+FAILED tests/integration/test_stage_a_original_qa.py::test_a04_approved_journal_is_incrementally_indexed_without_manual_job
+FAILED tests/unit/test_first_use_defaults.py::test_saving_the_injected_default_does_not_persist_it
+FAILED tests/unit/test_first_use_defaults.py::test_invalid_injected_values_are_rejected_by_the_existing_validators[embedding_base_url-https://ws-synthetic.cn-beijing.maas.aliyuncs.com/api/v1]
+FAILED tests/unit/test_first_use_defaults.py::test_invalid_injected_values_are_rejected_by_the_existing_validators[rerank_base_url-https://ws-synthetic.cn-beijing.maas.aliyuncs.com/compatible-mode/v1]
+FAILED tests/unit/test_provider_settings.py::test_embedding_fingerprint_changes_with_provider_configuration
+FAILED tests/unit/test_provider_settings.py::test_model_studio_custom_account_hosts_are_local_settings_and_fingerprint_inputs
+22 failed, 791 passed, 1 warning in 151.20s (0:02:31)
