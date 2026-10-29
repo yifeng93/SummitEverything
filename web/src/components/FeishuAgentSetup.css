@@ -1,0 +1,22 @@
+.feishu-agent-setup {
+  min-width: 0;
+}
+
+.feishu-agent-setup-fallback {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.feishu-agent-setup-fallback textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 9rem;
+  max-width: 100%;
+  resize: vertical;
+}
+
+.feishu-agent-setup-feedback {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}

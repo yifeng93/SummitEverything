@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { api } from '../api/client'
 import { FirstUseWizard } from './FirstUseWizard'
+import { FeishuAgentSetup } from './FeishuAgentSetup'
 import { SmokeCheckConfirm } from './SmokeCheckConfirm'
 import { ConfirmDialog } from './ConfirmDialog'
 import { saveFirstUseProgress, type FirstUseProgress } from './firstUseProgress'
@@ -377,7 +378,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
             })}
           </div>
           <p className="settings-card-next">飞书任务写回仍不可用；本页不提供任何修改飞书任务的入口。</p>
-          <button className="button primary" type="button" disabled={!settings} onClick={() => openWizard(4)}>连接 / 重新授权飞书</button>
+          <FeishuAgentSetup className="button primary" />
         </section>
       </div>
 

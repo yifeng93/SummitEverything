@@ -48,12 +48,15 @@ it('keeps a successful note receipt in place and continues with the exact saved 
   expect(requests.some((item) => item.path.endsWith('/drafts') || item.path.includes('/intake/jobs'))).toBe(false)
 })
 
-it('offers a direct connection action when calendar authorization is unavailable', async () => {
-  mockApi({ '/integrations/feishu/status': { mode: 'fake', authorized: false, scopes: [], token_type: 'user' } })
-  const onOpenConnectionWizard = vi.fn()
-  render(<TodayView onError={vi.fn()} onOpenConnectionWizard={onOpenConnectionWizard} />)
+it('copies an agent setup prompt without opening a wizard or calling external endpoints', async () => {
+  const requests = mockApi({ '/integrations/feishu/status': { mode: 'fake', authorized: false, scopes: [], token_type: 'user' } })
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  vi.stubGlobal('navigator', { clipboard: { writeText } })
+  render(<TodayView onError={vi.fn()} onOpenConnectionWizard={vi.fn(() => { throw new Error('wizard should not open') })} />)
   fireEvent.click(await screen.findByRole('button', { name: '连接飞书' }))
-  expect(onOpenConnectionWizard).toHaveBeenCalledTimes(1)
+  expect(await screen.findByText(/已复制，粘贴到 Codex \/ WorkBuddy/)).toBeTruthy()
+  expect(writeText).toHaveBeenCalledTimes(1)
+  expect(requests.some((item) => item.path.includes('/authorizations') || item.path.includes('/calendar?'))).toBe(false)
 })
 
 it('continues from a successful file import with the returned source item id', async () => {

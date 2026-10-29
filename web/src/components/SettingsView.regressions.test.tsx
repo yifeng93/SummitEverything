@@ -4,6 +4,19 @@ import { SettingsView } from './SettingsView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('copies the agent setup prompt from settings without opening the manual wizard', async () => {
+  const state = { mode: 'fake', feishu: { app_id: '', redirect_uri: '' }, llm: { provider: 'fake', model: null, account_id: 'default', enabled: false }, embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid', enabled: false }, rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid', enabled: false }, credential_status: {}, capabilities: {}, keychain_available: false }
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL) => ({ ok: true, status: 200, json: async () => state }))
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('navigator', { clipboard: { writeText } })
+  render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '连接飞书' }))
+  expect(await screen.findByText(/已复制，粘贴到 Codex \/ WorkBuddy/)).toBeTruthy()
+  expect(writeText).toHaveBeenCalledTimes(1)
+  expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/authorization'))).toBe(false)
+})
+
 it('persists a changed Model Studio account id through the settings form', async () => {
   const state = {
     mode: 'fake', model_studio_account_id: 'original-account',
