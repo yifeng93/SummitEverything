@@ -1,0 +1,41 @@
+[WebServer] (node:56183) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:56420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (38.8s)
+
+
+  1) e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.reload: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for navigation until "load"
+        - navigated to "http://127.0.0.1:5285/"
+
+
+      82 |   await page.screenshot({ path: resolve(evidenceDir, 'onboarding-step-3.png'), fullPage: true })
+      83 |
+    > 84 |   await page.reload()
+         |              ^
+      85 |   await expect(page.getByRole('heading', { name: '第 3 步 · 检查连接' })).toBeVisible()
+      86 |   await page.screenshot({ path: resolve(evidenceDir, 'onboarding-step-3-reloaded-open.png'), fullPage: true })
+      87 |   await page.getByRole('button', { name: '关闭向导' }).click()
+        at /Users/hanwenbo/ai/SummitEverything/.local/dev/feishu-agent-setup/e2e-followup/standalone/web/e2e/first-use.spec.ts:84:14
+
+    Error Context: test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step 

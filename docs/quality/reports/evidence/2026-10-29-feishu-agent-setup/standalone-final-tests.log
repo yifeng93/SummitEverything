@@ -1,0 +1,41 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/FeishuAgentSetup.test.tsx src/components/TodayView.test.tsx src/components/SettingsView.regressions.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/.local/dev/feishu-agent-setup/standalone-final/web
+
+ ❯ src/components/SettingsView.regressions.test.tsx (7 tests | 1 failed) 15657ms
+   × copies the agent setup prompt from settings without opening the manual wizard 6158ms
+ ❯ src/components/TodayView.test.tsx (16 tests | 1 failed) 15669ms
+   × places meetings and tasks beside capture tools while keeping remote data opt-in 7169ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > copies the agent setup prompt from settings without opening the manual wizard
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/SettingsView.regressions.test.tsx:7:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/TodayView.test.tsx > places meetings and tasks beside capture tools while keeping remote data opt-in
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/TodayView.test.tsx:21:1
+     19| }
+     20|
+     21| it('places meetings and tasks beside capture tools while keeping remot…
+       | ^
+     22|   const requests = mockApi({ '/actions': [], '/intake/items': [] })
+     23|   render(<TodayView onError={vi.fn()} />)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  2 failed | 23 passed (25)
+   Start at  11:00:20
+   Duration  28.33s (tests 54%, environment 22%, transform 15%, import 8%)
+

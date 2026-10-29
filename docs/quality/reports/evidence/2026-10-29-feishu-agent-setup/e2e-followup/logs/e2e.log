@@ -1,0 +1,45 @@
+[WebServer] (node:53091) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:53103) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step (8.8s)
+
+
+  1) e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('首次配置 · 第 1 步，共 5 步')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('首次配置 · 第 1 步，共 5 步') with timeout 5000ms
+      - waiting for getByText('首次配置 · 第 1 步，共 5 步')
+
+
+      59 |   await page.setViewportSize({ width: 390, height: 844 })
+      60 |   await page.goto('/')
+    > 61 |   await expect(page.getByText('首次配置 · 第 1 步，共 5 步')).toBeVisible()
+         |                                                      ^
+      62 |   await page.getByLabel('工作库名称').fill('模拟工作库')
+      63 |   await page.getByLabel('文件夹路径').fill('/tmp/unwritable-workspace')
+      64 |   await page.getByRole('button', { name: '创建本地工作库' }).click()
+        at /Users/hanwenbo/ai/SummitEverything/web/e2e/first-use.spec.ts:61:54
+
+    Error Context: test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/first-use-first-use-stays--c8e56-resumes-to-a-requested-step/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/first-use.spec.ts:15:1 › first use stays in one app-owned flow and resumes to a requested step 

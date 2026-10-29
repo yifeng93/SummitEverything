@@ -1,0 +1,472 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx src/components/FirstUseWizard.test.tsx --maxWorkers=1
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+ ❯ src/components/FirstUseWizard.test.tsx (19 tests | 1 failed) 9043ms
+   × copies the Feishu setup prompt without reopening the first-use wizard 1712ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/FirstUseWizard.test.tsx > copies the Feishu setup prompt without reopening the first-use wizard
+TestingLibraryElementError: Unable to find an element with the text: /已复制，粘贴到 Codex \/ WorkBuddy/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap settings-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading-copy"[39m
+        [36m>[39m
+          [36m<h1>[39m
+            [0m设置[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading-side"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m打开连接向导[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"settings-mode-line"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"pill quiet"[39m
+        [36m>[39m
+          [0m试用模式（不联网）[0m
+        [36m</span>[39m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"settings-cards"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"工作库"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m工作库[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge ok"[39m
+            [36m>[39m
+              [0m已连接[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-list"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<span>[39m
+                [0m当前工作库[0m
+              [36m</span>[39m
+              [36m<strong>[39m
+                [0mSynthetic[0m
+              [36m</strong>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m切换工作库[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"AI 模型"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mAI 模型[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge configured"[39m
+            [36m>[39m
+              [0m已配置（尚未验证）[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"cap-list"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m整理与问答模型[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m知识索引向量化[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m检索结果排序[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<details[39m
+            [33mclass[39m=[32m"card-more"[39m
+          [36m>[39m
+            [36m<summary>[39m
+              [0m如何启用真实模型[0m
+            [36m</summary>[39m
+            [36m<ul />[39m
+          [36m</details>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m配置 AI 模型与密钥[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"飞书"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m飞书[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge off"[39m
+            [36m>[39m
+              [0m未配置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"cap-list"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取已选择的飞书材料[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取飞书日历[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取飞书任务[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m创建或更改飞书任务[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m<...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"content-wrap settings-view"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"page-heading"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading-copy"[39m
+        [36m>[39m
+          [36m<h1>[39m
+            [0m设置[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading-side"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m打开连接向导[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"settings-mode-line"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"pill quiet"[39m
+        [36m>[39m
+          [0m试用模式（不联网）[0m
+        [36m</span>[39m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"settings-cards"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"工作库"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m工作库[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge ok"[39m
+            [36m>[39m
+              [0m已连接[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-list"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<span>[39m
+                [0m当前工作库[0m
+              [36m</span>[39m
+              [36m<strong>[39m
+                [0mSynthetic[0m
+              [36m</strong>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"button-row"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"button secondary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m切换工作库[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"AI 模型"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mAI 模型[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge configured"[39m
+            [36m>[39m
+              [0m已配置（尚未验证）[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"cap-list"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m整理与问答模型[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m知识索引向量化[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m检索结果排序[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<details[39m
+            [33mclass[39m=[32m"card-more"[39m
+          [36m>[39m
+            [36m<summary>[39m
+              [0m如何启用真实模型[0m
+            [36m</summary>[39m
+            [36m<ul />[39m
+          [36m</details>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m配置 AI 模型与密钥[0m
+          [36m</button>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"飞书"[39m
+          [33mclass[39m=[32m"settings-card"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"settings-card-head"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0m飞书[0m
+            [36m</h2>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"conn-badge off"[39m
+            [36m>[39m
+              [0m未配置[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"cap-list"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取已选择的飞书材料[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取飞书日历[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m读取飞书任务[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"cap-row"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0m创建或更改飞书任务[0m
+              [36m</strong>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"cap-state"[39m
+              [36m>[39m
+                [0m未启用[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m<...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/FirstUseWizard.test.tsx:167:23
+    165|   expect(onRequestWizard).toHaveBeenLastCalledWith(2)
+    166|   fireEvent.click(screen.getByRole('button', { name: '连接飞书' }))
+    167|   expect(await screen.findByText(/已复制，粘贴到 Codex \/ WorkBuddy/)).toBeTr…
+       |                       ^
+    168|   expect(writeText).toHaveBeenCalledTimes(1)
+    169|   expect(onRequestWizard).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 33 passed (34)
+   Start at  11:29:34
+   Duration  45.10s (environment 46%, tests 36%, import 10%, transform 8%)
+
+Environment  jsdom was created 2 times · 19.27s total, 46% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

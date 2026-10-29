@@ -1,0 +1,17 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/FeishuAgentSetup.test.tsx src/components/TodayView.test.tsx src/components/SettingsView.regressions.test.tsx --maxWorkers=1 -t copies the agent setup prompt from settings|places meetings and tasks beside capture tools while keeping remote data opt-in
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/.local/dev/feishu-agent-setup/standalone-final2/web
+
+
+ Test Files  2 passed | 1 skipped (3)
+      Tests  2 passed | 23 skipped (25)
+   Start at  11:03:49
+   Duration  22.67s (environment 55%, tests 28%, transform 8%, import 8%)
+
+Environment  jsdom was created 3 times · 10.77s total, 55% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

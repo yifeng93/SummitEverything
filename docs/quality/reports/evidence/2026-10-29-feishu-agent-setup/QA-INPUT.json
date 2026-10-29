@@ -1,0 +1,22 @@
+{
+  "source_sha": "7d9dcc4b73663ca2d414b286f22d1dbd4b2bf288",
+  "combined_ui_sha": "33337999f43f579cdd4528484ac32400e2e238ce",
+  "scope": "HEAD plus exact current web tree; QA only, not branch commit",
+  "new_ui_paths": [
+    "web/src/components/Drawer.tsx",
+    "web/src/components/PageHeader.tsx",
+    "web/src/components/PageTree.tsx",
+    "web/src/page-groups.test.ts",
+    "web/src/page-groups.ts",
+    "web/src/styles/approval.css",
+    "web/src/styles/ask.css",
+    "web/src/styles/controls.css",
+    "web/src/styles/markdown.css",
+    "web/src/styles/primitives.css",
+    "web/src/styles/projects.css",
+    "web/src/styles/reader.css",
+    "web/src/styles/settings.css",
+    "web/src/styles/today.css",
+    "web/src/styles/wizard.css"
+  ]
+}

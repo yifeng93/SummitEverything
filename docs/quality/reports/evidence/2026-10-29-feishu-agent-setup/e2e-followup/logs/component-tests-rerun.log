@@ -1,0 +1,50 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/SettingsView.cards.test.tsx src/components/FirstUseWizard.test.tsx src/components/FeishuAgentSetup.test.tsx src/components/TodayView.test.tsx src/components/SettingsView.regressions.test.tsx --maxWorkers=1
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+ ❯ src/components/SettingsView.cards.test.tsx (15 tests | 1 failed) 19634ms
+   × renders the three main cards and keeps technical fields inside the collapsed advanced block 8251ms
+ ❯ src/components/SettingsView.regressions.test.tsx (7 tests | 1 failed) 21049ms
+   × copies the same agent setup prompt from settings without opening the manual wizard 5466ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/SettingsView.cards.test.tsx > renders the three main cards and keeps technical fields inside the collapsed advanced block
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/SettingsView.cards.test.tsx:90:1
+     88| }
+     89|
+     90| it('renders the three main cards and keeps technical fields inside the…
+       | ^
+     91|   stubSettings()
+     92|   const { container } = render(<SettingsView workspaceName="Synthetic"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/SettingsView.regressions.test.tsx > copies the same agent setup prompt from settings without opening the manual wizard
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/SettingsView.regressions.test.tsx:7:1
+      5| afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+      6|
+      7| it('copies the same agent setup prompt from settings without opening t…
+       | ^
+      8|   const state = {
+      9|     mode: 'fake', feishu: { app_id: '', redirect_uri: '' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 3 passed (5)
+      Tests  2 failed | 57 passed (59)
+   Start at  11:32:02
+   Duration  153.16s (tests 44%, environment 39%, import 9%, transform 7%)
+
+Environment  jsdom was created 5 times · 55.11s total, 39% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

@@ -1,0 +1,167 @@
+# Raw outputs captured in this QA turn
+# Each stdout block below is transcribed from the corresponding exec tool result without rerunning checks.
+
+## Playwright one-shot rerun
+Command: node ../.local/qa/e2e-check.mjs
+Exit code: 0
+Stdout:
+{
+  "copiedOrigin": true,
+  "copiedMcpDoc": true,
+  "copiedNoSecrets": true,
+  "fallbackFullText": true,
+  "retrySuccess": true,
+  "dialogCount": 0,
+  "apiAfterCopy": [],
+  "outsideRequests": [],
+  "overflow": {
+    "scroll": 390,
+    "client": 390
+  },
+  "consoleErrors": [],
+  "apiSeen": [
+    {
+      "path": "/api/v1/workspaces/current",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/current",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/first-use/progress",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/first-use/progress",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/integrations/feishu/status",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/integrations/feishu/status",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/projects",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/actions",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/intake/items",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/projects",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/actions",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/intake/items",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/intake/items",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/drafts",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/pages",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/index/status",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/actions",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/action-intents?limit=20",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/settings",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/settings",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/provider-smoke",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/integrations/feishu/status",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/settings",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/provider-smoke",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/integrations/feishu/status",
+      "method": "GET"
+    }
+  ],
+  "settingsRoute": true
+}
+
+## Targeted Vitest: setup component and Settings entry
+Command: npm test -- --run src/components/FeishuAgentSetup.test.tsx src/components/SettingsView.regressions.test.tsx -t 'copies a self-contained prompt|offers selectable prompt|copies the agent setup prompt'
+Exit code: 0
+Stdout:
+
+> web@0.0.0 test
+> vitest run --run src/components/FeishuAgentSetup.test.tsx src/components/SettingsView.regressions.test.tsx -t copies a self-contained prompt|offers selectable prompt|copies the agent setup prompt
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/summit-feishu-prompt-final-qa/web
+
+
+ Test Files  2 passed (2)
+      Tests  3 passed | 6 skipped (9)
+   Start at  11:40:09
+   Duration  10.99s (environment 36%, tests 26%, transform 23%, import 14%)
+
+## Targeted Vitest: Today entry
+Command: npm test -- --run src/components/TodayView.test.tsx -t 'copies an agent setup prompt'
+Exit code: 0
+Stdout:
+
+> web@0.0.0 test
+> vitest run --run src/components/TodayView.test.tsx -t copies an agent setup prompt
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/summit-feishu-prompt-final-qa/web
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 15 skipped (16)
+   Start at  11:44:38
+   Duration  3.76s (environment 48%, tests 24%, transform 18%, import 8%)
+
+## TypeScript check
+Command: npm run typecheck
+Exit code: 0
+Captured stdout (complete):
+
+> web@0.0.0 typecheck
+> tsc -b --pretty
+
+No additional stdout was captured by the completed tool call.
