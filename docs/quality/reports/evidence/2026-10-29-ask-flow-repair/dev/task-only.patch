@@ -1,0 +1,1181 @@
+diff --git a/docs/contracts/API-v1.md b/docs/contracts/API-v1.md
+index f428e60..b865667 100644
+--- a/docs/contracts/API-v1.md
++++ b/docs/contracts/API-v1.md
+@@ -82,8 +82,8 @@
+ | GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
+ | POST /acceptance-plans；POST /acceptance-plans/{id}/confirm；GET /acceptance-plans/{id}；DELETE /acceptance-plans/{id} | 真实模型/Feishu 单次动作的本机预览、独立确认、状态/安全用量读取和未执行计划取消；计划绑定 profile、workspace、执行配置与确切 scope digest，有 10 分钟 TTL 和有限 HTTP request 上限。详情不保存 prompt/正文；unknown 消耗额度且无重发接口 |
+ | POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
+-| POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有 LanceDB 索引时，批准 mutation 可自动执行同 fingerprint 的 incremental。旧 SQLite `vector_json` 索引状态为 `not_ready`，附 `reason=legacy_vectors_require_rebuild` 与重建说明；不会读取旧向量或自动调用 embedding。用户通过初始索引计划从已确认 Markdown 显式重建。其他状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
+-| POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
++| POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有 LanceDB 索引时，批准 mutation 可自动执行同 fingerprint 的 incremental。旧 SQLite `vector_json` 索引状态为 `not_ready`，附 `reason=legacy_vectors_require_rebuild` 与重建说明；不会读取旧向量或自动调用 embedding。用户通过初始索引计划从已确认 Markdown 显式重建。Real 模式已有索引但 embedding fingerprint 与当前配置不符时，状态为 `stale`，附 `reason=embedding_model_changed`；不会自动重建。其他状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
++| POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。Real 模式在生成付费查询计划或开始查询前，要求存在与当前 embedding 配置匹配的活动索引代；无索引或 fingerprint 不匹配返回 409 `index_not_ready`，不创建计划、不预留 provider 请求、不自动建索引，调用方保留原问题并由用户前往审批显式准备索引。相同 fingerprint 的内容更新仍可查询，具体引用仍按当前内容资格门检查。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
+ | GET /conversations?cursor&limit；GET /conversations/{id}；POST /conversations/{id}/reopen；DELETE /conversations/{id} | 按本地 profile 与当前 workspace 隔离的问答历史；列表默认 20、limit 1–100；历史只读重开可接续提问或删除；不进入工作库语料 |
+ | GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机 profile+workspace 角色 CRUD；instructions 最多 4000 字符，角色上下文预算 0–6000 字节且每次查询会校验实际长度。角色只影响表达，不修改批准 / 工具权限 |
+ | GET /memory/candidates；POST /memory/candidates | 用户必须明确勾选 `user_expression=true`，`message_id` 必须是当前 profile/workspace 历史中的真实用户问题，`text` 必须与问题原文相符且表达本人偏好 / 习惯 / 事实；引用、来源、转述、粘贴及来源 canary 文本拒绝；服务端核验消息来源，不信任 UI 标签；响应是本机 pending 候选，不能直接进入上下文 |
+diff --git a/docs/product/FRONTEND-PAGE-SPECS.md b/docs/product/FRONTEND-PAGE-SPECS.md
+index 41cbd2a..8bb41bd 100644
+--- a/docs/product/FRONTEND-PAGE-SPECS.md
++++ b/docs/product/FRONTEND-PAGE-SPECS.md
+@@ -327,6 +327,7 @@
+ ### 三态
+ - 空：历史为空 → "还没有问答历史。问第一个问题吧。"；没有引用 → "没有找到可引用的依据"（仅正常完成且无引用时）。
+ - 错误：模型未配置/未启用/缺密钥 → 就地说明 + 「去设置」，保留输入的问题；计划预览或 `/settings` 失败说明本次问题尚未发送。
++- Real 模式索引缺失或向量模型不匹配：保留输入的问题，说明尚未预留/发送模型请求，并提供「前往审批建立或更新索引」；同 fingerprint 的部分内容陈旧仍允许查询，由当前内容资格规则逐页过滤。
+ - 中断：保留已收到的部分内容，说明不会自动重发，给「继续提问」。
+ 
+ ### 折叠项（L2）
+diff --git a/src/summit_everything/api/app.py b/src/summit_everything/api/app.py
+index 7090cea..cae1548 100644
+--- a/src/summit_everything/api/app.py
++++ b/src/summit_everything/api/app.py
+@@ -1494,6 +1494,25 @@ def create_app(
+             provider_guard=provider_guard,
+         )
+ 
++    def require_query_index_ready(workspace: WorkspaceContext, fingerprint: str) -> None:
++        """Reject a real query before reserving calls when no matching index exists."""
++        settings = settings_store(workspace).read()
++        expected = embedding_fingerprint(settings.embedding, mode=settings.mode)
++        active = IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3").active_fingerprint(
++            workspace.workspace_id
++        )
++        if active is None or active != expected or fingerprint != expected:
++            raise HTTPException(
++                status_code=409,
++                detail={
++                    "code": "index_not_ready",
++                    "message": (
++                        "当前本机索引尚未按已选向量模型准备完成。请前往审批建立或更新索引后再提问；"
++                        "本次问题已保留，尚未预留或发送模型请求。"
++                    ),
++                },
++            )
++
+     def conversations_for(workspace: WorkspaceContext) -> ConversationStore:
+         return ConversationStore(Path(workspace.local_profile_dir) / "conversations.sqlite3")
+ 
+@@ -1630,6 +1649,7 @@ def create_app(
+             request_limit = index_embedding_call_bound(workspace, scope)
+         elif payload.operation == "model.query":
+             scope = normalize_query_scope(workspace, payload.scope)
++            require_query_index_ready(workspace, str(scope["fingerprint"]))
+             request_limit = 3  # one embedding, one rerank, and one answer call at most
+         elif payload.operation == "model.organize":
+             scope = normalize_organize_scope(workspace, payload.scope)
+@@ -3125,6 +3145,17 @@ def create_app(
+     ) -> dict[str, int | str | None]:
+         status = query_for(workspace).status(Path(workspace.root))
+         fingerprint = status.get("fingerprint")
++        settings = settings_store(workspace).read()
++        if (
++            settings.mode == "real"
++            and fingerprint is not None
++            and fingerprint != embedding_fingerprint(settings.embedding, mode=settings.mode)
++        ):
++            # The generation may still be internally consistent with its old
++            # page hashes, but it cannot serve a query for the selected model.
++            status["state"] = "stale"
++            status["stale_pages"] = status.get("current_pages", 0)
++            status["reason"] = "embedding_model_changed"
+         # 完整指纹是内部标识，不进界面；概览只需要「仿真 / 真实」这一层。
+         status["vector"] = (
+             "unknown"
+@@ -3385,7 +3416,6 @@ def create_app(
+         query_scope_sha256: str | None = None
+         query_config_sha256: str | None = None
+         if not replay_existing:
+-            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
+             query_scope = normalize_query_scope(
+                 workspace,
+                 {
+@@ -3401,6 +3431,9 @@ def create_app(
+                 },
+             )
+             context = AnswerContext.model_validate(query_scope["context"])
++            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
++            if settings_store(workspace).read().mode == "real":
++                require_query_index_ready(workspace, str(query_scope["fingerprint"]))
+             context_version = hashlib.sha256(
+                 json.dumps(
+                     context.model_dump(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+diff --git a/src/summit_everything/integrations/llm.py b/src/summit_everything/integrations/llm.py
+index eed7498..1ced04b 100644
+--- a/src/summit_everything/integrations/llm.py
++++ b/src/summit_everything/integrations/llm.py
+@@ -28,10 +28,43 @@ def schema_failure_message(label: str, exc: ValidationError) -> str:
+     The text is logged locally and never rendered to a client, so it can name
+     the fields that broke the contract without echoing provider content.
+     """
+-    locations = sorted(
+-        {".".join(str(part) for part in error.get("loc", ())) or "<root>" for error in exc.errors()}
+-    )
+-    return f"{label} schema mismatch: " + ", ".join(locations)[:200]
++    known_fields = {
++        "proposals",
++        "title",
++        "kind",
++        "body",
++        "input_indexes",
++        "important_conflicts",
++        "id",
++        "question",
++        "alternatives",
++        "action_suggestions",
++        "description",
++        "related_project_id",
++        "text",
++        "source_statements",
++        "inferences",
++        "advice",
++        "missing_information",
++    }
++
++    def safe_location(location: object) -> str:
++        if not isinstance(location, tuple | list):
++            return "<root>"
++        parts: list[str] = []
++        for part in location[:8]:
++            if isinstance(part, int) and part >= 0:
++                parts.append(str(part))
++            elif isinstance(part, str) and part in known_fields:
++                parts.append(part)
++            else:
++                # Pydantic's extra_forbidden location contains the provider's
++                # arbitrary key. Do not copy it into diagnostics.
++                parts.append("<extra>")
++        return ".".join(parts) or "<root>"
++
++    locations = sorted({safe_location(error.get("loc", ())) for error in exc.errors()[:8]})
++    return f"{label} schema mismatch: " + ", ".join(locations)[:160]
+ 
+ 
+ class ImportantConflict(BaseModel):
+@@ -387,9 +420,18 @@ class DeepSeekLLM:
+             "Faithfully reorganize and deduplicate only what the source says. Preserve facts, "
+             "ideas, suggestions, and unresolved items distinctly in the body; do not add analysis, "
+             "recommendations, or conclusions that are absent from the source. "
+-            "Every proposal must include title, kind, body, input_indexes, important_conflicts, "
+-            "action_suggestions. kind must be exactly one of: object, case, topic, decision. "
+-            "Do not invent other kind values. Use source indexes from the provided inputs."
++            "Each proposal must be a JSON object with exactly these fields and types: "
++            "title (non-empty string), kind (one of the strings object, case, topic, decision), "
++            "body (non-empty string), input_indexes (array of integer input indexes), "
++            "important_conflicts (array of objects with id:string, question:string, "
++            "alternatives:array of at least two strings), and action_suggestions "
++            "(array of objects with kind: todo or progress_change, description: non-empty string, "
++            "related_project_id: UUID string or null). Every field is required, including empty "
++            "arrays when there are no conflicts or suggestions. Do not add fields. "
++            'Use this shape: {"proposals":[{"title":"...","kind":"topic",'
++            '"body":"...","input_indexes":[0],"important_conflicts":[],'
++            '"action_suggestions":[]}]}. Use only indexes from provided inputs and preserve '
++            "their exact integer type; never guess an index."
+         )
+         return self._complete(
+             system,
+@@ -459,7 +501,15 @@ class DeepSeekLLM:
+             proposals = decoded["proposals"]
+             if not isinstance(proposals, list) or not proposals:
+                 raise LLMProviderError("provider returned no proposals")
+-            return [DraftProposal.model_validate(item) for item in proposals]
++            validated: list[DraftProposal] = []
++            for index, item in enumerate(proposals):
++                try:
++                    validated.append(DraftProposal.model_validate(item))
++                except ValidationError as exc:
++                    raise LLMProviderError(
++                        schema_failure_message(f"proposals.{index}", exc), reason="schema"
++                    ) from exc
++            return validated
+         except LLMProviderError:
+             raise
+         except ValidationError as exc:
+diff --git a/tests/fixtures/deepseek-organize-success-replay.json b/tests/fixtures/deepseek-organize-success-replay.json
+new file mode 100644
+index 0000000..4fd8816
+--- /dev/null
++++ b/tests/fixtures/deepseek-organize-success-replay.json
+@@ -0,0 +1,272 @@
++[
++  {
++    "index": 8,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动008",
++        "kind": "topic",
++        "body": "合成纸飞机活动008仅为合成测试。人数上限32人，开始时间为下午16:30。场地费用尚未确定；负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 9,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动009",
++        "kind": "topic",
++        "body": "合成纸飞机活动009仅为合成测试。活动人数上限为33人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 18,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动018",
++        "kind": "topic",
++        "body": "合成纸飞机活动018仅为合成测试。人数上限42人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 19,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动019（合成测试）",
++        "kind": "object",
++        "body": "标注为合成纸飞机活动019，仅为合成测试。人数上限43人，开始时间为下午16:30。场地费用尚未确定；负责人电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 28,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动028",
++        "kind": "case",
++        "body": "合成纸飞机活动028仅为合成测试。人数上限52人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 29,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动029",
++        "kind": "topic",
++        "body": "合成纸飞机活动029仅为合成测试。人数上限53人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 38,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动038",
++        "kind": "topic",
++        "body": "合成纸飞机活动038仅为合成测试。人数上限62人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 48,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动048",
++        "kind": "topic",
++        "body": "合成纸飞机活动048仅为合成测试。人数上限为72人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 49,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动049",
++        "kind": "object",
++        "body": "合成纸飞机活动049仅为合成测试。人数上限73人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 59,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动059",
++        "kind": "topic",
++        "body": "合成纸飞机活动059，仅为合成测试。活动人数上限为83人，下午16:30开始。尚未确定的事项：场地费用、负责人的电话。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 68,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动068",
++        "kind": "topic",
++        "body": "合成纸飞机活动068仅为合成测试。人数上限92人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 69,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动069",
++        "kind": "case",
++        "body": "合成纸飞机活动069，仅为合成测试。人数上限93人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 78,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动078",
++        "kind": "object",
++        "body": "合成纸飞机活动078仅为合成测试。人数上限102人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 79,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动079",
++        "kind": "topic",
++        "body": "合成纸飞机活动079仅为合成测试。人数上限103人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 89,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动089合成测试",
++        "kind": "topic",
++        "body": "本条目为合成测试性质的纸飞机活动089。已知信息：人数上限为113人；活动于下午16:30开始。尚未确定的事项包括场地费用及负责人的电话。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 88,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动088",
++        "kind": "case",
++        "body": "合成纸飞机活动088仅为合成测试。人数上限112人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 98,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动098",
++        "kind": "case",
++        "body": "合成纸飞机活动098仅为合成测试。人数上限为122人，开始时间为下午16:30。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  },
++  {
++    "index": 99,
++    "proposals": [
++      {
++        "title": "合成纸飞机活动099",
++        "kind": "topic",
++        "body": "合成纸飞机活动099仅为合成测试。人数上限123人，下午16:30开始。场地费用和负责人的电话尚未确定。",
++        "input_indexes": [
++          0
++        ],
++        "important_conflicts": [],
++        "action_suggestions": []
++      }
++    ]
++  }
++]
+diff --git a/tests/integration/test_feishu_real_gate.py b/tests/integration/test_feishu_real_gate.py
+index 32133ee..9dcced1 100644
+--- a/tests/integration/test_feishu_real_gate.py
++++ b/tests/integration/test_feishu_real_gate.py
+@@ -15,6 +15,7 @@ from summit_everything.api.app import create_app
+ from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
+ from summit_everything.integrations.feishu.fake import FakeFeishu
+ from summit_everything.integrations.settings import MemorySecretBackend
++from summit_everything.retrieval.store import IndexStore
+ 
+ HEADERS = {"Authorization": "Bearer synthetic-gate-session"}
+ APP_ID = "cli_synthetic_gate_app"
+@@ -313,6 +314,19 @@ def test_real_query_plan_binds_context_settings_and_sources_without_persisting_p
+         == 200
+     )
+     fingerprint = client.get("/api/v1/settings", headers=HEADERS).json()["embedding_fingerprint"]
++    workspace = client.get("/api/v1/workspaces/current", headers=HEADERS).json()
++    # Seed an empty but structurally valid synthetic LanceDB generation for the
++    # configured model. This test exercises plan binding and stale-plan
++    # rejection; it must not require a provider call or bypass the new index gate.
++    index = IndexStore(Path(workspace["local_profile_dir"]) / "index.sqlite3")
++    generation = index.replace_generation(
++        UUID(workspace["workspace_id"]),
++        fingerprint,
++        [],
++        expected_generation=None,
++        vector_dimension=1024,
++    )
++    assert index.active_generation(UUID(workspace["workspace_id"])) == generation
+     query_id = str(uuid4())
+     scope = {
+         "question": "合成问题不得存入账本",
+diff --git a/tests/integration/test_intake_review.py b/tests/integration/test_intake_review.py
+index 0864bf9..1a3a472 100644
+--- a/tests/integration/test_intake_review.py
++++ b/tests/integration/test_intake_review.py
+@@ -8,6 +8,7 @@ from threading import Event, Thread, current_thread
+ from typing import Any
+ from uuid import UUID, uuid4
+ 
++import pytest
+ from fastapi.testclient import TestClient
+ from pydantic import ValidationError
+ 
+@@ -168,13 +169,32 @@ def test_source_with_pending_draft_is_not_pending_or_reorganized_again(tmp_path:
+     assert intake.list_items(root)[0].latest_job_id == repeated.job_id
+ 
+ 
+-def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path: Path) -> None:
++@pytest.mark.parametrize("failure", ["timeout", "schema"])
++def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(
++    tmp_path: Path, failure: str
++) -> None:
+     root = make_workspace(tmp_path / "workspace")
+     line = create_line(root, "模拟主线", "line")
+     project = create_project(root, line.id, "模拟项目", "project")
+     intake = IntakeService()
+     item = intake.add_text(root, "可重试来源。", filename="retry.txt", operation_id="retry-source")
+-    failing_review = IntakeReviewService(FakeLLM(scenario="timeout"))
++
++    class SchemaFailureThenSuccess:
++        calls = 0
++        fallback = FakeLLM()
++
++        def organize(self, inputs):  # type: ignore[no-untyped-def]
++            self.calls += 1
++            if self.calls == 1:
++                if failure == "timeout":
++                    raise LLMProviderError("simulated provider timeout", reason="timeout")
++                raise LLMProviderError(
++                    "proposals schema mismatch: proposals.0.input_indexes.0", reason="schema"
++                )
++            return self.fallback.organize(inputs)
++
++    provider = SchemaFailureThenSuccess()
++    failing_review = IntakeReviewService(provider)
+ 
+     try:
+         failing_review.create_job(
+@@ -190,7 +210,9 @@ def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path
+         raise AssertionError("the configured provider failure was hidden")
+ 
+     assert intake.list_items(root)[0].state == "failed"
+-    retry_review = IntakeReviewService(FakeLLM())
++    assert (root / item.original_relative_path).read_text(encoding="utf-8") == "可重试来源。"
++    assert provider.calls == 1
++    retry_review = IntakeReviewService(provider)
+     try:
+         retry_review.create_job(
+             root,
+@@ -203,6 +225,7 @@ def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path
+         assert "reprocess" in str(exc).lower()
+     else:
+         raise AssertionError("a failed source was retried without an explicit reprocess choice")
++    assert provider.calls == 1
+ 
+     retried = retry_review.create_job(
+         root,
+@@ -213,6 +236,7 @@ def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path
+         reprocess=True,
+     )
+     assert retried.state == "completed"
++    assert provider.calls == 2
+     assert intake.list_items(root)[0].state == "reviewing"
+ 
+ 
+diff --git a/tests/integration/test_provider_settings_api.py b/tests/integration/test_provider_settings_api.py
+index 278c2eb..973af7f 100644
+--- a/tests/integration/test_provider_settings_api.py
++++ b/tests/integration/test_provider_settings_api.py
+@@ -417,20 +417,79 @@ def test_real_embedding_defers_approval_index_and_rejects_stale_fingerprint(tmp_
+         headers=headers,
+         json={
+             "mode": "real",
++            "llm": {
++                "provider": "deepseek",
++                "model": "deepseek-flash",
++                "enabled": True,
++            },
+             "embedding": {
+                 "provider": "dashscope",
+                 "model": "qwen3.7-text-embedding",
+                 "enabled": True,
+             },
++            "rerank": {
++                "provider": "dashscope",
++                "model": "qwen3.7-text-rerank",
++                "enabled": True,
++            },
+         },
+     )
+     assert configured.status_code == 200
++    assert (
++        client.put(
++            "/api/v1/credentials/deepseek",
++            headers=headers,
++            json={"account_id": "default", "secret": "sk-synthetic-deepseek-key-00000000"},
++        ).status_code
++        == 200
++    )
++    assert (
++        client.put(
++            "/api/v1/credentials/dashscope",
++            headers=headers,
++            json={"account_id": "default", "secret": "sk-synthetic-dashscope-key-00000000"},
++        ).status_code
++        == 200
++    )
++    after_switch = client.get("/api/v1/index/status", headers=headers)
++    assert after_switch.status_code == 200
++    assert after_switch.json()["state"] == "stale"
++    assert after_switch.json()["vector"] == "simulated"
+     stale_plan = client.post(
+         "/api/v1/index/plans",
+         headers=headers,
+         json={"mode": "model_change", "fingerprint": fake_fingerprint},
+     )
+     assert stale_plan.status_code == 409
++    stale_query = client.post(
++        "/api/v1/queries",
++        headers=headers,
++        json={
++            "request_id": "00000000-0000-4000-8000-000000000201",
++            "question": "合成页面内容是什么",
++            "fingerprint": fake_fingerprint,
++            "purpose": "current",
++        },
++    )
++    assert stale_query.status_code == 409
++    assert stale_query.json()["error"]["code"] in {"index_not_ready", "provider_disabled"}
++
++    query_preview = client.post(
++        "/api/v1/acceptance-plans",
++        headers=headers,
++        json={
++            "operation": "model.query",
++            "scope": {
++                "request_id": "00000000-0000-4000-8000-000000000202",
++                "question": "合成页面内容是什么",
++                "fingerprint": configured.json()["embedding_fingerprint"],
++                "purpose": "current",
++                "answer_mode": "fact",
++            },
++        },
++    )
++    assert query_preview.status_code == 409
++    assert query_preview.json()["error"]["code"] == "index_not_ready"
+ 
+     second_page = client.post(
+         "/api/v1/pages",
+diff --git a/tests/integration/test_real_model_approval_flow.py b/tests/integration/test_real_model_approval_flow.py
+index f4a1693..b7f88c3 100644
+--- a/tests/integration/test_real_model_approval_flow.py
++++ b/tests/integration/test_real_model_approval_flow.py
+@@ -221,6 +221,10 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
+     )
+     assert organize_plan_response.status_code == 201, organize_plan_response.text
+     organize_plan = organize_plan_response.json()
++    # Preview and confirmation planning are local-only. Until the user confirms,
++    # the source remains without drafts and no adapter transport is invoked.
++    assert calls == []
++    assert client.get("/api/v1/drafts", headers=HEADERS).json() == []
+     organize_confirm = client.post(
+         f"/api/v1/acceptance-plans/{organize_plan['plan']['plan_id']}/confirm",
+         headers=HEADERS,
+@@ -331,6 +335,31 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
+     assert len([path for path, _ in calls if path.endswith("/embeddings")]) == 1
+     assert calls[1][0].endswith("/embeddings")
+ 
++    # Same-model content changes leave existing qualified vectors available;
++    # the query eligibility gate will exclude stale page versions individually.
++    late_page = client.post(
++        "/api/v1/pages",
++        headers=HEADERS,
++        json={
++            "metadata": {
++                "id": "00000000-0000-4000-8000-000000000113",
++                "title": "访客登记补充说明",
++                "role": "knowledge",
++                "kind": "topic",
++                "line_id": line.json()["id"],
++                "project_id": project.json()["id"],
++            },
++            "body": "仅用于部分陈旧同指纹索引验证。",
++            "confirmation_id": "confirm-late-page",
++            "operation_id": "late-page",
++        },
++    )
++    assert late_page.status_code == 201, late_page.text
++    assert late_page.json()["index_update"] == "manual_required"
++    partial_status = client.get("/api/v1/index/status", headers=HEADERS).json()
++    assert partial_status["state"] == "stale"
++    assert partial_status.get("reason") != "embedding_model_changed"
++
+     request_id = "47f12779-9448-48b4-979a-e39d276b4e03"
+     query_scope = {
+         "request_id": request_id,
+@@ -365,6 +394,16 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
+     )
+     assert query_result.status_code == 200, query_result.text
+     assert "访客登记由前台核验姓名并记录来访时间" in query_result.text
++    stream_events = [
++        json.loads(line.removeprefix("data: "))
++        for line in query_result.text.splitlines()
++        if line.startswith("data: {")
++    ]
++    citation_events = [item["data"] for item in stream_events if item["type"] == "citation"]
++    assert citation_events
++    citation_page = client.get(f"/api/v1/pages/{citation_events[0]['page_id']}", headers=HEADERS)
++    assert citation_page.status_code == 200, citation_page.text
++    assert citation_page.json()["content_sha256"] == citation_events[0]["content_sha256"]
+     query_state = client.get(
+         f"/api/v1/acceptance-plans/{query_preview['plan']['plan_id']}", headers=HEADERS
+     ).json()
+diff --git a/tests/unit/test_llm_schema_tolerance.py b/tests/unit/test_llm_schema_tolerance.py
+index 79e66be..304e4d7 100644
+--- a/tests/unit/test_llm_schema_tolerance.py
++++ b/tests/unit/test_llm_schema_tolerance.py
+@@ -119,7 +119,7 @@ def test_proposal_with_a_path_or_trust_field_is_rejected_with_the_field_name():
+     error = caught.value
+     assert error.reason == "schema"
+     # Only the field location is named; the offending value is never carried.
+-    assert "path" in str(error)
++    assert "<extra>" in str(error)
+     assert "/outside/workspace.md" not in str(error)
+ 
+ 
+diff --git a/tests/unit/test_organize_schema_replay.py b/tests/unit/test_organize_schema_replay.py
+new file mode 100644
+index 0000000..aed5619
+--- /dev/null
++++ b/tests/unit/test_organize_schema_replay.py
+@@ -0,0 +1,170 @@
++"""Contract and regression replay for provider organize responses (synthetic only)."""
++
++from __future__ import annotations
++
++import json
++from pathlib import Path
++from uuid import uuid4
++
++import httpx
++import pytest
++
++from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
++
++REPLAY = Path(__file__).parents[1] / "fixtures" / "deepseek-organize-success-replay.json"
++
++
++@pytest.mark.parametrize("record", json.loads(REPLAY.read_text(encoding="utf-8")))
++def test_replays_all_18_previously_successful_synthetic_organize_payloads(record: dict) -> None:
++    body = json.dumps({"proposals": record["proposals"]}, ensure_ascii=False)
++    client = httpx.Client(
++        transport=httpx.MockTransport(
++            lambda request: httpx.Response(
++                200,
++                json={
++                    "choices": [{"message": {"content": body}, "finish_reason": "stop"}],
++                    "usage": {"prompt_tokens": 1, "completion_tokens": 1},
++                },
++                request=request,
++            )
++        )
++    )
++    result = DeepSeekLLM("synthetic-api-key", client=client).organize(
++        [(uuid4(), uuid4(), "合成来源：人数上限24人。")]
++    )
++
++    assert len(result) == len(record["proposals"])
++    assert all(proposal.title.strip() and proposal.body.strip() for proposal in result)
++    assert all(proposal.input_indexes == [0] for proposal in result)
++
++
++def test_organize_prompt_spells_out_typed_strict_proposal_contract() -> None:
++    seen: list[httpx.Request] = []
++
++    def handler(request: httpx.Request) -> httpx.Response:
++        seen.append(request)
++        return httpx.Response(
++            200,
++            json={
++                "choices": [
++                    {
++                        "message": {
++                            "content": json.dumps(
++                                {
++                                    "proposals": [
++                                        {
++                                            "title": "合成标题",
++                                            "kind": "topic",
++                                            "body": "合成正文",
++                                            "input_indexes": [0],
++                                            "important_conflicts": [],
++                                            "action_suggestions": [],
++                                        }
++                                    ]
++                                },
++                                ensure_ascii=False,
++                            )
++                        },
++                        "finish_reason": "stop",
++                    }
++                ]
++            },
++            request=request,
++        )
++
++    model = DeepSeekLLM(
++        "synthetic-api-key", client=httpx.Client(transport=httpx.MockTransport(handler))
++    )
++    model.organize([(uuid4(), uuid4(), "合成输入")])
++    system = json.loads(seen[0].content)["messages"][0]["content"]
++    for field in (
++        "title (non-empty string)",
++        "kind (one of the strings object, case, topic, decision)",
++        "input_indexes (array of integer input indexes)",
++        "important_conflicts (array of objects with id:string",
++        "action_suggestions (array of objects with kind: todo or progress_change",
++        "Do not add fields",
++    ):
++        assert field in system
++
++
++def test_organize_schema_diagnostic_names_fields_without_echoing_bad_values() -> None:
++    bad_secret = "synthetic-private-provider-content"
++    response = json.dumps(
++        {
++            "proposals": [
++                {
++                    "title": "合成标题",
++                    "kind": "topic",
++                    "body": "合成正文",
++                    "input_indexes": [bad_secret],
++                    "important_conflicts": [],
++                    "action_suggestions": [],
++                }
++            ]
++        },
++        ensure_ascii=False,
++    )
++    model = DeepSeekLLM(
++        "synthetic-api-key",
++        client=httpx.Client(
++            transport=httpx.MockTransport(
++                lambda request: httpx.Response(
++                    200,
++                    json={"choices": [{"message": {"content": response}, "finish_reason": "stop"}]},
++                    request=request,
++                )
++            )
++        ),
++    )
++
++    with pytest.raises(LLMProviderError) as caught:
++        model.organize([(uuid4(), uuid4(), "合成输入")])
++
++    assert caught.value.reason == "schema"
++    assert "input_indexes.0" in str(caught.value)
++    assert bad_secret not in str(caught.value)
++    assert "synthetic-api-key" not in str(caught.value)
++
++
++def test_schema_diagnostic_redacts_provider_chosen_unknown_field_names() -> None:
++    private_key = "sk-synthetic-never-echo-this"
++    response = json.dumps(
++        {
++            "proposals": [
++                {
++                    "title": "合成标题",
++                    "kind": "topic",
++                    "body": "合成正文",
++                    "input_indexes": [0],
++                    "important_conflicts": [],
++                    "action_suggestions": [],
++                    private_key: "private-value",
++                }
++            ]
++        },
++        ensure_ascii=False,
++    )
++    model = DeepSeekLLM(
++        "synthetic-api-key",
++        client=httpx.Client(
++            transport=httpx.MockTransport(
++                lambda request: httpx.Response(
++                    200,
++                    json={"choices": [{"message": {"content": response}, "finish_reason": "stop"}]},
++                    request=request,
++                )
++            )
++        ),
++    )
++
++    with pytest.raises(LLMProviderError) as caught:
++        model.organize([(uuid4(), uuid4(), "合成输入")])
++
++    message = str(caught.value)
++    assert caught.value.reason == "schema"
++    assert "proposals.0" in message
++    assert "<extra>" in message
++    assert private_key not in message
++    assert "private-value" not in message
++    assert "synthetic-api-key" not in message
+diff --git a/tests/unit/test_real_model_adapters.py b/tests/unit/test_real_model_adapters.py
+index 0011b3c..a3e319f 100644
+--- a/tests/unit/test_real_model_adapters.py
++++ b/tests/unit/test_real_model_adapters.py
+@@ -64,8 +64,7 @@ def test_deepseek_sends_untrusted_text_as_data_and_validates_output():
+     assert "Faithfully reorganize" in sent["messages"][0]["content"]
+     assert "do not add analysis" in sent["messages"][0]["content"]
+     assert (
+-        "kind must be exactly one of: object, case, topic, decision"
+-        in sent["messages"][0]["content"]
++        "kind (one of the strings object, case, topic, decision)" in sent["messages"][0]["content"]
+     )
+     assert "as distinct kinds" not in sent["messages"][0]["content"]
+ 
+diff --git a/web/src/components/AskPreferences.test.tsx b/web/src/components/AskPreferences.test.tsx
+index 35454ee..5ef6d9e 100644
+--- a/web/src/components/AskPreferences.test.tsx
++++ b/web/src/components/AskPreferences.test.tsx
+@@ -17,7 +17,11 @@ function stubApi(overrides: Record<string, (init?: RequestInit) => Response | Pr
+     const custom = overrides[`${method} ${url}`] ?? overrides[url]
+     if (custom) return custom(init)
+     if (url === '/api/v1/index/status') return Response.json({ fingerprint: 'fp', pages: 153, chunks: 900, state: 'stale', current_pages: 154, stale_pages: 1 })
+-    if (url === '/api/v1/roles') return Response.json([role])
++    if (url === '/api/v1/roles' && method === 'GET') return Response.json([role])
++    if (url === '/api/v1/roles' && method === 'POST') {
++      const payload = JSON.parse(String(init?.body ?? '{}'))
++      return Response.json({ ...role, ...payload, role_id: 'role-created' }, { status: 201 })
++    }
+     if (url === '/api/v1/memory') return Response.json([memory])
+     if (url === '/api/v1/memory/candidates') return Response.json([candidate])
+     return Response.json({})
+@@ -54,6 +58,7 @@ it('saves a role and deletes a confirmed memory only after confirmation', async
+   const { calls } = stubApi()
+   render(<AskPreferences />)
+ 
++  await screen.findByLabelText('编辑已确认记忆')
+   const memoryBlock = (await screen.findByRole('heading', { name: '问答记忆' })).closest('section')!
+   fireEvent.click(within(memoryBlock).getByRole('button', { name: '删除记忆' }))
+   const dialog = await screen.findByRole('dialog', { name: '删除这条已确认记忆？' })
+diff --git a/web/src/components/AskView.test.tsx b/web/src/components/AskView.test.tsx
+index f2bff8d..03b15f7 100644
+--- a/web/src/components/AskView.test.tsx
++++ b/web/src/components/AskView.test.tsx
+@@ -293,6 +293,76 @@ it('explains missing real providers before creating a plan and preserves the que
+   expect(question.value).toBe('配置能力检查问题')
+ })
+ 
++it('routes a stale Fake-index query to Approval before creating a paid plan and keeps the question', async () => {
++  const calls: { url: string; method: string }[] = []
++  const onOpenApproval = vi.fn()
++  let planAttempts = 0
++  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input); const method = init?.method ?? 'GET'
++    calls.push({ url, method })
++    if (url === '/api/v1/index/status') return Response.json({ fingerprint: 'summit-fake-embedding-v1', pages: 154, chunks: 3532, state: 'ready', current_pages: 154, stale_pages: 0 })
++    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
++    if (url === '/api/v1/settings') return Response.json(realQuerySettings)
++    if (url === '/api/v1/acceptance-plans' && method === 'POST') {
++      planAttempts += 1
++      if (planAttempts === 1) return Response.json({
++        error: { code: 'index_not_ready', message: '当前本机索引尚未按已选向量模型准备完成。请前往审批建立或更新索引后再提问；本次问题已保留，尚未预留或发送模型请求。' },
++      }, { status: 409 })
++      return Response.json({ plan: { plan_id: 'retry-query-plan', scope_sha256: 'retry-hash', request_limit: 3 }, scope: { question: 'Fake索引切换后查价格' } }, { status: 201 })
++    }
++    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
++    throw new Error(`Unexpected fetch ${url}`)
++  }))
++  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} onOpenApproval={onOpenApproval} />)
++  const question = await screen.findByLabelText('你的问题') as HTMLTextAreaElement
++  fireEvent.change(question, { target: { value: 'Fake索引切换后查价格' } })
++  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
++
++  expect(await screen.findByText(/尚未按已选向量模型准备完成/)).toBeTruthy()
++  const approvalButton = screen.getByRole('button', { name: '前往审批建立或更新索引' })
++  expect(question.value).toBe('Fake索引切换后查价格')
++  expect(calls.some(({ url }) => url === '/api/v1/queries')).toBe(false)
++  expect(calls.some(({ url, method }) => url.endsWith('/confirm') && method === 'POST')).toBe(false)
++  fireEvent.click(approvalButton)
++  expect(onOpenApproval).toHaveBeenCalledTimes(1)
++
++  // A later request after the user prepares the index must clear the stale
++  // approval CTA, even while a fresh acceptance preview is being shown.
++  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
++  expect(await screen.findByRole('button', { name: '确认并发送本次问题' })).toBeTruthy()
++  expect(screen.queryByRole('button', { name: '前往审批建立或更新索引' })).toBeNull()
++})
++
++it('routes an index change after query preview back to Approval without clearing the question', async () => {
++  vi.stubGlobal('crypto', { randomUUID: () => 'index-changed-query' })
++  const calls: { url: string; method: string }[] = []
++  const onOpenApproval = vi.fn()
++  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input); const method = init?.method ?? 'GET'
++    calls.push({ url, method })
++    if (url === '/api/v1/index/status') return Response.json({ fingerprint: 'real-fp', pages: 1, chunks: 2, state: 'ready', current_pages: 1, stale_pages: 0 })
++    if (url.startsWith('/api/v1/conversations?')) return Response.json({ items: [], next_cursor: null })
++    if (url === '/api/v1/settings') return Response.json(realQuerySettings)
++    if (url === '/api/v1/acceptance-plans' && method === 'POST') return Response.json({ plan: { plan_id: 'query-plan', scope_sha256: 'scope-hash', request_limit: 3 }, scope: { question: '索引变动问题' } }, { status: 201 })
++    if (url.endsWith('/acceptance-plans/query-plan/confirm')) return Response.json({})
++    if (url === '/api/v1/queries') return Response.json({ error: { code: 'index_not_ready', message: '索引配置已变化，请重新准备。' } }, { status: 409 })
++    if (url === '/api/v1/pages' || url === '/api/v1/roles' || url === '/api/v1/memory' || url === '/api/v1/memory/candidates') return Response.json([])
++    throw new Error(`Unexpected fetch ${url}`)
++  }))
++  render(<AskView onError={vi.fn()} onOpenPage={vi.fn()} onOpenApproval={onOpenApproval} />)
++  const question = await screen.findByLabelText('你的问题') as HTMLTextAreaElement
++  fireEvent.change(question, { target: { value: '索引变动问题' } })
++  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
++  fireEvent.click(await screen.findByRole('button', { name: '确认并发送本次问题' }))
++
++  expect(await screen.findByText('索引配置已变化，请重新准备。')).toBeTruthy()
++  expect(screen.getByRole('button', { name: '前往审批建立或更新索引' })).toBeTruthy()
++  expect(question.value).toBe('索引变动问题')
++  expect(calls.some(({ url }) => url === '/api/v1/queries')).toBe(true)
++  fireEvent.click(screen.getByRole('button', { name: '前往审批建立或更新索引' }))
++  expect(onOpenApproval).toHaveBeenCalledTimes(1)
++})
++
+ it('routes a server-detected provider change back to Settings without losing the question', async () => {
+   const calls: string[] = []
+   const onOpenSettings = vi.fn()
+diff --git a/web/src/components/AskView.tsx b/web/src/components/AskView.tsx
+index 0772f12..4830482 100644
+--- a/web/src/components/AskView.tsx
++++ b/web/src/components/AskView.tsx
+@@ -54,7 +54,7 @@ const stateLabel: Record<QueryState, string> = {
+   interrupted: '连接中断',
+ }
+ 
+-export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
++export function AskView({ onError, onOpenPage, onOpenSettings, onOpenApproval }: Props) {
+   const [eligiblePages, setEligiblePages] = useState<Page[]>([])
+   const [pendingQuery, setPendingQuery] = useState<PendingQuery | null>(null)
+   const [question, setQuestion] = useState('')
+@@ -71,6 +71,7 @@ export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+   const [queryState, setQueryState] = useState<QueryState>('idle')
+   const [notice, setNotice] = useState('')
+   const [needsModelSetup, setNeedsModelSetup] = useState(false)
++  const [needsIndexPreparation, setNeedsIndexPreparation] = useState(false)
+   const [answerMode, setAnswerMode] = useState<AnswerMode>('fact')
+   const [retrievalPurpose, setRetrievalPurpose] = useState<RetrievalPurpose>('current')
+   const [roles, setRoles] = useState<AnswerRole[]>([])
+@@ -159,6 +160,7 @@ export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+     setRetrievalPurpose('current')
+     setNotice('')
+     setNeedsModelSetup(false)
++    setNeedsIndexPreparation(false)
+     setAnswerDetails(null)
+   }
+ 
+@@ -199,6 +201,7 @@ export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+     abortController.current = controller
+     let queryRequestDispatched = false
+     let queryResponseAccepted = false
++    setNeedsIndexPreparation(false)
+     setStreaming(true)
+     setQueryState('running')
+     setAnswer('')
+@@ -254,6 +257,7 @@ export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+           ? `本次问题尚未发送：${failure.error.message ?? '所需 AI 服务尚未启用。'}`
+           : failure?.error?.message ?? '问题未被接受；请检查输入后重试。')
+         setNeedsModelSetup(failure?.error?.code === 'provider_disabled')
++        setNeedsIndexPreparation(failure?.error?.code === 'index_not_ready')
+         return
+       }
+       queryResponseAccepted = true
+@@ -341,6 +345,10 @@ export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+           setQueryState('error')
+           setNeedsModelSetup(true)
+           setNotice(`本次问题尚未发送：${message}`)
++        } else if (cause instanceof ApiError && cause.code === 'index_not_ready') {
++          setQueryState('error')
++          setNeedsIndexPreparation(true)
++          setNotice(message)
+         } else if (!queryRequestDispatched) {
+           setQueryState('error')
+           setNotice(`本次问题尚未发送：${message}`)
+@@ -494,6 +502,7 @@ export function AskView({ onError, onOpenPage, onOpenSettings }: Props) {
+           ? <p role="status" className="form-error">{notice}</p>
+           : <p role="status" className="helper-line">{notice}<button type="button" className="text-button" onClick={() => queryForm.current?.querySelector('textarea')?.focus()}>继续提问</button></p>)}
+         {needsModelSetup && onOpenSettings && <button className="button secondary" type="button" onClick={onOpenSettings}>去设置配置模型</button>}
++        {needsIndexPreparation && onOpenApproval && <button className="button secondary" type="button" onClick={onOpenApproval}>前往审批建立或更新索引</button>}
+         {citations.length > 0 && <CitationList citations={citations} onOpen={openCitation} />}
+       </section>}
+ 
+diff --git a/web/src/components/SourceOrganizer.test.tsx b/web/src/components/SourceOrganizer.test.tsx
+index 9d29d35..22997f1 100644
+--- a/web/src/components/SourceOrganizer.test.tsx
++++ b/web/src/components/SourceOrganizer.test.tsx
+@@ -60,8 +60,9 @@ afterEach(() => {
+ })
+ 
+ async function openRealPreview() {
+-  await screen.findByRole('button', { name: /整理所选/ })
+-  fireEvent.click(screen.getByRole('button', { name: /整理所选/ }))
++  // This fixture has one source, so the current product wording is simply “整理”.
++  await screen.findByRole('button', { name: '整理' })
++  fireEvent.click(screen.getByRole('button', { name: '整理' }))
+   return screen.findByRole('dialog', { name: '确认整理所选来源？' })
+ }
+ 
+@@ -109,8 +110,8 @@ describe('SourceOrganizer preview', () => {
+       max_output_tokens: 512,
+       outgoing_inputs: [{ item_id: item.item_id, source_id: item.source_id, text: originalText }],
+     }) })
+-    await screen.findByRole('button', { name: /整理所选/ })
+-    fireEvent.click(screen.getByRole('button', { name: /整理所选/ }))
++    await screen.findByRole('button', { name: '整理' })
++    fireEvent.click(screen.getByRole('button', { name: '整理' }))
+ 
+     await waitFor(() => expect(onError).toHaveBeenCalled())
+     expect(screen.queryByRole('dialog')).toBeNull()
+@@ -120,8 +121,8 @@ describe('SourceOrganizer preview', () => {
+ 
+   it('shows the captured source target in the normal Fake confirmation', async () => {
+     setup({ mode: 'fake' })
+-    await screen.findByRole('button', { name: /整理所选/ })
+-    fireEvent.click(screen.getByRole('button', { name: /整理所选/ }))
++    await screen.findByRole('button', { name: '整理' })
++    fireEvent.click(screen.getByRole('button', { name: '整理' }))
+     const dialog = await screen.findByRole('dialog', { name: '确认整理所选来源？' })
+     expect(within(dialog).getByText((_, element) => element?.tagName === 'DD' && element.textContent === '合成主线甲 / 合成项目甲')).toBeTruthy()
+     expect(within(dialog).getByText((_, element) => element?.tagName === 'LI' && element.textContent === '待整理原件甲 · 文件')).toBeTruthy()
+diff --git a/web/src/ui-contract.allowlist.json b/web/src/ui-contract.allowlist.json
+index 0f1aad4..2b09ea5 100644
+--- a/web/src/ui-contract.allowlist.json
++++ b/web/src/ui-contract.allowlist.json
+@@ -32,12 +32,13 @@
+   "entries": {
+     "web/src/App.tsx:content_sha256": 1,
+     "web/src/App.tsx:page_id": 2,
+-    "web/src/components/AskView.tsx:fingerprint": 4,
++    "web/src/components/AskView.tsx:fingerprint": 1,
+     "web/src/components/AskView.tsx:content_sha256": 5,
+-    "web/src/components/AskView.tsx:candidate_id": 7,
+     "web/src/components/AskView.tsx:page_id": 6,
+     "web/src/components/AskView.tsx:request_id": 14,
+     "web/src/components/AskView.tsx:relative_path": 2,
++    "web/src/components/AskPreferences.tsx:fingerprint": 1,
++    "web/src/components/AskPreferences.tsx:candidate_id": 5,
+     "web/src/components/DraftReview.tsx:content_sha256": 3,
+     "web/src/components/DraftReview.tsx:operation_id": 1,
+     "web/src/components/DraftReview.tsx:page_id": 5,
+@@ -80,16 +81,20 @@
+       "reason": "路由回调打开正式页面；屏幕只展示页面标题。"
+     },
+     "web/src/components/AskView.tsx:fingerprint": {
+-      "slice": "P4 · 项目与问答",
+-      "reason": "索引状态查询使用配置指纹；不显示到问答界面"
++      "slice": "P4 · 问答",
++      "reason": "本次查询请求携带已确认的索引指纹，不显示其值"
+     },
+     "web/src/components/AskView.tsx:content_sha256": {
+       "slice": "P4 · 项目与问答",
+       "reason": "历史引用绑定答案时的页面版本；界面显示版本有效性，不显示哈希"
+     },
+-    "web/src/components/AskView.tsx:candidate_id": {
+-      "slice": "P4 · 项目与问答",
+-      "reason": "候选动作标识，仅 API 参数"
++    "web/src/components/AskPreferences.tsx:fingerprint": {
++      "slice": "P5 · 设置",
++      "reason": "本机索引状态使用的内部指纹，不渲染指纹值"
++    },
++    "web/src/components/AskPreferences.tsx:candidate_id": {
++      "slice": "P5 · 设置",
++      "reason": "已确认记忆候选的内部 API 标识，不显示给用户"
+     },
+     "web/src/components/AskView.tsx:page_id": {
+       "slice": "P4 · 项目与问答",

@@ -1,0 +1,159 @@
+........................................................................ [  9%]
+........................................................................ [ 18%]
+...............F........................................................ [ 27%]
+........................................................................ [ 36%]
+........................................................................ [ 45%]
+.........................................................F.............. [ 54%]
+.............F.......................................................... [ 63%]
+........................................................................ [ 72%]
+........................................................................ [ 81%]
+........................................................................ [ 90%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt _
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-161/test_real_query_plan_binds_con0')
+
+    def test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt(tmp_path):
+        client = _client(tmp_path)
+        _open(client, tmp_path)
+        assert (
+            client.patch(
+                "/api/v1/settings",
+                headers=HEADERS,
+                json={
+                    "mode": "real",
+                    "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
+                    "embedding": {
+                        "provider": "dashscope",
+                        "model": "qwen3.7-text-embedding",
+                        "enabled": True,
+                    },
+                    "rerank": {
+                        "provider": "dashscope",
+                        "model": "qwen3.7-text-rerank",
+                        "enabled": True,
+                    },
+                },
+            ).status_code
+            == 200
+        )
+        fingerprint = client.get("/api/v1/settings", headers=HEADERS).json()["embedding_fingerprint"]
+        query_id = str(uuid4())
+        scope = {
+            "question": "合成问题不得存入账本",
+            "fingerprint": fingerprint,
+            "purpose": "current",
+            "answer_mode": "fact",
+            "role_id": None,
+            "request_id": query_id,
+            "conversation_id": None,
+        }
+        created = client.post(
+            "/api/v1/acceptance-plans",
+            headers=HEADERS,
+            json={"operation": "model.query", "scope": scope},
+        )
+>       assert created.status_code == 201, created.text
+E       AssertionError: {"error":{"code":"index_not_ready","message":"当前本机索引尚未按已选向量模型准备完成。请前往审批建立或更新索引后再提问；本次问题已保留，尚未预留或发送模型请求。","request_id":"d23f9d9f0e06b243"}}
+E       assert 409 == 201
+E        +  where 409 = <Response [409 Conflict]>.status_code
+
+../../../../ai/SummitEverything/tests/integration/test_feishu_real_gate.py:331: AssertionError
+__ test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg1-False] ___
+
+loopback = <function loopback.<locals>.make at 0x11fadfc40>, deadline = 0.15
+cfg = {'header_delay': 0.5, 'body': b'{}'}, expect_no_further_traffic = False
+
+    @pytest.mark.parametrize(
+        "deadline,cfg,expect_no_further_traffic",
+        [
+            (0.15, {"mode": "incomplete_headers"}, True),
+            (0.15, {"header_delay": 0.5, "body": b"{}"}, False),
+            (0.3, {"mode": "trickle_body", "declared_length": 100_000}, True),
+        ],
+    )
+    def test_r4_02_deadline_cases_hold_over_ten_consecutive_runs(
+        loopback, deadline, cfg, expect_no_further_traffic
+    ):
+        client = _client()
+        timings: list[float] = []
+        try:
+            for _ in range(10):
+                timings.append(
+                    _deadline_case(
+                        loopback,
+                        client,
+                        deadline,
+                        expect_no_further_traffic=expect_no_further_traffic,
+                        **cfg,
+                    )
+                )
+        finally:
+            client.close()
+        worst = max(timings)
+        print(
+            f"R4-02 timings deadline={deadline} cfg={cfg} "
+            f"tolerance={TOLERANCE_SECONDS} worst={worst:.4f} "
+            f"values={[round(value, 4) for value in timings]}"
+        )
+>       assert all(value <= deadline + TOLERANCE_SECONDS for value in timings), timings
+E       AssertionError: [0.15460808295756578, 0.15430854202713817, 0.15365016704890877, 0.15442120900843292, 0.16017308400478214, 0.15982541698031127, ...]
+E       assert False
+E        +  where False = all(<generator object test_r4_02_deadline_cases_hold_over_ten_consecutive_runs.<locals>.<genexpr> at 0x12396b3e0>)
+
+../../../../ai/SummitEverything/tests/integration/test_stage_b_r4_loopback.py:391: AssertionError
+----------------------------- Captured stdout call -----------------------------
+R4-02 timings deadline=0.15 cfg={'header_delay': 0.5, 'body': b'{}'} tolerance=0.1 worst=0.5077 values=[0.1546, 0.1543, 0.1537, 0.1544, 0.1602, 0.1598, 0.1639, 0.1817, 0.5077, 0.1984]
+________ test_tls_handshake_timeout_closes_the_connection_before_return ________
+
+    def test_tls_handshake_timeout_closes_the_connection_before_return():
+        listener = socket.socket()
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        listener.settimeout(2)
+        closed = threading.Event()
+        errors = []
+    
+        def peer():
+            try:
+                connection, _ = listener.accept()
+                with connection:
+                    connection.settimeout(0.6)
+                    while connection.recv(8192):
+                        pass  # accept ClientHello, never complete the TLS handshake
+                    closed.set()
+            except BaseException as exc:
+                errors.append(exc)
+    
+        thread = threading.Thread(target=peer)
+        thread.start()
+        try:
+            with httpx.Client(transport=DeadlineTransport(), trust_env=False) as client:
+                started = time.monotonic()
+                with pytest.raises(TimeoutError):
+                    bounded_call(
+                        client,
+                        "GET",
+                        f"https://127.0.0.1:{listener.getsockname()[1]}/",
+                        headers={},
+                        deadline_seconds=0.15,
+                    )
+>               assert time.monotonic() - started < 0.25
+E               assert (543022.799541916 - 543022.423636708) < 0.25
+E                +  where 543022.799541916 = <built-in function monotonic>()
+E                +    where <built-in function monotonic> = time.monotonic
+
+../../../../ai/SummitEverything/tests/integration/test_stage_b_sol_closure.py:227: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Users/hanwenbo/.codex/worktrees/offline-ask-schema/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_feishu_real_gate.py::test_real_query_plan_binds_context_settings_and_sources_without_persisting_prompt
+FAILED tests/integration/test_stage_b_r4_loopback.py::test_r4_02_deadline_cases_hold_over_ten_consecutive_runs[0.15-cfg1-False]
+FAILED tests/integration/test_stage_b_sol_closure.py::test_tls_handshake_timeout_closes_the_connection_before_return
+3 failed, 791 passed, 1 warning in 255.25s (0:04:15)

@@ -1,0 +1,20 @@
+Chromium / CUA browser observation (local Vite + real FastAPI, profile/workspace isolated under .local/qa):
+
+Before submit:
+- Workspace: 独立浏览器合成验收库
+- Question: 合成资料里的答案是什么？
+
+After submit:
+- heading 本次回答
+- status 回答失败
+- 本次查询未完成，尚不能判断资料依据
+- 当前本机索引尚未按已选向量模型准备完成。请前往审批建立或更新索引后再提问；本次问题已保留，尚未预留或发送模型请求。
+- button 前往审批建立或更新索引
+- Question textarea remained 合成资料里的答案是什么？
+
+After clicking the CTA:
+- current page heading 审批
+- section 搜索与问答准备
+- state 还没有可准备的内容；先添加并确认正式内容，之后才能为搜索和问答做准备。
+
+No provider transport call was possible: the harness replaces all provider clients with HTTPX MockTransport; query stopped at index_not_ready.

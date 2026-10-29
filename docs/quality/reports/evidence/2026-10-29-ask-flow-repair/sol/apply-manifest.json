@@ -1,0 +1,107 @@
+{
+  "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f",
+  "files": [
+    {
+      "file": "docs/contracts/API-v1.md",
+      "method": "exact-base",
+      "before_sha256": "2dae562924c438454e2fecb65751204a0e44ecacd2ca53b6df86e84d45fdd33f",
+      "after_sha256": "58d5e8e4a1cafde0dca5fcd73381ab41895b4baa326a7da9f5924c57df34fed4"
+    },
+    {
+      "file": "docs/product/FRONTEND-PAGE-SPECS.md",
+      "method": "three-way-preserve-parallel-change",
+      "before_sha256": "a06129c0883b53fa5b74713bd755018da8d6746ee8ff8dbb01025280e50eb28d",
+      "after_sha256": "6bdbe826b7aaf3eccb97f3677fc23164831c69d099aa0dc316e2fa0e3991de46"
+    },
+    {
+      "file": "src/summit_everything/api/app.py",
+      "method": "exact-base",
+      "before_sha256": "887ae6e3e265136d8b4b83f151c849976ef5b9e8b837b4beb8c2d838e1824462",
+      "after_sha256": "3ea6f69f8268c741f5887fcd7a982b0a3aae0db0eceaa6fbd6c05f57c64de51e"
+    },
+    {
+      "file": "src/summit_everything/integrations/llm.py",
+      "method": "exact-base",
+      "before_sha256": "1c34d70991988de94ce798c83ba00f026eec08212961b4912480dfb5b78dcce2",
+      "after_sha256": "bec21b086eb7e4e310a4dd807c562b980ca209e3adfbbf00dec6b8814e55bccf"
+    },
+    {
+      "file": "tests/fixtures/deepseek-organize-success-replay.json",
+      "method": "exact-base",
+      "before_sha256": null,
+      "after_sha256": "3f4311cb9403936d988eaa52f716c02508f8a7d6d10ac2f92d3895b4a3fcb9bc"
+    },
+    {
+      "file": "tests/integration/test_feishu_real_gate.py",
+      "method": "exact-base",
+      "before_sha256": "d1854f099ffc34cd0eaa3b80c8aa1c8f34e0beacebfc27203acaf79f2c76483f",
+      "after_sha256": "5b5e8b6ebe5f85c908fe29fcbb959789d8a45b1906149e982538ccd64f580332"
+    },
+    {
+      "file": "tests/integration/test_intake_review.py",
+      "method": "exact-base",
+      "before_sha256": "3c2ae3f7b83058b742e86fc59515f72608596cdc0dbf8be1fba45cce61e4b1ac",
+      "after_sha256": "44377dfa2726a8318e1a730d78eec989069d819f1680b08bfc6051178e7c70bb"
+    },
+    {
+      "file": "tests/integration/test_provider_settings_api.py",
+      "method": "exact-base",
+      "before_sha256": "4ebc25a0da5df4dd8c45f85fdcdb03677534094f0bf18d0e16fe79162ef585a0",
+      "after_sha256": "ba91d7f5a12d419fb550832d9585e3bb93342bd52f4419337dd6f59393dc01b3"
+    },
+    {
+      "file": "tests/integration/test_real_model_approval_flow.py",
+      "method": "exact-base",
+      "before_sha256": "acb1a4e4403019b811568e9d6370228becc7fae6947d83d4b5168f46d4f215f3",
+      "after_sha256": "8dd858a4442e18e3673d209d27d43711b191d8a05efe795a970870f2e1c4ce65"
+    },
+    {
+      "file": "tests/unit/test_llm_schema_tolerance.py",
+      "method": "exact-base",
+      "before_sha256": "9eab1cd0621a87c3a4525488d32dd4d0d1e57d5702cb9251ab67297860b5170a",
+      "after_sha256": "475de69b86b52ededef3dd32a36c9b14be4898567aa205e0503ac53888bd75b5"
+    },
+    {
+      "file": "tests/unit/test_organize_schema_replay.py",
+      "method": "exact-base",
+      "before_sha256": null,
+      "after_sha256": "d0ad579815765f759ccb0e5d3b177a9096fb43cd2fd5f1aabaa33d72591ea199"
+    },
+    {
+      "file": "tests/unit/test_real_model_adapters.py",
+      "method": "exact-base",
+      "before_sha256": "9611b6ecc0e35a64d7942081c6534696d71789e41c197e525bb29c0a70958301",
+      "after_sha256": "5e997d8d849f922ae823868990f8adb0c9782746dc2f1b7973c620f0fdcd53ef"
+    },
+    {
+      "file": "web/src/components/AskPreferences.test.tsx",
+      "method": "retain-parallel-post-fixture-add-readiness-wait",
+      "before_sha256": "ea9c647ddc5208cd59324db3c85f1cd099f144448846417fb7a67b7cef784a23",
+      "after_sha256": "d960f3ddd56b0185404791ccbb2df289cf68c8169a064743ff4b514be6dbf466"
+    },
+    {
+      "file": "web/src/components/AskView.test.tsx",
+      "method": "three-way-preserve-parallel-change",
+      "before_sha256": "f95e9b95b1b9e9421fb7a4d0c145c8eb0364e90160393041ea13759a7c254b4c",
+      "after_sha256": "dc9be5bb584924097b9fc9a4b1ee2e4cc366af32b7d93c0049c5be9bb4196016"
+    },
+    {
+      "file": "web/src/components/AskView.tsx",
+      "method": "three-way-preserve-parallel-change",
+      "before_sha256": "26886ebc1299350dc5ce05f147d8ce0625a8db999dfbb603e4130442de0b8399",
+      "after_sha256": "a6501113c601bb65d857b83d9d6ae1d46624eca0747335a78b15e955b4f34a79"
+    },
+    {
+      "file": "web/src/components/SourceOrganizer.test.tsx",
+      "method": "exact-current-label-within-task-fixture",
+      "before_sha256": "08fbae55e9f1dae134508e0677d415438c7a82f9dd4098c7a4691f2aef3e1a4e",
+      "after_sha256": "d0ebc40f64b71c06eb485b843d33cba82aba0f30c06ddb5fcd12d73202e425e7"
+    },
+    {
+      "file": "web/src/ui-contract.allowlist.json",
+      "method": "retain-equivalent-parallel-allowlist",
+      "before_sha256": "1e04401be62dec67b3b461b1e0f8fe3dce5f8856636336588a6a77ba0b961a53",
+      "after_sha256": "1e04401be62dec67b3b461b1e0f8fe3dce5f8856636336588a6a77ba0b961a53"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/hanwenbo/ai/SummitEverything/.local/qa/2026-10-29-offline-flow-root/deepseek_verify.py", line 17, in <module>
+    KEY = os.environ['DEEPSEEK_API_KEY']
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 716, in __getitem__
+KeyError: 'DEEPSEEK_API_KEY'

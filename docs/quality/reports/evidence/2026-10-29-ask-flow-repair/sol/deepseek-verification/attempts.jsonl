@@ -1,0 +1,5 @@
+{"attempt": 1, "kind": "organize", "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f", "input_sha256": "986a9c25a62bf738776029dcaab7b6c418ecdd10ca1f0f44fd9c20774b48edfb", "time": 1793276966.099274, "max_tokens": 2048}
+{"attempt": 2, "kind": "organize", "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f", "input_sha256": "ba5ba5b8c885815a25b3a288ecc6070be10af72943fe2ab228c9b9b574701e06", "time": 1793276967.175374, "max_tokens": 2048}
+{"attempt": 3, "kind": "organize", "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f", "input_sha256": "c3a723c8c915ea7d8d71ebc2c1725846f030e5421fe3282559bd7dd5cce07cb6", "time": 1793276968.3108768, "max_tokens": 2048}
+{"attempt": 4, "kind": "answer_fact", "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f", "input_sha256": "d22ade52a616896e749830cc1d723a9f54d5b56f8c18ab4172d97e68ad7ef492", "time": 1793276969.581364, "max_tokens": 2048}
+{"attempt": 5, "kind": "answer_missing", "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f", "input_sha256": "d22ade52a616896e749830cc1d723a9f54d5b56f8c18ab4172d97e68ad7ef492", "time": 1793276973.940393, "max_tokens": 2048}

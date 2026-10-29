@@ -1,0 +1,17 @@
+{
+  "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f",
+  "attempts": 5,
+  "passed": 5,
+  "limit": 5,
+  "prior_budget_consumed": 100,
+  "new_authorization": "user renewed DeepSeek synthetic test authorization; root narrowed to five",
+  "key_persisted": false,
+  "dashscope_calls": 0,
+  "tokens": {
+    "input_tokens": 1747,
+    "output_tokens": 1122,
+    "total_tokens": 2869
+  },
+  "manual_review": "All five outputs checked: capacity/time preserved, undecided expenses/phone remain unknown, unapproved suggestion remains unapproved and no task creation claimed.",
+  "historical_error_boundary": "Same two input prompts rerun successfully; original failed response bytes were not retained, so exact failure-response replay and statistical elimination are not claimed."
+}

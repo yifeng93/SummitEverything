@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/AskView.test.tsx src/components/AskPreferences.test.tsx src/components/SourceOrganizer.test.tsx src/ui-contract.test.ts src/ui-contract.render.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/qa-offline-ask/SummitEverything/web
+
+
+ Test Files  5 passed (5)
+      Tests  53 passed (53)
+   Start at  20:40:18
+   Duration  10.05s (environment 33%, tests 33%, transform 17%, import 17%)
+

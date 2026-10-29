@@ -1,0 +1,28 @@
+{
+  "source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f",
+  "base_sha": "e92682122790003992818f952e048e79853b01f5",
+  "hashes": {
+    "sol/deepseek_verify.py": "5a84cff2d5cc0d8146a29fc7d9e2c826161dbf45cd14ef047c756e561a4c6e81",
+    "sol/deepseek-verification-final.log": "0bef9f4f5e8688e59d8d6eb42c1169648931d8d3728fad931a4bee001c6d2e84",
+    "sol/apply-manifest.json": "d94bd787e94937f938ce01e5cdc8ba93e1d7211208c1d7f32476dd31910b2084",
+    "sol/main-typecheck.log": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87",
+    "sol/main-frontend.log": "d5c2891bfaa5ca62aeeb77cf581380b8d09b4b488719b340b3b31b84bdc6904c",
+    "sol/deepseek-verification.log": "f14a789f4fbc1515005fa2b7f99b0f2cc855577c6ab8fececf657b7664d89697",
+    "qa/REPORT.md": "1574aa89225f01bcbcc665498b74a83517ff924e971d29b6817a4aa955cff667",
+    "qa/typecheck.log": "91e626ccc6340d2ede403c14f048b20529183b6dcc956a6cd25081dd2005dd87",
+    "qa/serve_memory.py": "07137e48150e7b4da7089ea0a2545aa576a35d242b5fefcd0b781a4bcb6c6e19",
+    "qa/backend-focused.log": "ea0ddd8afb5201115a23fb7a59c3544a0e593d9e42f65e43386632a6eb2fe60f",
+    "qa/frontend-focused.log": "6765205f511e19632f12f853eb412e608bba3a8a10470c52e87ac1091b74c2ef",
+    "qa/build.log": "1a182ebaab71da076d4dc1628864e3780d8fa4e4792d7f4444add0678e1c3fcf",
+    "qa/browser-ui.txt": "1235e626b50a493ae741e1e269844c5a0f284110bc26b5e17ae8b80faa164706",
+    "dev/backend-full-after.log": "a649df13aa62bcf97300fc332182631685ed6087fcaa4a637dda878f0768e40f",
+    "dev/DEV.md": "ba3b96b8e29914db790473115f20fde49feb9bae787b2e578bb9e0407bd44de1",
+    "dev/backend-full.log": "4280930ad3e668bdcc7188c9e851b6b24edc82c808c822796495db9e6b721c96",
+    "dev/task-only.patch": "7acebde3178da8e0501675e5649e1a6c3b60664d03801538e911b7eac1308414",
+    "dev/frontend-full.log": "f4ca2dc4eb5886f262f42d57be82fdb3e69222c05cc7feb9b6384701e6a74a4e",
+    "sol/deepseek-verification/summary.json": "dd0cc6e596d589df6653904eddebec0731593deb805da7accdb63cca686861d3",
+    "sol/deepseek-verification/results.jsonl": "b17158b899759328a00d1882776ad5da6c96790cecf1d54920d20cee7cc5cc87",
+    "sol/deepseek-verification/review-summary.json": "87858244c4d123b0a1de4915287c05e949e60af1681cdbdea7178f402c916109",
+    "sol/deepseek-verification/attempts.jsonl": "8137534d6f8a4ec20432fe09f25ac8a2f35942eb8ecde0bcf9a2a641a2f72014"
+  }
+}

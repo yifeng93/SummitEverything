@@ -1,0 +1,6 @@
+{"attempt": 1, "kind": "organize", "status": "PASS", "seconds": 1.06}
+{"attempt": 2, "kind": "organize", "status": "PASS", "seconds": 1.12}
+{"attempt": 3, "kind": "organize", "status": "PASS", "seconds": 1.25}
+{"attempt": 4, "kind": "answer_fact", "status": "PASS", "seconds": 4.34}
+{"attempt": 5, "kind": "answer_missing", "status": "PASS", "seconds": 2.36}
+{"source_sha": "b737a4c1a2c14c6641347353414f1a0cf7631e6f", "attempts": 5, "passed": 5, "limit": 5, "prior_budget_consumed": 100, "new_authorization": "user renewed DeepSeek synthetic test authorization; root narrowed to five", "key_persisted": false, "dashscope_calls": 0}
