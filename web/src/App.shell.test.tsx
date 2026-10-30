@@ -163,6 +163,47 @@ it('侧栏审批徽章与审批页共用同一份清单，数量一致', async (
   expect(within(approvalView).queryByText('已确认稿件')).toBeNull()
 })
 
+it('external Markdown revision refreshes the formal approval list and badge without manual refresh', async () => {
+  let revision = 'baseline'
+  let pages: Record<string, unknown>[] = []
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/pages/revision') return Response.json({ workspace_id: workspace.workspace_id, revision })
+    if (url === '/api/v1/pages') return Response.json(pages)
+    return shellFetch()(input, _init)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<App />)
+  await screen.findByRole('navigation', { name: '主导航' })
+  fireEvent.click(screen.getByRole('button', { name: '审批' }))
+  await screen.findByText('没有待确认的正式内容')
+
+  revision = 'after-external-save'
+  pages = [{ page_id: 'page-1', relative_path: 'private/path.md', metadata: { title: '外部新增页面', kind: 'topic' }, body: '当前正文', content_sha256: 'a'.repeat(64), raw_sha256: 'b'.repeat(64), storage_area: 'formal', approval_state: 'pending', validity: 'current' }]
+  expect(await screen.findByText('外部新增页面', {}, { timeout: 4000 })).toBeTruthy()
+  expect(await screen.findByRole('button', { name: '审批，1 项待处理' })).toBeTruthy()
+  expect(document.body.textContent).not.toContain('private/path.md')
+})
+
+it('shows revision monitor failures in the normal shell and clears the freshness warning after recovery', async () => {
+  let revisionUnavailable = true
+  const fallback = shellFetch()
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/pages/revision') {
+      return revisionUnavailable
+        ? Response.json({ error: { code: 'temporary_unavailable', message: '暂时不可用' } }, { status: 503 })
+        : Response.json({ workspace_id: workspace.workspace_id, revision: 'same-baseline' })
+    }
+    return fallback(input, init)
+  }))
+  render(<App />)
+  expect(await screen.findByText(/自动检查暂时不可用，当前内容可能不是最新版本/)).toBeTruthy()
+  expect(screen.getByRole('navigation', { name: '主导航' })).toBeTruthy()
+  revisionUnavailable = false
+  await waitFor(() => expect(screen.queryByText(/自动检查暂时不可用，当前内容可能不是最新版本/)).toBeNull(), { timeout: 4000 })
+})
+
 it('settings save refreshes hidden approval provider state and invalidates only an unconfirmed Q&A plan', async () => {
   const runtimeSettings = {
     mode: 'real', model_studio_account_id: 'studio-default',

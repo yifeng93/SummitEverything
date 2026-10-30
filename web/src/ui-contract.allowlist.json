@@ -30,12 +30,11 @@
     ".slice(0, 8)"
   ],
   "entries": {
-    "web/src/App.tsx:content_sha256": 1,
-    "web/src/App.tsx:page_id": 2,
-    "web/src/components/ApprovalView.tsx:content_sha256": 3,
+    "web/src/App.tsx:page_id": 6,
+    "web/src/components/ApprovalView.tsx:content_sha256": 7,
     "web/src/components/ApprovalView.tsx:fingerprint": 5,
     "web/src/components/ApprovalView.tsx:operation_id": 1,
-    "web/src/components/ApprovalView.tsx:page_id": 18,
+    "web/src/components/ApprovalView.tsx:page_id": 22,
     "web/src/components/AskPreferences.tsx:candidate_id": 5,
     "web/src/components/AskPreferences.tsx:fingerprint": 1,
     "web/src/components/AskView.tsx:content_sha256": 5,
@@ -54,16 +53,15 @@
     "web/src/components/MarkdownText.tsx:content_sha256": 2,
     "web/src/components/MarkdownText.tsx:page_id": 3,
     "web/src/components/MarkdownText.tsx:relative_path": 3,
-    "web/src/components/PageReader.tsx:content_sha256": 7,
+    "web/src/components/PageReader.tsx:content_sha256": 9,
     "web/src/components/PageReader.tsx:operation_id": 2,
-    "web/src/components/PageReader.tsx:page_id": 13,
+    "web/src/components/PageReader.tsx:page_id": 14,
     "web/src/components/PageReader.tsx:relative_path": 9,
     "web/src/components/PageTree.tsx:content_sha256": 1,
     "web/src/components/PageTree.tsx:page_id": 3,
-    "web/src/components/ProjectsView.tsx:content_sha256": 8,
-    "web/src/components/ProjectsView.tsx:operation_id": 8,
-    "web/src/components/ProjectsView.tsx:page_id": 18,
-    "web/src/components/ProjectsView.tsx:relative_path": 3,
+    "web/src/components/ProjectsView.tsx:content_sha256": 5,
+    "web/src/components/ProjectsView.tsx:operation_id": 7,
+    "web/src/components/ProjectsView.tsx:page_id": 17,
     "web/src/components/SearchReadiness.tsx:fingerprint": 9,
     "web/src/components/SourceOrganizer.tsx:operation_id": 4,
     "web/src/components/TasksPanel.tsx:candidate_id": 2,
@@ -72,10 +70,6 @@
     "web/src/page-groups.ts:page_id": 1
   },
   "attribution": {
-    "web/src/App.tsx:content_sha256": {
-      "slice": "P2 · 阅读与流式",
-      "reason": "引用版本绑定的 API 参数（openPage），不进入可见文案"
-    },
     "web/src/App.tsx:page_id": {
       "slice": "P2 · 阅读与流式",
       "reason": "路由回调打开正式页面；屏幕只展示页面标题。"
@@ -203,10 +197,6 @@
     "web/src/components/ProjectsView.tsx:page_id": {
       "slice": "P4 · 项目与问答",
       "reason": "打开页面参数"
-    },
-    "web/src/components/ProjectsView.tsx:relative_path": {
-      "slice": "P4 · 项目与问答",
-      "reason": "同项目 Markdown 关联页的解析参数，不显示路径"
     },
     "web/src/components/SearchReadiness.tsx:fingerprint": {
       "slice": "P3 · 审批",

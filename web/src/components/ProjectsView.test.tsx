@@ -200,34 +200,50 @@ it('shows the workspace refusal when deleting a non-empty line', async () => {
   await waitFor(() => expect(onError).toHaveBeenCalledWith('Move projects before deleting this line'))
 })
 
-it('creates a project overview only after an explicit confirmation and then opens it', async () => {
-  vi.stubGlobal('crypto', { randomUUID: () => 'overview-operation' })
+it('renders the project overview read-only with no body editor or create controls', async () => {
   const onOpenPage = vi.fn()
-  let created = false
   const overviewPage = { page_id: 'overview-1', relative_path: '模拟主线/模拟项目/概览.md', metadata: { id: 'overview-1', title: '模拟项目 概览', role: 'knowledge', kind: 'project_overview', line_id: 'line-1', project_id: 'project-1' }, body: '目标', content_sha256: 'e'.repeat(64), raw_sha256: 'f'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current' }
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input)
-    if (url.endsWith('/projects/project-1/overview/confirmations') && init?.method === 'POST') { created = true; return { ok: true, status: 201, json: async () => ({ saved_locally: true, index_update: 'updated' }) } }
     if (url.endsWith('/lines')) return { ok: true, status: 200, json: async () => lines }
     if (url.endsWith('/projects')) return { ok: true, status: 200, json: async () => projects }
-    if (url.endsWith('/pages/directory')) return { ok: true, status: 200, json: async () => created ? [overviewPage] : [] }
-    if (url.endsWith('/pages/overview-1')) return created
-      ? { ok: true, status: 200, json: async () => overviewPage }
-      : { ok: false, status: 404, json: async () => ({ error: { message: '找不到页面' } }) }
+    if (url.endsWith('/pages/directory')) return { ok: true, status: 200, json: async () => [overviewPage] }
+    if (url.endsWith('/pages/overview-1')) return { ok: true, status: 200, json: async () => overviewPage }
     throw new Error(`Unexpected request ${url}`)
   })
   vi.stubGlobal('fetch', fetchMock)
   render(<ProjectsView onError={vi.fn()} onOpenPage={onOpenPage} />)
   fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
-  fireEvent.click(await screen.findByRole('button', { name: '创建概览' }))
-  fireEvent.change(screen.getByLabelText('概览正文（Markdown）'), { target: { value: '目标' } })
-  fireEvent.click(screen.getByRole('button', { name: '创建概览' }))
-  await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/overview/confirmations') && init?.method === 'POST')).toBe(true))
-  expect(await screen.findByText('本机索引已更新。')).toBeTruthy()
-  // 概览直接显示在项目页右侧，不再跳转到独立页面。
+  expect(await screen.findByText('目标')).toBeTruthy()
   expect(await screen.findByRole('heading', { name: '模拟项目 概览' })).toBeTruthy()
-  expect(screen.getByText('目标')).toBeTruthy()
+  expect(screen.queryByLabelText('概览正文（Markdown）')).toBeNull()
+  expect(screen.queryByRole('button', { name: '编辑' })).toBeNull()
+  expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/overview/confirmations'))).toBe(false)
   expect(onOpenPage).not.toHaveBeenCalled()
+})
+
+it('keeps a deleted selected document unavailable instead of opening a neighboring page', async () => {
+  let directoryPages: typeof pages = [pages[0]]
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/lines')) return Response.json(lines)
+    if (url.endsWith('/projects')) return Response.json(projects.slice(0, 1))
+    if (url.endsWith('/pages/directory')) return Response.json(directoryPages)
+    if (url.endsWith('/index/status')) return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.endsWith('/pages/overview-1')) return Response.json({ error: { message: '找不到页面' } }, { status: 404 })
+    if (url.includes('/pages/page-1')) return Response.json(pages[0])
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  const props = { onError: vi.fn(), onOpenPage: vi.fn() }
+  const view = render(<ProjectsView {...props} />)
+  fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '模拟事实' }))
+  expect(await screen.findByText('正文')).toBeTruthy()
+  directoryPages = []
+  view.rerender(<ProjectsView {...props} externalPagesRevision={1} />)
+  expect(await screen.findByText(/这个页面已删除或暂时无法读取/)).toBeTruthy()
+  expect(screen.queryByText('正文')).toBeNull()
 })
 
 it('opens a full project detail and preserves list search/filter state on return', async () => {
@@ -400,7 +416,7 @@ it('shows index coverage and groups a document project by source directory', asy
   expect(await within(pane).findByRole('heading', { name: '总览' })).toBeTruthy()
 })
 
-it('refreshes the directory after the page changes between its listing and body read', async () => {
+it('automatically refreshes the directory after a version race between listing and body read', async () => {
   const oldEntry = { ...pages[0], page_id: 'page-race', content_sha256: 'a'.repeat(64) }
   const updatedPage = { ...oldEntry, content_sha256: 'b'.repeat(64), body: '刚更新的正文' }
   let directoryReads = 0
@@ -424,14 +440,12 @@ it('refreshes the directory after the page changes between its listing and body 
   fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
   const tree = await screen.findByRole('navigation', { name: '文档目录' })
   fireEvent.click(within(tree).getByRole('button', { name: '模拟事实' }))
-  expect(await screen.findByText(/页面内容刚刚更新/)).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: '刷新目录' }))
   expect(await screen.findByText('刚更新的正文')).toBeTruthy()
   expect(directoryReads).toBe(2)
   expect(detailReads).toBe(2)
 })
 
-it('retries the body after a directory refresh even when its content hash is unchanged', async () => {
+it('automatically retries the body after a directory refresh even when its content hash is unchanged', async () => {
   const listedPage = { ...pages[0], page_id: 'page-same-hash', content_sha256: 'a'.repeat(64) }
   const recoveredPage = { ...listedPage, body: '恢复后的正文' }
   let directoryReads = 0
@@ -454,11 +468,66 @@ it('retries the body after a directory refresh even when its content hash is unc
   fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
   const tree = await screen.findByRole('navigation', { name: '文档目录' })
   fireEvent.click(within(tree).getByRole('button', { name: '模拟事实' }))
-  expect(await screen.findByText(/页面内容刚刚更新/)).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: '刷新目录' }))
   expect(await screen.findByText('恢复后的正文')).toBeTruthy()
   expect(directoryReads).toBe(2)
   expect(detailReads).toBe(2)
+})
+
+it('retries a transient project-inline detail failure with a fresh request', async () => {
+  let detailReads = 0
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/lines')) return Response.json(lines)
+    if (url.endsWith('/projects')) return Response.json(projects)
+    if (url.endsWith('/index/status')) return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.endsWith('/pages/overview-1')) return Response.json({ error: { message: '没有概览' } }, { status: 404 })
+    if (url.endsWith('/pages/directory')) return Response.json([{ ...pages[0], page_id: 'page-transient' }])
+    if (url.includes('/pages/page-transient?expected_content_sha256=')) {
+      detailReads += 1
+      if (detailReads === 1) return Response.json({ error: { message: '暂时不可用' } }, { status: 503 })
+      return Response.json({ ...pages[0], page_id: 'page-transient', body: '短暂失败后恢复的正文' })
+    }
+    throw new Error(`Unexpected request ${url}`)
+  }))
+  render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
+  const tree = await screen.findByRole('navigation', { name: '文档目录' })
+  fireEvent.click(within(tree).getByRole('button', { name: '模拟事实' }))
+  expect(await screen.findByText('短暂失败后恢复的正文', {}, { timeout: 3000 })).toBeTruthy()
+  expect(detailReads).toBe(2)
+})
+
+it('keeps the same project overview reader mounted while an external change refreshes it', async () => {
+  const overviewPage = {
+    page_id: 'overview-1', relative_path: '模拟主线/模拟项目/概览.md',
+    metadata: { id: 'overview-1', title: '项目概览', role: 'knowledge', kind: 'project_overview', line_id: 'line-1', project_id: 'project-1' },
+    body: '项目概览长正文', content_sha256: 'e'.repeat(64), raw_sha256: 'f'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current',
+  }
+  let overviewReads = 0
+  let releaseRefresh: (() => void) | undefined
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.endsWith('/lines')) return Response.json(lines)
+    if (url.endsWith('/projects')) return Response.json(projects)
+    if (url.endsWith('/index/status')) return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    if (url.endsWith('/pages/directory')) return Response.json([])
+    if (url.endsWith('/pages/overview-1')) {
+      overviewReads += 1
+      if (overviewReads === 2) await new Promise<void>((resolve) => { releaseRefresh = resolve })
+      return Response.json(overviewPage)
+    }
+    throw new Error(`Unexpected request ${url}`)
+  }))
+  const view = render(<ProjectsView onError={vi.fn()} onOpenPage={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
+  await screen.findByText('项目概览长正文')
+  const originalReader = document.querySelector('.project-overview-pane .page-reader')
+  expect(originalReader).toBeTruthy()
+  view.rerender(<ProjectsView externalPagesRevision={1} onError={vi.fn()} onOpenPage={vi.fn()} />)
+  await waitFor(() => expect(overviewReads).toBe(2))
+  expect(document.querySelector('.project-overview-pane .page-reader')).toBe(originalReader)
+  expect(screen.getByText('项目概览长正文')).toBeTruthy()
+  act(() => releaseRefresh?.())
 })
 
 it('shows unavailable auxiliary state on failure and an honest empty summary after recovery', async () => {

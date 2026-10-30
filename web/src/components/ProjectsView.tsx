@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useImperativeHandle, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react'
 import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, FileText, Folder, FolderOpen, Plus } from 'lucide-react'
-import { ApiError, api, indexUpdateMessage, newOperationId, type IndexStatus, type Line, type MutationResult, type Page, type PageDirectoryEntry, type Project } from '../api/client'
+import { ApiError, api, newOperationId, type IndexStatus, type Line, type Page, type PageDirectoryEntry, type Project } from '../api/client'
 import { ConfirmDialog } from './ConfirmDialog'
 import { ImportDrawer } from './ImportDrawer'
 import { JournalDialog } from './JournalDialog'
 import { PageHeader } from './PageHeader'
 import { PageReader } from './PageReader'
-import { MarkdownText } from './MarkdownText'
 import { buildPageTree, findPageTrail, type PageTreeNode } from '../page-groups'
 import type { ToastKind } from '../toast'
 
 type Props = {
+  externalPagesRevision?: number
   onError: (message: string, kind?: ToastKind) => void
   onOpenPage: (id: string, hash?: string) => void
   /** 侧栏二级入口点某个项目：loaded 后按准确 id 打开详情。 */
@@ -24,11 +24,12 @@ type Props = {
   onProjectsChanged?: () => void
 }
 
-export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandled, onActiveProjectChange, onProjectsChanged, handleRef }: Props) {
+export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandled, onActiveProjectChange, onProjectsChanged, handleRef, externalPagesRevision = 0 }: Props) {
   const [lines, setLines] = useState<Line[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [pages, setPages] = useState<PageDirectoryEntry[]>([])
   const [pageDirectoryRevision, setPageDirectoryRevision] = useState(0)
+  const [externalRetryAttempt, setExternalRetryAttempt] = useState(0)
   const [overviewPage, setOverviewPage] = useState<Page | undefined>()
   const [overviewLoadState, setOverviewLoadState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [overviewRequestProjectId, setOverviewRequestProjectId] = useState('')
@@ -39,9 +40,6 @@ export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandl
   const [projectId, setProjectId] = useState('')
   const [lineName, setLineName] = useState('')
   const [projectName, setProjectName] = useState('')
-  const [overviewTitle, setOverviewTitle] = useState('')
-  const [overviewBody, setOverviewBody] = useState('')
-  const [editingOverview, setEditingOverview] = useState(false)
   const [editingLine, setEditingLine] = useState(false)
   const [editingProject, setEditingProject] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -55,10 +53,8 @@ export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandl
   const [showJournal, setShowJournal] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [overviewNotice, setOverviewNotice] = useState('')
   const [loaded, setLoaded] = useState(false)
   const [loadError, setLoadError] = useState('')
-  const pendingOverview = useRef<{ signature: string; operation: string } | null>(null)
   const refreshRun = useRef(0)
   const auxiliaryRun = useRef(0)
   const refreshController = useRef<AbortController | null>(null)
@@ -69,7 +65,7 @@ export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandl
   const lastOpenedProjectId = useRef('')
 
   // 一级导航「项目」：同步关掉详情，避免和行点击抢时序（effect 会晚一拍）。
-  useImperativeHandle(handleRef, () => ({ showList: () => { setDetailOpen(false); setEditingOverview(false); setProjectId('') } }))
+  useImperativeHandle(handleRef, () => ({ showList: () => { setDetailOpen(false); setProjectId('') } }))
 
   const loadAuxiliary = useCallback(async () => {
     const run = ++auxiliaryRun.current
@@ -221,13 +217,32 @@ export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandl
       if (run === overviewRun.current) { setOverviewPage(page); setOverviewLoadState('ready') }
     } catch (cause) {
       if (run === overviewRun.current) {
-        setOverviewPage(undefined)
-        setOverviewLoadState(cause instanceof ApiError && cause.status === 404 ? 'ready' : 'error')
+        if (cause instanceof ApiError && cause.status === 404) {
+          setOverviewPage(undefined)
+          setOverviewLoadState('ready')
+        } else setOverviewLoadState('error')
       }
     } finally {
       window.clearTimeout(timer)
     }
   }, [])
+
+  useEffect(() => {
+    if (externalPagesRevision === 0) return
+    setExternalRetryAttempt(0)
+    void loadAuxiliary()
+    if (selectedProject) void loadOverview(selectedProject)
+  }, [externalPagesRevision, loadAuxiliary, loadOverview, selectedProject])
+
+  useEffect(() => {
+    if (externalPagesRevision === 0 || externalRetryAttempt >= 2 || pagesState !== 'error' && overviewLoadState !== 'error') return
+    const timer = window.setTimeout(() => {
+      setExternalRetryAttempt((value) => value + 1)
+      if (pagesState === 'error') void loadAuxiliary()
+      if (overviewLoadState === 'error' && selectedProject) void loadOverview(selectedProject)
+    }, externalRetryAttempt === 0 ? 1000 : 2000)
+    return () => window.clearTimeout(timer)
+  }, [externalPagesRevision, externalRetryAttempt, loadAuxiliary, loadOverview, overviewLoadState, pagesState, selectedProject])
   useEffect(() => {
     if (!detailOpen || !selectedProject) { overviewRun.current += 1; overviewController.current?.abort(); setOverviewPage(undefined); setOverviewLoadState('idle'); return }
     void loadOverview(selectedProject)
@@ -264,37 +279,12 @@ export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandl
     const projectIdToFocus = lastOpenedProjectId.current
     setShowArchived(projects.some((project) => project.id === projectIdToFocus && project.archived))
     setDetailOpen(false)
-    setEditingOverview(false)
     requestAnimationFrame(() => {
       document.documentElement.scrollTop = detailScrollTop.current
       document.body.scrollTop = detailScrollTop.current
       const trigger = Array.from(document.querySelectorAll<HTMLElement>('[data-project-id]')).find((element) => element.dataset.projectId === projectIdToFocus)
       ;(trigger ?? document.querySelector<HTMLElement>('#project-search'))?.focus({ preventScroll: true })
     })
-  }
-
-  async function saveOverview(event: FormEvent) {
-    event.preventDefault()
-    if (!selectedProject || !overviewTitle.trim() || !overviewBody.trim()) return
-    const signature = JSON.stringify([selectedProject.id, overviewTitle.trim(), overviewBody, overview?.content_sha256 ?? null])
-    if (pendingOverview.current?.signature !== signature) pendingOverview.current = { signature, operation: newOperationId() }
-    setBusy(true)
-    try {
-      const result = await api.post<MutationResult>(`/projects/${selectedProject.id}/overview/confirmations`, {
-        title: overviewTitle.trim(), body: overviewBody, confirmation_id: pendingOverview.current.operation,
-        operation_id: pendingOverview.current.operation, expected_content_sha256: overview?.content_sha256 ?? null,
-      })
-      setOverviewNotice(indexUpdateMessage(result.index_update) ?? '')
-      pendingOverview.current = null
-      setEditingOverview(false)
-      await refresh()
-      await loadOverview(selectedProject)
-    } catch (cause) {
-      if (cause instanceof ApiError && cause.code === 'version_conflict') {
-        setOverviewNotice('概览已在其他位置更新；当前编辑内容未覆盖新版本。请取消后重新打开概览，再检查和编辑。')
-      } else onError(cause instanceof Error ? cause.message : '无法保存项目概览')
-    }
-    finally { setBusy(false) }
   }
 
   if (detailOpen && selectedProject) return <ProjectDetailView
@@ -309,19 +299,10 @@ export function ProjectsView({ onError, onOpenPage, target = null, onTargetHandl
     onRetryPages={loadAuxiliary}
     overviewLoadState={overviewRequestProjectId === selectedProject.id ? overviewLoadState : 'loading'}
     pageDirectoryRevision={pageDirectoryRevision}
-    onRetryOverview={() => { if (selectedProject) void loadOverview(selectedProject) }}
-    overviewNotice={overviewNotice}
-    overviewTitle={overviewTitle}
-    overviewBody={overviewBody}
-    editingOverview={editingOverview}
     busy={busy}
+    onRetryOverview={() => { if (selectedProject) void loadOverview(selectedProject) }}
     onBack={returnToProjectList}
     onOpenPage={onOpenPage}
-    onEditOverview={() => { setOverviewTitle(overview ? String(overview.metadata.title ?? '') : selectedProject.name + ' 概览'); setOverviewBody(overview?.body ?? ''); setEditingOverview(true) }}
-    onCancelOverview={() => setEditingOverview(false)}
-    onOverviewTitle={setOverviewTitle}
-    onOverviewBody={setOverviewBody}
-    onSaveOverview={(event) => void saveOverview(event)}
     onRename={() => { setProjectName(selectedProject.name); setEditingProject(true) }}
     editingProject={editingProject}
     projectName={projectName}
@@ -432,23 +413,14 @@ type ProjectDetailProps = {
   library: { pages: PageDirectoryEntry[]; projects: Project[] }
   onReloadPages: () => Promise<void>
   pageDirectoryRevision: number
+  busy: boolean
   overview?: Page
   pagesState: 'loading' | 'ready' | 'error'
   onRetryPages: () => void
   overviewLoadState: 'idle' | 'loading' | 'ready' | 'error'
   onRetryOverview: () => void
-  overviewNotice: string
-  overviewTitle: string
-  overviewBody: string
-  editingOverview: boolean
-  busy: boolean
   onBack: () => void
   onOpenPage: (id: string, hash?: string) => void
-  onEditOverview: () => void
-  onCancelOverview: () => void
-  onOverviewTitle: (value: string) => void
-  onOverviewBody: (value: string) => void
-  onSaveOverview: (event: FormEvent) => void
   onRename: () => void
   editingProject: boolean
   projectName: string
@@ -507,27 +479,51 @@ function ProjectRow({ project, lines, pages, pagesState, statusOf, onOpen }: {
 
 function ProjectDetailView(props: ProjectDetailProps) {
   const { project, line, pages, overview } = props
-  const confirmedOverview = overview?.approval_state === 'confirmed' ? overview : undefined
   const facts = pages.filter((page) => page.page_id !== overview?.page_id).sort((a, b) => (pageBusinessDate(b)?.timestamp ?? -Infinity) - (pageBusinessDate(a)?.timestamp ?? -Infinity))
-  const markdownPages = pages.map((page) => ({ page_id: page.page_id, content_sha256: page.content_sha256, title: String(page.metadata.title ?? ''), relative_path: page.relative_path }))
   const pageTree = buildPageTree(facts)
   const [activePageId, setActivePageId] = useState('')
-  const activePage = facts.find((page) => page.page_id === activePageId) ?? facts[0]
+  const activePage = activePageId ? facts.find((page) => page.page_id === activePageId) : facts[0]
   const [activePageDetail, setActivePageDetail] = useState<Page>()
-  const [activePageLoad, setActivePageLoad] = useState<'loading' | 'ready' | 'error' | 'updated'>('loading')
+  const activePageDetailRef = useRef<Page | undefined>(undefined)
+  activePageDetailRef.current = activePageDetail
+  const [activePageLoad, setActivePageLoad] = useState<'loading' | 'ready' | 'retrying' | 'error' | 'updated'>('loading')
   const [activePageRetry, setActivePageRetry] = useState(0)
+  const activePageRetryKey = useRef('')
+  const activePageRetryAttempts = useRef(0)
   // 概览和文档共用右侧同一块区域：默认停在概览（它就是项目首页），没有概览时落到第一篇文档。
   const [view, setView] = useState<'overview' | 'doc'>('overview')
+  const activePageIdForRead = activePage?.page_id
+  const activePageHashForRead = activePage?.content_sha256
+  const directoryRevisionForRead = props.pageDirectoryRevision
+  const refreshDirectory = props.onRetryPages
   useEffect(() => {
-    if (view !== 'doc' || !activePage) { setActivePageDetail(undefined); setActivePageLoad('loading'); return }
+    if (view !== 'doc' || !activePageIdForRead || !activePageHashForRead) { setActivePageDetail(undefined); setActivePageLoad('loading'); return }
+    const retryKey = `${activePageIdForRead}:${activePageHashForRead}`
+    if (activePageRetryKey.current !== retryKey) {
+      activePageRetryKey.current = retryKey
+      activePageRetryAttempts.current = 0
+    }
     let current = true
+    let retryTimer = 0
     const controller = new AbortController()
     const timer = window.setTimeout(() => controller.abort(), 5000)
-    setActivePageDetail(undefined)
-    setActivePageLoad('loading')
-    void api.get<Page>(`/pages/${activePage.page_id}?expected_content_sha256=${encodeURIComponent(activePage.content_sha256)}`, { signal: controller.signal }).then((detail) => { if (current) { setActivePageDetail(detail); setActivePageLoad('ready') } }).catch((cause) => { if (current) { setActivePageDetail(undefined); setActivePageLoad(cause instanceof ApiError && cause.status === 409 ? 'updated' : 'error') } }).finally(() => window.clearTimeout(timer))
-    return () => { current = false; controller.abort(); window.clearTimeout(timer) }
-  }, [view, activePage?.page_id, activePage?.content_sha256, activePageRetry, props.pageDirectoryRevision])
+    if (activePageDetailRef.current?.page_id !== activePageIdForRead) setActivePageDetail(undefined)
+    setActivePageLoad(activePageRetryAttempts.current > 0 ? 'retrying' : 'loading')
+    void api.get<Page>(`/pages/${activePageIdForRead}?expected_content_sha256=${encodeURIComponent(activePageHashForRead)}`, { signal: controller.signal }).then((detail) => { if (current) { activePageRetryAttempts.current = 0; setActivePageDetail(detail); setActivePageLoad('ready') } }).catch((cause) => {
+      if (!current) return
+      const versionChanged = cause instanceof ApiError && cause.status === 409
+      if (versionChanged) void refreshDirectory()
+      if (activePageRetryAttempts.current < 3) {
+        const attempt = activePageRetryAttempts.current++
+        setActivePageLoad('retrying')
+        retryTimer = window.setTimeout(() => { if (current) setActivePageRetry((value) => value + 1) }, [500, 1200, 2500][attempt])
+      } else {
+        setActivePageDetail(undefined)
+        setActivePageLoad(versionChanged ? 'updated' : 'error')
+      }
+    }).finally(() => window.clearTimeout(timer))
+    return () => { current = false; controller.abort(); window.clearTimeout(timer); window.clearTimeout(retryTimer) }
+  }, [view, activePageIdForRead, activePageHashForRead, activePageRetry, directoryRevisionForRead, refreshDirectory])
   // 默认只展开当前文档所在的那条路径：树一眼能扫完，又不会把 69 篇全铺开。
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set((findPageTrail(pageTree, facts[0]?.page_id ?? '') ?? []).map((node) => node.key)))
   function toggleFolder(key: string) {
@@ -618,43 +614,35 @@ function ProjectDetailView(props: ProjectDetailProps) {
         <div className="project-docs-body">
           {view === 'overview'
             ? <article className={overview ? 'page-reader project-overview-pane' : 'page-reader project-overview-pane is-empty'} aria-label="项目概览">
-              {overview && <div className="page-reader-topline">
-                <div className="page-meta"><span className={confirmedOverview ? '' : 'page-status-invalid'}>{confirmedOverview ? '已确认概览' : '待确认概览'}</span></div>
-                {!props.editingOverview && <button className="text-button quiet" onClick={props.onEditOverview}>编辑</button>}
-              </div>}
-              <h1>{String(overview?.metadata.title ?? '项目概览')}</h1>
-              {overview && <p className="helper-line">{confirmedOverview ? '项目摘要依据这一版；正文可随时修改。' : '待确认概览：正文可读，但不会用于项目摘要。'}</p>}
-              {props.editingOverview
-                ? <form className="overview-editor" onSubmit={props.onSaveOverview}>
-                  <label className="field"><span>概览标题</span><input value={props.overviewTitle} onChange={(event) => props.onOverviewTitle(event.target.value)} /></label>
-                  <label className="field"><span>概览正文（Markdown）</span><textarea rows={10} value={props.overviewBody} onChange={(event) => props.onOverviewBody(event.target.value)} /></label>
-                  <div className="button-row">
-                    <button type="button" className="button secondary" onClick={props.onCancelOverview}>取消</button>
-                    <button className="button primary" disabled={props.busy || !props.overviewTitle.trim() || !props.overviewBody.trim()}>{overview ? '保存概览' : '创建概览'}</button>
-                  </div>
-                </form>
-              : props.overviewLoadState === 'loading' ? <p role="status" className="muted">正在读取项目概览…</p>
+              {overview && (props.overviewLoadState === 'ready' || props.overviewLoadState === 'loading' || props.overviewLoadState === 'error')
+                ? <><PageReader key={overview.page_id} page={overview} pane={props.library} directoryRevision={props.pageDirectoryRevision} synchronizing={props.overviewLoadState !== 'ready'} onClose={() => undefined} onReload={props.onReloadPages} onOpenPage={props.onOpenPage} />{props.overviewLoadState === 'error' && <p role="alert" className="form-error">项目概览暂时无法更新；当前显示的是上次读取内容。<button className="text-button" onClick={props.onRetryOverview}>重试</button></p>}</>
+                : props.overviewLoadState === 'loading' ? <p role="status" className="muted">正在读取项目概览…</p>
                 : props.overviewLoadState === 'error' ? <p role="alert" className="form-error">项目概览读取失败。<button className="text-button" onClick={props.onRetryOverview}>重试</button></p>
-                : overview
-                  ? <MarkdownText className="page-body" content={overview.body} sourcePath={overview.relative_path} pageIndex={markdownPages} onOpenPage={props.onOpenPage} />
                   : props.pagesState === 'loading' ? <p role="status" className="muted">正在读取项目页面目录…</p>
                     : props.pagesState === 'error' ? <p role="alert" className="form-error">项目页面目录读取失败。<button className="text-button" onClick={props.onRetryPages}>重试</button></p>
                     : <>
-                    <p className="muted">还没有项目概览。写一份用来说明这个项目要达成什么，它会成为项目摘要的依据。</p>
-                    <button className="button primary" onClick={props.onEditOverview}>创建概览</button>
+                    <h1>项目概览</h1>
+                    <p className="muted">还没有项目概览。概览正文在外部维护，这里只负责阅读与确认。</p>
                   </>}
-              {props.overviewNotice && <p role="status" className={props.overviewNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{props.overviewNotice}</p>}
             </article>
-            : activePageDetail && activePageDetail.page_id === activePage?.page_id && activePageDetail.content_sha256 === activePage.content_sha256
+            : props.pagesState === 'error' ? <p role="alert" className="form-error">项目页面目录暂时无法读取；确认与阅读已暂停，连接或文件恢复后会自动重试。</p>
+              : activePageDetail && activePageDetail.page_id === activePage?.page_id && (activePageDetail.content_sha256 === activePage.content_sha256 || activePageLoad === 'loading')
               ? <PageReader
                 key={activePageDetail.page_id}
                 page={activePageDetail}
                 pane={props.library}
+                directoryRevision={props.pageDirectoryRevision}
+                synchronizing={activePageDetail.content_sha256 !== activePage.content_sha256}
                 onClose={() => undefined}
                 onReload={props.onReloadPages}
                 onOpenPage={props.onOpenPage}
               />
-              : activePage && activePageLoad === 'updated' ? <p role="status" className="form-error">页面内容刚刚更新。请刷新页面目录后重新打开。<button className="text-button" onClick={props.onRetryPages}>刷新目录</button></p> : activePage && activePageLoad !== 'error' ? <p className="muted" role="status">正在读取页面正文…</p> : activePage && activePageLoad === 'error' ? <p role="alert" className="form-error">页面读取失败。<button className="text-button" onClick={() => setActivePageRetry((value) => value + 1)}>重试</button></p> : props.pagesState === 'loading' ? <p className="muted" role="status">正在读取项目页面目录…</p> : props.pagesState === 'error' ? <p role="alert" className="form-error">项目页面目录读取失败。<button className="text-button" onClick={props.onRetryPages}>重试</button></p> : <p className="muted">左侧还没有可读的文档。</p>}
+              : !activePage && activePageId ? <p role="alert" className="form-error">这个页面已删除或暂时无法读取；修复后会自动恢复。</p>
+                : activePage && activePageLoad === 'updated' ? <p role="status" className="form-error">页面内容刚刚更新。请刷新页面目录后重新打开。<button className="text-button" onClick={props.onRetryPages}>刷新目录</button></p>
+                  : activePage && activePageLoad === 'error' ? <p role="alert" className="form-error">页面暂时无法读取。<button className="text-button" onClick={() => { activePageRetryAttempts.current = 0; setActivePageRetry((value) => value + 1) }}>重试</button></p>
+                    : activePage && activePageLoad === 'retrying' ? <p className="muted" role="status">暂时没有读到页面，正在自动重试…</p>
+                    : activePage ? <p className="muted" role="status">正在读取页面正文…</p>
+                      : props.pagesState === 'loading' ? <p className="muted" role="status">正在读取项目页面目录…</p> : <p className="muted">左侧还没有可读的文档。</p>}
         </div>
       </div>
     </section>

@@ -1,0 +1,6 @@
+{
+  "status": 200,
+  "mode": "real",
+  "llm_provider": "deepseek",
+  "embedding_fingerprint": "fe87c0a70186bcc7bd6a69945404302c28492810f9c6c1776e6e1b777f5e650b"
+}

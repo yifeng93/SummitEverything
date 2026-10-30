@@ -1,0 +1,46 @@
+
+> web@0.0.0 test
+> vitest run --run src/App.shell.test.tsx src/components/ProjectsView.test.tsx src/components/ApprovalView.test.tsx src/components/PageReader.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+ ❯ src/components/ProjectsView.test.tsx (19 tests | 1 failed) 12818ms
+   × renames a line and project while keeping their stable IDs 5417ms
+ ❯ src/components/ApprovalView.test.tsx (37 tests | 1 failed) 13953ms
+   × continues with returned source IDs when titles collide and opens the exact item 5280ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ApprovalView.test.tsx > continues with returned source IDs when titles collide and opens the exact item
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/ApprovalView.test.tsx:69:1
+     67| }
+     68|
+     69| it('continues with returned source IDs when titles collide and opens t…
+       | ^
+     70|   const onTargetHandled = vi.fn()
+     71|   const line = { id: 'line-a', name: '合成主线', directory: '合成主线' }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/ProjectsView.test.tsx > renames a line and project while keeping their stable IDs
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/ProjectsView.test.tsx:28:1
+     26| })
+     27|
+     28| it('renames a line and project while keeping their stable IDs', async …
+       | ^
+     29|   vi.stubGlobal('crypto', { randomUUID: () => 'operation-id' })
+     30|   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: Requ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  2 failed | 74 passed (76)
+   Start at  14:59:40
+   Duration  31.55s (tests 42%, environment 22%, import 22%, transform 14%, worker 1%)
+

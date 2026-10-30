@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run --maxWorkers=1 src/App.shell.test.tsx -t Today→Settings→Today
+
+
+ RUN  v5.0.3 /Users/hanwenbo/ai/SummitEverything/web
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 14 skipped (15)
+   Start at  16:14:50
+   Duration  7.12s (environment 38%, tests 25%, transform 20%, import 17%)
+

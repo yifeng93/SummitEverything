@@ -56,6 +56,7 @@
 | GET /projects；POST /projects；PATCH /projects/{id}；DELETE /projects/{id} | 主线归属、名称、归档；业务进度另走 Action |
 | GET /pages；GET /pages/{id} | PageSnapshot；引用打开可附 expected_content_sha256，旧版本返回内容已更新 |
 | GET /pages/directory | PageDirectoryEntry（不含正文；仅项目概览提供摘要正文）；供项目目录快速展示页面层级 |
+| GET /pages/revision | 必须携带 `X-Summit-Workspace-Id`；返回当前工作库 ID 与不透明 revision。仅签名 manifest 和注册正式目录内 Markdown 文件的 stat，不解析正文、不返回路径；供客户端轮询变化后定向刷新，不批准或索引内容 |
 | POST /pages | 明确直接撰写并确认的 metadata / body、confirmation_id → MutationResult；新增基准为空 |
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
 | POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |

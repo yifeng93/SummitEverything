@@ -3268,6 +3268,62 @@
         }
       }
     },
+    "/api/v1/pages/revision": {
+      "get": {
+        "summary": "Pages Revision",
+        "operationId": "pages_revision_api_v1_pages_revision_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspacePagesRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/pages/directory": {
       "get": {
         "summary": "Page Directory",
@@ -10312,6 +10368,25 @@
           "name"
         ],
         "title": "WorkspaceContext"
+      },
+      "WorkspacePagesRevision": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "revision": {
+            "type": "string",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id",
+          "revision"
+        ],
+        "title": "WorkspacePagesRevision"
       },
       "WorkspaceRequest": {
         "properties": {

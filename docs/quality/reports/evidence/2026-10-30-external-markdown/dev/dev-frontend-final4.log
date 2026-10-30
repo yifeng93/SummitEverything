@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/App.shell.test.tsx src/components/ProjectsView.test.tsx src/components/ApprovalView.test.tsx src/components/PageReader.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+
+ Test Files  4 passed (4)
+      Tests  76 passed (76)
+   Start at  14:55:11
+   Duration  13.40s (tests 44%, environment 31%, import 13%, transform 12%)
+

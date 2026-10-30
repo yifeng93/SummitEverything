@@ -1,0 +1,6 @@
+[
+  {
+    "status": 200,
+    "body": "{\"operation_id\":\"ac608de6-ffe2-435a-bfcd-26ae487e9575\",\"state\":\"succeeded\",\"changed_paths\":[\"合成验收主线/飞纸读书会/合成外部更新规则.md\"],\"page_versions\":{\"64e76855-eba5-439f-8ae2-3bbe89a21401\":\"bc31c2567658b2a69ff055ec4626bb38fbed68f464943dca92a2a7b4be72150b\"},\"saved_locally\":true,\"index_update\":\"updated\"}"
+  }
+]

@@ -49,6 +49,7 @@ from summit_everything.domain.models import (
     ProjectRecord,
     SourceDetail,
     WorkspaceContext,
+    WorkspacePagesRevision,
 )
 from summit_everything.intake.actions import ActionService
 from summit_everything.intake.review import IntakeReviewService
@@ -169,7 +170,7 @@ from summit_everything.workspace.manifest import (
     update_line,
     update_project,
 )
-from summit_everything.workspace.reader import list_pages, read_page
+from summit_everything.workspace.reader import formal_pages_revision, list_pages, read_page
 from summit_everything.workspace.writer import (
     PageWriter,
     WorkspaceWriteConflict,
@@ -2708,6 +2709,17 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> list[PageSnapshot]:
         return list_pages(Path(workspace.root))
+
+    @app.get("/api/v1/pages/revision", dependencies=[Depends(authenticated)])
+    def pages_revision(
+        workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
+        response: Response,
+    ) -> WorkspacePagesRevision:
+        response.headers["Cache-Control"] = "no-store"
+        return WorkspacePagesRevision(
+            workspace_id=workspace.workspace_id,
+            revision=formal_pages_revision(Path(workspace.root)),
+        )
 
     @app.get(
         "/api/v1/pages/directory",

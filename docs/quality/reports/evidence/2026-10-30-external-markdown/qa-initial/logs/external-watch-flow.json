@@ -1,0 +1,31 @@
+{
+  "pageId": "ad32d369-78aa-40da-9958-b248d5a86b8a",
+  "oldHash": "ede0115ad80cea00b428d67900a68890f172f63ffdafae6d3968d6c1702105f4",
+  "newHash": "9e7dd2d3f907b25566e30295b2ff4943c0213a8434b33c98e8e5bb286625bdb4",
+  "injectedDetailFailures": 1,
+  "detailGets": 3,
+  "beforeConfirm": {
+    "approvalState": "invalid",
+    "index": {
+      "fingerprint": "fe87c0a70186bcc7bd6a69945404302c28492810f9c6c1776e6e1b777f5e650b",
+      "pages": 1,
+      "chunks": 1,
+      "state": "stale",
+      "current_pages": 0,
+      "stale_pages": 1,
+      "vector": "real"
+    }
+  },
+  "confirmationStatus": 200,
+  "indexUpdate": "updated",
+  "finalIndex": {
+    "fingerprint": "fe87c0a70186bcc7bd6a69945404302c28492810f9c6c1776e6e1b777f5e650b",
+    "pages": 1,
+    "chunks": 1,
+    "state": "ready",
+    "current_pages": 1,
+    "stale_pages": 0,
+    "vector": "real"
+  },
+  "finalApprovalState": "confirmed"
+}

@@ -1,0 +1,13 @@
+{
+  "candidate": "5d76fe20b0300fb846b6af01475f55f4e75859ab",
+  "pages": 180,
+  "samples": 30,
+  "median_ms": 7.688333513215184,
+  "max_ms": 9.709249949082732,
+  "markdown_parse_calls": 0,
+  "same_size_mtime_preserved": true,
+  "atomic_replacement_detected": true,
+  "source_tmp_ignored": true,
+  "outside_symlink_rejected": true,
+  "fixture_note": "180 metadata polling files derived from one synthetic page with unique IDs; no retrieval assertion"
+}

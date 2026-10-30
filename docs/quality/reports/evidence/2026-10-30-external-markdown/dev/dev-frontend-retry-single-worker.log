@@ -1,0 +1,16 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/ProjectsView.test.tsx src/components/ApprovalView.test.tsx --maxWorkers=1
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+
+ Test Files  2 passed (2)
+      Tests  56 passed (56)
+   Start at  15:00:35
+   Duration  15.16s (tests 69%, environment 16%, import 9%, transform 6%)
+
+    Isolate  2 workers spawned · ~1.53s startup each (spawn + environment, per file)
+             at least ~1.53s faster with isolate: false — reuses workers across files instead of one per file
+

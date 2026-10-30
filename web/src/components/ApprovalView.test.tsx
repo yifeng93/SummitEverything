@@ -18,7 +18,7 @@ const page = { page_id: 'page-1', relative_path: '项目/页面.md', metadata: {
 const candidate = { action_id: 'candidate-1', kind: 'todo', description: '合成任务建议', related_project_id: null, state: 'proposed', source_draft_id: 'draft-1', created_at: '2026-10-14T00:00:00Z' }
 const intent = { action_id: 'action-1', kind: 'project_progress', payload: { progress: '合成' }, payload_sha256: 'b'.repeat(64), state: 'proposed', confirmation_id: null, created_at: '2026-10-14T00:00:00Z' }
 
-function setup(overrides: Record<string, unknown> = {}, props: { target?: ApprovalTarget | null; onTargetHandled?: () => void; refreshEpoch?: number; onOpenPage?: (pageId: string, expectedHash?: string) => void } = {}) {
+function setup(overrides: Record<string, unknown> = {}, props: { target?: ApprovalTarget | null; onTargetHandled?: () => void; refreshEpoch?: number; externalPagesRevision?: number; onOpenPage?: (pageId: string, expectedHash?: string) => void } = {}) {
   const calls: Array<{ path: string; method: string; body?: Record<string, unknown> }> = []
   const onError = vi.fn()
   const responses: Record<string, unknown> = {
@@ -107,6 +107,20 @@ it('routes formal-page targets by page ID when titles collide', async () => {
   const focus = await screen.findByRole('region', { name: '正式内容：正式页' })
   expect(within(focus).getByText('本次实际页面正文')).toBeTruthy()
   expect(within(focus).queryByText('旧的同名正文')).toBeNull()
+})
+
+it('marks a deleted focused formal page unavailable and restores it when it returns', async () => {
+  let currentPages = [page]
+  const { rerender } = setup({ '/api/v1/pages': () => Promise.resolve(Response.json(currentPages)) }, { target: { kind: 'formal', pageIds: [page.page_id] } })
+  const focus = await screen.findByRole('region', { name: '正式内容：正式页' })
+  expect(within(focus).getByRole('button', { name: '确认并保存当前版本' })).toBeTruthy()
+  currentPages = []
+  rerender({ externalPagesRevision: 1 })
+  expect(await screen.findByText(/页面已删除或暂时无法读取/)).toBeTruthy()
+  expect(screen.queryByRole('button', { name: '确认并保存当前版本' })).toBeNull()
+  currentPages = [page]
+  rerender({ externalPagesRevision: 2 })
+  expect(await screen.findByRole('region', { name: '正式内容：正式页' })).toBeTruthy()
 })
 
 it('waits for refreshed target data before handling an exact-ID destination', async () => {

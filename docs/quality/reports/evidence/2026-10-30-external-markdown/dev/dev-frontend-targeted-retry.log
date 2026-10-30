@@ -1,0 +1,622 @@
+
+> web@0.0.0 test
+> vitest run --run src/App.shell.test.tsx src/components/ProjectsView.test.tsx src/components/ApprovalView.test.tsx src/components/PageReader.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+ ❯ src/components/ProjectsView.test.tsx (19 tests | 1 failed) 5024ms
+   × keeps a deleted selected document unavailable instead of opening a neighboring page 1125ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ProjectsView.test.tsx > keeps a deleted selected document unavailable instead of opening a neighboring page
+TestingLibraryElementError: Unable to find an element with the text: 正文. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33maria-label[39m=[32m"项目详情"[39m
+      [33mclass[39m=[32m"content-wrap project-detail"[39m
+      [33mrole[39m=[32m"region"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"project-detail-topline"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"back-link"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"15"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.75"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"15"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m返回项目列表[0m
+        [36m</button>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"project-detail-line"[39m
+        [36m>[39m
+          [0m模拟主线[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"project-detail-head"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h1>[39m
+              [0m模拟项目[0m
+            [36m</h1>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"project-status-badge "[39m
+            [36m>[39m
+              [0m新[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"项目操作"[39m
+          [33mclass[39m=[32m"project-detail-actions"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-plus"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"14"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M5 12h14"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 5v14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0m追加推进日志[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+          [36m>[39m
+            [0m存产物[0m
+          [36m</button>[39m
+          [36m<details[39m
+            [33mclass[39m=[32m"project-more-actions"[39m
+          [36m>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m更多[0m
+            [36m</summary>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"project-menu"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m重命名项目[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m归档项目[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</details>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"page-list-section project-docs-section"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"directory-title"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0m文档[0m
+          [36m</h2>[39m
+          [36m<span>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"project-docs"[39m
+        [36m>[39m
+          [36m<nav[39m
+            [33maria-label[39m=[32m"文档目录"[39m
+            [33mclass[39m=[32m"knowledge-tree project-docs-tree"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"knowledge-tree-list"[39m
+            [36m>[39m
+              [36m<li>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"knowledge-tree-node"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"knowledge-tree-chevron-space"[39m
+                  [36m/>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-book-open"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.75"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 5v16"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"knowledge-tree-label"[39m
+                  [36m>[39m
+                    [0m项目概览[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"knowledge-tree-node"[39m
+                  [33mtitle[39m=[32m"其他页面"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"13"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.75"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"13"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-folder-open"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.75"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"knowledge-tree-label"[39m
+                  [36m>[39m
+                    [0m其他页面[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"knowledge-tree-count"[39m
+                  [36m>[39m
+                    [0m1[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"knowledge-tree-list"[39m
+                [36m>[39m
+                  [36m<li>[39m
+                    [36m<button[39m
+                      [33maria-current[39m=[32m"page"[39m
+                      [33mclass[39m=[32m"knowledge-tree-page"[39m
+                      [33mtitle[39m=[32m"模拟事实"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"14"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"1.75"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"14"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M10 9H8"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M16 13H8"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M16 17H8"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>[39m
+                        [0m模拟事实[0m
+                      [36m</span>[39m
+                    [36m</button>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+          [36m</nav>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"project-docs-body"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"form-error"[39m
+              [33mrole[39m=[32m"alert"[39m
+            [36m>[39m
+              [0m页面已删除或暂时无法读取；修复后会自动恢复。[0m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-button"[39m
+              [36m>[39m
+                [0m重试[0m
+              [36m</button>[39m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33maria-label[39m=[32m"项目详情"[39m
+      [33mclass[39m=[32m"content-wrap project-detail"[39m
+      [33mrole[39m=[32m"region"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"project-detail-topline"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"back-link"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-arrow-left"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"15"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.75"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"15"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 19-7-7 7-7"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M19 12H5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m返回项目列表[0m
+        [36m</button>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"project-detail-line"[39m
+        [36m>[39m
+          [0m模拟主线[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"project-detail-head"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"page-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h1>[39m
+              [0m模拟项目[0m
+            [36m</h1>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"project-status-badge "[39m
+            [36m>[39m
+              [0m新[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"项目操作"[39m
+          [33mclass[39m=[32m"project-detail-actions"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button primary"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-plus"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"14"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M5 12h14"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 5v14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0m追加推进日志[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"button secondary"[39m
+          [36m>[39m
+            [0m存产物[0m
+          [36m</button>[39m
+          [36m<details[39m
+            [33mclass[39m=[32m"project-more-actions"[39m
+          [36m>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"button secondary"[39m
+            [36m>[39m
+              [0m更多[0m
+            [36m</summary>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"project-menu"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m重命名项目[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m归档项目[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</details>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"page-list-section project-docs-section"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"directory-title"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0m文档[0m
+          [36m</h2>[39m
+          [36m<span>[39m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"project-docs"[39m
+        [36m>[39m
+          [36m<nav[39m
+            [33maria-label[39m=[32m"文档目录"[39m
+            [33mclass[39m=[32m"knowledge-tree project-docs-tree"[39m
+          [36m>[39m
+            [36m<ul[39m
+              [33mclass[39m=[32m"knowledge-tree-list"[39m
+            [36m>[39m
+              [36m<li>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"knowledge-tree-node"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"knowledge-tree-chevron-space"[39m
+                  [36m/>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-book-open"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.75"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 5v16"[39m
+                    [36m/>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"knowledge-tree-label"[39m
+                  [36m>[39m
+                    [0m项目概览[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"knowledge-tree-node"[39m
+                  [33mtitle[39m=[32m"其他页面"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"13"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.75"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"13"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-folder-open"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"1.75"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"knowledge-tree-label"[39m
+                  [36m>[39m
+                    [0m其他页面[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"knowledge-tree-count"[39m
+                  [36m>[39m
+                    [0m1[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"knowledge-tree-list"[39m
+                [36m>[39m
+                  [36m<li>[39m
+                    [36m<button[39m
+                      [33maria-current[39m=[32m"page"[39m
+                      [33mclass[39m=[32m"knowledge-tree-page"[39m
+                      [33mtitle[39m=[32m"模拟事实"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"14"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"1.75"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"14"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M14 2v5a1 1 0 0 0 1 1h5"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M10 9H8"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M16 13H8"[39m
+                        [36m/>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M16 17H8"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>[39m
+                        [0m模拟事实[0m
+                      [36m</span>[39m
+                    [36m</button>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</li>[39m
+            [36m</ul>[39m
+          [36m</nav>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"project-docs-body"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"form-error"[39m
+              [33mrole[39m=[32m"alert"[39m
+            [36m>[39m
+              [0m页面已删除或暂时无法读取；修复后会自动恢复。[0m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-button"[39m
+              [36m>[39m
+                [0m重试[0m
+              [36m</button>[39m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/ProjectsView.test.tsx:242:23
+    240|   fireEvent.click(await screen.findByRole('button', { name: /模拟项目/ }))
+    241|   fireEvent.click(await screen.findByRole('button', { name: '模拟事实' }))
+    242|   expect(await screen.findByText('正文')).toBeTruthy()
+       |                       ^
+    243|   directoryPages = []
+    244|   view.rerender(<ProjectsView {...props} externalPagesRevision={1} />)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 75 passed (76)
+   Start at  14:44:41
+   Duration  9.24s (tests 53%, environment 20%, import 15%, transform 13%)
+

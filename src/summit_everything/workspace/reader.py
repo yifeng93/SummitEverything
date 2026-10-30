@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from collections import OrderedDict
 from copy import deepcopy
 from datetime import date, datetime
@@ -288,6 +289,28 @@ def list_pages(root: Path) -> list[PageSnapshot]:
             while len(_dir_cache) > _DIR_CACHE_WORKSPACES:
                 _dir_cache.pop(next(iter(_dir_cache)))
     return pages
+
+
+def formal_pages_revision(root: Path) -> str:
+    """Return an opaque, cheap revision for registered Markdown file changes."""
+    root = root.resolve()
+    manifest = load_manifest(root)
+    paths = _page_paths(root, manifest)
+    signature = _directory_signature(paths)
+    manifest_stat = (root / ".summit-everything" / "manifest.json").stat()
+    payload = json.dumps(
+        [
+            str(manifest.workspace_id),
+            manifest_stat.st_mtime_ns,
+            manifest_stat.st_ctime_ns,
+            manifest_stat.st_size,
+            manifest_stat.st_ino,
+            signature,
+        ],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _directory_signature(paths: list[Path]) -> tuple[tuple[str, int, int, int], ...]:

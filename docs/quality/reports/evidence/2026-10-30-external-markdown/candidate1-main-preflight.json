@@ -1,0 +1,109 @@
+{
+  "main_head": "fad0de06cc5333ac457e88b9df73498ca5189d0b",
+  "main_branch": "hanwenbo-dev-202610",
+  "candidate": "4358c7b2b410d8c5bcc6ab4dd7d219ce9d349a25",
+  "check_exit": 0,
+  "check_stderr": "",
+  "files": [
+    {
+      "path": "docs/contracts/API-v1.md",
+      "sha256": "264ca7155d9912c857c29de74efbe14bbb0cf1d8eb984b1f7f3b1346c6235890",
+      "matches_base": false
+    },
+    {
+      "path": "docs/decisions/0035-external-markdown-auto-discovery.md",
+      "sha256": null,
+      "matches_base": null
+    },
+    {
+      "path": "docs/product/FRONTEND-PAGE-SPECS.md",
+      "sha256": "c08b2ff83ed6541f7f86f73fdf0d6779153a426a111bba8cf8a28164507fcfd5",
+      "matches_base": false
+    },
+    {
+      "path": "docs/product/PRODUCT-SPEC.md",
+      "sha256": "f53ddd50a953ed734a73836d0a15ba41ef563ba7bc23f7e95f865b7cd813e4fe",
+      "matches_base": true
+    },
+    {
+      "path": "docs/quality/ACCEPTANCE.md",
+      "sha256": "33ea8e9275dbfd21999eafd79e4bc046745207df7ebd22b83642bca8f0dc28c7",
+      "matches_base": true
+    },
+    {
+      "path": "src/summit_everything/api/app.py",
+      "sha256": "437f1dea4e6e6120f9b28e25d316b7003f7b82144cbd28186543261c42744743",
+      "matches_base": false
+    },
+    {
+      "path": "src/summit_everything/domain/models.py",
+      "sha256": "4a6239779e7c30b1a96d2614c5b89868da0ea742f9f3ba7d5a3f191a2d81f5d2",
+      "matches_base": true
+    },
+    {
+      "path": "src/summit_everything/workspace/reader.py",
+      "sha256": "2d188b90044a51ae4997babacaa78ee50e5c8643e610c486f1c161da30d60bf9",
+      "matches_base": true
+    },
+    {
+      "path": "tests/contract/test_workspace_api.py",
+      "sha256": "ccd43d3f0308ca5cad9089d87b586bab10f4d901be18bb8bd589fd8b1346fe73",
+      "matches_base": true
+    },
+    {
+      "path": "tests/unit/test_page_directory_cache.py",
+      "sha256": "637dd87e2fd758e0ea5c2e918ddd84a9c524cd5c9f1c49f48c1709b3f3900113",
+      "matches_base": true
+    },
+    {
+      "path": "web/openapi.json",
+      "sha256": "d9bba01e985a585f9c2e2a5fb6c1dac39a3c965f0d65f9430718157f4a409887",
+      "matches_base": false
+    },
+    {
+      "path": "web/src/App.shell.test.tsx",
+      "sha256": "2311c9535c30056ec8be32e4d17863e5573f3215e0474c77d88911289d5fdc7c",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/App.tsx",
+      "sha256": "402499b336383df38b5a2a8a10a3fd7a890ef1a3201eab3c86fda949a93d26a6",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/api/generated.ts",
+      "sha256": "59b6b2596eea6d63c15254eed9041c1dc86a49025c019c022f8f49ed96ac18bc",
+      "matches_base": false
+    },
+    {
+      "path": "web/src/components/ApprovalView.test.tsx",
+      "sha256": "77bbd647d194177a1ba6ea04f03911e7f65fcfb927cd3e425928bd957b141583",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/components/ApprovalView.tsx",
+      "sha256": "22c7b20468af0e6946ee2580e2854b964c1c064a070c5051f9e295d412b8c4a3",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/components/PageReader.tsx",
+      "sha256": "24917df17954589ac59d390f528268f5dc08df650837b38bd9d7e5976f917ffb",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/components/ProjectsView.test.tsx",
+      "sha256": "f59eb336f0f8679ff917f8cffea0f970e65e8797d2cce118fe262f853f4c3793",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/components/ProjectsView.tsx",
+      "sha256": "277736dadbb83fb03b2775ec7093b3c4df04694693c010c5f08bd82bfcf8102b",
+      "matches_base": true
+    },
+    {
+      "path": "web/src/ui-contract.allowlist.json",
+      "sha256": "6838216be0d79de8a1ac882b999ebf63d1b198e5f7d12f751f50a067e0d84408",
+      "matches_base": true
+    }
+  ]
+}

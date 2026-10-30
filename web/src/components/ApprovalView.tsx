@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { FileText, X } from 'lucide-react'
-import { api, indexUpdateMessage, type ActionCandidate, type Draft, type IntakeItem, type MutationResult, type Page, type Project, type SourceDetail } from '../api/client'
+import { ApiError, api, indexUpdateMessage, type ActionCandidate, type Draft, type IntakeItem, type MutationResult, type Page, type Project, type SourceDetail } from '../api/client'
 import type { components } from '../api/generated'
 import { draftNeedsAttention, draftStateLabel, intakeNeedsAttention, intakeStateLabel } from '../approval-summary'
 import { MarkdownText } from './MarkdownText'
@@ -19,7 +19,7 @@ type ActionPage = components['schemas']['ActionPage']
 type Resource<T> = { data: T | null; loading: boolean; error: string; lastSuccess: string | null }
 type IndexStatus = { state: string; fingerprint: string | null; pages: number; chunks: number; current_pages: number; stale_pages: number }
 type IntakeJob = components['schemas']['IntakeJob']
-type Props = { onPendingCount: (count: number) => void; onError: (message: string) => void; onOpenPage?: (pageId: string, expectedHash?: string) => void; refreshEpoch?: number; target?: ApprovalTarget | null; onTargetHandled?: () => void; onDirtyChange?: (dirty: boolean) => void; discardEpoch?: number }
+type Props = { onPendingCount: (count: number) => void; onError: (message: string) => void; onOpenPage?: (pageId: string, expectedHash?: string) => void; refreshEpoch?: number; externalPagesRevision?: number; target?: ApprovalTarget | null; onTargetHandled?: () => void; onDirtyChange?: (dirty: boolean) => void; discardEpoch?: number }
 
 const initial = <T,>(): Resource<T> => ({ data: null, loading: true, error: '', lastSuccess: null })
 const formalNeedsAttention = (page: Page) => page.approval_state !== 'confirmed'
@@ -71,7 +71,7 @@ function earlierSuccessfulRead(first: string | null, second: string | null): str
   return Date.parse(first) <= Date.parse(second) ? first : second
 }
 
-export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch = 0, target = null, onTargetHandled, onDirtyChange, discardEpoch = 0 }: Props) {
+export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch = 0, externalPagesRevision = 0, target = null, onTargetHandled, onDirtyChange, discardEpoch = 0 }: Props) {
   const [sources, setSources] = useState(initial<IntakeItem[]>)
   const [drafts, setDrafts] = useState(initial<Draft[]>)
   const [pages, setPages] = useState(initial<Page[]>)
@@ -91,7 +91,7 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const [organizeResult, setOrganizeResult] = useState<IntakeJob | null>(null)
   const [draftDirty, setDraftDirty] = useState(false)
   const [confirmPage, setConfirmPage] = useState<Page | null>(null)
-  const [formalResult, setFormalResult] = useState<{ pageId: string; title: string; indexMessage: string | null } | null>(null)
+  const [formalResult, setFormalResult] = useState<{ pageId: string; title: string; contentHash: string; indexMessage: string | null } | null>(null)
   const [draftResult, setDraftResult] = useState<{ draftId: string; pageIds: string[]; indexMessage: string | null } | null>(null)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
@@ -227,6 +227,55 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
     return () => { current = false; settingsRequest.current += 1 }
   }, [refreshEpoch, refreshSettings])
 
+  const externalRevisionSeen = useRef(externalPagesRevision)
+  useEffect(() => {
+    if (externalPagesRevision === externalRevisionSeen.current) return
+    externalRevisionSeen.current = externalPagesRevision
+    let current = true
+    const controllers: AbortController[] = []
+    const retries: number[] = []
+    setPages((value) => ({ ...value, loading: true, error: '' }))
+    setIndex((value) => ({ ...value, loading: true, error: '' }))
+    const readPages = async (remaining = 2): Promise<void> => {
+      const controller = new AbortController()
+      controllers.push(controller)
+      const deadline = window.setTimeout(() => controller.abort(), 5000)
+      try {
+        const next = await api.get<Page[]>('/pages', { signal: controller.signal })
+        if (!current) return
+        const formal = next.filter((page) => page.storage_area === 'formal')
+        setPages({ data: formal, loading: false, error: '', lastSuccess: new Date().toISOString() })
+        setConfirmPage((pending) => pending && !formal.some((page) => page.page_id === pending.page_id && page.content_sha256 === pending.content_sha256 && page.approval_state !== 'confirmed') ? null : pending)
+        setFormalResult((receipt) => receipt && !formal.some((page) => page.page_id === receipt.pageId && page.content_sha256 === receipt.contentHash && page.approval_state === 'confirmed') ? null : receipt)
+      } catch (cause) {
+        if (!current) return
+        setPages((value) => ({ ...value, loading: false, error: cause instanceof Error ? cause.message : '读取失败，请重试。' }))
+        if (remaining > 0) retries.push(window.setTimeout(() => { void readPages(remaining - 1) }, (3 - remaining) * 1000))
+        else { setConfirmPage(null); setFormalResult(null) }
+      } finally {
+        window.clearTimeout(deadline)
+      }
+    }
+    const readIndex = async (remaining = 2): Promise<void> => {
+      const controller = new AbortController()
+      controllers.push(controller)
+      const deadline = window.setTimeout(() => controller.abort(), 5000)
+      try {
+        const next = await api.get<IndexStatus>('/index/status', { signal: controller.signal })
+        if (current) setIndex({ data: next, loading: false, error: '', lastSuccess: new Date().toISOString() })
+      } catch (cause) {
+        if (!current) return
+        setIndex((value) => ({ ...value, loading: false, error: cause instanceof Error ? cause.message : '读取失败，请重试。' }))
+        if (remaining > 0) retries.push(window.setTimeout(() => { void readIndex(remaining - 1) }, (3 - remaining) * 1000))
+      } finally {
+        window.clearTimeout(deadline)
+      }
+    }
+    void readPages()
+    void readIndex()
+    return () => { current = false; retries.forEach(window.clearTimeout); controllers.forEach((controller) => controller.abort()) }
+  }, [externalPagesRevision])
+
   const pendingSources = sources.data?.filter(intakeNeedsAttention) ?? []
   const pendingDraftList = drafts.data?.filter(draftNeedsAttention) ?? []
   const pendingPages = pages.data?.filter(formalNeedsAttention) ?? []
@@ -340,11 +389,17 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
       })
       setConfirmPage(null)
       const message = indexUpdateMessage(result.index_update)
-      setFormalResult({ pageId: page.page_id, title: String(page.metadata.title ?? '未命名页面'), indexMessage: message })
+      setFormalResult({ pageId: page.page_id, title: String(page.metadata.title ?? '未命名页面'), contentHash: result.page_versions[page.page_id] ?? page.content_sha256, indexMessage: message })
       setActivePage(page.page_id); setActiveDraft(null); setActiveSource(null)
       setNotice(message ?? '当前版本已确认并保存。')
       await Promise.allSettled([refreshPages(), refreshIndex()])
-    } catch (cause) { onError(cause instanceof Error ? cause.message : '无法确认并保存当前版本') }
+    } catch (cause) {
+      if (cause instanceof ApiError && cause.status === 409) {
+        setConfirmPage(null)
+        await refreshPages()
+        onError('页面已在外部更新，未确认旧版本。请重新读取并检查当前内容。')
+      } else onError(cause instanceof Error ? cause.message : '无法确认并保存当前版本')
+    }
     finally { setBusy(false) }
   }
 
@@ -438,16 +493,16 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
         </div>
       </section>
     </div>}
-    {activeFormalPage && <section className="panel formal-focus" aria-label={`正式内容：${String(activeFormalPage.metadata.title ?? '未命名页面')}`} tabIndex={-1}>
-      <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>{activeFormalPage.approval_state === 'confirmed' ? '已确认' : '待确认'}</span></div>
+    {activePage && (!activeFormalPage || pages.error) ? <section className="panel formal-focus" role="alert"><div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>页面暂不可用</span></div><p>页面已删除或暂时无法读取；确认已暂停。修复文件后会自动恢复。</p><button className="button secondary" onClick={() => void refreshPages()}>重新读取</button></section> : activeFormalPage && <section className="panel formal-focus" aria-label={`正式内容：${String(activeFormalPage.metadata.title ?? '未命名页面')}`} tabIndex={-1}>
+      <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>{pages.loading ? '正在检查页面更新…' : activeFormalPage.approval_state === 'confirmed' ? '已确认' : '待确认'}</span></div>
       <h2>{String(activeFormalPage.metadata.title ?? '未命名页面')}</h2>
       <p className="source-focus-meta">{formalKindLabel(String(activeFormalPage.metadata.kind ?? ''))}</p>
       <article className="formal-reading-body"><MarkdownText content={activeFormalPage.body} onOpenPage={onOpenPage} /></article>
       {formalResult?.pageId === activeFormalPage.page_id && <div className="formal-result" role="status"><p>“{formalResult.title}”已保存为当前正式版本。{formalResult.indexMessage}</p><div className="button-row"><button className="button secondary" onClick={() => onOpenPage?.(activeFormalPage.page_id, activeFormalPage.content_sha256)}>打开正式页</button><button className="button secondary" disabled={!visiblePages.some((page) => page.page_id !== activeFormalPage.page_id)} onClick={() => { const next = visiblePages.find((page) => page.page_id !== activeFormalPage.page_id); if (next) { setFormalResult(null); setActivePage(next.page_id) } }}>下一份待确认</button></div></div>}
-      {activeFormalPage.approval_state !== 'confirmed' && <button className="button primary" onClick={() => setConfirmPage(activeFormalPage)}>确认并保存当前版本</button>}
+      {activeFormalPage.approval_state !== 'confirmed' && <button className="button primary" disabled={pages.loading} onClick={() => setConfirmPage(activeFormalPage)}>确认并保存当前版本</button>}
     </section>}
 
-    {confirmPage && <ConfirmDialog title="确认并保存当前正式版本？" description={`“${String(confirmPage.metadata.title ?? '未命名页面')}”的正文和页面信息将按当前版本写入正式内容。`} consequence="只确认当前版本；不会创建飞书任务或改变项目进度。索引按当前真实本机模型与审批规则处理。" confirmLabel="确认并保存当前版本" busyLabel="正在保存…" busy={busy} onCancel={() => setConfirmPage(null)} onConfirm={confirmFormal}><MarkdownText content={confirmPage.body} onOpenPage={onOpenPage} /></ConfirmDialog>}
+    {confirmPage && <ConfirmDialog title="确认并保存当前正式版本？" description={`“${String(confirmPage.metadata.title ?? '未命名页面')}”的正文和页面信息将按当前版本写入正式内容。`} consequence="只确认当前版本；不会创建飞书任务或改变项目进度。索引按当前真实本机模型与审批规则处理。" confirmLabel="确认并保存当前版本" busyLabel={pages.loading ? '正在检查页面…' : '正在保存…'} busy={busy || pages.loading} onCancel={() => setConfirmPage(null)} onConfirm={confirmFormal}><MarkdownText content={confirmPage.body} onOpenPage={onOpenPage} /></ConfirmDialog>}
   </section>
 }
 

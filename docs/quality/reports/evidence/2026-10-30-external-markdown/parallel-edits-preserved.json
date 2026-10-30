@@ -1,0 +1,22 @@
+[
+  {
+    "path": "docs/contracts/API-v1.md",
+    "parallel_edits_preserved_exactly": true
+  },
+  {
+    "path": "docs/product/FRONTEND-PAGE-SPECS.md",
+    "parallel_edits_preserved_exactly": true
+  },
+  {
+    "path": "src/summit_everything/api/app.py",
+    "parallel_edits_preserved_exactly": true
+  },
+  {
+    "path": "web/openapi.json",
+    "parallel_edits_preserved_exactly": true
+  },
+  {
+    "path": "web/src/api/generated.ts",
+    "parallel_edits_preserved_exactly": true
+  }
+]

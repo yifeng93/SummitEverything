@@ -1,0 +1,165 @@
+{
+  "created": {
+    "operation_id": "2258d58c-c0dd-4ea2-8744-1dbf9f624e97",
+    "state": "succeeded",
+    "changed_paths": [
+      "合成验收主线/飞纸读书会/合成外部更新规则.md"
+    ],
+    "page_versions": {
+      "ad32d369-78aa-40da-9958-b248d5a86b8a": "ede0115ad80cea00b428d67900a68890f172f63ffdafae6d3968d6c1702105f4"
+    },
+    "saved_locally": true,
+    "index_update": "not_enabled"
+  },
+  "page": {
+    "page_id": "ad32d369-78aa-40da-9958-b248d5a86b8a",
+    "relative_path": "合成验收主线/飞纸读书会/合成外部更新规则.md",
+    "metadata": {
+      "id": "ad32d369-78aa-40da-9958-b248d5a86b8a",
+      "title": "合成外部更新规则",
+      "role": "knowledge",
+      "kind": "topic",
+      "validity": "current",
+      "line_id": "f27748fd-2ae5-58ec-83f9-137898ffa1ed",
+      "project_id": "db1dff5a-a644-5108-842f-5f2dd3dbbd2f",
+      "approval": {
+        "version": 1,
+        "content_sha256": "ede0115ad80cea00b428d67900a68890f172f63ffdafae6d3968d6c1702105f4",
+        "confirmed_at": "2026-10-30T07:31:05.595653+00:00",
+        "confirmation_id": "6de184eb-7bac-42f7-bdd9-bb60bbc00cc4"
+      }
+    },
+    "body": "合成事实：活动于 2026-10-30 14:00 至 16:00，最多 24 人。集合地点：临时西门合成大厅。",
+    "content_sha256": "ede0115ad80cea00b428d67900a68890f172f63ffdafae6d3968d6c1702105f4",
+    "storage_area": "formal",
+    "approval_state": "confirmed",
+    "validity": "current"
+  },
+  "pages": [
+    {
+      "page_id": "ad32d369-78aa-40da-9958-b248d5a86b8a",
+      "relative_path": "合成验收主线/飞纸读书会/合成外部更新规则.md",
+      "metadata": {
+        "id": "ad32d369-78aa-40da-9958-b248d5a86b8a",
+        "title": "合成外部更新规则",
+        "role": "knowledge",
+        "kind": "topic",
+        "validity": "current",
+        "line_id": "f27748fd-2ae5-58ec-83f9-137898ffa1ed",
+        "project_id": "db1dff5a-a644-5108-842f-5f2dd3dbbd2f",
+        "approval": {
+          "version": 1,
+          "content_sha256": "ede0115ad80cea00b428d67900a68890f172f63ffdafae6d3968d6c1702105f4",
+          "confirmed_at": "2026-10-30T07:31:05.595653+00:00",
+          "confirmation_id": "6de184eb-7bac-42f7-bdd9-bb60bbc00cc4"
+        }
+      },
+      "body": "合成事实：活动于 2026-10-30 14:00 至 16:00，最多 24 人。集合地点：临时西门合成大厅。",
+      "content_sha256": "ede0115ad80cea00b428d67900a68890f172f63ffdafae6d3968d6c1702105f4",
+      "storage_area": "formal",
+      "approval_state": "confirmed",
+      "validity": "current"
+    }
+  ],
+  "index": {
+    "fingerprint": null,
+    "pages": 0,
+    "chunks": 0,
+    "state": "not_ready",
+    "current_pages": 0,
+    "stale_pages": 0,
+    "vector": "unknown"
+  },
+  "settings": {
+    "mode": "real",
+    "legacy_provider_migration_required": false,
+    "model_studio_account_id": "default",
+    "feishu": {
+      "app_id": "",
+      "redirect_uri": "",
+      "identity": "app",
+      "calendar_id": "",
+      "material_content": "transcript",
+      "real_data_enabled": false
+    },
+    "llm": {
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "account_id": "external-watch-qa",
+      "enabled": true,
+      "max_output_tokens": 2048,
+      "reasoning_effort": "low"
+    },
+    "embedding": {
+      "provider": "local",
+      "model": "BAAI/bge-small-zh-v1.5",
+      "region": "cn",
+      "dimensions": 512,
+      "base_url": "",
+      "enabled": true
+    },
+    "rerank": {
+      "provider": "local",
+      "model": "BAAI/bge-small-zh-v1.5",
+      "region": "cn",
+      "dimensions": 512,
+      "base_url": "",
+      "enabled": true
+    },
+    "capabilities": {
+      "feishu_material_read": {
+        "available": false,
+        "configured": false,
+        "disabled_reason": "acceptance_plan_required"
+      },
+      "feishu_calendar_read": {
+        "available": false,
+        "configured": false,
+        "disabled_reason": "provider_not_configured"
+      },
+      "feishu_task_read": {
+        "available": false,
+        "configured": false,
+        "disabled_reason": "acceptance_plan_required"
+      },
+      "feishu_task_write": {
+        "available": false,
+        "configured": false,
+        "disabled_reason": "provider_not_configured"
+      },
+      "llm": {
+        "available": false,
+        "configured": true,
+        "disabled_reason": "acceptance_plan_required"
+      },
+      "embedding": {
+        "available": true,
+        "configured": true,
+        "disabled_reason": null
+      },
+      "rerank": {
+        "available": true,
+        "configured": true,
+        "disabled_reason": null
+      }
+    },
+    "credential_status": {
+      "feishu_app": false,
+      "deepseek": true,
+      "dashscope": false
+    },
+    "keychain_available": true,
+    "embedding_fingerprint": "fe87c0a70186bcc7bd6a69945404302c28492810f9c6c1776e6e1b777f5e650b",
+    "local_model": {
+      "model": "BAAI/bge-small-zh-v1.5",
+      "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+      "dimensions": 512,
+      "token_limit": 512,
+      "download_size_bytes": 95330972,
+      "state": "ready",
+      "downloaded_bytes": 0,
+      "progress_percent": 0,
+      "error_code": null
+    }
+  }
+}

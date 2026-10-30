@@ -1,5 +1,9 @@
 # 开发与独立验收报告索引
 
+## 外部 Markdown 自动发现与只读阅读（2026-10-30）
+
+- [Sol 复核与当前开发页面](2026-10-30-EXTERNAL-MARKDOWN-SOL.md)、[修复后独立 QA](evidence/2026-10-30-external-markdown/qa-final/REPORT.md)、[首轮失败记录](evidence/2026-10-30-external-markdown/qa-initial/REPORT.md)。
+
 ## 本机 MCP Agent 工具桥（2026-10-29）
 
 - [DEV 自测记录](2026-10-29-MCP-DEV-222b460.md)：固定源码 SHA `222b46062fa9fff0cee52deb202c71698e1365ba`；MCP stdio 与 API 定向 7 项通过，明确记录全量 pytest 尚有一次历史失败以及真实/安装门未测。

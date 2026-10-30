@@ -1,0 +1,61 @@
+[WebServer] INFO:     Started server process [80473]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:6185 (Press CTRL+C to quit)
+[WebServer] (node:80564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:80577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [2026-10-30T08:03:35Z WARN  lance::dataset::scanner] Deprecation warning, this behavior will change in the future. This search specified output columns but did not include `_distance`.  Currently the `_distance` column will be included.  In the future it will not.  Call `disable_scoring_autoprojection` to adopt the future behavior and avoid this warning
+[WebServer] [2026-10-30T08:03:40Z WARN  lance::dataset::scanner] Deprecation warning, this behavior will change in the future. This search specified output columns but did not include `_distance`.  Currently the `_distance` column will be included.  In the future it will not.  Call `disable_scoring_autoprojection` to adopt the future behavior and avoid this warning
+  ✘  1 .local/qa/external-watch-20261030/external-watch.spec.ts:10:6 › desktop business UI uses real FastAPI and isolated synthetic workspace (32.6s)
+
+
+  1) .local/qa/external-watch-20261030/external-watch.spec.ts:10:6 › desktop business UI uses real FastAPI and isolated synthetic workspace 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('region', { name: '项目详情' }).getByRole('button', { name: /外部新增自动发现/ })
+    Expected substring: "待确认"
+    Received string:    "外部新增自动发现"
+    Timeout: 15000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('region', { name: '项目详情' }).getByRole('button', { name: /外部新增自动发现/ }) with timeout 15000ms
+      - waiting for getByRole('region', { name: '项目详情' }).getByRole('button', { name: /外部新增自动发现/ })
+        32 × locator resolved to <button title="外部新增自动发现" class="knowledge-tree-page">…</button>
+           - unexpected value "外部新增自动发现"
+
+
+      267 |   const newExternalNode = projectDetail.getByRole('button', { name: /外部新增自动发现/ })
+      268 |   await qaExpect(newExternalNode).toBeVisible({ timeout: 30_000 })
+    > 269 |   await qaExpect(newExternalNode).toContainText('待确认')
+          |                                   ^
+      270 |   await newExternalNode.click()
+      271 |   const inlineReader = projectDetail.locator('.page-reader')
+      272 |   await qaExpect(inlineReader).toContainText('新增页面正文：外部新增东门提示。')
+        at /Users/hanwenbo/.codex/worktrees/qa-external-watch-repair1-20261030/SummitEverything/.local/qa/external-watch-20261030/external-watch.spec.ts:269:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .local/qa/external-watch-20261030/playwright-output/external-watch-desktop-bus-8ec09-solated-synthetic-workspace/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    .local/qa/external-watch-20261030/playwright-output/external-watch-desktop-bus-8ec09-solated-synthetic-workspace/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .local/qa/external-watch-20261030/playwright-output/external-watch-desktop-bus-8ec09-solated-synthetic-workspace/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .local/qa/external-watch-20261030/playwright-output/external-watch-desktop-bus-8ec09-solated-synthetic-workspace/trace.zip
+    Usage:
+
+        npx playwright show-trace .local/qa/external-watch-20261030/playwright-output/external-watch-desktop-bus-8ec09-solated-synthetic-workspace/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    .local/qa/external-watch-20261030/external-watch.spec.ts:10:6 › desktop business UI uses real FastAPI and isolated synthetic workspace 

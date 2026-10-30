@@ -1,0 +1,13 @@
+
+> web@0.0.0 test
+> vitest run --run src/components/JournalDialog.test.tsx src/components/DraftReview.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/qa-external-watch-repair1-20261030/SummitEverything/web
+
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  16:06:15
+   Duration  11.26s (environment 41%, tests 25%, import 21%, transform 13%)
+

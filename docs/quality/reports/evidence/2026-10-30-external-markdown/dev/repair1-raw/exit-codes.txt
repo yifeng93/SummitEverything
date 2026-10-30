@@ -1,0 +1,18 @@
+Candidate SHA: 4358c7b2b410d8c5bcc6ab4dd7d219ce9d349a25
+Worktree: /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything
+
+Command: npm test (cwd web)
+Exit code: 0
+Raw stdout: npm-test-313.stdout.log
+
+Command: npx vitest run src/App.shell.test.tsx src/components/ProjectsView.test.tsx src/ui-contract.test.ts && npm run typecheck && git diff --check (cwd web)
+Exit code: 0
+Raw stdout: final-47-typecheck.stdout.log
+
+Command: npm run typecheck (cwd web; standalone run earlier in this repair round)
+Exit code: 0
+Raw stdout: typecheck.stdout.log
+
+Command: npm run build (cwd web)
+Exit code: 0
+Raw stdout: build.stdout.log

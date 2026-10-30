@@ -1,0 +1,6 @@
+[
+  {
+    "status": 200,
+    "body": "{\"plan_id\":\"2adb57e1-6d4a-42e5-b384-8f5e3b333135\",\"workspace_id\":\"75fef06f-f1fb-409a-ac01-053ead021d7f\",\"mode\":\"initial\",\"fingerprint\":\"fe87c0a70186bcc7bd6a69945404302c28492810f9c6c1776e6e1b777f5e650b\",\"page_ids\":[\"64e76855-eba5-439f-8ae2-3bbe89a21401\"],\"page_versions\":{\"64e76855-eba5-439f-8ae2-3bbe89a21401\":\"fb0232e41f2fb522f0316bbaf18fd6a2986f895f09cf7528e54a471252d9e669\"},\"estimated_tokens\":14,\"estimated_cost\":0.0,\"acceptance_plan_id\":null,\"page_preview\":[]}"
+  }
+]

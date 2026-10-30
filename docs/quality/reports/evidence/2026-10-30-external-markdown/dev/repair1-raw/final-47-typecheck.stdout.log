@@ -1,0 +1,11 @@
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+
+ Test Files  3 passed (3)
+      Tests  47 passed (47)
+   Start at  15:50:49
+   Duration  12.44s (tests 61%, environment 20%, transform 10%, import 9%)
+
+
+> npm run typecheck
+> tsc -b --pretty

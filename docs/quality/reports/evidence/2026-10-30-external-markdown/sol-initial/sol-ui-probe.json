@@ -1,0 +1,10 @@
+{
+  "candidate": "5d76fe20b0300fb846b6af01475f55f4e75859ab",
+  "readsBefore": 1,
+  "readsAfter": 2,
+  "injectedFailures": 1,
+  "detailRecoveryWithoutRevision": false,
+  "visibleText": "页面已删除或暂时无法读取；修复后会自动恢复。重试",
+  "monitorFailureVisible": false,
+  "monitorAlerts": []
+}

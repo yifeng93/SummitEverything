@@ -100,6 +100,29 @@ def test_workspace_mutations_require_session_token(tmp_path: Path) -> None:
     assert not (tmp_path / "new").exists()
 
 
+def test_page_revision_requires_matching_workspace_and_exposes_no_file_paths(
+    tmp_path: Path,
+) -> None:
+    api = client()
+    workspace = open_new_workspace(api, tmp_path / "revision-workspace")
+    workspace_id = str(workspace["workspace_id"])
+    headers = {"Authorization": f"Bearer {TOKEN}", "X-Summit-Workspace-Id": workspace_id}
+
+    missing = api.get("/api/v1/pages/revision", headers={"Authorization": f"Bearer {TOKEN}"})
+    assert missing.status_code == 422
+    foreign = api.get(
+        "/api/v1/pages/revision",
+        headers={**headers, "X-Summit-Workspace-Id": "00000000-0000-0000-0000-000000000001"},
+    )
+    assert foreign.status_code == 409
+    current = api.get("/api/v1/pages/revision", headers=headers)
+    assert current.status_code == 200
+    assert current.json()["workspace_id"] == workspace_id
+    assert current.headers["cache-control"] == "no-store"
+    assert "revision-workspace" not in current.text
+    assert set(current.json()) == {"workspace_id", "revision"}
+
+
 def test_request_validation_uses_the_stable_error_envelope() -> None:
     response = client().post(
         "/api/v1/workspaces",

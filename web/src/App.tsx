@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { api, ApiError, type Page, type Project, type Workspace } from './api/client'
+import type { components } from './api/generated'
 import { AppShell } from './components/AppShell'
 import { ApprovalView } from './components/ApprovalView'
 import { AskView } from './components/AskView'
@@ -34,11 +35,20 @@ export default function App() {
   const [visitedSections, setVisitedSections] = useState<Set<ShellSection>>(() => new Set(['today', 'approval']))
   const [firstUse, setFirstUse] = useState<FirstUseState>({ open: false, step: 2, returnSection: 'today', completed: false })
   const [page, setPage] = useState<Page | null>(null)
+  const [readerUnavailable, setReaderUnavailable] = useState(false)
+  const [readerRefreshing, setReaderRefreshing] = useState(false)
   const readerFocusReturn = useRef<HTMLElement | null>(null)
   const readerOriginScroll = useRef(0)
   const [profileDir, setProfileDir] = useState<string | undefined>(undefined)
   const [approvalCount, setApprovalCount] = useState(0)
   const [approvalRefreshEpoch, setApprovalRefreshEpoch] = useState(0)
+  const [externalPagesRevision, setExternalPagesRevision] = useState(0)
+  const [externalWatchError, setExternalWatchError] = useState(false)
+  const [readerRetryEpoch, setReaderRetryEpoch] = useState(0)
+  const [readerRetryCount, setReaderRetryCount] = useState(0)
+  const pageLoadRequest = useRef(0)
+  const workspaceIdRef = useRef('')
+  const pageIdRef = useRef('')
   const [runtimeSettingsEpoch, setRuntimeSettingsEpoch] = useState(0)
   const [approvalTarget, setApprovalTarget] = useState<ApprovalTarget | null>(null)
   const [approvalDirty, setApprovalDirty] = useState(false)
@@ -52,6 +62,10 @@ export default function App() {
   const projectsHandle = useRef<{ showList: () => void } | null>(null)
   const projectNonce = useRef(0)
   const [themePreference, setThemePreference] = useThemePreference()
+  useLayoutEffect(() => {
+    workspaceIdRef.current = workspace?.workspace_id ?? ''
+    pageIdRef.current = page?.page_id ?? ''
+  }, [workspace?.workspace_id, page?.page_id])
   const { toasts, notify, dismiss } = useToasts()
   const resetApproval = useCallback(() => setApprovalCount(0), [])
 
@@ -144,6 +158,96 @@ export default function App() {
 
   useEffect(() => { void connect() }, [connect])
 
+  const activeReaderPageId = page?.page_id
+  const activeWorkspaceId = workspace?.workspace_id
+  useEffect(() => {
+    if (!activeReaderPageId || externalPagesRevision === 0 || !activeWorkspaceId) return
+    const pageId = activeReaderPageId
+    const workspaceId = activeWorkspaceId
+    const controller = new AbortController()
+    const deadline = window.setTimeout(() => controller.abort(), 5000)
+    let cancelled = false
+    setReaderRefreshing(true)
+    void api.get<Page>(`/pages/${pageId}`, { signal: controller.signal }).then((latest) => {
+      if (!controller.signal.aborted && workspaceIdRef.current === workspaceId && pageIdRef.current === pageId) {
+        setPage(latest)
+        setReaderUnavailable(false)
+        setReaderRefreshing(false)
+        setReaderRetryCount(0)
+      }
+    }).catch(() => {
+      if (!cancelled && workspaceIdRef.current === workspaceId && pageIdRef.current === pageId) {
+        setReaderUnavailable(true)
+        setReaderRefreshing(false)
+      }
+    }).finally(() => window.clearTimeout(deadline))
+    return () => { cancelled = true; controller.abort(); window.clearTimeout(deadline) }
+  }, [activeReaderPageId, activeWorkspaceId, externalPagesRevision, readerRetryEpoch])
+
+  useEffect(() => {
+    if (!readerUnavailable || readerRetryCount >= 2) return
+    const retry = window.setTimeout(() => {
+      setReaderRetryCount((value) => value + 1)
+      setReaderRetryEpoch((value) => value + 1)
+    }, 1500)
+    return () => window.clearTimeout(retry)
+  }, [readerUnavailable, readerRetryEpoch, readerRetryCount])
+
+  // Poll directory metadata sequentially; each successful revision change triggers one targeted refresh.
+  useEffect(() => {
+    if (!workspace) return
+    let baseline: string | null = null
+    let active = true
+    let timer = 0
+    let inFlight: AbortController | null = null
+    let hadFailure = false
+    let pendingRefresh = 0
+    const scheduleRefresh = () => {
+      if (!pendingRefresh) pendingRefresh = window.setTimeout(() => {
+        pendingRefresh = 0
+        setExternalPagesRevision((value) => value + 1)
+      }, 300)
+    }
+    const poll = async () => {
+      const controller = new AbortController()
+      inFlight = controller
+      const deadline = window.setTimeout(() => controller.abort(), 3000)
+      try {
+        const result = await api.get<components['schemas']['WorkspacePagesRevision']>('/pages/revision', {
+          signal: controller.signal, cache: 'no-store', headers: { 'X-Summit-Workspace-Id': workspace.workspace_id },
+        })
+        if (!active) return
+        if (result.workspace_id !== workspace.workspace_id) throw new Error('workspace changed')
+        setExternalWatchError(false)
+        if (baseline === null) {
+          baseline = result.revision
+          scheduleRefresh()
+        }
+        else if (result.revision !== baseline) {
+          baseline = result.revision
+          scheduleRefresh()
+        }
+        if (hadFailure) scheduleRefresh()
+        hadFailure = false
+      } catch {
+        if (!active) return
+        hadFailure = true
+        setExternalWatchError(true)
+      } finally {
+        window.clearTimeout(deadline)
+        if (inFlight === controller) inFlight = null
+        if (active) timer = window.setTimeout(() => { void poll() }, 1500)
+      }
+    }
+    void poll()
+    return () => {
+      active = false
+      window.clearTimeout(timer)
+      window.clearTimeout(pendingRefresh)
+      inFlight?.abort()
+    }
+  }, [workspace?.workspace_id, profileDir])
+
   /** 侧栏二级入口只依赖项目名与 id；失败时留空，不冒充「没有项目」。 */
   useEffect(() => {
     if (connection !== 'ready') return
@@ -164,6 +268,7 @@ export default function App() {
       setApprovalDiscardEpoch((value) => value + 1)
     }
     projectNonce.current += 1
+    pageLoadRequest.current += 1
     setPage(null)
     setProjectTarget({ id: projectId, nonce: projectNonce.current })
     setSection('projects')
@@ -178,6 +283,7 @@ export default function App() {
     resetApproval()
     setWorkspace(opened)
     if (opened.local_profile_dir) setProfileDir(opened.local_profile_dir)
+    pageLoadRequest.current += 1
     setPage(null)
     setApprovalTarget(null)
     setProjectTarget(null)
@@ -204,11 +310,16 @@ export default function App() {
   /** 换页（阅读页里点目录/上一篇）总是回到正文顶部；关闭阅读时再还原原来的列表位置。 */
   function showPage(next: Page) {
     setPage(next)
+    setReaderUnavailable(false)
+    setReaderRefreshing(false)
+    setReaderRetryCount(0)
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
   }
 
   async function openPage(pageId: string, expectedHash?: string) {
+    const request = ++pageLoadRequest.current
+    const requestedWorkspaceId = workspaceIdRef.current
     if (section === 'approval' && approvalDirty) {
       if (!window.confirm('稿件有未保存的修改。离开审批会放弃这些修改，是否继续？')) return
       setApprovalDirty(false)
@@ -218,27 +329,39 @@ export default function App() {
       readerFocusReturn.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
       readerOriginScroll.current = window.scrollY || document.documentElement.scrollTop
     }
+    const controller = new AbortController()
+    const deadline = window.setTimeout(() => controller.abort(), 5000)
     try {
       const query = expectedHash ? '?expected_content_sha256=' + expectedHash : ''
-      showPage(await api.get<Page>('/pages/' + pageId + query))
+      const loadedPage = await api.get<Page>('/pages/' + pageId + query, { signal: controller.signal })
+      if (request === pageLoadRequest.current && workspaceIdRef.current === requestedWorkspaceId) showPage(loadedPage)
     } catch (cause) {
+      if (request !== pageLoadRequest.current || workspaceIdRef.current !== requestedWorkspaceId) return
       if (expectedHash && cause instanceof ApiError && cause.code === 'version_conflict') {
         try {
-          showPage(await api.get<Page>('/pages/' + pageId))
+          const latestPage = await api.get<Page>('/pages/' + pageId, { signal: controller.signal })
+          if (request !== pageLoadRequest.current || workspaceIdRef.current !== requestedWorkspaceId) return
+          showPage(latestPage)
           report('引用保存的是回答当时的页面版本；该页面已更新。当前显示的是新版本，不能替代原回答依据。')
           return
         } catch {
+          if (request !== pageLoadRequest.current || workspaceIdRef.current !== requestedWorkspaceId) return
           setPage(null)
         }
       } else {
         setPage(null)
       }
       report(cause instanceof Error ? cause.message : '无法打开页面')
+    } finally {
+      window.clearTimeout(deadline)
     }
   }
 
   function closeReader() {
+    pageLoadRequest.current += 1
     setPage(null)
+    setReaderUnavailable(false)
+    setReaderRefreshing(false)
     requestAnimationFrame(() => {
       document.documentElement.scrollTop = readerOriginScroll.current
       document.body.scrollTop = readerOriginScroll.current
@@ -252,6 +375,7 @@ export default function App() {
       setApprovalDirty(false)
     }
     setFirstUse((current) => ({ ...current, open: false }))
+    pageLoadRequest.current += 1
     setPage(null)
     setApprovalTarget(null)
     setProjectTarget(null)
@@ -280,6 +404,7 @@ export default function App() {
           setApprovalDirty(false)
           setApprovalDiscardEpoch((value) => value + 1)
         }
+        pageLoadRequest.current += 1
         setPage(null); setSection(next); setVisitedSections((current) => new Set(current).add(next))
         // 点一级导航「项目」永远回到项目列表。
         if (next === 'projects') projectsHandle.current?.showList()
@@ -295,10 +420,15 @@ export default function App() {
       toasts={toasts}
       onDismissToast={dismiss}
     >
-      {page ? (
+      {externalWatchError && <p className="content-wrap" role="status">自动检查暂时不可用，当前内容可能不是最新版本；连接恢复后会继续检查。</p>}
+      {page ? readerUnavailable ? (
+        <div className="content-wrap" role="alert"><h1>{String(page.metadata.title ?? '页面')}</h1><p>这个页面已删除或暂时无法读取。修复文件后会自动恢复显示。</p><button className="button secondary" onClick={() => void openPage(page.page_id)}>重新读取</button><button className="text-button" onClick={closeReader}>返回</button></div>
+      ) : (
         <PageReader
-          key={`${page.page_id}:${page.content_sha256}`}
+          key={page.page_id}
           page={page}
+          directoryRevision={externalPagesRevision}
+          synchronizing={readerRefreshing}
           onClose={closeReader}
           onReload={() => void openPage(page.page_id)}
           onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)}
@@ -329,10 +459,10 @@ export default function App() {
         onRuntimeSettingsChanged={refreshApprovalAfterSettingsChange}
         />
       ) : null}
-      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView key={workspace.workspace_id} handleRef={projectsHandle} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} target={projectTarget} onTargetHandled={clearProjectTarget} onActiveProjectChange={setActiveProjectId} onProjectsChanged={refreshSidebarProjects} />}</div>
+      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView key={workspace.workspace_id} externalPagesRevision={externalPagesRevision} handleRef={projectsHandle} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} target={projectTarget} onTargetHandled={clearProjectTarget} onActiveProjectChange={setActiveProjectId} onProjectsChanged={refreshSidebarProjects} />}</div>
       <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView key={workspace.workspace_id} active={!page && section === 'ask'} settingsEpoch={runtimeSettingsEpoch} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={openApproval} onOpenSettings={() => { setPage(null); setSection('settings'); setVisitedSections((current) => new Set(current).add('settings')) }} />}</div>
       <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} calendarDedupeScope={`${profileDir ?? ''}:${workspace.workspace_id}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={openApproval} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} onOpenConnectionWizard={() => { setFirstUse((current) => ({ ...current, open: true, step: 4, returnSection: 'today' })); setSection('settings'); setVisitedSections((current) => new Set(current).add('settings')) }} /></div>
-      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={workspace.workspace_id} refreshEpoch={approvalRefreshEpoch} target={approvalTarget} onTargetHandled={clearApprovalTarget} onPendingCount={setApprovalCount} onDirtyChange={setApprovalDirty} discardEpoch={approvalDiscardEpoch} onError={report} onOpenPage={(pageId, expectedHash) => void openPage(pageId, expectedHash)} /></div>
+      <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={workspace.workspace_id} externalPagesRevision={externalPagesRevision} refreshEpoch={approvalRefreshEpoch} target={approvalTarget} onTargetHandled={clearApprovalTarget} onPendingCount={setApprovalCount} onDirtyChange={setApprovalDirty} discardEpoch={approvalDiscardEpoch} onError={report} onOpenPage={(pageId, expectedHash) => void openPage(pageId, expectedHash)} /></div>
     </AppShell>
   )
 }

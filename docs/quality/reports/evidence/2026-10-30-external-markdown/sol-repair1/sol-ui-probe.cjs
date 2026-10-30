@@ -1,0 +1,58 @@
+const { chromium } = require('/Users/hanwenbo/ai/SummitEverything/web/node_modules/@playwright/test');
+const fs=require('node:fs');
+const out=__dirname;
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const page=await browser.newPage({viewport:{width:1440,height:960}});
+ let revision='old',body='西门',hash='a'.repeat(64),failDetail=false,revisionError=false,reads=0,failures=0;
+ const ws={workspace_id:'probe-workspace',root:'/tmp/probe-library',local_profile_dir:'/tmp/probe-profile',name:'独立界面探针',read_only:false};
+ const project={id:'probe-project',line_id:'probe-line',overview_id:'probe-overview',name:'探针项目',directory:'探针主线/探针项目',archived:false};
+ const model={mode:'real',embedding_fingerprint:'local-probe',keychain_available:true,credential_status:{deepseek:false},llm:{provider:'deepseek',enabled:false},embedding:{provider:'local',enabled:true},rerank:{provider:'local',enabled:true},local_model:{state:'ready'}};
+ const doc=()=>({page_id:'probe-page',relative_path:'探针主线/探针项目/规则.md',metadata:{id:'probe-page',title:'探针规则',role:'knowledge',kind:'topic',line_id:'probe-line',project_id:'probe-project'},body:'集合地点：'+body,content_sha256:hash,raw_sha256:hash,approval_state:revision==='old'?'confirmed':'invalid',storage_area:'formal',validity:'current'});
+ await page.route('**/api/v1/**',async route=>{
+  const u=new URL(route.request().url()),p=u.pathname.replace('/api/v1','');const json=x=>route.fulfill({json:x});
+  if(route.request().method()!=='GET')return route.fulfill({status:403,json:{error:{message:'探针拒绝写入'}}});
+  if(p==='/workspaces/current')return json(ws);
+  if(p==='/first-use/progress')return json({step:5,completed:true,open:false});
+  if(p==='/settings')return json(model);
+  if(p==='/integrations/feishu/status')return json({mode:'real',authorized:false,calendar_ready:false});
+  if(p==='/lines')return json([{id:'probe-line',name:'探针主线',directory:'探针主线'}]);
+  if(p==='/projects')return json([project]);
+  if(p==='/pages/revision')return revisionError?route.fulfill({status:503,json:{error:{message:'synthetic monitor outage'}}}):json({workspace_id:ws.workspace_id,revision});
+  if(p==='/pages'||p==='/pages/directory')return json([doc()]);
+  if(p==='/pages/probe-overview')return route.fulfill({status:404,json:{error:{message:'不存在'}}});
+  if(p==='/pages/probe-page'){reads++; if(failDetail){failDetail=false;failures++;return route.fulfill({status:503,json:{error:{message:'一次正文读取失败'}}})}return json(doc());}
+  if(p==='/index/status')return json({fingerprint:'local-probe',state:'ready',pages:1,chunks:1,current_pages:1,stale_pages:0,vector:'real'});
+  if(p==='/action-intents'||p==='/conversations')return json({items:[],next_cursor:null});
+  return json([]);
+ });
+ await page.goto('http://127.0.0.1:6190');
+ await page.getByRole('button',{name:'项目',exact:true}).click();
+ await page.locator('[data-project-id="probe-project"]').click();
+ await page.getByRole('button',{name:'探针规则',exact:true}).click();
+ await page.getByText('集合地点：西门',{exact:true}).waitFor();
+ await page.waitForTimeout(2200);
+ const before=reads;revision='new';hash='b'.repeat(64);body='东门';failDetail=true;
+ await page.getByText('集合地点：东门',{exact:true}).waitFor();
+ await page.waitForTimeout(6500);
+ const recovered=await page.getByText('集合地点：东门',{exact:true}).isVisible();
+ const result={candidate:'4358c7b2b410d8c5bcc6ab4dd7d219ce9d349a25',readsBefore:before,readsAfter:reads,injectedFailures:failures,detailRecoveryWithoutRevision:recovered,visibleText:await page.locator('.project-docs-body').innerText()};
+ await page.screenshot({path:out+'/sol-detail-transient.png',fullPage:true});
+ // Fresh mount for monitor-only failure: do not let previous detail error supply a warning.
+ await page.reload();
+ await page.getByRole('button',{name:'项目',exact:true}).click();
+ await page.locator('[data-project-id="probe-project"]').click();
+ await page.getByRole('button',{name:'探针规则',exact:true}).click();
+ await page.getByText('集合地点：东门',{exact:true}).waitFor();
+ revisionError=true;
+ await page.waitForTimeout(4500);
+ result.monitorFailureVisible=(await page.locator('body').innerText()).includes('自动检查');
+ result.monitorAlerts=await page.getByRole('alert').allTextContents();
+ await page.screenshot({path:out+'/sol-monitor-error.png',fullPage:true});
+ revisionError=false;
+ await page.getByText('自动检查暂时不可用，当前内容可能不是最新版本；连接恢复后会继续检查。',{exact:true}).waitFor({state:'hidden'});
+ result.monitorRecovered=true;result.pageTitle=await page.title();result.pageUrl=page.url();result.frameworkOverlay=await page.locator('vite-error-overlay').count();
+ fs.writeFileSync(out+'/sol-ui-probe.json',JSON.stringify(result,null,2));
+ console.log(JSON.stringify(result,null,2));await browser.close();
+ if(!recovered || failures!==1 || reads<3 || !result.monitorFailureVisible || !result.monitorRecovered || result.frameworkOverlay) throw new Error('Repair probe assertions failed');
+})().catch(e=>{console.error(e);process.exit(1)});

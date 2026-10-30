@@ -73,6 +73,11 @@ class PageDirectoryEntry(BaseModel):
     body: str | None = None
 
 
+class WorkspacePagesRevision(BaseModel):
+    workspace_id: UUID
+    revision: str
+
+
 class MutationResult(BaseModel):
     operation_id: str
     state: Literal["succeeded"] = "succeeded"

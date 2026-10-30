@@ -1,0 +1,14 @@
+{
+  "candidate": "4358c7b2b410d8c5bcc6ab4dd7d219ce9d349a25",
+  "readsBefore": 1,
+  "readsAfter": 3,
+  "injectedFailures": 1,
+  "detailRecoveryWithoutRevision": true,
+  "visibleText": "待确认\n检查页面当前版本\n\n此页面自上次确认后已有变化，目前不会用于知识问答。请核对当前正文；只有点击确认后，新版本才会恢复检索资格。\n\n正文由外部来源写入，这里只读；需要改动请到来源文件，保存后回来重新确认。\n\n集合地点：东门\n\n确认当前版本",
+  "monitorFailureVisible": true,
+  "monitorAlerts": [],
+  "monitorRecovered": true,
+  "pageTitle": "SummitEverything — 本地知识工作台",
+  "pageUrl": "http://127.0.0.1:6190/",
+  "frameworkOverlay": 0
+}

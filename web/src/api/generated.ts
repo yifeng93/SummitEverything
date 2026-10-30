@@ -731,6 +731,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pages/revision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pages Revision */
+        get: operations["pages_revision_api_v1_pages_revision_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pages/directory": {
         parameters: {
             query?: never;
@@ -3103,6 +3120,16 @@ export interface components {
              */
             read_only: boolean;
         };
+        /** WorkspacePagesRevision */
+        WorkspacePagesRevision: {
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+            /** Revision */
+            revision: string;
+        };
         /** WorkspaceRequest */
         WorkspaceRequest: {
             /** Root */
@@ -5020,6 +5047,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MutationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pages_revision_api_v1_pages_revision_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspacePagesRevision"];
                 };
             };
             /** @description Validation Error */

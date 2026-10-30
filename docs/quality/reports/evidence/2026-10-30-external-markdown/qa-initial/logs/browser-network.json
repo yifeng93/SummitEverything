@@ -1,0 +1,700 @@
+{
+  "externalAttempts": [],
+  "localRequests": [
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/current",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/first-use/progress",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/provider-smoke",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/integrations/feishu/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/intake/items",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/drafts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/actions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/action-intents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/first-use/progress",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/lines",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/d9592b58-76a8-5009-995e-c8dfa05fdbd2",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/lines",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/credentials/deepseek",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/d9592b58-76a8-5009-995e-c8dfa05fdbd2",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/index/plans",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/index/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/roles",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/acceptance-plans",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/acceptance-plans/6c1603cd-6606-4771-a0c1-b742842250ae/confirm",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/queries",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/conversations/2903a760-69a6-428e-906a-4bd75a249cb1/reopen",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/ad32d369-78aa-40da-9958-b248d5a86b8a",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/ad32d369-78aa-40da-9958-b248d5a86b8a",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/directory",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/d9592b58-76a8-5009-995e-c8dfa05fdbd2",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/revision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations/2903a760-69a6-428e-906a-4bd75a249cb1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/acceptance-plans",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/acceptance-plans/29b2210f-2525-4a0d-8891-1f0bece05408/confirm",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/index/status",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/queries",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/conversations/1cc2731f-85ab-4994-a16d-7735edd553fc/reopen",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/conversations",
+      "status": 200
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "pageErrors": []
+}

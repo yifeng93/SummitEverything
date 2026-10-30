@@ -5,8 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import summit_everything.workspace.reader as page_reader
 from summit_everything.workspace.manifest import create_line, create_project, create_workspace
-from summit_everything.workspace.reader import list_pages
+from summit_everything.workspace.reader import formal_pages_revision, list_pages
 from summit_everything.workspace.writer import PageWriter
 
 
@@ -64,3 +65,27 @@ def test_list_pages_reuses_snapshots_until_a_file_changes(tmp_path: Path, monkey
     third = list_pages(root)
     assert len(third) == len(first) + 1
     assert reads > first_reads
+
+
+def test_page_revision_tracks_atomic_add_replace_delete_without_markdown_parse(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root, line_id, project_id = _workspace(tmp_path / "workspace")
+    page_id = _page(root, line_id, project_id, "旧正文")
+    source = next((root / "模拟线" / "模拟项目").glob("*.md"))
+    monkeypatch.setattr(
+        page_reader,
+        "_split_markdown",
+        lambda _raw: (_ for _ in ()).throw(AssertionError("parsed markdown")),
+    )
+    original = formal_pages_revision(root)
+    staged = source.with_suffix(".tmp")
+    staged.write_text(
+        source.read_text(encoding="utf-8").replace("旧正文", "新正文"), encoding="utf-8"
+    )
+    staged.replace(source)
+    replaced = formal_pages_revision(root)
+    source.unlink()
+    deleted = formal_pages_revision(root)
+    assert page_id
+    assert len({original, replaced, deleted}) == 3

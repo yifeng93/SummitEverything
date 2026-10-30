@@ -1,0 +1,25 @@
+{
+  "origin": "http://127.0.0.1:5173",
+  "health_status": 200,
+  "workspace_status": 200,
+  "revision_status": 200,
+  "revision_cache_control": "no-store",
+  "workspace_bound": true,
+  "opaque_revision_length": 64,
+  "served_modules": {
+    "/src/App.tsx": {
+      "status": 200,
+      "marker_present": true
+    },
+    "/src/components/ProjectsView.tsx": {
+      "status": 200,
+      "marker_present": true
+    },
+    "/src/components/PageReader.tsx": {
+      "status": 200,
+      "marker_present": true
+    }
+  },
+  "writes": 0,
+  "provider_calls": 0
+}

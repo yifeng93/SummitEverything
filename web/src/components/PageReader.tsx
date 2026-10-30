@@ -13,6 +13,8 @@ type Props = {
   onReload: () => Promise<void>
   onOpenPage: (id: string, hash: string) => void
   returnLabel?: string
+  directoryRevision?: number
+  synchronizing?: boolean
   /** 嵌在项目页右侧时传入：用外部数据、不渲染自己的左目录与返回行。 */
   pane?: { projects: Project[]; pages: PageDirectoryEntry[] }
 }
@@ -24,10 +26,10 @@ type Props = {
  * 让用户确认当前版本、决定是否索引。唯一的写操作是「移动到其他项目」——
  * 它只改归属，不动正文。待确认页也只提供「确认当前版本」，没有编辑器。
  */
-export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = '知识', pane }: Props) {
+export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = '知识', pane, directoryRevision = 0, synchronizing = false }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [receipt, setReceipt] = useState<{ contentHash: string; message: string } | null>(null)
   const [loadedProjects, setLoadedProjects] = useState<Project[]>([])
   const [linkIndex, setLinkIndex] = useState<MarkdownPage[]>([])
   const [loadedPages, setLoadedPages] = useState<Page[]>([])
@@ -77,7 +79,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = 
       setError(cause instanceof Error ? cause.message : '无法加载页面操作')
     })
     return () => { cancelled = true }
-  }, [page.page_id, pane])
+  }, [page.page_id, pane, directoryRevision])
 
   async function confirmCurrentVersion() {
     setBusy(true)
@@ -90,7 +92,10 @@ export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = 
         operation_id: newOperationId(),
         expected_base_sha256: page.content_sha256,
       })
-      setNotice(indexUpdateMessage(result.index_update) ?? '')
+      setReceipt({
+        contentHash: result.page_versions[page.page_id] ?? page.content_sha256,
+        message: indexUpdateMessage(result.index_update) ?? '当前版本已确认并保存。',
+      })
       await onReload()
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : '无法确认此页面'
@@ -151,7 +156,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = 
               <button className="back-link" onClick={onClose}><ArrowLeft size={15} strokeWidth={1.75} aria-hidden="true" />{returnLabel === '知识问答' ? '返回知识问答' : returnLabel === '项目' ? '返回项目' : '返回知识'}</button>
               <div className="page-reader-tools">
                 <button className="text-button tree-toggle" onClick={() => setNavigatorOpen(true)}>目录</button>
-                {!needsConfirmation && <button className="text-button" onClick={() => setOpsOpen(true)}>页面操作</button>}
+                {!needsConfirmation && !synchronizing && <button className="text-button" onClick={() => setOpsOpen(true)}>页面操作</button>}
               </div>
             </div>
             <nav className="page-breadcrumb" aria-label="当前位置">{projectName ? `${projectName} / ${location}` : location}</nav>
@@ -159,6 +164,7 @@ export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = 
           </>}
         <h1>{needsConfirmation ? '检查页面当前版本' : String(page.metadata.title ?? '未命名页面')}</h1>
         {historicalValidity && <p role="status" className="page-validity-note">{historicalValidity.description}</p>}
+        {synchronizing && <p role="status" className="helper-line">正在读取新版本；当前正文暂不能确认或操作。</p>}
         {needsConfirmation ? (
           <section className="page-reconfirmation" aria-label="重新确认当前页面">
             <p role="status">此页面自上次确认后已有变化，目前不会用于知识问答。请核对当前正文；只有点击确认后，新版本才会恢复检索资格。</p>
@@ -167,14 +173,14 @@ export function PageReader({ page, onClose, onReload, onOpenPage, returnLabel = 
             {error && <button className="text-button" onClick={() => void onReload()}>重新读取当前版本</button>}
             <MarkdownText className="page-body" content={displayBody} sourcePath={page.relative_path} pageIndex={linkIndex} onOpenPage={onOpenPage} />
             <div className="button-row">
-              <button className="button primary" disabled={busy} onClick={() => void confirmCurrentVersion()}>
+              <button className="button primary" disabled={busy || synchronizing} onClick={() => void confirmCurrentVersion()}>
                 {busy ? '正在确认…' : '确认当前版本'}
               </button>
             </div>
           </section>
         ) : <>
           {error && <p role="alert" className="form-error">{error}</p>}
-          {notice && <p role="status" className={notice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{notice}</p>}
+          {receipt && <p role="status" className={receipt.message.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{receipt.contentHash === page.content_sha256 ? receipt.message : '先前版本已确认；页面内容已变化，当前版本需要重新确认。'}</p>}
           <MarkdownText className="page-body" content={displayBody} sourcePath={page.relative_path} pageIndex={linkIndex} onOpenPage={onOpenPage} />
           {(previousPage || nextPage) && <nav className="page-pager" aria-label="同分类翻页">
             <div>

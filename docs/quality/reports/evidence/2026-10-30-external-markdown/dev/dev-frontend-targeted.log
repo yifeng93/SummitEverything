@@ -1,0 +1,29 @@
+
+> web@0.0.0 test
+> vitest run --run src/App.shell.test.tsx src/components/ProjectsView.test.tsx src/components/ApprovalView.test.tsx src/components/PageReader.test.tsx
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+ ❯ src/App.shell.test.tsx (14 tests | 1 failed) 9293ms
+   × external Markdown revision refreshes the formal approval list and badge without manual refresh 1812ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.shell.test.tsx > external Markdown revision refreshes the formal approval list and badge without manual refresh
+AssertionError: expected '审批' to contain '1'
+
+Expected: "1"
+Received: "审批"
+
+ ❯ src/App.shell.test.tsx:184:66
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 73 passed (74)
+   Start at  14:41:52
+   Duration  22.01s (environment 40%, tests 39%, import 10%, transform 10%)
+

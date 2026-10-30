@@ -1,0 +1,15 @@
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/external-watch-20261030/SummitEverything/web
+
+
+ Test Files  34 passed (34)
+      Tests  313 passed (313)
+   Start at  15:46:56
+   Duration  44.96s (tests 47%, environment 35%, import 12%, transform 6%)
+
+Environment  jsdom was created 34 times · 115.21s total, 35% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it per worker)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
