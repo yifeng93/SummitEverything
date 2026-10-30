@@ -18,13 +18,13 @@ def test_settings_default_offline_and_atomic_round_trip(tmp_path):
     store = SettingsStore(tmp_path / "settings.json")
 
     initial = store.read()
-    assert initial.mode == "fake"
-    assert initial.llm.provider == "fake"
+    assert initial.mode == "real"
+    assert initial.llm.provider == "deepseek"
 
     updated = store.update({"llm": {"provider": "deepseek", "model": "deepseek-flash"}})
     assert updated.llm.provider == "deepseek"
     assert store.read() == updated
-    assert json.loads((tmp_path / "settings.json").read_text())["mode"] == "fake"
+    assert json.loads((tmp_path / "settings.json").read_text())["mode"] == "real"
 
 
 def test_settings_reject_unknown_fields_and_arbitrary_endpoint(tmp_path):
@@ -41,7 +41,7 @@ def test_settings_rejects_non_allowlisted_model_and_dimension(tmp_path):
     with pytest.raises(ValidationError):
         store.update({"llm": {"provider": "deepseek", "model": "some-other-model"}})
     with pytest.raises(ValidationError):
-        store.update(
+        ProviderSettings.model_validate(
             {
                 "embedding": {
                     "provider": "dashscope",
@@ -50,9 +50,11 @@ def test_settings_rejects_non_allowlisted_model_and_dimension(tmp_path):
                 }
             }
         )
+    with pytest.raises(SettingsError, match="provider_not_allowed"):
+        store.update({"embedding": {"provider": "dashscope"}})
     with pytest.raises(ValidationError):
         store.update({"embedding": {"region": "us"}})
-    with pytest.raises(ValidationError):
+    with pytest.raises(SettingsError, match="provider_not_allowed"):
         store.update(
             {
                 "embedding": {
@@ -99,7 +101,13 @@ def test_settings_updates_merge_across_concurrent_requests(tmp_path):
 def test_embedding_fingerprint_changes_with_provider_configuration():
     fake = ProviderSettings.model_validate({})
     real = ProviderSettings.model_validate(
-        {"embedding": {"provider": "dashscope", "model": "qwen3.7-text-embedding"}}
+        {
+            "embedding": {
+                "provider": "dashscope",
+                "model": "qwen3.7-text-embedding",
+                "dimensions": 1024,
+            }
+        }
     )
     assert embedding_fingerprint(fake.embedding) != embedding_fingerprint(real.embedding)
     assert embedding_fingerprint(real.embedding) == embedding_fingerprint(real.embedding)
@@ -112,11 +120,13 @@ def test_model_studio_custom_account_hosts_are_local_settings_and_fingerprint_in
             "embedding": {
                 "provider": "dashscope",
                 "model": "qwen3.7-text-embedding",
+                "dimensions": 1024,
                 "base_url": "https://workspace.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
             },
             "rerank": {
                 "provider": "dashscope",
                 "model": "qwen3.7-text-rerank",
+                "dimensions": 1024,
                 "base_url": "https://workspace.cn-beijing.maas.aliyuncs.com/api/v1",
             },
         }

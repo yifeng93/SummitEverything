@@ -13,6 +13,8 @@
  */
 
 :root {
+  /* 原生控件（按钮、滚动条、输入框）跟随主题，不然暗色下会画出浅色底。 */
+  color-scheme: light;
   /* ── 颜色 · 浅色 ─────────────────────────────────────────────── */
   --ink: #242a2c;
   --muted: #666f6e;              /* 为满足 §6.2 对比度，较原 #717a79 加深 */
@@ -35,6 +37,14 @@
   --warn: #7a5a12;
   --warn-wash: #fbf4e8;
   --warn-ink: #5f4409;
+  /* 代码高亮：只用于 Markdown 代码块，不参与界面强调色 */
+  --code-keyword: #9a4526;
+  --code-string: #3d6b4a;
+  --code-number: #7a5a12;
+  --code-type: #2f5d87;
+  --code-comment: #6f7876;
+  /* select 自绘箭头（浅色）：等同 --quiet */
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236f7876' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   --sidebar: #202928;
   --sidebar-muted: #9ca9a3;
   --sidebar-active: #34403c;
@@ -48,13 +58,32 @@
   --overlay: rgb(28 32 29 / 42%);
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* ── 尺度 · 间距（8 的倍数优先）─────────────────────────────── */
+  /* ── 尺度 · 间距（2px 网格；≥16 走 4px 网格）───────────────────
+   * 例外只允许：页面级留白（40 / 72）、对话框宽度、图表与文本行宽。
+   * 组件内部的 padding / margin / gap 一律取下面这些刻度。 */
+  --space-0: 2px;
   --space-1: 4px;
+  --space-1-5: 6px;
   --space-2: 8px;
+  --space-2-5: 10px;
   --space-3: 12px;
+  --space-3-5: 14px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
+  --space-18: 72px;
+
+  /* ── 尺度 · 控件高度（同一种控件全站同高）───────────────────── */
+  --control-xs: 28px;   /* 分段按钮、标签页 */
+  --control-sm: 32px;   /* 默认按钮、输入框、图标按钮、单行选择 */
+  --control-lg: 44px;   /* 宽按钮、导航项、触屏下限 */
+
+  /* ── 尺度 · 图标（只允许这三档）─────────────────────────────── */
+  --icon-sm: 14px;
+  --icon-md: 16px;
+  --icon-lg: 18px;
 
   /* ── 尺度 · 圆角 ─────────────────────────────────────────────── */
   --radius-sm: 6px;
@@ -72,6 +101,7 @@
   --text-list: 14px;
   --text-body: 15px;
   --text-section: 16px;
+  --text-metric: 19px;
   --text-page: 22px;
   --text-display: 31px;
   --lh-body: 1.6;
@@ -81,6 +111,7 @@
 
 /* 深色：覆盖上面每一个颜色 token（theme.test.ts 逐条核对）。 */
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --ink: #e7ebe7;
   --muted: #abb5af;
   --quiet: #96a09a;
@@ -102,6 +133,12 @@
   --warn: #e0b872;
   --warn-wash: #3d3220;
   --warn-ink: #e8c98d;
+  --code-keyword: #e9a07f;
+  --code-string: #94c8a7;
+  --code-number: #e0c07d;
+  --code-type: #93b6dd;
+  --code-comment: #7f8a84;
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2396a09a' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   --sidebar: #111715;
   --sidebar-muted: #9ca9a3;
   --sidebar-active: #2a3631;

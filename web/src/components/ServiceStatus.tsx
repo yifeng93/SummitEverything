@@ -38,7 +38,6 @@ export function ServiceUnreachableScreen({ onRetry, profileDir }: { onRetry: () 
     <main className="status-screen">
       <div className="status-card">
         <ShellBrand />
-        <p className="eyebrow">本机服务</p>
         <h1>没有连上本机服务</h1>
         <p className="lede">资料和知识库都还在这台 Mac 上，没有丢。应用只是暂时连不上负责读写的本机服务。</p>
         <p className="status-hint">它可能还在启动、已经被关掉，或者启动时出了错。点「重试」再连一次；一直连不上就打开下面的日志目录看原因。</p>

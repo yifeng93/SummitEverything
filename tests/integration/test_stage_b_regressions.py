@@ -7,10 +7,10 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 from test_qualified_retrieval import approve_page, create_test_workspace
 
-from summit_everything.api.app import create_app
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.integrations.rerank import ModelStudioReranker

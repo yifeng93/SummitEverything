@@ -50,7 +50,7 @@ it('keeps the updated citation version warning visible after navigating to the p
   expect(await screen.findByText('会议地点已改为西馆。')).toBeTruthy()
   expect((await screen.findByRole('alert')).textContent).toContain('该页面已更新')
   await waitFor(() => expect(requestedPageUrls).toEqual([`/api/v1/pages/page-1?expected_content_sha256=${oldHash}`]))
-  fireEvent.click(screen.getByRole('button', { name: '← 返回知识问答' }))
+  fireEvent.click(screen.getByRole('button', { name: '返回知识问答' }))
   expect(await screen.findByRole('button', { name: /会议地点是北馆/ })).toBeTruthy()
   expect(screen.queryByText('会议地点已改为西馆。')).toBeNull()
 })

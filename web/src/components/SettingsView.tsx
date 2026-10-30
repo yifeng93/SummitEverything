@@ -1,19 +1,21 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { api } from '../api/client'
 import { FirstUseWizard } from './FirstUseWizard'
 import { FeishuAgentSetup } from './FeishuAgentSetup'
+import { AskPreferences } from './AskPreferences'
 import { SmokeCheckConfirm } from './SmokeCheckConfirm'
+import { PageHeader } from './PageHeader'
 import { ConfirmDialog } from './ConfirmDialog'
+import { LocalModelSetup } from './LocalModelSetup'
 import { saveFirstUseProgress, type FirstUseProgress } from './firstUseProgress'
 import {
   badgeClass, capabilityLabels, capabilityStatusLabel, checkedCapabilityStatusLabel, credentialAccountId, failedFeishuStatusRead, feishuCardBadge,
   modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckConfigStamp, smokeCheckDisabled, smokeChecks,
   type CardBadge, type CheckOutcome, type CheckResult, type FeishuStatusRead, type SecretProvider, type Settings,
   type SmokeCheckKey, type SmokeStatus,
+  unpreparedLocalModel,
 } from './settingsBadges'
-
-type LLMProvider = Settings['llm']['provider']
-type ModelProvider = Settings['embedding']['provider']
 
 function CardHead({ title, badge }: { title: string; badge: CardBadge }) {
   return <div className="settings-card-head">
@@ -56,9 +58,12 @@ type SettingsViewProps = {
   onWizardClose?: () => void
   onFinishFirstUse?: () => void
   onAuthorizationChanged?: () => void
+  onRuntimeSettingsChanged?: () => void
+  onOpenApproval?: () => void
+  onError?: (message: string) => void
 }
 
-export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, resumeWizardStep = 2, initialWizardCompleted = false, persistWizardProgress, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged }: SettingsViewProps) {
+export function SettingsView({ workspaceName, workspaceId = workspaceName, profileId = 'default', onSwitchWorkspace, wizardOnly = false, initialWizardStep = 2, resumeWizardStep = 2, initialWizardCompleted = false, persistWizardProgress, onRequestWizard, onWizardStepChange, onWizardClose, onFinishFirstUse, onAuthorizationChanged, onRuntimeSettingsChanged, onOpenApproval, onError }: SettingsViewProps) {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [smokeStatus, setSmokeStatus] = useState<SmokeStatus | null>(null)
   // 密钥只允许停留在组件内存 state：不写 localStorage / sessionStorage / 工作库，
@@ -72,17 +77,27 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   const [pendingCheck, setPendingCheck] = useState<SmokeCheckKey | null>(null)
   const [pendingRemoval, setPendingRemoval] = useState<SecretProvider | null>(null)
   const [settingsReadFailed, setSettingsReadFailed] = useState(false)
-  const [settingsReadAt, setSettingsReadAt] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  const persistedLocalModelStamp = useRef('')
+
+  function localModelStamp(value: Settings['local_model'] | undefined) {
+    return JSON.stringify({ model: value?.model, revision: value?.revision, state: value?.state })
+  }
+
+  function acceptSavedSettings(updated: Settings) {
+    persistedLocalModelStamp.current = localModelStamp(updated.local_model)
+    onRuntimeSettingsChanged?.()
+    setSettings(updated)
+  }
 
   async function load(): Promise<Settings | null> {
     try {
       const value = await api.get<Settings>('/settings')
+      persistedLocalModelStamp.current = localModelStamp(value.local_model)
       setSettings(value)
-      setSettingsReadAt(new Date().toISOString())
       setSettingsReadFailed(false)
       setError('')
       return value
@@ -119,8 +134,8 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     api.get<Settings>('/settings')
       .then((value) => {
         if (!active) return
+        persistedLocalModelStamp.current = localModelStamp(value.local_model)
         setSettings(value)
-        setSettingsReadAt(new Date().toISOString())
         setSettingsReadFailed(false)
       })
       .catch((cause: unknown) => {
@@ -163,7 +178,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
 
   async function patchSettings(patch: Record<string, unknown>): Promise<Settings> {
     const updated = await api.patch<Settings>('/settings', patch)
-    setSettings(updated)
+    acceptSavedSettings(updated)
     return updated
   }
 
@@ -174,19 +189,14 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     setBusy(true); setError(''); setNotice('')
     try {
       const deepseekSecret = secrets.deepseek.trim()
-      const dashscopeSecret = secrets.dashscope.trim()
-      if (deepseekSecret || dashscopeSecret) requireKeychain()
+      if (deepseekSecret) requireKeychain()
       const updated = await patchSettings(settingsPatch(settings))
       const saved: string[] = []
       if (deepseekSecret) {
         await api.put('/credentials/deepseek', { account_id: credentialAccountId(updated, 'deepseek'), secret: deepseekSecret })
+        onRuntimeSettingsChanged?.()
         saved.push('DeepSeek API Key')
         setSecret('deepseek', '')
-      }
-      if (dashscopeSecret) {
-        await api.put('/credentials/dashscope', { account_id: credentialAccountId(updated, 'dashscope'), secret: dashscopeSecret })
-        saved.push('阿里云 Model Studio API Key')
-        setSecret('dashscope', '')
       }
       await load()
       setNotice(saved.length
@@ -208,6 +218,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
       setFeishuStatus({ state: 'unreadable' })
       if (appSecret) {
         await api.put('/credentials/feishu_app', { account_id: credentialAccountId(updated, 'feishu_app'), secret: appSecret })
+        onRuntimeSettingsChanged?.()
         setSecret('feishu_app', '')
       }
       await load()
@@ -219,13 +230,27 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     finally { setBusy(false) }
   }
 
+  async function switchToLocalRetrieval() {
+    if (!settings) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const updated = await api.patch<Settings>('/settings', {
+        embedding: { ...settings.embedding, provider: 'local', model: 'BAAI/bge-small-zh-v1.5', dimensions: 512, enabled: true },
+        rerank: { ...settings.rerank, provider: 'local', model: 'BAAI/bge-small-zh-v1.5', dimensions: 512, enabled: true },
+      })
+      acceptSavedSettings(updated)
+      setNotice('检索配置已切换到本地模型。原有云端密钥仍留在本机；新索引需要查看范围并确认准备。')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : '无法切换本地检索配置') }
+    finally { setBusy(false) }
+  }
+
   async function saveAdvancedSettings(event: FormEvent) {
     event.preventDefault()
     if (!settings) return
     setBusy(true); setError(''); setNotice('')
     try {
       const updated = await api.patch<Settings>('/settings', settingsPatch(settings))
-      setSettings(updated)
+      acceptSavedSettings(updated)
       setNotice('高级设置已保存在本机。保存过程没有联系 provider。模型变更不会自动重建索引。')
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法保存设置') }
     finally { setBusy(false) }
@@ -239,6 +264,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
       // 先读回落盘的账户标识，避免用界面上未保存的值去删除钥匙串条目。
       const fresh = await api.get<Settings>('/settings')
       await api.delete('/credentials/' + provider, { account_id: credentialAccountId(fresh, provider) })
+      if (provider === 'deepseek') onRuntimeSettingsChanged?.()
       await load()
       if (provider === 'feishu_app') setFeishuStatus({ state: 'invalidated' })
       setNotice('所选应用密钥已从本机钥匙串删除；需要重新录入后才能使用对应能力。')
@@ -272,7 +298,7 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     return [key, settings && result?.configStamp === smokeCheckConfigStamp(settings, key) ? result.outcome : 'none']
   })) as Record<SmokeCheckKey, CheckOutcome>
   const modelBadge = modelCardBadge({
-    mode: settings?.mode ?? 'fake',
+    mode: settings?.mode ?? 'real',
     credentials,
     capabilities,
     checkOutcomes,
@@ -281,13 +307,25 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     keychainAvailable: Boolean(settings?.keychain_available),
     read: feishuStatus,
   })
+  const aiCapabilityIds = ['llm', 'embedding', 'rerank'] as const
+  const aiReasonTexts = aiCapabilityIds
+    .map((id) => capabilities[id]?.disabled_reason ? reasonText(capabilities[id].disabled_reason).text : '')
+    .filter(Boolean)
+  // 三项常常是同一句“离线 Fake”，逐行重复没有信息量；相同就只留一句脚注。
+  const sharedAiReason = new Set(aiReasonTexts).size === 1 ? aiReasonTexts[0] : ''
+  const feishuReadIds = ['feishu_material_read', 'feishu_calendar_read', 'feishu_task_read'] as const
+  const feishuReadReasonTexts = feishuReadIds
+    .map((id) => capabilities[id]?.disabled_reason ? reasonText(capabilities[id].disabled_reason).text : '')
+    .filter(Boolean)
+  const sharedFeishuReadReason = new Set(feishuReadReasonTexts).size === 1 ? feishuReadReasonTexts[0] : ''
 
   const wizard = settings && <FirstUseWizard
     settings={settings}
     smokeStatus={smokeStatus}
     feishuStatus={feishuStatus}
     onClose={() => onWizardClose?.()}
-    onSettingsChanged={(updated) => setSettings(updated)}
+    onSettingsChanged={acceptSavedSettings}
+    onRuntimeSettingsChanged={onRuntimeSettingsChanged}
     onSmokeStatusRefresh={loadSmokeStatus}
     onFeishuStatusRefresh={loadFeishuStatus}
     persistProgress={persistWizardProgress ?? persistWizardProgressDefault}
@@ -307,17 +345,16 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   </main>
 
   return <section className="content-wrap settings-view">
-    <div className="eyebrow">本机 profile</div>
-    <h1>设置</h1>
-    <p className="lede">常用连接在下面三张卡里完成，技术字段默认收在「高级与自定义」。读取、保存和刷新设置不会连接外部服务，保存后也不会自动发起任何联网检查。</p>
-    <p className="settings-mode-line">当前运行模式：<strong>{settings?.mode === 'real' ? 'Real · 显式启用' : 'Fake · 离线（默认）'}</strong><span>真实调用仍需一次性范围预览与独立确认。</span></p>
-    <div className="settings-wizard-entry">
-      <button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard()}>打开连接向导</button>
-      <span>按步完成工作库、模型与密钥、连接检查和飞书设置；可保存进度后继续。</span>
-    </div>
+    <PageHeader
+      title="设置"
+      actions={<button className="button secondary" type="button" disabled={!settings} onClick={() => openWizard()}>打开连接向导</button>}
+    />
+    <p className="settings-mode-line">
+      <span className="pill">真实连接</span>
+      {settings?.legacy_provider_migration_required && <span role="status" className="helper-line">旧 provider 设置已转为真实服务。请检查 DeepSeek 密钥、本地模型状态，并在审批中重建旧索引。</span>}
+    </p>
     {error && <p role="alert" className="form-error">{error}</p>}
     {notice && <p role="status" className="settings-notice">{notice}</p>}
-    {settingsReadAt && <p className="settings-help">本机设置最近读取于 {new Date(settingsReadAt).toLocaleString()}</p>}
     {!settings ? <div className="settings-cards" aria-label="设置读取状态">
       {(['工作库', 'AI 模型', '飞书'] as const).map((title) => <section className="settings-card" aria-label={title} key={title}>
         <CardHead title={title} badge={{ kind: 'unreadable', label: settingsReadFailed ? '暂时无法读取' : '正在读取', hint: '' }} />
@@ -328,10 +365,8 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
       <div className="settings-cards">
         <section className="settings-card" aria-label="工作库">
           <CardHead title="工作库" badge={{ kind: 'verified', label: '已连接', hint: '' }} />
-          <p className="settings-card-desc">知识正文保存在这个工作库；索引、聊天历史、凭据与诊断记录按本机 profile 管理。</p>
           <div className="settings-list">
             <div><span>当前工作库</span><strong>{workspaceName}</strong></div>
-            <div><span>运行方式</span><strong>本机 API + WebUI</strong></div>
           </div>
           <div className="button-row">
             <button className="button secondary" type="button" onClick={onSwitchWorkspace}>切换工作库</button>
@@ -340,68 +375,97 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
 
         <section className="settings-card" aria-label="AI 模型">
           <CardHead title="AI 模型" badge={modelBadge} />
-          <p className="settings-card-desc">按业务能力查看状态。模型名称、账户与密钥放在高级配置中；密钥只保存在本机钥匙串，页面不会回显。</p>
-          <div className="settings-capability-summary">
-            {(['llm', 'embedding', 'rerank'] as const).map((id) => {
+          <div className="cap-list">
+            {aiCapabilityIds.map((id) => {
               const capability = capabilities[id]
               const reason = reasonText(capability?.disabled_reason)
-              return <div className="settings-capability-item" key={id}>
+              return <div className="cap-row" key={id}>
                 <strong>{capabilityLabels[id]}</strong>
-                <span>{checkedCapabilityStatusLabel(capability, checkOutcomes[
-                  id === 'llm' ? 'deepseek_chat' : id === 'embedding' ? 'model_studio_embedding' : 'model_studio_rerank'
-                ])}</span>
-                {capability?.disabled_reason && <small>{reason.text} 下一步：{reason.next}</small>}
+                  <span className="cap-state">{id === 'llm' ? checkedCapabilityStatusLabel(capability, checkOutcomes.deepseek_chat) : capabilityStatusLabel(capability)}</span>
+                {capability?.disabled_reason && !sharedAiReason && <p className="cap-reason">{reason.text}</p>}
               </div>
             })}
           </div>
+          {sharedAiReason && <p className="card-footnote">{sharedAiReason}</p>}
+          <LocalModelSetup key={`${profileId}:${workspaceId}`} status={settings.local_model ?? unpreparedLocalModel} onStatus={(local_model) => {
+            const updated = { ...settings, local_model }
+            const nextStamp = localModelStamp(local_model)
+            if (persistedLocalModelStamp.current !== nextStamp) onRuntimeSettingsChanged?.()
+            persistedLocalModelStamp.current = nextStamp
+            setSettings(updated)
+          }} />
+          {(settings.embedding.provider === 'dashscope' || settings.rerank.provider === 'dashscope') && <div className="settings-read-warning" role="status"><p>旧云端检索设置已停用。原密钥会保留在本机，切换时不会删除。</p><button className="button secondary" type="button" disabled={busy} onClick={() => void switchToLocalRetrieval()}>切换到本地检索</button></div>}
+          <details className="card-more">
+            <summary>如何启用真实模型</summary>
+            <ul>
+              {aiCapabilityIds.map((id) => {
+                const capability = capabilities[id]
+                const reason = reasonText(capability?.disabled_reason)
+                return capability?.disabled_reason ? <li key={id}><strong>{capabilityLabels[id]}</strong>下一步：{reason.next}</li> : null
+              })}
+            </ul>
+          </details>
           <button className="button primary" type="button" onClick={openAdvanced}>配置 AI 模型与密钥</button>
         </section>
 
         <section className="settings-card" aria-label="飞书">
           <CardHead title="飞书" badge={feishuBadge} />
-          <p className="settings-card-desc">状态来自本机授权记录。材料、日历与任务仍只读，并按已确认范围访问。</p>
-          <p className="settings-card-next">{feishuBadge.hint}</p>
+          {feishuStatus.state === 'loaded' && feishuStatus.status.authorized && <p className="card-footnote">已授权读取；不表示身份已核实，也不能写回飞书任务。</p>}
           {feishuStatus.state === 'stale' && <div className="settings-read-warning" role="alert">
             <p>本次读取失败；以下保留最近一次成功读取的结果，可能已过时{feishuStatus.readAt ? `（成功读取于 ${new Date(feishuStatus.readAt).toLocaleString()}）` : ''}。</p>
             <button className="button secondary" type="button" onClick={() => void loadFeishuStatus()}>重试读取</button>
           </div>}
           {feishuStatus.state === 'unreadable' && <button className="button secondary" type="button" onClick={() => void loadFeishuStatus()}>重试读取</button>}
-          <div className="settings-capability-summary">
-            {(['feishu_material_read', 'feishu_calendar_read', 'feishu_task_read', 'feishu_task_write'] as const).map((id) => {
+          <div className="cap-list">
+            {(['feishu_material_read', 'feishu_calendar_read', 'feishu_task_read', 'feishu_task_write'] as const).map((id, index) => {
               const capability = capabilities[id]
               const reason = reasonText(capability?.disabled_reason)
-              return <div className="settings-capability-item" key={id}>
-                <strong>{capabilityLabels[id]}</strong>
-                <span>{capabilityStatusLabel(capability)}</span>
-                {capability?.disabled_reason && <small>{reason.text} 下一步：{reason.next}</small>}
-              </div>
+              return <Fragment key={id}>
+                <div className="cap-row">
+                  <strong>{capabilityLabels[id]}</strong>
+                  <span className="cap-state">{capabilityStatusLabel(capability)}</span>
+                  {capability?.disabled_reason && !(sharedFeishuReadReason && id !== 'feishu_task_write') && <p className="cap-reason">{reason.text}</p>}
+                </div>
+                {index === 2 && sharedFeishuReadReason && <p className="card-footnote">读取类能力：{sharedFeishuReadReason}</p>}
+              </Fragment>
             })}
           </div>
-          <p className="settings-card-next">飞书任务写回仍不可用；本页不提供任何修改飞书任务的入口。</p>
+          <details className="card-more">
+            <summary>各项能力为什么还不能用</summary>
+            <ul>
+              {(['feishu_material_read', 'feishu_calendar_read', 'feishu_task_read', 'feishu_task_write'] as const).map((id) => {
+                const capability = capabilities[id]
+                const reason = reasonText(capability?.disabled_reason)
+                return capability?.disabled_reason ? <li key={id}><strong>{capabilityLabels[id]}</strong>下一步：{reason.next}</li> : null
+              })}
+            </ul>
+          </details>
+          <p className="card-footnote">飞书任务写回仍不可用；本页不提供任何修改飞书任务的入口。</p>
           <FeishuAgentSetup className="button primary" />
         </section>
       </div>
 
+      <section className="settings-card settings-ask-card" aria-label="知识问答">
+        <div className="settings-section-heading"><h2>知识问答</h2><span>索引、角色与记忆只保存在本机</span></div>
+        <AskPreferences onOpenApproval={onOpenApproval} onError={onError} />
+      </section>
+
       <details className="settings-advanced-block" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
-        <summary>高级与自定义（模型配置、密钥、端点、账户标识、检查额度与诊断）</summary>
+        <summary>高级与自定义<ChevronDown className="advanced-chevron" size={15} strokeWidth={1.75} aria-hidden="true" /></summary>
 
         <section className="provider-settings" aria-labelledby="model-config-heading">
           <div className="settings-section-heading"><h2 id="model-config-heading">AI 模型与密钥</h2><span>仅保存在本机</span></div>
           {!settings.keychain_available && <p className="settings-help" role="status">当前运行环境无法访问 macOS 钥匙串。真实模式保存密钥会失败关闭，不会写入文件或内存。</p>}
           <form className="settings-card-form" onSubmit={saveModelCard}>
-            <label className="settings-field"><span>整理与问答模型</span><select value={settings.llm.provider} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, provider: event.target.value as LLMProvider, model: event.target.value === 'fake' ? null : 'deepseek-flash', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="deepseek">DeepSeek · deepseek-flash</option></select></label>
+            <div className="settings-field"><span>整理与问答模型</span><strong>DeepSeek · deepseek-flash</strong></div>
             <div className="secret-slot">
               <label htmlFor="secret-deepseek">DeepSeek API Key<span>用于整理与问答。已保存的密钥不会显示，留空表示不修改。</span></label>
               <input id="secret-deepseek" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.deepseek} onChange={(event) => setSecret('deepseek', event.target.value)} />
               <small>{credentials.deepseek ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
             </div>
-            <label className="settings-field"><span>知识索引向量化模型</span><select value={settings.embedding.provider} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-embedding', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-embedding</option></select></label>
-            <label className="settings-field"><span>检索结果排序模型</span><select value={settings.rerank.provider} onChange={(event) => setSettings({ ...settings, rerank: { ...settings.rerank, provider: event.target.value as ModelProvider, model: event.target.value === 'fake' ? null : 'qwen3.7-text-rerank', enabled: event.target.value !== 'fake' } })}><option value="fake">Fake · 离线</option><option value="dashscope">阿里云 Model Studio · qwen3.7-text-rerank</option></select></label>
-            <div className="secret-slot">
-              <label htmlFor="secret-dashscope">阿里云 Model Studio API Key<span>向量化与排序共用此密钥。已保存的密钥不会显示，留空表示不修改。</span></label>
-              <input id="secret-dashscope" type="password" autoComplete="new-password" maxLength={20_000} value={secrets.dashscope} onChange={(event) => setSecret('dashscope', event.target.value)} />
-              <small>{credentials.dashscope ? '本机钥匙串：已配置' : '本机钥匙串：未配置'}</small>
-            </div>
+            {(settings.local_model ?? unpreparedLocalModel).state === 'ready'
+              ? <p className="settings-help">向量化和结果排序均使用本地检索模型。</p>
+              : <p className="settings-help">向量化和结果排序均使用本地检索模型。首次准备需在设置卡中明确点击下载。</p>}
             <div className="button-row"><button className="button primary" disabled={busy}>保存 AI 模型设置</button></div>
           </form>
         </section>
@@ -430,48 +494,30 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
           <p className="settings-help">先用固定短合成 payload 检查接口连通与响应结构，不发送工作库材料。每项最多一次，失败、超时与未知结果同样计数且不会自动重发；点击后需确认本次范围才会发出请求。</p>
           <div className="button-row">
             <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'deepseek_chat', busy)} type="button" onClick={() => setPendingCheck('deepseek_chat')}>DeepSeek Chat（剩余 {smokeStatus?.remaining?.deepseek_chat ?? '…'}）</button>
-            <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'model_studio_embedding', busy)} type="button" onClick={() => setPendingCheck('model_studio_embedding')}>Embedding（剩余 {smokeStatus?.remaining?.model_studio_embedding ?? '…'}）</button>
-            <button className="button secondary" disabled={smokeCheckDisabled(settings, smokeStatus, 'model_studio_rerank', busy)} type="button" onClick={() => setPendingCheck('model_studio_rerank')}>Rerank（剩余 {smokeStatus?.remaining?.model_studio_rerank ?? '…'}）</button>
           </div>
           {pendingCheck && <SmokeCheckConfirm check={pendingCheck} smokeStatus={smokeStatus} busy={busy} onConfirm={() => void confirmSmoke()} onCancel={() => setPendingCheck(null)} />}
         </section>
 
         <form className="provider-settings" onSubmit={saveAdvancedSettings}>
-          <div className="settings-section-heading"><h2>运行模式与账户标识</h2><span>{settings.mode === 'fake' ? '离线模式' : '真实 provider 已选择'}</span></div>
-          <label className="settings-field"><span>运行模式</span><select value={settings.mode} onChange={(event) => setSettings({ ...settings, mode: event.target.value as Settings['mode'] })}><option value="fake">Fake · 离线</option><option value="real">Real · 显式启用</option></select></label>
+          <div className="settings-section-heading"><h2>运行模式与账户标识</h2><span>真实连接</span></div>
+          <div className="settings-field"><span>运行模式</span><strong>真实连接</strong></div>
           <label className="settings-field"><span>DeepSeek 账户标识</span><input value={settings.llm.account_id} maxLength={200} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, account_id: event.target.value } })} /></label>
-          <label className="settings-field"><span>Model Studio 账户标识</span><input value={settings.model_studio_account_id} maxLength={200} onChange={(event) => setSettings({ ...settings, model_studio_account_id: event.target.value })} /></label>
-          <div className="settings-field"><span>Model Studio 区域</span><strong>中国大陆（当前已核对 endpoint）</strong></div>
-          <label className="settings-field"><span>Embedding Base URL</span><input type="url" value={settings.embedding.base_url ?? ''} onChange={(event) => setSettings({ ...settings, embedding: { ...settings.embedding, base_url: event.target.value } })} /></label>
-          <label className="settings-field"><span>Rerank API Base URL</span><input type="url" value={settings.rerank.base_url ?? ''} onChange={(event) => setSettings({ ...settings, rerank: { ...settings.rerank, base_url: event.target.value } })} /></label>
           <label className="settings-field"><span>注册 callback URI</span><input value={settings.feishu.redirect_uri} placeholder="http://127.0.0.1:5173/api/v1/integrations/feishu/callback" onChange={(event) => setSettings({ ...settings, feishu: { ...settings.feishu, redirect_uri: event.target.value } })} /></label>
           <details className="settings-help"><summary>问答输出预算</summary><label className="settings-field"><span>回答长度上限（生成 token）</span><input type="number" min={256} max={16384} step={256} value={settings.llm.max_output_tokens ?? ''} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, max_output_tokens: Number(event.target.value) } })} /></label><label className="settings-field"><span>回答推理预算</span><select value={settings.llm.reasoning_effort} onChange={(event) => setSettings({ ...settings, llm: { ...settings.llm, reasoning_effort: event.target.value as Settings['llm']['reasoning_effort'] } })}><option value="low">低 · 默认</option><option value="high">高</option></select></label><p>整理固定关闭思考；此设置只影响问答。上限会进入真实操作预览与配置绑定。</p></details>
-          <p className="settings-help">飞书 callback 必须与开发者后台完全一致且使用本机 loopback。Model Studio 只接受其 HTTPS 域名。请勿在聊天中发送密钥。</p>
+          <p className="settings-help">飞书 callback 必须与开发者后台完全一致且使用本机 loopback。请勿在聊天中发送密钥。</p>
           <div className="button-row"><button className="button primary" disabled={busy}>保存 provider 设置</button></div>
         </form>
 
-        <section className="provider-settings" aria-labelledby="smoke-quota-heading">
-          <div className="settings-section-heading"><h2 id="smoke-quota-heading">受限合成连接检查的额度细节</h2><span>跨运行不重置</span></div>
-          {!smokeStatus ? <p className="settings-help">暂时无法读取本机调用记录；在恢复读取前不要假设额度仍可用。</p> : <table className="smoke-quota">
-            <thead><tr><th>检查</th><th>累计已用</th><th>上限</th><th>剩余</th></tr></thead>
-            <tbody>{(Object.keys(smokeChecks) as SmokeCheckKey[]).map((key) => <tr key={key}>
-              <td>{smokeChecks[key].operation}</td>
-              <td>{smokeStatus.counts?.[key] ?? '未知'}</td>
-              <td>{smokeStatus.limits?.[key] ?? '未知'}</td>
-              <td>{smokeStatus.remaining?.[key] ?? '未知'}</td>
-            </tr>)}</tbody>
-          </table>}
-          <p className="settings-help">DeepSeek 检查最多输出 64 tokens；按当前官方高峰价估算，三项合计低于 ¥0.01（实际账单待服务方核对）。CNY 5 是提示词建议上限，不是用户设定预算。</p>
-        </section>
+        <section className="provider-settings" aria-label="DeepSeek 合成连接检查"><p className="settings-help">DeepSeek 检查需单独确认，只发送固定短合成内容；不会发送工作库材料。</p></section>
 
         <section className="provider-settings" aria-labelledby="diagnostics-heading">
           <div className="settings-section-heading"><h2 id="diagnostics-heading">诊断信息</h2><span>只读</span></div>
           <div className="settings-diag">
             <span>当前工作库</span><strong>{workspaceName}</strong>
             <span>运行方式</span><strong>本机 API + WebUI</strong>
-            <span>运行模式</span><strong>{settings.mode === 'real' ? 'Real · 显式启用' : 'Fake · 离线'}</strong>
+            <span>运行模式</span><strong>真实连接</strong>
             <span>macOS 钥匙串</span><strong>{settings.keychain_available ? '可用' : '不可用（密钥保存失败关闭）'}</strong>
-            <span>Embedding 配置</span><strong>{settings.embedding_fingerprint ? '已配置' : '未配置'}</strong>
+            <span>本地检索模型</span><strong>{(settings.local_model ?? unpreparedLocalModel).state === 'ready' ? '已准备好' : (settings.local_model ?? unpreparedLocalModel).state === 'preparing' ? '正在准备' : '尚未准备'}</strong>
           </div>
         </section>
 
@@ -480,7 +526,6 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
           <p className="settings-help">删除后无法从本机恢复；对应能力需要重新录入密钥才能使用。</p>
           <div className="button-row">
             <button className="button danger-secondary" type="button" disabled={busy || !credentials.deepseek} onClick={() => setPendingRemoval('deepseek')}>删除 DeepSeek 密钥</button>
-            <button className="button danger-secondary" type="button" disabled={busy || !credentials.dashscope} onClick={() => setPendingRemoval('dashscope')}>删除 Model Studio 密钥</button>
             <button className="button danger-secondary" type="button" disabled={busy || !credentials.feishu_app} onClick={() => setPendingRemoval('feishu_app')}>删除飞书应用密钥</button>
           </div>
         </section>

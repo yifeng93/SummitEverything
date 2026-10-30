@@ -24,12 +24,16 @@ from summit_everything.domain.models import (
     PageSnapshot,
     WorkspaceManifest,
 )
-from summit_everything.integrations.embedding import FakeEmbedding
+from summit_everything.integrations.embedding import EmbeddingProviderError, FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
-from summit_everything.integrations.rerank import FakeReranker
+from summit_everything.integrations.rerank import FakeReranker, RerankProviderError
 from summit_everything.local.answer_context import AnswerContext
 from summit_everything.retrieval.chunking import TextChunk, chunk_markdown
 from summit_everything.retrieval.planner import (
+    _alias_has_entity_role,
+    _clean_aliases,
+    _entity_mentions,
+    _normalize,
     aliases_from_subject_text,
     matches_explicit_subject,
     plan_retrieval,
@@ -64,11 +68,57 @@ class AnswerProvider(Protocol):
     ) -> GroundedAnswer: ...
 
 
-def _scope_segments(text: str, subjects: tuple[str, ...], dimensions: tuple[str, ...]) -> list[str]:
-    """Split evidence where a new explicit object begins a different topic."""
-    initial = [
-        segment.strip() for segment in re.split(r"(?<=[。！？；;，,\n])", text) if segment.strip()
+_SCOPE_BLOCK_BOUNDARY = re.compile(
+    r"\n[ \t]*\n+|(?=^[ \t]{0,3}(?:#{1,6}[ \t]+|(?:[-*+]|\d+[.)])[ \t]+|\|))",
+    re.MULTILINE,
+)
+
+
+def _scope_segments(
+    text: str,
+    subjects: tuple[str, ...],
+    dimensions: tuple[str, ...],
+    normalized_subject_aliases: tuple[str, ...] = (),
+) -> list[str]:
+    """Keep sentence scope local, allowing one unambiguous subject per paragraph."""
+    blocks = _SCOPE_BLOCK_BOUNDARY.split(text)
+    paragraphs = [paragraph.strip() for paragraph in blocks if paragraph.strip()]
+    paragraph_segments = [
+        [
+            segment.strip()
+            for segment in re.split(r"(?<=[。！？；;，,\n])", paragraph)
+            if segment.strip()
+        ]
+        for paragraph in paragraphs
     ]
+    initial = [segment for segments in paragraph_segments for segment in segments]
+    if len(subjects) == 1 and dimensions:
+        subject = _normalize(subjects[0])
+        subject_is_registered_alias = subject in normalized_subject_aliases
+        carried: list[str] = []
+        for paragraph, segments in zip(paragraphs, paragraph_segments, strict=True):
+            normalized_paragraph = _normalize(paragraph)
+            has_subject = bool(subject and subject in normalized_paragraph)
+            has_competing_object = False
+            for normalized_alias in normalized_subject_aliases:
+                if (
+                    normalized_alias
+                    and normalized_alias in normalized_paragraph
+                    and normalized_alias != subject
+                    and (subject not in normalized_alias or not subject_is_registered_alias)
+                ):
+                    has_competing_object = True
+                    break
+            if has_subject and not has_competing_object:
+                # A later sentence may state the requested fact without repeating
+                # the paragraph's single explicit subject. Treat that paragraph as
+                # one scope region so subject and topic still have to co-occur in
+                # the same approved chunk and the requested dimension is still
+                # checked against its visible text.
+                carried.append(paragraph)
+            else:
+                carried.extend(segments)
+        initial = carried
     if len(subjects) < 2 or not dimensions:
         return initial
 
@@ -99,6 +149,30 @@ def _scope_segments(text: str, subjects: tuple[str, ...], dimensions: tuple[str,
     return result
 
 
+def _mentioned_query_subjects(
+    segment: str,
+    subjects: tuple[str, ...],
+    normalized_aliases: tuple[str, ...],
+) -> tuple[str, ...]:
+    normalized_segment = _normalize(segment)
+    if len(subjects) != 1:
+        return tuple(subject for subject in subjects if _normalize(subject) in normalized_segment)
+    normalized_subject = _normalize(subjects[0])
+    if not normalized_subject:
+        return ()
+    if normalized_subject in normalized_aliases:
+        return (subjects[0],) if normalized_subject in normalized_segment else ()
+    # Do not treat a short requested subject as a mention when it appears only
+    # inside another registered object alias (for example, “活动” inside
+    # “赤陶活动”). An unregistered name is outside this alias-based guarantee.
+    if any(
+        alias != normalized_subject and normalized_subject in alias and alias in normalized_segment
+        for alias in normalized_aliases
+    ):
+        return ()
+    return (subjects[0],) if normalized_subject in normalized_segment else ()
+
+
 class QueryService:
     def __init__(
         self,
@@ -107,13 +181,26 @@ class QueryService:
         reranker: RerankerProvider | None = None,
         answer_provider: AnswerProvider | None = None,
         provider_guard: Callable[[], None] | None = None,
+        local_costs: bool = False,
+        require_explicit_providers: bool = False,
     ) -> None:
         self.store = store
-        self.embedding = embedding or FakeEmbedding()
-        self.reranker = reranker or FakeReranker()
+        self.embedding = embedding if require_explicit_providers else embedding or FakeEmbedding()
+        self.reranker = reranker if require_explicit_providers else reranker or FakeReranker()
         self.answer_provider = answer_provider
         self.provider_guard = provider_guard
+        self.local_costs = local_costs
         self._closed = False
+
+    def _require_embedding_provider(self) -> EmbeddingProvider:
+        if self.embedding is None:
+            raise EmbeddingProviderError("provider_not_configured")
+        return self.embedding
+
+    def _require_reranker_provider(self) -> RerankerProvider:
+        if self.reranker is None:
+            raise RerankProviderError("provider_not_configured")
+        return self.reranker
 
     def close(self) -> None:
         """Release operation-scoped provider clients exactly once.
@@ -136,11 +223,13 @@ class QueryService:
 
     def _status_locked(self, root: Path, workspace_id: UUID) -> dict[str, int | str | None]:
         generation = self.store.active_generation(workspace_id)
-        generation_rows = self.store.generation_chunks(generation) if generation is not None else []
+        generation_rows = (
+            self.store.generation_page_versions(generation) if generation is not None else []
+        )
         status: dict[str, int | str | None] = (
             {
                 "fingerprint": generation.fingerprint,
-                "pages": len({str(row["page_id"]) for row in generation_rows}),
+                "pages": len({page_id for page_id, _ in generation_rows}),
                 "chunks": len(generation_rows),
             }
             if generation is not None
@@ -167,7 +256,7 @@ class QueryService:
             str(page.page_id): page.content_sha256
             for page in self._eligible_pages(list_pages(root), purpose=RetrievalPurpose.HISTORY)
         }
-        indexed = {str(chunk["page_id"]): str(chunk["content_sha256"]) for chunk in generation_rows}
+        indexed = {page_id: content_hash for page_id, content_hash in generation_rows}
         stale = sum(
             current.get(page_id) != indexed.get(page_id)
             for page_id in current.keys() | indexed.keys()
@@ -201,7 +290,13 @@ class QueryService:
             page_ids=[page.page_id for page in eligible],
             page_versions={str(page.page_id): page.content_sha256 for page in eligible},
             estimated_tokens=sum(max(1, len(page.body) // 4) for page in eligible),
-            estimated_cost=0 if fingerprint == "summit-fake-embedding-v1" else None,
+            estimated_cost=(
+                0
+                if fingerprint == "summit-fake-embedding-v1"
+                or self.local_costs
+                or bool(getattr(self.embedding, "is_local", False))
+                else None
+            ),
         )
 
     def execute_plan(self, root: Path, plan: IndexPlan) -> IndexResult:
@@ -249,19 +344,23 @@ class QueryService:
         )
         prepared: list[tuple[TextChunk, list[float] | None]] = []
         for page in current_pages.values():
-            for chunk in chunk_markdown(page.page_id, page.content_sha256, page.body):
+            chunks = chunk_markdown(page.page_id, page.content_sha256, page.body)
+            embedding = self._require_embedding_provider()
+            split_for_index = getattr(embedding, "split_for_index", None)
+            if callable(split_for_index):
+                chunks = split_for_index(chunks)
+            for chunk in chunks:
                 prepared.append((chunk, existing.get(chunk.chunk_id)))
         missing = [chunk for chunk, vector in prepared if vector is None]
         newly_embedded: list[list[float]] = []
-        batch_size = getattr(self.embedding, "max_batch_size", 20)
+        embedding = self._require_embedding_provider()
+        batch_size = getattr(embedding, "max_batch_size", 20)
         for offset in range(0, len(missing), batch_size):
             batch = missing[offset : offset + batch_size]
             if self.provider_guard is not None:
                 self.provider_guard()
             newly_embedded.extend(
-                self.embedding.embed_many(
-                    [chunk.text for chunk in batch], fingerprint=plan.fingerprint
-                )
+                embedding.embed_many([chunk.text for chunk in batch], fingerprint=plan.fingerprint)
             )
         if len(newly_embedded) != len(missing):
             raise ValueError("Embedding provider returned an incomplete batch")
@@ -278,7 +377,7 @@ class QueryService:
                 expected_generation.vector_dimension
                 if expected_generation is not None
                 and expected_generation.fingerprint == plan.fingerprint
-                else int(getattr(self.embedding, "dimensions", 0))
+                else int(getattr(embedding, "dimensions", 0))
             )
         )
         self.store.replace_generation(
@@ -394,7 +493,30 @@ class QueryService:
             )
         if self.provider_guard is not None:
             self.provider_guard()
-        query_vector = self.embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
+        known_entity_subjects = _clean_aliases(object_aliases)
+        normalized_entity_subjects = {_normalize(subject) for subject in known_entity_subjects}
+        eligible_title_pages = self._eligible_pages(
+            workspace_pages, purpose=RetrievalPurpose.HISTORY
+        )
+        page_title_subjects = {
+            _normalize(str(page.metadata["title"]))
+            for page in eligible_title_pages
+            if isinstance(page.metadata.get("title"), str)
+        }
+        document_scope_subjects = tuple(
+            subject
+            for subject in retrieval_plan.explicit_subjects
+            if _normalize(subject) in page_title_subjects
+            and _normalize(subject) not in normalized_entity_subjects
+            and not _alias_has_entity_role(subject)
+        )
+        entity_scope_subjects = tuple(
+            subject
+            for subject in retrieval_plan.explicit_subjects
+            if subject not in document_scope_subjects
+        )
+        embedding = self._require_embedding_provider()
+        query_vector = embedding.embed(retrieval_plan.search_question, fingerprint=fingerprint)
         self._check_cancelled(cancelled)
         dense, lexical_candidates = self.store.search(
             generation,
@@ -420,7 +542,7 @@ class QueryService:
         workspace_pages = list_pages(root)
         pages_by_id = {page.page_id: page for page in workspace_pages}
         qualified, qualification_rejections = self._qualified_chunks(
-            root, retrieved, purpose=purpose, pages_by_id=pages_by_id
+            root, retrieved, purpose=purpose, pages=pages_by_id
         )
         subject_pages: dict[UUID, PageSnapshot | None] = {}
         scope_pairs_by_chunk: dict[str, set[tuple[str, str]]] = {}
@@ -436,19 +558,56 @@ class QueryService:
             for alias in subject_aliases
             if alias.casefold() not in {topic.casefold() for topic in requested_exact_topics}
         )
+        # Normalize once; the per-chunk scope check must not re-run a regex for
+        # every alias (thousands of aliases on a real corpus).
+        normalized_aliases = tuple(
+            _normalize(alias) for alias in _clean_aliases(all_subject_aliases)
+        )
+        normalized_entity_scope_subjects = {
+            _normalize(subject) for subject in entity_scope_subjects
+        }
 
         def in_scope(item: dict[str, Any]) -> bool:
             page_id = item["page_id"]
             if page_id not in subject_pages:
-                subject_pages[page_id] = pages_by_id.get(page_id)
+                page, eligibility = self._eligibility_from_page(
+                    pages_by_id,
+                    page_id,
+                    purpose=purpose,
+                    expected_content_sha256=str(item["content_sha256"]),
+                )
+                subject_pages[page_id] = page
+                if page is None:
+                    qualification_rejections[page_id] = eligibility.reason
             page = subject_pages[page_id]
             if page is None:
                 return False
             subject_names = self._page_subject_names(page, manifest)
-            text = str(item["text"])
-            segments = _scope_segments(
-                text, retrieval_plan.explicit_subjects, retrieval_plan.dimensions
+            page_title = page.metadata.get("title")
+            normalized_page_title = _normalize(page_title) if isinstance(page_title, str) else ""
+            page_document_subjects = tuple(
+                subject
+                for subject in document_scope_subjects
+                if _normalize(subject) == normalized_page_title
             )
+            if document_scope_subjects and not page_document_subjects and not entity_scope_subjects:
+                return False
+            text = str(item["text"])
+            if page_document_subjects and not entity_scope_subjects:
+                # A named page is one document scope. Keep each paragraph whole
+                # so a topic explanation is not clipped at connective commas.
+                segments = [
+                    paragraph.strip()
+                    for paragraph in _SCOPE_BLOCK_BOUNDARY.split(text)
+                    if paragraph.strip()
+                ]
+            else:
+                segments = _scope_segments(
+                    text,
+                    retrieval_plan.explicit_subjects,
+                    retrieval_plan.dimensions,
+                    normalized_aliases,
+                )
             if not retrieval_plan.explicit_subjects and not retrieval_plan.dimensions:
                 # Unscoped exploratory questions retain the existing ranked path.
                 scope_pairs_by_chunk[str(item["chunk_id"])] = set()
@@ -463,34 +622,45 @@ class QueryService:
                 matching_dimensions = supported_dimensions(segment, retrieval_plan.dimensions)
                 if retrieval_plan.dimensions and not matching_dimensions:
                     continue
-                mentioned_query_subjects = tuple(
-                    subject
-                    for subject in retrieval_plan.explicit_subjects
-                    if matches_explicit_subject(segment, (subject,))
+                normalized_segment = _normalize(segment)
+                mentioned_query_subjects = _mentioned_query_subjects(
+                    segment, entity_scope_subjects, normalized_aliases
                 )
-                mentions_any_subject = any(
-                    matches_explicit_subject(segment, (alias,)) for alias in all_subject_aliases
+                mentions_any_entity = any(
+                    alias in normalized_segment for alias in normalized_aliases
+                ) or any(
+                    _normalize(entity) not in normalized_entity_scope_subjects
+                    for entity in _entity_mentions(segment, entity_scope_subjects)
                 )
-                if retrieval_plan.explicit_subjects:
+                if entity_scope_subjects:
                     if mentioned_query_subjects:
-                        segment_subjects = mentioned_query_subjects
-                    elif mentions_any_subject:
-                        # A sentence naming a different object cannot inherit the
-                        # page owner's project association.
-                        continue
+                        segment_entity_subjects = mentioned_query_subjects
+                    elif mentions_any_entity:
+                        # A sentence naming another entity cannot inherit the
+                        # page owner's project association. A page-title scope is
+                        # still valid because the document itself is the subject.
+                        segment_entity_subjects = ()
                     else:
-                        segment_subjects = tuple(
+                        segment_entity_subjects = tuple(
                             subject
-                            for subject in retrieval_plan.explicit_subjects
+                            for subject in entity_scope_subjects
                             if matches_explicit_subject(subject_names, (subject,))
                         )
-                    if not segment_subjects:
+                    if not segment_entity_subjects and not page_document_subjects:
                         continue
+                    segment_subjects = (*page_document_subjects, *segment_entity_subjects)
                     segment_dimensions = matching_dimensions or ("",)
                     segment_pairs = {
                         (subject, dimension)
                         for subject in segment_subjects
                         for dimension in segment_dimensions
+                    }
+                    segment_pairs &= set(retrieval_plan.required_pairs)
+                elif page_document_subjects:
+                    segment_pairs = {
+                        (subject, dimension)
+                        for subject in page_document_subjects
+                        for dimension in (matching_dimensions or ("",))
                     }
                     segment_pairs &= set(retrieval_plan.required_pairs)
                 else:
@@ -584,7 +754,8 @@ class QueryService:
         self._check_cancelled(cancelled)
         if self.provider_guard is not None:
             self.provider_guard()
-        reranked = self.reranker.rank(
+        reranker = self._require_reranker_provider()
+        reranked = reranker.rank(
             retrieval_plan.search_question, [str(item["text"]) for item in candidates]
         )
         self._check_cancelled(cancelled)
@@ -628,8 +799,8 @@ class QueryService:
         citation_rejections: dict[UUID, str] = {}
         truncated_by_limit = False
         for item in ranked:
-            page, eligibility = self._read_page_eligibility(
-                root,
+            page, eligibility = self._eligibility_from_page(
+                pages_by_id,
                 item["page_id"],
                 purpose=purpose,
                 expected_content_sha256=str(item["content_sha256"]),
@@ -735,13 +906,11 @@ class QueryService:
         for item in scope_candidates:
             page_id = item["page_id"]
             if page_id not in eligible_page_cache:
-                current_page, _ = self._read_page_eligibility(
-                    root,
+                current_page, _ = self._eligibility_from_page(
+                    pages_by_id,
                     page_id,
                     purpose=purpose,
                     expected_content_sha256=str(item["content_sha256"]),
-                    page_snapshot=pages_by_id.get(page_id),
-                    snapshot_only=True,
                 )
                 eligible_page_cache[page_id] = current_page
             current_page = eligible_page_cache[page_id]
@@ -881,8 +1050,8 @@ class QueryService:
         for project in manifest.projects:
             aliases.append(project.name)
             object_names.append(project.name)
-        source_pages = pages if pages is not None else list_pages(root)
-        for page in self._eligible_pages(source_pages, purpose=RetrievalPurpose.HISTORY):
+        eligible_source = pages if pages is not None else list_pages(root)
+        for page in self._eligible_pages(eligible_source, purpose=RetrievalPurpose.HISTORY):
             title = page.metadata.get("title")
             if isinstance(title, str):
                 aliases.append(title)
@@ -930,8 +1099,12 @@ class QueryService:
         chunks: list[dict[str, Any]],
         *,
         purpose: RetrievalPurpose,
-        pages_by_id: dict[UUID, PageSnapshot],
+        pages: dict[UUID, PageSnapshot] | None = None,
     ) -> tuple[list[dict[str, Any]], dict[UUID, str]]:
+        # One page map per query. Calling read_page() for each candidate page
+        # re-reads the whole workspace, which turns a large corpus into O(n^2)
+        # file reads; with 150+ pages that stalls the query.
+        page_map = pages if pages is not None else {page.page_id: page for page in list_pages(root)}
         page_eligibility: dict[UUID, bool] = {}
         rejections: dict[UUID, str] = {}
         qualified: list[dict[str, Any]] = []
@@ -940,16 +1113,20 @@ class QueryService:
             if not isinstance(page_id, UUID):
                 continue
             if page_id not in page_eligibility:
-                page, eligibility = self._read_page_eligibility(
-                    root,
-                    page_id,
+                page = page_map.get(page_id)
+                if page is None:
+                    page_eligibility[page_id] = False
+                    rejections[page_id] = "unavailable"
+                    continue
+                eligibility = retrieval_eligibility(
+                    page.metadata,
+                    page.body,
+                    area=StorageArea(page.storage_area),
                     purpose=purpose,
                     expected_content_sha256=str(chunk["content_sha256"]),
-                    page_snapshot=pages_by_id.get(page_id),
-                    snapshot_only=True,
                 )
-                page_eligibility[page_id] = page is not None
-                if page is None:
+                page_eligibility[page_id] = eligibility.eligible
+                if not eligibility.eligible:
                     rejections[page_id] = eligibility.reason
             if page_eligibility[page_id]:
                 qualified.append(chunk)
@@ -1037,6 +1214,26 @@ class QueryService:
         )
         return (page if eligibility.eligible else None), eligibility
 
+    @staticmethod
+    def _eligibility_from_page(
+        pages: dict[UUID, PageSnapshot],
+        page_id: UUID,
+        *,
+        purpose: RetrievalPurpose,
+        expected_content_sha256: str | None = None,
+    ) -> tuple[PageSnapshot | None, Eligibility]:
+        page = pages.get(page_id)
+        if page is None:
+            return None, Eligibility(False, "unavailable")
+        eligibility = retrieval_eligibility(
+            page.metadata,
+            page.body,
+            area=StorageArea(page.storage_area),
+            purpose=purpose,
+            expected_content_sha256=expected_content_sha256,
+        )
+        return (page if eligibility.eligible else None), eligibility
+
     def _citation_change_reason(
         self,
         root: Path,
@@ -1044,6 +1241,9 @@ class QueryService:
         *,
         purpose: RetrievalPurpose,
     ) -> str | None:
+        # This check runs after the answer provider returns: it must observe
+        # the files *now*, not the page map loaded before retrieval. A page can
+        # be deleted or edited while the provider is answering.
         for citation in citations:
             page, eligibility = self._read_page_eligibility(
                 root,
@@ -1093,6 +1293,7 @@ class QueryService:
             "schedule": "排期或启动时间",
             "storage": "存储或保管规则",
             "owner": "负责人信息",
+            "capacity": "人数或接待上限",
         }
         base, *qualifiers = dimension.split("&")
         # A bare exact topic carries no family label; show its business text
@@ -1104,6 +1305,11 @@ class QueryService:
             for item in qualifiers
             if item.startswith("term:") and item.removeprefix("term:") != subject
         ]
+        # A bounded qualifier before the capacity family is one phrase in normal
+        # Chinese (e.g. 清场志愿者人数). Keep it intact so a missing-information
+        # notice names the exact requested fact rather than an internal family.
+        if base == "capacity" and qualifier_labels:
+            return "、".join(f"{item}人数" for item in qualifier_labels)
         return f"{base_label}（{'、'.join(qualifier_labels)}）" if qualifier_labels else base_label
 
     def _scope_missing_pairs(self, pairs: set[tuple[str, str]]) -> list[str]:

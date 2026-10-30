@@ -60,8 +60,9 @@ afterEach(() => {
 })
 
 async function openRealPreview() {
-  await screen.findByRole('button', { name: /整理所选/ })
-  fireEvent.click(screen.getByRole('button', { name: /整理所选/ }))
+  // This fixture has one source, so the current product wording is simply “整理”.
+  await screen.findByRole('button', { name: '整理' })
+  fireEvent.click(screen.getByRole('button', { name: '整理' }))
   return screen.findByRole('dialog', { name: '确认整理所选来源？' })
 }
 
@@ -109,8 +110,8 @@ describe('SourceOrganizer preview', () => {
       max_output_tokens: 512,
       outgoing_inputs: [{ item_id: item.item_id, source_id: item.source_id, text: originalText }],
     }) })
-    await screen.findByRole('button', { name: /整理所选/ })
-    fireEvent.click(screen.getByRole('button', { name: /整理所选/ }))
+    await screen.findByRole('button', { name: '整理' })
+    fireEvent.click(screen.getByRole('button', { name: '整理' }))
 
     await waitFor(() => expect(onError).toHaveBeenCalled())
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -118,14 +119,16 @@ describe('SourceOrganizer preview', () => {
     expect(requests.some((request) => request.path.endsWith('/confirm'))).toBe(false)
   })
 
-  it('shows the captured source target in the normal Fake confirmation', async () => {
-    setup({ mode: 'fake' })
-    await screen.findByRole('button', { name: /整理所选/ })
-    fireEvent.click(screen.getByRole('button', { name: /整理所选/ }))
+  it('shows the captured source target in the real acceptance preview before submission', async () => {
+    const { requests } = setup()
+    await screen.findByRole('button', { name: '整理' })
+    fireEvent.click(screen.getByRole('button', { name: '整理' }))
     const dialog = await screen.findByRole('dialog', { name: '确认整理所选来源？' })
     expect(within(dialog).getByText((_, element) => element?.tagName === 'DD' && element.textContent === '合成主线甲 / 合成项目甲')).toBeTruthy()
     expect(within(dialog).getByText((_, element) => element?.tagName === 'LI' && element.textContent === '待整理原件甲 · 文件')).toBeTruthy()
     expect(dialog.textContent).toContain('文件')
+    expect(requests.some((request) => request.path === '/acceptance-plans' && request.method === 'POST')).toBe(true)
+    expect(requests.some((request) => request.path === '/intake/jobs')).toBe(false)
   })
 })
 

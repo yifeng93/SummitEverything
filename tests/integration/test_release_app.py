@@ -3,10 +3,10 @@ import hashlib
 import json
 from uuid import uuid4
 
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 from starlette.requests import Request
 
-from summit_everything.api.app import create_app
 from summit_everything.integrations.llm import LLMProviderError
 from summit_everything.workspace.manifest import WorkspaceError
 from summit_everything.workspace.writer import WorkspaceWriteConflict

@@ -302,6 +302,10 @@ class CalendarEvent(BaseModel):
     title: str
     start: datetime
     end: datetime
+    location: str = ""
+    meeting_url: str | None = None
+    status: str = "confirmed"
+    all_day: bool = False
 
 
 class CalendarPage(BaseModel):

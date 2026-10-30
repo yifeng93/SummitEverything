@@ -1,0 +1,124 @@
+/* 今日：左侧一张「今天的安排」卡（会议 / 待办），右侧一张「记录与导入」卡。 */
+
+.today-view.content-wrap { padding-top: 32px; }
+.today-view .page-heading { margin-bottom: 20px; }
+.today-columns { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); align-items: start; gap: 20px; }
+.today-schedule { min-width: 0; display: grid; }
+.today-columns > .capture-panel { min-width: 0; }
+
+/* 同一张卡里的两个区块，用一条分隔线而不是两张卡。 */
+.schedule-block { min-width: 0; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--line); }
+.schedule-block:first-of-type { padding-top: 0; margin-top: 0; border-top: 0; }
+.schedule-block .section-head { margin-bottom: 6px; }
+.schedule-block .empty-row { padding-top: 6px; }
+
+.capture-panel .section-head { margin-bottom: 10px; }
+.capture-panel textarea { width: 100%; min-height: 84px; border: 1px solid var(--line-strong); border-radius: var(--radius); resize: vertical; padding: 12px 12px; background: var(--surface-2); color: var(--ink); font-size: var(--text-body); line-height: 1.65; }
+.capture-panel textarea:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 1px; background: var(--surface); }
+.capture-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 10px; }
+.capture-actions .button { flex: 0 0 auto; white-space: nowrap; }
+.save-receipt { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 8px 10px; border-left: 3px solid var(--green); background: var(--green-wash); color: var(--ink); font-size: var(--text-small); line-height: 1.5; }
+.save-receipt .text-button { flex: 0 0 auto; color: var(--green); }
+
+.recent-materials { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.recent-materials .section-head { margin-bottom: 2px; }
+.recent-materials .section-actions { gap: 8px; }
+.recent-materials .source-list { max-height: 300px; overflow: auto; }
+.recent-materials .source-row { padding-block: 8px; }
+.recent-materials .file-glyph { width: 24px; height: 24px; flex-basis: 24px; font-size: var(--text-caption); }
+
+/* 会议 / 任务列表：时间在前，标题在后，行高紧凑。 */
+.schedule-list { list-style: none; margin: 0; padding: 0; }
+.schedule-item { display: flex; align-items: baseline; gap: 12px; padding: 8px 2px; }
+.schedule-item + .schedule-item { border-top: 1px solid var(--line); }
+.schedule-time { flex: 0 0 88px; color: var(--muted); font-size: var(--text-caption); font-variant-numeric: tabular-nums; }
+.schedule-copy { min-width: 0; flex: 1; }
+.schedule-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: var(--text-list); font-weight: 550; }
+.schedule-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: var(--text-caption); }
+.schedule-more { margin-top: 6px; }
+
+/* 飞书 / 任务组件内嵌在区块里时不再自己画卡片。 */
+.today-section { min-width: 0; }
+.feishu-panel, .tasks-panel { min-width: 0; }
+.feishu-panel .organize-row, .tasks-panel .button-row { margin-top: 8px; }
+.calendar-range { margin-top: 4px; color: var(--muted); font-size: var(--text-caption); }
+.calendar-range > summary { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 10px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--muted); font-weight: 500; list-style: none; }
+.calendar-range > summary::-webkit-details-marker { display: none; }
+.calendar-range > summary .range-chevron { transition: transform .12s; }
+.calendar-range[open] > summary .range-chevron { transform: rotate(90deg); }
+.calendar-range > summary:hover { border-color: var(--line-strong); color: var(--ink); }
+.calendar-range .organize-row { align-items: flex-end; margin-top: 8px; }
+/* 会议条目：左侧色条 + 单行时间 + 标题，右侧图标入口；一行 52px，不再留半屏空白。 */
+.calendar-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.calendar-item { display: grid; grid-template-columns: 3px 88px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: 8px 2px; border-top: 1px solid var(--line); }
+.calendar-item:first-child { border-top: 0; }
+.calendar-bar { align-self: stretch; width: 3px; min-height: 26px; border-radius: var(--radius-pill); background: var(--accent); opacity: .8; }
+.calendar-slot { color: var(--muted); font-size: var(--text-caption); font-variant-numeric: tabular-nums; }
+.calendar-body { min-width: 0; display: grid; gap: 0; }
+.calendar-body strong { color: var(--ink); font-size: var(--text-list); font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendar-place { color: var(--muted); font-size: var(--text-caption); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendar-tail { display: flex; align-items: center; gap: var(--space-2); color: var(--muted); font-size: var(--text-caption); }
+.calendar-join { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--muted); }
+.calendar-join:hover { border-color: var(--accent); color: var(--accent); }
+.calendar-item.is-cancelled .calendar-bar { background: var(--line-strong); }
+.calendar-item.is-cancelled .calendar-body strong { color: var(--quiet); text-decoration: line-through; }
+/* 时间范围收进标题行：一个图标按钮，点开是浮层，不再占一整行。 */
+.calendar-range.is-compact { position: relative; }
+.calendar-range-trigger { list-style: none; cursor: pointer; }
+.calendar-range-trigger::-webkit-details-marker { display: none; }
+.calendar-range-panel { position: absolute; right: 0; top: 36px; z-index: 30; width: 288px; display: grid; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-2); }
+.calendar-range-panel .organize-row { display: grid; gap: var(--space-2); margin-top: 0; }
+.calendar-heading { display: none; }
+.tasks-panel .task-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 2px; flex-wrap: wrap; }
+.tasks-panel .task-row strong { font-size: var(--text-list); font-weight: 550; }
+.tasks-panel .task-row small { display: block; margin-top: 2px; color: var(--muted); font-size: var(--text-caption); }
+.tasks-panel .action-candidates, .tasks-panel .action-detail, .tasks-panel .action-form { margin-top: 14px; }
+
+/* 需要行动：只在真有建议时出现。 */
+.candidate-list li { display: flex; gap: 8px; padding-top: 10px; }
+.candidate-list li + li { border-top: 1px solid var(--line); margin-top: 10px; }
+.candidate-dot { width: 20px; height: 20px; flex: 0 0 20px; display: grid; place-items: center; border-radius: 50%; background: var(--accent-wash); color: var(--accent); font-size: var(--text-caption); }
+.candidate-list strong, .candidate-list small { display: block; }
+.candidate-list strong { color: var(--ink); font-size: var(--text-small); font-weight: 500; line-height: 1.5; }
+.candidate-list small { color: var(--muted); font-size: var(--text-caption); margin-top: 2px; }
+
+/* 导入抽屉 / 工作日志弹层 */
+/* 导入：一个窄弹层，两个来源用分段按钮切换，拖拽区承载说明。 */
+.import-drawer { width: min(640px, calc(100vw - 32px)); max-height: min(90vh, 900px); overflow: auto; padding: var(--space-6); }
+.journal-dialog { width: min(960px, calc(100vw - 32px)); max-height: min(90vh, 900px); overflow: auto; padding: var(--space-5); }
+.import-drawer > .feishu-panel { margin-top: var(--space-4); }
+.modal-close { flex: 0 0 auto; margin-top: -2px; border-color: transparent; background: transparent; }
+.modal-close:hover:not(:disabled) { border-color: transparent; background: var(--surface-2); }
+.import-tabs { display: inline-flex; gap: 2px; margin: var(--space-3) 0 var(--space-4); padding: 2px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.import-tabs [role="tab"] { min-height: var(--control-xs); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--muted); font: inherit; font-size: var(--text-small); cursor: pointer; }
+.import-tabs [role="tab"].active { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-1); }
+.import-picker { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.drop-zone { display: grid; place-items: center; gap: var(--space-0); margin-top: var(--space-3); padding: var(--space-6) var(--space-4); border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface-2); text-align: center; color: var(--muted); font-size: var(--text-small); }
+.drop-zone strong { color: var(--ink); font-size: var(--text-list); font-weight: 600; }
+.drop-zone span { color: var(--quiet); font-size: var(--text-caption); }
+.journal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+/* 工作日志：作为弹层内容时不再重复页头与大内边距。 */
+.journal-dialog .journal-view.content-wrap { padding: 0; max-width: none; }
+.journal-dialog .journal-view > .page-heading { display: none; }
+.journal-editor { display: grid; gap: 14px; }
+.journal-kind { display: inline-flex; padding: 2px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); justify-self: start; }
+.journal-kind button { min-height: var(--control-xs); padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--muted); font-size: var(--text-small); font-weight: 600; }
+.journal-kind button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.journal-editor form { display: grid; gap: 12px; }
+.journal-association { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.journal-suggestion { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.journal-suggestion h2 { font-size: var(--text-list); }
+.journal-suggestion pre { max-height: 220px; overflow: auto; margin: 0; padding: 10px; border-radius: var(--radius-sm); background: var(--surface); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--mono); font-size: var(--text-caption); line-height: 1.6; }
+.journal-history { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 14px; }
+.journal-history h2 { font-size: var(--text-list); margin-bottom: 4px; }
+
+@media (max-width: 1100px) {
+  .today-columns { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .capture-actions { align-items: stretch; flex-direction: column; }
+  .capture-actions .button { width: 100%; }
+  .import-drawer, .journal-dialog { width: calc(100vw - 16px); max-height: 94vh; padding: 14px; }
+  .schedule-item { align-items: flex-start; flex-direction: column; gap: 2px; }
+}

@@ -4,9 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.integrations.llm import FakeLLM
 
@@ -172,6 +172,10 @@ def test_overview_uses_stable_id_and_requires_current_content_version(journal_ap
     page = api.get(f"/api/v1/pages/{ids['overview']}").json()
     assert page["metadata"]["kind"] == "project_overview"
     assert page["approval_state"] == "confirmed"
+    directory_entry = api.get("/api/v1/pages/directory").json()[0]
+    assert directory_entry["page_id"] == ids["overview"]
+    assert directory_entry["body"] == request["body"]
+    assert "raw_sha256" not in directory_entry
     assert api.get("/api/v1/projects").json()[0]["progress"] == before["progress"]
 
     updated = api.post(
@@ -197,6 +201,7 @@ def test_overview_uses_stable_id_and_requires_current_content_version(journal_ap
     )
     assert stale.status_code == 409
     assert api.get(f"/api/v1/pages/{ids['overview']}").json()["body"] == "更新的目标。"
+    assert api.get("/api/v1/pages/directory").json()[0]["body"] == "更新的目标。"
     assert api.get("/api/v1/projects").json()[0]["progress"] == before["progress"]
 
 

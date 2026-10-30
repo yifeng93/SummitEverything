@@ -14,6 +14,8 @@ import pytest
 from pydantic import SecretStr
 
 from summit_everything.integrations.feishu.http import (
+    CALENDAR_EVENTS_PATH,
+    CALENDAR_PRIMARY_PATH,
     MINUTES_ARTIFACTS_PATH,
     MINUTES_SEARCH_PATH,
     MINUTES_TRANSCRIPT_PATH,
@@ -298,6 +300,66 @@ def test_calendar_range_is_seconds_and_rejects_pagination_cursor():
     with pytest.raises(FeishuError) as error:
         _provider(handler).calendar(USER, start, end, "Asia/Shanghai", "cursor", 20)
     assert error.value.code == "invalid_cursor"
+
+
+def test_calendar_primary_and_events_are_bounded_to_three_http_calls_without_retry():
+    recorder = Recorder()
+    start = datetime(2026, 10, 9, tzinfo=UTC)
+    end = start + timedelta(days=1)
+    calendar_id = "feishu.cn_synthetic@group.calendar.feishu.cn"
+    event_path = CALENDAR_EVENTS_PATH.format(calendar_id=calendar_id)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == TENANT_TOKEN_PATH:
+            return _tenant(request)
+        if request.url.path == CALENDAR_PRIMARY_PATH:
+            return httpx.Response(
+                200,
+                json={
+                    "code": 0,
+                    "data": {"calendars": [{"calendar": {"calendar_id": calendar_id}}]},
+                },
+            )
+        assert request.url.path == event_path
+        return httpx.Response(200, json={"code": 0, "data": {"items": []}})
+
+    config = _config(calendar_id="")
+    page = _provider(handler, recorder, config=config).calendar(
+        None, start, end, "Asia/Shanghai", None, 20
+    )
+    assert page.items == []
+    assert [request.url.path for request in recorder.requests] == [
+        TENANT_TOKEN_PATH,
+        CALENDAR_PRIMARY_PATH,
+        event_path,
+    ]
+
+    recorder = Recorder()
+
+    def timeout_after_primary(request: httpx.Request) -> httpx.Response:
+        if request.url.path == TENANT_TOKEN_PATH:
+            return _tenant(request)
+        if request.url.path == CALENDAR_PRIMARY_PATH:
+            return httpx.Response(
+                200,
+                json={
+                    "code": 0,
+                    "data": {"calendars": [{"calendar": {"calendar_id": calendar_id}}]},
+                },
+            )
+        assert request.url.path == event_path
+        return httpx.Response(503, json={"code": 100, "msg": "synthetic unavailable"})
+
+    with pytest.raises(FeishuError) as error:
+        _provider(timeout_after_primary, recorder, config=config).calendar(
+            None, start, end, "Asia/Shanghai", None, 20
+        )
+    assert error.value.code == "provider_unavailable"
+    assert [request.url.path for request in recorder.requests] == [
+        TENANT_TOKEN_PATH,
+        CALENDAR_PRIMARY_PATH,
+        event_path,
+    ]
 
 
 def test_task_list_uses_user_token_and_maps_due_and_completion():

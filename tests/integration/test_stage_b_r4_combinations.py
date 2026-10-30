@@ -156,6 +156,7 @@ def _api(
     *,
     open_api_base: str | None = None,
     use_mock: bool = True,
+    identity: str = "app",
 ):
     import summit_everything.api.app as app_module
 
@@ -204,6 +205,7 @@ def _api(
                     "app_id": APP_ID,
                     "redirect_uri": CALLBACK,
                     "real_data_enabled": True,
+                    "identity": identity,
                     "calendar_id": "cal-a",
                 },
             },
@@ -255,7 +257,7 @@ def test_r4_combo_1_new_authorization_survives_an_old_refresh_and_a_config_switc
     entered, release = Event(), Event()
     backend = Backend()
     remote = TokenRemote(refresh_gate=(entered, release))
-    client, _clients = _api(tmp_path, monkeypatch, backend, remote)
+    client, _clients = _api(tmp_path, monkeypatch, backend, remote, identity="user")
 
     state = _authorize(client)
     assert client.get(CALLBACK, params={"state": state, "code": "first"}).status_code == 200
@@ -393,7 +395,9 @@ def test_r4_combo_2_old_trickling_read_is_cancelled_while_a_new_request_uses_new
         open_api_base=server.base,
         use_mock=False,
     )
-    old_client = clients[0]
+    # Workspace opening may create a provider for the initial default
+    # configuration; the latest provider is the one bound to this read.
+    old_client = clients[-1]
 
     original_bounded_call = feishu_http.bounded_call
 

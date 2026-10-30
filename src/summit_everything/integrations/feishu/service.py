@@ -45,8 +45,16 @@ class FeishuStatus(BaseModel):
     identity lookup has been performed.
     """
 
-    mode: str = "fake"
+    mode: str = "real"
     authorized: bool
+    # An expired access token can still be used for a user initiated read when
+    # its single-use refresh token is present and has not been consumed. Status
+    # is deliberately read-only; the provider refresh happens with that read.
+    refreshable: bool = False
+    calendar_ready: bool = False
+    # Local, non-secret generation used to invalidate in-flight UI reads after
+    # logout or re-authorization, without exposing an account/token identifier.
+    authorization_generation: int = 0
     app_configured: bool = False
     identity: str = "app"
     token_type: str = "user"
@@ -178,25 +186,57 @@ class FeishuService:
             return None
 
     def status(self) -> FeishuStatus:
-        credentials = self._safe_user()
+        # Application identity must not inspect the user credential slot.
+        # Keep its readiness independent from any broken/stale user token.
+        credentials = self._safe_user() if self.config.identity == "user" else None
         app = self._safe_app()
         authorized = (
             credentials is not None
             and credentials.token_type == "user"
-            and credentials.expires_at > self.clock()
+            and credentials.expires_at > self.clock() + 60
         )
+        refreshable = bool(
+            credentials is not None
+            and credentials.token_type == "user"
+            and credentials.expires_at <= self.clock() + 60
+            and credentials.refresh_token
+            and not credentials.refresh_consumed
+            and not self.auth.refresh_consumed(credentials.refresh_token)
+        )
+        calendar_scopes = {
+            self.config.scope_calendar,
+            "calendar:calendar:read",
+            "calendar:calendar:readonly",
+        }
+        has_calendar_scope = bool(credentials and calendar_scopes.intersection(credentials.scopes))
         app_configured = app is not None and app.app_id == self.config.app_id
         credential_error = None
-        try:
-            self.credentials.get()
-        except Exception:
-            credential_error = "credential_unreadable"
+        if self.config.identity == "user":
+            try:
+                self.credentials.get()
+            except Exception:
+                credential_error = "credential_unreadable"
+            if credentials is not None and refreshable and not app_configured:
+                credential_error = "application_credential_missing"
         return FeishuStatus(
             mode=self.config.mode,
             authorized=authorized,
+            refreshable=refreshable,
+            authorization_generation=self.auth.version(),
+            calendar_ready=(
+                self.config.mode == "real"
+                and (
+                    (self.config.identity == "app" and app_configured)
+                    or (
+                        self.config.identity == "user"
+                        and has_calendar_scope
+                        and (authorized or (refreshable and app_configured))
+                    )
+                )
+            ),
             app_configured=app_configured,
             identity=self.config.identity,
-            scopes=credentials.scopes if authorized and credentials else [],
+            scopes=credentials.scopes if (authorized or refreshable) and credentials else [],
             credential_error=credential_error,
         )
 
@@ -423,7 +463,12 @@ class FeishuService:
         except (ValueError, ZoneInfoNotFoundError):
             raise ValueError("请选择有效的起止时间和时区。") from None
         with self.operation():
-            identity = self.identity_for(self.config.scope_calendar, app_capable=True)
+            # Accept the earlier documented readonly scope for already-connected
+            # user credentials; new OAuth requests continue to ask only for the
+            # current scope declared by the provider config.
+            identity = self.identity_for_any(
+                (self.config.scope_calendar, "calendar:calendar:readonly"), app_capable=True
+            )
             result = self._call(
                 lambda: self.provider.calendar(identity, start, end, timezone, cursor, limit)
             )

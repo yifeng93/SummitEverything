@@ -7,9 +7,9 @@ from pathlib import Path
 from threading import Event
 from uuid import uuid4
 
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.domain.models import Answer
 from summit_everything.local.conversations import ConversationStore, QueryStart
@@ -88,13 +88,13 @@ def test_first_query_without_conversation_id_creates_and_reopens_server_conversa
                 "mode": "real",
                 "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
                 "embedding": {
-                    "provider": "dashscope",
-                    "model": "qwen3.7-text-embedding",
+                    "provider": "local",
+                    "model": "BAAI/bge-small-zh-v1.5",
                     "enabled": True,
                 },
                 "rerank": {
-                    "provider": "dashscope",
-                    "model": "qwen3.7-text-rerank",
+                    "provider": "local",
+                    "model": "BAAI/bge-small-zh-v1.5",
                     "enabled": True,
                 },
             },

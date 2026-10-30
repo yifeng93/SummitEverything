@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { ApiError, api, indexUpdateMessage, newOperationId, type Draft, type MutationResult, type Page, type SourceDetail } from '../api/client'
 import { MarkdownText } from './MarkdownText'
 import { ConfirmDialog } from './ConfirmDialog'
+import { draftStateLabel } from '../approval-summary'
 
 type Conflict = { id: string; question: string; alternatives: string[] }
 type Props = {
@@ -31,6 +33,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated, onD
   const staleBase = Boolean(target && target.content_sha256 !== baseHash)
   const targetNeedsConfirmation = Boolean(target && target.approval_state !== 'confirmed')
   const unresolvedConflicts = conflicts.filter((conflict) => !resolutions[conflict.id]).length
+  const readOnly = draft.state !== 'pending'
   const candidates = useMemo(
     () => pages.filter((page) =>
       (page.approval_state === 'confirmed' || page.page_id === targetId)
@@ -123,11 +126,12 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated, onD
   return (
     <section className="draft-review" aria-label="审核稿阅读与确认">
       {indexNotice && <p role="status" className={indexNotice.includes('索引更新未完成') ? 'form-error' : 'success-note'}>{indexNotice}</p>}
-      <div className="review-topline"><span>完整审核稿</span><span>{draft.source_ids.length} 个原始来源</span></div>
       <header className="draft-reading-heading"><h2>{title || '未命名稿件'}</h2><span>{draft.source_ids.length} 个来源 · 第 {version} 版</span></header>
       <article className="draft-reading-body"><MarkdownText content={body} /></article>
+      {readOnly && <p className="helper-line">这份稿件{draftStateLabel(draft.state)}，当前只读查看。</p>}
       {versionConflict && <div className="form-error" role="alert"><p>稿件在你审核期间发生变化，当前编辑仍保留。确认前请核对最新版本。</p><button className="button secondary" disabled={busy} onClick={reloadLatestDraft}>放弃当前编辑并载入最新版本</button></div>}
-      <details className="draft-edit-details"><summary>编辑稿件与归属</summary>
+      {!readOnly && <div className="draft-review-tools">
+      <details className="draft-edit-details"><summary>编辑稿件与归属<ChevronRight className="draft-tool-arrow" size={14} strokeWidth={1.75} aria-hidden="true" /></summary>
         <label className="field"><span>页面标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
         <label className="compact-field target-select"><span>整理到</span>
           <select value={targetId} onChange={(event) => void selectTarget(event.target.value)}>
@@ -140,11 +144,12 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated, onD
         <label className="field"><span>正文</span><textarea value={body} rows={12} onChange={(event) => setBody(event.target.value)} /></label>
       </details>
       {target && <div className="target-status">{(staleBase || targetNeedsConfirmation) && <div className="form-error" role="status"><p>目标页面已变化或需要重新确认。当前正文尚未被覆盖。</p>{staleBase ? <button className="text-button" disabled={busy} onClick={() => setBaseHash(target.content_sha256)}>采用当前页面作为比较基准</button> : <span>当前正文已作为比较基准；确认时仍会检查是否再次发生变化。</span>}</div>}<details className="draft-diff-details"><summary>查看改动</summary><div className="diff-view"><div><span>当前版本</span><MarkdownText content={target.body} /></div><div><span>审核稿</span><MarkdownText content={body} /></div></div></details></div>}
-      <details className="source-reference"><summary>查看来源</summary>
-          {draft.source_ids.map((sourceId, index) => <button key={sourceId} className="source-chip" onClick={() => api.get<SourceDetail>('/sources/' + sourceId).then(setSource).catch((cause) => onError(cause instanceof Error ? cause.message : '无法读取来源'))}>打开来源 {index + 1}</button>)}
+      </div>}
+      <details className="source-reference"><summary>查看来源<ChevronRight className="draft-tool-arrow" size={14} strokeWidth={1.75} aria-hidden="true" /></summary>
+        {draft.source_ids.map((sourceId, index) => <button key={sourceId} className="source-chip" onClick={() => api.get<SourceDetail>('/sources/' + sourceId).then(setSource).catch((cause) => onError(cause instanceof Error ? cause.message : '无法读取来源'))}>打开来源 {index + 1}</button>)}
       </details>
       {source && <section className="original-source"><div><strong>{source.source.filename}</strong><button className="text-button" onClick={() => setSource(null)}>收起</button></div><MarkdownText content={source.text} /></section>}
-      {conflicts.length > 0 && (
+      {!readOnly && conflicts.length > 0 && (
         <div className="conflict-list">
           <h3>需要你判断的冲突</h3>
           {conflicts.map((conflict) => (
@@ -170,6 +175,7 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated, onD
           )}
         </div>
       )}
+      {!readOnly && <>
       <div className="review-actions">
         <span>{contentDirty ? conflicts.length ? '正文或归属尚未保存；冲突选择会在确认时提交。' : '正文或归属尚未保存。' : resolutionDirty ? '冲突选择尚未提交，将在确认时生效。' : '来源与稿件保持关联'}</span>
         <div className="button-row">
@@ -177,7 +183,8 @@ export function DraftReview({ draft, pages, onError, onConfirmed, onUpdated, onD
           <button className="button primary" disabled={busy || staleBase || unresolvedConflicts > 0} title={unresolvedConflicts ? `还有 ${unresolvedConflicts} 项冲突需要选择，或标记为暂时未决。` : undefined} onClick={() => setConfirmOpen(true)}>{busy ? '正在保存…' : '确认并保存当前版本'}</button>
         </div>
       </div>
-      {confirmOpen && <ConfirmDialog title="确认并保存当前稿件版本？" description={`“${title || '未命名稿件'}”将在你确认后写入正式内容。`} consequence="保存的是当前编辑正文；Fake 活跃索引按现有规则自动增量。不会创建飞书任务或改变项目进度。" confirmLabel="确认并保存当前版本" busyLabel="正在保存…" busy={busy} onCancel={() => setConfirmOpen(false)} onConfirm={confirmDraft}><MarkdownText content={body} /></ConfirmDialog>}
+      {confirmOpen && <ConfirmDialog title="确认并保存当前稿件版本？" description={`“${title || '未命名稿件'}”将在你确认后写入正式内容。`} consequence="保存的是当前编辑正文；索引按当前真实本机模型与审批规则处理。不会创建飞书任务或改变项目进度。" confirmLabel="确认并保存当前版本" busyLabel="正在保存…" busy={busy} onCancel={() => setConfirmOpen(false)} onConfirm={confirmDraft}><MarkdownText content={body} /></ConfirmDialog>}
+      </>}
     </section>
   )
 }

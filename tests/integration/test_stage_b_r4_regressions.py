@@ -183,7 +183,12 @@ def _client(
             headers=HEADERS,
             json={
                 "mode": "real",
-                "feishu": {"app_id": APP_ID, "redirect_uri": CALLBACK, "real_data_enabled": True},
+                "feishu": {
+                    "app_id": APP_ID,
+                    "redirect_uri": CALLBACK,
+                    "real_data_enabled": True,
+                    "identity": "user",
+                },
             },
         ).status_code
         == 200

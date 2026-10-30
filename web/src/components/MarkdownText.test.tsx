@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, expect, it, vi } from 'vitest'
-import { MarkdownText, type MarkdownPage } from './MarkdownText'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { MarkdownText, withoutDuplicateTitle, type MarkdownPage } from './MarkdownText'
 import { StreamingMarkdown } from './StreamingMarkdown'
 
 afterEach(cleanup)
@@ -21,7 +21,8 @@ it('renders GFM, resolves only real unique page links, and secures external link
   />)
   expect(screen.getByRole('heading', { name: '标题' })).toBeTruthy()
   expect(screen.getByRole('table')).toBeTruthy()
-  expect(screen.getByText(/const answer = 42[\s\S]*\[\[page-1\]\]/)).toBeTruthy()
+  // 代码块经过语法高亮后会被拆成多个 span，逐字内容整段比对。
+  expect((document.querySelector('pre code') as HTMLElement).textContent).toMatch(/const answer = 42[\s\S]*\[\[page-1\]\]/)
   fireEvent.click(screen.getByRole('link', { name: '安全说明' }))
   fireEvent.click(screen.getByRole('link', { name: '相对链接' }))
   expect(onOpenPage).toHaveBeenNthCalledWith(1, 'page-1', 'a'.repeat(64))
@@ -176,4 +177,28 @@ it('keeps unfinished wiki targets and labels readable but non-clickable until th
 
   rerender(<StreamingMarkdown content="[[page-1|安全说明]]" pageIndex={pages} sourcePath="line/project/source.md" />)
   expect(container.querySelector('a')?.textContent).toBe('安全说明')
+})
+
+describe('withoutDuplicateTitle', () => {
+  it('去掉与页面标题相同的一级标题，避免标题出现两次', () => {
+    expect(withoutDuplicateTitle('# 消息反馈\n\n正文', '消息反馈')).toBe('正文')
+    expect(withoutDuplicateTitle('\n# 消息反馈\n\n正文', '消息反馈')).toBe('正文')
+    expect(withoutDuplicateTitle('# **消息反馈**\n正文', '消息反馈')).toBe('正文')
+    expect(withoutDuplicateTitle('\uFEFF# 消息反馈\n正文', '消息反馈')).toBe('正文')
+    expect(withoutDuplicateTitle('<!-- 来源注释 -->\n\n# 消息反馈\n正文', '消息反馈')).toBe('正文')
+    expect(withoutDuplicateTitle('# [消息反馈](./feedback.md)\n正文', '消息反馈')).toBe('正文')
+  })
+
+  it('标题不同或没有标题时原样返回', () => {
+    expect(withoutDuplicateTitle('# 别的标题\n\n正文', '消息反馈')).toBe('# 别的标题\n\n正文')
+    expect(withoutDuplicateTitle('正文', '消息反馈')).toBe('正文')
+  })
+})
+
+it('给带语言的代码块加语法高亮标记', () => {
+  render(<MarkdownText content={'```ts\nconst answer: number = 42\n```'} />)
+  const code = document.querySelector('pre code') as HTMLElement
+  expect(code.className).toContain('hljs')
+  expect(code.querySelector('.hljs-keyword')?.textContent).toBe('const')
+  expect(code.querySelector('.hljs-number')?.textContent).toBe('42')
 })

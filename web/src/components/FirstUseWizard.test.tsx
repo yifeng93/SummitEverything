@@ -153,19 +153,14 @@ it('leaves wizard opening under the app host and reports the requested step', as
   expect(onRequestWizard).toHaveBeenCalledWith(2)
 })
 
-it('copies the Feishu setup prompt without reopening the first-use wizard', async () => {
+it('keeps the first-use wizard under the app host', async () => {
   settingsStub({ credential_status: { feishu_app: false, deepseek: true, dashscope: false } })
   const onRequestWizard = vi.fn()
-  const writeText = vi.fn().mockResolvedValue(undefined)
-  vi.stubGlobal('navigator', { clipboard: { writeText } })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} onRequestWizard={onRequestWizard} />)
   await screen.findByRole('region', { name: '工作库' })
   expect(screen.queryByRole('dialog', { name: '首次配置向导' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '打开连接向导' }))
   expect(onRequestWizard).toHaveBeenLastCalledWith(2)
-  fireEvent.click(screen.getByRole('button', { name: '连接飞书' }))
-  expect((await screen.findByRole('status')).textContent).toContain('已复制')
-  expect(writeText).toHaveBeenCalledTimes(1)
   expect(onRequestWizard).toHaveBeenCalledTimes(1)
 })
 
@@ -241,26 +236,24 @@ it('关闭向导要等写入成功才收起，失败时不报告已关闭', asyn
   ])
 })
 
-it('shows built-in read-only addresses together with secrets on step 2', () => {
+it('shows the DeepSeek endpoint and explains local retrieval on step 2', () => {
   renderWizard(fixture())
   expect(screen.getByText('整理与问答')).toBeTruthy()
-  expect(screen.getByText('知识索引向量化')).toBeTruthy()
-  expect(screen.getByText('检索结果排序')).toBeTruthy()
-  expect(screen.getByText('https://api.deepseek.com/chat/completions')).toBeTruthy()
-  expect(screen.getByText('https://ws-demo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1')).toBeTruthy()
-  expect(screen.getAllByText('已内置，无需填写')).toHaveLength(3)
-  // 地址只读：页面上没有可编辑的 Base URL 输入。
+  expect(screen.queryByText(/https:\/\/api\.deepseek\.com/)).toBeNull()
+  expect(screen.getByText('知识索引与检索排序')).toBeTruthy()
+  expect(screen.getByText(/首次下载约 95 MB，可在设置中明确开始/)).toBeTruthy()
+  expect(screen.queryByText(/阿里云|Model Studio/)).toBeNull()
   expect(screen.queryByLabelText(/Base URL/)).toBeNull()
 })
 
 it('disables save with field guidance for a selected capability that has no stored key', () => {
   renderWizard(fixture())
-  fireEvent.click(screen.getByRole('checkbox', { name: /整理与问答/ }))
   const save = screen.getByRole('button', { name: '保存密钥并继续' }) as HTMLButtonElement
   expect(save.disabled).toBe(true)
   expect(save.title).toContain('DeepSeek API Key')
-  expect(screen.getByText(/选择此能力后需要填写 DeepSeek API Key/)).toBeTruthy()
-  expect(screen.queryByText(/需要填写阿里云 Model Studio API Key/)).toBeNull()
+  expect(screen.getByText('请填写 DeepSeek API Key。此能力不能改为离线模拟。')).toBeTruthy()
+  expect(screen.getByLabelText(/DeepSeek API Key/).getAttribute('aria-invalid')).toBe('true')
+  expect(screen.queryByRole('checkbox', { name: /整理与问答/ })).toBeNull()
 })
 
 it('does not ask again when the selected capability already has a server-stored key', async () => {
@@ -281,24 +274,20 @@ it('does not ask again when the selected capability already has a server-stored 
 it('saves settings before credentials, uses the persisted account ids, and clears the secret fields', async () => {
   const setItem = vi.spyOn(Storage.prototype, 'setItem')
   const { calls, state } = renderWizard(fixture())
-  // 显式选择真实能力；模型选择与密钥录入位于同一步。
-  fireEvent.click(screen.getByRole('checkbox', { name: /整理与问答/ }))
-  fireEvent.click(screen.getByRole('checkbox', { name: /知识索引向量化/ }))
-  fireEvent.click(screen.getByRole('checkbox', { name: /检索结果排序/ }))
+  // Provider is fixed to the supported real service; configuration begins by
+  // entering the missing key, without an offline/Fake mode selector.
+  expect(screen.queryByRole('checkbox', { name: /整理与问答/ })).toBeNull()
 
   fireEvent.change(screen.getByLabelText(/DeepSeek API Key/), { target: { value: 'synthetic-deepseek' } })
-  fireEvent.change(screen.getByLabelText(/阿里云 Model Studio API Key/), { target: { value: 'synthetic-dashscope' } })
   fireEvent.click(screen.getByRole('button', { name: '保存密钥并继续' }))
 
   await waitFor(() => expect(state.credential_status.deepseek).toBe(true))
-  expect(state.credential_status.dashscope).toBe(true)
   const patched = calls.find((call) => call.method === 'PATCH')
   expect(patched?.body).toMatchObject({ mode: 'real', llm: { provider: 'deepseek', model: 'deepseek-flash', enabled: true } })
-  expect(patched?.body).toMatchObject({ embedding: { provider: 'dashscope', enabled: true }, rerank: { provider: 'dashscope', enabled: true } })
 
   const puts = calls.filter((call) => call.method === 'PUT')
-  expect(puts.map((call) => call.body?.account_id)).toEqual(['server-assigned-account', 'server-assigned-studio'])
-  expect(puts.map((call) => call.body?.secret)).toEqual(['synthetic-deepseek', 'synthetic-dashscope'])
+  expect(puts.map((call) => call.body?.account_id)).toEqual(['server-assigned-account'])
+  expect(puts.map((call) => call.body?.secret)).toEqual(['synthetic-deepseek'])
   const methods = calls.map((call) => call.method)
   expect(methods.indexOf('PATCH')).toBeLessThan(methods.indexOf('PUT'))
 
@@ -307,23 +296,22 @@ it('saves settings before credentials, uses the persisted account ids, and clear
   // 保存成功后前进到检查连接步骤，且页面上不再出现任何密钥值。
   expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
   expect(document.body.textContent ?? '').not.toContain('synthetic-deepseek')
-  expect(document.body.textContent ?? '').not.toContain('synthetic-dashscope')
   // 返回后输入框已被清空（组件内存里也没有保留明文）。
   fireEvent.click(screen.getByRole('button', { name: '上一步' }))
   await screen.findByRole('heading', { name: /第 2 步 · 模型与密钥/ })
   expect((screen.getByLabelText(/DeepSeek API Key/) as HTMLInputElement).value).toBe('')
-  expect((screen.getByLabelText(/阿里云 Model Studio API Key/) as HTMLInputElement).value).toBe('')
   expect(setItem).not.toHaveBeenCalled()
   expect(localStorage.length).toBe(0)
   expect(sessionStorage.length).toBe(0)
 })
 
-it('keeps Fake offline and makes no request when no model or key is selected', async () => {
+it('requires a DeepSeek key before saving settings', async () => {
   const { fetchMock } = renderWizard(fixture())
-  fireEvent.click(screen.getByRole('button', { name: '保存密钥并继续' }))
-  expect(await screen.findByText(/保留 Fake 离线模式/)).toBeTruthy()
+  const save = screen.getByRole('button', { name: '保存密钥并继续' }) as HTMLButtonElement
+  expect(save.disabled).toBe(true)
+  expect(save.title).toContain('DeepSeek API Key')
   expect(fetchMock).not.toHaveBeenCalled()
-  expect(await screen.findByRole('heading', { name: /第 3 步 · 检查连接/ })).toBeTruthy()
+  expect(screen.getByRole('heading', { name: /第 2 步 · 模型与密钥/ })).toBeTruthy()
 })
 
 it('blocks step 2 entirely when the keychain is unavailable', () => {
@@ -346,8 +334,8 @@ function realFixture() {
   return fixture({
     mode: 'real',
     llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'default', enabled: true, max_output_tokens: 2048, reasoning_effort: 'low' },
-    embedding: { provider: 'dashscope', model: 'qwen3.7-text-embedding', region: 'cn', dimensions: 1024, base_url: 'https://ws-demo.cn-beijing.maas.aliyuncs.com/compatible-mode/v1', enabled: true },
-    rerank: { provider: 'dashscope', model: 'qwen3.7-text-rerank', region: 'cn', dimensions: 1024, base_url: 'https://ws-demo.cn-beijing.maas.aliyuncs.com/api/v1', enabled: true },
+    embedding: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', region: 'cn', dimensions: 512, base_url: '', enabled: true },
+    rerank: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', region: 'cn', dimensions: 512, base_url: '', enabled: true },
     credential_status: { feishu_app: false, deepseek: true, dashscope: true },
   })
 }
@@ -360,7 +348,7 @@ async function goToStep3() {
 it('requires an explicit confirmation before the connection check, and cancel sends nothing', async () => {
   const { calls } = renderWizard(realFixture())
   await goToStep3()
-  const button = screen.getByRole('button', { name: '检查 DeepSeek Chat（剩余 1）' })
+  const button = screen.getByRole('button', { name: '检查 DeepSeek（剩余 1）' })
   expect((button as HTMLButtonElement).disabled).toBe(false)
 
   fireEvent.click(button)
@@ -376,13 +364,14 @@ it('requires an explicit confirmation before the connection check, and cancel se
   expect(smokePosts(calls)).toHaveLength(0)
 })
 
-it('sends exactly the confirmed check and nothing when the step is skipped', async () => {
+it('checks only DeepSeek and does not expose a cloud embedding or rerank check', async () => {
   const { calls } = renderWizard(realFixture())
   await goToStep3()
-  fireEvent.click(screen.getByRole('button', { name: '检查 Embedding（剩余 1）' }))
+  fireEvent.click(screen.getByRole('button', { name: '检查 DeepSeek（剩余 1）' }))
   fireEvent.click(await screen.findByRole('button', { name: '确认发送本次检查' }))
   await waitFor(() => expect(smokePosts(calls)).toHaveLength(1))
-  expect(smokePosts(calls)[0].url).toContain('/provider-smoke/model-studio-embedding')
+  expect(smokePosts(calls)[0].url).toContain('/provider-smoke/deepseek-chat')
+  expect(screen.queryByRole('button', { name: /检查 (?:Embedding|Rerank)/ })).toBeNull()
 
   fireEvent.click(screen.getByRole('button', { name: '稍后再说' }))
   await screen.findByRole('heading', { name: /第 4 步 · 飞书/ })
@@ -456,8 +445,9 @@ it('summarizes saved and skipped items with the remaining unverified boundaries'
   expect(panel.textContent).toContain('钥匙串生命周期仍未验证')
   expect(panel.textContent ?? '').not.toMatch(/可以(写回|修改)/)
   expect(panel.textContent).not.toContain('已验证通过')
-  // 全部跳过时如实显示仍是离线 Fake。
-  expect(panel.textContent).toContain('Fake · 离线')
+  // Skipping setup never claims a working connection.
+  expect(panel.textContent).toContain('真实连接')
+  expect(panel.textContent).not.toContain('Fake · 离线')
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
@@ -474,7 +464,7 @@ it('only ever calls local settings, smoke-status and credential routes', async (
     /^\/api\/v1\/integrations\/feishu\/authorizations$/,
   ]
   await goToStep3()
-  fireEvent.click(screen.getByRole('button', { name: '检查 DeepSeek Chat（剩余 1）' }))
+  fireEvent.click(screen.getByRole('button', { name: '检查 DeepSeek（剩余 1）' }))
   fireEvent.click(await screen.findByRole('button', { name: '确认发送本次检查' }))
   await waitFor(() => expect(smokePosts(calls)).toHaveLength(1))
   for (const call of calls) {

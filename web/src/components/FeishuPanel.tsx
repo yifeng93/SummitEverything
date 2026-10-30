@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { CalendarDays, ChevronRight, RefreshCw, Video } from 'lucide-react'
 import { ApiError, api, newOperationId } from '../api/client'
 import type { components } from '../api/generated'
 import { startFeishuAuthorization } from './feishuAuthorization'
@@ -13,8 +14,9 @@ type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: nu
 type PendingApproval = { plan: AcceptancePlan; operation: string; scope: Record<string, unknown>; execute: (planId: string) => Promise<void> }
 const prefix = '/integrations/feishu'
 const localDate = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
+const calendarReads = new Map<string, Promise<Calendar>>()
 
-export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusyChange, onClose, view = 'all', showAuthorization = true }: { onImported: (itemIds?: string[]) => Promise<void>; onMode?: (mode: "fake" | "real" | null) => void; onAuthorizationChanged?: () => void; onBusyChange?: (busy: boolean) => void; onClose?: () => void; view?: 'all' | 'calendar' | 'materials'; showAuthorization?: boolean; onOpenConnectionWizard?: () => void }) {
+export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusyChange, onClose, view = 'all', showAuthorization = true, compact = false, dedupeScope = 'default' }: { onImported: (itemIds?: string[]) => Promise<void>; onMode?: (mode: "fake" | "real" | null) => void; onAuthorizationChanged?: () => void; onBusyChange?: (busy: boolean) => void; onClose?: () => void; onOpenConnectionWizard?: () => void; view?: 'all' | 'calendar' | 'materials'; showAuthorization?: boolean; compact?: boolean; dedupeScope?: string }) {
   const [status, setStatus] = useState<Status | null>(null)
   const [error, setError] = useState('')
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
@@ -39,13 +41,25 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   const [approval, setApproval] = useState<PendingApproval | null>(null)
   const operation = useRef<{ key: string; id: string } | null>(null)
   const statusRef = useRef<Status | null>(null)
+  const mounted = useRef(true)
+  const calendarRequest = useRef(0)
+  const autoCalendarKey = useRef('')
   useEffect(() => { onBusyChange?.(busy) }, [busy, onBusyChange])
+
+  useEffect(() => {
+    mounted.current = true
+    return () => { mounted.current = false; calendarRequest.current += 1 }
+  }, [])
 
   const publishStatus = useCallback((value: Status, notify = true) => {
     const previous = statusRef.current
     statusRef.current = value
     setStatus(value)
-    if (notify && previous && (previous.authorized !== value.authorized || previous.identity !== value.identity || previous.mode !== value.mode || previous.app_configured !== value.app_configured || previous.scopes.join(',') !== value.scopes.join(','))) onAuthorizationChanged?.()
+    if (previous && previous.authorization_generation !== value.authorization_generation) {
+      calendarRequest.current += 1
+      setCalendar(null); setCalendarSuccess(null); setCalendarError('')
+    }
+    if (notify && previous && (previous.authorized !== value.authorized || previous.identity !== value.identity || previous.mode !== value.mode || previous.app_configured !== value.app_configured || previous.scopes.join(',') !== value.scopes.join(',') || previous.authorization_generation !== value.authorization_generation)) onAuthorizationChanged?.()
   }, [onAuthorizationChanged])
 
   useEffect(() => {
@@ -57,7 +71,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
 
   function recordAuthProblem(code?: string) {
     if (code === 'token_expired' || code === 'not_authorized') {
-      if (statusRef.current) publishStatus({ ...statusRef.current, authorized: false, scopes: [] })
+      if (statusRef.current) publishStatus({ ...statusRef.current, authorized: false, refreshable: false, calendar_ready: false, scopes: [] })
       setAuthProblem(code === 'token_expired' ? 'expired' : null)
       setSelected([]); setMaterials(null); setCalendar(null); setMaterialsSuccess(null); setCalendarSuccess(null)
     } else if (code === 'missing_scope') {
@@ -102,15 +116,11 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
   async function authorize() {
     setBusy(true); setError(''); setAuthorizationUrl(null)
     try {
-      if (status?.mode === 'real') {
-        const result = await startFeishuAuthorization('real')
-        // No fetch to the external authorization endpoint and no automatic code
-        // exchange. The user opens the official page in a separate browser.
-        setAuthorizationUrl(result.authorizationUrl)
-      } else {
-        const result = await startFeishuAuthorization('fake')
-        publishStatus(result.status); setAuthProblem(null)
-      }
+      if (status?.mode !== 'real') throw new Error('真实连接尚未配置；不能使用模拟授权。')
+      const result = await startFeishuAuthorization('real')
+      // No fetch to the external authorization endpoint and no automatic code
+      // exchange. The user opens the official page in a separate browser.
+      setAuthorizationUrl(result.authorizationUrl)
     } catch (cause) { recordFailure(cause); setError(cause instanceof Error ? cause.message : '授权失败') }
     finally { setBusy(false) }
   }
@@ -129,7 +139,7 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
     setBusy(true); setError('')
     try {
       await api.delete<void>(prefix + '/authorizations')
-      if (statusRef.current) publishStatus({ ...statusRef.current, authorized: false, scopes: [] })
+      if (statusRef.current) publishStatus({ ...statusRef.current, authorized: false, refreshable: false, calendar_ready: false, scopes: [], authorization_generation: statusRef.current.authorization_generation + 1 })
       setAuthorizationUrl(null); setAuthProblem(null); setMaterials(null); setCalendar(null); setMaterialsSuccess(null); setCalendarSuccess(null); setSelected([])
     } catch (cause) { setError(cause instanceof Error ? cause.message : '断开飞书授权失败') }
     finally { setBusy(false) }
@@ -190,35 +200,67 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
 
   async function loadCalendar(event?: FormEvent, cursor?: string) {
     event?.preventDefault(); setBusy(true); setCalendarError('')
+    const request = ++calendarRequest.current
     try {
       const atStartOfDay = (day: string) => timezone === 'UTC' ? day + 'T00:00:00Z' : new Date(day + 'T00:00:00').toISOString()
       const startAt = atStartOfDay(start), endAt = atStartOfDay(end)
       const params = new URLSearchParams({ start: startAt, end: endAt, timezone, limit: '20' })
       if (cursor) params.set('cursor', cursor)
-      const execute = async (planId?: string) => {
-        const plannedParams = new URLSearchParams(params)
-        if (planId) plannedParams.set('plan_id', planId)
-        setCalendar(await api.get<Calendar>(prefix + '/calendar?' + plannedParams)); setCalendarExpanded(false); setCalendarSuccess(new Date().toISOString())
+      const url = prefix + '/calendar?' + params
+      const scopeKey = `${dedupeScope}:${statusRef.current?.mode ?? ''}:${statusRef.current?.identity ?? ''}:${statusRef.current?.scopes.join(',') ?? ''}:${statusRef.current?.authorization_generation ?? 0}:${url}`
+      let pending = calendarReads.get(scopeKey)
+      if (!pending) {
+        pending = api.get<Calendar>(url)
+        calendarReads.set(scopeKey, pending)
+        void pending.finally(() => { if (calendarReads.get(scopeKey) === pending) calendarReads.delete(scopeKey) }).catch(() => undefined)
       }
-      if (status?.mode === 'real') {
-        await preparePlan('feishu.calendar.read', { start: startAt, end: endAt, timezone, cursor: cursor ?? null, limit: 20 }, async (planId) => {
-          try { await execute(planId) } catch (cause) { recordFailure(cause); setCalendarError(cause instanceof Error ? cause.message : '日历请求结果未知') }
-        })
-        return
+      const result = await pending
+      if (mounted.current && calendarRequest.current === request) {
+        setCalendar(result); setCalendarExpanded(false); setCalendarSuccess(new Date().toISOString())
       }
-      await execute()
-    } catch (cause) { recordFailure(cause); setCalendarError(cause instanceof Error ? cause.message : '无法读取日历') }
-    finally { setBusy(false) }
+    } catch (cause) {
+      if (mounted.current && calendarRequest.current === request) {
+        recordFailure(cause); setCalendarError(cause instanceof Error ? cause.message : '无法读取日历')
+      }
+    } finally {
+      if (mounted.current && calendarRequest.current === request) setBusy(false)
+    }
   }
 
-  const calendarReady = status?.mode === 'fake' ? status.authorized : status?.mode === 'real'
-    ? status.identity === 'app' ? status.app_configured : status.authorized : false
-  const calendarRows = calendar?.items.slice(0, calendarExpanded ? calendar.items.length : 3) ?? []
+  const calendarReady = status?.calendar_ready ?? false
+  const previousCalendarScope = useRef(dedupeScope)
+  useEffect(() => {
+    if (previousCalendarScope.current === dedupeScope) return
+    previousCalendarScope.current = dedupeScope
+    calendarRequest.current += 1
+    setCalendar(null)
+    setCalendarError('')
+    setCalendarSuccess('')
+    setCalendarExpanded(false)
+    autoCalendarKey.current = ''
+  }, [dedupeScope])
 
-  return <section className="panel feishu-panel">
+  useEffect(() => {
+    if (!calendarReady || view === 'materials') return
+    const key = `${dedupeScope}:${status?.mode}:${status?.identity}:${status?.scopes.join(',')}:${status?.authorization_generation}:${start}:${end}:${timezone}`
+    if (autoCalendarKey.current === key) return
+    autoCalendarKey.current = key
+    void loadCalendar()
+    // A failed automatic read remains visible; only a user refresh retries it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calendarReady, status?.mode, status?.identity, status?.scopes, status?.authorization_generation, dedupeScope, start, end, timezone, view])
+  const calendarRows = calendar?.items.slice(0, calendarExpanded ? calendar.items.length : 3) ?? []
+  const calendarRangeForm = <div className="calendar-range-panel"><form className="organize-row" onSubmit={(event) => void loadCalendar(event)}>
+    <label className="compact-field"><span>开始日期</span><input type="date" required value={start} onChange={(event) => setStart(event.target.value)} /></label>
+    <label className="compact-field"><span>结束日期（不含）</span><input type="date" required value={end} onChange={(event) => setEnd(event.target.value)} /></label>
+    <label className="compact-field"><span>时区</span><select value={timezone} onChange={(event) => setTimezone(event.target.value)}>{[...new Set([timezone, 'Asia/Shanghai', 'UTC'])].map((value) => <option key={value}>{value}</option>)}</select></label>
+    <button className="button secondary" disabled={!calendarReady || busy}>按此范围刷新</button>
+  </form></div>
+
+  return <section className={compact ? 'feishu-panel is-embedded' : 'panel feishu-panel'}>
     {showAuthorization && <>
-    {view === 'all' && <div className="panel-heading"><div><h2>飞书日常</h2><p>{status?.mode === 'real' ? '真实模式 · 应用身份优先；仅妙记搜索与任务列表需要一次性用户授权。' : '模拟模式 · 仅使用合成材料和日程。真实飞书尚未接入。'}</p></div><span className="status-label">{authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '用户已授权' : '用户未授权'}</span></div>}
-    <div className="button-row"><button className="button secondary" disabled={busy} onClick={authorize}>{status?.mode === 'real' ? '授权飞书用户身份' : '模拟授权飞书'}</button>{status?.authorized && <button className="button secondary" disabled={busy} onClick={() => setConfirmDisconnect(true)}>断开飞书授权</button>}</div>
+    {view === 'all' && <div className="panel-heading"><div><h2>飞书日常</h2><p>读取范围由已配置身份和实际授权权限决定。</p></div><span className="status-label">{status?.credential_error === 'application_credential_missing' ? '需补应用密钥' : authProblem === 'expired' ? '授权已过期' : authProblem === 'scope' ? '权限不足' : status?.authorized ? '用户已授权' : status?.refreshable ? '授权可续期' : '用户未授权'}</span></div>}
+    <div className="button-row"><button className="button secondary" disabled={busy || status?.mode !== 'real'} onClick={authorize}>连接飞书用户身份</button>{(status?.authorized || status?.refreshable) && <button className="button secondary" disabled={busy} onClick={() => setConfirmDisconnect(true)}>断开飞书授权</button>}</div>
     {status?.mode === 'real' && <p className="quiet-empty" role="status">{status.app_configured ? '应用密钥已配置。' : '尚未配置应用密钥。'}{!status.user_identity_verified && ' 用户身份尚未验证。'}</p>}
     {status?.mode === 'real' && <div className="button-row">
       {authorizationUrl && <><a className="button secondary" href={authorizationUrl} target="_blank" rel="noopener noreferrer">打开飞书授权页面</a><span>在浏览器完成后刷新本机授权状态；入口有效期5分钟。注册callback的本机端口须正在运行。刷新只反映当前凭据，不代表用户身份已核验。</span></>}
@@ -247,16 +289,24 @@ export function FeishuPanel({ onImported, onMode, onAuthorizationChanged, onBusy
       {selected.length > 0 && unknownImportKey === [...selected].sort().join(',') && <div className="resource-error"><p>本次导入结果未知，不会重发。关闭抽屉并刷新收件箱核对是否已保存。</p><button className="button secondary" onClick={() => void onImported().then(() => onClose?.())}>刷新收件箱并关闭</button></div>}
     </>}
     {imports && <div aria-live="polite"><p>{imports.state === 'succeeded' ? '所选材料已保存到待整理。' : imports.state === 'partial' ? '部分材料导入失败，请查看逐项结果。' : '材料导入失败。'}</p><ul>{imports.outcomes.map((row) => <li key={row.material_id}>{titles[row.material_id] ?? '所选材料'}：{row.state === 'succeeded' ? '已保存原件与待整理项' : row.message}</li>)}</ul></div>}</>}
-    {(view === 'all' || view === 'calendar') && <><div className="panel-heading calendar-heading"><div>{view !== 'calendar' && <h3>日历</h3>}</div><div className="button-row">{calendarSuccess && <small className="last-success">{new Date(calendarSuccess).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 已读取{calendarError ? ' · 更新失败' : ''}</small>}<button className="button secondary" disabled={!calendarReady || busy} onClick={() => void loadCalendar()}>{busy ? '正在读取…' : '刷新日历'}</button></div></div>
-    <details className="calendar-range"><summary>调整范围</summary><form className="organize-row" onSubmit={(event) => void loadCalendar(event)}>
-      <label className="compact-field"><span>开始日期</span><input type="date" required value={start} onChange={(event) => setStart(event.target.value)} /></label>
-      <label className="compact-field"><span>结束日期（不含）</span><input type="date" required value={end} onChange={(event) => setEnd(event.target.value)} /></label>
-      <label className="compact-field"><span>时区</span><select value={timezone} onChange={(event) => setTimezone(event.target.value)}>{[...new Set([timezone, 'Asia/Shanghai', 'UTC'])].map((value) => <option key={value}>{value}</option>)}</select></label>
-      <button className="button secondary" disabled={!calendarReady || busy}>按此范围刷新</button>
-    </form></details>
-    {calendarError && <p role="alert">{calendarError}；保留已有结果，读取失败不表示没有日程。</p>}
-    {view === 'calendar' && status && !calendarReady && <FeishuAgentSetup />}
-    {!calendar && !calendarError && <p className="quiet-empty">尚未读取日历。</p>}
-    {calendar && <>{calendar.items.length === 0 ? <p className="quiet-empty">所选时间内没有日程。</p> : <ul className="source-list">{calendarRows.map((row) => <li key={row.event_id}><div className="source-row"><span className="source-title"><strong>{row.title}</strong><small>{new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: timezone }).format(new Date(row.start))}–{new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: timezone }).format(new Date(row.end))}</small></span></div></li>)}</ul>}{calendar.items.length > 3 && <button className="button secondary" onClick={() => setCalendarExpanded((value) => !value)}>{calendarExpanded ? '收起日程' : `显示全部日程（${calendar.items.length}）`}</button>}{calendar.truncated && <p role="status">仅显示部分日程，请缩小时间范围。</p>}{!calendar.truncated && <button className="button secondary" disabled={busy || !calendar.next_cursor} onClick={() => void loadCalendar(undefined, calendar.next_cursor ?? undefined)}>下一页日程</button>}</>}</>}
+    {(view === 'all' || view === 'calendar') && <>{compact
+      ? <div className="section-head"><h3>会议</h3><div className="section-actions">{calendarError && <span className="section-meta">更新失败</span>}{calendarReady && <details className="calendar-range is-compact"><summary className="icon-button calendar-range-trigger" aria-label="时间范围" title={`${start} 至 ${end}`}><CalendarDays size={15} strokeWidth={1.75} aria-hidden="true" /></summary>{calendarRangeForm}</details>}{calendar && calendar.items.length > 3 && <button className="text-button quiet" onClick={() => setCalendarExpanded((value) => !value)}>{calendarExpanded ? '收起' : `全部 ${calendar.items.length} 项`}</button>}<button className="icon-button" disabled={!calendarReady || busy} aria-label="刷新日历" title={busy ? '正在读取…' : calendarSuccess ? `上次读取 ${new Date(calendarSuccess).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}` : '刷新日历'} onClick={() => void loadCalendar()}><RefreshCw size={15} strokeWidth={1.75} aria-hidden="true" /></button></div></div>
+      : <div className="panel-heading calendar-heading"><div>{view !== 'calendar' && <h3>日历</h3>}</div><div className="button-row">{calendarSuccess && <small className="last-success">{new Date(calendarSuccess).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 已读取{calendarError ? ' · 更新失败' : ''}</small>}<button className="button secondary" disabled={!calendarReady || busy} onClick={() => void loadCalendar()}>{busy ? '正在读取…' : '刷新日历'}</button></div></div>}
+    {!compact && calendarReady && <details className="calendar-range"><summary><ChevronRight className="range-chevron" size={13} strokeWidth={1.75} aria-hidden="true" />调整范围</summary>{calendarRangeForm}</details>}
+    {calendarError && <p role="alert" className="helper-line">{calendarError}；保留已有结果，读取失败不表示没有日程。</p>}
+    {view === 'calendar' && status && !calendarReady && !compact && <FeishuAgentSetup />}
+    {!calendar && !calendarError && (compact
+      ? <div className="empty-row"><span>还没读取日历。连接飞书后可以在这里查看今天的会议。</span>{status && !calendarReady && <FeishuAgentSetup className="text-button" />}</div>
+      : <p className="quiet-empty">尚未读取日历。</p>)}
+    {calendar && <>{calendar.items.length === 0 ? <p className="quiet-empty">所选时间内没有日程。</p> : <ul className="calendar-list">{calendarRows.map((row) => <li key={row.event_id} className={row.status === 'cancelled' ? 'calendar-item is-cancelled' : 'calendar-item'}>
+      <span className="calendar-bar" aria-hidden="true" />
+      <span className="calendar-slot">{row.all_day ? '全天' : `${calendarTime(row.start, timezone)}–${calendarTime(row.end, timezone)}`}</span>
+      <span className="calendar-body"><strong>{row.title || '未命名日程'}</strong>{row.location && <small className="calendar-place">{row.location}</small>}</span>
+      <span className="calendar-tail">{row.status === 'tentative' && <small>待确认</small>}{row.meeting_url && <a className="calendar-join" href={row.meeting_url} target="_blank" rel="noopener noreferrer" aria-label={`加入会议：${row.title || '未命名日程'}`} title="加入会议"><Video size={15} strokeWidth={1.75} aria-hidden="true" /></a>}</span>
+    </li>)}</ul>}{calendar.truncated && <p role="status">仅显示部分日程，请缩小时间范围。</p>}</>}</>}
   </section>
+}
+
+function calendarTime(value: string, timezone: string): string {
+  return new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: timezone }).format(new Date(value))
 }

@@ -1,8 +1,8 @@
 import pytest
 
-from summit_everything.integrations.embedding import FakeEmbedding, ModelStudioEmbedding
-from summit_everything.integrations.llm import DeepSeekLLM, FakeLLM, LLMProviderError
-from summit_everything.integrations.rerank import FakeReranker, ModelStudioReranker
+from summit_everything.integrations.embedding import FakeEmbedding
+from summit_everything.integrations.llm import FakeLLM, LLMProviderError
+from summit_everything.integrations.rerank import FakeReranker
 from summit_everything.integrations.runtime import ModelRuntime
 from summit_everything.integrations.settings import (
     CredentialVault,
@@ -30,15 +30,16 @@ class StubKeychain(MacOSKeychainBackend):
 def test_fake_mode_never_selects_remote_providers_even_if_configured():
     settings = ProviderSettings.model_validate(
         {
+            "mode": "fake",
             "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
             "embedding": {
-                "provider": "dashscope",
-                "model": "qwen3.7-text-embedding",
+                "provider": "fake",
+                "model": None,
                 "enabled": True,
             },
             "rerank": {
-                "provider": "dashscope",
-                "model": "qwen3.7-text-rerank",
+                "provider": "fake",
+                "model": None,
                 "enabled": True,
             },
         }
@@ -66,7 +67,7 @@ def test_real_mode_fails_closed_for_memory_backend_and_missing_credentials():
         keychain_runtime.llm()
 
 
-def test_real_mode_constructs_selected_adapters_without_network_requests():
+def test_legacy_retrieval_provider_profiles_remain_readable_but_runtime_refuses_them():
     settings = ProviderSettings.model_validate(
         {
             "mode": "real",
@@ -74,28 +75,33 @@ def test_real_mode_constructs_selected_adapters_without_network_requests():
             "embedding": {
                 "provider": "dashscope",
                 "model": "qwen3.7-text-embedding",
+                "dimensions": 1024,
                 "enabled": True,
             },
             "rerank": {
                 "provider": "dashscope",
                 "model": "qwen3.7-text-rerank",
+                "dimensions": 1024,
                 "enabled": True,
             },
         }
     )
-    vault = CredentialVault("profile", StubKeychain({}))
-    vault.put("deepseek", "synthetic-key")
-    vault.put("dashscope", "synthetic-key")
-    runtime = ModelRuntime(settings, vault)
+    assert settings.embedding.provider == "dashscope"
+    assert settings.rerank.provider == "dashscope"
+    runtime = ModelRuntime(settings, CredentialVault("profile", StubKeychain({})))
 
-    assert isinstance(runtime.llm(), DeepSeekLLM)
-    assert isinstance(runtime.embedding(), ModelStudioEmbedding)
-    assert isinstance(runtime.reranker(), ModelStudioReranker)
+    with pytest.raises(SettingsError, match="legacy_provider_migration_required"):
+        runtime.embedding()
+    with pytest.raises(SettingsError, match="legacy_provider_migration_required"):
+        runtime.reranker()
 
 
 def test_real_mode_rejects_remote_provider_when_not_enabled():
     settings = ProviderSettings.model_validate(
-        {"mode": "real", "llm": {"provider": "deepseek", "model": "deepseek-flash"}}
+        {
+            "mode": "real",
+            "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": False},
+        }
     )
     runtime = ModelRuntime(settings, CredentialVault("profile", StubKeychain({})))
     with pytest.raises(LLMProviderError, match="disabled"):

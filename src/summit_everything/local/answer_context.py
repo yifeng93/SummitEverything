@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fcntl
 import json
 import sqlite3
 from datetime import UTC, datetime
@@ -73,29 +74,36 @@ class AnswerContextStore:
     def __init__(self, path: Path) -> None:
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(path) as db:
-            db.executescript(
-                """
-                PRAGMA journal_mode=WAL;
-                CREATE TABLE IF NOT EXISTS answer_roles (
-                    workspace_id TEXT NOT NULL, role_id TEXT NOT NULL,
-                    name TEXT NOT NULL, instructions TEXT NOT NULL,
-                    context_budget INTEGER NOT NULL, created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL,
-                    PRIMARY KEY (workspace_id, role_id)
-                );
-                CREATE TABLE IF NOT EXISTS memory_items (
-                    workspace_id TEXT NOT NULL, memory_id TEXT NOT NULL,
-                    source_message_id TEXT NOT NULL, text TEXT NOT NULL,
-                    state TEXT NOT NULL, confirmation_id TEXT,
-                    confirmation_hash TEXT, created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL,
-                    PRIMARY KEY (workspace_id, memory_id)
-                );
-                CREATE INDEX IF NOT EXISTS memory_state
-                    ON memory_items(workspace_id, state, created_at);
-                """
-            )
+        initialization_lock = path.with_suffix(path.suffix + ".init.lock")
+        with initialization_lock.open("a+b") as lock_file:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            try:
+                with sqlite3.connect(path, timeout=30) as db:
+                    db.execute("PRAGMA busy_timeout=30000")
+                    db.execute("PRAGMA journal_mode=WAL")
+                    db.executescript(
+                        """
+                        CREATE TABLE IF NOT EXISTS answer_roles (
+                            workspace_id TEXT NOT NULL, role_id TEXT NOT NULL,
+                            name TEXT NOT NULL, instructions TEXT NOT NULL,
+                            context_budget INTEGER NOT NULL, created_at TEXT NOT NULL,
+                            updated_at TEXT NOT NULL,
+                            PRIMARY KEY (workspace_id, role_id)
+                        );
+                        CREATE TABLE IF NOT EXISTS memory_items (
+                            workspace_id TEXT NOT NULL, memory_id TEXT NOT NULL,
+                            source_message_id TEXT NOT NULL, text TEXT NOT NULL,
+                            state TEXT NOT NULL, confirmation_id TEXT,
+                            confirmation_hash TEXT, created_at TEXT NOT NULL,
+                            updated_at TEXT NOT NULL,
+                            PRIMARY KEY (workspace_id, memory_id)
+                        );
+                        CREATE INDEX IF NOT EXISTS memory_state
+                            ON memory_items(workspace_id, state, created_at);
+                        """
+                    )
+            finally:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
     def _connect(self) -> sqlite3.Connection:
         db = sqlite3.connect(self.path, timeout=30)

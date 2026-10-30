@@ -22,9 +22,11 @@ API token 可由 `SUMMIT_MCP_TOKEN` 提供，或使用 `SUMMIT_MCP_TOKEN_FILE` �
 | `list_pending_drafts` / `get_draft` | 待审稿 | 只读 |
 | `create_draft` / `edit_draft` | 完整待审稿提交/编辑 | 本机写入；版本冲突拒绝；不确认、不入库 |
 | `read_source` | 显式选择的收件箱来源原件 | 只读；返回标记为未确认材料 |
-| `list_calendar` | 显式区间的飞书日历 | 只消费 UI 已批准的一次性计划；MCP 无签发能力 |
+| `list_calendar` | 显式区间的飞书日历 | 已授权身份下直接执行有界只读请求；保留工作库/凭据/scope 校验，无计划签发能力 |
 
 此版本不提供 page/draft confirm、任务执行、凭据或任意 URL/路径工具。草稿创建只接受明确字段，拒绝 `approval`、`confirmation_id`、`user_confirmed` 等未知字段；稿件幂等键绑定完整请求内容并先写事务意图供中断恢复。正式页面须由应用用户在审核界面确认；Agent 创建或修改的内容一直只是建议稿。
+
+`list_calendar` 直接读取显式时间范围内可访问的日历；旧客户端可选传入 `approved_plan_id` 维持参数兼容，但该值只接受 UUID 格式，不转发给 API，也不构成授权。真实日历仍按当前应用/用户身份、实际 scope、profile/workspace 与服务端请求上限校验。
 
 搜索/读取资格以 `domain/content.py` 为准。当前页面内容必须重新读取并匹配索引 chunk 的 SHA；未确认、非正式区或发生外部语义修改的页面不得返回为知识。索引尚未建立时返回 `index_not_ready`，旧索引返回 `index_rebuild_required`；仅可用索引中没有命中时才返回空列表。不会生成向量或伪造搜索结果。
 

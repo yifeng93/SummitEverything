@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
+import socket
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -10,12 +13,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 import summit_everything.api.app as app_module
-import summit_everything.integrations.embedding as embedding_module
 import summit_everything.integrations.llm as llm_module
-import summit_everything.integrations.rerank as rerank_module
 from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
 from summit_everything.integrations.runtime import ModelRuntime
 from summit_everything.integrations.settings import MemorySecretBackend
+from summit_everything.local.retrieval_model import LocalRetrievalModelStore
 
 HEADERS = {"Authorization": "Bearer synthetic-real-adapter-session"}
 SOURCE = "青榆的访客登记须由前台核验姓名并记录来访时间。"
@@ -25,6 +27,17 @@ SOURCE = "青榆的访客登记须由前台核验姓名并记录来访时间。"
 def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     tmp_path, monkeypatch, usage_write_fails: bool
 ):
+    model_directory_value = os.environ.get("SUMMIT_LOCAL_RETRIEVAL_MODEL_DIR", "")
+    model_directory = Path(model_directory_value) if model_directory_value else None
+    if not usage_write_fails and (model_directory is None or not model_directory.is_dir()):
+        pytest.skip("set SUMMIT_LOCAL_RETRIEVAL_MODEL_DIR to run the local-model approval flow")
+    if not usage_write_fails:
+
+        def reject_network(*_args: object, **_kwargs: object) -> None:
+            raise AssertionError("local retrieval attempted a network connection")
+
+        monkeypatch.setattr(socket.socket, "connect", reject_network)
+        monkeypatch.setattr(socket, "create_connection", reject_network)
     calls: list[tuple[str, dict[str, Any]]] = []
     closed_clients: list[bool] = []
     fail_next_chat = [False]
@@ -45,35 +58,6 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
         assert request.headers["authorization"] == "Bearer synthetic-adapter-key"
         payload = json.loads(request.content)
         calls.append((request.url.path, payload))
-        if request.url.path.endswith("/embeddings"):
-            vectors = [
-                {"index": index, "embedding": [1.0] + [0.0] * 1023}
-                for index, _text in enumerate(payload["input"])
-            ]
-            return httpx.Response(
-                200,
-                json={
-                    "model": "qwen3.7-text-embedding",
-                    "data": vectors,
-                    "usage": {"total_tokens": 12},
-                },
-                headers={"x-request-id": f"synthetic-{len(calls):02d}"},
-            )
-        if request.url.path.endswith("/text-rerank"):
-            documents = payload["input"]["documents"]
-            return httpx.Response(
-                200,
-                json={
-                    "output": {
-                        "results": [
-                            {"index": index, "relevance_score": 0.9 - index / 100}
-                            for index in range(len(documents))
-                        ]
-                    },
-                    "usage": {"prompt_tokens": 12, "total_tokens": 12},
-                },
-                headers={"x-request-id": f"synthetic-{len(calls):02d}"},
-            )
         if request.url.path.endswith("/chat/completions"):
             if fail_next_chat[0]:
                 fail_next_chat[0] = False
@@ -131,9 +115,7 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
         "_credential",
         lambda _self, _provider, _account_id: "synthetic-adapter-key",
     )
-    monkeypatch.setattr(embedding_module, "create_http_client", new_client)
     monkeypatch.setattr(llm_module, "create_http_client", new_client)
-    monkeypatch.setattr(rerank_module, "create_http_client", new_client)
     if usage_write_fails:
 
         def fail_record_usage(_ledger: AcceptancePlanLedger, _plan_id: Any, _usage: Any) -> None:
@@ -158,6 +140,13 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
         },
     )
     assert opened.status_code == 201, opened.text
+    if not usage_write_fails:
+        workspace_id = opened.json()["workspace_id"]
+        profile = (tmp_path / "profile" / workspace_id).resolve()
+        assert model_directory is not None
+        app.state.local_model_stores[str(profile)] = LocalRetrievalModelStore(
+            profile / "retrieval-models", model_directory=model_directory
+        )
     settings = client.patch(
         "/api/v1/settings",
         headers=HEADERS,
@@ -170,16 +159,8 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
                 "reasoning_effort": "low",
                 "max_output_tokens": 2048,
             },
-            "embedding": {
-                "provider": "dashscope",
-                "model": "qwen3.7-text-embedding",
-                "enabled": True,
-            },
-            "rerank": {
-                "provider": "dashscope",
-                "model": "qwen3.7-text-rerank",
-                "enabled": True,
-            },
+            "embedding": {"provider": "local", "model": "BAAI/bge-small-zh-v1.5", "enabled": True},
+            "rerank": {"provider": "local", "model": "BAAI/bge-small-zh-v1.5", "enabled": True},
         },
     )
     assert settings.status_code == 200, settings.text
@@ -221,6 +202,10 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     )
     assert organize_plan_response.status_code == 201, organize_plan_response.text
     organize_plan = organize_plan_response.json()
+    # Preview and confirmation planning are local-only. Until the user confirms,
+    # the source remains without drafts and no adapter transport is invoked.
+    assert calls == []
+    assert client.get("/api/v1/drafts", headers=HEADERS).json() == []
     organize_confirm = client.post(
         f"/api/v1/acceptance-plans/{organize_plan['plan']['plan_id']}/confirm",
         headers=HEADERS,
@@ -288,48 +273,38 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
         json={"mode": "initial", "fingerprint": embedding_fingerprint},
     )
     assert local_index.status_code == 200, local_index.text
-    index_plan_response = client.post(
-        "/api/v1/acceptance-plans",
-        headers=HEADERS,
-        json={
-            "operation": "model.index",
-            "scope": {
-                "mode": local_index.json()["mode"],
-                "fingerprint": local_index.json()["fingerprint"],
-                "page_ids": local_index.json()["page_ids"],
-                "page_versions": local_index.json()["page_versions"],
-            },
-        },
-    )
-    assert index_plan_response.status_code == 201, index_plan_response.text
-    index_preview = index_plan_response.json()
-    index_confirm = client.post(
-        f"/api/v1/acceptance-plans/{index_preview['plan']['plan_id']}/confirm",
-        headers=HEADERS,
-        json={
-            "scope_sha256": index_preview["plan"]["scope_sha256"],
-            "scope": index_preview["scope"],
-        },
-    )
-    assert index_confirm.status_code == 200, index_confirm.text
     index_execute = client.post(
         "/api/v1/index/jobs",
         headers=HEADERS,
-        json={
-            **local_index.json(),
-            "acceptance_plan_id": index_preview["plan"]["plan_id"],
-        },
+        json=local_index.json(),
     )
     assert index_execute.status_code == 200, index_execute.text
     assert index_execute.json()["indexed_chunks"] >= 1
-    index_state = client.get(
-        f"/api/v1/acceptance-plans/{index_preview['plan']['plan_id']}", headers=HEADERS
-    ).json()
-    assert index_state["provider_usage"][0]["provider"] == "qwen3.7-text-embedding"
-    assert index_state["provider_usage"][0]["input_tokens"] is None
-    assert index_state["provider_usage"][0]["total_tokens"] == 12
-    assert len([path for path, _ in calls if path.endswith("/embeddings")]) == 1
-    assert calls[1][0].endswith("/embeddings")
+    assert local_index.json()["estimated_cost"] == 0
+
+    # Same-model local content changes are indexed incrementally without a paid plan.
+    late_page = client.post(
+        "/api/v1/pages",
+        headers=HEADERS,
+        json={
+            "metadata": {
+                "id": "00000000-0000-4000-8000-000000000113",
+                "title": "访客登记补充说明",
+                "role": "knowledge",
+                "kind": "topic",
+                "line_id": line.json()["id"],
+                "project_id": project.json()["id"],
+            },
+            "body": "仅用于部分陈旧同指纹索引验证。",
+            "confirmation_id": "confirm-late-page",
+            "operation_id": "late-page",
+        },
+    )
+    assert late_page.status_code == 201, late_page.text
+    assert late_page.json()["index_update"] == "updated"
+    partial_status = client.get("/api/v1/index/status", headers=HEADERS).json()
+    assert partial_status["state"] == "ready"
+    assert partial_status.get("reason") != "embedding_model_changed"
 
     request_id = "47f12779-9448-48b4-979a-e39d276b4e03"
     query_scope = {
@@ -365,14 +340,20 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     )
     assert query_result.status_code == 200, query_result.text
     assert "访客登记由前台核验姓名并记录来访时间" in query_result.text
+    stream_events = [
+        json.loads(line.removeprefix("data: "))
+        for line in query_result.text.splitlines()
+        if line.startswith("data: {")
+    ]
+    citation_events = [item["data"] for item in stream_events if item["type"] == "citation"]
+    assert citation_events
+    citation_page = client.get(f"/api/v1/pages/{citation_events[0]['page_id']}", headers=HEADERS)
+    assert citation_page.status_code == 200, citation_page.text
+    assert citation_page.json()["content_sha256"] == citation_events[0]["content_sha256"]
     query_state = client.get(
         f"/api/v1/acceptance-plans/{query_preview['plan']['plan_id']}", headers=HEADERS
     ).json()
-    assert [item["provider"] for item in query_state["provider_usage"]] == [
-        "qwen3.7-text-embedding",
-        "qwen3.7-text-rerank",
-        "deepseek",
-    ]
+    assert [item["provider"] for item in query_state["provider_usage"]] == ["deepseek"]
     assert all(
         item["request_id"].startswith("synthetic-") for item in query_state["provider_usage"]
     )
@@ -383,9 +364,7 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     assert model_calls[1][1]["thinking"] == {"type": "enabled"}
     assert model_calls[1][1]["reasoning_effort"] == "low"
     assert model_calls[1][1]["max_tokens"] == 2048
-    assert len([path for path, _ in calls if path.endswith("/embeddings")]) == 2
-    assert len([path for path, _ in calls if path.endswith("/text-rerank")]) == 1
-    assert len(closed_clients) == 5
+    assert len(closed_clients) == 2
 
     journal_text = "合成日志：周三完成访客流程演练，遗留事项待确认。"
     before_journal = len(calls)
@@ -450,7 +429,7 @@ def test_organize_index_and_query_use_confirmed_plans_and_real_adapters(
     )
     assert repeated.status_code == 409
     assert len(calls) == before_journal + 1
-    assert len(closed_clients) == 6
+    assert len(closed_clients) == 3
 
     def confirmed_journal_plan(text: str) -> dict[str, Any]:
         preview_response = client.post(

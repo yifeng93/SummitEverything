@@ -1,21 +1,64 @@
 from __future__ import annotations
 
 import json
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
-from uuid import uuid4
+from threading import Barrier
+from uuid import UUID, uuid4
 
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import FakeLLM, GroundedAnswer
-from summit_everything.local.answer_context import AnswerContext
+from summit_everything.local.answer_context import AnswerContext, AnswerContextStore
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import create_line, create_project, create_workspace
 from summit_everything.workspace.writer import PageWriter
 
 TOKEN = "answer-context-test"
+
+
+def _initialize_answer_context_after_barrier(path: str, workspace_id: str, barrier) -> int:
+    barrier.wait(timeout=20)
+    return len(AnswerContextStore(Path(path)).candidates(UUID(workspace_id)))
+
+
+def test_answer_context_first_initialization_is_serialized_across_threads_and_processes(
+    tmp_path: Path,
+) -> None:
+    workers = 6
+    workspace_id = str(uuid4())
+
+    thread_path = tmp_path / "threads" / "answer_context.sqlite3"
+    thread_barrier = Barrier(workers)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        thread_results = list(
+            executor.map(
+                _initialize_answer_context_after_barrier,
+                [str(thread_path)] * workers,
+                [workspace_id] * workers,
+                [thread_barrier] * workers,
+            )
+        )
+    assert thread_results == [0] * workers
+
+    process_path = tmp_path / "processes" / "answer_context.sqlite3"
+    process_context = multiprocessing.get_context("spawn")
+    with process_context.Manager() as manager:
+        process_barrier = manager.Barrier(workers)
+        with ProcessPoolExecutor(max_workers=workers, mp_context=process_context) as executor:
+            process_results = list(
+                executor.map(
+                    _initialize_answer_context_after_barrier,
+                    [str(process_path)] * workers,
+                    [workspace_id] * workers,
+                    [process_barrier] * workers,
+                )
+            )
+    assert process_results == [0] * workers
 
 
 def _events(response) -> list[dict[str, object]]:

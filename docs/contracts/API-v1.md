@@ -1,6 +1,6 @@
 # 本地 API 契约 v1
 
-状态：v1 API 契约与实现边界。本表描述 API 语义，不维护阶段状态，也不表示真实 provider 已验收。当前验收状态见 [PROGRESS](../implementation/PROGRESS.md)；历史固定 SHA 的结论见[报告索引](../quality/reports/README.md)。Settings 读写不联系 provider；真实业务调用需有绑定当前范围的一次性计划和独立确认。前缀 `/api/v1`；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
+状态：v1 API 契约与实现边界。本表描述 API 语义，不维护阶段状态，也不表示真实 provider 已验收。当前验收状态见 [PROGRESS](../implementation/PROGRESS.md)；历史固定 SHA 的结论见[报告索引](../quality/reports/README.md)。Settings 读写不联系 provider；真实模型调用、飞书材料/任务读取与材料导入需有绑定当前范围的一次性计划和独立确认。飞书日历只读是明确例外：已配置身份直接读取，由凭据、身份、scope、工作库隔离和请求上限约束。前缀 `/api/v1`；JSON 使用 snake_case、稳定小写枚举，OpenAPI / TypeScript 从后端类型生成。
 
 ## 共用对象与认证
 
@@ -41,7 +41,7 @@
 
 `POST /acceptance-plans` 只在本机生成 10 分钟有效的单次计划，不调用 provider。输入 `operation` 和具体 `scope`；响应同时返回可读范围与 `plan`（范围/配置 SHA-256、有限 `request_limit`、状态和时间）。客户端必须展示该范围并由用户显式调用 `POST /acceptance-plans/{plan_id}/confirm`，提交预览时返回的 `scope_sha256` 和 `scope`。设置、模型内容和页面数据不能自行确认。
 
-真实整理、索引、问答、日志 AI 辅助、飞书只读与导入执行路由要求相应已确认 `acceptance_plan_id`，并在外发前重核同一内容/页面版本、profile/workspace、配置与飞书授权代次。执行预留有限 HTTP request 数；索引上界按最多 20 条输入一批，问答最多 embedding/rerank/answer 各一次，整理和日志 AI 辅助最多一次，飞书导入按保守最坏上界计算。超时或进程中断的预留不可释放、不可重发；状态 `unknown` 表示结果未知而非明确失败。相同 Feishu operation_id 与 query request_id 的本地 replay 不重复 provider 调用或消耗新的计划。
+真实整理、问答、日志 AI 辅助、飞书材料/任务读取与导入执行路由要求相应已确认 `acceptance_plan_id`，飞书日历只读除外；并在外发前重核同一内容版本、profile/workspace、配置与飞书授权代次。本地 embedding、排序和索引构建不创建外部付费计划；问答计划仅为 DeepSeek 回答预留 1 次请求，整理和日志 AI 辅助最多一次，飞书导入按保守最坏上界计算。超时或进程中断的预留不可释放、不可重发；状态 `unknown` 表示结果未知而非明确失败。相同 Feishu operation_id 与 query request_id 的本地 replay 不重复 provider 调用或消耗新的计划。
 
 `GET /acceptance-plans/{plan_id}` 仅返回本地状态；成功后 `provider_usage` 只包含 provider 明确回报的 request id 与 token 计数，未回报的字段为 null / `usage_reported=false`。字段缺失不当作 0，亦不表示实际账单；真实账单需另在 provider 侧核对。损坏/容量用尽时本地拒绝继续授权。`DELETE /acceptance-plans/{plan_id}` 撤销尚未执行计划，不影响已经预留的调用。全程只接受本机 Bearer / allowlisted Origin。
 
@@ -55,6 +55,7 @@
 | GET /lines；POST /lines；PATCH /lines/{id}；DELETE /lines/{id} | 线 CRUD，写带 operation_id；非空删除拒绝 |
 | GET /projects；POST /projects；PATCH /projects/{id}；DELETE /projects/{id} | 主线归属、名称、归档；业务进度另走 Action |
 | GET /pages；GET /pages/{id} | PageSnapshot；引用打开可附 expected_content_sha256，旧版本返回内容已更新 |
+| GET /pages/directory | PageDirectoryEntry（不含正文；仅项目概览提供摘要正文）；供项目目录快速展示页面层级 |
 | POST /pages | 明确直接撰写并确认的 metadata / body、confirmation_id → MutationResult；新增基准为空 |
 | POST /pages/{id}/confirmations | 外部编辑或直接修改后的 metadata / body、expected_base_sha256、confirmation_id → MutationResult |
 | POST /pages/{id}/moves | destination_relative_path、operation_id、跨项目时的 structure_confirmation_id → MutationResult；移动原子维护标准 Markdown 相对链接，结构确认更新单一主归属 |
@@ -78,20 +79,21 @@
 | GET /integrations/feishu/callback | 验证已发起 OAuth state / redirect；Fake 存进程内，Real 模式写入当前 profile 的统一 Keychain 凭据槽 |
 | GET /integrations/feishu/materials | 搜索 / 分页的可见材料 metadata；不调模型 |
 | POST /integrations/feishu/imports | 用户选择的材料 ID、operation_id → 来源与 item；不隐式整理 |
-| GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 读取日历 / 正式任务；任务写统一走 Action |
-| POST /acceptance-plans；POST /acceptance-plans/{id}/confirm；GET /acceptance-plans/{id}；DELETE /acceptance-plans/{id} | 真实模型/Feishu 单次动作的本机预览、独立确认、状态/安全用量读取和未执行计划取消；计划绑定 profile、workspace、执行配置与确切 scope digest，有 10 分钟 TTL 和有限 HTTP request 上限。详情不保存 prompt/正文；unknown 消耗额度且无重发接口 |
-| POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、费用估计、fingerprint |
-| POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有 LanceDB 索引时，批准 mutation 可自动执行同 fingerprint 的 incremental。旧 SQLite `vector_json` 索引状态为 `not_ready`，附 `reason=legacy_vectors_require_rebuild` 与重建说明；不会读取旧向量或自动调用 embedding。用户通过初始索引计划从已确认 Markdown 显式重建。其他状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
-| POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
+| GET /integrations/feishu/calendar；GET /integrations/feishu/tasks | 日历直接执行有界只读并校验身份/scope；正式任务读取需已确认计划；任务写统一走 Action |
+| POST /acceptance-plans；POST /acceptance-plans/{id}/confirm；GET /acceptance-plans/{id}；DELETE /acceptance-plans/{id} | DeepSeek 与 Feishu 单次外部动作的本机预览、独立确认、状态/安全用量读取和未执行计划取消；计划绑定 profile、workspace、执行配置与确切 scope digest，有 10 分钟 TTL 和有限 HTTP request 上限。详情不保存 prompt/正文；unknown 消耗额度且无重发接口。兼容操作名 `model.index` 返回 409，提示改用本地索引计划，不建立外部调用预算 |
+| POST /index/plans | mode:initial/incremental/full/model_change → 页面 / 分块范围、本机执行计划、fingerprint；本地模型由 UI 明确确认此范围后执行，不创建外部授权计划或调用额度 |
+| POST /index/jobs；GET /index/status | 首次索引或用户请求的 full / model_change 计划仍需显式确认；已有 LanceDB 索引时，批准 mutation 可自动执行同 fingerprint 的 incremental。旧 SQLite `vector_json` 索引状态为 `not_ready`，附 `reason=legacy_vectors_require_rebuild` 与重建说明；不会读取旧向量或自动调用 embedding。用户通过初始索引计划从已确认 Markdown 显式重建。已有索引但 embedding fingerprint 与当前配置不符时，状态为 `stale`，附 `reason=embedding_model_changed`；不会自动重建。其他状态返回 fingerprint、索引页/分块数、当前页数、stale_pages 与 state（not_ready / ready / stale）；旧版本不得作为当前引用 |
+| POST /queries；DELETE /queries/{request_id} | question（最多 8000 字）、conversation_id?、role_id?、answer_mode:fact/comparison/plan、purpose:current/history → SSE / 取消；服务器从当前合格版本重新检索，不把历史 assistant 回答当 passage。意图 hash 包含模式、角色与上下文版本；稳定 ID 重放使用已保存事件，不重发 provider。生成 DeepSeek 查询计划或开始查询前，要求存在与当前本地 embedding 配置匹配的活动索引代；无索引或 fingerprint 不匹配返回 409 `index_not_ready`，不创建计划、不预留 provider 请求、不自动建索引，调用方保留原问题并由用户前往审批显式准备索引。相同 fingerprint 的内容更新仍可查询，具体引用仍按当前内容资格门检查。角色偏好与用户记忆不得改变证据、工具或批准边界。 |
 | GET /conversations?cursor&limit；GET /conversations/{id}；POST /conversations/{id}/reopen；DELETE /conversations/{id} | 按本地 profile 与当前 workspace 隔离的问答历史；列表默认 20、limit 1–100；历史只读重开可接续提问或删除；不进入工作库语料 |
 | GET /roles；POST /roles；PATCH /roles/{id}；DELETE /roles/{id} | 本机 profile+workspace 角色 CRUD；instructions 最多 4000 字符，角色上下文预算 0–6000 字节且每次查询会校验实际长度。角色只影响表达，不修改批准 / 工具权限 |
 | GET /memory/candidates；POST /memory/candidates | 用户必须明确勾选 `user_expression=true`，`message_id` 必须是当前 profile/workspace 历史中的真实用户问题，`text` 必须与问题原文相符且表达本人偏好 / 习惯 / 事实；引用、来源、转述、粘贴及来源 canary 文本拒绝；服务端核验消息来源，不信任 UI 标签；响应是本机 pending 候选，不能直接进入上下文 |
 | POST /memory/candidates/{id}/confirmations | confirmation_id、用户编辑后的正文 → 活跃本机记忆；保留来源 message_id 与确认意图，重放同意图幂等，改内容冲突 |
 | GET /memory；PATCH /memory/{id}；DELETE /memory/{id} | 查看、编辑、删除活跃本机记忆；按 profile 与 workspace 隔离，不写工作库 |
-| GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置；已实现原子本地保存；设置读取 / 保存不联网 |
+| GET /settings；PATCH /settings | 当前本地 profile 的非秘密配置，含 `local_model` readiness；已实现原子本地保存；设置读取 / 保存不联网 |
+| GET /retrieval-model/status；POST /retrieval-model/prepare | 读取本地固定模型的状态；准备路由只有用户明确 POST 时才启动下载，异步返回状态，按固定 revision、文件 size 与 SHA-256 验证，失败清理暂存并可重试；不访问密钥、不回退到云端 |
 | PUT /credentials/{provider}；DELETE /credentials/{provider} | 已实现显式 macOS Keychain adapter 与测试注入边界；响应只返回 configured 状态。真实 OS Keychain 拒绝 / 锁定 / 重启生命周期仍 NOT_RUN |
 | POST /settings/connections/{provider} | 计划路由；尚未实现。连接检查进入 Stage C 授权门，不能由刷新设置触发 |
-| GET /provider-smoke；POST /provider-smoke/deepseek-chat；POST /provider-smoke/model-studio-embedding；POST /provider-smoke/model-studio-rerank | 单独限额的合成连接 smoke；provider 在本机已保存并启用 Real 配置时可调用，固定合成输入、每个 app profile 每 provider 最多一次。尝试在出网前原子记账，失败/超时也占额，无自动重试；普通业务模型路径仍被服务端拒绝。真实 smoke 尚未执行；Feishu OAuth 没有对应 smoke 路由 |
+| GET /provider-smoke；POST /provider-smoke/deepseek-chat | DeepSeek 合成连接 smoke；固定合成输入、每个 app profile 最多一次。尝试在出网前原子记账，失败/超时也占额，无自动重试；普通业务路径不使用 smoke。真实 smoke 尚未执行；Feishu OAuth 没有对应 smoke 路由 |
 
 ### Intake 作业恢复与回执归档
 
@@ -140,7 +142,7 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 - 生命周期与 deadline：一个完整业务操作（主日历→events、refresh→读取、正文回退、多项导入）持有**按调用线程归属**的租约；配置变更后新操作立即使用新配置，已开始的操作（含嵌套步骤与后续 HTTP）按旧配置快照完成，退役 provider 拒绝无关新操作与无租约的直接 adapter 调用，只在最后一个租约结束后关闭自有 client 一次。HTTP 边界使用可取消的整体 deadline：到期关闭底层传输连接并等待 worker 收敛后才返回，覆盖连接/响应头/正文/结束（响应头未完成时同样生效），注入 client 也不能绕过无重定向与大小上限。
 - 授权代次：同一 profile/app 共享授权代次；logout、重新授权与凭据替换都会使在途 refresh 结果作废，不清除随后建立的新授权。
 - 错误映射：按 HTTP 状态与官方业务码映射到 `token_expired` / `missing_scope` / `not_found` / `provider_timeout` / `provider_unavailable` / `malformed_response`；响应体、header、token、prompt 不出现在错误文本。
-- 历史服务端门：旧 Stage B 固定 SHA 曾使用 `feishu.real_data_enabled` 作为数据读取开关。当前真实读取 / 导入与模型 organize/index/query 必须有绑定当前范围的本机一次性计划和独立确认；该旧 bool 即使为 true 也不能单独授权。未配置 Real / provider 时返回具体配置错误；计划不会调用 provider。真实 task 写仍由独立门返回 `result_proof_unavailable`。
+- 历史服务端门：旧 Stage B 固定 SHA 曾使用 `feishu.real_data_enabled` 作为数据读取开关。当前真实日历读取按本契约的只读直读规则校验身份与scope；其他 Feishu 读取 / 导入及模型 organize/index/query 必须有绑定当前范围的本机一次性计划和独立确认。该旧 bool 即使为 true 也不能单独授权。未配置 Real / provider 时返回具体配置错误；计划不会调用 provider。真实 task 写仍由独立门返回 `result_proof_unavailable`。
 
 - `GET /integrations/feishu/status` → `{mode, authorized, app_configured, identity, token_type: user, scopes, user_identity_verified, credential_error}`，不返回 token。`credential_error=credential_unreadable` 表示本机用户凭据无法解析（此时 `authorized=false`）。`mode` 反映实际配置（real 不会返回 fake）；`authorized` 只表示存在可用 **user** token；`app_configured` 只表示已保存应用密钥，不伪装成用户已授权；`user_identity_verified` 只在实际 user-info 验证成功后置为 true，不从配置推断。
 - `POST /integrations/feishu/authorizations` → `{authorization_url, expires_in_seconds}`。Fake URL 使用精确配置的 callback 加 OAuth `code/state`；state 由本机会话创建、300 秒到期、一次性并受运行身份限制。
@@ -149,7 +151,7 @@ Fake providers 在 integrations 协议边界替代网络，工作库、事务、
 - `GET /integrations/feishu/materials?query&visibility&cursor&limit` → MaterialPage `{items, next_cursor}`；visibility 为 owner/shared 或不传，limit 为 1–30，默认 20；query 最多 500 字符。列表不获取正文。
 - `POST /integrations/feishu/imports`：`{material_ids: 非空明确选择集合, operation_id}` → `{operation_id, state: succeeded/partial/failed, outcomes}`；每个 outcome 含 material_id、state、成功时 source_id/item_id、失败时 error_code/message。最多 30 个 ID，ID 与 operation_id 上限 200 字符。同 operation_id / 相同 ID 集合重放既有结果，变更集合返回 409。部分失败不是全成功；明确的新 ID 是新的导入意图。
 - 正文为 file bytes，接受 UTF-8 TXT/Markdown，20 MB 上限；接受 text/plain、text/markdown、application/octet-stream（charset 若给出须 UTF-8），拒绝 JSON、非法编码、空文件、NUL 与不安全路径。原字节和 SHA-256 原样保留；SourceRecord.external_identity 记录 provider、material_id、token_type 与 content_type。只生成 source / pending intake，不生成稿件、批准或正式知识。
-- `GET /integrations/feishu/calendar?start&end&timezone&cursor&limit` → `{items, next_cursor, timezone}`；必须显式传带时区时间和有效 IANA timezone，start < end，limit 1–30。空列表正常，读取无模型或任务写。
+- `GET /integrations/feishu/calendar?start&end&timezone&cursor&limit` → `{items, next_cursor, timezone}`；日历只读不要求或消费 acceptance plan。必须显式传带时区时间和有效 IANA timezone，start < end，limit 1–30。保持凭据身份、scope 和当前工作库隔离；每次只执行有界读取，超时/错误不自动重试，错误不伪装为空列表。真实明确时间范围按 provider 协议为单页，cursor 无效时返回错误；Fake 可覆盖分页。读取无模型或任务写。Agent 路由使用相同读取规则。
 - 安全错误代码：authorization_denied、not_authorized、token_expired、missing_scope、not_found、malformed_response、provider_timeout、provider_unavailable、invalid_state、invalid_redirect、invalid_cursor、credential_missing、credential_unreadable、unsupported_capability、result_proof_unavailable、no_primary_calendar、ambiguous_calendar；内部异常文本不泄露到响应。
 - 用户资源访问前，如 access token 将于 60 秒内过期，服务先调用 provider 的 refresh 契约；仅验证新 user token 仍有效且保留所需 scope 后，才替换当前 credential。refresh 在 lifecycle 锁内串行执行并二次检查，因此同一 profile/account 的并发读者只消耗一次 refresh token 并保留最新 token（离线并发回归覆盖）；真实 Keychain 拒绝/锁定/重启生命周期仍未验收。
 
@@ -159,7 +161,7 @@ M2.1 审查补充：前端 callback 使用返回的绝对本机地址，限定 h
 
 ## 设置与凭据扩展
 
-Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都不联系 provider。连接测试是另一条显式调用，不通过 `GET/PATCH /settings` 触发。`real_data_enabled` 兼容字段本身不授权真实外发。Feishu 读取/导入及模型 organize/index/query 要提交已确认的一次性计划；真实 task 写仍保持独立禁用。
+Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都不联系 provider。连接测试是另一条显式调用，不通过 `GET/PATCH /settings` 触发。`real_data_enabled` 兼容字段本身不授权真实外发。飞书材料/任务读取与导入及模型 organize/index/query 要提交已确认的一次性计划；日历只读经身份、scope、请求数与响应大小门禁后直接执行；真实 task 写仍保持独立禁用。
 
 ### `GET /settings`
 
@@ -167,17 +169,17 @@ Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都�
 
 - `mode`: `fake` 或 `real`，缺失配置时默认为 `fake`。
 - `feishu`: `app_id`、loopback `redirect_uri`、`identity`（app/user，默认 app）、`calendar_id`、`material_content`（transcript/artifacts）与 `real_data_enabled`（默认 false）。不返回 app secret 或 token；授权状态由 `GET /integrations/feishu/status` 单独返回。
-- `llm`, `embedding`, `rerank`: 返回非秘密 provider 配置、allowlisted model、能力开关和受限地区；LLM 有本机账户标识，Model Studio embedding / rerank 共用 `model_studio_account_id`；Model Studio `base_url` 是**逐账户受限可配置**（allowlist：阿里云 HTTPS host + `/api/v1` 或 `/compatible-mode/v1` 路径）。embedding 另返回 dimension 与 fingerprint。配置摘要本身不授权调用。
-- `capabilities`: 按能力列出 `available/configured/disabled_reason`。该静态摘要不签发动作计划或确认；Feishu 实际调用还需提交已确认的精确计划。task create/edit/complete 因缺少可核实结果证明单独保持 unavailable（`result_proof_unavailable`）。不能因为读取可用而标成可写。
+- `llm`, `embedding`, `rerank`: 返回非秘密 provider 配置、allowlisted model 和能力开关。默认检索 provider 是本地 BGE；`dashscope` 配置字段仅为旧 profile 兼容读取，业务 runtime 拒绝调用。设置摘要包含 `local_model`（模型状态、revision、维度、文件大小、准备进度和安全错误码），不含本机目录或模型文件 hash。
+- `capabilities`: 按能力列出 `available/configured/disabled_reason`。该静态摘要不签发动作计划或确认；Feishu 日历只读直接校验身份/scope；材料和任务读取/导入还需提交已确认的精确计划。task create/edit/complete 因缺少可核实结果证明单独保持 unavailable（`result_proof_unavailable`）。不能因为读取可用而标成可写。
 - `credential_status`: 各 provider 是否已设置、Keychain 是否可用。不得返回 Keychain item 名、secret 长度或 secret 值。
 
 ### `PATCH /settings`
 
-只接受非秘密字段的 typed partial update。未知字段拒绝，范围、地区和模型标识按 provider allowlist 校验，写入当前本地 profile 并原子替换。更改 provider/model/dimension 不调用 provider、不重建索引、不估计实际账单；返回新配置与提示用户显式查看/确认索引计划。Model Studio endpoint 允许逐账户受限 base URL：必须是阿里云 HTTPS host 且路径为 `/api/v1` 或 `/compatible-mode/v1`，其他任意 URL 一律拒绝（有离线反例覆盖）。当前未实现多地区选择。
+只接受非秘密字段的 typed partial update。未知字段拒绝，模型标识按 provider allowlist 校验，写入当前本地 profile 并原子替换。设置保存不调用 provider、不准备模型、不重建索引；用户更改本地模型配置后需显式预览并确认索引计划。索引计划范围绑定页面版本和模型 fingerprint，执行前重新核对；该本地确认不通过外部调用授权账本。
 
 ### `PUT /credentials/{provider}` 与 `DELETE /credentials/{provider}`
 
-- `provider` 为 allowlist key：`feishu_app`、`feishu_user`、`deepseek`、`dashscope`。`feishu_user` 由 OAuth 流程写入，设置 UI 只展示 `feishu_app`/`deepseek`/`dashscope` 的配置状态。
+- `provider` 为 allowlist key：`feishu_app`、`feishu_user`、`deepseek`、`dashscope`。`feishu_user` 由 OAuth 流程写入。当前设置 UI 只提供 `feishu_app` / `deepseek`；`dashscope` 仅为旧凭据兼容保留，用户迁移不会删除已保存条目。
 - `PUT` 的 secret 只在 request body 内传输到 loopback FastAPI，再交给 Keychain；response 只含 `{provider, configured: true}`。错误不回显 body、值、长度或底层 Keychain 错误文本。设置变更不测试连接。
 - `PUT` / `DELETE` 的 JSON body 带非秘密 `account_id`。Keychain item 按 app/profile/provider/账户标识的摘要隔离；切换账户标识后只显示并操作当前账户项。Feishu 应用凭据与 user token 使用**同一个 vault 命名空间**，账户标识均为当前 `app_id`：app secret 占 `feishu_app:<hash>`，user token 占 `feishu_user:<hash>`，因此设置 UI 写入的 app secret 就是 adapter 读取的槽，不存在两套互不通的 Keychain slot。`DELETE` 只删除当前 provider/account key，不扫描或删除用户其他 Keychain 项。
 - Keychain 拒绝、锁定、不可用或删除失败采用一致的 `credential_store_unavailable` / `credential_access_denied` 错误。真实模式始终 fail closed，不回退内存或文件。

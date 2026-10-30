@@ -31,7 +31,7 @@ VOLUME_ICON_RELATIVE_PATH = Path("native/Resources/VolumeIcon.icns")
 BUNDLE_ICON_NAME = "AppIcon.icns"
 BUNDLE_ICON_STEM = "AppIcon"
 DMG_VOLUME_NAME = "SummitEverything Internal"
-MACOS_UV_ARGS = ["--python-platform", "aarch64-apple-darwin"]
+MACOS_UV_ARGS = ["--python", "3.13", "--python-platform", "aarch64-apple-darwin"]
 
 
 def build_environment() -> dict[str, str]:
@@ -317,6 +317,12 @@ def build(output: Path, *, allow_dirty: bool, dmg: Path | None = None) -> None:
                 "lancedb",
                 "--collect-all",
                 "pyarrow",
+                "--collect-all",
+                "fastembed",
+                "--collect-all",
+                "onnxruntime",
+                "--collect-all",
+                "tokenizers",
                 "--distpath",
                 str(work / "dist"),
                 "--workpath",

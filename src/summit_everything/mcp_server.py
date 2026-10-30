@@ -224,17 +224,17 @@ async def list_calendar(
     start: str,
     end: str,
     timezone: str,
-    approved_plan_id: str,
+    approved_plan_id: str | None = None,
     limit: Annotated[int, Field(strict=True, ge=1, le=30)] = 20,
     cursor: str = "",
 ) -> object:
-    """读取已由应用用户审批范围的飞书日历；需提供对应一次性计划 ID，工具不会签发或扩大审批。"""
-    UUID(approved_plan_id)
+    """读取授权身份可访问的有界飞书日历。旧计划 ID 可选传入，仅为调用兼容，不签发或消费计划。"""
+    if approved_plan_id is not None:
+        UUID(approved_plan_id)
     params: dict[str, str | int] = {
         "start": start,
         "end": end,
         "timezone": timezone,
-        "plan_id": approved_plan_id,
         "limit": limit,
     }
     if cursor:

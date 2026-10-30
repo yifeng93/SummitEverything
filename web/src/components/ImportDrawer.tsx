@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent } from 'react'
+import { X } from 'lucide-react'
 import { ApiError, api, newOperationId, type IntakeItem } from '../api/client'
 import { FeishuPanel } from './FeishuPanel'
 import { useDialogFocus } from './useDialogFocus'
@@ -50,15 +51,20 @@ export function ImportDrawer({ onClose, onImported, onMode, onAuthorizationChang
   }
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) requestClose() }}>
     <section ref={dialogRef} className="modal-card import-drawer" role="dialog" aria-modal="true" aria-label="导入材料" tabIndex={-1}>
-      <div className="panel-heading"><div><h2>导入材料</h2><p>选择本机文件，或搜索飞书材料；导入只保存原件，不会调用模型。</p></div><button className="button secondary" onClick={requestClose} disabled={busy || remoteBusy}>关闭</button></div>
+      <div className="panel-heading">
+        <div><h2>导入材料</h2></div>
+        <button className="icon-button modal-close" aria-label="关闭" title="关闭" onClick={requestClose} disabled={busy || remoteBusy}><X size={16} strokeWidth={1.75} aria-hidden="true" /></button>
+      </div>
       {contextMessage && <p className="helper-line">{contextMessage}</p>}
       <div className="import-tabs" role="tablist" aria-label="材料来源"><button role="tab" aria-selected={sourceTab === 'local'} className={sourceTab === 'local' ? 'active' : ''} onClick={() => setSourceTab('local')}>本机文件</button><button role="tab" aria-selected={sourceTab === 'feishu'} className={sourceTab === 'feishu' ? 'active' : ''} onClick={() => setSourceTab('feishu')}>飞书材料</button></div>
-      {sourceTab === 'local' && <><div className="capture-actions">
-        <label className="button secondary file-button">本机文件<input aria-label="选择多个文件" type="file" multiple accept=".txt,.md,text/plain,text/markdown" onChange={choose} disabled={busy} /></label>
+      {sourceTab === 'local' && <><div className="import-picker">
+        <label className="button primary file-button">选择文件<input aria-label="选择多个文件" type="file" multiple accept=".txt,.md,text/plain,text/markdown" onChange={choose} disabled={busy} /></label>
         <label className="button secondary file-button">选择文件夹<input type="file" multiple webkitdirectory="" accept=".txt,.md,text/plain,text/markdown" onChange={choose} disabled={busy} /></label>
-        <span className="helper-line">也可将文件拖到此处。每批最多 100 个 / 100 MB，单个不超过 20 MB。</span>
       </div>
-      <div className="drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); stage(Array.from(event.dataTransfer.files)) }}>将 TXT 或 Markdown 文件拖到这里</div>
+      <div className="drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); stage(Array.from(event.dataTransfer.files)) }}>
+        <strong>把 TXT / Markdown 拖到这里</strong>
+        <span>单批最多 100 个、100 MB；单个不超过 20 MB</span>
+      </div>
       {rows.length > 0 && <section className="batch-upload-review" aria-label="导入文件状态"><ul className="source-list">{rows.map((row) => <li key={row.key}><div className="source-row"><span className="source-title"><strong>{row.path}</strong><small>{(row.file.size / 1024).toFixed(1)} KB · {{ queued: '待导入', uploading: '正在导入', succeeded: '已导入', failed: '导入失败', unknown: '结果未知', skipped: '已跳过', blocked: '未导入' }[row.state]}{row.message ? ` · ${row.message}` : ''}</small></span>{row.state === 'failed' && <button className="text-button" disabled={busy} onClick={() => void upload([row])}>只重试此文件</button>}</div></li>)}</ul><button className="button primary" disabled={busy || !rows.some((row) => row.state === 'queued')} onClick={() => void upload()}>{busy ? '正在逐项导入…' : '导入可用文件'}</button><button className="button secondary" disabled={busy || !rows.some((row) => row.state === 'failed')} onClick={() => void upload(rows.filter((row) => row.state === 'failed'))}>重试失败项</button></section>}</>}
       {(busy || remoteBusy) && <p className="helper-line" role="status">正在处理导入；请等待结果可核对后再关闭。</p>}
       {sourceTab === 'feishu' && <><FeishuPanel view="materials" showAuthorization={false} onImported={onImported} onMode={onMode} onAuthorizationChanged={onAuthorizationChanged} onBusyChange={setRemoteBusy} onClose={requestClose} /><p className="helper-line">需要授权时，可到设置里的连接向导处理。</p></>}

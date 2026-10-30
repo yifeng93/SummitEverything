@@ -207,9 +207,8 @@ class ActionService:
             )
             if request.candidate_id is not None:
                 from summit_everything.intake.review import IntakeReviewService
-                from summit_everything.integrations.llm import FakeLLM
 
-                candidates = IntakeReviewService(FakeLLM()).list_actions(root)
+                candidates = IntakeReviewService().list_actions(root)
                 candidate = next(
                     (value for value in candidates if value.action_id == request.candidate_id), None
                 )

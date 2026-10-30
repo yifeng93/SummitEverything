@@ -32,39 +32,44 @@
   "entries": {
     "web/src/App.tsx:content_sha256": 1,
     "web/src/App.tsx:page_id": 2,
-    "web/src/components/AskView.tsx:fingerprint": 4,
+    "web/src/components/ApprovalView.tsx:content_sha256": 3,
+    "web/src/components/ApprovalView.tsx:fingerprint": 5,
+    "web/src/components/ApprovalView.tsx:operation_id": 1,
+    "web/src/components/ApprovalView.tsx:page_id": 18,
+    "web/src/components/AskPreferences.tsx:candidate_id": 5,
+    "web/src/components/AskPreferences.tsx:fingerprint": 1,
     "web/src/components/AskView.tsx:content_sha256": 5,
-    "web/src/components/AskView.tsx:candidate_id": 7,
+    "web/src/components/AskView.tsx:fingerprint": 2,
     "web/src/components/AskView.tsx:page_id": 6,
-    "web/src/components/AskView.tsx:request_id": 14,
     "web/src/components/AskView.tsx:relative_path": 2,
+    "web/src/components/AskView.tsx:request_id": 14,
     "web/src/components/DraftReview.tsx:content_sha256": 3,
     "web/src/components/DraftReview.tsx:operation_id": 1,
     "web/src/components/DraftReview.tsx:page_id": 5,
-    "web/src/components/FeishuPanel.tsx:operation_id": 2,
     "web/src/components/FeishuPanel.tsx:material_id": 7,
+    "web/src/components/FeishuPanel.tsx:operation_id": 2,
+    "web/src/components/ImportDrawer.tsx:operation_id": 1,
     "web/src/components/JournalView.tsx:operation_id": 1,
     "web/src/components/JournalView.tsx:page_id": 2,
     "web/src/components/MarkdownText.tsx:content_sha256": 2,
     "web/src/components/MarkdownText.tsx:page_id": 3,
     "web/src/components/MarkdownText.tsx:relative_path": 3,
-    "web/src/components/PageReader.tsx:content_sha256": 3,
+    "web/src/components/PageReader.tsx:content_sha256": 7,
     "web/src/components/PageReader.tsx:operation_id": 2,
-    "web/src/components/PageReader.tsx:page_id": 10,
-    "web/src/components/PageReader.tsx:relative_path": 7,
-    "web/src/components/ProjectsView.tsx:content_sha256": 5,
+    "web/src/components/PageReader.tsx:page_id": 13,
+    "web/src/components/PageReader.tsx:relative_path": 9,
+    "web/src/components/PageTree.tsx:content_sha256": 1,
+    "web/src/components/PageTree.tsx:page_id": 3,
+    "web/src/components/ProjectsView.tsx:content_sha256": 8,
     "web/src/components/ProjectsView.tsx:operation_id": 8,
-    "web/src/components/ProjectsView.tsx:page_id": 10,
-    "web/src/components/ProjectsView.tsx:relative_path": 5,
-    "web/src/components/TasksPanel.tsx:candidate_id": 2,
-    "web/src/components/WorkspaceGate.tsx:operation_id": 1,
-    "web/src/components/ApprovalView.tsx:content_sha256": 2,
-    "web/src/components/ApprovalView.tsx:fingerprint": 10,
-    "web/src/components/ApprovalView.tsx:operation_id": 1,
-    "web/src/components/ApprovalView.tsx:page_id": 17,
-    "web/src/components/ImportDrawer.tsx:operation_id": 1,
+    "web/src/components/ProjectsView.tsx:page_id": 18,
+    "web/src/components/ProjectsView.tsx:relative_path": 3,
+    "web/src/components/SearchReadiness.tsx:fingerprint": 9,
     "web/src/components/SourceOrganizer.tsx:operation_id": 4,
-    "web/src/components/TodayView.tsx:operation_id": 1
+    "web/src/components/TasksPanel.tsx:candidate_id": 2,
+    "web/src/components/TodayView.tsx:operation_id": 1,
+    "web/src/components/WorkspaceGate.tsx:operation_id": 1,
+    "web/src/page-groups.ts:page_id": 1
   },
   "attribution": {
     "web/src/App.tsx:content_sha256": {
@@ -75,17 +80,37 @@
       "slice": "P2 · 阅读与流式",
       "reason": "路由回调打开正式页面；屏幕只展示页面标题。"
     },
-    "web/src/components/AskView.tsx:fingerprint": {
+    "web/src/components/ApprovalView.tsx:content_sha256": {
+      "slice": "P3 · 审批",
+      "reason": "正式页确认与打开已保存版本使用的接口版本参数；始终留在请求中，不渲染为业务文案。"
+    },
+    "web/src/components/ApprovalView.tsx:fingerprint": {
+      "slice": "P3 · 审批",
+      "reason": "搜索准备状态字段读取与传递到 SearchReadiness；不显示指纹内容。"
+    },
+    "web/src/components/ApprovalView.tsx:operation_id": {
+      "slice": "P3 · 审批",
+      "reason": "正式内容保存的幂等参数，不显示。"
+    },
+    "web/src/components/ApprovalView.tsx:page_id": {
+      "slice": "P3 · 审批",
+      "reason": "真实稿件确认回执、正式页定位及打开详情使用的内部寻址参数；界面只显示标题，运行时正文断言覆盖ID不泄漏。"
+    },
+    "web/src/components/AskPreferences.tsx:candidate_id": {
       "slice": "P4 · 项目与问答",
-      "reason": "索引状态查询使用配置指纹；不显示到问答界面"
+      "reason": "记忆候选标识，仅 API 参数"
+    },
+    "web/src/components/AskPreferences.tsx:fingerprint": {
+      "slice": "P4 · 项目与问答",
+      "reason": "索引状态读取使用配置指纹；只显示页数，不显示指纹"
     },
     "web/src/components/AskView.tsx:content_sha256": {
       "slice": "P4 · 项目与问答",
       "reason": "历史引用绑定答案时的页面版本；界面显示版本有效性，不显示哈希"
     },
-    "web/src/components/AskView.tsx:candidate_id": {
+    "web/src/components/AskView.tsx:fingerprint": {
       "slice": "P4 · 项目与问答",
-      "reason": "候选动作标识，仅 API 参数"
+      "reason": "检索就绪检查和本次发送预览绑定配置指纹；不显示到问答界面"
     },
     "web/src/components/AskView.tsx:page_id": {
       "slice": "P4 · 项目与问答",
@@ -111,13 +136,17 @@
       "slice": "P3 · 信息架构（审批）",
       "reason": "落点页面参数；主界面显示中文显示名"
     },
+    "web/src/components/FeishuPanel.tsx:material_id": {
+      "slice": "P3 · 今日",
+      "reason": "飞书材料标识仅供导入API调用，不显示给用户。"
+    },
     "web/src/components/FeishuPanel.tsx:operation_id": {
       "slice": "P3 · 信息架构（审批）",
       "reason": "幂等操作编号，仅 API 参数（飞书入口迁入审批）"
     },
-    "web/src/components/FeishuPanel.tsx:material_id": {
+    "web/src/components/ImportDrawer.tsx:operation_id": {
       "slice": "P3 · 今日",
-      "reason": "飞书材料标识仅供导入API调用，不显示给用户。"
+      "reason": "上传幂等参数，不显示。"
     },
     "web/src/components/JournalView.tsx:operation_id": {
       "slice": "P3 · 信息架构（审批）",
@@ -155,6 +184,14 @@
       "slice": "P2 · 阅读与流式",
       "reason": "来源页相对 Markdown 链接解析参数，不显示给用户"
     },
+    "web/src/components/PageTree.tsx:content_sha256": {
+      "slice": "P5 · 阅读上下文",
+      "reason": "阅读页目录的当前页标记、切换参数与排序键，不显示给用户"
+    },
+    "web/src/components/PageTree.tsx:page_id": {
+      "slice": "P5 · 阅读上下文",
+      "reason": "阅读页目录的当前页标记、切换参数与排序键，不显示给用户"
+    },
     "web/src/components/ProjectsView.tsx:content_sha256": {
       "slice": "P4 · 项目与问答",
       "reason": "打开页面时的版本绑定参数"
@@ -171,41 +208,29 @@
       "slice": "P4 · 项目与问答",
       "reason": "同项目 Markdown 关联页的解析参数，不显示路径"
     },
-    "web/src/components/TasksPanel.tsx:candidate_id": {
-      "slice": "P3 · 信息架构（审批）",
-      "reason": "候选任务标识，仅 API 参数"
-    },
-    "web/src/components/WorkspaceGate.tsx:operation_id": {
-      "slice": "P5 · 首次配置",
-      "reason": "建库/开库的幂等编号，仅 API 参数"
-    },
-    "web/src/components/ApprovalView.tsx:content_sha256": {
+    "web/src/components/SearchReadiness.tsx:fingerprint": {
       "slice": "P3 · 审批",
-      "reason": "正式页确认与打开已保存版本使用的接口版本参数；始终留在请求中，不渲染为业务文案。"
-    },
-    "web/src/components/ApprovalView.tsx:fingerprint": {
-      "slice": "P3 · 审批",
-      "reason": "索引计划请求参数；用户可见内容只展示页数和状态。"
-    },
-    "web/src/components/ApprovalView.tsx:operation_id": {
-      "slice": "P3 · 审批",
-      "reason": "正式内容保存的幂等参数，不显示。"
-    },
-    "web/src/components/ApprovalView.tsx:page_id": {
-      "slice": "P3 · 审批",
-      "reason": "真实稿件确认回执、正式页定位及打开详情使用的内部寻址参数；界面只显示标题，运行时正文断言覆盖ID不泄漏。"
-    },
-    "web/src/components/ImportDrawer.tsx:operation_id": {
-      "slice": "P3 · 今日",
-      "reason": "上传幂等参数，不显示。"
+      "reason": "搜索配置与准备计划的接口字段，用于比较配置并发送计划请求；不渲染指纹值。"
     },
     "web/src/components/SourceOrganizer.tsx:operation_id": {
       "slice": "P3 · 审批",
       "reason": "来源整理幂等参数及 Real 冻结范围一致性校验，不显示。"
     },
+    "web/src/components/TasksPanel.tsx:candidate_id": {
+      "slice": "P3 · 信息架构（审批）",
+      "reason": "候选任务标识，仅 API 参数"
+    },
     "web/src/components/TodayView.tsx:operation_id": {
       "slice": "P3 · 今日",
       "reason": "随手记提交使用稳定幂等键，不作为可见内容。"
+    },
+    "web/src/components/WorkspaceGate.tsx:operation_id": {
+      "slice": "P5 · 首次配置",
+      "reason": "建库/开库的幂等编号，仅 API 参数"
+    },
+    "web/src/page-groups.ts:page_id": {
+      "slice": "P5 · 阅读上下文",
+      "reason": "目录树按页面 ID 定位所在分支，只做查找，不显示给用户"
     }
   }
 }

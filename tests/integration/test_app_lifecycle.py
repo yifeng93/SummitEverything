@@ -7,9 +7,9 @@ from threading import Event
 from uuid import uuid4
 
 import pytest
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.domain.models import Answer
 from summit_everything.integrations.embedding import FakeEmbedding
@@ -141,7 +141,7 @@ def test_api_index_query_and_stale_citation_lifecycle(tmp_path: Path) -> None:
         },
     )
     assert page.status_code == 201, page.text
-    fingerprint = "fake-embedding-v1"
+    fingerprint = "summit-fake-embedding-v1"
     plan = api.post("/api/v1/index/plans", json={"mode": "initial", "fingerprint": fingerprint})
     assert plan.status_code == 200, plan.text
     built = api.post("/api/v1/index/jobs", json=plan.json())

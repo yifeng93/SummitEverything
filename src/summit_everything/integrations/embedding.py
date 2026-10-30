@@ -6,6 +6,7 @@ import hashlib
 import math
 import re
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -56,6 +57,163 @@ class FakeEmbedding:
 
     def embed_many(self, texts: Sequence[str], *, fingerprint: str) -> list[list[float]]:
         return [self.embed(text, fingerprint=fingerprint) for text in texts]
+
+
+class LocalBgeEmbedding:
+    """Pinned CPU-only BGE embedding with explicit token windows for long text.
+
+    FastEmbed is configured with ``local_files_only`` and ``specific_model_path``
+    so an index or query can never cause an implicit model download. Windowing
+    keeps every input token represented instead of silently accepting ONNX's
+    512-token truncation.
+    """
+
+    dimensions = 512
+    is_local = True
+    max_batch_size = 20
+    max_text_bytes = 1_000_000
+    window_tokens = 480
+    overlap_tokens = 64
+
+    def __init__(self, model_directory: Path, *, model: Any | None = None) -> None:
+        if model is None:
+            import onnxruntime  # type: ignore[import-untyped]
+            from fastembed import TextEmbedding
+            from tokenizers import Tokenizer
+
+            # FastEmbed's ONNX session may otherwise emit anonymous runtime
+            # telemetry; local inference must stay on-device and quiet.
+            onnxruntime.disable_telemetry_events()
+            model = TextEmbedding(
+                model_name="BAAI/bge-small-zh-v1.5",
+                specific_model_path=str(model_directory),
+                local_files_only=True,
+                threads=2,
+                providers=["CPUExecutionProvider"],
+            )
+            self._tokenizer: Any = Tokenizer.from_file(str(model_directory / "tokenizer.json"))
+            self._tokenizer.no_truncation()
+            self._tokenizer.no_padding()
+        else:
+            # Synthetic model doubles can expose the small tokenizer contract.
+            self._tokenizer = getattr(model, "tokenizer", None)
+        self._model = model
+        self.calls = 0
+
+    def _token_windows(self, text: str) -> list[tuple[str, int]]:
+        if not text.strip() or len(text.encode("utf-8")) > self.max_text_bytes:
+            raise ValueError("local embedding text is outside the supported size range")
+        tokenizer = self._tokenizer
+        if tokenizer is None:
+            return [(text, 1)]
+        encoding = tokenizer.encode(text, add_special_tokens=False)
+        token_ids = encoding.ids
+        if not token_ids:
+            return [(text, 1)]
+        result: list[tuple[str, int]] = []
+        stride = self.window_tokens - self.overlap_tokens
+        start = 0
+        while start < len(token_ids):
+            end = min(len(token_ids), start + self.window_tokens)
+            start_char = encoding.offsets[start][0]
+            end_char = encoding.offsets[end - 1][1]
+            window = text[start_char:end_char]
+            if window:
+                result.append((window, end - start))
+            if end == len(token_ids):
+                break
+            start += stride
+        return result or [(text, 1)]
+
+    def _windows(self, text: str) -> list[tuple[str, int]]:
+        return self._token_windows(text)
+
+    def split_for_index(self, chunks: Sequence[Any]) -> list[Any]:
+        """Store long passages as independently retrievable token windows.
+
+        Each window keeps its source page/version/heading, while a stable ID
+        prevents an incremental build from confusing different window contents.
+        This preserves rare tail facts that a whole-chunk mean vector would dilute.
+        """
+        tokenizer = self._tokenizer
+        if tokenizer is None:
+            return list(chunks)
+        result: list[Any] = []
+        stride = self.window_tokens - self.overlap_tokens
+        for chunk in chunks:
+            encoding = tokenizer.encode(chunk.text, add_special_tokens=False)
+            token_ids = encoding.ids
+            if len(token_ids) <= self.window_tokens:
+                result.append(chunk)
+                continue
+            for window_index, start in enumerate(range(0, len(token_ids), stride)):
+                end = min(len(token_ids), start + self.window_tokens)
+                start_char = encoding.offsets[start][0]
+                end_char = encoding.offsets[end - 1][1]
+                text = chunk.text[start_char:end_char]
+                if not text:
+                    continue
+                chunk_id = hashlib.sha256(
+                    f"{chunk.chunk_id}:{window_index}:{text}".encode()
+                ).hexdigest()
+                result.append(
+                    type(chunk)(
+                        page_id=chunk.page_id,
+                        content_sha256=chunk.content_sha256,
+                        chunk_id=chunk_id,
+                        heading=chunk.heading,
+                        text=text,
+                    )
+                )
+                if end == len(token_ids):
+                    break
+        return result
+
+    @staticmethod
+    def _normalize(vector: list[float]) -> list[float]:
+        norm = math.sqrt(sum(value * value for value in vector))
+        if not math.isfinite(norm) or norm <= 0:
+            raise ValueError("local embedding returned an invalid vector")
+        return [value / norm for value in vector]
+
+    def _embed_texts(self, texts: Sequence[str], *, query: bool) -> list[list[float]]:
+        if not texts or len(texts) > self.max_batch_size:
+            raise ValueError("local embedding batch size is outside the supported range")
+        windows = [self._windows(text) for text in texts]
+        flat = [window for text_windows in windows for window, _weight in text_windows]
+        self.calls += 1
+        embed = self._model.query_embed if query else self._model.embed
+        raw = list(embed(flat, batch_size=self.max_batch_size, parallel=None))
+        if len(raw) != len(flat):
+            raise ValueError("local embedding returned an incomplete batch")
+        vectors: list[list[float]] = []
+        position = 0
+        for text_windows in windows:
+            combined = [0.0] * self.dimensions
+            weight_total = 0
+            for _window, weight in text_windows:
+                value = raw[position]
+                position += 1
+                vector = [float(item) for item in value]
+                if len(vector) != self.dimensions or not all(
+                    math.isfinite(item) for item in vector
+                ):
+                    raise ValueError("local embedding returned an invalid vector")
+                for index, item in enumerate(vector):
+                    combined[index] += item * weight
+                weight_total += weight
+            if weight_total <= 0:
+                raise ValueError("local embedding returned no tokens")
+            vectors.append(self._normalize([item / weight_total for item in combined]))
+        return vectors
+
+    def embed(self, text: str, *, fingerprint: str) -> list[float]:
+        del fingerprint
+        return self._embed_texts([text], query=True)[0]
+
+    def embed_many(self, texts: Sequence[str], *, fingerprint: str) -> list[list[float]]:
+        del fingerprint
+        return self._embed_texts(texts, query=False)
 
 
 class ModelStudioEmbedding:

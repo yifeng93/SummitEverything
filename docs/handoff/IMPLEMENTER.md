@@ -11,7 +11,7 @@
 ## 实现与自测
 
 - 先验证相关契约与失败路径，再做最小可维护改动。业务、文件和索引路径保持真实，仅在边界处替代外部服务。
-- 使用合成内容、Fake provider 和隔离临时工作库。不得读取或提交未经批准的真实业务材料，不得接触真实凭据、外部服务或安装应用，除非当前任务明确授权。
+- 使用合成内容和隔离临时工作库。Fake/Mock provider 只能由自动化测试显式注入，不能成为正常启动配置或 UI 入口。不得读取或提交未经批准的真实业务材料，不得接触真实凭据、外部服务或安装应用，除非当前任务明确授权。
 - 用户确认是正式知识写入门；任务及项目进度动作各自独立确认。资格判断统一调用 `domain/content.py`。
 - README 提供常用检查入口；详细命令、首次安装和 Internal 构建步骤以本手册为准。新增真实运行命令时同步更新 README 与相关手册。
 - 记录命令、真实退出码、证据位置、模拟/真实边界、未测项与已知问题。测试通过不等于阶段验收通过。
@@ -36,7 +36,7 @@ npm --prefix web run lint
 npm --prefix web run build
 ```
 
-启动 WebUI：`uv run python scripts/run_dev.py`，浏览器打开 `http://127.0.0.1:5173`。默认使用 Fake provider 和隔离工作库。
+启动 WebUI：`uv run python scripts/run_dev.py`，浏览器打开 `http://127.0.0.1:5173`。`--app` 使用同一个 Vite 页面启动 debug 原生壳；两者都支持前端 HMR 与后端 `uvicorn --reload`，不需要重新打包安装。运行配置默认为 real + DeepSeek/local；`.local/dev/` 只用于隔离 profile 与工作库，缺少密钥、模型或有效索引时会显示未就绪，不会切换到模拟 provider。`--fresh` 可清空重建隔离开发数据。
 
 ### 标准 MCP stdio 服务
 
@@ -56,11 +56,13 @@ Host 侧 `SUMMIT_API_URL` 默认 `http://127.0.0.1:8793`；MCP 会话启动时 p
 uv sync --locked --group dev --group build
 npm --prefix web ci
 scripts/release-macos.sh "$PWD/.local/dev/m41/artifacts/SummitEverything Internal.app" "$PWD/.local/dev/m41/artifacts/SummitEverything-Internal.dmg"
+
+DMG 脚本固定 Python 3.13 + aarch64-apple-darwin，用于保留 macOS 13 最低运行目标。Python 3.14 本机开发要求 macOS 14，并使用 ONNX Runtime 1.31.1；这不是 DMG 验收证据。
 ```
 
 ## 本机检索索引
 
-本地索引由 SQLite 状态/活动代指针和 profile 内嵌入式 LanceDB 组成。旧 SQLite `vector_json` 不自动迁移或作为证据；用户通过已确认 Markdown 的索引预览/执行路径显式重建。不要在开发命令中默认清理或重建已有 profile。
+本地模型固定为 BAAI/bge-small-zh-v1.5；只在用户明确启动准备后下载与校验。索引、向量化和排序不创建外部 provider 计划。本地索引由 SQLite 状态/活动代指针和 profile 内嵌入式 LanceDB 组成。旧 SQLite `vector_json` 不自动迁移或作为证据；用户通过已确认 Markdown 的索引预览/执行路径显式重建。不要在开发命令中默认清理或重建已有 profile。
 
 ```sh
 uv run python scripts/inspect_index.py --json
@@ -70,6 +72,18 @@ uv run python scripts/prune_local_index.py --index-db "/actual/profile/path/inde
 检查脚本只读；generation 清理要求应用完全退出，保留活动代和最近一个旧代，不移除旧 SQLite chunk 行。
 
 ## 固定交接
+
+### 2026-10-23 交互原型预览
+
+本轮只制作独立静态原型，入口见 [原型说明](../../prototypes/mcp-workbench/README.md)。在仓库根目录运行：
+
+```sh
+python3 -m http.server 4318 --bind 127.0.0.1 --directory "$PWD"
+```
+
+打开 <http://127.0.0.1:4318/prototypes/mcp-workbench/>。该入口只读取静态文件，使用内存中的合成数据，不启动 FastAPI、不接入真实工作库或外部服务。用户明确要求不提交，本轮以基线 SHA 加原型文件 SHA-256 清单固定预览内容；该方式仅用于本轮设计原型，不替代正式功能的提交与验收流程。
+
+### 正式功能交接
 
 1. 对照任务和 [ACCEPTANCE](../quality/ACCEPTANCE.md) 检查覆盖项。
 2. 完成自测，检查差异和工作区，提交小逻辑变更，取得完整 clean SHA。

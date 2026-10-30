@@ -1,0 +1,13 @@
+/*
+ * 表单控件外观补丁（最后加载，用于收掉浏览器默认绘制）。
+ * 原生 select 的箭头贴着边框、和自绘边框打架，这里统一换成 token 里的箭头。
+ */
+
+select:not([size]) {
+  appearance: none;
+  padding-right: var(--space-8);
+  background-image: var(--select-arrow);
+  background-repeat: no-repeat;
+  background-position: right var(--space-2-5) center;
+  background-size: var(--icon-sm);
+}

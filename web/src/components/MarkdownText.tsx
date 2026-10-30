@@ -1,5 +1,26 @@
 import ReactMarkdown, { type Components, type Options } from 'react-markdown'
+import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
+
+/** 正文开头若是一级标题且与页面标题相同，渲染时去掉它，避免同一标题出现两次。 */
+export function withoutDuplicateTitle(markdown: string, title: string): string {
+  const lines = markdown.replace(/^\uFEFF/, '').split('\n')
+  let index = 0
+  // 跳过开头空行与 HTML 注释块；有些导出会在标题前留一行注释。
+  for (;;) {
+    while (index < lines.length && !lines[index].trim()) index += 1
+    if (index >= lines.length || !lines[index].trimStart().startsWith('<!--')) break
+    while (index < lines.length && !lines[index].includes('-->')) index += 1
+    index += 1
+  }
+  const match = lines[index]?.match(/^#\s+(.+?)\s*#*\s*$/)
+  if (!match) return markdown
+  const normalize = (value: string) => value.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[`*_~]/g, '').replace(/\s+/g, ' ').trim()
+  if (normalize(match[1]) !== normalize(title)) return markdown
+  const rest = lines.slice(index + 1)
+  while (rest.length && !rest[0].trim()) rest.shift()
+  return rest.join('\n')
+}
 
 export type MarkdownPage = { page_id: string; content_sha256: string; title: string; relative_path: string }
 type MarkdownTreeNode = { type: string; value?: string; url?: string; identifier?: string; children?: MarkdownTreeNode[]; data?: { hProperties?: Record<string, string> } }
@@ -157,6 +178,6 @@ export function MarkdownText({ content, onOpenPage, pageIndex = [], sourcePath, 
   }
   const plugins: NonNullable<Options['remarkPlugins']> = [remarkGfm, [pageResolverPlugin, { pages: pageIndex, sourcePath }]]
   return <div className={['markdown-content', className].filter(Boolean).join(' ')}>
-    <ReactMarkdown remarkPlugins={plugins} components={components}>{content}</ReactMarkdown>
+    <ReactMarkdown remarkPlugins={plugins} rehypePlugins={[[rehypeHighlight, { detect: false, ignoreMissing: true }]]} components={components}>{content}</ReactMarkdown>
   </div>
 }

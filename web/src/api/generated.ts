@@ -177,6 +177,40 @@ export interface paths {
         patch: operations["patch_settings_api_v1_settings_patch"];
         trace?: never;
     };
+    "/api/v1/retrieval-model/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieval Model Status */
+        get: operations["retrieval_model_status_api_v1_retrieval_model_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/retrieval-model/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retrieval Model Prepare */
+        post: operations["retrieval_model_prepare_api_v1_retrieval_model_prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/first-use/progress": {
         parameters: {
             query?: never;
@@ -384,6 +418,229 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/agent/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Workspace Info */
+        get: operations["agent_workspace_info_api_v1_agent_workspace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/workspace/bound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Workspace Bound */
+        get: operations["agent_workspace_bound_api_v1_agent_workspace_bound_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Lines */
+        get: operations["agent_lines_api_v1_agent_lines_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Projects */
+        get: operations["agent_projects_api_v1_agent_projects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Index Status */
+        get: operations["agent_index_status_api_v1_agent_index_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Pages */
+        get: operations["agent_pages_api_v1_agent_pages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Search */
+        get: operations["agent_search_api_v1_agent_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/pages/{page_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Page Get */
+        get: operations["agent_page_get_api_v1_agent_pages__page_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/intake": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Intake List */
+        get: operations["agent_intake_list_api_v1_agent_intake_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/sources/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Source Get */
+        get: operations["agent_source_get_api_v1_agent_sources__source_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Draft List */
+        get: operations["agent_draft_list_api_v1_agent_drafts_get"];
+        put?: never;
+        /** Agent Draft Create */
+        post: operations["agent_draft_create_api_v1_agent_drafts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agent/drafts/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Draft Get */
+        get: operations["agent_draft_get_api_v1_agent_drafts__draft_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Agent Draft Edit */
+        patch: operations["agent_draft_edit_api_v1_agent_drafts__draft_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/agent/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Agent Import */
+        post: operations["agent_import_api_v1_agent_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lines": {
         parameters: {
             query?: never;
@@ -468,6 +725,23 @@ export interface paths {
         put?: never;
         /** Page Create */
         post: operations["page_create_api_v1_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pages/directory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page Directory */
+        get: operations["page_directory_api_v1_pages_directory_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1078,6 +1352,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/agent/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Calendar */
+        get: operations["agent_calendar_api_v1_agent_calendar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1283,6 +1574,45 @@ export interface components {
             /** Candidate Id */
             candidate_id?: string | null;
         };
+        /** AgentDraftCreateRequest */
+        AgentDraftCreateRequest: {
+            /** Operation Id */
+            operation_id: string;
+            /** Item Ids */
+            item_ids: string[];
+            /**
+             * Line Id
+             * Format: uuid
+             */
+            line_id: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "object" | "case" | "topic" | "decision" | "log" | "thought";
+            /** Body */
+            body: string;
+            /** Target Page Id */
+            target_page_id?: string | null;
+            /** Expected Base Sha256 */
+            expected_base_sha256?: string | null;
+        };
+        /** AgentImportRequest */
+        AgentImportRequest: {
+            /** Text */
+            text: string;
+            /** Filename */
+            filename: string;
+            /** Operation Id */
+            operation_id: string;
+        };
         /** AnswerRole */
         AnswerRole: {
             /** Name */
@@ -1343,6 +1673,23 @@ export interface components {
              * Format: date-time
              */
             end: string;
+            /**
+             * Location
+             * @default
+             */
+            location: string;
+            /** Meeting Url */
+            meeting_url?: string | null;
+            /**
+             * Status
+             * @default confirmed
+             */
+            status: string;
+            /**
+             * All Day
+             * @default false
+             */
+            all_day: boolean;
         };
         /** CalendarPage */
         CalendarPage: {
@@ -1608,12 +1955,15 @@ export interface components {
         EmbeddingSettings: {
             /**
              * Provider
-             * @default fake
+             * @default local
              * @enum {string}
              */
-            provider: "fake" | "dashscope";
-            /** Model */
-            model?: "qwen3.7-text-embedding" | null;
+            provider: "fake" | "local" | "dashscope";
+            /**
+             * Model
+             * @default BAAI/bge-small-zh-v1.5
+             */
+            model: ("BAAI/bge-small-zh-v1.5" | "qwen3.7-text-embedding") | null;
             /**
              * Region
              * @default cn
@@ -1622,17 +1972,17 @@ export interface components {
             region: "cn";
             /**
              * Dimensions
-             * @default 1024
+             * @default 512
              */
             dimensions: number;
             /**
              * Base Url
-             * @default https://dashscope.aliyuncs.com/compatible-mode/v1
+             * @default
              */
             base_url: string;
             /**
              * Enabled
-             * @default false
+             * @default true
              */
             enabled: boolean;
         };
@@ -1698,11 +2048,26 @@ export interface components {
         FeishuStatus: {
             /**
              * Mode
-             * @default fake
+             * @default real
              */
             mode: string;
             /** Authorized */
             authorized: boolean;
+            /**
+             * Refreshable
+             * @default false
+             */
+            refreshable: boolean;
+            /**
+             * Calendar Ready
+             * @default false
+             */
+            calendar_ready: boolean;
+            /**
+             * Authorization Generation
+             * @default 0
+             */
+            authorization_generation: number;
             /**
              * App Configured
              * @default false
@@ -2040,12 +2405,15 @@ export interface components {
         LLMSettings: {
             /**
              * Provider
-             * @default fake
+             * @default deepseek
              * @enum {string}
              */
             provider: "fake" | "deepseek";
-            /** Model */
-            model?: "deepseek-flash" | null;
+            /**
+             * Model
+             * @default deepseek-flash
+             */
+            model: "deepseek-flash" | null;
             /**
              * Account Id
              * @default default
@@ -2053,7 +2421,7 @@ export interface components {
             account_id: string;
             /**
              * Enabled
-             * @default false
+             * @default true
              */
             enabled: boolean;
             /**
@@ -2071,7 +2439,7 @@ export interface components {
         /** LLMSettingsPatch */
         LLMSettingsPatch: {
             /** Provider */
-            provider?: ("fake" | "deepseek") | null;
+            provider?: "deepseek" | null;
             /** Model */
             model?: "deepseek-flash" | null;
             /** Account Id */
@@ -2110,6 +2478,30 @@ export interface components {
             directory: string;
         } & {
             [key: string]: unknown;
+        };
+        /** LocalModelStatus */
+        LocalModelStatus: {
+            /** Model */
+            model: string;
+            /** Revision */
+            revision: string;
+            /** Dimensions */
+            dimensions: number;
+            /** Token Limit */
+            token_limit: number;
+            /** Download Size Bytes */
+            download_size_bytes: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "not_prepared" | "preparing" | "ready" | "failed" | "incomplete";
+            /** Downloaded Bytes */
+            downloaded_bytes: number;
+            /** Progress Percent */
+            progress_percent: number;
+            /** Error Code */
+            error_code: string | null;
         };
         /** Material */
         Material: {
@@ -2190,9 +2582,9 @@ export interface components {
         /** ModelStudioSettingsPatch */
         ModelStudioSettingsPatch: {
             /** Provider */
-            provider?: ("fake" | "dashscope") | null;
+            provider?: "local" | null;
             /** Model */
-            model?: ("qwen3.7-text-embedding" | "qwen3.7-text-rerank") | null;
+            model?: "BAAI/bge-small-zh-v1.5" | null;
             /** Region */
             region?: "cn" | null;
             /** Dimensions */
@@ -2253,6 +2645,42 @@ export interface components {
             confirmation_id: string;
             /** Operation Id */
             operation_id: string;
+        };
+        /**
+         * PageDirectoryEntry
+         * @description Metadata needed to browse pages without transferring their full bodies.
+         */
+        PageDirectoryEntry: {
+            /**
+             * Page Id
+             * Format: uuid
+             */
+            page_id: string;
+            /** Relative Path */
+            relative_path: string;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Storage Area
+             * @enum {string}
+             */
+            storage_area: "formal" | "source" | "draft" | "system";
+            /**
+             * Approval State
+             * @enum {string}
+             */
+            approval_state: "confirmed" | "pending" | "invalid";
+            /**
+             * Validity
+             * @default current
+             */
+            validity: string;
+            /** Body */
+            body?: string | null;
         };
         /** PageMove */
         PageMove: {
@@ -2381,7 +2809,7 @@ export interface components {
         /** ProviderSettingsPatch */
         ProviderSettingsPatch: {
             /** Mode */
-            mode?: ("fake" | "real") | null;
+            mode?: "real" | null;
             /** Model Studio Account Id */
             model_studio_account_id?: string | null;
             feishu?: components["schemas"]["FeishuSettingsPatch"] | null;
@@ -2457,12 +2885,15 @@ export interface components {
         RerankSettings: {
             /**
              * Provider
-             * @default fake
+             * @default local
              * @enum {string}
              */
-            provider: "fake" | "dashscope";
-            /** Model */
-            model?: "qwen3.7-text-rerank" | null;
+            provider: "fake" | "local" | "dashscope";
+            /**
+             * Model
+             * @default BAAI/bge-small-zh-v1.5
+             */
+            model: ("BAAI/bge-small-zh-v1.5" | "qwen3.7-text-rerank") | null;
             /**
              * Region
              * @default cn
@@ -2471,17 +2902,17 @@ export interface components {
             region: "cn";
             /**
              * Dimensions
-             * @default 1024
+             * @default 512
              */
             dimensions: number;
             /**
              * Base Url
-             * @default https://dashscope.aliyuncs.com/api/v1
+             * @default
              */
             base_url: string;
             /**
              * Enabled
-             * @default false
+             * @default true
              */
             enabled: boolean;
         };
@@ -2507,6 +2938,11 @@ export interface components {
              * @enum {string}
              */
             mode: "fake" | "real";
+            /**
+             * Legacy Provider Migration Required
+             * @default false
+             */
+            legacy_provider_migration_required: boolean;
             /** Model Studio Account Id */
             model_studio_account_id: string;
             feishu: components["schemas"]["FeishuSettings"];
@@ -2525,6 +2961,7 @@ export interface components {
             keychain_available: boolean;
             /** Embedding Fingerprint */
             embedding_fingerprint: string;
+            local_model: components["schemas"]["LocalModelStatus"];
         };
         /** SourceDetail */
         SourceDetail: {
@@ -3161,6 +3598,68 @@ export interface operations {
             };
         };
     };
+    retrieval_model_status_api_v1_retrieval_model_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalModelStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retrieval_model_prepare_api_v1_retrieval_model_prepare_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalModelStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_first_use_progress_api_v1_first_use_progress_get: {
         parameters: {
             query?: never;
@@ -3663,6 +4162,520 @@ export interface operations {
             };
         };
     };
+    agent_workspace_info_api_v1_agent_workspace_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceContext"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_workspace_bound_api_v1_agent_workspace_bound_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceContext"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_lines_api_v1_agent_lines_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LineRecord"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_projects_api_v1_agent_projects_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRecord"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_index_status_api_v1_agent_index_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number | string | null;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_pages_api_v1_agent_pages_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_search_api_v1_agent_search_get: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_page_get_api_v1_agent_pages__page_id__get: {
+        parameters: {
+            query: {
+                expected_content_sha256: string;
+            };
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_intake_list_api_v1_agent_intake_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_source_get_api_v1_agent_sources__source_id__get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_draft_list_api_v1_agent_drafts_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Draft"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_draft_create_api_v1_agent_drafts_post: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentDraftCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Draft"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_draft_get_api_v1_agent_drafts__draft_id__get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Draft"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_draft_edit_api_v1_agent_drafts__draft_id__patch: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftPatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Draft"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_import_api_v1_agent_import_post: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     lines_api_v1_lines_get: {
         parameters: {
             query?: never;
@@ -3988,6 +5001,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MutationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    page_directory_api_v1_pages_directory_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDirectoryEntry"][];
                 };
             };
             /** @description Validation Error */
@@ -5480,10 +6524,47 @@ export interface operations {
                 timezone: string;
                 cursor?: string | null;
                 limit?: number;
-                plan_id?: string | null;
             };
             header?: {
                 authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agent_calendar_api_v1_agent_calendar_get: {
+        parameters: {
+            query: {
+                start: string;
+                end: string;
+                timezone: string;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header: {
+                authorization?: string | null;
+                "X-Summit-Workspace-Id": string;
             };
             path?: never;
             cookie?: never;

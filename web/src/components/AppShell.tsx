@@ -1,21 +1,32 @@
-import type { ReactNode } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
+import { ArrowLeftRight, Check, ChevronsUpDown, ClipboardCheck, FolderKanban, MessageCircleQuestion, Monitor, Moon, Palette, Settings, Sun, type LucideIcon } from 'lucide-react'
 import { THEME_LABELS, THEME_PREFERENCES, type ThemePreference } from '../theme'
 import { useSaveStatus } from '../save-status'
-import { useServiceStatus } from '../service-status'
-import { NAV_ITEMS, sectionLabel, type ShellSection } from '../navigation'
+import { NAV_ITEMS, type ShellSection } from '../navigation'
 import type { Toast } from '../toast'
 import { ToastHost } from './ToastHost'
 
+const NAV_ICONS: Record<ShellSection, LucideIcon> = {
+  today: Sun,
+  approval: ClipboardCheck,
+  projects: FolderKanban,
+  ask: MessageCircleQuestion,
+  settings: Settings,
+}
+
+const THEME_ICONS = { system: Monitor, light: Sun, dark: Moon } as const
+
 /**
- * 应用外壳（逐页规格 §0）。壳不承载业务，只回答三件事：
- * 我在哪（侧栏当前项 + 顶栏当前页名）、这个应用现在什么状态（保存三态、本机服务可达性）、怎么换工作库。
+ * 应用外壳（逐页规格 §0）。壳不承载业务，只回答两件事：
+ * 我在哪（侧栏当前项）、怎么换工作库。
  *
  * 硬规格：
  * - 左侧栏 200px，主导航**恰好 5 项**、顺序固定：今日 / 审批 / 项目 / 知识问答 / 设置；
  *   当前项 `aria-current="page"` + 左侧 3px 强调条；审批项带待处理数量徽章（0 时不显示）。
- * - 侧栏底部：工作库名 + 首字头像 + 「切换…」；下方一行真实的本机服务状态（可达/不可达，两种文案两种颜色）。
- *   **不**用 `⌄` 暗示不存在的下拉。
- * - 顶栏 62px：左当前页名（只有页面阅读时才显示「项目 / 页面名」层级）；右真实的保存三态 + 主题三选。
+ * - 「项目」下面挂二级快捷入口（未归档项目的名字），点一下直接进那个项目的详情。
+ *   二级项不是第 6 个导航目的地，不计入 5 项；≤800px 图标栏与 ≤560px 底栏不显示。
+ * - **没有顶栏**：页名由各页自己的 h1 承担，不再用一条 62px 的条重复一遍。
+ * - 侧栏底部：保存三态（仅在有状态时出现）+ 紧凑工作库选择器 + 「外观」入口。
  * - 主内容区 `max-width: 1200px` 居中（由 App.css 的 .content-wrap 承担）。
  * - 全局提示走右下角 toast，不再有常驻红色横幅。
  */
@@ -26,13 +37,22 @@ type Props = {
   onSwitchWorkspace: () => void
   /** 待处理总数（来源 + 稿件）；0 时不显示徽章。 */
   approvalCount: number
-  /** 页面阅读时给出的「页面名」；为空时顶栏只显示当前页名。 */
-  openPageTitle?: string | null
+  /** 「项目」下的二级快捷入口；只传未归档项目。 */
+  projects?: { id: string; name: string }[]
+  /** 当前正在看的项目；用于二级项高亮。 */
+  activeProjectId?: string | null
+  onOpenProject?: (projectId: string) => void
   themePreference: ThemePreference
   onThemePreferenceChange: (preference: ThemePreference) => void
   toasts: Toast[]
   onDismissToast: (id: number) => void
   children: ReactNode
+}
+
+/** 导航图标统一走 Lucide，尺寸与描边由这里固定，避免各页手绘几何错位。 */
+function NavIcon({ section }: { section: ShellSection }) {
+  const Icon = NAV_ICONS[section]
+  return <Icon className="nav-icon" size={18} strokeWidth={1.75} aria-hidden="true" />
 }
 
 /** 顶栏保存状态：真实三态 + 未保存过时不说话（不再有永远为真的「本机已保存」）。 */
@@ -58,15 +78,42 @@ export function AppShell({
   workspaceName,
   onSwitchWorkspace,
   approvalCount,
-  openPageTitle,
+  projects = [],
+  activeProjectId = null,
+  onOpenProject,
   themePreference,
   onThemePreferenceChange,
   toasts,
   onDismissToast,
   children,
 }: Props) {
-  const { reachable } = useServiceStatus()
-  const currentLabel = sectionLabel(section)
+  const [menu, setMenu] = useState<'workspace' | 'theme' | null>(null)
+  const workspaceButton = useRef<HTMLButtonElement>(null)
+  const workspacePanel = useRef<HTMLDivElement>(null)
+  const themeButton = useRef<HTMLButtonElement>(null)
+  const themePanel = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menu) return
+    const closeOnOutside = (event: PointerEvent) => {
+      const target = event.target as Node
+      const inside = [workspaceButton, workspacePanel, themeButton, themePanel]
+        .some((ref) => ref.current?.contains(target))
+      if (inside) return
+      setMenu(null)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenu(null)
+      ;(menu === 'workspace' ? workspaceButton : themeButton).current?.focus()
+    }
+    document.addEventListener('pointerdown', closeOnOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [menu])
 
   return (
     <div className="app-frame">
@@ -82,55 +129,101 @@ export function AppShell({
           {NAV_ITEMS.map((item) => {
             const badge = item.id === 'approval' ? approvalCount : 0
             return (
-              <button
-                key={item.id}
-                className={section === item.id ? 'nav-item active' : 'nav-item'}
-                aria-current={section === item.id ? 'page' : undefined}
-                aria-label={badge > 0 ? `${item.label}，${badge} 项待处理` : item.label}
-                title={item.label}
-                onClick={() => onSelect(item.id)}
-              >
-                <span className={'nav-symbol nav-' + item.id} aria-hidden="true" />
-                <span className="nav-label">{item.label}</span>
-                {badge > 0 && <span className="nav-badge">{badge > 99 ? '99+' : badge}</span>}
-              </button>
+              <Fragment key={item.id}>
+                <button
+                  className={section === item.id ? 'nav-item active' : 'nav-item'}
+                  aria-current={section === item.id ? 'page' : undefined}
+                  aria-label={badge > 0 ? `${item.label}，${badge} 项待处理` : item.label}
+                  title={item.label}
+                  onClick={() => onSelect(item.id)}
+                >
+                  <NavIcon section={item.id} />
+                  <span className="nav-label">{item.label}</span>
+                  {badge > 0 && <span className="nav-badge">{badge > 99 ? '99+' : badge}</span>}
+                </button>
+                {item.id === 'projects' && projects.length > 0 && (
+                  <ul className="nav-submenu" aria-label="项目快捷入口">
+                    {projects.map((project) => {
+                      const current = activeProjectId === project.id
+                      return <li key={project.id}>
+                        <button
+                          className={current ? 'nav-subitem active' : 'nav-subitem'}
+                          aria-current={current ? 'page' : undefined}
+                          title={project.name}
+                          onClick={() => { setMenu(null); onOpenProject?.(project.id) }}
+                        >{project.name}</button>
+                      </li>
+                    })}
+                  </ul>
+                )}
+              </Fragment>
             )
           })}
         </nav>
 
         <div className="sidebar-bottom">
-          <button className="workspace-name" aria-label="切换工作库" title="切换工作库" onClick={onSwitchWorkspace}>
-            <span className="workspace-avatar" aria-hidden="true">{workspaceName.slice(0, 1)}</span>
-            <span className="workspace-name-text"><strong>{workspaceName}</strong><small>切换…</small></span>
-          </button>
-          <div className={reachable ? 'local-indicator is-online' : 'local-indicator is-offline'}>
-            <span className="local-dot" aria-hidden="true" />
-            <span className="local-indicator-text">{reachable ? '仅本机运行' : '本机服务未连接'}</span>
+          {/* 保存三态从顶栏搬到侧栏底部：没有顶栏之后，这是唯一常驻的外壳状态位。 */}
+          <SaveIndicator />
+          <div className="sidebar-menu-anchor">
+            <button
+              ref={workspaceButton}
+              type="button"
+              className="workspace-switcher"
+              aria-label={`工作库：${workspaceName}，打开菜单`}
+              aria-haspopup="dialog"
+              aria-expanded={menu === 'workspace'}
+              title="切换工作库"
+              onClick={() => setMenu(menu === 'workspace' ? null : 'workspace')}
+            >
+              <span className="workspace-avatar" aria-hidden="true">{workspaceName.slice(0, 1)}</span>
+              <span className="workspace-switcher-name">{workspaceName}</span>
+              <ChevronsUpDown className="workspace-switcher-chevron" size={14} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+            {menu === 'workspace' && <div ref={workspacePanel} className="sidebar-popover workspace-popover" role="dialog" aria-label="工作库菜单">
+              <p className="sidebar-popover-title">工作库</p>
+              <button type="button" className="sidebar-popover-action" onClick={() => { setMenu(null); onSwitchWorkspace() }}>
+                <ArrowLeftRight size={15} strokeWidth={1.75} aria-hidden="true" />
+                <span>切换工作库</span>
+              </button>
+            </div>}
+          </div>
+          <div className="sidebar-menu-anchor">
+            <button
+              ref={themeButton}
+              type="button"
+              className="sidebar-theme"
+              aria-label="外观与主题"
+              aria-haspopup="dialog"
+              aria-expanded={menu === 'theme'}
+              title="外观与主题"
+              onClick={() => setMenu(menu === 'theme' ? null : 'theme')}
+            >
+              <Palette size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span className="sidebar-theme-label">外观</span>
+            </button>
+            {menu === 'theme' && <div ref={themePanel} className="sidebar-popover theme-popover" role="dialog" aria-label="外观与主题">
+              <p className="sidebar-popover-title">外观</p>
+              {THEME_PREFERENCES.map((preference) => {
+                const Icon = THEME_ICONS[preference]
+                const selected = themePreference === preference
+                return <button
+                  key={preference}
+                  type="button"
+                  className={selected ? 'theme-option selected' : 'theme-option'}
+                  aria-pressed={selected}
+                  onClick={() => { onThemePreferenceChange(preference); setMenu(null) }}
+                >
+                  <Icon size={15} strokeWidth={1.75} aria-hidden="true" />
+                  <span>{THEME_LABELS[preference]}</span>
+                  {selected && <Check className="theme-check" size={14} strokeWidth={2} aria-hidden="true" />}
+                </button>
+              })}
+            </div>}
           </div>
         </div>
       </aside>
 
       <div className="main-shell">
-        <header className="topbar">
-          <div className="crumbs">
-            <span>{currentLabel}</span>
-            {openPageTitle && <><span className="crumb-separator" aria-hidden="true">/</span><span>{openPageTitle}</span></>}
-          </div>
-          <div className="topbar-right">
-            <SaveIndicator />
-            <select
-              className="theme-select"
-              aria-label="主题"
-              title="主题：跟随系统 / 浅色 / 深色"
-              value={themePreference}
-              onChange={(event) => onThemePreferenceChange(event.target.value as ThemePreference)}
-            >
-              {THEME_PREFERENCES.map((preference) => (
-                <option key={preference} value={preference}>{THEME_LABELS[preference]}</option>
-              ))}
-            </select>
-          </div>
-        </header>
         <main id="main-content" className="main-content" tabIndex={-1}>{children}</main>
       </div>
 

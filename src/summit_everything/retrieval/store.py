@@ -508,6 +508,12 @@ class IndexStore:
             for row in rows
         ]
 
+    def generation_page_versions(self, generation: IndexGeneration) -> list[tuple[str, str]]:
+        """Read only chunk ownership/version columns for status comparisons."""
+        table = self._lance_db().open_table(generation.table_name)
+        rows = table.search().select(["page_id", "content_sha256"]).limit(None).to_list()
+        return [(str(row["page_id"]), str(row["content_sha256"])) for row in rows]
+
     def search(
         self,
         generation: IndexGeneration,

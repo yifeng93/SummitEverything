@@ -84,8 +84,8 @@ export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeI
     try {
       const settings = await api.get<components['schemas']['SettingsSummary']>('/settings')
       const real = settings.mode === 'real'
-      if (!real && !reprocess) {
-        setPending({ body, plan: null, scope: null, real: false, lineName: capturedLine.name, projectName: capturedProject.name, items: capturedItems })
+      if (!real) {
+        onError('真实整理服务尚未准备好；不会使用模拟服务处理这些来源。')
         return
       }
       let plan: Plan | null = null
@@ -139,10 +139,10 @@ export function SourceOrganizer({ items, onComplete, onError }: { items: IntakeI
 
   if (!items.length) return null
   return <div className="source-organizer">
-    <div className="organize-row"><label className="compact-field"><span>主线</span><select value={selectedLine} onChange={(event) => { setLineId(event.target.value); setProjectId('') }}><option value="">选择主线</option>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label><label className="compact-field"><span>项目</span><select value={selectedProject} onChange={(event) => setProjectId(event.target.value)}><option value="">选择项目</option>{availableProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label><button className="button primary" disabled={!selectedProject || busy || items.some((item) => ['processing', 'reviewing'].includes(item.state))} onClick={() => void prepare()}>{reprocess ? '明确重新整理' : '整理所选'} · {items.length}</button></div>
+    <div className="organize-row"><label className="compact-field"><span>主线</span><select value={selectedLine} onChange={(event) => { setLineId(event.target.value); setProjectId('') }}><option value="">选择主线</option>{lines.map((line) => <option key={line.id} value={line.id}>{line.name}</option>)}</select></label><label className="compact-field"><span>项目</span><select value={selectedProject} onChange={(event) => setProjectId(event.target.value)}><option value="">选择项目</option>{availableProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label><button className="button primary" disabled={!selectedProject || busy || items.some((item) => ['processing', 'reviewing'].includes(item.state))} onClick={() => void prepare()}>{reprocess ? '明确重新整理' : items.length > 1 ? `整理所选 · ${items.length}` : '整理'}</button></div>
     {reprocess && items.some((item) => item.state === 'unknown') && <p className="helper-line">请求结果未知，不会自动重发。重新整理会创建新操作，可能再次调用模型；原件和既有稿件会保留。</p>}
     {(!lines.length || !availableProjects.length) && <p className="helper-line">整理前请先在“项目与知识”建立主线和项目。</p>}
-    {pending && <ConfirmDialog title={pending.body.reprocess ? '明确重新整理所选来源？' : '确认整理所选来源？'} description={`将把 ${pending.items.length} 条原件发送给整理流程，在选定项目下生成待审核稿。不会直接写入正式知识。`} consequence={pending.real ? `真实模式将发送所选原件；请求上限 ${pending.plan!.request_limit} 次。` : 'Fake 模式使用本机合成整理流程。'} confirmLabel="确认并整理所选材料" busyLabel="正在整理…" busy={busy} onCancel={() => void cancel()} onConfirm={confirm}>
+    {pending && <ConfirmDialog title={pending.body.reprocess ? '明确重新整理所选来源？' : '确认整理所选来源？'} description={`将把 ${pending.items.length} 条原件发送给整理流程，在选定项目下生成待审核稿。不会直接写入正式知识。`} consequence={`真实模式将发送所选原件；请求上限 ${pending.plan!.request_limit} 次。`} confirmLabel="确认并整理所选材料" busyLabel="正在整理…" busy={busy} onCancel={() => void cancel()} onConfirm={confirm}>
       <dl className="organize-preview-target"><div><dt>整理到</dt><dd>{pending.lineName} / {pending.projectName}</dd></div>{pending.scope && <><div><dt>请求上限</dt><dd>{pending.plan!.request_limit} 次</dd></div><div><dt>输出上限</dt><dd>{pending.scope.max_output_tokens} token</dd></div></>}</dl>
       <ul>{pending.items.map((item) => <li key={item.item_id}>{item.title} · {({ quick_note: '记一句', file: '文件', feishu_material: '飞书材料', unknown: '来源类型未知' } as Record<string, string>)[item.origin_kind ?? 'unknown']}</li>)}</ul>
       {pending.scope && <details><summary>查看本次范围原文</summary><div className="organize-preview-inputs">{pending.scope.outgoing_inputs.map((input) => {

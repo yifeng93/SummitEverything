@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+import summit_everything.workspace.reader as page_reader
 from summit_everything.domain.models import MutationResult
 from summit_everything.workspace.manifest import (
     WorkspaceError,
@@ -62,6 +63,72 @@ def test_page_is_written_as_confirmed_only_through_explicit_confirmation(tmp_pat
     assert all(
         "隔离模拟的已确认事实" not in receipt.read_text() for receipt in transaction_receipts
     )
+
+
+def test_page_parse_cache_hits_for_153_pages_and_invalidates_on_same_mtime_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, line_id, project_id = make_workspace(tmp_path / "workspace")
+    project_dir = root / "模拟线" / "模拟项目"
+    project_dir.mkdir(parents=True, exist_ok=True)
+    page_ids = [uuid4() for _ in range(153)]
+    for page_id in page_ids:
+        (project_dir / f"{page_id}.md").write_text(
+            "---\n"
+            f"id: {page_id}\n"
+            f"title: 合成页面 {page_id}\n"
+            "role: knowledge\nkind: topic\n"
+            f"line_id: {line_id}\nproject_id: {project_id}\n"
+            "custom_field:\n  source: untouched\n"
+            "---\n\n合成正文。\n",
+            encoding="utf-8",
+        )
+
+    original_parse = page_reader._parse_markdown
+    parsed = 0
+
+    def count_parse(raw: bytes):
+        nonlocal parsed
+        parsed += 1
+        return original_parse(raw)
+
+    monkeypatch.setattr(page_reader, "_parse_markdown", count_parse)
+    first = list_pages(root)
+    assert len(first) == 153
+    assert parsed == 153
+    first[0].metadata["title"] = "缓存污染"
+    first[0].metadata["custom_field"]["source"] = "缓存污染"
+    second = list_pages(root)
+    assert len(second) == 153
+    assert parsed == 153
+    assert second[0].metadata["title"] != "缓存污染"
+    assert second[0].metadata["custom_field"]["source"] == "untouched"
+
+    changed_path = project_dir / f"{page_ids[0]}.md"
+    original_stat = changed_path.stat()
+    changed_path.write_text(
+        changed_path.read_text(encoding="utf-8").replace("合成正文", "外部更新"), encoding="utf-8"
+    )
+    import os
+
+    os.utime(changed_path, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
+    changed = next(page for page in list_pages(root) if page.page_id == page_ids[0])
+    assert "外部更新" in changed.body
+    assert parsed == 154
+
+    duplicate_path = project_dir / "cached-duplicate.md"
+    duplicate_path.write_bytes(changed_path.read_bytes())
+    with pytest.raises(WorkspaceError, match="duplicate page IDs"):
+        list_pages(root)
+    duplicate_path.unlink()
+
+    other_project = create_project(root, UUID(line_id), "另一个模拟项目", "second-project")
+    other_dir = root / other_project.directory
+    other_dir.mkdir(parents=True, exist_ok=True)
+    escaped_identity = other_dir / "misplaced.md"
+    escaped_identity.write_bytes(changed_path.read_bytes())
+    with pytest.raises(WorkspaceError, match="outside its registered project directory"):
+        list_pages(root)
 
 
 def test_empty_page_cannot_receive_a_confirmation_proof(tmp_path: Path) -> None:

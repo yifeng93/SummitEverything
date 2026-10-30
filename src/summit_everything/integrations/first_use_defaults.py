@@ -246,10 +246,22 @@ def load_first_use_defaults(
 def _validate_default_values(values: Mapping[str, str], *, source: Path) -> None:
     if not values:
         return
-    payload: dict[str, dict[str, str]] = {}
+    payload: dict[str, dict[str, object]] = {}
     for key, value in values.items():
         section, field_name = DEFAULTS_FIELD_MAP[key]
         payload.setdefault(section, {})[field_name] = value
+        if section == "embedding":
+            payload[section].update(
+                provider="dashscope",
+                model="qwen3.7-text-embedding",
+                dimensions=1024,
+            )
+        elif section == "rerank":
+            payload[section].update(
+                provider="dashscope",
+                model="qwen3.7-text-rerank",
+                dimensions=1024,
+            )
     try:
         ProviderSettings.model_validate(payload)
     except ValidationError as exc:

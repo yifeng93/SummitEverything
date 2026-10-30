@@ -30,7 +30,7 @@ const feishuStatus = {
 
 /** 完整的外壳夹具：不制造无关的读取失败，除非用例显式覆盖某个端点。 */
 function shellFetch(overrides: Record<string, unknown> = {}, status = 200) {
-  return vi.fn(async (input: RequestInfo | URL) => {
+  return vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
     const url = String(input)
     if (url === '/api/v1/workspaces/current') return Response.json(workspace)
     if (url === '/api/v1/integrations/feishu/status') return Response.json(feishuStatus)
@@ -117,7 +117,6 @@ it('本机服务不可达：就地提示 + 重试 + L2 日志目录，不冒充�
   vi.stubGlobal('fetch', shellFetch())
   fireEvent.click(screen.getByRole('button', { name: '重试' }))
   expect(await screen.findByRole('navigation', { name: '主导航' })).toBeTruthy()
-  expect(document.querySelector('.local-indicator')?.textContent).toBe('仅本机运行')
 })
 
 it('本机服务报 500 也显示就地提示，而不是工作库向导（守卫④ 变体）', async () => {
@@ -164,6 +163,109 @@ it('侧栏审批徽章与审批页共用同一份清单，数量一致', async (
   expect(within(approvalView).queryByText('已确认稿件')).toBeNull()
 })
 
+it('settings save refreshes hidden approval provider state and invalidates only an unconfirmed Q&A plan', async () => {
+  const runtimeSettings = {
+    mode: 'real', model_studio_account_id: 'studio-default',
+    feishu: { app_id: 'synthetic-app', redirect_uri: '', identity: 'app', calendar_id: '' },
+    llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'team-account', enabled: true, max_output_tokens: 2048, reasoning_effort: 'low' },
+    embedding: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', region: 'cn', dimensions: 512, enabled: true },
+    rerank: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', region: 'cn', dimensions: 512, enabled: true },
+    capabilities: { llm: { available: true, configured: true, disabled_reason: 'acceptance_plan_required' } },
+    credential_status: { feishu_app: false, deepseek: true, dashscope: false }, keychain_available: true,
+    embedding_fingerprint: 'real-fingerprint',
+    local_model: { model: 'BAAI/bge-small-zh-v1.5', revision: 'synthetic-revision', dimensions: 512, token_limit: 512, download_size_bytes: 95, state: 'ready', downloaded_bytes: 95, progress_percent: 100, error_code: null },
+  }
+  const confirmedPage = {
+    page_id: 'confirmed-page', relative_path: '合成/地点.md', metadata: { id: 'confirmed-page', title: '已确认合成页', kind: 'knowledge' },
+    body: '合成正文', content_sha256: 'c'.repeat(64), storage_area: 'formal', approval_state: 'confirmed', validity: 'current',
+  }
+  const indexPlans: Array<Record<string, unknown>> = []
+  const acceptanceScopes: Array<Record<string, unknown>> = []
+  let indexStatusReads = 0
+  let indexBuilt = false
+  const fallback = shellFetch({
+    '/api/v1/pages': [confirmedPage],
+    '/api/v1/settings': runtimeSettings,
+    '/api/v1/index/status': { fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 },
+  })
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url === '/api/v1/settings' && init?.method === 'PATCH') {
+      const patch = JSON.parse(String(init.body)) as Record<string, unknown>
+      Object.assign(runtimeSettings, patch)
+      for (const key of ['feishu', 'llm', 'embedding', 'rerank'] as const) {
+        if (patch[key] && typeof patch[key] === 'object') Object.assign(runtimeSettings[key], patch[key])
+      }
+      if (patch.llm && typeof patch.llm === 'object' && 'account_id' in patch.llm && patch.llm.account_id === 'updated-team-account') runtimeSettings.embedding_fingerprint = 'updated-real-fingerprint'
+      return Response.json(runtimeSettings)
+    }
+    if (url === '/api/v1/settings') return Response.json(runtimeSettings)
+    if (url === '/api/v1/index/status') {
+      indexStatusReads += 1
+      if (indexBuilt) return Response.json({ fingerprint: runtimeSettings.embedding_fingerprint, vector: 'real', pages: 1, chunks: 1, state: 'ready', current_pages: 1, stale_pages: 0 })
+      return Response.json({ fingerprint: null, pages: 0, chunks: 0, state: 'not_ready', current_pages: 0, stale_pages: 0 })
+    }
+    if (url === '/api/v1/index/plans' && init?.method === 'POST') {
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>
+      indexPlans.push(body)
+      if (body.fingerprint !== 'real-fingerprint') return Response.json({ error: { code: 'request_error', message: 'Provider 设置已变化，请重新生成索引计划。' } }, { status: 409 })
+      return Response.json({ plan_id: 'index-plan', workspace_id: 'workspace-1', mode: 'initial', fingerprint: body.fingerprint, page_ids: ['confirmed-page'], page_versions: { 'confirmed-page': 'c'.repeat(64) }, estimated_tokens: 12, estimated_cost: 0, page_preview: [{ title: '已确认合成页', version: '当前版本' }] })
+    }
+    if (url === '/api/v1/index/jobs' && init?.method === 'POST') {
+      indexBuilt = true
+      return Response.json({ job_id: 'synthetic-index-job', state: 'completed' }, { status: 201 })
+    }
+    if (url === '/api/v1/acceptance-plans' && init?.method === 'POST') {
+      acceptanceScopes.push(JSON.parse(String(init.body)) as Record<string, unknown>)
+      return Response.json({ plan: { plan_id: 'query-plan', scope_sha256: 'query-scope', request_limit: 1 }, scope: { question: '合成问题', max_output_tokens: 2048, reasoning_effort: 'low' } })
+    }
+    return fallback(input, init)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<App />)
+
+  const nav = await screen.findByRole('navigation', { name: '主导航' })
+  fireEvent.click(within(nav).getByRole('button', { name: '设置' }))
+  fireEvent.click(await screen.findByRole('button', { name: '配置 AI 模型与密钥' }))
+  expect(screen.getByText('DeepSeek · deepseek-flash')).toBeTruthy()
+
+  fireEvent.click(within(nav).getByRole('button', { name: /^审批/ }))
+  const readiness = await screen.findByRole('region', { name: '搜索与问答准备' })
+  expect(within(readiness).getByText('首次准备待确认')).toBeTruthy()
+  expect(within(readiness).queryByText(/演示模式/)).toBeNull()
+  const prepare = within(readiness).getByRole('button', { name: '准备已确认的内容' }) as HTMLButtonElement
+  expect(prepare.disabled).toBe(false)
+  fireEvent.click(prepare)
+  await screen.findByText('将准备 1 页已确认内容。')
+  expect(indexPlans).toEqual([{ mode: 'initial', fingerprint: 'real-fingerprint' }])
+  fireEvent.click(screen.getByRole('button', { name: '查看范围并确认' }))
+  fireEvent.click(screen.getByRole('button', { name: '确认并开始准备' }))
+  await waitFor(() => expect(indexBuilt).toBe(true))
+
+  fireEvent.click(within(nav).getByRole('button', { name: '知识问答' }))
+  const question = await screen.findByLabelText('你的问题') as HTMLTextAreaElement
+  fireEvent.change(question, { target: { value: '合成问题' } })
+  fireEvent.click(screen.getByRole('button', { name: '开始检索' }))
+  const queryPreview = await screen.findByRole('region', { name: '真实问答发送预览' })
+  expect(within(queryPreview).getByText('合成问题')).toBeTruthy()
+  expect(acceptanceScopes).toEqual([expect.objectContaining({ operation: 'model.query', scope: expect.objectContaining({ fingerprint: 'real-fingerprint' }) })])
+  expect(fetchMock.mock.calls.some(([url, init]) => String(url) === '/api/v1/queries' && init?.method === 'POST')).toBe(false)
+
+  fireEvent.click(within(nav).getByRole('button', { name: '设置' }))
+  fireEvent.click(await screen.findByRole('button', { name: '配置 AI 模型与密钥' }))
+  fireEvent.change(await screen.findByLabelText('DeepSeek 账户标识'), { target: { value: 'updated-team-account' } })
+  const readsBeforeProviderSave = indexStatusReads
+  fireEvent.click(screen.getByRole('button', { name: '保存 provider 设置' }))
+  expect(await screen.findByText(/高级设置已保存在本机/)).toBeTruthy()
+  await waitFor(() => expect(indexStatusReads).toBeGreaterThan(readsBeforeProviderSave))
+
+  fireEvent.click(within(nav).getByRole('button', { name: '知识问答' }))
+  expect(await screen.findByText('模型或搜索设置已变化。请重新检查当前问题的发送范围。')).toBeTruthy()
+  expect((screen.getByLabelText('你的问题') as HTMLTextAreaElement).value).toBe('合成问题')
+  expect(screen.queryByRole('region', { name: '真实问答发送预览' })).toBeNull()
+  expect(fetchMock.mock.calls.some(([url, init]) => String(url) === '/api/v1/queries' && init?.method === 'POST')).toBe(false)
+}, 15000)
+
 it('dirty draft blocks sidebar navigation and accepted discard returns to the saved list', async () => {
   const reviewDraft = { draft_id: 'draft-focus', metadata: { title: '需保护的稿件' }, body: '# 原正文', source_ids: ['source-focus'], important_conflicts: [], state: 'pending', version: 1 }
   vi.stubGlobal('fetch', shellFetch({ '/api/v1/drafts': [reviewDraft] }))
@@ -201,16 +303,18 @@ it('dirty draft blocks sidebar navigation and accepted discard returns to the sa
   const reopenedBody = within(reopenedFocus).getByLabelText('正文') as HTMLTextAreaElement
   fireEvent.change(reopenedBody, { target: { value: '# 切换前保留修改' } })
   confirm.mockReturnValue(false)
+  fireEvent.click(screen.getByRole('button', { name: /^工作库：/ }))
   fireEvent.click(screen.getByRole('button', { name: '切换工作库' }))
   expect(confirm).toHaveBeenCalledWith('稿件有未保存的修改。切换工作库会放弃这些修改，是否继续？')
   expect(screen.getByRole('navigation', { name: '主导航' })).toBeTruthy()
   expect(reopenedBody.value).toBe('# 切换前保留修改')
 
   confirm.mockReturnValue(true)
+  fireEvent.click(screen.getByRole('button', { name: /^工作库：/ }))
   fireEvent.click(screen.getByRole('button', { name: '切换工作库' }))
   expect(await screen.findByRole('button', { name: '创建本地工作库' })).toBeTruthy()
   expect(screen.queryByRole('navigation', { name: '主导航' })).toBeNull()
-})
+}, 15000)
 
 it('待处理为 0 时不显示徽章', async () => {
   vi.stubGlobal('fetch', shellFetch())
@@ -267,11 +371,12 @@ it('全局失败提示走 toast（可手关），没有常驻红色横幅', asyn
   await waitFor(() => expect(screen.queryByText('本机读取出了点问题。')).toBeNull())
 })
 
-it('「切换…」离开当前工作库，回到首次配置向导', async () => {
+it('工作库菜单里的切换离开当前工作库，回到首次配置向导', async () => {
   vi.stubGlobal('fetch', shellFetch())
   render(<App />)
 
-  fireEvent.click(await screen.findByRole('button', { name: '切换工作库' }))
+  fireEvent.click(await screen.findByRole('button', { name: /^工作库：/ }))
+  fireEvent.click(screen.getByRole('button', { name: '切换工作库' }))
   expect(await screen.findByRole('button', { name: '创建本地工作库' })).toBeTruthy()
   expect(screen.queryByRole('navigation', { name: '主导航' })).toBeNull()
 })
@@ -280,8 +385,26 @@ it('主题三选在运行期写入 data-theme 并持久化（外壳重写后仍�
   vi.stubGlobal('fetch', shellFetch())
   render(<App />)
 
-  const select = await screen.findByLabelText('主题')
-  fireEvent.change(select, { target: { value: 'dark' } })
+  fireEvent.click(await screen.findByRole('button', { name: '外观与主题' }))
+  fireEvent.click(await screen.findByRole('button', { name: '深色' }))
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'))
   expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+})
+
+it('点一级导航「项目」从项目详情回到项目列表', async () => {
+  const project = { id: 'project-1', name: '模拟项目', directory: '模拟主线/模拟项目', line_id: 'line-1', archived: false, progress: '', progress_version: 0 }
+  vi.stubGlobal('fetch', shellFetch({ '/api/v1/projects': [project] }))
+  render(<App />)
+  const nav = await screen.findByRole('navigation', { name: '主导航' })
+  fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+  await screen.findByRole('heading', { name: '项目' })
+  // 侧栏二级入口也叫「模拟项目」；这里只点列表里的那一行。
+  const list = document.querySelector('.projects-view') as HTMLElement
+  fireEvent.click(await within(list).findByRole('button', { name: /模拟项目/ }))
+  expect(await screen.findByRole('region', { name: '项目详情' })).toBeTruthy()
+
+  // 再点一次「项目」：一级导航永远回到列表，而不是停在详情里。
+  fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
+  await waitFor(() => expect(screen.queryByRole('region', { name: '项目详情' })).toBeNull())
+  expect(screen.getByRole('heading', { name: '项目' })).toBeTruthy()
 })

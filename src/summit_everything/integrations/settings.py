@@ -8,6 +8,7 @@ import json
 import os
 import platform
 import tempfile
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Literal, Protocol, TypeVar, cast
@@ -62,10 +63,10 @@ class FeishuSettings(_SettingsModel):
 
 
 class LLMSettings(_SettingsModel):
-    provider: Literal["fake", "deepseek"] = "fake"
-    model: Literal["deepseek-flash"] | None = None
+    provider: Literal["fake", "deepseek"] = "deepseek"
+    model: Literal["deepseek-flash"] | None = "deepseek-flash"
     account_id: str = Field(default="default", min_length=1, max_length=200)
-    enabled: bool = False
+    enabled: bool = True
     max_output_tokens: int = Field(default=2048, ge=256, le=16384)
     reasoning_effort: Literal["low", "high"] = "low"
 
@@ -81,17 +82,23 @@ class LLMSettings(_SettingsModel):
 
 
 class ModelStudioSettings(_SettingsModel):
-    provider: Literal["fake", "dashscope"] = "fake"
-    model: Literal["qwen3.7-text-embedding", "qwen3.7-text-rerank"] | None = None
+    # ``dashscope`` remains readable for old profiles but is never a runtime
+    # provider in the new local-retrieval path.
+    provider: Literal["fake", "local", "dashscope"] = "local"
+    model: (
+        Literal["BAAI/bge-small-zh-v1.5", "qwen3.7-text-embedding", "qwen3.7-text-rerank"] | None
+    ) = "BAAI/bge-small-zh-v1.5"
     # Only the Mainland endpoint is implemented and source-checked in this candidate.
     region: Literal["cn"] = "cn"
-    dimensions: int = Field(default=1024, ge=1, le=4096)
-    base_url: str = "https://dashscope.aliyuncs.com/api/v1"
-    enabled: bool = False
+    dimensions: int = Field(default=512, ge=1, le=4096)
+    base_url: str = ""
+    enabled: bool = True
 
     @field_validator("base_url")
     @classmethod
     def alibaba_model_studio_endpoint(cls, value: str) -> str:
+        if not value:
+            return value
         parts = urlsplit(value)
         if (
             parts.scheme != "https"
@@ -110,33 +117,69 @@ class ModelStudioSettings(_SettingsModel):
 
     @field_validator("dimensions")
     @classmethod
-    def documented_dimension(cls, value: int) -> int:
-        if value != 1024:
-            raise ValueError("Only the documented 1024 dimension is supported")
+    def supported_dimension(cls, value: int) -> int:
+        if value not in {512, 1024}:
+            raise ValueError("Only the supported local or legacy dimension is allowed")
         return value
 
 
 class EmbeddingSettings(ModelStudioSettings):
-    model: Literal["qwen3.7-text-embedding"] | None = None
-    base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    model: Literal["BAAI/bge-small-zh-v1.5", "qwen3.7-text-embedding"] | None = (
+        "BAAI/bge-small-zh-v1.5"
+    )
+    base_url: str = ""
     expected_model: ClassVar[str] = "qwen3.7-text-embedding"
+
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_profile_defaults(cls, value: object) -> object:
+        if isinstance(value, dict) and value.get("provider") == "dashscope":
+            compatible = dict(value)
+            compatible.setdefault("dimensions", 1024)
+            compatible.setdefault("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+            return compatible
+        return value
 
     @model_validator(mode="after")
     def validate_selection(self) -> EmbeddingSettings:
+        if self.provider == "local":
+            if self.model != "BAAI/bge-small-zh-v1.5" or self.dimensions != 512:
+                raise ValueError("Select the pinned 512-dimensional local retrieval model")
+            return self
         _validate_model_selection(self.provider, self.model, self.expected_model)
-        if urlsplit(self.base_url).path != "/compatible-mode/v1":
+        if self.provider == "dashscope" and self.dimensions != 1024:
+            raise ValueError("The legacy embedding configuration requires 1024 dimensions")
+        if self.provider == "dashscope" and urlsplit(self.base_url).path != "/compatible-mode/v1":
             raise ValueError("Embedding requires the Model Studio compatible-mode base URL")
         return self
 
 
 class RerankSettings(ModelStudioSettings):
-    model: Literal["qwen3.7-text-rerank"] | None = None
+    model: Literal["BAAI/bge-small-zh-v1.5", "qwen3.7-text-rerank"] | None = (
+        "BAAI/bge-small-zh-v1.5"
+    )
     expected_model: ClassVar[str] = "qwen3.7-text-rerank"
+
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_profile_defaults(cls, value: object) -> object:
+        if isinstance(value, dict) and value.get("provider") == "dashscope":
+            compatible = dict(value)
+            compatible.setdefault("dimensions", 1024)
+            compatible.setdefault("base_url", "https://dashscope.aliyuncs.com/api/v1")
+            return compatible
+        return value
 
     @model_validator(mode="after")
     def validate_selection(self) -> RerankSettings:
+        if self.provider == "local":
+            if self.model != "BAAI/bge-small-zh-v1.5" or self.dimensions != 512:
+                raise ValueError("Select the pinned local semantic ranking model")
+            return self
         _validate_model_selection(self.provider, self.model, self.expected_model)
-        if urlsplit(self.base_url).path != "/api/v1":
+        if self.provider == "dashscope" and self.dimensions != 1024:
+            raise ValueError("The legacy rerank configuration requires 1024 dimensions")
+        if self.provider == "dashscope" and urlsplit(self.base_url).path != "/api/v1":
             raise ValueError("Rerank requires the Model Studio API base URL")
         return self
 
@@ -145,11 +188,14 @@ def _validate_model_selection(provider: str, model: str | None, expected_model: 
     if provider == "fake" and model is not None:
         raise ValueError("Fake mode does not select a remote model")
     if provider == "dashscope" and model != expected_model:
-        raise ValueError("Selected model does not match the provider capability")
+        raise ValueError("Selected model does not match the legacy provider capability")
 
 
 class ProviderSettings(_SettingsModel):
-    mode: Literal["fake", "real"] = "fake"
+    mode: Literal["fake", "real"] = "real"
+    # Runtime-only marker: legacy Fake profiles are surfaced as unconfigured
+    # real settings and are never allowed to select a simulated provider.
+    legacy_provider_migration_required: bool = Field(default=False, exclude=True)
     model_studio_account_id: str = Field(default="default", min_length=1, max_length=200)
     feishu: FeishuSettings = Field(default_factory=FeishuSettings)
     llm: LLMSettings = Field(default_factory=LLMSettings)
@@ -163,8 +209,21 @@ class CapabilityState(_SettingsModel):
     disabled_reason: str | None
 
 
+class LocalModelStatus(_SettingsModel):
+    model: str
+    revision: str
+    dimensions: int
+    token_limit: int
+    download_size_bytes: int
+    state: Literal["not_prepared", "preparing", "ready", "failed", "incomplete"]
+    downloaded_bytes: int
+    progress_percent: int
+    error_code: str | None
+
+
 class SettingsSummary(_SettingsModel):
     mode: Literal["fake", "real"]
+    legacy_provider_migration_required: bool = False
     model_studio_account_id: str
     feishu: FeishuSettings
     llm: LLMSettings
@@ -174,6 +233,7 @@ class SettingsSummary(_SettingsModel):
     credential_status: dict[str, bool]
     keychain_available: bool
     embedding_fingerprint: str
+    local_model: LocalModelStatus
 
 
 class FeishuSettingsPatch(_SettingsModel):
@@ -186,7 +246,7 @@ class FeishuSettingsPatch(_SettingsModel):
 
 
 class LLMSettingsPatch(_SettingsModel):
-    provider: Literal["fake", "deepseek"] | None = None
+    provider: Literal["deepseek"] | None = None
     model: Literal["deepseek-flash"] | None = None
     account_id: str | None = Field(default=None, min_length=1, max_length=200)
     enabled: bool | None = None
@@ -195,8 +255,10 @@ class LLMSettingsPatch(_SettingsModel):
 
 
 class ModelStudioSettingsPatch(_SettingsModel):
-    provider: Literal["fake", "dashscope"] | None = None
-    model: Literal["qwen3.7-text-embedding", "qwen3.7-text-rerank"] | None = None
+    # Legacy DashScope and Fake choices remain readable in stored profiles,
+    # but new settings writes can select only the local model.
+    provider: Literal["local"] | None = None
+    model: Literal["BAAI/bge-small-zh-v1.5"] | None = None
     region: Literal["cn"] | None = None
     dimensions: int | None = Field(default=None, ge=1, le=4096)
     base_url: str | None = None
@@ -204,7 +266,7 @@ class ModelStudioSettingsPatch(_SettingsModel):
 
 
 class ProviderSettingsPatch(_SettingsModel):
-    mode: Literal["fake", "real"] | None = None
+    mode: Literal["real"] | None = None
     model_studio_account_id: str | None = Field(default=None, min_length=1, max_length=200)
     feishu: FeishuSettingsPatch | None = None
     llm: LLMSettingsPatch | None = None
@@ -222,16 +284,29 @@ class SettingsStore:
     default changes while an explicit override stays fixed.
     """
 
-    def __init__(self, path: Path, *, defaults: FirstUseDefaults | None = None) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        defaults: FirstUseDefaults | None = None,
+        allow_test_fake: bool = False,
+    ) -> None:
         self.path = path
         self._defaults = defaults
+        self._allow_test_fake = allow_test_fake
 
     def read(self) -> ProviderSettings:
         raw = self._read_raw()
         if self._defaults is not None:
             raw = self._defaults.apply(raw)
+        legacy_provider = not self._allow_test_fake and _contains_legacy_provider_configuration(raw)
+        if legacy_provider:
+            raw = _migrate_legacy_provider_configuration(raw)
         try:
-            return ProviderSettings.model_validate(raw)
+            settings = ProviderSettings.model_validate(raw)
+            return settings.model_copy(
+                update={"legacy_provider_migration_required": legacy_provider}
+            )
         except (OSError, ValueError) as exc:
             raise SettingsError("settings_unavailable") from exc
 
@@ -244,6 +319,8 @@ class SettingsStore:
             raise SettingsError("settings_unavailable") from exc
 
     def update(self, patch: dict[str, object]) -> ProviderSettings:
+        if not self._allow_test_fake and _contains_non_delivery_provider_selection(patch):
+            raise SettingsError("provider_not_allowed")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         lock_path = self.path.with_suffix(self.path.suffix + ".lock")
         with lock_path.open("a+b") as lock_file:
@@ -298,6 +375,62 @@ def _merge(current: dict[str, object], patch: dict[str, object]) -> dict[str, ob
         else:
             merged[key] = value
     return merged
+
+
+def _contains_legacy_provider_configuration(raw: object) -> bool:
+    if not isinstance(raw, dict):
+        return False
+    if raw.get("mode") == "fake":
+        return True
+    llm = raw.get("llm")
+    if isinstance(llm, dict) and llm.get("provider") == "fake":
+        return True
+    return any(
+        isinstance(raw.get(section), dict) and raw[section].get("provider") in {"fake", "dashscope"}
+        for section in ("embedding", "rerank")
+    )
+
+
+def _contains_non_delivery_provider_selection(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    if value.get("mode") == "fake":
+        return True
+    if isinstance(value.get("llm"), dict) and value["llm"].get("provider") == "fake":
+        return True
+    return any(
+        isinstance(value.get(section), dict)
+        and value[section].get("provider") in {"fake", "dashscope"}
+        for section in ("embedding", "rerank")
+    )
+
+
+def _migrate_legacy_provider_configuration(raw: object) -> object:
+    """Map stored non-delivery providers to real providers that report setup gaps."""
+    if not isinstance(raw, dict):
+        return raw
+    migrated = {
+        key: dict(value) if isinstance(value, dict) else value for key, value in raw.items()
+    }
+    migrated["mode"] = "real"
+    llm = migrated.get("llm")
+    llm = dict(llm) if isinstance(llm, dict) else {}
+    if llm.get("provider") == "fake":
+        llm.update(provider="deepseek", model="deepseek-flash", enabled=True)
+    migrated["llm"] = llm
+    for section in ("embedding", "rerank"):
+        model_settings = migrated.get(section)
+        model_settings = dict(model_settings) if isinstance(model_settings, dict) else {}
+        if model_settings.get("provider") in {"fake", "dashscope"}:
+            model_settings.update(
+                provider="local",
+                model="BAAI/bge-small-zh-v1.5",
+                dimensions=512,
+                enabled=True,
+                base_url="",
+            )
+        migrated[section] = model_settings
+    return migrated
 
 
 class SecretBackend(Protocol):
@@ -421,7 +554,12 @@ class CredentialVault:
 
 
 def provider_settings_payload(
-    settings: ProviderSettings, vault: CredentialVault
+    settings: ProviderSettings,
+    vault: CredentialVault,
+    *,
+    local_model_status: dict[str, object] | None = None,
+    legacy_provider_migration_required: bool = False,
+    feishu_calendar_ready: bool | None = None,
 ) -> SettingsSummary:
     """Build a safe, user-facing status summary without exposing secret metadata."""
     keychain_available = isinstance(vault.backend, (MemorySecretBackend, MacOSKeychainBackend))
@@ -455,11 +593,26 @@ def provider_settings_payload(
     llm_configured = settings.llm.provider == "deepseek" and credential_status.get(
         "deepseek", False
     )
-    embedding_configured = settings.embedding.provider == "dashscope" and credential_status.get(
-        "dashscope", False
+    local_model_ready = (local_model_status or {}).get("state") == "ready"
+    embedding_configured = settings.embedding.provider == "local" and local_model_ready
+    rerank_configured = settings.rerank.provider == "local" and local_model_ready
+    embedding_reason = (
+        None
+        if embedding_configured
+        else "local_model_not_prepared"
+        if settings.embedding.provider == "local"
+        else "legacy_provider_migration_required"
+        if settings.embedding.provider == "dashscope"
+        else "local_model_not_selected"
     )
-    rerank_configured = settings.rerank.provider == "dashscope" and credential_status.get(
-        "dashscope", False
+    rerank_reason = (
+        None
+        if rerank_configured
+        else "local_model_not_prepared"
+        if settings.rerank.provider == "local"
+        else "legacy_provider_migration_required"
+        if settings.rerank.provider == "dashscope"
+        else "local_model_not_selected"
     )
     capabilities = {
         key: CapabilityState(**disabled, disabled_reason=reason)
@@ -475,20 +628,8 @@ def provider_settings_payload(
                 if settings.llm.provider == "fake"
                 else "provider_not_configured"
             ),
-            "embedding": (
-                "acceptance_plan_required"
-                if embedding_configured and settings.mode == "real"
-                else "offline_default"
-                if settings.embedding.provider == "fake"
-                else "provider_not_configured"
-            ),
-            "rerank": (
-                "acceptance_plan_required"
-                if rerank_configured and settings.mode == "real"
-                else "offline_default"
-                if settings.rerank.provider == "fake"
-                else "provider_not_configured"
-            ),
+            "embedding": embedding_reason,
+            "rerank": rerank_reason,
         }.items()
     }
     capabilities["llm"] = CapabilityState(
@@ -497,24 +638,93 @@ def provider_settings_payload(
         disabled_reason=capabilities["llm"].disabled_reason,
     )
     capabilities["embedding"] = CapabilityState(
-        available=False,
+        available=embedding_configured,
         configured=embedding_configured,
         disabled_reason=capabilities["embedding"].disabled_reason,
     )
     capabilities["rerank"] = CapabilityState(
-        available=False,
+        available=rerank_configured,
         configured=rerank_configured,
         disabled_reason=capabilities["rerank"].disabled_reason,
     )
-    # A saved settings flag cannot authorize business data reads. Each real read
-    # requires a matching confirmed one-shot acceptance plan.
+    # Calendar is a bounded, read-only capability guarded by the configured
+    # Feishu identity and scopes at the provider boundary. Other data reads
+    # still require a matching confirmed one-shot acceptance plan. For user
+    # identity, inspect only the local vault record needed to avoid claiming
+    # connectivity from app configuration alone.
     feishu_executable = False
-    for name in ("feishu_material_read", "feishu_calendar_read", "feishu_task_read"):
+    for name in ("feishu_material_read", "feishu_task_read"):
         capabilities[name] = CapabilityState(
             available=feishu_executable,
             configured=feishu_ready,
             disabled_reason=(None if feishu_executable else "acceptance_plan_required"),
         )
+    calendar_user_ready = False
+    calendar_user_configured = False
+    calendar_user_refreshable = False
+    if settings.mode == "real" and settings.feishu.identity == "user" and settings.feishu.app_id:
+        try:
+            from summit_everything.integrations.feishu.provider import UserCredentials
+
+            raw = vault.get_secret("feishu_user", account_id=settings.feishu.app_id)
+            credentials = UserCredentials.model_validate_json(raw) if raw else None
+            if credentials is not None:
+                has_calendar_scope = bool(
+                    {
+                        "calendar:calendar.event:read",
+                        "calendar:calendar:read",
+                        "calendar:calendar:readonly",
+                    }
+                    & set(credentials.scopes)
+                )
+                calendar_user_configured = has_calendar_scope
+                calendar_user_refreshable = bool(credentials.refresh_token) and not (
+                    credentials.refresh_consumed
+                )
+                current_or_refreshable = credentials.expires_at > time.time() or (
+                    calendar_user_refreshable and feishu_app_configured
+                )
+                calendar_user_ready = has_calendar_scope and current_or_refreshable
+        except Exception:
+            calendar_user_ready = False
+    calendar_configured = settings.mode == "real" and (
+        feishu_calendar_ready is True
+        or (
+            bool(settings.feishu.app_id)
+            and (
+                feishu_app_configured
+                if settings.feishu.identity == "app"
+                else calendar_user_configured
+            )
+        )
+    )
+    calendar_enabled = (
+        feishu_calendar_ready
+        if feishu_calendar_ready is not None
+        else (feishu_ready if settings.feishu.identity == "app" else calendar_user_ready)
+    ) and settings.mode == "real"
+    if calendar_enabled:
+        calendar_disabled_reason = None
+    elif settings.mode == "fake":
+        calendar_disabled_reason = "offline_default"
+    elif (
+        not settings.feishu.app_id
+        or (settings.feishu.identity == "app" and not feishu_app_configured)
+        or (
+            settings.feishu.identity == "user"
+            and calendar_user_configured
+            and calendar_user_refreshable
+            and not feishu_app_configured
+        )
+    ):
+        calendar_disabled_reason = "provider_not_configured"
+    else:
+        calendar_disabled_reason = "stage_c_authorization_required"
+    capabilities["feishu_calendar_read"] = CapabilityState(
+        available=calendar_enabled,
+        configured=calendar_configured,
+        disabled_reason=calendar_disabled_reason,
+    )
     # Task writes additionally require an independently verifiable result, which
     # no documented endpoint provides, so they stay unavailable.
     capabilities["feishu_task_write"] = CapabilityState(
@@ -524,6 +734,7 @@ def provider_settings_payload(
     )
     return SettingsSummary(
         mode=settings.mode,
+        legacy_provider_migration_required=legacy_provider_migration_required,
         model_studio_account_id=settings.model_studio_account_id,
         feishu=settings.feishu,
         llm=settings.llm,
@@ -533,6 +744,20 @@ def provider_settings_payload(
         credential_status=credential_status,
         keychain_available=keychain_available,
         embedding_fingerprint=embedding_fingerprint(settings.embedding, mode=settings.mode),
+        local_model=LocalModelStatus.model_validate(
+            local_model_status
+            or {
+                "model": "BAAI/bge-small-zh-v1.5",
+                "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+                "dimensions": 512,
+                "token_limit": 512,
+                "download_size_bytes": 95_330_972,
+                "state": "not_prepared",
+                "downloaded_bytes": 0,
+                "progress_percent": 0,
+                "error_code": None,
+            }
+        ),
     )
 
 
@@ -542,6 +767,19 @@ CredentialProvider = Literal["feishu_app", "deepseek", "dashscope"]
 def embedding_fingerprint(settings: EmbeddingSettings, *, mode: str = "real") -> str:
     if mode == "fake" or settings.provider == "fake":
         return "summit-fake-embedding-v1"
+    if settings.provider == "local":
+        identity = {
+            "provider": "local",
+            "model": "BAAI/bge-small-zh-v1.5",
+            "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+            "dimensions": 512,
+            "token_window": 480,
+            "token_overlap": 64,
+            "window_aggregation": "token_weighted_mean_l2_v1",
+            "chunking": "chunk_markdown_v1",
+        }
+        payload = json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
+        return hashlib.sha256(payload).hexdigest()
     identity = {
         "provider": settings.provider,
         "model": settings.model or "fake-hash-v1",

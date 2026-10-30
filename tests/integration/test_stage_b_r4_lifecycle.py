@@ -384,7 +384,9 @@ def test_r4_03_e_config_change_keeps_the_old_read_on_its_snapshot(tmp_path, monk
     remote = ApiRemote(pause_at_transcript=2)
     client, clients = _api_client(tmp_path, monkeypatch, backend, remote)
 
-    old_client = clients[0]
+    # Workspace opening may create a provider for the initial default
+    # configuration; the latest provider is the one bound to this read.
+    old_client = clients[-1]
     materials = ["obc" + "0" * 21, "obc" + "1" * 21, "obc" + "2" * 21]
     thread, box = _parallel(
         client.post,

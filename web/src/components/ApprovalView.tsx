@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { FileText, X } from 'lucide-react'
 import { api, indexUpdateMessage, type ActionCandidate, type Draft, type IntakeItem, type MutationResult, type Page, type Project, type SourceDetail } from '../api/client'
 import type { components } from '../api/generated'
-import { draftNeedsAttention, intakeNeedsAttention, intakeStateLabel } from '../approval-summary'
+import { draftNeedsAttention, draftStateLabel, intakeNeedsAttention, intakeStateLabel } from '../approval-summary'
 import { MarkdownText } from './MarkdownText'
 import { DraftReview } from './DraftReview'
 import { ConfirmDialog } from './ConfirmDialog'
 import { TasksPanel } from './TasksPanel'
 import { SourceOrganizer } from './SourceOrganizer'
+import { useDialogFocus } from './useDialogFocus'
+import { PageHeader } from './PageHeader'
 import { newOperationId } from '../api/client'
 import type { ApprovalTarget } from '../approvalTarget'
+import { SearchReadiness } from './SearchReadiness'
 
 type Action = components['schemas']['Action']
 type ActionPage = components['schemas']['ActionPage']
 type Resource<T> = { data: T | null; loading: boolean; error: string; lastSuccess: string | null }
 type IndexStatus = { state: string; fingerprint: string | null; pages: number; chunks: number; current_pages: number; stale_pages: number }
-type AcceptancePlan = { plan_id: string; scope_sha256: string; request_limit: number }
-type IndexPlan = components['schemas']['IndexPlan']
 type IntakeJob = components['schemas']['IntakeJob']
 type Props = { onPendingCount: (count: number) => void; onError: (message: string) => void; onOpenPage?: (pageId: string, expectedHash?: string) => void; refreshEpoch?: number; target?: ApprovalTarget | null; onTargetHandled?: () => void; onDirtyChange?: (dirty: boolean) => void; discardEpoch?: number }
 
@@ -40,17 +42,33 @@ function StatePanel<T>({ resource, retry, children }: { resource: Resource<T>; r
   if (resource.loading && resource.data === null) return <p className="quiet-empty" role="status">正在读取…</p>
   if (resource.error && resource.data === null) return <div className="resource-error" role="alert"><p>{resource.error}</p><button className="button secondary" onClick={retry}>重试</button></div>
   if (resource.data === null) return <p className="quiet-empty" role="status">正在读取…</p>
-  return <>{resource.error && <p className="stale-note" role="status">{resource.error}；下方保留上次成功读取的内容。{resource.lastSuccess ? ` 最近成功读取：${new Date(resource.lastSuccess).toLocaleString('zh-CN')}` : ''} <button className="text-button" onClick={retry}>重试</button></p>}{children(resource.data)}{resource.loading && <span className="inline-loading" role="status">正在更新…</span>}{!resource.error && resource.lastSuccess && <small className="last-success">最近读取：{new Date(resource.lastSuccess).toLocaleString('zh-CN')}</small>}</>
+  return <>{resource.error && <p className="stale-note" role="status">{resource.error}；下方保留上次成功读取的内容。 <button className="text-button" onClick={retry}>重试</button></p>}{children(resource.data)}{resource.loading && <span className="inline-loading" role="status">正在更新…</span>}</>
 }
 
-function ApprovalGroup({ id, headingId, title, description, count, open, onToggle, children }: {
-  id: string; headingId: string; title: string; description: string; count: string | number;
-  open: boolean; onToggle: (open: boolean) => void; children: ReactNode
+function ApprovalGroup({ id, headingId, title, summary, lastSuccess, hasReadError = false, count, children }: {
+  id: string; headingId: string; title: string; summary: string; lastSuccess: string | null; hasReadError?: boolean; count: string | number; children: ReactNode
 }) {
-  return <details className="panel approval-group" id={id} role="region" aria-labelledby={headingId} open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
-    <summary className="panel-heading"><div><h2 id={headingId}>{title}</h2><p>{description}</p></div><span className="count-badge">{count}</span></summary>
-    <div className="approval-group-content">{children}</div>
-  </details>
+  // 五组是并列的待办队列，不是步骤：固定顺序、同等大小，内容多时在卡内滚动。
+  return <section className={'panel approval-group' + (Number(count) > 0 ? ' has-pending' : '')} id={id} role="region" aria-label={title}>
+    <div className="approval-group-head">
+      <div className="approval-group-copy">
+        <h2 id={headingId}>{title}</h2>
+        {(summary || lastSuccess) && <div className="approval-group-meta">
+          {summary && <p>{summary}</p>}
+          {lastSuccess && <small>{hasReadError ? '上次成功读取：' : '最近读取：'}{new Date(lastSuccess).toLocaleString('zh-CN')}</small>}
+        </div>}
+      </div>
+      <span className={Number(count) > 0 ? 'count-badge has-items' : 'count-badge'}>{count}</span>
+    </div>
+    <div className="approval-group-content">
+      {children}
+    </div>
+  </section>
+}
+
+function earlierSuccessfulRead(first: string | null, second: string | null): string | null {
+  if (!first || !second) return null
+  return Date.parse(first) <= Date.parse(second) ? first : second
 }
 
 export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch = 0, target = null, onTargetHandled, onDirtyChange, discardEpoch = 0 }: Props) {
@@ -62,9 +80,8 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const [intents, setIntents] = useState(initial<ActionPage>)
   const [settingsMode, setSettingsMode] = useState<'fake' | 'real' | null>(null)
   const [configuredFingerprint, setConfiguredFingerprint] = useState('')
+  const [localModelReady, setLocalModelReady] = useState(false)
   const [filter, setFilter] = useState<'all' | 'pending' | 'complete'>('pending')
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
-  const [selectedSources, setSelectedSources] = useState<string[]>([])
   const [activeDraft, setActiveDraft] = useState<string | null>(null)
   const [activeSource, setActiveSource] = useState<string | null>(null)
   const [activePage, setActivePage] = useState<string | null>(null)
@@ -84,6 +101,7 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const previousDiscardEpoch = useRef(discardEpoch)
   const sourceDetailRequest = useRef(0)
   const targetRouteRequest = useRef(0)
+  const settingsRequest = useRef(0)
 
   useEffect(() => { onDirtyChange?.(draftDirty) }, [draftDirty, onDirtyChange])
   useEffect(() => {
@@ -112,7 +130,6 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
     returnScrollRef.current = window.scrollY
     setActiveDraft(null); setActivePage(null)
     setActiveSource(item.item_id)
-    setSelectedSources([item.item_id])
     setSourceDetail(null); setSourceDetailError(''); setSourceDetailLoading(true); setOrganizeResult(null)
     const requestId = ++sourceDetailRequest.current
     void api.get<SourceDetail>('/sources/' + item.source_id)
@@ -159,6 +176,21 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const refreshIndex = useCallback(() => load(setIndex, () => api.get<IndexStatus>('/index/status')), [load])
   const refreshCandidates = useCallback(() => load(setCandidates, () => api.get<ActionCandidate[]>('/actions')), [load])
   const refreshIntents = useCallback(() => load(setIntents, () => api.get<ActionPage>('/action-intents?limit=20')), [load])
+  const refreshSettings = useCallback(async () => {
+    const requestId = ++settingsRequest.current
+    try {
+      const value = await api.get<components['schemas']['SettingsSummary']>('/settings')
+      if (requestId === settingsRequest.current) {
+        setSettingsMode(value.mode)
+        setConfiguredFingerprint(value.embedding_fingerprint)
+        setLocalModelReady(value.mode === 'fake' || value.local_model?.state === 'ready')
+      }
+    } catch {
+      if (requestId === settingsRequest.current) {
+        setSettingsMode(null); setConfiguredFingerprint(''); setLocalModelReady(false)
+      }
+    }
+  }, [])
   useEffect(() => {
     let current = true
     targetRouteRequest.current += 1
@@ -179,14 +211,6 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
           if (current) setter((value) => ({ ...value, loading: false, error: cause instanceof Error ? cause.message : '读取失败，请重试。' }))
         }
       }
-      const settings = async () => {
-        try {
-          const value = await api.get<components['schemas']['SettingsSummary']>('/settings')
-          if (current) { setSettingsMode(value.mode); setConfiguredFingerprint(value.embedding_fingerprint) }
-        } catch {
-          if (current) { setSettingsMode(null); setConfiguredFingerprint('') }
-        }
-      }
       await Promise.all([
         refreshResource(setSources, () => api.get<IntakeItem[]>('/intake/items')),
         refreshResource(setDrafts, () => api.get<Draft[]>('/drafts')),
@@ -194,27 +218,38 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
         refreshResource(setIndex, () => api.get<IndexStatus>('/index/status')),
         refreshResource(setCandidates, () => api.get<ActionCandidate[]>('/actions')),
         refreshResource(setIntents, () => api.get<ActionPage>('/action-intents?limit=20')),
-        settings(),
+        refreshSettings(),
       ])
       if (!current) return
       setLoadedEpoch(refreshEpoch)
     }
     void refresh()
-    return () => { current = false }
-  }, [refreshEpoch])
+    return () => { current = false; settingsRequest.current += 1 }
+  }, [refreshEpoch, refreshSettings])
 
   const pendingSources = sources.data?.filter(intakeNeedsAttention) ?? []
   const pendingDraftList = drafts.data?.filter(draftNeedsAttention) ?? []
   const pendingPages = pages.data?.filter(formalNeedsAttention) ?? []
   const pendingActions = intents.data?.items.filter(actionableAction) ?? []
-  const firstIndexNeedsReview = index.data?.state === 'not_ready' && (pages.data ?? []).some((page) => page.approval_state === 'confirmed')
-  const pendingIndex = index.data && (index.data.state === 'manual_required' || firstIndexNeedsReview || settingsMode === 'real' && index.data.state !== 'ready') ? 1 : 0
+  const confirmedPageCount = pages.data?.filter((page) => page.approval_state === 'confirmed').length ?? null
+  const indexContextKey = JSON.stringify({
+    state: index.data?.state,
+    fingerprint: index.data?.fingerprint,
+    currentPages: index.data?.current_pages,
+    stalePages: index.data?.stale_pages,
+    mode: settingsMode,
+    configuredFingerprint,
+    confirmedPages: pages.data?.filter((page) => page.approval_state === 'confirmed').map((page) => [page.page_id, page.content_sha256]),
+  })
+  const pendingIndex = index.data && (
+    index.data.state === 'stale' || index.data.state === 'manual_required'
+      || index.data.state === 'not_ready' && confirmedPageCount !== null && confirmedPageCount > 0
+      || index.data.state === 'ready' && Boolean(configuredFingerprint && index.data.fingerprint && configuredFingerprint !== index.data.fingerprint)
+  ) ? 1 : 0
   const needsCount = pendingSources.length + pendingDraftList.length + pendingPages.length + pendingIndex + pendingActions.length + (candidates.data?.length ?? 0)
   const pendingCategoryCount = [pendingSources.length, pendingDraftList.length, pendingPages.length, pendingIndex, pendingActions.length + (candidates.data?.length ?? 0)].filter((count) => count > 0).length
   const categoryCount = [sources.data, drafts.data, pages.data, index.data, intents.data !== null && candidates.data !== null ? true : null].filter((data) => data !== null).length
   const dataComplete = categoryCount === 5
-  const groupOpen = (id: string, hasPending: boolean) => expandedGroups[id] ?? hasPending
-  const setGroupOpen = (id: string, open: boolean) => setExpandedGroups((current) => ({ ...current, [id]: open }))
   useEffect(() => { onPendingCount(dataComplete ? needsCount : 0) }, [dataComplete, needsCount, onPendingCount])
 
   const rowsForFilter = <T,>(rows: T[], predicate: (row: T) => boolean, settled: (row: T) => boolean) => filter === 'all' ? rows : filter === 'pending' ? rows.filter(predicate) : rows.filter(settled)
@@ -226,7 +261,9 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   const active = drafts.data?.find((draft) => draft.draft_id === activeDraft) ?? null
   const activeSourceItem = sources.data?.find((item) => item.item_id === activeSource) ?? null
   const activeFormalPage = pages.data?.find((page) => page.page_id === activePage) ?? null
-  const focused = Boolean(activeDraft || activeSource || activePage)
+  // 来源详情走弹层，清单保持可见；稿件与正式内容仍然是独立专注页。
+  const focused = Boolean(activeDraft || activePage)
+  const sourceDialogRef = useDialogFocus(closeFocus, Boolean(activeSourceItem))
 
   // Resolve exact-ID navigation only after the refreshed collections are available.
   useEffect(() => {
@@ -246,7 +283,6 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
         const source = sources.data.find((item) => target.itemIds.includes(item.item_id))
         if (!source) message = '这条材料已不在当前工作库中。请刷新来源列表后重新选择。'
         else {
-          setSelectedSources(target.itemIds.filter((id) => sources.data?.some((item) => item.item_id === id && item.state !== 'processing' && item.state !== 'reviewing')))
           const related = source.state === 'reviewing' ? drafts.data.find((draft) => draft.source_ids.includes(source.source_id)) : null
           if (related) {
             setActiveDraft(related.draft_id); setActiveSource(null); setActivePage(null)
@@ -290,10 +326,6 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
     return () => { current = false }
   }, [target, sources.data, drafts.data, pages.data, loadedEpoch, refreshEpoch, onTargetHandled])
 
-  function toggleSource(id: string) {
-    setSelectedSources((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
-  }
-
   async function confirmFormal() {
     if (!confirmPage) return
     setBusy(true)
@@ -326,49 +358,86 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
   }
 
   return <section className="content-wrap approval-view">
-    <div className="page-heading"><div><div className="eyebrow">需要你点一下才算数</div><h1>审批</h1><p className="lede">来源、稿件、正式内容、索引与外部动作分开处理；每次确认都只作用于当前类别。</p></div></div>
-    <div className="approval-toolbar" hidden={focused}><p className="hint" role="status">{!dataComplete ? `正在读取审批事项…（${categoryCount} / 5 类已读）` : filter === 'pending' ? `${needsCount} 项待处理 · 共 ${pendingCategoryCount} 类` : filter === 'complete' ? `${visibleSources.length + visibleDrafts.length + visiblePages.length + (intents.data?.items.filter((action) => !actionableAction(action)).length ?? 0)} 项已完成` : '显示全部事项'}</p><div className="approval-toolbar-actions"><label className="compact-field"><span>显示</span><select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}><option value="all">全部</option><option value="pending">待处理</option><option value="complete">已完成</option></select></label></div></div>
-    <p className="how-to-read" hidden={focused}>原件只供整理和追溯，不进入检索；稿件和正式页点击确认时会保存当前版本。索引计划与外部动作各有单独的预览和确认。来源类型来自可信入口，旧材料显示“类型未知”时不会按文件名猜。</p>
+    <PageHeader title="审批" />
+    <div className="toolbar approval-toolbar" hidden={focused}>
+      <p className="hint" role="status">{!dataComplete ? `正在读取审批事项…（${categoryCount} / 5 类已读）` : filter === 'pending' ? `${needsCount} 项待处理 · 共 ${pendingCategoryCount} 类` : filter === 'complete' ? `${visibleSources.length + visibleDrafts.length + visiblePages.length + (intents.data?.items.filter((action) => !actionableAction(action)).length ?? 0)} 项已完成` : '显示全部事项'}</p>
+      <div className="segmented" role="group" aria-label="显示范围">
+        {([['pending', '待处理'], ['all', '全部'], ['complete', '已完成']] as const).map(([value, label]) => <button key={value} type="button" className={filter === value ? 'active' : ''} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}
+      </div>
+    </div>
     {notice && <p className="success-note" role="status">{notice}</p>}
 
     <div className="approval-list" role="region" aria-label="审批清单" hidden={focused}>
-    <ApprovalGroup id="approval-sources" headingId="approval-sources-heading" title="1 · 来源" description="选中来源后指定主线和项目，再明确发起整理。未知请求不会自动重发。" count={sources.data ? visibleSources.length : '—'} open={groupOpen('sources', pendingSources.length > 0)} onToggle={(open) => setGroupOpen('sources', open)}>
-      <StatePanel resource={sources} retry={() => void refreshSources()}>{() => <><SourceList items={visibleSources} selected={selectedSources} onToggle={toggleSource} targetIds={target?.kind === 'source' ? target.itemIds : []} onOpenSource={openSourceFocus} /><SourceOrganizer items={(sources.data ?? []).filter((item) => selectedSources.includes(item.item_id))} onError={(message) => { onError(message); void refreshSources() }} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} /></>}</StatePanel>
+    <ApprovalGroup id="approval-sources" headingId="approval-sources-heading" title="来源" summary="待整理成稿的材料" lastSuccess={sources.lastSuccess} hasReadError={Boolean(sources.error)} count={sources.data ? visibleSources.length : '—'}>
+      <StatePanel resource={sources} retry={() => void refreshSources()}>{() => <><SourceList items={visibleSources} targetIds={target?.kind === 'source' ? target.itemIds : []} onOpenSource={openSourceFocus} /></>}</StatePanel>
     </ApprovalGroup>
 
-    <ApprovalGroup id="approval-drafts" headingId="approval-drafts-heading" title="2 · 稿件" description="查看渲染后的正文、冲突和来源；确认会把所选版本保存为正式内容。" count={drafts.data ? visibleDrafts.length : '—'} open={groupOpen('drafts', pendingDraftList.length > 0)} onToggle={(open) => setGroupOpen('drafts', open)}>
-      <StatePanel resource={drafts} retry={() => void refreshDrafts()}>{() => visibleDrafts.length === 0 ? <div className="empty-state"><strong>{filter === 'complete' ? '没有已完成的稿件' : '没有待复核的稿件'}</strong></div> : <>
+    <ApprovalGroup id="approval-drafts" headingId="approval-drafts-heading" title="稿件" summary="待复核的整理结果" lastSuccess={drafts.lastSuccess} hasReadError={Boolean(drafts.error)} count={drafts.data ? visibleDrafts.length : '—'}>
+      <StatePanel resource={drafts} retry={() => void refreshDrafts()}>{() => visibleDrafts.length === 0 ? <div className="empty-state"><strong>{filter === 'complete' ? '没有已完成的稿件' : '没有待复核的稿件'}</strong><span>整理来源后会生成稿件。</span></div> : <>
         <ul className="draft-list">{visibleDrafts.map((draft) => <li key={draft.draft_id} data-draft-id={draft.draft_id} tabIndex={-1}><div className="approval-row"><span className="source-title"><strong>{String(draft.metadata.title ?? '未命名稿件')}</strong><small>{draft.source_ids.length} 个来源 · {draft.important_conflicts?.length ?? 0} 项重要冲突</small></span><button type="button" className="button secondary" onClick={(event) => openDraftFocus(draft.draft_id, event.currentTarget)}>打开稿件：{String(draft.metadata.title ?? '未命名稿件')}</button></div></li>)}</ul>
       </>}</StatePanel>
     </ApprovalGroup>
 
-    <ApprovalGroup id="approval-formal" headingId="approval-formal-heading" title="3 · 正式内容" description="仅确认当前这一版；文件变化后需要重新确认。确认正文不会批准进度或飞书任务。" count={pages.data ? visiblePages.length : '—'} open={groupOpen('formal', pendingPages.length > 0)} onToggle={(open) => setGroupOpen('formal', open)}>
-      <StatePanel resource={pages} retry={() => void refreshPages()}>{() => visiblePages.length === 0 ? <div className="empty-state"><strong>没有待确认的正式内容</strong></div> : <ul className="knowledge-page-list">{visiblePages.map((page) => <li key={page.page_id} data-page-id={page.page_id} tabIndex={-1}><div className="formal-page-row"><button className="formal-open-button" onClick={(event) => openPageFocus(page.page_id, event.currentTarget)}><strong>{String(page.metadata.title ?? '未命名页面')}</strong><small>{formalKindLabel(String(page.metadata.kind ?? ''))} · {page.approval_state === 'invalid' ? '需要重新确认' : '待确认'}</small></button><button className="button secondary" onClick={() => setConfirmPage(page)}>确认并保存当前版本</button></div></li>)}</ul>}</StatePanel>
+    <ApprovalGroup id="approval-formal" headingId="approval-formal-heading" title="正式内容" summary="待确认的页面版本" lastSuccess={pages.lastSuccess} hasReadError={Boolean(pages.error)} count={pages.data ? visiblePages.length : '—'}>
+      <StatePanel resource={pages} retry={() => void refreshPages()}>{() => visiblePages.length === 0 ? <div className="empty-state"><strong>没有待确认的正式内容</strong><span>稿件确认后会出现在这里。</span></div> : <ul className="knowledge-page-list">{visiblePages.map((page) => <li key={page.page_id} data-page-id={page.page_id} tabIndex={-1}><div className="formal-page-row"><button className="formal-open-button" onClick={(event) => openPageFocus(page.page_id, event.currentTarget)}><strong>{String(page.metadata.title ?? '未命名页面')}</strong><small>{formalKindLabel(String(page.metadata.kind ?? ''))} · {page.approval_state === 'invalid' ? '需要重新确认' : '待确认'}</small></button><button className="button secondary" onClick={() => setConfirmPage(page)}>确认并保存当前版本</button></div></li>)}</ul>}</StatePanel>
     </ApprovalGroup>
 
-    <ApprovalGroup id="approval-index" headingId="approval-index-heading" title="4 · 索引" description="Fake 活跃索引会在正式内容确认后自动增量；首次建立、Real、模型变更、重建或服务要求手动确认时，需预览独立计划。" count={index.data ? (filter === 'complete' ? 0 : pendingIndex) : '—'} open={groupOpen('index', pendingIndex > 0)} onToggle={(open) => setGroupOpen('index', open)}>
-      <StatePanel resource={index} retry={() => void refreshIndex()}>{(status) => <IndexControls status={status} providerMode={settingsMode} configuredFingerprint={configuredFingerprint} onComplete={async () => { await refreshIndex(); setNotice('索引操作已返回结果。') }} onError={onError} />}</StatePanel>
+    <ApprovalGroup id="approval-index" headingId="approval-index-heading" title="搜索与问答准备" summary="" lastSuccess={index.lastSuccess} hasReadError={Boolean(index.error)} count={index.data ? (filter === 'complete' ? 0 : !settingsMode || !configuredFingerprint || index.data.state === 'unknown' || index.data.state === 'not_ready' && confirmedPageCount === null ? '—' : pendingIndex ? 1 : 0) : '—'}>
+      <StatePanel resource={index} retry={() => { void refreshIndex(); void refreshPages(); void refreshSettings() }}>{(status) => <SearchReadiness key={indexContextKey} status={status} confirmedPageCount={confirmedPageCount} confirmedPagesLoading={pages.loading} confirmedPagesError={pages.data === null ? pages.error : ''} providerMode={settingsMode} configuredFingerprint={configuredFingerprint} localModelReady={localModelReady} onComplete={async () => { await refreshIndex(); setNotice('搜索和问答准备已返回结果。') }} onRefresh={() => { void refreshIndex(); void refreshPages(); void refreshSettings() }} onError={onError} />}</StatePanel>
     </ApprovalGroup>
 
-    <ApprovalGroup id="approval-actions" headingId="approval-actions-heading" title="5 · 外部动作" description="候选建议、已保存动作和执行回执分开显示。未知结果只能核对或记录，不能自动重发。" count={intents.data && candidates.data ? visibleIntents.length + visibleCandidates.length : '—'} open={groupOpen('actions', pendingActions.length + (candidates.data?.length ?? 0) > 0)} onToggle={(open) => setGroupOpen('actions', open)}>
-      <StatePanel resource={intents} retry={() => void refreshIntents()}>{() => <ActionIntentList items={visibleIntents} mode={settingsMode} onChanged={async () => { await Promise.allSettled([refreshIntents(), refreshCandidates()]) }} onError={onError} />}</StatePanel>
-      {intents.data?.next_cursor && <button type="button" className="button secondary" disabled={intents.loading} onClick={() => void loadMoreActions()}>读取更多动作</button>}
-      <div className="action-candidate-panel"><h3>尚未转成动作的建议</h3><StatePanel resource={candidates} retry={() => void refreshCandidates()}>{() => visibleCandidates.length ? <CandidateReview candidates={visibleCandidates} mode={settingsMode} /> : <div className="empty-state"><strong>没有待处理的动作建议</strong></div>}</StatePanel></div>
+    <ApprovalGroup id="approval-actions" headingId="approval-actions-heading" title="外部动作" summary="待确认或待核对的外部动作" lastSuccess={earlierSuccessfulRead(intents.lastSuccess, candidates.lastSuccess)} hasReadError={Boolean(intents.error || candidates.error)} count={intents.data && candidates.data ? visibleIntents.length + visibleCandidates.length : '—'}>
+      {intents.data && candidates.data && visibleIntents.length === 0 && visibleCandidates.length === 0
+        ? <div className="empty-state"><strong>没有待处理的外部动作</strong><span>模型建议会先出现在这里，确认后才会执行。</span></div>
+        : <>
+          <StatePanel resource={intents} retry={() => void refreshIntents()}>{() => <ActionIntentList items={visibleIntents} mode={settingsMode} onChanged={async () => { await Promise.allSettled([refreshIntents(), refreshCandidates()]) }} onError={onError} />}</StatePanel>
+          {intents.data?.next_cursor && <button type="button" className="button secondary" disabled={intents.loading} onClick={() => void loadMoreActions()}>读取更多动作</button>}
+          {visibleCandidates.length > 0 && <div className="action-candidate-panel"><h3>尚未转成动作的建议</h3><StatePanel resource={candidates} retry={() => void refreshCandidates()}>{() => <CandidateReview candidates={visibleCandidates} mode={settingsMode} />}</StatePanel></div>}
+        </>}
     </ApprovalGroup>
     </div>
 
     {active && <section className="panel draft-focus" aria-label={`稿件审核：${String(active.metadata.title ?? '未命名稿件')}`} tabIndex={-1}>
-      <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>正在审核一份稿件</span></div>
+      <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>{active.state === 'pending' ? '正在审核一份稿件' : draftStateLabel(active.state)}</span></div>
       {draftResult?.draftId === active.draft_id ? <section className="formal-result" aria-label="稿件确认结果"><p>“{String(active.metadata.title ?? '未命名稿件')}”已确认并写入正式内容。{draftResult.indexMessage}</p>{draftResult.pageIds.length > 0 && <ul>{draftResult.pageIds.map((id) => <li key={id}><button className="button secondary" onClick={() => onOpenPage?.(id)}>打开本次保存的正式页</button></li>)}</ul>}<div className="button-row"><button className="button secondary" disabled={!visibleDrafts.some((draft) => draft.draft_id !== active.draft_id)} onClick={() => { const next = visibleDrafts.find((draft) => draft.draft_id !== active.draft_id); if (next) { setDraftResult(null); setActiveDraft(next.draft_id) } }}>下一份待审核</button><button className="button primary" onClick={closeFocus}>返回清单</button></div></section> : <DraftReview key={active.draft_id} draft={active} pages={pages.data ?? []} onError={onError} onDirtyChange={setDraftDirty} onConfirmed={async (result) => { const indexMessage = indexUpdateMessage(result.index_update); setDraftDirty(false); setDraftResult({ draftId: active.draft_id, pageIds: Object.keys(result.page_versions ?? {}), indexMessage }); await Promise.allSettled([refreshDrafts(), refreshPages(), refreshIndex(), refreshCandidates()]); setNotice(indexMessage ?? '稿件已确认并写入正式内容。') }} onUpdated={async () => { await refreshDrafts() }} />}
     </section>}
-    {activeSourceItem && <section className="panel source-focus" aria-label={`来源详情：${activeSourceItem.title}`} tabIndex={-1}>
-      <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>{intakeStateLabel(activeSourceItem.state)}</span></div>
-      <h2>{activeSourceItem.title}</h2>
-      <p className="source-focus-meta">{activeSourceItem.filename} · {activeSourceItem.created_at ? new Date(activeSourceItem.created_at).toLocaleString('zh-CN') : ''}</p>
-      {sourceDetailLoading ? <p role="status">正在读取原文…</p> : sourceDetailError ? <div className="resource-error" role="alert"><p>{sourceDetailError}</p><button className="button secondary" onClick={() => openSourceFocus(activeSourceItem, document.activeElement as HTMLElement)}>重试</button></div> : sourceDetail && <article className="source-reading-body"><MarkdownText content={sourceDetail.text} /></article>}
-      {activeSourceItem.state === 'processing' || activeSourceItem.state === 'reviewing' ? <><p className="helper-line">这条材料已有整理任务或稿件，不会再次发起整理。</p>{organizeResult && <button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button>}</> : <SourceOrganizer items={(sources.data ?? []).filter((item) => selectedSources.includes(item.item_id))} onError={(message) => { onError(message); void refreshSources() }} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} />}
-      {organizeResult && <section className="organize-result" aria-label="本次整理结果"><h3>本次整理结果</h3>{organizeResult.state === 'completed' ? <><p>已完成，生成 {organizeResult.draft_ids?.length ?? 0} 份待审核稿。</p>{organizeResult.draft_ids?.length ? <ul>{organizeResult.draft_ids.map((id) => { const draft = drafts.data?.find((item) => item.draft_id === id); return <li key={id}><span>{draft ? String(draft.metadata.title ?? '未命名稿件') : '稿件载入中'}</span>{draft && <button className="button secondary" onClick={(event) => openDraftFocus(id, event.currentTarget)}>打开这份稿件</button>}</li> })}</ul> : null}</> : <><p>{organizeResultMessage(organizeResult.state)}</p><button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button></>}</section>}
-    </section>}
+    {activeSourceItem && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeFocus() }}>
+      <section ref={sourceDialogRef} className="modal-card source-modal" role="dialog" aria-modal="true" aria-label={`来源详情：${activeSourceItem.title}`} tabIndex={-1}>
+        <div className="panel-heading">
+          <div>
+            <h2>{activeSourceItem.title}</h2>
+            <p className="source-focus-meta">{activeSourceItem.filename} · {activeSourceItem.created_at ? new Date(activeSourceItem.created_at).toLocaleString('zh-CN') : ''} · {intakeStateLabel(activeSourceItem.state)}</p>
+          </div>
+          <button className="icon-button modal-close" aria-label="关闭" title="关闭" onClick={closeFocus}><X size={16} strokeWidth={1.75} aria-hidden="true" /></button>
+        </div>
+        <div className="source-modal-body">
+          {sourceDetailLoading
+            ? <p role="status" className="empty-row">正在读取原文…</p>
+            : sourceDetailError
+              ? <div className="resource-error" role="alert"><p>{sourceDetailError}</p><button className="button secondary" onClick={() => openSourceFocus(activeSourceItem, document.activeElement as HTMLElement)}>重试</button></div>
+              : sourceDetail && <article className="source-reading-body"><MarkdownText content={sourceDetail.text} /></article>}
+        </div>
+        <div className="source-modal-foot">
+          {activeSourceItem.state === 'processing' || activeSourceItem.state === 'reviewing'
+            ? <><p className="helper-line">这条材料已有整理任务或稿件，不会再次发起整理。</p>{organizeResult && <button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button>}</>
+            : <SourceOrganizer items={[activeSourceItem]} onError={(message) => { onError(message); void refreshSources() }} onComplete={async (job) => { setOrganizeResult(job); await Promise.allSettled([refreshSources(), refreshDrafts()]) }} />}
+          {!organizeResult && (activeSourceItem.state === 'reviewing' || activeSourceItem.state === 'completed') && <StatePanel resource={drafts} retry={() => void refreshDrafts()}>{(allDrafts) => {
+            const linkedDrafts = allDrafts.filter((draft) => draft.source_ids.includes(activeSourceItem.source_id))
+            return <section className="organize-result" aria-label="关联稿件">
+              <h3>关联稿件</h3>
+              {linkedDrafts.length === 0
+                ? <p className="helper-line">当前没有可打开的关联稿件。</p>
+                : <ul>{linkedDrafts.map((draft) => {
+                  const stateLabel = draftStateLabel(draft.state)
+                  const actionLabel = draft.state === 'pending' ? '打开这份稿件' : `查看${stateLabel}稿件`
+                  return <li key={draft.draft_id}><span>{String(draft.metadata.title ?? '未命名稿件')} · {stateLabel}</span><button className="button secondary" onClick={(event) => openDraftFocus(draft.draft_id, event.currentTarget)}>{actionLabel}</button></li>
+                })}</ul>}
+            </section>
+          }}</StatePanel>}
+          {organizeResult && <section className="organize-result" aria-label="本次整理结果"><h3>本次整理结果</h3>{organizeResult.state === 'completed' ? <><p>已完成，生成 {organizeResult.draft_ids?.length ?? 0} 份待审核稿。</p>{organizeResult.draft_ids?.length ? <ul>{organizeResult.draft_ids.map((id) => { const draft = drafts.data?.find((item) => item.draft_id === id); return <li key={id}><span>{draft ? String(draft.metadata.title ?? '未命名稿件') : '稿件载入中'}</span>{draft && <button className="button secondary" onClick={(event) => openDraftFocus(id, event.currentTarget)}>打开这份稿件</button>}</li> })}</ul> : null}</> : <><p>{organizeResultMessage(organizeResult.state)}</p><button className="button secondary" onClick={() => void refreshOrganizeResult()}>刷新整理结果</button></>}</section>}
+        </div>
+      </section>
+    </div>}
     {activeFormalPage && <section className="panel formal-focus" aria-label={`正式内容：${String(activeFormalPage.metadata.title ?? '未命名页面')}`} tabIndex={-1}>
       <div className="focus-toolbar"><button className="button secondary" onClick={closeFocus}>返回审批清单</button><span>{activeFormalPage.approval_state === 'confirmed' ? '已确认' : '待确认'}</span></div>
       <h2>{String(activeFormalPage.metadata.title ?? '未命名页面')}</h2>
@@ -378,7 +447,7 @@ export function ApprovalView({ onPendingCount, onError, onOpenPage, refreshEpoch
       {activeFormalPage.approval_state !== 'confirmed' && <button className="button primary" onClick={() => setConfirmPage(activeFormalPage)}>确认并保存当前版本</button>}
     </section>}
 
-    {confirmPage && <ConfirmDialog title="确认并保存当前正式版本？" description={`“${String(confirmPage.metadata.title ?? '未命名页面')}”的正文和页面信息将按当前版本写入正式内容。`} consequence="只确认当前版本；不会创建飞书任务或改变项目进度。Fake 活跃索引按现有规则自动增量。" confirmLabel="确认并保存当前版本" busyLabel="正在保存…" busy={busy} onCancel={() => setConfirmPage(null)} onConfirm={confirmFormal}><MarkdownText content={confirmPage.body} onOpenPage={onOpenPage} /></ConfirmDialog>}
+    {confirmPage && <ConfirmDialog title="确认并保存当前正式版本？" description={`“${String(confirmPage.metadata.title ?? '未命名页面')}”的正文和页面信息将按当前版本写入正式内容。`} consequence="只确认当前版本；不会创建飞书任务或改变项目进度。索引按当前真实本机模型与审批规则处理。" confirmLabel="确认并保存当前版本" busyLabel="正在保存…" busy={busy} onCancel={() => setConfirmPage(null)} onConfirm={confirmFormal}><MarkdownText content={confirmPage.body} onOpenPage={onOpenPage} /></ConfirmDialog>}
   </section>
 }
 
@@ -394,50 +463,10 @@ function formalKindLabel(kind: string) {
   return ({ decision: '业务决定', log: '工作日志', thought: '工作思考', meeting: '会议纪要', material: '工作材料', overview: '项目主页', knowledge: '知识页', review: '周复盘' } as Record<string, string>)[kind] ?? '知识页'
 }
 
-function SourceList({ items, selected, onToggle, targetIds, onOpenSource }: { items: IntakeItem[]; selected: string[]; onToggle: (id: string) => void; targetIds: string[]; onOpenSource: (item: IntakeItem, trigger: HTMLElement) => void }) {
+function SourceList({ items, targetIds, onOpenSource }: { items: IntakeItem[]; targetIds: string[]; onOpenSource: (item: IntakeItem, trigger: HTMLElement) => void }) {
   if (items.length === 0) return <div className="empty-state"><strong>没有待整理的来源</strong><span>记一句或导入材料后会出现在这里。</span></div>
-  return <ul className="source-list">{items.map((item) => <li key={item.item_id} data-item-id={item.item_id} tabIndex={-1} className={targetIds.includes(item.item_id) ? 'approval-target' : ''}><div className="source-row"><input aria-label={`选择来源 ${item.title}`} type="checkbox" disabled={item.state === 'processing' || item.state === 'reviewing'} checked={selected.includes(item.item_id)} onChange={() => onToggle(item.item_id)} /><span className="file-glyph" aria-hidden="true">文</span><span className="source-title"><button className="source-open-button" onClick={(event) => onOpenSource(item, event.currentTarget)}>{item.title}</button><small>{({ quick_note: '记一句', file: '文件', feishu_material: '飞书材料', unknown: '来源类型未知' } as Record<string, string>)[item.origin_kind ?? 'unknown']} · {item.filename} · {new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span><span className="status-label">{intakeStateLabel(item.state)}</span></div></li>)}</ul>
-}
-
-function IndexControls({ status, providerMode, configuredFingerprint, onComplete, onError }: { status: IndexStatus; providerMode: 'fake' | 'real' | null; configuredFingerprint: string; onComplete: () => Promise<void>; onError: (message: string) => void }) {
-  const [plan, setPlan] = useState<IndexPlan | null>(null)
-  const [acceptance, setAcceptance] = useState<{ plan: AcceptancePlan; scope: Record<string, unknown> } | null>(null)
-  const [confirm, setConfirm] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const busyRef = useRef(false)
-  const fingerprint = configuredFingerprint || status.fingerprint || ''
-  async function preview(mode: 'initial' | 'full' | 'incremental' | 'model_change') {
-    if (busyRef.current) return
-    if (!fingerprint) { onError('当前索引状态没有可用配置指纹，请先在设置中检查向量化配置。'); return }
-    busyRef.current = true
-    setBusy(true); setPlan(null); setAcceptance(null); setConfirm(false)
-    try {
-      const current = await api.post<IndexPlan>('/index/plans', { mode, fingerprint })
-      let reviewed: { plan: AcceptancePlan; scope: Record<string, unknown> } | null = null
-      if (providerMode === 'real' || mode === 'full' || mode === 'model_change' || (mode === 'incremental' && status.state === 'manual_required')) {
-        reviewed = await api.post<{ plan: AcceptancePlan; scope: Record<string, unknown> }>('/acceptance-plans', { operation: 'model.index', scope: { mode: current.mode, fingerprint: current.fingerprint, page_ids: current.page_ids, page_versions: current.page_versions } })
-      }
-      setPlan(current); setAcceptance(reviewed)
-    } catch (cause) { onError(cause instanceof Error ? cause.message : '无法生成索引范围预览') }
-    finally { busyRef.current = false; setBusy(false) }
-  }
-  async function execute() {
-    if (!plan || busyRef.current) return
-    if (providerMode === 'real' && !acceptance) { setConfirm(false); onError('真实索引范围未完成授权预览，请重新预览后再确认。'); return }
-    busyRef.current = true
-    setBusy(true)
-    try {
-      if (acceptance) await api.post(`/acceptance-plans/${acceptance.plan.plan_id}/confirm`, { scope_sha256: acceptance.plan.scope_sha256, scope: acceptance.scope })
-      await api.post('/index/jobs', { ...plan, ...(acceptance ? { acceptance_plan_id: acceptance.plan.plan_id } : {}) })
-      setConfirm(false); setPlan(null); setAcceptance(null); await onComplete()
-    } catch (cause) { onError(cause instanceof Error ? cause.message : '索引操作没有完成') }
-    finally { busyRef.current = false; setBusy(false) }
-  }
-  const indexMode: 'initial' | 'incremental' | 'full' | 'model_change' = status.state === 'not_ready' ? 'initial' : status.fingerprint && configuredFingerprint && status.fingerprint !== configuredFingerprint ? 'model_change' : status.state === 'manual_required' ? 'incremental' : status.state === 'stale' ? 'incremental' : 'full'
-  return <><div className="index-status-panel"><div><strong className="index-state">当前状态：{status.state === 'ready' ? '可用' : status.state === 'stale' ? '有内容待更新' : status.state === 'manual_required' ? '需要单独确认' : status.state === 'not_ready' ? '尚未建立' : '状态未知'}</strong><p>当前纳入 {status.current_pages} 页 · 待更新 {status.stale_pages} 页 · 共 {status.pages} 页</p></div><button className="button secondary" disabled={busy || !fingerprint || !providerMode} onClick={() => void preview(indexMode)}>{busy ? '正在准备…' : status.state === 'not_ready' ? '预览首次索引' : '预览索引范围'}</button></div>
-    {plan && <div className="plan-card"><div><strong>本次范围：{plan.page_ids.length} 页</strong><span>计划类型：{plan.mode === 'initial' ? '首次建立' : plan.mode === 'model_change' ? '模型变更' : plan.mode === 'full' ? '重建' : '增量更新'} · 预计 {plan.estimated_tokens} token</span></div><button className="button primary" onClick={() => setConfirm(true)}>查看范围并确认</button></div>}
-    {confirm && plan && <ConfirmDialog title="确认本次索引范围？" description={`将处理 ${plan.page_ids.length} 个页面版本，预计 ${plan.estimated_tokens} token。`} consequence={providerMode === 'real' ? `真实模式会使用已配置的向量化服务；请求上限 ${acceptance?.plan.request_limit ?? '待确认'} 次。` : 'Fake 模式仅使用本机合成索引。'} confirmLabel="确认并开始索引" busyLabel="正在索引…" busy={busy} onCancel={() => { setConfirm(false); setPlan(null); setAcceptance(null) }} onConfirm={execute}><ul>{(plan.page_preview ?? []).map((page, index) => <li key={index}>{page.title ?? '页面'} · {page.version ?? ''}</li>)}</ul></ConfirmDialog>}
-  </>
+  // 整行就是入口：点开弹层看原文并整理，不用先勾选再找按钮。
+  return <ul className="source-list">{items.map((item) => <li key={item.item_id} data-item-id={item.item_id} tabIndex={-1} className={targetIds.includes(item.item_id) ? 'approval-target' : ''}><button type="button" className="source-row" onClick={(event) => onOpenSource(item, event.currentTarget)}><span className="file-glyph" aria-hidden="true"><FileText size={14} strokeWidth={1.75} /></span><span className="source-title"><strong>{item.title}</strong><small>{({ quick_note: '记一句', file: '文件', feishu_material: '飞书材料', unknown: '来源类型未知' } as Record<string, string>)[item.origin_kind ?? 'unknown']} · {item.filename} · {new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span><span className="status-label">{intakeStateLabel(item.state)}</span></button></li>)}</ul>
 }
 
 function CandidateReview({ candidates, mode }: { candidates: ActionCandidate[]; mode: 'fake' | 'real' | null }) {
@@ -461,7 +490,7 @@ function ActionIntentList({ items, mode, onChanged, onError }: { items: Action[]
     } catch (cause) { onError(cause instanceof Error ? cause.message : '动作状态未能更新；请刷新记录核对。') }
     finally { setBusy(false) }
   }
-  return <>{items.length === 0 ? <div className="empty-state"><strong>没有已保存的外部动作</strong><span>候选建议会单独列在下方。</span></div> : <ul className="action-intent-list">{items.map((action) => <li key={action.action_id}><div><strong>{({ feishu_task_create: '创建飞书任务', feishu_task_update: '编辑飞书任务', feishu_task_complete: '完成飞书任务', project_progress: '更新项目进度' } as Record<string, string>)[action.kind]}</strong><small>{({ proposed: '待确认', confirmed: '已确认，尚未执行', running: '正在执行', succeeded: '已完成', failed: '执行未成功', unknown: '结果未知，请核对' } as Record<string, string>)[action.state]}</small></div><button className="button secondary" onClick={() => setCurrent(action)}>查看与处理</button></li>)}</ul>}{current && <ActionDialog action={current} mode={mode} busy={busy} onCancel={() => setCurrent(null)} onConfirm={() => void act(current, 'confirm')} onExecute={() => void act(current, 'execute')} onReconcile={() => void act(current, 'reconcile')} onOutcome={(evidence, outcome) => void act(current, 'outcome', evidence, outcome)} />}</>
+  return <>{items.length === 0 ? <div className="empty-state"><strong>没有已保存的外部动作</strong><span>确认后的动作会出现在这里。</span></div> : <ul className="action-intent-list">{items.map((action) => <li key={action.action_id}><div><strong>{({ feishu_task_create: '创建飞书任务', feishu_task_update: '编辑飞书任务', feishu_task_complete: '完成飞书任务', project_progress: '更新项目进度' } as Record<string, string>)[action.kind]}</strong><small>{({ proposed: '待确认', confirmed: '已确认，尚未执行', running: '正在执行', succeeded: '已完成', failed: '执行未成功', unknown: '结果未知，请核对' } as Record<string, string>)[action.state]}</small></div><button className="button secondary" onClick={() => setCurrent(action)}>查看与处理</button></li>)}</ul>}{current && <ActionDialog action={current} mode={mode} busy={busy} onCancel={() => setCurrent(null)} onConfirm={() => void act(current, 'confirm')} onExecute={() => void act(current, 'execute')} onReconcile={() => void act(current, 'reconcile')} onOutcome={(evidence, outcome) => void act(current, 'outcome', evidence, outcome)} />}</>
 }
 
 function ActionDialog({ action, mode, busy, onCancel, onConfirm, onExecute, onReconcile, onOutcome }: { action: Action; mode: 'fake' | 'real' | null; busy: boolean; onCancel: () => void; onConfirm: () => void; onExecute: () => void; onReconcile: () => void; onOutcome: (evidence: string, state: 'succeeded' | 'failed') => void }) {

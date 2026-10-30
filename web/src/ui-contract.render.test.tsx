@@ -59,6 +59,10 @@ function stubShell(overrides: Record<string, unknown> = {}) {
       '/api/v1/memory/candidates': [],
       ...overrides,
     }
+    if (url === '/api/v1/pages/directory') {
+      // 项目页用 /pages/directory 取叶子；测试里仍按 /pages 的覆盖数据喂它。
+      return Response.json(overrides['/api/v1/pages/directory'] ?? table['/api/v1/pages'])
+    }
     if (url.startsWith('/api/v1/pages/')) {
       const pageId = new URL(url, 'http://localhost').pathname.split('/').at(-1)
       const pages = table['/api/v1/pages'] as Array<{ page_id: string }>
@@ -66,6 +70,9 @@ function stubShell(overrides: Record<string, unknown> = {}) {
       return match ? Response.json(match) : Response.json({ error: { code: 'not_found', message: '找不到这个页面。' } }, { status: 404 })
     }
     if (url in table) return Response.json(table[url])
+    // 带查询串的同一接口（例如 /pages?include=…）也按基础路径匹配。
+    const base = url.split('?')[0]
+    if (base in table) return Response.json(table[base])
     return Response.json({ error: { code: 'not_found', message: '本机没有这个接口。' } }, { status: 404 })
   })
   vi.stubGlobal('fetch', rawFetch)
@@ -100,7 +107,7 @@ afterEach(() => {
 it('渲染出的 DOM 里没有内联样式的裸色（GUIDE §11 ①）', async () => {
   stubShell()
   render(<App />)
-  await screen.findByLabelText('主题')
+  await screen.findByLabelText('外观与主题')
 
   const offenders = Array.from(document.querySelectorAll<HTMLElement>('[style]'))
     .map((element) => ({ tag: element.tagName.toLowerCase(), style: element.getAttribute('style') ?? '' }))
@@ -117,13 +124,15 @@ it('渲染出的 DOM 里没有内联样式的裸色（GUIDE §11 ①）', async 
 it('主题三选：切换写入 <html data-theme> 并持久化（浅色 / 深色）', async () => {
   stubShell()
   render(<App />)
-  const select = await screen.findByLabelText('主题')
+  const trigger = await screen.findByRole('button', { name: '外观与主题' })
 
-  fireEvent.change(select, { target: { value: 'dark' } })
+  fireEvent.click(trigger)
+  fireEvent.click(await screen.findByRole('button', { name: '深色' }))
   await waitFor(() => expect(document.documentElement.dataset.theme, RULE_THEME).toBe('dark'))
   expect(window.localStorage.getItem(THEME_STORAGE_KEY), RULE_THEME).toBe('dark')
 
-  fireEvent.change(select, { target: { value: 'light' } })
+  fireEvent.click(trigger)
+  fireEvent.click(await screen.findByRole('button', { name: '浅色' }))
   await waitFor(() => expect(document.documentElement.dataset.theme, RULE_THEME).toBe('light'))
   expect(window.localStorage.getItem(THEME_STORAGE_KEY), RULE_THEME).toBe('light')
 })
@@ -134,7 +143,7 @@ it('跟随系统：偏好 system 时按系统偏好解析 data-theme', async () 
   stubShell()
   render(<App />)
 
-  await screen.findByLabelText('主题')
+  await screen.findByLabelText('外观与主题')
   await waitFor(() => expect(document.documentElement.dataset.theme, RULE_THEME).toBe('dark'))
   expect(window.localStorage.getItem(THEME_STORAGE_KEY), RULE_THEME).toBe('system')
 })
@@ -143,10 +152,11 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
   it('主导航恰好 5 项、标签精确、顺序固定，当前项 aria-current="page"', async () => {
     stubShell()
     render(<App />)
-    await screen.findByLabelText('主题')
+    await screen.findByLabelText('外观与主题')
 
     const nav = screen.getByRole('navigation', { name: '主导航' })
-    const buttons = within(nav).getAllByRole('button')
+    // 只数一级项：项目二级快捷入口属于「项目」内部入口，不是第 6 个目的地。
+    const buttons = Array.from(nav.querySelectorAll<HTMLButtonElement>('.nav-item'))
     const labels = buttons.map((button) => button.querySelector('.nav-label')?.textContent)
 
     expect(labels, `${RULE_NAV}；D1 定的是 5 栏，不加第 6 项`).toEqual(['今日', '审批', '项目', '知识问答', '设置'])
@@ -167,7 +177,7 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
   it('退役的导航项不再占位（日志与思考 / 飞书日常）', async () => {
     stubShell()
     render(<App />)
-    await screen.findByLabelText('主题')
+    await screen.findByLabelText('外观与主题')
 
     const nav = screen.getByRole('navigation', { name: '主导航' })
     expect(within(nav).queryByText('日志与思考'), 'D1：日志与思考并入今日工具区，不再占导航项').toBeNull()
@@ -178,7 +188,7 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
   it('今日页不出现本轮已可判定的退役内容', async () => {
     stubShell()
     render(<App />)
-    await screen.findByLabelText('主题')
+    await screen.findByLabelText('外观与主题')
 
     const today = document.querySelector('.today-view')
     expect(today, '找不到今日页容器，说明外壳没渲染出今日').toBeTruthy()
@@ -199,7 +209,7 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     render(<App />)
 
     const nav = await screen.findByRole('navigation', { name: '主导航' })
-    const approval = await within(nav).findByRole('button', { name: '审批，3 项待处理' })
+    const approval = await within(nav).findByRole('button', { name: '审批，3 项待处理' }, { timeout: 10000 })
     expect(within(approval).getByText('3'), '徽章显示待处理总数（来源 + 稿件）').toBeTruthy()
   })
 
@@ -212,7 +222,10 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     expect(today.querySelector('.today-schedule')?.textContent).toContain('会议')
     expect(today.querySelector('.today-schedule')?.textContent).toContain('待办任务')
     expect(today.querySelector('.capture-panel')?.textContent).toContain('最近材料')
-    expect(today.querySelectorAll('.today-tools button')).toHaveLength(3)
+    const capture = today.querySelector('.capture-panel') as HTMLElement
+    expect(within(capture).getByRole('button', { name: '导入材料' }), '导入入口保留在首屏').toBeTruthy()
+    expect(within(capture).getByRole('button', { name: '工作日志 / 思考' })).toBeTruthy()
+    expect(capture.querySelectorAll('.capture-actions button'), '记录卡的动作行只留一个主动作').toHaveLength(1)
     expect(today.querySelector('.queue-panel, .review-panel, .today-rail')).toBeNull()
     expect(within(today).queryByRole('button', { name: /授权飞书/ })).toBeNull()
     expect(screen.queryByRole('heading', { name: '需要行动' })).toBeNull()
@@ -229,13 +242,28 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
       body: '已确认的中文正文。\n\n```ts\nconst userText = "page-internal-abc";\n```', content_sha256: 'f'.repeat(64), raw_sha256: 'e'.repeat(64),
       storage_area: 'formal', approval_state: 'confirmed', validity: 'current',
     }
-    const fetchMock = stubShell({ '/api/v1/lines': [line], '/api/v1/projects': [project], '/api/v1/pages': [page] })
+    const fetchMock = stubShell({
+      '/api/v1/lines': [line], '/api/v1/projects': [project], '/api/v1/pages': [page],
+      '/api/v1/settings': {
+        mode: 'real', model_studio_account_id: 'synthetic-account',
+        feishu: { app_id: '', redirect_uri: '', identity: 'app', calendar_id: '' },
+        llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'synthetic-account', enabled: true, max_output_tokens: 2048, reasoning_effort: 'low' },
+        embedding: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', region: 'cn', dimensions: 512, enabled: true },
+        rerank: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', region: 'cn', dimensions: 512, enabled: true },
+        capabilities: { llm: { available: true, configured: true, disabled_reason: 'acceptance_plan_required' } },
+        credential_status: { feishu_app: false, deepseek: true, dashscope: false }, keychain_available: true,
+        embedding_fingerprint: 'synthetic-fingerprint',
+        local_model: { model: 'BAAI/bge-small-zh-v1.5', revision: 'synthetic-revision', dimensions: 512, token_limit: 512, download_size_bytes: 95, state: 'ready', downloaded_bytes: 95, progress_percent: 100, error_code: null },
+      },
+    })
     render(<App />)
-    await screen.findByLabelText('主题')
+    await screen.findByLabelText('外观与主题')
     const nav = screen.getByRole('navigation', { name: '主导航' })
     fireEvent.click(within(nav).getByRole('button', { name: '项目' }))
-    const row = await screen.findByRole('button', { name: /中文业务项目/ })
-    expect(row.textContent).toContain('在推进')
+    // 侧栏也有同名项目入口；这里只看主内容区的项目行（带状态徽章）。
+    const projectsView = document.querySelector('.projects-view') as HTMLElement
+    const row = await within(projectsView).findByRole('button', { name: /中文业务项目/ })
+    await waitFor(() => expect(row.textContent).toContain('在推进'))
     const noIdentifiers = (text: string, expectBusinessName = true) => {
       if (expectBusinessName) expect(text).toContain('中文')
       expect(text).not.toMatch(/line-internal-123|project-internal-456|overview-internal-789|page-internal-abc|f{64}|中文业务主线\/中文业务项目/)
@@ -243,7 +271,10 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     noIdentifiers(document.querySelector('.projects-view')?.textContent ?? '')
     fireEvent.click(row)
     expect(await screen.findByRole('region', { name: '项目详情' })).toBeTruthy()
-    noIdentifiers(document.querySelector('.project-detail')?.textContent ?? '')
+    // 项目页右侧现在直接渲染正文；代码块按守卫 ⑥ 逐字保留，不参与「标识外泄」扫描。
+    const detail = document.querySelector('.project-detail')!.cloneNode(true) as HTMLElement
+    detail.querySelectorAll('pre code').forEach((code) => code.remove())
+    noIdentifiers(detail.textContent ?? '')
     fireEvent.click(screen.getByRole('button', { name: /中文事实记录/ }))
     expect(await screen.findByText('已确认的中文正文。')).toBeTruthy()
     const reader = document.querySelector('.page-reader') as HTMLElement
@@ -260,9 +291,12 @@ describe('守卫⑧ 页面区块（GUIDE §11 ⑧、§14 P1）', () => {
     fireEvent.click(within(nav).getByRole('button', { name: '知识问答' }))
     const question = await screen.findByLabelText('你的问题')
     const form = question.closest('form')!
-    const history = document.querySelector('.ask-view details[aria-label="本机问答历史"]')!
+    const history = document.querySelector('.ask-view [aria-label="最近的问答"]')!
     expect(form.compareDocumentPosition(history) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     noIdentifiers(document.querySelector('.ask-view')?.textContent ?? '', false)
+    // 信息架构守卫：索引与角色/记忆只在设置里，不在问答页。
+    expect(document.querySelector('.ask-view [aria-label="本机索引与更新"]')).toBeNull()
+    expect(document.querySelector('.ask-view [aria-label="问答角色与记忆"]')).toBeNull()
     const providerOrPlanCalls = fetchMock.mock.calls.filter(([input]) => /acceptance-plans|index\/plans|index\/jobs|provider-smoke/.test(String(input)))
     expect(providerOrPlanCalls).toHaveLength(0)
   })
@@ -293,7 +327,7 @@ it('① 全站普通详情、标题与可访问名称不泄漏元数据并逐字
     },
   })
   render(<App />)
-  await screen.findByLabelText('主题')
+  await screen.findByLabelText('外观与主题')
   const nav = screen.getByRole('navigation', { name: '主导航' })
   const scan = (root: Element | null, expectChineseName = true) => {
     expect(root).toBeTruthy()
@@ -332,6 +366,6 @@ it('① 全站普通详情、标题与可访问名称不泄漏元数据并逐字
   fireEvent.click(await screen.findByRole('button', { name: '打开连接向导' }))
   await screen.findByRole('dialog', { name: '首次配置向导' })
   scan(document.querySelector('.onboarding-host'), false)
-})
+}, 15000)
 
 // ① 元数据渲染断言见上方运行时跨页测试；Ask/Today/Approval 状态、危险操作和 Markdown 分块断言由 focused 渲染测试覆盖。

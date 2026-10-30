@@ -60,6 +60,19 @@ class PageSnapshot(BaseModel):
     raw_sha256: str = Field(exclude=True)
 
 
+class PageDirectoryEntry(BaseModel):
+    """Metadata needed to browse pages without transferring their full bodies."""
+
+    page_id: UUID
+    relative_path: str
+    metadata: dict[str, Any]
+    content_sha256: str
+    storage_area: Literal["formal", "source", "draft", "system"]
+    approval_state: Literal["confirmed", "pending", "invalid"]
+    validity: str = "current"
+    body: str | None = None
+
+
 class MutationResult(BaseModel):
     operation_id: str
     state: Literal["succeeded"] = "succeeded"

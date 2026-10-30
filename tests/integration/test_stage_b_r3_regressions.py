@@ -217,6 +217,7 @@ def _client(tmp_path: Path, store: InstrumentedStore, provider: Any) -> TestClie
                     "app_id": APP_ID,
                     "redirect_uri": CALLBACK,
                     "real_data_enabled": True,
+                    "identity": "user",
                 },
             },
         ).status_code
@@ -521,6 +522,7 @@ def _http_client(tmp_path: Path, monkeypatch, store: InstrumentedStore, remote: 
                     "app_id": APP_ID,
                     "redirect_uri": CALLBACK,
                     "real_data_enabled": True,
+                    "identity": "user",
                 },
             },
         ).status_code
@@ -963,7 +965,14 @@ def test_r3_03_idle_retire_closes_exactly_once_and_rejects_new_operations(tmp_pa
     assert first_client.close_calls == 1, first_client.close_calls
 
 
-def _http_lease_client(tmp_path: Path, monkeypatch, store: InstrumentedStore, remote: TokenRemote):
+def _http_lease_client(
+    tmp_path: Path,
+    monkeypatch,
+    store: InstrumentedStore,
+    remote: TokenRemote,
+    *,
+    identity: str = "app",
+):
     import summit_everything.api.app as app_module
 
     holder: dict[str, CloseTrackingClient] = {}
@@ -1009,6 +1018,7 @@ def _http_lease_client(tmp_path: Path, monkeypatch, store: InstrumentedStore, re
                     "app_id": APP_ID,
                     "redirect_uri": CALLBACK,
                     "real_data_enabled": True,
+                    "identity": identity,
                 },
             },
         ).status_code
@@ -1024,7 +1034,7 @@ def test_r3_03_refresh_then_read_survives_a_config_change_without_rerefreshing(
     entered, release = Event(), Event()
     remote = TokenRemote(_valid_token_payload(), token_gate=(entered, release))
     store = InstrumentedStore(app=_app_credentials(), user=_user_token(expires_in=5))
-    client, holder = _http_lease_client(tmp_path, monkeypatch, store, remote)
+    client, holder = _http_lease_client(tmp_path, monkeypatch, store, remote, identity="user")
     old_client = holder["client"]
 
     thread, box = _parallel(client.get, "/api/v1/integrations/feishu/materials", headers=HEADERS)
@@ -1251,17 +1261,36 @@ def test_r3_04_user_only_endpoints_report_readably_when_the_user_slot_is_broken(
         assert response.status_code != 500, (user_state, path, response.text)
 
 
-def test_r3_04_status_never_claims_authorization_for_a_corrupt_user_slot(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    ("identity", "expected_error", "expected_calendar_ready"),
+    [("app", None, True), ("user", "credential_unreadable", False)],
+)
+def test_r3_04_status_scopes_corrupt_user_slot_to_selected_identity(
+    tmp_path, monkeypatch, identity, expected_error, expected_calendar_ready
+):
     store = InstrumentedStore(app=_app_credentials(), user=_user_token(), corrupt_user=True)
     remote = IdentityRemote()
     client = _identity_client(tmp_path, monkeypatch, store, remote)
 
+    assert (
+        client.patch(
+            "/api/v1/settings",
+            headers=HEADERS,
+            json={"feishu": {"identity": identity}},
+        ).status_code
+        == 200
+    )
     response = client.get("/api/v1/integrations/feishu/status", headers=HEADERS)
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["authorized"] is False, body
     assert body["app_configured"] is True, body
-    assert body["credential_error"] == "credential_unreadable", body
+    assert body["credential_error"] == expected_error, body
+    assert body["calendar_ready"] is expected_calendar_ready, body
+    if identity == "app":
+        assert store.user_reads == 0, store.user_reads
+    else:
+        assert store.user_reads > 0, store.user_reads
     assert "synthetic-access" not in response.text
 
 

@@ -28,10 +28,43 @@ def schema_failure_message(label: str, exc: ValidationError) -> str:
     The text is logged locally and never rendered to a client, so it can name
     the fields that broke the contract without echoing provider content.
     """
-    locations = sorted(
-        {".".join(str(part) for part in error.get("loc", ())) or "<root>" for error in exc.errors()}
-    )
-    return f"{label} schema mismatch: " + ", ".join(locations)[:200]
+    known_fields = {
+        "proposals",
+        "title",
+        "kind",
+        "body",
+        "input_indexes",
+        "important_conflicts",
+        "id",
+        "question",
+        "alternatives",
+        "action_suggestions",
+        "description",
+        "related_project_id",
+        "text",
+        "source_statements",
+        "inferences",
+        "advice",
+        "missing_information",
+    }
+
+    def safe_location(location: object) -> str:
+        if not isinstance(location, tuple | list):
+            return "<root>"
+        parts: list[str] = []
+        for part in location[:8]:
+            if isinstance(part, int) and part >= 0:
+                parts.append(str(part))
+            elif isinstance(part, str) and part in known_fields:
+                parts.append(part)
+            else:
+                # Pydantic's extra_forbidden location contains the provider's
+                # arbitrary key. Do not copy it into diagnostics.
+                parts.append("<extra>")
+        return ".".join(parts) or "<root>"
+
+    locations = sorted({safe_location(error.get("loc", ())) for error in exc.errors()[:8]})
+    return f"{label} schema mismatch: " + ", ".join(locations)[:160]
 
 
 class ImportantConflict(BaseModel):
@@ -387,9 +420,18 @@ class DeepSeekLLM:
             "Faithfully reorganize and deduplicate only what the source says. Preserve facts, "
             "ideas, suggestions, and unresolved items distinctly in the body; do not add analysis, "
             "recommendations, or conclusions that are absent from the source. "
-            "Every proposal must include title, kind, body, input_indexes, important_conflicts, "
-            "action_suggestions. kind must be exactly one of: object, case, topic, decision. "
-            "Do not invent other kind values. Use source indexes from the provided inputs."
+            "Each proposal must be a JSON object with exactly these fields and types: "
+            "title (non-empty string), kind (one of the strings object, case, topic, decision), "
+            "body (non-empty string), input_indexes (array of integer input indexes), "
+            "important_conflicts (array of objects with id:string, question:string, "
+            "alternatives:array of at least two strings), and action_suggestions "
+            "(array of objects with kind: todo or progress_change, description: non-empty string, "
+            "related_project_id: UUID string or null). Every field is required, including empty "
+            "arrays when there are no conflicts or suggestions. Do not add fields. "
+            'Use this shape: {"proposals":[{"title":"...","kind":"topic",'
+            '"body":"...","input_indexes":[0],"important_conflicts":[],'
+            '"action_suggestions":[]}]}. Use only indexes from provided inputs and preserve '
+            "their exact integer type; never guess an index."
         )
         return self._complete(
             system,
@@ -459,7 +501,15 @@ class DeepSeekLLM:
             proposals = decoded["proposals"]
             if not isinstance(proposals, list) or not proposals:
                 raise LLMProviderError("provider returned no proposals")
-            return [DraftProposal.model_validate(item) for item in proposals]
+            validated: list[DraftProposal] = []
+            for index, item in enumerate(proposals):
+                try:
+                    validated.append(DraftProposal.model_validate(item))
+                except ValidationError as exc:
+                    raise LLMProviderError(
+                        schema_failure_message(f"proposals.{index}", exc), reason="schema"
+                    ) from exc
+            return validated
         except LLMProviderError:
             raise
         except ValidationError as exc:

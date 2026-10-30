@@ -21,7 +21,7 @@ from summit_everything.domain.models import (
 )
 from summit_everything.intake.sources import SourceStore
 from summit_everything.integrations.http_boundary import sanitize_provider_text
-from summit_everything.integrations.llm import DraftProposal, FakeLLM, LLMProviderError
+from summit_everything.integrations.llm import DraftProposal, LLMProviderError
 from summit_everything.workspace.archives import (
     archive_completed_transactions,
 )
@@ -86,7 +86,7 @@ class IntakeReviewService:
     def __init__(
         self, provider: OrganizeProvider | None = None, page_writer: PageWriter | None = None
     ) -> None:
-        self.provider = provider or FakeLLM()
+        self.provider = provider
         self.page_writer = page_writer or PageWriter()
 
     def create_agent_draft(
@@ -538,6 +538,12 @@ class IntakeReviewService:
             try:
                 if before_provider_call is not None:
                     before_provider_call(inputs)
+                if self.provider is None:
+                    raise LLMProviderError(
+                        "整理服务未配置。",
+                        provider_code="provider_not_configured",
+                        reason="not_configured",
+                    )
                 proposals = self.provider.organize(inputs)
                 covered_inputs: set[int] = set()
                 for proposal in proposals:

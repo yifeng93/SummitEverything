@@ -650,12 +650,38 @@ class FeishuHttpProvider:
             event_id = raw.get("event_id")
             if not isinstance(event_id, str) or not event_id:
                 raise FeishuError("malformed_response")
+            start_raw = raw.get("start_time")
+            location = raw.get("location")
+            location_name = ""
+            if isinstance(location, dict):
+                raw_name = location.get("name")
+                location_name = raw_name.strip() if isinstance(raw_name, str) else ""
+            vchat = raw.get("vchat")
+            meeting_url = None
+            if isinstance(vchat, dict):
+                raw_url = vchat.get("meeting_url")
+                # 只接受 https：日程描述来自外部，不能把它变成可执行链接。
+                if isinstance(raw_url, str) and raw_url.startswith("https://"):
+                    meeting_url = raw_url
+            raw_status = raw.get("status")
             events.append(
                 CalendarEvent(
                     event_id=event_id,
                     title=str(raw.get("summary") or ""),
-                    start=_time_info(raw.get("start_time")),
+                    start=_time_info(start_raw),
                     end=_time_info(raw.get("end_time")),
+                    location=location_name,
+                    meeting_url=meeting_url,
+                    status=(
+                        raw_status
+                        if raw_status in {"confirmed", "tentative", "cancelled"}
+                        else "confirmed"
+                    ),
+                    all_day=(
+                        isinstance(start_raw, dict)
+                        and not isinstance(start_raw.get("timestamp"), str)
+                        and isinstance(start_raw.get("date"), str)
+                    ),
                 )
             )
         # Validate every upstream item before deciding what to return; a

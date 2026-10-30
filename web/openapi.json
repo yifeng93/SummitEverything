@@ -863,6 +863,98 @@
         }
       }
     },
+    "/api/v1/retrieval-model/status": {
+      "get": {
+        "summary": "Retrieval Model Status",
+        "operationId": "retrieval_model_status_api_v1_retrieval_model_status_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalModelStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/retrieval-model/prepare": {
+      "post": {
+        "summary": "Retrieval Model Prepare",
+        "operationId": "retrieval_model_prepare_api_v1_retrieval_model_prepare_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalModelStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/first-use/progress": {
       "get": {
         "summary": "Get First Use Progress",
@@ -1648,6 +1740,978 @@
         }
       }
     },
+    "/api/v1/agent/workspace": {
+      "get": {
+        "summary": "Agent Workspace Info",
+        "operationId": "agent_workspace_info_api_v1_agent_workspace_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceContext"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/workspace/bound": {
+      "get": {
+        "summary": "Agent Workspace Bound",
+        "operationId": "agent_workspace_bound_api_v1_agent_workspace_bound_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceContext"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/lines": {
+      "get": {
+        "summary": "Agent Lines",
+        "operationId": "agent_lines_api_v1_agent_lines_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LineRecord"
+                  },
+                  "title": "Response Agent Lines Api V1 Agent Lines Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/projects": {
+      "get": {
+        "summary": "Agent Projects",
+        "operationId": "agent_projects_api_v1_agent_projects_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectRecord"
+                  },
+                  "title": "Response Agent Projects Api V1 Agent Projects Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/index": {
+      "get": {
+        "summary": "Agent Index Status",
+        "operationId": "agent_index_status_api_v1_agent_index_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "title": "Response Agent Index Status Api V1 Agent Index Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/pages": {
+      "get": {
+        "summary": "Agent Pages",
+        "operationId": "agent_pages_api_v1_agent_pages_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Agent Pages Api V1 Agent Pages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/search": {
+      "get": {
+        "summary": "Agent Search",
+        "operationId": "agent_search_api_v1_agent_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000,
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 30,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Agent Search Api V1 Agent Search Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/pages/{page_id}": {
+      "get": {
+        "summary": "Agent Page Get",
+        "operationId": "agent_page_get_api_v1_agent_pages__page_id__get",
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Page Id"
+            }
+          },
+          {
+            "name": "expected_content_sha256",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Expected Content Sha256"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Agent Page Get Api V1 Agent Pages  Page Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/intake": {
+      "get": {
+        "summary": "Agent Intake List",
+        "operationId": "agent_intake_list_api_v1_agent_intake_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntakeItem"
+                  },
+                  "title": "Response Agent Intake List Api V1 Agent Intake Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/sources/{source_id}": {
+      "get": {
+        "summary": "Agent Source Get",
+        "operationId": "agent_source_get_api_v1_agent_sources__source_id__get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Agent Source Get Api V1 Agent Sources  Source Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/drafts": {
+      "get": {
+        "summary": "Agent Draft List",
+        "operationId": "agent_draft_list_api_v1_agent_drafts_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Draft"
+                  },
+                  "title": "Response Agent Draft List Api V1 Agent Drafts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Agent Draft Create",
+        "operationId": "agent_draft_create_api_v1_agent_drafts_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentDraftCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/drafts/{draft_id}": {
+      "get": {
+        "summary": "Agent Draft Get",
+        "operationId": "agent_draft_get_api_v1_agent_drafts__draft_id__get",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Agent Draft Edit",
+        "operationId": "agent_draft_edit_api_v1_agent_drafts__draft_id__patch",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftPatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/import": {
+      "post": {
+        "summary": "Agent Import",
+        "operationId": "agent_import_api_v1_agent_import_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/lines": {
       "get": {
         "summary": "Lines",
@@ -2187,6 +3251,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MutationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pages/directory": {
+      "get": {
+        "summary": "Page Directory",
+        "operationId": "page_directory_api_v1_pages_directory_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PageDirectoryEntry"
+                  },
+                  "title": "Response Page Directory Api V1 Pages Directory Get"
                 }
               }
             }
@@ -4820,20 +5934,104 @@
             }
           },
           {
-            "name": "plan_id",
-            "in": "query",
+            "name": "authorization",
+            "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "type": "string",
-                  "format": "uuid"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Plan Id"
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/calendar": {
+      "get": {
+        "summary": "Agent Calendar",
+        "operationId": "agent_calendar_api_v1_agent_calendar_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "End"
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Timezone"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
             }
           },
           {
@@ -4850,6 +6048,16 @@
                 }
               ],
               "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Summit-Workspace-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Summit-Workspace-Id"
             }
           }
         ],
@@ -5403,6 +6611,119 @@
         ],
         "title": "ActionProposal"
       },
+      "AgentDraftCreateRequest": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Operation Id"
+          },
+          "item_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Item Ids"
+          },
+          "line_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Line Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "object",
+              "case",
+              "topic",
+              "decision",
+              "log",
+              "thought"
+            ],
+            "title": "Kind"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Body"
+          },
+          "target_page_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Page Id"
+          },
+          "expected_base_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Base Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation_id",
+          "item_ids",
+          "line_id",
+          "project_id",
+          "title",
+          "kind",
+          "body"
+        ],
+        "title": "AgentDraftCreateRequest"
+      },
+      "AgentImportRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text"
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Operation Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "filename",
+          "operation_id"
+        ],
+        "title": "AgentImportRequest"
+      },
       "AnswerRole": {
         "properties": {
           "name": {
@@ -5507,6 +6828,32 @@
             "type": "string",
             "format": "date-time",
             "title": "End"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "default": ""
+          },
+          "meeting_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Url"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "confirmed"
+          },
+          "all_day": {
+            "type": "boolean",
+            "title": "All Day",
+            "default": false
           }
         },
         "type": "object",
@@ -6164,22 +7511,27 @@
             "type": "string",
             "enum": [
               "fake",
+              "local",
               "dashscope"
             ],
             "title": "Provider",
-            "default": "fake"
+            "default": "local"
           },
           "model": {
             "anyOf": [
               {
                 "type": "string",
-                "const": "qwen3.7-text-embedding"
+                "enum": [
+                  "BAAI/bge-small-zh-v1.5",
+                  "qwen3.7-text-embedding"
+                ]
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Model"
+            "title": "Model",
+            "default": "BAAI/bge-small-zh-v1.5"
           },
           "region": {
             "type": "string",
@@ -6192,17 +7544,17 @@
             "maximum": 4096.0,
             "minimum": 1.0,
             "title": "Dimensions",
-            "default": 1024
+            "default": 512
           },
           "base_url": {
             "type": "string",
             "title": "Base Url",
-            "default": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+            "default": ""
           },
           "enabled": {
             "type": "boolean",
             "title": "Enabled",
-            "default": false
+            "default": true
           }
         },
         "additionalProperties": false,
@@ -6346,11 +7698,26 @@
           "mode": {
             "type": "string",
             "title": "Mode",
-            "default": "fake"
+            "default": "real"
           },
           "authorized": {
             "type": "boolean",
             "title": "Authorized"
+          },
+          "refreshable": {
+            "type": "boolean",
+            "title": "Refreshable",
+            "default": false
+          },
+          "calendar_ready": {
+            "type": "boolean",
+            "title": "Calendar Ready",
+            "default": false
+          },
+          "authorization_generation": {
+            "type": "integer",
+            "title": "Authorization Generation",
+            "default": 0
           },
           "app_configured": {
             "type": "boolean",
@@ -7199,7 +8566,7 @@
               "deepseek"
             ],
             "title": "Provider",
-            "default": "fake"
+            "default": "deepseek"
           },
           "model": {
             "anyOf": [
@@ -7211,7 +8578,8 @@
                 "type": "null"
               }
             ],
-            "title": "Model"
+            "title": "Model",
+            "default": "deepseek-flash"
           },
           "account_id": {
             "type": "string",
@@ -7223,7 +8591,7 @@
           "enabled": {
             "type": "boolean",
             "title": "Enabled",
-            "default": false
+            "default": true
           },
           "max_output_tokens": {
             "type": "integer",
@@ -7252,10 +8620,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "fake",
-                  "deepseek"
-                ]
+                "const": "deepseek"
               },
               {
                 "type": "null"
@@ -7399,6 +8764,74 @@
           "directory"
         ],
         "title": "LineRecord"
+      },
+      "LocalModelStatus": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "revision": {
+            "type": "string",
+            "title": "Revision"
+          },
+          "dimensions": {
+            "type": "integer",
+            "title": "Dimensions"
+          },
+          "token_limit": {
+            "type": "integer",
+            "title": "Token Limit"
+          },
+          "download_size_bytes": {
+            "type": "integer",
+            "title": "Download Size Bytes"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_prepared",
+              "preparing",
+              "ready",
+              "failed",
+              "incomplete"
+            ],
+            "title": "State"
+          },
+          "downloaded_bytes": {
+            "type": "integer",
+            "title": "Downloaded Bytes"
+          },
+          "progress_percent": {
+            "type": "integer",
+            "title": "Progress Percent"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model",
+          "revision",
+          "dimensions",
+          "token_limit",
+          "download_size_bytes",
+          "state",
+          "downloaded_bytes",
+          "progress_percent",
+          "error_code"
+        ],
+        "title": "LocalModelStatus"
       },
       "Material": {
         "properties": {
@@ -7586,10 +9019,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "fake",
-                  "dashscope"
-                ]
+                "const": "local"
               },
               {
                 "type": "null"
@@ -7601,10 +9031,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "qwen3.7-text-embedding",
-                  "qwen3.7-text-rerank"
-                ]
+                "const": "BAAI/bge-small-zh-v1.5"
               },
               {
                 "type": "null"
@@ -7789,6 +9216,74 @@
           "operation_id"
         ],
         "title": "PageCreate"
+      },
+      "PageDirectoryEntry": {
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Page Id"
+          },
+          "relative_path": {
+            "type": "string",
+            "title": "Relative Path"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "storage_area": {
+            "type": "string",
+            "enum": [
+              "formal",
+              "source",
+              "draft",
+              "system"
+            ],
+            "title": "Storage Area"
+          },
+          "approval_state": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "pending",
+              "invalid"
+            ],
+            "title": "Approval State"
+          },
+          "validity": {
+            "type": "string",
+            "title": "Validity",
+            "default": "current"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page_id",
+          "relative_path",
+          "metadata",
+          "content_sha256",
+          "storage_area",
+          "approval_state"
+        ],
+        "title": "PageDirectoryEntry",
+        "description": "Metadata needed to browse pages without transferring their full bodies."
       },
       "PageMove": {
         "properties": {
@@ -8084,10 +9579,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "fake",
-                  "real"
-                ]
+                "const": "real"
               },
               {
                 "type": "null"
@@ -8358,22 +9850,27 @@
             "type": "string",
             "enum": [
               "fake",
+              "local",
               "dashscope"
             ],
             "title": "Provider",
-            "default": "fake"
+            "default": "local"
           },
           "model": {
             "anyOf": [
               {
                 "type": "string",
-                "const": "qwen3.7-text-rerank"
+                "enum": [
+                  "BAAI/bge-small-zh-v1.5",
+                  "qwen3.7-text-rerank"
+                ]
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Model"
+            "title": "Model",
+            "default": "BAAI/bge-small-zh-v1.5"
           },
           "region": {
             "type": "string",
@@ -8386,17 +9883,17 @@
             "maximum": 4096.0,
             "minimum": 1.0,
             "title": "Dimensions",
-            "default": 1024
+            "default": 512
           },
           "base_url": {
             "type": "string",
             "title": "Base Url",
-            "default": "https://dashscope.aliyuncs.com/api/v1"
+            "default": ""
           },
           "enabled": {
             "type": "boolean",
             "title": "Enabled",
-            "default": false
+            "default": true
           }
         },
         "additionalProperties": false,
@@ -8442,6 +9939,11 @@
             ],
             "title": "Mode"
           },
+          "legacy_provider_migration_required": {
+            "type": "boolean",
+            "title": "Legacy Provider Migration Required",
+            "default": false
+          },
           "model_studio_account_id": {
             "type": "string",
             "title": "Model Studio Account Id"
@@ -8479,6 +9981,9 @@
           "embedding_fingerprint": {
             "type": "string",
             "title": "Embedding Fingerprint"
+          },
+          "local_model": {
+            "$ref": "#/components/schemas/LocalModelStatus"
           }
         },
         "additionalProperties": false,
@@ -8493,7 +9998,8 @@
           "capabilities",
           "credential_status",
           "keychain_available",
-          "embedding_fingerprint"
+          "embedding_fingerprint",
+          "local_model"
         ],
         "title": "SettingsSummary"
       },

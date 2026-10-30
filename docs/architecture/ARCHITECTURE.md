@@ -59,14 +59,15 @@ React / TypeScript → 受保护的本地 FastAPI → 工作库 / 本地存储 /
 | 能力 | 默认 |
 |---|---|
 | 整理、分类、摘要、问答 | deepseek-flash（DeepSeek V4.1 Flash） |
-| 嵌入 | qwen3.7-text-embedding，1024 维 |
-| 重排 | qwen3.7-text-rerank |
+| 嵌入与排序 | 本地 BAAI/bge-small-zh-v1.5，512 维；同一模型承担本地语义重排 |
 
 整理、分类和记忆候选抽取关闭思考模式；问答推理预算显式配置，截断要同时检查输出预算耗尽和内容是否为空。失败保留可恢复状态，不伪装成功。
 
-DeepSeek、Qwen embedding 和 Qwen rerank 是独立 provider。Qwen 3.7 重排与旧 qwen3-rerank 端点及响应不可互换；地区、workspace_id、模型、维度形成配置，不能仅改模型字符串。
+检索只使用 profile 外部的模型目录；首次下载由用户显式启动，按固定公开 revision 和每个文件 SHA-256 校验后原子发布。推理始终使用 specific_model_path 与 local_files_only；缺失或损坏时明确失败，绝不联网回退。旧 DashScope embedding/rerank 设置可读取用于兼容，但运行时拒绝调用，用户可显式切换到本地模型；已有钥匙串密钥保留。
 
-官方依据：[DeepSeek](https://api-docs.deepseek.com/quick_start/pricing/)、[Qwen embedding](https://help.aliyun.com/zh/model-studio/text-embedding-synchronous-api)、[Qwen rerank](https://help.aliyun.com/zh/model-studio/text-rerank-api)。实施接入时再核对当前官方协议，验证真实账户支持后才进行明确授权的调用。
+DeepSeek 是唯一外部模型 provider，用于整理与生成式问答；每次业务发送继续走一次性预览确认。检索索引和本地搜索不需要 DeepSeek key。整理、分类和记忆候选抽取关闭思考模式；问答推理预算显式配置，截断要同时检查输出预算耗尽和内容是否为空。当前本地模型为 FastEmbed 0.9.1 + ONNX Runtime + Tokenizers；模型 revision、向量维度、480 token 窗口、64 token overlap 和窗口聚合策略共同进入 fingerprint。
+
+DMG 仍以 macOS 13 为最低版本，打包固定使用 Python 3.13，使 ONNX Runtime wheel 保持 macOS 13 部署目标。Python 3.14 开发运行使用 ONNX Runtime 1.31.1，要求 macOS 14；这不改变 DMG 的运行目标，也不等于安装包已验收。依赖版本见 `uv.lock`。
 
 索引 fingerprint 包含 provider / 模型 / 维度 / 分块与规范化版本。不同 fingerprint 不混用向量；完整重建先写入新的 LanceDB 代，核对行数、模式、维度并建好中文 n-gram BM25 全文索引，再用 SQLite 事务和代号比较交换活动指针。查询固定读取开始时选定的一代；旧代保留供在途查询。未变的嵌入输入复用当前本机代的向量，不同步向量数据库。LanceDB 只执行本地文件模式，不使用云端数据库、模型自动下载或付费 provider。
 
@@ -88,7 +89,7 @@ M4 强制构建 WebUI 后打包；包内记录应用版本、build、源码提�
 
 ## 飞书集成边界
 
-`integrations/feishu/provider.py` 定义配置、凭据接口与 DTO；`fake.py` 提供无网络合成分页、文件和日程；`service.py` 实现本机会话 state、权限门禁、响应验证及选择导入。API 通过 create_app 参数注入 provider/store/config，默认使用 Fake + MemoryCredentialStore。`http.py` 提供独立 Feishu HTTP adapter；真实调用需满足设置、凭据和一次性确认计划边界。
+`integrations/feishu/provider.py` 定义配置、凭据接口与 DTO；`fake.py` 提供无网络合成分页、文件和日程；`service.py` 实现本机会话 state、权限门禁、响应验证及选择导入。API 通过 create_app 参数注入 provider/store/config，默认使用 Fake + MemoryCredentialStore。`http.py` 提供独立 Feishu HTTP adapter；真实日历只读在身份、凭据、scope、资源范围和请求预算校验通过后直接执行；其他真实读取/导入继续要求绑定范围的一次性确认计划。
 
 OAuth state 只在本进程内保存，绑定本次服务会话 token 的身份，超时与消费由锁保护。callback 地址精确匹配配置；不为了开发端口重写用户注册地址。凭据不进入工作库或浏览器。SourceStore 的 optional external_identity 在 source record 与可恢复意图中保留，手写输入继续使用原幂等 hash 规则。
 

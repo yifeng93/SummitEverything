@@ -78,7 +78,19 @@ _ENTITY_COMPARISON_PREFIX = re.compile(
 )
 _ENTITY_REQUEST_PREFIX = re.compile(r"^(?:(?:请|麻烦|我希望|我想)?(?:给|为|针对|关于))")
 _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
-    "budget": ("预算", "经费", "费用", "成本", "资金", "额度", "储备", "金额"),
+    "budget": (
+        "预算",
+        "经费",
+        "费用",
+        "成本",
+        "资金",
+        "额度",
+        "储备",
+        "金额",
+        "租金",
+        "租赁",
+        "租用",
+    ),
     "schedule": (
         "排期",
         "时间",
@@ -87,6 +99,8 @@ _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
         "截止",
         "期限",
         "日期",
+        "开工",
+        "动工",
         "进度",
         "什么时候",
         "何时",
@@ -94,6 +108,7 @@ _TOPIC_CLASSES: dict[str, tuple[str, ...]] = {
     ),
     "storage": ("存储", "储存", "保管", "存放", "备份", "归档"),
     "owner": ("负责人", "联系人", "所有者", "责任人"),
+    "capacity": ("容纳", "容量", "人数", "人次", "接待", "座位"),
 }
 # Request-shell words: question form, politeness and generic plan vocabulary that
 # carries no local evidence of its own. Information-bearing qualifiers such as
@@ -107,8 +122,9 @@ _PLAN_SHELL = re.compile(r"^(?:(?:下一步|后续|往后|接下来|工作|计�
 _TOPIC_REQUEST_SUFFIX = re.compile(r"(?:提出|制定|给出|说明|告诉|并列出|列出|再给|请|帮我).*")
 _TOPIC_PREFIX = re.compile(rf"^(?:(?:{_POLITE_SHELL}|{_LOOKUP_VERBS}|{_TOPIC_SHELL_ONLY})+)+")
 _TOPIC_SUFFIX = re.compile(
-    r"(?:(?:分别|是什么|是谁|有什么|怎么(?:安排|处理|办|做)?|如何|安排|办理|办法|方式|流程|手续|"
-    r"规则|情况|建议|方案|上限|多少|哪些(?:信息|内容|事项|项目)?|哪一个|哪项|目前|当前|现行|最新|是|吗|呢|吧|啊|一下|下一步需要补什么|"
+    r"(?:(?:分别|有什么区别|有何区别|区别是什么|差异是什么|有什么不同|有何不同|差别是什么|"
+    r"是什么|是谁|有什么|怎么(?:安排|处理|办|做)?|如何|安排|办理|办法|方式|流程|手续|"
+    r"规则|情况|建议|方案|上限|多少|哪些(?:信息|内容|事项|项目)?|哪一个|哪项|目前|当前|现行|最新|怎样(?:办理|处理|安排|做)?|是|吗|呢|吧|啊|一下|下一步需要补什么|"
     r"再给简短结论|并汇总现有资料|并汇总|现有资料|简短结论|。|！|!|？|\?)+)$"
 )
 # Object nouns that can close a corpus name. 专项 is deliberately excluded: it is
@@ -150,7 +166,16 @@ _PLAN_CLAUSE_SUFFIX = re.compile(
     r"(?:工作)?(?:方案|计划|安排|要点)?$"
 )
 _FAMILY_DOCUMENT_SUFFIX = re.compile(r"(?:信息|资料|内容)$")
-_FAMILY_DETAIL_SHELL = re.compile(r"^(?:上限|额度|总额|分别是多少|是多少|多少|情况)+$")
+_FAMILY_DETAIL_SHELL = re.compile(
+    r"^(?:上限|额度|总额|分别是多少|是多少|多少|情况|几月份|哪几个月|"
+    r"什么时候|何时|几号|几点|何日|哪天)+$"
+)
+_FAMILY_NUMERIC_VALUE = re.compile(
+    r"(?<![\w])(?:\d+(?:[.,]\d+)?|[零〇一二两三四五六七八九十百千万亿]+)"
+    r"(?:\s*(?:元|万元|块钱|人民币|美元|人|位|个|间|天|周|月|年|号|日|点|小时|分钟))?"
+)
+_BUDGET_AVAILABILITY_TERMS = frozenset({"可用", "可动用"})
+_PROJECT_START_TERMS = frozenset({"启动", "开工", "动工"})
 _FAMILY_TERMS = tuple(
     sorted(
         {term for terms in _TOPIC_CLASSES.values() for term in terms},
@@ -159,6 +184,13 @@ _FAMILY_TERMS = tuple(
     )
 )
 _FAMILY_TERM_PATTERN = re.compile("|".join(re.escape(term) for term in _FAMILY_TERMS))
+_LOCALIZER_PARTICLES = ("中", "里", "内", "上", "下")
+_LOCALIZER_BOUNDARY = re.compile(r"(?:$|的|[\s，,。！？?!；;：:、/（）()\[\]【】{}<>《》“”‘’\"'])")
+_LOCALIZER_WRAPPERS = re.compile(r"^[\s\"'“”‘’「」『』《》（）()\[\]【】{}<>]*")
+_SUBJECT_LOCALIZER = re.compile(
+    r"^[\s\"'“”‘’「」『』《》（）()\[\]【】{}<>]*(?:中|里|内|上|下)"
+    r"(?=$|的|[\s，,。！？?!；;：:、/（）()\[\]【】{}<>《》“”‘’\"'])"
+)
 
 
 @dataclass(frozen=True)
@@ -266,7 +298,9 @@ def _extract_explicit_subjects(
         matched = tuple(
             alias
             for alias in all_matches
-            if _alias_has_entity_role(alias) or alias in object_aliases
+            if _alias_has_entity_role(alias)
+            or alias in object_aliases
+            or _alias_followed_by_localizer(source_question, alias)
         )
     else:
         matched = tuple(
@@ -274,6 +308,20 @@ def _extract_explicit_subjects(
             for alias in all_matches
             if _alias_is_subject_in_question(source_question, alias)
             or (alias in object_aliases and _alias_has_topic_after(source_question, alias))
+        )
+    # In “collection title page title 中 …” the page title immediately before
+    # the localizer is the query subject; the preceding collection name is context.
+    # Keep other subjects when a connector (和、与、vs.) separates them.
+    localized = tuple(
+        alias for alias in matched if _alias_followed_by_localizer(source_question, alias)
+    )
+    if localized:
+        matched = tuple(
+            alias
+            for alias in matched
+            if not any(
+                _alias_is_whitespace_prefix(source_question, alias, target) for target in localized
+            )
         )
     entity_mentions = _entity_mentions(source_question, matched)
     # A known short object alias embedded in a longer entity-shaped span is not
@@ -358,6 +406,14 @@ def _extract_explicit_subjects(
                 if candidate.startswith(prefix):
                     candidate = candidate[len(prefix) :]
                     break
+            if any(
+                _normalize(subject).startswith(_normalize(candidate))
+                for subject in matched
+                if _normalize(candidate)
+            ):
+                # A short stem such as 青岚 is not a second explicit object when
+                # the complete known object 青岚计划 was already matched.
+                continue
             if len(candidate) >= 2 and candidate not in candidates:
                 candidates.append(candidate)
     # Matched corpus names and unmatched parallel names are both part of the
@@ -391,7 +447,7 @@ def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str
             return tuple(matched)
         if _FAMILY_TERM_PATTERN.search(topic_phrase):
             topic_phrase = _FAMILY_DOCUMENT_SUFFIX.sub("", topic_phrase)
-        qualifiers = _family_residual_topics(topic_phrase)
+        qualifiers = _family_residual_topics(topic_phrase, matched)
         if qualifiers:
             return ("&".join(("+".join(matched), *(f"term:{part}" for part in qualifiers))),)
         return tuple(matched)
@@ -407,7 +463,7 @@ def query_dimensions(question: str, subjects: tuple[str, ...] = ()) -> tuple[str
     return ()
 
 
-def _family_residual_topics(topic_phrase: str) -> tuple[str, ...]:
+def _family_residual_topics(topic_phrase: str, families: list[str]) -> tuple[str, ...]:
     """Keep meaningful family-adjacent text as separate, contiguous constraints.
 
     Removing a family word and concatenating both sides would manufacture a phrase
@@ -418,10 +474,13 @@ def _family_residual_topics(topic_phrase: str) -> tuple[str, ...]:
     previous_end = 0
     for match in _FAMILY_TERM_PATTERN.finditer(topic_phrase):
         fragment = topic_phrase[previous_end : match.start()].strip(" \t\r\n的和与及、,，:：")
+        fragment = _normalize_family_retrieval_qualifier(fragment, families)
         if fragment:
             fragments.append(fragment)
         previous_end = match.end()
-    tail = topic_phrase[previous_end:].strip(" \t\r\n的和与及、,，:：")
+    tail = _normalize_family_retrieval_qualifier(
+        topic_phrase[previous_end:].strip(" \t\r\n的和与及、,，:："), families
+    )
     if tail:
         fragments.append(tail)
     return tuple(
@@ -433,6 +492,29 @@ def _family_residual_topics(topic_phrase: str) -> tuple[str, ...]:
             and not _PLAN_SHELL.fullmatch(normalized)
         )
     )
+
+
+def _normalize_family_retrieval_qualifier(fragment: str, families: list[str]) -> str:
+    """Drop query-shell and numeric premises from a known fact family.
+
+    The original question still reaches the answer model, so cited source values
+    can correct its premise. Unknown non-numeric modifiers remain exact terms.
+    """
+    cleaned = _FAMILY_NUMERIC_VALUE.sub("", fragment)
+    cleaned = re.sub(r"(?:几月份|哪几个月|什么时候|何时|几号|几点|何日|哪天)", "", cleaned)
+    if "budget" in families:
+        cleaned = re.sub(
+            "|".join(sorted(_BUDGET_AVAILABILITY_TERMS, key=len, reverse=True)), "", cleaned
+        )
+    if "schedule" in families:
+        cleaned = re.sub("|".join(sorted(_PROJECT_START_TERMS, key=len, reverse=True)), "", cleaned)
+    cleaned = re.sub(r"(?:是多少|分别是|有多少|多少|上限|额度|总额|情况)$", "", cleaned)
+    cleaned = re.sub(
+        r"(?:能租|可以租|租得起|够用|够不够|能(?:否|不能)|是否)(?:吗|呢|吧|啊)?$",
+        "",
+        cleaned,
+    )
+    return cleaned.strip(" ￥¥$€£\t\r\n的和与及、,，:：？?吗呢吧啊")
 
 
 def query_scope(
@@ -509,6 +591,10 @@ def _local_subject_topics(question: str, subjects: tuple[str, ...]) -> dict[str,
     for index, (_start, end, subject) in enumerate(selected):
         next_start = selected[index + 1][0] if index + 1 < len(selected) else len(question)
         span = question[end:next_start]
+        # A quoted/page-title subject is often followed by a localizer:
+        # “《title》里 …” or “title中的 …”. The localizer links the topic to
+        # the named page and carries no retrieval evidence itself.
+        span = _SUBJECT_LOCALIZER.sub("", span)
         topics[subject] = _topic_dimensions(span)
     return topics
 
@@ -626,10 +712,43 @@ def _alias_is_subject_in_question(question: str, alias: str) -> bool:
     if _alias_has_entity_role(alias):
         return True
     tail = normalized_question[position + len(normalized_alias) :]
+    if _alias_followed_by_localizer(question, alias):
+        return True
     if any(_normalize(term) in tail for terms in _TOPIC_CLASSES.values() for term in terms):
         return True
     cleaned_tail = _TOPIC_SUFFIX.sub("", tail)
     return len(cleaned_tail) >= 2 and not _topic_phrase(tail, ())
+
+
+def _alias_followed_by_localizer(question: str, alias: str) -> bool:
+    normalized_alias = _normalize(alias)
+    normalized_chars: list[tuple[str, int]] = []
+    for offset, char in enumerate(question):
+        for folded_char in char.casefold():
+            if re.match(r"[\w\u3400-\u9fff]", folded_char, flags=re.UNICODE):
+                normalized_chars.append((folded_char, offset))
+    normalized_question = "".join(char for char, _ in normalized_chars)
+    position = normalized_question.find(normalized_alias)
+    if position < 0 or not normalized_alias:
+        return False
+    source_end = normalized_chars[position + len(normalized_alias) - 1][1] + 1
+    tail = _LOCALIZER_WRAPPERS.sub("", question[source_end:])
+    particle = next((value for value in _LOCALIZER_PARTICLES if tail.startswith(value)), None)
+    return particle is not None and bool(_LOCALIZER_BOUNDARY.match(tail[len(particle) :]))
+
+
+def _alias_is_whitespace_prefix(question: str, prefix: str, target: str) -> bool:
+    if _normalize(prefix) == _normalize(target):
+        return False
+    source = question.casefold()
+    prefix_at = source.find(prefix.casefold())
+    target_at = source.find(target.casefold())
+    between = source[prefix_at + len(prefix) : target_at] if prefix_at >= 0 else ""
+    return (
+        prefix_at >= 0
+        and target_at > prefix_at + len(prefix)
+        and re.fullmatch(r"[\s\"'“”‘’「」『』《》（）()\[\]【】]*", between) is not None
+    )
 
 
 def _alias_has_entity_role(alias: str) -> bool:
@@ -734,7 +853,7 @@ def supported_dimensions(text: str, dimensions: tuple[str, ...]) -> tuple[str, .
     supported: list[str] = []
     for dimension in dimensions:
         parts = dimension.split("&")
-        found = all(_dimension_part_supported(normalized, part) for part in parts)
+        found = all(_dimension_part_supported(normalized, part, text) for part in parts)
         if not found and "schedule" in parts and any(part.startswith("term:") for part in parts):
             # Keep the fallback narrow: a valid numeric date/time must be
             # explicitly introduced as a schedule value and stay close to the
@@ -743,7 +862,7 @@ def supported_dimensions(text: str, dimensions: tuple[str, ...]) -> tuple[str, .
             required_parts = [part for part in parts if part != "schedule"]
             terms = [part[5:] for part in required_parts if part.startswith("term:")]
             found = all(
-                _dimension_part_supported(normalized, part) for part in required_parts
+                _dimension_part_supported(normalized, part, text) for part in required_parts
             ) and any(_explicit_temporal_qualifies_action(text, term) for term in terms)
         if found:
             supported.append(dimension)
@@ -751,7 +870,10 @@ def supported_dimensions(text: str, dimensions: tuple[str, ...]) -> tuple[str, .
 
 
 def _explicit_temporal_qualifies_action(text: str, action: str) -> bool:
-    action_matches = list(re.finditer(re.escape(action), text))
+    actions = {action}
+    if action in _PROJECT_START_TERMS:
+        actions.update(_PROJECT_START_TERMS)
+    action_matches = [match for term in actions for match in re.finditer(re.escape(term), text)]
     if not action_matches:
         return False
     boundaries = [match.start() for match in re.finditer(r"[，,。！？?；;\n]", text)]
@@ -799,9 +921,23 @@ def _date_match_is_valid(match: re.Match[str]) -> bool:
     return True
 
 
-def _dimension_part_supported(normalized_text: str, part: str) -> bool:
+def _dimension_part_supported(normalized_text: str, part: str, original_text: str = "") -> bool:
     if part.startswith("term:"):
-        return part[5:] in normalized_text
+        term = part[5:]
+        if term in _BUDGET_AVAILABILITY_TERMS:
+            return any(value in normalized_text for value in _BUDGET_AVAILABILITY_TERMS)
+        if term in _PROJECT_START_TERMS:
+            return any(value in normalized_text for value in _PROJECT_START_TERMS)
+        if re.search(r"[a-z]", term, re.I):
+            return (
+                re.search(
+                    rf"(?<![a-z0-9_]){re.escape(term)}(?![a-z0-9_])",
+                    original_text,
+                    re.I,
+                )
+                is not None
+            )
+        return term in normalized_text
     labels = part.split("+")
     return all(
         any(_normalize(term) in normalized_text for term in _TOPIC_CLASSES.get(label, ()))

@@ -13,16 +13,42 @@ SummitEverything 是个人工作知识整理与检索应用。它把工作记录
 
 ## 本地开发
 
-需要 Python 3.12+、uv、Node.js/npm，以及运行 macOS 壳测试时的 Swift 工具链。默认开发与测试使用合成数据和 Fake provider；真实服务调用需按各自授权门单独确认。
+需要 Python 3.12+、uv、Node.js/npm，以及运行 macOS 壳测试时的 Swift 工具链。正常启动只允许真实 provider：DeepSeek 负责整理与问答，本地 BGE 负责检索；Fake/Mock 仅能由自动化测试显式注入隔离依赖。缺少 DeepSeek 密钥、本地模型或有效索引时，界面明确显示未就绪，不会使用模拟 provider 顶替。真实请求遵循各自已确认的操作门。DMG 构建固定 Python 3.13 以兼容 macOS 13；Python 3.14 开发运行要求 macOS 14。
 
 ```sh
 uv sync --locked --group dev
 cd web && npm ci
 cd ..
-uv run python scripts/run_dev.py
+uv run python scripts/run_dev.py          # 浏览器调试
+uv run python scripts/run_dev.py --app    # 原生壳调试（同一个 Vite 页面）
 ```
 
-打开 <http://127.0.0.1:5173>，并为工作库选择新的隔离目录。脚本启动本机 FastAPI 和 Vite 服务；退出时只关闭本次启动的服务。详细隔离选项、Internal App/DMG 构建和验收边界见[实现手册](docs/handoff/IMPLEMENTER.md)与[测试手册](docs/handoff/TESTER.md)。
+浏览器调试打开 <http://127.0.0.1:5173>；`--app` 会编译一次 `native/` 的 debug 壳并指向同一个 Vite 服务，窗口内同样是热更新。
+
+- 前端改动由 Vite HMR 即时生效；后端改动由 `uvicorn --reload` 自动重载。改代码不需要重新打包或安装 DMG。
+- 开发状态固定在 `.local/dev/`（profile 与工作库），启动时自动打开，直接落在「今日」，不需要每次新选目录。`--fresh` 清空重建；`--no-workspace` 保留在工作库选择页。
+- 首次运行会在缺平台绑定时自动补齐（`rolldown` / `oxlint`），避免换 node 架构后出现 `Cannot find native binding`。
+
+查看本机索引（只读，不会重建或改向量）：
+
+```sh
+uv run python scripts/inspect_index.py
+uv run python scripts/inspect_index.py --full --limit 5
+uv run python scripts/inspect_index.py --json
+```
+
+脚本默认读 `.local/dev/profile` 与 `.local/dev/workspace`，输出 active generation 的页面、分块、向量维度/范数/前几维；索引库在 profile 下，不在工作库里。
+
+需要一份真实语料做检索测试时，可把 DeepSeek Harness 官方 Markdown 灌入开发库（仅 fixture，不是正常导入流程）：
+
+```sh
+uv run python scripts/seed_knowledge.py --source /tmp/deepseek-harness
+uv run python scripts/seed_knowledge.py --source /tmp/deepseek-harness --dry-run
+```
+
+脚本优先用 `.zh.md`，跳过 changelog/upgrade/i18n，稳定 ID 可重复执行，最后只建一次索引。需求速览见 [REQUIREMENTS-AT-A-GLANCE](docs/product/REQUIREMENTS-AT-A-GLANCE.md)。
+
+退出时只关闭本次启动的服务。详细隔离选项、Internal App/DMG 构建和验收边界见[实现手册](docs/handoff/IMPLEMENTER.md)与[测试手册](docs/handoff/TESTER.md)。
 
 提供标准 MCP stdio 入口供 Codex / WorkBuddy 连接已运行的本机 API：`uv run --locked --project "$PWD" python -m summit_everything.mcp_server`。先准备当前服务会话的 token 文件（权限 0600），再按[本机 MCP 契约](docs/contracts/MCP-v1.md)配置 `SUMMIT_MCP_TOKEN_FILE`；MCP 不会启动第二个后端。
 
@@ -42,9 +68,9 @@ npm --prefix web run lint
 npm --prefix web run build
 ```
 
-首次运行后端集成测试前安装 Web 依赖。Playwright、Fake API 集成与内部应用构建命令和安全边界见实现/测试手册。自动检查通过不等于阶段验收通过。
+首次运行后端集成测试前安装 Web 依赖。Playwright、隔离 API 集成与内部应用构建命令和安全边界见实现/测试手册。自动检查通过不等于阶段验收通过。
 
-本地索引由 SQLite 指针与 profile 内嵌入式 LanceDB 组成，`index.sqlite3` 对应独立的 `index.lancedb` 数据目录。查询和索引构建通过 profile 文件锁保留代；旧代会在应用退出后通过下面的维护命令清理。旧 SQLite `vector_json` 索引不会自动迁移或用于查询，状态会要求重建；需从已确认 Markdown 预览并显式建立新索引。旧 SQLite 行会原样保留，新 profile 不再创建 `chunks/vector_json` 表。查询在重建前不会因此触发 embedding。
+本地索引由 SQLite 指针与 profile 内嵌入式 LanceDB 组成，`index.sqlite3` 对应独立的 `index.lancedb` 数据目录。查询和索引构建通过 profile 文件锁保留代；旧代会在应用退出后通过下面的维护命令清理。旧 SQLite `vector_json` 索引不会自动迁移或用于查询，状态会要求重建；需从已确认 Markdown 预览并显式建立新索引。旧 SQLite 行会原样保留，新 profile 不再创建 `chunks/vector_json` 表。查询在重建前不会因此触发 embedding。首次使用固定的 `BAAI/bge-small-zh-v1.5` 模型时，由用户在设置页点击准备（约 95 MB），文件按固定 revision 与 SHA-256 校验；索引和排序均本机运行，不使用百炼密钥或付费服务计划。
 
 清理 LanceDB 旧代时先退出应用，再将 `<profile>/index.sqlite3` 替换为对应本机 profile 中的真实文件路径。此命令不会清理旧 SQLite `chunks/vector_json` 残留：
 
@@ -54,10 +80,12 @@ uv run python scripts/prune_local_index.py --index-db "/actual/profile/path/inde
 
 ## 文档导航
 
+- [助手接入与知识搜索交互原型](prototypes/mcp-workbench/README.md)：2026-10-23 设计探索，使用示例数据；独立预览入口与运行命令见原型说明，不替代当前产品。
+
 - 当前产品和验收状态：[PROGRESS](docs/implementation/PROGRESS.md)；本轮固定候选交接：[LATEST-IMPLEMENTATION](docs/handoff/LATEST-IMPLEMENTATION.md)。
 - 实现/验收入口：[AGENTS.md](AGENTS.md)、[实现手册](docs/handoff/IMPLEMENTER.md)、[测试手册](docs/handoff/TESTER.md)、[验收矩阵](docs/quality/ACCEPTANCE.md)。
 - 规格与实现边界：[产品规格](docs/product/PRODUCT-SPEC.md)、[前端指南](docs/product/FRONTEND-GUIDE.md)、[逐页规格](docs/product/FRONTEND-PAGE-SPECS.md)、[架构](docs/architecture/ARCHITECTURE.md)、[工作库契约](docs/contracts/WORKSPACE-v1.md)、[API 契约](docs/contracts/API-v1.md)。
-- Agent 接入：[MCP v1 契约](docs/contracts/MCP-v1.md)、[ADR 0028](docs/decisions/0028-local-mcp-agent-tools.md)。
+- Agent 接入：[MCP v1 契约](docs/contracts/MCP-v1.md)、[ADR 0028](docs/decisions/0028-local-mcp-agent-tools.md)；日历直读决议见 [ADR 0031](docs/decisions/0031-calendar-direct-read.md)。
 - [全部文档索引](docs/README.md)、[开发与 QA 报告索引](docs/quality/reports/README.md)、[完整 v1 实施与验收计划](docs/superpowers/plans/2026-10-09-summit-everything-v1.md)。
 
 SummitEverything 是独立实现；SummitWorkbench 与 SummitKnowledge 仅作只读参考，运行时不依赖旧应用。

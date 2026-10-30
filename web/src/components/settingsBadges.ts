@@ -9,6 +9,11 @@ import type { components } from '../api/generated'
 
 export type Settings = components['schemas']['SettingsSummary']
 export type Capability = components['schemas']['CapabilityState']
+export const unpreparedLocalModel: Settings['local_model'] = {
+  model: 'BAAI/bge-small-zh-v1.5', revision: '46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59',
+  dimensions: 512, token_limit: 512, download_size_bytes: 95_330_972,
+  state: 'not_prepared', downloaded_bytes: 0, progress_percent: 0, error_code: null,
+}
 
 export type SmokeCheckKey = 'deepseek_chat' | 'model_studio_embedding' | 'model_studio_rerank'
 export type SecretProvider = 'feishu_app' | 'deepseek' | 'dashscope'
@@ -39,11 +44,11 @@ export const capabilityLabels: Record<string, string> = {
  */
 export const disabledReasons: Record<string, { text: string; next: string }> = {
   offline_default: {
-    text: '当前使用离线 Fake；此路径不会访问真实 provider。',
-    next: '切换到 Real 并保存真实模型与本机密钥后，真实调用仍需每次预览并独立确认范围。',
+    text: '旧离线配置已迁移，真实服务尚未完成准备。',
+    next: '检查 DeepSeek 密钥、本地模型和有效索引；未就绪时不会发送问答请求。',
   },
   provider_not_configured: {
-    text: '已选 provider；真实模式与本机密钥尚未完成配置。',
+    text: '已选择服务；真实模式与本机密钥尚未完成配置。',
     next: '在本卡填入对应密钥并保存；保存设置不会联网，也不会自动发起检查。',
   },
   acceptance_plan_required: {
@@ -55,8 +60,8 @@ export const disabledReasons: Record<string, { text: string; next: string }> = {
     next: '写回继续禁用；普通任务对象不能当作写入成功的证据。',
   },
   stage_c_authorization_required: {
-    text: '飞书真实读取属于单独的 Stage C 授权范围，当前未授权。',
-    next: '需先单独授权真实范围并逐次预览确认，才会执行读取。',
+    text: '飞书身份尚未完成授权；日历读取还会核对本机身份和读取权限。',
+    next: '先完成对应身份的飞书连接；材料读取和导入仍需逐次预览确认。',
   },
 }
 
@@ -114,6 +119,8 @@ export function smokeCheckDisabled(
 export type FeishuStatusSummary = {
   mode: string
   authorized: boolean
+  refreshable?: boolean
+  calendar_ready?: boolean
   app_configured: boolean
   credential_error?: string | null
   user_identity_verified?: boolean
@@ -139,6 +146,8 @@ export function parseFeishuStatus(value: unknown): FeishuStatusSummary | null {
   return {
     mode: candidate.mode,
     authorized: candidate.authorized,
+    refreshable: candidate.refreshable === true,
+    calendar_ready: candidate.calendar_ready === true,
     app_configured: candidate.app_configured === true,
     credential_error: typeof candidate.credential_error === 'string' ? candidate.credential_error : null,
     user_identity_verified: candidate.user_identity_verified === true,
@@ -256,7 +265,7 @@ export function modelCardBadge(input: {
   if (!configured) {
     return {
       kind: 'unconfigured', label: '未配置',
-      hint: '还没有可用的真实模型配置与密钥。选择模型、填入密钥并保存后，再单独确认连接检查。',
+      hint: '还没有可用的真实模型配置与密钥。配置 DeepSeek 密钥和本地模型后，再按各自操作门使用。',
     }
   }
   if (input.mode === 'real') {
@@ -267,7 +276,7 @@ export function modelCardBadge(input: {
   }
   return {
     kind: 'configured', label: '已配置（尚未验证）',
-    hint: '配置已保存在本机，但当前是离线 Fake 模式；切换到 Real 后才能进行连接检查与真实调用。',
+    hint: '配置已保存在本机；使用前仍需满足真实 provider、密钥、本地模型与索引要求。',
   }
 }
 
@@ -313,10 +322,22 @@ export function feishuCardBadge(input: {
       hint: '本机存在飞书凭据但已无法读取。请在「今日 / 飞书日常」重新完成授权。',
     }
   }
+  if (status.credential_error === 'application_credential_missing') {
+    return {
+      kind: 'configured', label: '需补应用密钥',
+      hint: '现有用户授权仍保存在本机。续期需要匹配的飞书应用密钥；补齐 App ID 与应用密钥后即可继续使用，无需重新授权。',
+    }
+  }
   if (status.mode !== 'real') {
     return {
       kind: 'unconfigured', label: '未配置',
-      hint: '当前离线模式（Fake），不会访问飞书。切换到 Real、保存应用密钥并完成授权后才可能读取。',
+      hint: '真实飞书连接尚未准备好。完成应用配置与授权后才能读取。',
+    }
+  }
+  if (status.refreshable) {
+    return {
+      kind: 'authorized', label: '已授权，可续期',
+      hint: '本机保存了有效范围和未消费的续期凭据。下一次只读请求可尝试续期；失败时会提示重新授权。',
     }
   }
   if (status.authorized) {

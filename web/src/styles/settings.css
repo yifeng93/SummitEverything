@@ -1,0 +1,90 @@
+/* 设置：三张纵向卡；每张卡只有一个主操作，技术字段全部收进「高级与自定义」。 */
+
+.content-wrap.settings-view { max-width: 900px; }
+.settings-view .page-heading { align-items: center; margin-bottom: 12px; }
+.settings-mode-line { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 0 0 20px; color: var(--muted); font-size: var(--text-small); }
+.settings-mode-line .pill { font-weight: 600; }
+.settings-notice { margin: 0 0 14px; padding: 10px 12px; border-left: 3px solid var(--green); background: var(--green-wash); color: var(--ink); font-size: var(--text-small); line-height: 1.6; }
+
+/* 卡片与页头共用一条右边线：不再各自收窄，避免右侧参差。 */
+.settings-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; margin: 0; }
+/* 知识问答卡在卡片组之外，单独补齐与上方卡片的间距。 */
+.settings-ask-card { margin-top: 14px; }
+.settings-card { box-sizing: border-box; display: grid; min-width: 0; gap: 12px; padding: 20px 20px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.settings-card > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.settings-card .button-row { flex-wrap: wrap; }
+.settings-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.settings-card-head h2 { font-size: var(--text-body); }
+.settings-card-desc { margin: 0; color: var(--muted); font-size: var(--text-small); line-height: 1.65; }
+.settings-card-next { margin: 0; padding: 10px 12px; border-left: 3px solid var(--line-strong); border-radius: 0 6px 6px 0; background: var(--surface-2); color: var(--ink); font-size: var(--text-small); line-height: 1.6; }
+.card-footnote { margin: 6px 0 2px; padding-left: 10px; border-left: 2px solid var(--line); color: var(--quiet); font-size: var(--text-caption); line-height: 1.6; }
+.settings-card .settings-list { margin: 0; max-width: none; }
+.settings-card > .button.primary { justify-self: start; }
+
+/* 能力清单：名称 + 状态一行，原因一行；解释收进 card-more。 */
+.cap-list { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.cap-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.cap-row strong { color: var(--ink); font-size: var(--text-small); font-weight: 550; }
+.cap-state { color: var(--muted); font-size: var(--text-caption); white-space: nowrap; }
+.cap-reason { grid-column: 1 / -1; margin: 2px 0 0; color: var(--quiet); font-size: var(--text-caption); line-height: 1.55; }
+.card-more { border-top: 1px solid var(--line); padding-top: 2px; }
+/* 紧接能力列表的折叠区不再画第二条线：用列表最后一行的下边框作分隔即可。 */
+.cap-list + .card-more { border-top: 0; margin-top: -6px; }
+.card-more > summary { cursor: pointer; color: var(--muted); font-size: var(--text-caption); padding: 4px 0; }
+.card-more > summary:hover { color: var(--ink); }
+.card-more ul { margin: 6px 0 0; padding-left: 16px; display: grid; gap: 6px; color: var(--muted); font-size: var(--text-caption); line-height: 1.6; }
+.card-more li strong { color: var(--ink); font-weight: 600; margin-right: 6px; }
+
+.settings-list { margin: 0; border-top: 1px solid var(--line); }
+.settings-list div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: var(--text-small); }
+.settings-list strong { color: var(--ink); font-weight: 500; text-align: right; }
+
+/* 高级与自定义 */
+.settings-advanced-block { margin: 24px 0 0; padding: 0 16px 4px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-2); }
+.settings-advanced-block > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; color: var(--muted); font-size: var(--text-small); padding: 14px 0; }
+.settings-advanced-block > summary:hover { color: var(--ink); }
+.settings-advanced-block[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.advanced-chevron { flex: 0 0 auto; color: var(--quiet); transition: transform .12s; }
+.settings-advanced-block[open] .advanced-chevron { transform: rotate(180deg); }
+.provider-settings { display: grid; gap: 12px; max-width: none; margin: 14px 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.settings-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.settings-section-heading h2 { margin: 0; font-size: var(--text-body); }
+.settings-section-heading span, .settings-help { color: var(--muted); font-size: var(--text-caption); }
+.settings-help { margin: 0; line-height: 1.6; }
+.settings-field { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr); align-items: center; gap: 12px; }
+.settings-field, .settings-card-form { min-width: 0; }
+.settings-field > * { min-width: 0; max-width: 100%; }
+.settings-field > span { font-size: var(--text-small); color: var(--muted); }
+.settings-field input, .settings-field select { min-width: 0; width: 100%; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--ink); background: var(--surface); font: inherit; font-size: var(--text-small); }
+.settings-card-form { display: grid; gap: 12px; }
+.settings-check-block { border-top: 1px solid var(--line); padding-top: 14px; }
+.settings-danger-zone { border-color: var(--danger); }
+.settings-read-warning { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--danger-ink); border-radius: var(--radius); background: var(--danger-wash); color: var(--danger-ink); font-size: var(--text-small); line-height: 1.6; }
+.settings-read-warning p { margin: 0; }
+.secret-slot { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.secret-slot > label { display: grid; gap: 2px; color: var(--ink); font-size: var(--text-small); font-weight: 600; }
+.secret-slot > label span { color: var(--muted); font-size: var(--text-caption); font-weight: 400; line-height: 1.55; }
+.secret-slot input { width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font-size: var(--text-small); }
+.secret-slot small { color: var(--quiet); font-size: var(--text-caption); }
+.smoke-quota { width: 100%; border-collapse: collapse; font-size: var(--text-caption); }
+.smoke-quota th, .smoke-quota td { padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: left; color: var(--ink); }
+.smoke-quota th { color: var(--muted); font-weight: 600; }
+.settings-diag { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr); gap: 6px 14px; font-size: var(--text-small); }
+.settings-diag span { color: var(--muted); }
+.settings-diag strong { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.settings-confirm { display: grid; gap: 10px; padding: 14px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--accent-wash); }
+.settings-confirm strong { color: var(--ink); font-size: var(--text-small); }
+.settings-confirm ul { margin: 0; padding-left: 16px; color: var(--ink); font-size: var(--text-small); line-height: 1.7; }
+.conn-badge { flex: 0 0 auto; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); color: var(--muted); font-size: var(--text-caption); font-weight: 600; white-space: nowrap; }
+.conn-badge.ok { border-color: var(--green); background: var(--green-wash); color: var(--green); }
+.conn-badge.configured { border-color: var(--line-strong); background: var(--surface-2); color: var(--ink); }
+.conn-badge.failed { border-color: var(--danger); background: var(--danger-wash); color: var(--danger-ink); }
+.conn-badge.reauth { border-color: var(--warn); background: var(--warn-wash); color: var(--warn-ink); }
+.conn-badge.unreadable { border-style: dashed; background: var(--surface-2); color: var(--muted); }
+
+@media (max-width: 560px) {
+  .settings-card { padding: 16px 16px; }
+  .settings-field { grid-template-columns: 1fr; gap: 4px; }
+  .settings-diag { grid-template-columns: 1fr; gap: 4px; }
+  .settings-card-head { align-items: flex-start; flex-direction: column; }
+}

@@ -225,6 +225,34 @@ describe('守卫③ 字号下限（GUIDE §11 ③、§6.1）', () => {
   })
 })
 
+const RULE_SPACING = '守卫⑪ 间距刻度（UI-STANDARD §3）：padding / margin / gap 的裸 px 必须落在 0/2/4/6/8/10/12/14/16/20/24/28/32/36/40/44/48/64/72 上，或改用 var(--space-*)'
+
+/** 间距刻度：2px 半步 + 4px 主网格；不在刻度上的值必须显式修正，不能随手写 9/11/13。 */
+const SPACING_SCALE = new Set([0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 64, 72])
+
+describe('守卫⑪ 间距刻度（UI-STANDARD §3）', () => {
+  it('padding / margin / gap 的裸 px 值必须在刻度上', () => {
+    const offenders: string[] = []
+    for (const path of cssFiles()) {
+      for (const rule of parseCss(readFileSync(path, 'utf8'))) {
+        for (const declaration of rule.declarations) {
+          if (!/^(padding|margin|gap)(-(top|right|bottom|left|inline|block))?$/.test(declaration.property)) continue
+          const value = declaration.value
+          // 变量、calc、百分比与 auto 由 token 或布局决定，不在这一条里判断。
+          if (/var\(|calc\(|%|auto|vh|vw|ch/.test(value)) continue
+          for (const match of value.matchAll(/(-?\d*\.?\d+)\s*px/g)) {
+            const amount = Math.abs(Number(match[1]))
+            if (!SPACING_SCALE.has(amount)) {
+              offenders.push(`${webPath(path)}:${declaration.line} 「${rule.selectors.join(', ')}」 ${declaration.property}: ${value}`)
+            }
+          }
+        }
+      }
+    }
+    expect(offenders, RULE_SPACING).toEqual([])
+  })
+})
+
 describe('守卫① 裸色（GUIDE §11 ①、§6.1）', () => {
   const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/g
 
@@ -322,14 +350,23 @@ function declarationValue(
 
 describe('守卫⑧ 外壳几何与响应式（逐页规格 §0、GUIDE §8.1）', () => {
   const appCss = parseCss(readFileSync(join(SRC_ROOT, 'App.css'), 'utf8'))
-  const px = (value: string | undefined) => (value ? Number(value.match(/(-?\d*\.?\d+)px/)?.[1] ?? NaN) : NaN)
+  // 几何值现在可能写成 var(--control-*) / var(--space-*)：断言前先解析成像素。
+  const tokenCss = parseCss(readFileSync(join(SRC_ROOT, 'theme-tokens.css'), 'utf8'))
+  const px = (value: string | undefined) => {
+    if (!value) return NaN
+    const token = value.match(/var\((--[a-z0-9-]+)/)
+    const resolved = token ? declarationValue(tokenCss, ':root', token[1]) ?? '' : value
+    return Number(resolved.match(/(-?\d*\.?\d+)px/)?.[1] ?? NaN)
+  }
 
-  it('桌面：侧栏 200px、顶栏 62px、主内容 max-width 1200px、导航项高 44px', () => {
+  it('桌面：侧栏 200px、无顶栏、主内容 max-width 1200px、导航项高 32px', () => {
     expect(declarationValue(appCss, '.sidebar', 'width'), `${RULE_SHELL_GEOMETRY}；侧栏必须是 200px`).toBe('200px')
     expect(declarationValue(appCss, '.sidebar', 'flex'), `${RULE_SHELL_GEOMETRY}；侧栏不得被内容撑开`).toContain('200px')
-    expect(declarationValue(appCss, '.topbar', 'height'), `${RULE_SHELL_GEOMETRY}；顶栏必须是 62px`).toBe('62px')
+    expect(declarationValue(appCss, '.topbar', 'height'), `${RULE_SHELL_GEOMETRY}；外壳不再有顶栏（ADR 0025），页名由各页 h1 承担`).toBeUndefined()
     expect(declarationValue(appCss, '.content-wrap', 'max-width'), `${RULE_SHELL_GEOMETRY}；主内容区必须 max-width: 1200px 居中`).toBe('1200px')
-    expect(px(declarationValue(appCss, '.nav-item', 'min-height')), `${RULE_SHELL_GEOMETRY}；导航项每项高 44px`).toBeGreaterThanOrEqual(44)
+    // 一级与二级共用 32px 行高（2026-10-29 用户要求对齐）；触屏仍由 pointer: coarse 抬到 44。
+    expect(px(declarationValue(appCss, '.nav-item', 'min-height')), `${RULE_SHELL_GEOMETRY}；桌面导航项与二级菜单同高 32px`).toBe(32)
+    expect(px(declarationValue(appCss, '.nav-subitem', 'min-height')), `${RULE_SHELL_GEOMETRY}；二级菜单行高 32px`).toBe(32)
     expect(declarationValue(appCss, '.nav-item.active::before', 'width'), `${RULE_SHELL_GEOMETRY}；当前项左侧 3px 强调条`).toBe('3px')
   })
 

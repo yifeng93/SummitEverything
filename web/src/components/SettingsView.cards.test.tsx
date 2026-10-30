@@ -14,12 +14,12 @@ function capability(overrides: Partial<CapabilityState> = {}): CapabilityState {
 
 function settings(overrides: Record<string, unknown> = {}) {
   return {
-    mode: 'fake',
+    mode: 'real',
     model_studio_account_id: 'studio-default',
     feishu: { app_id: '', redirect_uri: '' },
-    llm: { provider: 'fake', model: null, account_id: 'default', enabled: false, max_output_tokens: 2048, reasoning_effort: 'low' },
-    embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.aliyuncs.com/compatible-mode/v1', enabled: false },
-    rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.aliyuncs.com/api/v1', enabled: false },
+    llm: { provider: 'local', model: null, account_id: 'default', enabled: false, max_output_tokens: 2048, reasoning_effort: 'low' },
+    embedding: { provider: 'local', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.aliyuncs.com/compatible-mode/v1', enabled: false },
+    rerank: { provider: 'local', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.aliyuncs.com/api/v1', enabled: false },
     capabilities: {},
     credential_status: { feishu_app: false, deepseek: false, dashscope: false },
     keychain_available: true,
@@ -109,19 +109,18 @@ it('renders the three main cards and keeps technical fields inside the collapsed
   expect(advanced).toBeTruthy()
   expect(advanced.open).toBe(false)
   expect(within(advanced).getByLabelText(/DeepSeek API Key/)).toBeTruthy()
-  expect(within(advanced).getByLabelText(/阿里云 Model Studio API Key/)).toBeTruthy()
+  expect(within(advanced).queryByLabelText(/阿里云 Model Studio API Key/)).toBeNull()
   expect(within(advanced).getByLabelText('飞书应用 App ID')).toBeTruthy()
   expect(within(advanced).getByRole('button', { name: '重新读取授权状态' })).toBeTruthy()
-  expect(within(advanced).getByLabelText('Embedding Base URL')).toBeTruthy()
-  expect(within(advanced).getByLabelText('Rerank API Base URL')).toBeTruthy()
-  expect(within(advanced).getByLabelText('Model Studio 账户标识')).toBeTruthy()
+  expect(within(advanced).queryByLabelText('Embedding Base URL')).toBeNull()
+  expect(within(advanced).queryByLabelText('Rerank API Base URL')).toBeNull()
+  expect(within(advanced).queryByLabelText('Model Studio 账户标识')).toBeNull()
   expect(within(advanced).getByLabelText('DeepSeek 账户标识')).toBeTruthy()
   expect(within(advanced).getByLabelText('回答长度上限（生成 token）')).toBeTruthy()
   expect(within(advanced).getByLabelText('回答推理预算')).toBeTruthy()
-  expect(within(advanced).getByText('中国大陆（当前已核对 endpoint）')).toBeTruthy()
-  expect(within(advanced).getByRole('table')).toBeTruthy()
-  expect(within(advanced).getByText('Embedding 配置')).toBeTruthy()
-  expect(within(advanced).getByText('已配置')).toBeTruthy()
+  expect(within(advanced).getByText(/向量化和结果排序均使用本地检索模型/)).toBeTruthy()
+  expect(within(advanced).queryByText(/dashscope\.aliyuncs\.com/)).toBeNull()
+  expect(within(advanced).getAllByText('真实连接').length).toBeGreaterThan(0)
   expect(within(advanced).queryByText('fingerprint')).toBeNull()
   expect(screen.queryByLabelText('Provider')).toBeNull()
   expect(Array.from(container.querySelectorAll('.settings-cards > .settings-card')).map((card) => card.getAttribute('aria-label')))
@@ -180,8 +179,8 @@ it('maps the four backend capability codes to business language with a next acti
   await waitForSettings()
   expect(await screen.findByText(/每次使用前需预览并确认本次范围/)).toBeTruthy()
   expect(screen.getByText(/下一步：在对应操作中先查看本次范围预览/)).toBeTruthy()
-  expect(screen.getByText(/当前使用离线 Fake；此路径不会访问真实 provider/)).toBeTruthy()
-  expect(screen.getByText(/已选 provider；真实模式与本机密钥尚未完成配置/)).toBeTruthy()
+  expect(screen.getByText(/旧离线配置已迁移，真实服务尚未完成准备/)).toBeTruthy()
+  expect(screen.getByText('已配置（尚未验证）')).toBeTruthy()
   expect(screen.getByText(/缺少可独立核实写入结果的方式，飞书任务写回保持关闭/)).toBeTruthy()
   expect(screen.getByText(/下一步：写回继续禁用/)).toBeTruthy()
   expect(screen.getByText('已配置，待本次确认')).toBeTruthy()
@@ -196,7 +195,7 @@ it('falls back to a next-action message for an unknown capability code', async (
 })
 
 it('maps AI model badges only when all three current capability checks pass', () => {
-  const none = { mode: 'fake' as const, credentials: {}, capabilities: {}, checkOutcomes: { deepseek_chat: 'none' as const, model_studio_embedding: 'none' as const, model_studio_rerank: 'none' as const } }
+  const none = { mode: 'real' as const, credentials: {}, capabilities: {}, checkOutcomes: { deepseek_chat: 'none' as const, model_studio_embedding: 'none' as const, model_studio_rerank: 'none' as const } }
   const empty = none
   expect(modelCardBadge(empty).kind).toBe('unconfigured')
 
@@ -263,13 +262,21 @@ it('maps the feishu card badge from the local status payload', () => {
   expect(unreadableCredential.kind).toBe('reauth')
   expect(unreadableCredential.label).toBe('需重新授权')
 
-  // 离线模式与完全未配置。
+  const missingAppSecret = feishuCardBadge({
+    keychainAvailable: true,
+    read: { state: 'loaded', status: feishuStatus({ refreshable: true, app_configured: false, credential_error: 'application_credential_missing' }) },
+  })
+  expect(missingAppSecret.kind).toBe('configured')
+  expect(missingAppSecret.label).toBe('需补应用密钥')
+  expect(missingAppSecret.hint).toContain('无需重新授权')
+
+  // 未配置的真实连接仍提供下一步操作指引。
   const offline = feishuCardBadge({
     keychainAvailable: true,
-    read: { state: 'loaded', status: feishuStatus({ mode: 'fake' }) },
+    read: { state: 'loaded', status: feishuStatus({ mode: 'real', authorized: false, app_configured: false }) },
   })
   expect(offline.kind).toBe('unconfigured')
-  expect(offline.hint).toContain('离线模式')
+  expect(offline.hint).toContain('还没有可用的飞书应用配置与授权')
 
   const nothing = feishuCardBadge({
     keychainAvailable: true,
@@ -346,9 +353,7 @@ it('shows an unreadable authorization status when the status request fails, with
   // 状态读取不算连接检查：没有 smoke POST，额度保持 0/1。
   expect(smokePosts(fetchMock)).toHaveLength(0)
   const advanced = container.querySelector('details.settings-advanced-block') as HTMLDetailsElement
-  const used = Array.from(advanced.querySelectorAll('.smoke-quota tbody tr td:nth-child(2)'))
-  expect(used).toHaveLength(3)
-  for (const cell of used) expect(cell.textContent).toBe('0')
+  expect(advanced.textContent).not.toContain('0/1')
 })
 
 it('treats a rejected status request the same way and keeps the reload affordance', async () => {

@@ -9,9 +9,10 @@ declare global {
 }
 
 /**
- * `mode` is forwarded because it carries real user intent: 新建 means first use
- * (the wizard may open), 打开已有 means the user is returning to a库 that may
- * already have been configured by an older build (see QA D-1).
+ * 第一步只有一个任务：新建或打开一个本机文件夹。
+ *
+ * `mode` 仍然随结果上抛，因为「新建」是首次使用、「打开已有」是回到旧库，
+ * 两者的落点不同（QA D-1）。界面只保留模式、名称、路径和主按钮。
  */
 export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace, mode: 'create' | 'open') => void }) {
   const [root, setRoot] = useState('')
@@ -19,6 +20,7 @@ export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace, m
   const [mode, setMode] = useState<'create' | 'open'>('create')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const canPickFolder = Boolean(window.webkit?.messageHandlers?.selectWorkspaceFolder)
 
   useEffect(() => {
     function receiveFolder(event: Event) {
@@ -45,7 +47,7 @@ export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace, m
         operation_id: newOperationId(),
       }), mode)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '无法打开工作库')
+      setError(cause instanceof Error ? cause.message : mode === 'create' ? '工作库没有创建成功。' : '工作库没有打开。')
     } finally {
       setBusy(false)
     }
@@ -54,40 +56,47 @@ export function WorkspaceGate({ onOpened }: { onOpened: (workspace: Workspace, m
   return (
     <main className="setup-screen">
       <div className="setup-card">
-        <div className="brand setup-brand">
+        <div className="setup-brand">
           <span className="brand-mark" aria-hidden="true">S</span>
-          <div><strong>SummitEverything</strong><span>本地知识工作台</span></div>
+          <strong>SummitEverything</strong>
         </div>
-        <p className="eyebrow">首次配置 · 第 1 步，共 5 步</p>
-        <p className="settings-card-next">先打开工作库，成功后会在这里继续模型与密钥配置。</p>
-        <h1>让工作资料成为<br />自己的知识。</h1>
-        <p className="lede">工作库保存在你选择的本机文件夹。试用时请使用隔离的模拟资料。</p>
+
+        <h1>{mode === 'create' ? '新建工作库' : '打开工作库'}</h1>
+
         <form onSubmit={submit} className="setup-form">
-          <fieldset className="mode-switch">
-            <legend>工作库操作</legend>
-            <label><input type="radio" checked={mode === 'create'} onChange={() => setMode('create')} /> 新建</label>
-            <label><input type="radio" checked={mode === 'open'} onChange={() => setMode('open')} /> 打开已有</label>
+          <fieldset className="setup-modes">
+            <legend className="sr-only">工作库操作</legend>
+            <label className={mode === 'create' ? 'active' : ''}>
+              <input type="radio" name="workspace-mode" checked={mode === 'create'} onChange={() => { setMode('create'); setError('') }} />
+              <span>新建</span>
+            </label>
+            <label className={mode === 'open' ? 'active' : ''}>
+              <input type="radio" name="workspace-mode" checked={mode === 'open'} onChange={() => { setMode('open'); setError('') }} />
+              <span>打开已有</span>
+            </label>
           </fieldset>
+
           {mode === 'create' && (
-            <div className="field">
+            <div className="setup-field">
               <label htmlFor="workspace-name">工作库名称</label>
-              <input id="workspace-name" required value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：个人模拟库" />
+              <input id="workspace-name" required autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：我的工作库" />
             </div>
           )}
-          <div className="field">
+
+          <div className="setup-field">
             <label htmlFor="workspace-path">文件夹路径</label>
-            <input id="workspace-path" required value={root} onChange={(event) => setRoot(event.target.value)} placeholder="/Users/you/Documents/MyKnowledge" />
-            <small id="workspace-path-help">在开发预览中输入完整本机路径。</small>
-            {window.webkit?.messageHandlers?.selectWorkspaceFolder && (
-              <button className="button secondary" type="button" onClick={chooseFolder}>选择文件夹…</button>
-            )}
+            <div className="setup-path">
+              <input id="workspace-path" required autoFocus={mode === 'open'} value={root} onChange={(event) => setRoot(event.target.value)} placeholder="/Users/you/Documents/Knowledge" />
+              {canPickFolder && <button className="button secondary" type="button" onClick={chooseFolder}>选择…</button>}
+            </div>
           </div>
+
           {error && <p role="alert" className="form-error">{error}</p>}
+
           <button className="button primary wide" disabled={busy}>
-            {busy ? '正在连接…' : mode === 'create' ? '创建本地工作库' : '打开工作库'}
+            {busy ? '正在打开…' : mode === 'create' ? '创建本地工作库' : '打开工作库'}
           </button>
         </form>
-        <div className="privacy-note"><span aria-hidden="true">●</span> 内容仅写入本机；导入材料不会自动成为正式知识。</div>
       </div>
     </main>
   )

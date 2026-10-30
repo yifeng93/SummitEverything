@@ -12,9 +12,10 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app, record_diagnostic
+from summit_everything.api.app import record_diagnostic
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.integrations.embedding import EmbeddingProviderError, FakeEmbedding
 from summit_everything.integrations.llm import LLMProviderError

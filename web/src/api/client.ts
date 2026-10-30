@@ -6,6 +6,7 @@ export type Workspace = components['schemas']['WorkspaceContext']
 export type Line = components['schemas']['LineRecord']
 export type Project = components['schemas']['ProjectRecord']
 export type Page = components['schemas']['PageSnapshot']
+export type PageDirectoryEntry = Omit<Page, 'body' | 'raw_sha256'> & { body?: string | null }
 export type IntakeItem = components['schemas']['IntakeItem']
 export type Draft = components['schemas']['Draft']
 export type ActionCandidate = components['schemas']['ActionCandidate']
@@ -13,6 +14,17 @@ export type SourceDetail = components['schemas']['SourceDetail']
 export type Citation = components['schemas']['Citation']
 export type IndexPlan = components['schemas']['IndexPlan']
 export type IndexResult = components['schemas']['IndexResult']
+
+/** `GET /index/status`：索引代与当前工作库的覆盖情况。 */
+export type IndexStatus = {
+  fingerprint: string | null
+  pages: number
+  chunks: number
+  state: 'ready' | 'stale' | 'not_ready'
+  current_pages: number
+  stale_pages: number
+  vector: 'simulated' | 'real' | 'unknown'
+}
 export type MutationResult = components['schemas']['MutationResult']
 
 export function indexUpdateMessage(status: MutationResult['index_update']): string | null {
@@ -79,7 +91,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     response = await fetch('/api/v1' + path, { ...init, headers })
   } catch (cause) {
     // 没拿到响应 = 本机服务不可达（拿到了 4xx/5xx 也算服务在跑）。
-    markServiceUnreachable()
+    const aborted = init?.signal?.aborted || (cause instanceof DOMException && cause.name === 'AbortError')
+    if (!aborted) markServiceUnreachable()
     if (tracked) failSave()
     throw cause
   }
@@ -103,7 +116,7 @@ export function sessionHeaders(initial?: HeadersInit): Headers {
 
 export const api = {
   oauthCallback,
-  get: <T>(path: string) => request<T>(path),
+  get: <T>(path: string, init?: RequestInit) => request<T>(path, init),
   post: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(payload) }),
   put: <T>(path: string, payload: unknown) =>

@@ -52,11 +52,16 @@ class HighestScoreReranker:
         return [(index, 10000.0 - index) for index in reversed(range(len(texts)))]
 
 
-def build_query(tmp_path: Path, pages: list[tuple[str, str, str]]):
+def build_query(
+    tmp_path: Path,
+    pages: list[tuple[str, str, str]],
+    *,
+    line_name: str = "活动运营线",
+):
     root = tmp_path / "workspace"
     profile = tmp_path / "profile"
     create_workspace(root, "C19 归一化", profile, "c19-normalization")
-    line = create_line(root, "活动运营线", "c19-line")
+    line = create_line(root, line_name, "c19-line")
     projects: dict[str, object] = {}
     for project_name, _, _ in pages:
         if project_name not in projects:
@@ -200,6 +205,95 @@ def excerpts(answer) -> str:
 
 def passages(answerer: RecordingAnswerer, index: int = 0) -> str:
     return "\n".join(item["excerpt"] for item in answerer.calls[index][1])
+
+
+def test_single_subject_carries_to_later_sentence_in_same_paragraph(tmp_path: Path) -> None:
+    body = "合成事实：活动于 2026-10-30 14:00 至 16:00，最多 24 人。集合地点：东门合成大厅。"
+    root, service, answerer = build_query(
+        tmp_path,
+        [("纸飞机读书会", "合成规则 dcb1aa2a", body)],
+        line_name="合成验收主线",
+    )
+
+    planned = scope(service, root, "活动的集合地点是什么？")
+    assert planned.explicit_subjects == ("活动",)
+    assert planned.required_pairs == (("活动", "term:集合地点"),)
+
+    answer = ask(service, root, "活动的集合地点是什么？", "fact")
+    assert len(answer.citations) == 1, answer.model_dump()
+    assert "集合地点：东门合成大厅" in excerpts(answer)
+    assert answerer.calls
+
+
+def test_single_subject_cannot_carry_across_competing_object_in_same_paragraph(
+    tmp_path: Path,
+) -> None:
+    root, service, answerer = build_query(
+        tmp_path,
+        [
+            (
+                "纸飞机读书会",
+                "合成记录",
+                "活动于 2026-10-30 举行。赤陶活动集合地点：西门大厅。",
+            ),
+            ("赤陶活动", "赤陶活动地点", "赤陶活动集合地点：西门大厅。"),
+        ],
+        line_name="合成验收主线",
+    )
+
+    answer = ask(service, root, "活动的集合地点是什么？", "fact")
+    assert answer.citations == [], answer.model_dump()
+    assert answerer.calls == []
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "活动于 2026-10-30 举行。\n\n集合地点：东门大厅。",
+        "- 活动于 2026-10-30 举行。\n- 集合地点：东门大厅。",
+        "活动于 2026-10-30 举行。\n### 地点记录\n集合地点：东门大厅。",
+        "| 项目 | 说明 |\n|---|---|\n| 活动 | 2026-10-30 举行 |\n| 集合地点 | 东门大厅 |",
+    ],
+    ids=["separate-paragraphs", "separate-list-items", "new-heading", "separate-table-rows"],
+)
+def test_single_subject_does_not_carry_across_paragraph_or_list_item(
+    tmp_path: Path, body: str
+) -> None:
+    root, service, answerer = build_query(
+        tmp_path,
+        [("纸飞机读书会", "合成记录", body)],
+        line_name="合成验收主线",
+    )
+
+    answer = ask(service, root, "活动的集合地点是什么？", "fact")
+    assert answer.citations == [], answer.model_dump()
+    assert answerer.calls == []
+
+
+def test_two_subject_topics_keep_their_own_scope_within_one_paragraph(tmp_path: Path) -> None:
+    body = "枫湾活动预算上限为七万二千元。玄石展览访客设备领用须登记姓名。"
+    root, service, answerer = build_query(
+        tmp_path,
+        [
+            ("枫湾活动", "经费与访客设备", body),
+            ("玄石展览", "访客设备", "玄石展览访客设备领用须登记姓名。"),
+        ],
+        line_name="合成验收主线",
+    )
+    question = "比较枫湾活动预算与玄石展览的访客设备领用办法"
+
+    planned = scope(service, root, question)
+    assert set(planned.required_pairs) == {
+        ("枫湾活动", "budget"),
+        ("玄石展览", "term:访客设备领用"),
+    }
+
+    answer = ask(service, root, question, "comparison")
+    text = excerpts(answer)
+    assert "预算上限为七万二千元" in text, answer.model_dump()
+    assert "访客设备领用须登记姓名" in text, answer.model_dump()
+    assert answer.missing_information == []
+    assert answerer.calls
 
 
 DEVICE_PAGES = [

@@ -8,8 +8,29 @@ import WebKit
 import NativeUploadPolicy
 
 private let apiPort = 18793
-private let localOrigin = "http://127.0.0.1:\(apiPort)"
-private let healthURL = URL(string: "\(localOrigin)/api/v1/health")!
+private let productionOrigin = "http://127.0.0.1:\(apiPort)"
+
+/// Development override: `SUMMIT_DEV_SERVER_URL=http://127.0.0.1:5173/` makes the
+/// shell skip the bundled backend and load the Vite dev server instead. Vite keeps
+/// its HMR websocket, the API is proxied by Vite, so no rebuild or reinstall is
+/// needed while iterating on the UI. Only loopback URLs are accepted.
+private struct DevTarget {
+    let baseURL: URL
+    let origin: String
+    let port: Int
+}
+
+private let devTarget: DevTarget? = {
+    guard let raw = ProcessInfo.processInfo.environment["SUMMIT_DEV_SERVER_URL"],
+          let url = URL(string: raw),
+          url.scheme == "http",
+          url.host == "127.0.0.1" || url.host == "localhost" else { return nil }
+    // Normalize to 127.0.0.1 so the navigation policy, upload policy and the
+    // injected dev URL all agree even when the caller wrote "localhost".
+    let port = url.port ?? 80
+    let origin = "http://127.0.0.1:\(port)"
+    return DevTarget(baseURL: URL(string: origin + "/")!, origin: origin, port: port)
+}()
 
 struct BuildIdentity: Decodable {
     let source_sha: String
@@ -37,8 +58,24 @@ private struct InternalWindow: View {
 
     var body: some View {
         Group {
-            if let identity = appDelegate.identity, let token = appDelegate.sessionToken {
-                LocalWebView(identity: identity, runID: appDelegate.runID, token: token)
+            if let target = devTarget {
+                LocalWebView(
+                    baseURL: target.baseURL,
+                    origin: target.origin,
+                    port: target.port,
+                    identity: nil,
+                    runID: appDelegate.runID,
+                    token: nil
+                )
+            } else if let identity = appDelegate.identity, let token = appDelegate.sessionToken {
+                LocalWebView(
+                    baseURL: URL(string: productionOrigin + "/")!,
+                    origin: productionOrigin,
+                    port: apiPort,
+                    identity: identity,
+                    runID: appDelegate.runID,
+                    token: token
+                )
             } else {
                 ProgressView("正在启动 SummitEverything Internal…")
                     .frame(minWidth: 600, minHeight: 360)
@@ -58,6 +95,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if devTarget != nil {
+            // Development mode: the API and Vite are started by scripts/run_dev.py.
+            return
+        }
         do {
             let resources = Bundle.main.resourceURL!
             identity = try JSONDecoder().decode(BuildIdentity.self, from: Data(contentsOf: resources.appendingPathComponent("build-info.json")))
@@ -151,11 +192,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 }
 
 private struct LocalWebView: NSViewRepresentable {
-    let identity: BuildIdentity
+    let baseURL: URL
+    let origin: String
+    let port: Int
+    let identity: BuildIdentity?
     let runID: String
-    let token: String
+    let token: String?
 
-    func makeCoordinator() -> Coordinator { Coordinator(identity: identity, runID: runID, token: token) }
+    func makeCoordinator() -> Coordinator {
+        Coordinator(baseURL: baseURL, origin: origin, port: port, identity: identity, runID: runID, token: token)
+    }
 
     func makeNSView(context: Context) -> WKWebView {
         let controller = WKUserContentController()
@@ -174,16 +220,22 @@ private struct LocalWebView: NSViewRepresentable {
     func updateNSView(_ view: WKWebView, context: Context) {}
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, URLSessionTaskDelegate {
-        private let identity: BuildIdentity
+        private let baseURL: URL
+        private let origin: String
+        private let port: Int
+        private let identity: BuildIdentity?
         private let runID: String
-        private let token: String
+        private let token: String?
         weak var webView: WKWebView?
         private var readinessTimer: Timer?
         private var attempts = 0
         private var checkingReadiness = false
         private lazy var session = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: nil)
 
-        init(identity: BuildIdentity, runID: String, token: String) {
+        init(baseURL: URL, origin: String, port: Int, identity: BuildIdentity?, runID: String, token: String?) {
+            self.baseURL = baseURL
+            self.origin = origin
+            self.port = port
             self.identity = identity
             self.runID = runID
             self.token = token
@@ -200,18 +252,39 @@ private struct LocalWebView: NSViewRepresentable {
                 }
                 guard !self.checkingReadiness else { return }
                 self.checkingReadiness = true
-                self.checkHealth(timer: timer)
+                if self.identity == nil {
+                    self.checkDevServer(timer: timer)
+                } else {
+                    self.checkHealth(timer: timer)
+                }
             }
         }
 
+        /// Development: Vite may still be starting. Do not require the bundled
+        /// build identity; load as soon as the dev server answers.
+        private func checkDevServer(timer: Timer) {
+            var request = URLRequest(url: baseURL, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 1)
+            request.httpMethod = "GET"
+            session.dataTask(with: request) { [weak self] _, response, _ in
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    self.checkingReadiness = false
+                    guard timer.isValid, (response as? HTTPURLResponse)?.statusCode == 200 else { return }
+                    timer.invalidate()
+                    self.readinessTimer = nil
+                    self.webView?.load(URLRequest(url: self.baseURL, cachePolicy: .reloadIgnoringLocalCacheData))
+                }
+            }.resume()
+        }
+
         private func checkHealth(timer: Timer) {
-            var request = URLRequest(url: healthURL, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 1)
+            var request = URLRequest(url: URL(string: origin + "/api/v1/health")!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 1)
             request.httpMethod = "GET"
             session.dataTask(with: request) { [weak self] data, response, _ in
                 guard let self else { return }
                 let payload = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
                 let matches = (response as? HTTPURLResponse)?.statusCode == 200
-                    && response?.url == healthURL
+                    && response?.url == URL(string: self.origin + "/api/v1/health")!
                     && payload.map { health in
                         self.healthIdentity.allSatisfy { key, value in
                             guard let actual = health[key] else { return false }
@@ -227,28 +300,30 @@ private struct LocalWebView: NSViewRepresentable {
                     DispatchQueue.main.async { self.checkingReadiness = false }
                     return
                 }
-                self.session.dataTask(with: URLRequest(url: URL(string: localOrigin + "/")!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 1)) { [weak self] _, webResponse, _ in
+                self.session.dataTask(with: URLRequest(url: URL(string: self.origin + "/")!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 1)) { [weak self] _, webResponse, _ in
                     DispatchQueue.main.async {
                         guard let self else { return }
                         self.checkingReadiness = false
                         guard timer.isValid, (webResponse as? HTTPURLResponse)?.statusCode == 200,
-                              webResponse?.url?.absoluteString == localOrigin + "/" else { return }
+                              webResponse?.url?.absoluteString == self.origin + "/" else { return }
                         timer.invalidate()
                         self.readinessTimer = nil
-                        guard let tokenData = try? JSONSerialization.data(withJSONObject: self.token, options: .fragmentsAllowed),
+                        guard let token = self.token,
+                              let tokenData = try? JSONSerialization.data(withJSONObject: token, options: .fragmentsAllowed),
                               let tokenLiteral = String(data: tokenData, encoding: .utf8) else { return }
                         let script = WKUserScript(source: "Object.defineProperty(window, '__SUMMIT_SESSION_TOKEN__', { value: \(tokenLiteral), writable: false, configurable: false });", injectionTime: .atDocumentStart, forMainFrameOnly: true)
                         self.webView?.configuration.userContentController.addUserScript(script)
-                        self.webView?.load(URLRequest(url: URL(string: localOrigin + "/")!, cachePolicy: .reloadIgnoringLocalCacheData))
+                        self.webView?.load(URLRequest(url: URL(string: self.origin + "/")!, cachePolicy: .reloadIgnoringLocalCacheData))
                     }
                 }.resume()
             }.resume()
         }
 
         private var healthIdentity: [String: Any] {
-            ["service": "ready", "run_id": runID, "source_sha": identity.source_sha,
-             "dirty": identity.dirty, "build_id": identity.build_id, "app_version": identity.app_version,
-             "frontend_sha256": identity.frontend_sha256, "dependencies_sha256": identity.dependencies_sha256]
+            guard let identity else { return [:] }
+            return ["service": "ready", "run_id": runID, "source_sha": identity.source_sha,
+                    "dirty": identity.dirty, "build_id": identity.build_id, "app_version": identity.app_version,
+                    "frontend_sha256": identity.frontend_sha256, "dependencies_sha256": identity.dependencies_sha256]
         }
 
         func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
@@ -267,7 +342,7 @@ private struct LocalWebView: NSViewRepresentable {
                 originPort: frame.securityOrigin.port,
                 frameURL: frame.request.url,
                 pageURL: candidate.url,
-                expectedPort: apiPort
+                expectedPort: port
             )
         }
 
@@ -324,8 +399,7 @@ private struct LocalWebView: NSViewRepresentable {
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             guard let url = navigationAction.request.url else { decisionHandler(.cancel); return }
-            if url.absoluteString == localOrigin + "/" ||
-                (url.scheme == "http" && url.host == "127.0.0.1" && url.port == apiPort) {
+            if isTrusted(url) {
                 decisionHandler(.allow)
             } else if navigationAction.navigationType == .linkActivated, allowedOAuth(url), navigationAction.targetFrame == nil {
                 NSWorkspace.shared.open(url)
@@ -337,11 +411,15 @@ private struct LocalWebView: NSViewRepresentable {
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
                      decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            if let url = navigationResponse.response.url, url.scheme == "http", url.host == "127.0.0.1", url.port == apiPort {
+            if let url = navigationResponse.response.url, isTrusted(url) {
                 decisionHandler(.allow)
             } else {
                 decisionHandler(.cancel)
             }
+        }
+
+        private func isTrusted(_ url: URL) -> Bool {
+            url.scheme == "http" && url.host == "127.0.0.1" && url.port == port
         }
 
         private func allowedOAuth(_ url: URL) -> Bool {
@@ -368,8 +446,10 @@ private struct LocalWebView: NSViewRepresentable {
 
         private func showReadinessError() {
             let alert = NSAlert()
-            alert.messageText = "本地应用服务未就绪"
-            alert.informativeText = "请保留此错误状态并联系维护者。候选包身份或本机端口可能不匹配。"
+            alert.messageText = identity == nil ? "开发服务器未就绪" : "本地应用服务未就绪"
+            alert.informativeText = identity == nil
+                ? "请确认 scripts/run_dev.py 正在运行，且 Vite 端口与 SUMMIT_DEV_SERVER_URL 一致。"
+                : "请保留此错误状态并联系维护者。候选包身份或本机端口可能不匹配。"
             alert.runModal()
             NSApp.terminate(nil)
         }

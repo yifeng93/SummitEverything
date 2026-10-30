@@ -4,80 +4,76 @@ import { SettingsView } from './SettingsView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
-it('copies the agent setup prompt from settings without opening the manual wizard', async () => {
-  const state = { mode: 'fake', feishu: { app_id: '', redirect_uri: '' }, llm: { provider: 'fake', model: null, account_id: 'default', enabled: false }, embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid', enabled: false }, rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid', enabled: false }, credential_status: {}, capabilities: {}, keychain_available: false }
+it('copies the same agent setup prompt from settings without opening the manual wizard', async () => {
+  const state = {
+    mode: 'fake', feishu: { app_id: '', redirect_uri: '' },
+    llm: { provider: 'fake', model: null, account_id: 'default', enabled: false },
+    embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid', enabled: false },
+    rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://example.invalid', enabled: false },
+    credential_status: {}, capabilities: {}, keychain_available: false,
+  }
   const fetchMock = vi.fn(async (_input: RequestInfo | URL) => ({ ok: true, status: 200, json: async () => state }))
   const writeText = vi.fn().mockResolvedValue(undefined)
   vi.stubGlobal('fetch', fetchMock)
   vi.stubGlobal('navigator', { clipboard: { writeText } })
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
   fireEvent.click(await screen.findByRole('button', { name: '连接飞书' }))
-  expect(await screen.findByText(/已复制，粘贴到 Codex \/ WorkBuddy/)).toBeTruthy()
+  expect(await screen.findByRole('button', { name: /已复制/ })).toBeTruthy()
   expect(writeText).toHaveBeenCalledTimes(1)
   expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/authorization'))).toBe(false)
+  expect(screen.queryByText(/步骤指示/)).toBeNull()
 })
 
-it('persists a changed Model Studio account id through the settings form', async () => {
+it('offers an explicit migration from the disabled cloud search provider', async () => {
   const state = {
     mode: 'fake', model_studio_account_id: 'original-account',
     feishu: { app_id: '', redirect_uri: '' },
     llm: { provider: 'fake', model: null, account_id: 'default', enabled: false },
-    embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', enabled: false },
-    rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/api/v1', enabled: false },
+    embedding: { provider: 'dashscope', model: 'text-embedding-v3', region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', enabled: true },
+    rerank: { provider: 'dashscope', model: 'gte-rerank-v2', region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/api/v1', enabled: true },
     credential_status: {}, capabilities: {}, keychain_available: false,
   }
   let patch: Record<string, unknown> | null = null
-  vi.stubGlobal('fetch', vi.fn(async (_url: unknown, init?: RequestInit) => {
+  const fetchMock = vi.fn(async (_url: unknown, init?: RequestInit) => {
     if (init?.method === 'PATCH') {
       patch = JSON.parse(String(init.body))
+      Object.assign(state, patch)
     }
     return { ok: true, status: 200, json: async () => state }
-  }))
+  })
+  vi.stubGlobal('fetch', fetchMock)
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  fireEvent.click(screen.getByText(/高级与自定义/))
-  const field = await screen.findByLabelText('Model Studio 账户标识')
-  fireEvent.change(field, { target: { value: 'new-account' } })
-  fireEvent.click(screen.getByRole('button', { name: '保存 AI 模型设置' }))
+  fireEvent.click(await screen.findByRole('button', { name: '切换到本地检索' }))
   await waitFor(() => expect(patch).not.toBeNull())
-  expect(patch).toHaveProperty('model_studio_account_id', 'new-account')
+  expect(patch).toMatchObject({
+    embedding: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', dimensions: 512, enabled: true },
+    rerank: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', dimensions: 512, enabled: true },
+  })
+  expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE' || init?.method === 'PUT')).toBe(false)
+  expect(screen.getByText(/原有云端密钥仍留在本机/)).toBeTruthy()
 })
 
-it('saves the account id and the matching API key in one card submit', async () => {
+it('does not expose legacy cloud search credentials or offer their deletion', async () => {
   const state = {
     mode: 'fake',
     model_studio_account_id: 'original-account',
     feishu: { app_id: '', redirect_uri: '' },
     llm: { provider: 'fake', model: null, account_id: 'default', enabled: false },
-    embedding: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', enabled: false },
-    rerank: { provider: 'fake', model: null, region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/api/v1', enabled: false },
-    credential_status: { feishu_app: false, deepseek: false, dashscope: false },
+    embedding: { provider: 'dashscope', model: 'text-embedding-v3', region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', enabled: true },
+    rerank: { provider: 'dashscope', model: 'gte-rerank-v2', region: 'cn', dimensions: 1024, base_url: 'https://dashscope.aliyuncs.com/api/v1', enabled: true },
+    credential_status: { feishu_app: false, deepseek: false, dashscope: true },
     capabilities: {},
     keychain_available: true,
   }
-  let accountId: string | null = null
-  const methods: string[] = []
-  vi.stubGlobal('fetch', vi.fn(async (_url: unknown, init?: RequestInit) => {
-    const method = init?.method ?? 'GET'
-    methods.push(method)
-    if (method === 'PATCH') {
-      Object.assign(state, JSON.parse(String(init.body)))
-    }
-    if (method === 'PUT') {
-      accountId = JSON.parse(String(init.body)).account_id
-      state.credential_status.dashscope = true
-    }
-    return { ok: true, status: 200, json: async () => state }
-  }))
+  const fetchMock = vi.fn(async (_url: unknown, _init?: RequestInit) => ({ ok: true, status: 200, json: async () => state }))
+  vi.stubGlobal('fetch', fetchMock)
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  fireEvent.click(screen.getByText(/高级与自定义/))
-  fireEvent.change(await screen.findByLabelText('Model Studio 账户标识'), { target: { value: 'new-account' } })
-  fireEvent.change(screen.getByLabelText(/阿里云 Model Studio API Key/), { target: { value: 'synthetic-key' } })
-  // 录入密钥不再需要先单独保存账户标识。
-  expect(methods).not.toContain('PUT')
-  fireEvent.click(screen.getByRole('button', { name: '保存 AI 模型设置' }))
-  await waitFor(() => expect(accountId).toBe('new-account'))
-  expect(methods.indexOf('PATCH')).toBeGreaterThanOrEqual(0)
-  expect(methods.indexOf('PATCH')).toBeLessThan(methods.indexOf('PUT'))
+  fireEvent.click(await screen.findByText(/高级与自定义/))
+  expect(screen.queryByLabelText('Model Studio 账户标识')).toBeNull()
+  expect(screen.queryByLabelText(/阿里云 Model Studio API Key/)).toBeNull()
+  expect(screen.queryByRole('button', { name: '删除 Model Studio 密钥' })).toBeNull()
+  expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
+  expect(state.credential_status.dashscope).toBe(true)
 })
 
 it('asks for an explicit range confirmation before calling the fixed DeepSeek smoke route', async () => {
@@ -100,7 +96,7 @@ it('asks for an explicit range confirmation before calling the fixed DeepSeek sm
   })
   vi.stubGlobal('fetch', fetchMock)
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  fireEvent.click(screen.getByText(/高级与自定义/))
+  fireEvent.click(await screen.findByText(/高级与自定义/))
   const button = await screen.findByRole('button', { name: 'DeepSeek Chat（剩余 1）' })
   expect((button as HTMLButtonElement).disabled).toBe(false)
   fireEvent.click(button)
@@ -118,7 +114,6 @@ it('asks for an explicit range confirmation before calling the fixed DeepSeek sm
 
 it.each([
   ['deepseek', '删除 DeepSeek 密钥'],
-  ['dashscope', '删除 Model Studio 密钥'],
   ['feishu_app', '删除飞书应用密钥'],
 ] as const)('does not delete the %s credential until destructive confirmation is accepted', async (provider, buttonLabel) => {
   const state = {
@@ -133,7 +128,7 @@ it.each([
   const fetchMock = vi.fn(async (_url: unknown, _init?: RequestInit) => ({ ok: true, status: 200, json: async () => state }))
   vi.stubGlobal('fetch', fetchMock)
   render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
-  fireEvent.click(screen.getByText(/高级与自定义/))
+  fireEvent.click(await screen.findByText(/高级与自定义/))
   fireEvent.click(await screen.findByRole('button', { name: buttonLabel }))
   const dialog = await screen.findByRole('dialog', { name: '删除所选本机密钥？' })
   expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: '取消' }))

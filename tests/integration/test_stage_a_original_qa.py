@@ -9,9 +9,9 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID, uuid4
 
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 
-from summit_everything.api.app import create_app
 from summit_everything.domain.content import RetrievalPurpose
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.feishu.provider import UserCredentials
@@ -76,7 +76,7 @@ def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Pat
         operation_id="initial-overview-write",
     )
     index = QueryService(IndexStore(tmp_path / "profile" / workspace_id / "index.sqlite3"))
-    index.rebuild(root, fingerprint="fake-qa-v1")
+    index.rebuild(root, fingerprint="summit-fake-embedding-v1")
     before = api.get(f"/api/v1/pages/{ids['overview']}").json()
     response = api.post(
         f"/api/v1/projects/{ids['project']}/overview/confirmations",
@@ -100,7 +100,7 @@ def test_a01_overview_title_update_preserves_validity_and_metadata(tmp_path: Pat
     answer = index.query(
         root,
         "鲸蓝九七站发生了什么？",
-        fingerprint="fake-qa-v1",
+        fingerprint="summit-fake-embedding-v1",
         purpose=RetrievalPurpose.CURRENT,
     )
     citation_ids = {str(c.page_id) for c in answer.citations}

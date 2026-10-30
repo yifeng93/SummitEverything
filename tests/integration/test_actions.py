@@ -3,9 +3,8 @@
 from pathlib import Path
 from uuid import uuid4
 
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
-
-from summit_everything.api.app import create_app
 
 PREFIX = "/api/v1/actions"
 TASKS = "/api/v1/integrations/feishu/tasks"
@@ -13,7 +12,9 @@ TASKS = "/api/v1/integrations/feishu/tasks"
 
 def client(tmp_path: Path, *, root: Path | None = None, provider=None) -> TestClient:
     app = create_app(
-        session_token=str(uuid4()), profile_root=tmp_path / "profile", feishu_provider=provider
+        session_token=str(uuid4()),
+        profile_root=tmp_path / "profile",
+        feishu_provider=provider,
     )
     c = TestClient(
         app,

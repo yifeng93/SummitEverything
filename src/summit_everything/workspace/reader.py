@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+from collections import OrderedDict
+from copy import deepcopy
 from datetime import date, datetime
 from pathlib import Path
+from threading import Event, Lock
 from typing import Any, Literal, cast
 from uuid import UUID
 
@@ -22,6 +25,22 @@ from summit_everything.workspace.manifest import WorkspaceError, _safe_directory
 StorageName = Literal["formal", "source", "draft", "system"]
 ApprovalState = Literal["confirmed", "pending", "invalid"]
 KINDS = {"project_overview", "object", "case", "topic", "decision", "log", "thought"}
+_PARSE_CACHE_MAX_BYTES = 32 * 1024 * 1024
+_PARSE_CACHE_MAX_PAGE_BYTES = 256 * 1024
+_PARSE_CACHE_MAX_ENTRIES = 512
+_parse_cache: OrderedDict[bytes, tuple[dict[str, Any], str]] = OrderedDict()
+_parse_cache_size = 0
+_parse_cache_lock = Lock()
+_parse_inflight: dict[bytes, Event] = {}
+
+# 页目录级缓存：一次请求要把全部页面读一遍，154 页就是 154 次文件读。
+# 只缓存「原始字节」而不是 PageSnapshot：快照仍按调用重新构建，调用方可以放心修改返回值。
+# 失效签名用 (路径, mtime_ns, size, ctime_ns)：同 mtime 同大小的外部改写也会被 ctime 抓到。
+_dir_cache: dict[
+    tuple[str, str], tuple[tuple[tuple[str, int, int, int], ...], dict[Path, bytes]]
+] = {}
+_dir_cache_lock = Lock()
+_DIR_CACHE_WORKSPACES = 4
 
 
 def _yaml_value(value: Any) -> Any:
@@ -34,7 +53,7 @@ def _yaml_value(value: Any) -> Any:
     return value
 
 
-def _split_markdown(raw: bytes) -> tuple[dict[str, Any], str]:
+def _parse_markdown(raw: bytes) -> tuple[dict[str, Any], str]:
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
@@ -54,6 +73,45 @@ def _split_markdown(raw: bytes) -> tuple[dict[str, Any], str]:
     if not isinstance(metadata, dict):
         raise WorkspaceError("Markdown frontmatter must be an object")
     return _yaml_value(metadata), "".join(lines[end + 1 :])
+
+
+def _split_markdown(raw: bytes) -> tuple[dict[str, Any], str]:
+    # Every call reads bytes from disk. Cache only parsed frontmatter/body, keyed
+    # by exact bytes; path, manifest, qualification and digests are recomputed.
+    global _parse_cache_size
+    if len(raw) > _PARSE_CACHE_MAX_PAGE_BYTES:
+        return _parse_markdown(raw)
+    while True:
+        with _parse_cache_lock:
+            cached = _parse_cache.get(raw)
+            if cached is not None:
+                _parse_cache.move_to_end(raw)
+                return deepcopy(cached[0]), cached[1]
+            event = _parse_inflight.get(raw)
+            if event is None:
+                event = Event()
+                _parse_inflight[raw] = event
+                owner = True
+            else:
+                owner = False
+        if owner:
+            try:
+                parsed = _parse_markdown(raw)
+                with _parse_cache_lock:
+                    _parse_cache[raw] = parsed
+                    _parse_cache_size += len(raw)
+                    while (
+                        _parse_cache_size > _PARSE_CACHE_MAX_BYTES
+                        or len(_parse_cache) > _PARSE_CACHE_MAX_ENTRIES
+                    ) and _parse_cache:
+                        evicted_raw, _ = _parse_cache.popitem(last=False)
+                        _parse_cache_size -= len(evicted_raw)
+                return deepcopy(parsed[0]), parsed[1]
+            finally:
+                with _parse_cache_lock:
+                    _parse_inflight.pop(raw, None)
+                    event.set()
+        event.wait()
 
 
 def _expected_location(manifest: WorkspaceManifest, metadata: dict[str, Any]) -> StorageName:
@@ -200,10 +258,21 @@ def list_pages(root: Path) -> list[PageSnapshot]:
     except WorkspaceWriteConflict as exc:
         raise WorkspaceError(str(exc), 409) from exc
     manifest = load_manifest(root)
+    paths = list(_page_paths(root, manifest))
+    signature = _directory_signature(paths)
+    key = (str(root), str(manifest.workspace_id))
+    with _dir_cache_lock:
+        cached = _dir_cache.get(key)
+    cached_bytes = cached[1] if cached is not None and cached[0] == signature else None
     pages: list[PageSnapshot] = []
     seen: set[UUID] = set()
-    for path in _page_paths(root, manifest):
-        raw = path.read_bytes()
+    fresh_bytes: dict[Path, bytes] = {}
+    for path in paths:
+        if cached_bytes is not None:
+            raw = cached_bytes[path]
+        else:
+            raw = path.read_bytes()
+            fresh_bytes[path] = raw
         metadata, body = _split_markdown(raw)
         area = _validate_location(root, manifest, path, metadata)
         if area != "formal":
@@ -213,7 +282,24 @@ def list_pages(root: Path) -> list[PageSnapshot]:
             raise WorkspaceError("Workspace contains duplicate page IDs")
         seen.add(snapshot.page_id)
         pages.append(snapshot)
+    if cached_bytes is None:
+        with _dir_cache_lock:
+            _dir_cache[key] = (signature, fresh_bytes)
+            while len(_dir_cache) > _DIR_CACHE_WORKSPACES:
+                _dir_cache.pop(next(iter(_dir_cache)))
     return pages
+
+
+def _directory_signature(paths: list[Path]) -> tuple[tuple[str, int, int, int], ...]:
+    signature: list[tuple[str, int, int, int]] = []
+    for path in paths:
+        try:
+            stat = path.stat()
+        except OSError:
+            signature.append((str(path), -1, -1, -1))
+            continue
+        signature.append((str(path), stat.st_mtime_ns, stat.st_size, stat.st_ctime_ns))
+    return tuple(signature)
 
 
 def read_page(root: Path, page_id: UUID) -> PageSnapshot:

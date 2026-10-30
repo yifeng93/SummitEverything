@@ -17,6 +17,7 @@
 - [全 v1 实施计划](superpowers/plans/2026-10-09-summit-everything-v1.md)：阶段任务、测试与退出门；完成状态以 PROGRESS 为准。
 - [Provider 协议矩阵](architecture/PROVIDER-PROTOCOL-MATRIX.md)与[旧项目复用地图](architecture/REUSE-MAP.md)
 - [架构与产品决策记录](decisions/)
+- [ADR 0032：真实 provider 交付与连接恢复](decisions/0032-real-provider-delivery.md)：替代正常启动默认 Fake，并说明飞书日历续期与问答就绪门。
 
 ## 历史记录
 

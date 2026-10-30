@@ -1,16 +1,39 @@
+import { StrictMode } from 'react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { TodayView } from './TodayView'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+type TestResponse = { ok: boolean; status: number; json: () => Promise<unknown>; clone?: () => { json: () => Promise<unknown> } }
+type TestFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<TestResponse>
+
+function stubFetch(implementation: TestFetch) {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input)
+    const response = await implementation(input, init)
+    if (!response.ok) return response
+    let data: unknown
+    try { data = await (typeof response.clone === 'function' ? response.clone() : response).json() } catch { return response }
+    if (path.endsWith('/acceptance-plans') && init?.method === 'POST' && (!data || typeof data !== 'object' || !('plan' in data))) {
+      const request = typeof init?.body === 'string' ? JSON.parse(init.body) as { scope?: unknown } : {}
+      return Response.json({ plan: { plan_id: 'test-plan', scope_sha256: 'test-scope', request_limit: 2 }, scope: request.scope ?? {} }, { status: 201 })
+    }
+    if (path.includes('/calendar?') && (!data || typeof data !== 'object' || !('items' in data))) {
+      return Response.json({ items: [], next_cursor: null, timezone: 'Asia/Shanghai' })
+    }
+    return response
+  }))
+}
+
 function mockApi(overrides: Record<string, unknown> = {}) {
   const requests: { path: string; method: string; body?: unknown }[] = []
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input), method = init?.method ?? 'GET'
     requests.push({ path, method, body: typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body })
     let data: unknown = []
-    if (path.endsWith('/integrations/feishu/status')) data = { mode: 'fake', authorized: true, scopes: [], token_type: 'user' }
+    if (path.endsWith('/integrations/feishu/status')) data = { mode: 'real', authorized: true, calendar_ready: true, scopes: ['calendar:read'], token_type: 'user' }
+    if (path.includes('/calendar?')) data = { items: [], next_cursor: null, timezone: 'Asia/Shanghai' }
     for (const [route, value] of Object.entries(overrides)) if (path.endsWith(route) || path.split('?')[0].endsWith(route)) data = value
     if (path.endsWith('/intake/items') && method === 'POST') data = { item_id: 'new', origin_kind: 'quick_note', state: 'pending' }
     return { ok: true, status: 200, json: async () => data }
@@ -18,7 +41,11 @@ function mockApi(overrides: Record<string, unknown> = {}) {
   return requests
 }
 
-it('places meetings and tasks beside capture tools while keeping remote data opt-in', async () => {
+async function confirmOperationRead() {
+  fireEvent.click(await screen.findByRole('button', { name: '确认并执行本次读取' }))
+}
+
+it('places meetings and tasks beside capture tools and automatically reads an authorized calendar', async () => {
   const requests = mockApi({ '/actions': [], '/intake/items': [] })
   render(<TodayView onError={vi.fn()} />)
   const schedule = screen.getByRole('region', { name: '今天的安排' })
@@ -29,9 +56,17 @@ it('places meetings and tasks beside capture tools while keeping remote data opt
   expect(screen.getByRole('button', { name: '导入材料' })).toBeTruthy()
   expect(screen.queryByRole('heading', { name: '需要行动' })).toBeNull()
   await waitFor(() => expect(screen.getByText('还没有最近材料。')).toBeTruthy())
-  expect(requests.some((item) => item.path.includes('/calendar?') || item.path.includes('/integrations/feishu/tasks?'))).toBe(false)
+  await waitFor(() => expect(requests.filter((item) => item.path.includes('/calendar?'))).toHaveLength(1))
+  expect(requests.some((item) => item.path.includes('/integrations/feishu/tasks?'))).toBe(false)
   expect(screen.queryByRole('button', { name: /授权飞书/ })).toBeNull()
   await waitFor(() => expect(requests.some((item) => item.path.endsWith('/integrations/feishu/status'))).toBe(true))
+})
+
+it('reads the authorized calendar once under StrictMode', async () => {
+  const requests = mockApi({ '/actions': [], '/intake/items': [] })
+  render(<StrictMode><TodayView onError={vi.fn()} /></StrictMode>)
+  await waitFor(() => expect(requests.filter((item) => item.path.includes('/calendar?'))).toHaveLength(1))
+  expect(requests.filter((item) => item.path.includes('/calendar?'))).toHaveLength(1)
 })
 
 it('keeps a successful note receipt in place and continues with the exact saved item id', async () => {
@@ -49,21 +84,21 @@ it('keeps a successful note receipt in place and continues with the exact saved 
 })
 
 it('copies an agent setup prompt without opening a wizard or calling external endpoints', async () => {
-  const requests = mockApi({ '/integrations/feishu/status': { mode: 'fake', authorized: false, scopes: [], token_type: 'user' } })
   const writeText = vi.fn().mockResolvedValue(undefined)
   vi.stubGlobal('navigator', { clipboard: { writeText } })
+  const requests = mockApi({ '/integrations/feishu/status': { mode: 'real', authorized: false, scopes: [], token_type: 'user' } })
   render(<TodayView onError={vi.fn()} onOpenConnectionWizard={vi.fn(() => { throw new Error('wizard should not open') })} />)
   fireEvent.click(await screen.findByRole('button', { name: '连接飞书' }))
-  expect(await screen.findByText(/已复制，粘贴到 Codex \/ WorkBuddy/)).toBeTruthy()
+  expect(await screen.findByRole('button', { name: /已复制/ })).toBeTruthy()
   expect(writeText).toHaveBeenCalledTimes(1)
-  expect(requests.some((item) => item.path.includes('/authorizations') || item.path.includes('/calendar?'))).toBe(false)
+  expect(requests.every((item) => item.path.endsWith('/projects') || item.path.endsWith('/actions') || item.path.includes('/intake/items') || item.path.endsWith('/integrations/feishu/status'))).toBe(true)
 })
 
 it('continues from a successful file import with the returned source item id', async () => {
   const onOpenApproval = vi.fn()
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
-    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false })
+    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'real', authorized: false })
     if (path.endsWith('/intake/files') && init?.method === 'POST') return Response.json({ item_id: 'exact-file-item', origin_kind: 'file', state: 'pending' }, { status: 201 })
     if (path.endsWith('/intake/items')) return Response.json([])
     return Response.json([])
@@ -115,9 +150,9 @@ it('does not save Enter used to confirm an IME composition', async () => {
 it('single-flights same-event quick-note submits while the request is pending', async () => {
   const requests: Record<string, unknown>[] = []
   let finishSave: ((response: Response) => void) | undefined
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
-    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false })
+    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'real', authorized: false })
     if (path.endsWith('/intake/items') && init?.method === 'POST') {
       requests.push(JSON.parse(String(init.body)) as Record<string, unknown>)
       return await new Promise<Response>((resolve) => { finishSave = resolve })
@@ -138,7 +173,7 @@ it('single-flights same-event quick-note submits while the request is pending', 
 it('keeps the import dialog open during an in-flight local file write and restores focus on Escape', async () => {
   let finishUpload: ((response: Response) => void) | undefined
   const originalFetch = vi.fn(async (input: RequestInfo | URL) => {
-    if (String(input).endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false })
+    if (String(input).endsWith('/integrations/feishu/status')) return Response.json({ mode: 'real', authorized: false })
     if (String(input).endsWith('/intake/items')) return Response.json([])
     if (String(input).endsWith('/intake/files')) return await new Promise<Response>((resolve) => { finishUpload = resolve })
     return Response.json([])
@@ -164,9 +199,9 @@ it('keeps the import dialog open during an in-flight local file write and restor
 it('reuses the same quick-note operation after an uncertain failure', async () => {
   const requests: Record<string, unknown>[] = []
   let saves = 0
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
-    if (path.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => ({ mode: 'fake', authorized: false }) }
+    if (path.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => ({ mode: 'real', authorized: false }) }
     if (path.endsWith('/intake/items') && init?.method === 'POST') {
       const body = JSON.parse(String(init.body)) as Record<string, unknown>
       requests.push(body); saves += 1
@@ -199,6 +234,7 @@ it('opens the reusable import drawer with file staging and Feishu search but no 
   fireEvent.click(screen.getByRole('tab', { name: '飞书材料' }))
   await waitFor(() => expect((screen.getByRole('button', { name: '搜索 / 刷新材料' }) as HTMLButtonElement).disabled).toBe(false))
   fireEvent.click(screen.getByRole('button', { name: '搜索 / 刷新材料' }))
+  await confirmOperationRead()
   await waitFor(() => expect(requests.some((item) => item.path.includes('/materials?'))).toBe(true))
   expect(await screen.findByText('合成会议材料')).toBeTruthy()
   expect(requests.some((item) => item.path.includes('/materials?'))).toBe(true)
@@ -208,7 +244,7 @@ it('keeps each failed file retryable without repeating successful imports', asyn
   let uploads = 0
   const requests = mockApi({ '/actions': [], '/intake/items': [] })
   const originalFetch = globalThis.fetch as typeof fetch
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
     if (path.endsWith('/intake/files')) {
       uploads += 1
@@ -234,7 +270,7 @@ it('does not resend a file whose upload result is unknown', async () => {
   let uploads = 0
   const requests = mockApi({ '/actions': [], '/intake/items': [] })
   const originalFetch = globalThis.fetch as typeof fetch
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input)
     if (path.endsWith('/intake/files')) {
       uploads += 1; requests.push({ path, method: 'POST' })
@@ -253,25 +289,25 @@ it('does not resend a file whose upload result is unknown', async () => {
 
 it('shows a stale inbox after a failed refresh instead of treating it as empty', async () => {
   let reads = 0
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL) => {
     const path = String(input)
-    if (path.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => ({ mode: 'fake', authorized: true, scopes: [], token_type: 'user' }) }
+    if (path.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => ({ mode: 'real', authorized: true, calendar_ready: true, scopes: ['calendar:read'], token_type: 'user' }) }
     if (path.endsWith('/intake/items')) { reads += 1; return reads === 1 ? { ok: true, status: 200, json: async () => [{ item_id: 'x', title: '保留的内容', filename: 'one.md', state: 'pending', created_at: '2026-10-15T00:00:00Z', origin_kind: 'unknown' }] } : { ok: false, status: 503, json: async () => ({ error: { message: '离线' } }) } }
     return { ok: true, status: 200, json: async () => [] }
   }))
   render(<TodayView onError={vi.fn()} />)
   expect(await screen.findByText('保留的内容')).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: '刷新' }))
+  fireEvent.click(screen.getByRole('button', { name: '刷新最近材料' }))
   await waitFor(() => expect(screen.getByText(/读取失败：离线；保留已有内容/)).toBeTruthy())
   expect(screen.queryByText('还没有最近材料。')).toBeNull()
 })
 
 it('keeps the initial Today inbox pending until its first successful read', async () => {
   let finishRead: ((response: Response) => void) | undefined
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+  stubFetch(vi.fn(async (input: RequestInfo | URL) => {
     const path = String(input)
     if (path.endsWith('/intake/items')) return await new Promise<Response>((resolve) => { finishRead = resolve })
-    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'fake', authorized: false, scopes: [], token_type: 'user' })
+    if (path.endsWith('/integrations/feishu/status')) return Response.json({ mode: 'real', authorized: false, scopes: [], token_type: 'user' })
     if (path.endsWith('/actions') || path.endsWith('/projects')) return Response.json([])
     return Response.json([])
   }))

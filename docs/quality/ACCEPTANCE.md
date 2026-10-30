@@ -130,14 +130,20 @@ M2.1 审查回归：用不同的 API/Web 端口注册 callback，确认前端请
 | B05 | 独立离线QA PASS | 最终受测源码576895f；独立388+25/Web45，实际合成浏览器/原生冷启动/重启/5秒延迟启动和退出清理PASS；见最终独立复验报告。历史R1–R4证据原样保留；OS Keychain和DMG未运行 |
 | B06（历史） | 对固定 SHA 的离线 QA PASS / 历史合并点 | Luna High 独立 checkout 固定 576895f；与执行者环境分离，离线完整检查、新增失败路径和实际 UI 复验。PR #10 当时已合并，merge `41207e5` 的产品树与受测 SHA 一致并通过合并后核验。真实门另行验收 |
 | R01 | 部分授权 / 冒烟未执行 | 用户于 2026-10-10 授权有限合成冒烟：一次 Feishu OAuth code exchange、必要时一次 refresh；DeepSeek chat / Model Studio embedding / rerank 各最多一次合成请求。执行前核对官方价格和端点；提示词建议 CNY 5 为保守操作上限（非用户指定预算）。秘密只经安全本地入口。真实材料、日历/task读取、真实内容外发和任务写入仍需逐项授权 |
-| R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、选中材料、指定日历与 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。当前授权只覆盖 OAuth 连接，不含数据读取 |
+| R02 | 真实只读 / NOT_RUN（冒烟例外不含业务读取） | 固定 B 受测 SHA；真实 OAuth / scope / refresh / Keychain、连接后的有界日历 UI 与 MCP 直读、选中材料和 task 读取实际协议 / UI 完整且资源范围准确；无隐式正文批准或模型发送。日历直读按服务端身份/scope校验，材料与任务读取仍使用逐次确认计划 |
 | R03 | 真实模型质量 / NOT_RUN | 真实 LLM / embedding / rerank 各自可核对配置、实际调用、用量 / 费用；预定质量样例、用户评定、资格 / stale / 注入反例和独立 QA 通过 |
 | R04 | 真实任务 / NOT_RUN | 独立确认创建 / 编辑 / 完成；各日期语义与清空、目标 / 字段和 GET 回读证实；journal 核实 / unknown 不重发；遗留测试资源及处理责任明确 |
 | R05 | C 整合 / NOT_RUN | 固定代码 / 文档 / 独立 QA / manifest / PR / main 关系清楚；所有适用必需真实项通过，否则为部分完成或 BLOCKED；代码变更后对应门重新复验 |
 
 ### 一次性授权计划验收标准
 
-真实模型 organize/index/query 和 Feishu read/import 必须先预览确切内容范围、显式确认，再在原业务路由提交 plan id。取消、过期、配置/来源/页面/Feishu 授权代次变化、异 workspace/profile 或未确认均不得外发。每次请求先有限预留；中断状态保留为 unknown 且不能释放/重放。provider usage 只保存响应报告的 request id/token 数；缺字段保持未知，真实账单需在服务商侧人工核对。本要求不替代整行 MUST 验收。
+真实模型 organize/index/query 和 Feishu 材料/任务 read/import 必须先预览确切内容范围、显式确认，再在原业务路由提交 plan id。飞书日历 read 是只读例外：授权连接后 UI 与 MCP 直接调用日历接口，服务端仍校验配置身份、凭据与 scope，并限制单次响应、请求数和时间；失败不自动重试。取消、过期、配置/来源/页面/Feishu 授权代次变化、异 workspace/profile 或未确认均不得外发。计划保护的请求先有限预留；中断状态保留为 unknown 且不能释放/重放。日历直读按 adapter 的有限调用链、单次响应大小与单个请求 deadline 约束，不自动重试。provider usage 只保存响应报告的 request id/token 数；缺字段保持未知，真实账单需在服务商侧人工核对。本要求不替代整行 MUST 验收。
+
+
+
+### 日历直读专项验收
+
+Real 已授权连接后，今日页刷新和 MCP `list_calendar` 不调用或消费 acceptance-plan；API 与 agent API 都直接经过同一 `FeishuService.calendar`，并保留 profile/workspace、应用或用户凭据、scope、IANA 时区、start < end、limit 1–30 与 cursor 校验。Real 缺 app_id 必须返回配置错误，不能降级为 Fake 成功；用户身份无 token 或缺 calendar readonly scope 时请求被拒绝。provider 对显式区间最多进行 tenant-token/refresh + primary lookup + events 的有界链路（最多 3 次 HTTP 请求），DeadlineTransport、4 MiB 响应上限与无重试规则继续生效；真实区间仍单页并以截断提示说明，Fake 分页保持。超时/错误保留原日历与错误态，不显示空列表。合成 API 测试核对 agent workspace 不匹配拒绝；HTTP Mock 统计实际调用数，禁止真实飞书/模型/Keychain。
 
 ### C28 五个实际工作日记录模板
 

@@ -7,8 +7,7 @@ import logging
 import os
 import re
 import secrets
-import tempfile
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from threading import Event, Lock
@@ -45,6 +44,7 @@ from summit_everything.domain.models import (
     IntakeJob,
     LineRecord,
     MutationResult,
+    PageDirectoryEntry,
     PageSnapshot,
     ProjectRecord,
     SourceDetail,
@@ -60,8 +60,7 @@ from summit_everything.integrations.acceptance_plans import (
     ProviderUsage,
     plan_conflict_message,
 )
-from summit_everything.integrations.embedding import EmbeddingProviderError, ModelStudioEmbedding
-from summit_everything.integrations.feishu.fake import FakeFeishu
+from summit_everything.integrations.embedding import EmbeddingProviderError
 from summit_everything.integrations.feishu.http import FeishuHttpProvider
 from summit_everything.integrations.feishu.provider import (
     CalendarPage,
@@ -93,17 +92,18 @@ from summit_everything.integrations.http_boundary import (
     describe_failure,
     sanitize_provider_text,
 )
-from summit_everything.integrations.llm import DeepSeekLLM, FakeLLM, LLMProviderError
+from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
 from summit_everything.integrations.provider_smoke import (
     SMOKE_LIMITS,
     SmokeLimitReached,
     reserve_smoke_call,
     smoke_counts,
 )
-from summit_everything.integrations.rerank import ModelStudioReranker, RerankProviderError
+from summit_everything.integrations.rerank import RerankProviderError
 from summit_everything.integrations.runtime import ModelRuntime
 from summit_everything.integrations.settings import (
     CredentialVault,
+    LocalModelStatus,
     MacOSKeychainBackend,
     ProviderSettingsPatch,
     SecretBackend,
@@ -138,6 +138,7 @@ from summit_everything.local.first_use_progress import (
     FirstUseProgressError,
     FirstUseProgressStore,
 )
+from summit_everything.local.retrieval_model import LocalModelError, LocalRetrievalModelStore
 from summit_everything.release import (
     fingerprint_web_dist,
     load_build_identity,
@@ -644,6 +645,7 @@ def create_app(
     secret_backend: SecretBackend | None = None,
     feishu_config: FeishuConfig | None = None,
     first_use_defaults: FirstUseDefaults | None = None,
+    settings_store_factory: Callable[[Path, FirstUseDefaults | None], SettingsStore] | None = None,
 ) -> FastAPI:
     app = FastAPI(title="SummitEverything Local API", version="1.0.0")
     app.state.acceptance_run_id = uuid4()
@@ -653,6 +655,17 @@ def create_app(
     app.state.first_use_defaults = (
         first_use_defaults if first_use_defaults is not None else load_first_use_defaults()
     )
+    # Pure-Python dependency injection supports isolated tests that need a
+    # synthetic settings store. Runtime callers always get the production
+    # SettingsStore; this factory is not selected from HTTP, config or env.
+    store_factory = settings_store_factory or (
+        lambda path, defaults: SettingsStore(path, defaults=defaults)
+    )
+    app.state.settings_store_factory = store_factory
+
+    def make_settings_store(path: Path) -> SettingsStore:
+        return store_factory(path, app.state.first_use_defaults)
+
     build_info_path = os.environ.get("SUMMIT_BUILD_INFO")
     build_identity = load_build_identity(build_info_path)
     web_dist = os.environ.get("SUMMIT_WEB_DIST")
@@ -683,9 +696,11 @@ def create_app(
         except SettingsError:
             secret_backend = UnavailableSecretBackend()
     app.state.secret_backend = secret_backend
+    app.state.local_model_stores = {}
+    app.state.local_model_stores_lock = Lock()
     app.state.workspace = None
     intake_service = IntakeService()
-    review = review_service or IntakeReviewService(FakeLLM())
+    review = review_service or IntakeReviewService()
     app.state.intake_service = intake_service
     app.state.review_service = review
     cancellations: dict[tuple[str, str, str], Event] = {}
@@ -695,16 +710,15 @@ def create_app(
     auth_coordinators: dict[tuple[str, str], FeishuAuthCoordinator] = {}
     action_services: dict[int, ActionService] = {}
     feishu_services_lock = Lock()
-    feishu = FeishuService(
-        feishu_provider
-        or FakeFeishu(
-            Path(tempfile.gettempdir())
-            / "summit-simulated-feishu-remote"
-            / hashlib.sha256(str(app.state.profile_root).encode()).hexdigest()
-        ),
-        credential_store or MemoryCredentialStore(),
-        config,
-        app.state.session_token,
+    feishu = (
+        FeishuService(
+            feishu_provider,
+            credential_store or MemoryCredentialStore(),
+            config,
+            app.state.session_token,
+        )
+        if feishu_provider is not None
+        else None
     )
     app.state.feishu_service = feishu
 
@@ -715,9 +729,8 @@ def create_app(
         allowed_origins = config.allowed_origins
         if workspace is not None:
             try:
-                settings = SettingsStore(
-                    Path(workspace.local_profile_dir) / "provider-settings.json",
-                    defaults=app.state.first_use_defaults,
+                settings = make_settings_store(
+                    Path(workspace.local_profile_dir) / "provider-settings.json"
                 ).read()
             except SettingsError as exc:
                 # A corrupt profile must fail closed with the designed envelope.
@@ -799,10 +812,16 @@ def create_app(
         return workspace
 
     def settings_store(workspace: WorkspaceContext) -> SettingsStore:
-        return SettingsStore(
-            Path(workspace.local_profile_dir) / "provider-settings.json",
-            defaults=app.state.first_use_defaults,
-        )
+        return make_settings_store(Path(workspace.local_profile_dir) / "provider-settings.json")
+
+    def local_models_for(workspace: WorkspaceContext) -> LocalRetrievalModelStore:
+        profile = Path(workspace.local_profile_dir).resolve()
+        key = str(profile)
+        with app.state.local_model_stores_lock:
+            stores = cast(dict[str, LocalRetrievalModelStore], app.state.local_model_stores)
+            if key not in stores:
+                stores[key] = LocalRetrievalModelStore(profile / "retrieval-models")
+            return stores[key]
 
     def first_use_progress_store(workspace: WorkspaceContext) -> FirstUseProgressStore:
         # Living inside the workspace's own local profile directory is what
@@ -1251,7 +1270,9 @@ def create_app(
         redirect_uri = settings.feishu.redirect_uri or config.redirect_uri
         parts = urlsplit(redirect_uri)
         callback_origin = f"{parts.scheme}://{parts.netloc}"
-        real = settings.mode == "real" and bool(settings.feishu.app_id)
+        # A missing app ID/secret is a real configuration gap, not a reason to
+        # select the simulated Feishu provider in a normal app session.
+        real = settings.mode == "real"
         workspace_config = FeishuConfig(
             mode="real" if real else "fake",
             app_id=app_id,
@@ -1296,11 +1317,7 @@ def create_app(
                     )
                     provider = FeishuHttpProvider(workspace_config, store.get_app)
                 else:
-                    provider = FakeFeishu(
-                        Path(tempfile.gettempdir())
-                        / "summit-simulated-feishu-remote"
-                        / hashlib.sha256(profile.encode()).hexdigest()
-                    )
+                    raise SettingsError("provider_not_allowed")
                 if credential_store is not None:
                     store = credential_store
                 elif real:
@@ -1335,6 +1352,12 @@ def create_app(
         app.state.feishu_service = service
         return service
 
+    def feishu_calendar_ready_for(workspace: WorkspaceContext) -> bool:
+        settings = settings_store(workspace).read()
+        if settings.mode != "real" or not (settings.feishu.app_id or config.app_id):
+            return False
+        return feishu_for(workspace).status().calendar_ready
+
     def require_feishu_data(
         workspace: WorkspaceContext,
         operation: str,
@@ -1343,6 +1366,16 @@ def create_app(
         request_count: int = 1,
     ) -> UUID | None:
         return start_feishu_plan(workspace, operation, scope, plan_id, request_count)
+
+    def require_calendar_provider_config(workspace: WorkspaceContext) -> None:
+        current = settings_store(workspace).read()
+        # A missing app_id is a real setup gap, not permission to read a
+        # synthetic calendar through an adapter selected for tests.
+        if current.mode == "real" and not current.feishu.app_id:
+            raise HTTPException(
+                409,
+                detail={"code": "provider_not_configured", "message": "请先完成飞书应用配置。"},
+            )
 
     def actions_for(workspace: WorkspaceContext) -> ActionService:
         service = feishu_for(workspace)
@@ -1415,7 +1448,11 @@ def create_app(
         )
 
     def runtime_for(workspace: WorkspaceContext) -> ModelRuntime:
-        return ModelRuntime(settings_store(workspace).read(), credential_vault(workspace))
+        return ModelRuntime(
+            settings_store(workspace).read(),
+            credential_vault(workspace),
+            local_models_for(workspace),
+        )
 
     def ensure_remote_calls_allowed(
         workspace: WorkspaceContext, providers: tuple[str, ...]
@@ -1428,19 +1465,43 @@ def create_app(
             "embedding": settings.embedding,
             "rerank": settings.rerank,
         }
-        missing = [
-            name
-            for name in providers
-            if selected[name].provider == "fake" or not selected[name].enabled
-        ]
+        labels = {
+            "llm": "整理与问答模型",
+            "embedding": "知识索引向量化",
+            "rerank": "检索结果排序",
+        }
+        missing: list[str] = []
+        for name in providers:
+            config = selected[name]
+            if name in {"embedding", "rerank"} and config.provider == "dashscope":
+                missing.append(f"{labels[name]}已停用旧云端配置，请切换到本地模型")
+                continue
+            if name in {"embedding", "rerank"} and config.provider == "local":
+                if local_models_for(workspace).status()["state"] != "ready":
+                    raise HTTPException(
+                        status_code=409,
+                        detail={
+                            "code": "local_model_not_ready",
+                            "message": "请先在设置中准备本地检索模型，再建立索引或提问。",
+                        },
+                    )
+                continue
+            if config.provider == "fake":
+                missing.append(f"{labels[name]}未选择真实模型")
+                continue
+            if not config.enabled:
+                missing.append(f"{labels[name]}未启用")
+                continue
+            if not config.model:
+                missing.append(f"{labels[name]}未选择模型")
         if missing:
             raise HTTPException(
                 status_code=409,
                 detail={
                     "code": "provider_disabled",
-                    "message": (
-                        "真实业务调用需要已选择并启用对应 provider；Fake 不会冒充真实质量结果。"
-                    ),
+                    "message": "所需 AI 服务尚未配置完成："
+                    + "；".join(missing)
+                    + "。请到设置完成配置后重新查看本次预览；不会自动改用模拟结果或自动重发。",
                 },
             )
 
@@ -1452,7 +1513,7 @@ def create_app(
 
     def fingerprint_is_current(workspace: WorkspaceContext, fingerprint: str) -> bool:
         settings = settings_store(workspace).read()
-        if settings.mode == "fake" and settings.embedding.provider == "fake":
+        if settings.mode == "fake":
             return True
         return fingerprint == embedding_fingerprint(settings.embedding, mode=settings.mode)
 
@@ -1462,12 +1523,17 @@ def create_app(
         remote: bool = False,
         provider_guard: Any = None,
         required_providers: tuple[str, ...] = ("embedding", "rerank", "llm"),
+        local_costs: bool = False,
     ) -> QueryService:
         if query_service is not None:
             return query_service
         if remote:
             ensure_remote_calls_allowed(workspace, required_providers)
-        providers = runtime_for(workspace) if remote else None
+        settings = settings_store(workspace).read()
+        # Fake providers are allowed only through explicit test settings
+        # injection. Production real-mode metadata/preview requests must not
+        # instantiate them implicitly.
+        providers = runtime_for(workspace) if remote or settings.mode == "fake" else None
         return QueryService(
             IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3"),
             embedding=providers.embedding()
@@ -1480,7 +1546,61 @@ def create_app(
                 else None
             ),
             provider_guard=provider_guard,
+            local_costs=local_costs,
+            # Production API services never synthesize test adapters when a
+            # metadata/preview path does not need a provider. Generation and
+            # query calls must receive the configured runtime adapters above.
+            require_explicit_providers=True,
         )
+
+    def require_query_index_ready(workspace: WorkspaceContext, fingerprint: str) -> None:
+        """Reject a real query before reserving calls when no matching index exists."""
+        settings = settings_store(workspace).read()
+        expected = embedding_fingerprint(settings.embedding, mode=settings.mode)
+        active = IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3").active_fingerprint(
+            workspace.workspace_id
+        )
+        if active is None or active != expected or fingerprint != expected:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "index_not_ready",
+                    "message": (
+                        "当前本机索引尚未按已选向量模型准备完成。请前往审批建立或更新索引后再提问；"
+                        "本次问题已保留，尚未预留或发送模型请求。"
+                    ),
+                },
+            )
+
+    def require_local_retrieval_ready(workspace: WorkspaceContext) -> None:
+        if query_service is not None:
+            return
+        settings = settings_store(workspace).read()
+        if settings.mode == "fake":
+            return
+        if settings.embedding.provider == "dashscope" or settings.rerank.provider == "dashscope":
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "legacy_provider_migration_required",
+                    "message": (
+                        "旧版云端检索配置已停用，请在设置中切换为本地检索模型并重新建立索引。"
+                    ),
+                },
+            )
+        if settings.embedding.provider != "local" or settings.rerank.provider != "local":
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "local_provider_required", "message": "请先选择本地检索模型。"},
+            )
+        if local_models_for(workspace).status()["state"] != "ready":
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "local_model_not_ready",
+                    "message": "本地检索模型尚未准备完成；请在设置中下载并校验模型文件。",
+                },
+            )
 
     def conversations_for(workspace: WorkspaceContext) -> ConversationStore:
         return ConversationStore(Path(workspace.local_profile_dir) / "conversations.sqlite3")
@@ -1504,6 +1624,9 @@ def create_app(
             page = read_page(Path(workspace.root), citation.page_id)
         except WorkspaceError:
             return "unavailable"
+        return citation_availability_of_page(page, citation, purpose)
+
+    def citation_availability_of_page(page: Any, citation: Any, purpose: str) -> str:
         eligibility = retrieval_eligibility(
             page.metadata,
             page.body,
@@ -1519,7 +1642,13 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> SettingsSummary:
         settings = settings_store(workspace).read()
-        return provider_settings_payload(settings, credential_vault(workspace))
+        return provider_settings_payload(
+            settings,
+            credential_vault(workspace),
+            local_model_status=local_models_for(workspace).status(),
+            legacy_provider_migration_required=settings.legacy_provider_migration_required,
+            feishu_calendar_ready=feishu_calendar_ready_for(workspace),
+        )
 
     @app.patch("/api/v1/settings", dependencies=[Depends(authenticated)])
     def patch_settings(
@@ -1532,7 +1661,43 @@ def create_app(
             raise SettingsError("validation_error") from exc
         if payload.feishu is not None:
             feishu_for(workspace)
-        return provider_settings_payload(settings, credential_vault(workspace))
+        return provider_settings_payload(
+            settings,
+            credential_vault(workspace),
+            local_model_status=local_models_for(workspace).status(),
+            legacy_provider_migration_required=settings.legacy_provider_migration_required,
+            feishu_calendar_ready=feishu_calendar_ready_for(workspace),
+        )
+
+    @app.get(
+        "/api/v1/retrieval-model/status",
+        response_model=LocalModelStatus,
+        dependencies=[Depends(authenticated)],
+    )
+    def retrieval_model_status(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        return local_models_for(workspace).status()
+
+    @app.post(
+        "/api/v1/retrieval-model/prepare",
+        response_model=LocalModelStatus,
+        dependencies=[Depends(authenticated)],
+    )
+    def retrieval_model_prepare(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> dict[str, object]:
+        try:
+            return local_models_for(workspace).start_prepare()
+        except LocalModelError as exc:
+            status_code = 409 if exc.code == "model_directory_read_only" else 503
+            raise HTTPException(
+                status_code=status_code,
+                detail={
+                    "code": exc.code,
+                    "message": "无法准备本地检索模型，请检查本机存储后重试。",
+                },
+            ) from None
 
     @app.get("/api/v1/first-use/progress", dependencies=[Depends(authenticated)])
     def get_first_use_progress(
@@ -1589,30 +1754,41 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, object]:
         settings = settings_store(workspace).read()
-        if settings.mode != "real" or (
-            payload.operation.startswith("feishu.") and not settings.feishu.app_id
-        ):
+        if payload.operation == "model.index":
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "local_index_plan_required",
+                    "message": "本地索引无需外部调用授权，请使用索引预览计划。",
+                },
+            )
+        if settings.mode != "real":
             raise HTTPException(
                 status_code=409,
                 detail={
                     "code": "provider_not_configured",
-                    "message": "请先配置 Real 模式，并为飞书操作配置 App ID。",
+                    "message": "请先配置 Real 模式，再预览外部调用范围。",
                 },
             )
-        if payload.operation == "model.index":
-            ensure_remote_calls_allowed(workspace, ("embedding",))
-        elif payload.operation == "model.query":
-            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
+        if payload.operation.startswith("feishu.") and not settings.feishu.app_id:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "provider_not_configured",
+                    "message": "请先配置飞书 App ID，再预览飞书操作范围。",
+                },
+            )
+        if payload.operation == "model.query":
+            ensure_remote_calls_allowed(workspace, ("llm",))
+            require_local_retrieval_ready(workspace)
         elif payload.operation == "model.organize":
             ensure_remote_calls_allowed(workspace, ("llm",))
         elif payload.operation == "model.journal_assist":
             ensure_remote_calls_allowed(workspace, ("llm",))
-        if payload.operation == "model.index":
-            scope = normalize_index_scope(workspace, payload.scope)
-            request_limit = index_embedding_call_bound(workspace, scope)
-        elif payload.operation == "model.query":
+        if payload.operation == "model.query":
             scope = normalize_query_scope(workspace, payload.scope)
-            request_limit = 3  # one embedding, one rerank, and one answer call at most
+            require_query_index_ready(workspace, str(scope["fingerprint"]))
+            request_limit = 1  # local embedding/ranking; DeepSeek answer only
         elif payload.operation == "model.organize":
             scope = normalize_organize_scope(workspace, payload.scope)
             request_limit = 1
@@ -1779,17 +1955,19 @@ def create_app(
         }
 
     def require_smoke_provider(workspace: WorkspaceContext, operation: str) -> ModelRuntime:
+        if operation in {"model_studio_embedding", "model_studio_rerank"}:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "legacy_provider_migration_required",
+                    "message": "云端检索连接测试已停用，请切换到本地检索模型。",
+                },
+            )
         settings = settings_store(workspace).read()
         requirement = {
             "deepseek_chat": settings.mode == "real"
             and settings.llm.provider == "deepseek"
             and settings.llm.enabled,
-            "model_studio_embedding": settings.mode == "real"
-            and settings.embedding.provider == "dashscope"
-            and settings.embedding.enabled,
-            "model_studio_rerank": settings.mode == "real"
-            and settings.rerank.provider == "dashscope"
-            and settings.rerank.enabled,
         }.get(operation, False)
         if not requirement:
             raise HTTPException(
@@ -1850,76 +2028,54 @@ def create_app(
         "/api/v1/provider-smoke/model-studio-embedding", dependencies=[Depends(authenticated)]
     )
     def smoke_model_studio_embedding(
-        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        _workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, object]:
-        runtime = require_smoke_provider(workspace, "model_studio_embedding")
-        provider = runtime.embedding()
-        if not isinstance(provider, ModelStudioEmbedding):
-            raise HTTPException(status_code=409, detail="所选 provider 不支持此检查。")
-        try:
-            attempt = reserve_smoke("model_studio_embedding")
-            provider.embed_many(["synthetic connection check"], fingerprint=None)
-            return {
-                "state": "succeeded",
-                "operation": "model_studio_embedding",
-                "attempt": attempt,
-            }
-        except HTTPException:
-            raise
-        except Exception as exc:
-            detail: dict[str, object] = {
-                "code": "provider_smoke_failed",
-                "message": smoke_failure_message(exc, service="向量服务"),
-            }
-            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
-                detail["provider"] = exc.details()
-            raise HTTPException(status_code=502, detail=detail) from None
-        finally:
-            provider.close()
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "legacy_provider_migration_required",
+                "message": "云端检索连接测试已停用，请切换到本地检索模型。",
+            },
+        )
 
     @app.post("/api/v1/provider-smoke/model-studio-rerank", dependencies=[Depends(authenticated)])
     def smoke_model_studio_rerank(
-        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+        _workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, object]:
-        runtime = require_smoke_provider(workspace, "model_studio_rerank")
-        provider = runtime.reranker()
-        if not isinstance(provider, ModelStudioReranker):
-            raise HTTPException(status_code=409, detail="所选 provider 不支持此检查。")
-        try:
-            attempt = reserve_smoke("model_studio_rerank")
-            provider.rank(
-                "synthetic connection query",
-                ["synthetic candidate alpha", "synthetic candidate beta"],
-            )
-            return {
-                "state": "succeeded",
-                "operation": "model_studio_rerank",
-                "attempt": attempt,
-            }
-        except HTTPException:
-            raise
-        except Exception as exc:
-            detail: dict[str, object] = {
-                "code": "provider_smoke_failed",
-                "message": smoke_failure_message(exc, service="排序服务"),
-            }
-            if isinstance(exc, (ProviderError, LLMProviderError)) and exc.details():
-                detail["provider"] = exc.details()
-            raise HTTPException(status_code=502, detail=detail) from None
-        finally:
-            provider.close()
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "legacy_provider_migration_required",
+                "message": "云端检索连接测试已停用，请切换到本地检索模型。",
+            },
+        )
 
     def index_after_approval(
         workspace: WorkspaceContext, mutation: MutationResult
     ) -> MutationResult:
-        settings = settings_store(workspace).read()
-        service = query_for(workspace)
-        fingerprint = service.store.active_fingerprint(workspace.workspace_id)
-        if fingerprint is None:
-            return mutation.model_copy(update={"index_update": "not_enabled"})
-        if settings.mode == "real" and settings.embedding.provider != "fake":
-            return mutation.model_copy(update={"index_update": "manual_required"})
         try:
+            settings = settings_store(workspace).read()
+            store = (
+                query_service.store
+                if query_service is not None
+                else IndexStore(Path(workspace.local_profile_dir) / "index.sqlite3")
+            )
+            fingerprint = store.active_fingerprint(workspace.workspace_id)
+            if fingerprint is None:
+                return mutation.model_copy(update={"index_update": "not_enabled"})
+            expected_fingerprint = embedding_fingerprint(settings.embedding, mode=settings.mode)
+            if query_service is None and fingerprint != expected_fingerprint:
+                # Never append vectors from a newly selected model to a generation
+                # created by another model. Keep the old generation intact until
+                # the user explicitly previews and confirms model_change.
+                return mutation.model_copy(update={"index_update": "manual_required"})
+            if settings.mode == "real" and settings.embedding.provider == "dashscope":
+                return mutation.model_copy(update={"index_update": "manual_required"})
+            service = query_for(
+                workspace,
+                remote=settings.mode == "real" and settings.embedding.provider == "local",
+                required_providers=("embedding",),
+            )
             root = Path(workspace.root)
             plan = service.plan(root, fingerprint=fingerprint, mode="incremental")
             service.execute_plan(root, plan)
@@ -2094,7 +2250,6 @@ def create_app(
         else:
             context = open_workspace(root, app.state.profile_root)
         app.state.workspace = context
-        feishu_for(context)
         return context
 
     @app.get("/api/v1/workspaces/current", dependencies=[Depends(authenticated)])
@@ -2398,6 +2553,30 @@ def create_app(
     ) -> list[PageSnapshot]:
         return list_pages(Path(workspace.root))
 
+    @app.get(
+        "/api/v1/pages/directory",
+        dependencies=[Depends(authenticated)],
+        response_model_exclude_none=True,
+    )
+    def page_directory(
+        workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
+    ) -> list[PageDirectoryEntry]:
+        return [
+            PageDirectoryEntry(
+                page_id=page.page_id,
+                relative_path=page.relative_path,
+                metadata=page.metadata,
+                content_sha256=page.content_sha256,
+                storage_area=page.storage_area,
+                approval_state=page.approval_state,
+                validity=page.validity,
+                # Project rows need the overview's short next-step summary. Other
+                # page bodies remain strictly on-demand.
+                body=page.body if page.metadata.get("kind") == "project_overview" else None,
+            )
+            for page in list_pages(Path(workspace.root))
+        ]
+
     @app.post("/api/v1/pages", status_code=201, dependencies=[Depends(authenticated)])
     def page_create(
         payload: PageCreate,
@@ -2507,6 +2686,8 @@ def create_app(
                 # Use the configured runtime directly. Test-only injected review services
                 # cannot turn a real-mode action into a Fake or bypass its credential gate.
                 provider_review = IntakeReviewService(runtime_for(workspace).llm())
+                if provider_review.provider is None:
+                    raise LLMProviderError("provider_not_configured")
                 current_scope = normalize_journal_assist_scope(workspace, {"text": payload.text})
                 if (
                     settings_binding(workspace) != approved.config_sha256
@@ -2565,7 +2746,10 @@ def create_app(
                         if callable(close_provider):
                             close_provider()
         try:
-            proposals = review_for(workspace).provider.organize([(uuid4(), uuid4(), payload.text)])
+            provider = review_for(workspace).provider
+            if provider is None:
+                raise LLMProviderError("provider_not_configured")
+            proposals = provider.organize([(uuid4(), uuid4(), payload.text)])
         except Exception as exc:
             # Every failure answers with a safe sentence and leaves a searchable
             # local cause; a typed provider failure also names the reason.
@@ -2973,24 +3157,31 @@ def create_app(
         payload: IndexPlanRequest,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IndexPlan:
+        require_local_retrieval_ready(workspace)
         if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
             raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
-        return query_for(workspace).plan(
-            Path(workspace.root), fingerprint=payload.fingerprint, mode=payload.mode
-        )
+        return query_for(
+            workspace,
+            local_costs=settings_store(workspace).read().embedding.provider == "local",
+        ).plan(Path(workspace.root), fingerprint=payload.fingerprint, mode=payload.mode)
 
     @app.post("/api/v1/index/jobs", dependencies=[Depends(authenticated)])
     def index_execute(
         payload: IndexPlan,
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> IndexResult:
+        require_local_retrieval_ready(workspace)
         ensure_remote_calls_allowed(workspace, ("embedding",))
         if query_service is None and not fingerprint_is_current(workspace, payload.fingerprint):
             raise HTTPException(status_code=409, detail="Provider 设置已变化，请重新生成索引计划。")
         plan_id: UUID | None = None
         expected_config_sha256 = settings_binding(workspace)
         expected_scope: dict[str, Any] | None = None
-        if query_service is None and settings_store(workspace).read().mode == "real":
+        if (
+            query_service is None
+            and settings_store(workspace).read().mode == "real"
+            and settings_store(workspace).read().embedding.provider == "dashscope"
+        ):
             if payload.acceptance_plan_id is None:
                 raise HTTPException(
                     status_code=409,
@@ -3081,7 +3272,28 @@ def create_app(
     def index_status(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> dict[str, int | str | None]:
-        return query_for(workspace).status(Path(workspace.root))
+        status = query_for(workspace).status(Path(workspace.root))
+        fingerprint = status.get("fingerprint")
+        settings = settings_store(workspace).read()
+        if (
+            query_service is None
+            and fingerprint is not None
+            and fingerprint != embedding_fingerprint(settings.embedding, mode=settings.mode)
+        ):
+            # The generation may still be internally consistent with its old
+            # page hashes, but it cannot serve a query for the selected model.
+            status["state"] = "stale"
+            status["stale_pages"] = status.get("current_pages", 0)
+            status["reason"] = "embedding_model_changed"
+        # 完整指纹是内部标识，不进界面；概览只需要「仿真 / 真实」这一层。
+        status["vector"] = (
+            "unknown"
+            if fingerprint is None
+            else "simulated"
+            if str(fingerprint).startswith("summit-fake")
+            else "real"
+        )
+        return status
 
     @app.get("/api/v1/conversations", dependencies=[Depends(authenticated)])
     def conversation_list(
@@ -3110,18 +3322,22 @@ def create_app(
             raise HTTPException(
                 status_code=404, detail={"code": "not_found", "message": "找不到这段问答历史。"}
             )
+        # 每检查一条引用都重扫整棵页面目录会随引用数线性变慢；
+        # 一段会话只扫一次，之后按 page_id 查表。
+        page_index: dict[Any, Any] | None = None
         messages = []
         for message in detail.messages:
-            citations = [
-                citation.model_copy(
-                    update={
-                        "availability": current_citation_availability(
-                            workspace, citation, message.purpose
-                        )
-                    }
+            citations = []
+            for citation in message.citations:
+                if page_index is None:
+                    page_index = {page.page_id: page for page in list_pages(Path(workspace.root))}
+                page = page_index.get(citation.page_id)
+                availability = (
+                    "unavailable"
+                    if page is None
+                    else citation_availability_of_page(page, citation, message.purpose)
                 )
-                for citation in message.citations
-            ]
+                citations.append(citation.model_copy(update={"availability": availability}))
             messages.append(message.model_copy(update={"citations": citations}))
         return detail.model_copy(update={"messages": messages})
 
@@ -3333,7 +3549,6 @@ def create_app(
         query_scope_sha256: str | None = None
         query_config_sha256: str | None = None
         if not replay_existing:
-            ensure_remote_calls_allowed(workspace, ("embedding", "rerank", "llm"))
             query_scope = normalize_query_scope(
                 workspace,
                 {
@@ -3349,6 +3564,10 @@ def create_app(
                 },
             )
             context = AnswerContext.model_validate(query_scope["context"])
+            ensure_remote_calls_allowed(workspace, ("llm",))
+            if settings_store(workspace).read().mode == "real":
+                require_local_retrieval_ready(workspace)
+                require_query_index_ready(workspace, str(query_scope["fingerprint"]))
             context_version = hashlib.sha256(
                 json.dumps(
                     context.model_dump(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
@@ -3767,6 +3986,14 @@ def create_app(
     ) -> FeishuStatus:
         workspace = cast(WorkspaceContext | None, app.state.workspace)
         service = feishu_for(workspace) if workspace is not None else feishu
+        if service is None:
+            raise HTTPException(
+                409,
+                detail={
+                    "code": "provider_not_configured",
+                    "message": "请先打开工作库并完成飞书配置。",
+                },
+            )
         return service.callback(state, code, error, callback_boundary(str(request.url)))
 
     @app.get(prefix + "/materials", dependencies=[Depends(authenticated)])
@@ -3831,13 +4058,13 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
         cursor: str | None = None,
         limit: int = 20,
-        plan_id: UUID | None = None,
     ) -> CalendarPage:
+        require_calendar_provider_config(workspace)
         if not 1 <= limit <= 30 or (cursor and len(cursor) > 500):
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "日历分页无效。"}
             )
-        scope = normalize_feishu_scope(
+        normalize_feishu_scope(
             "feishu.calendar.read",
             {
                 "start": start.isoformat(),
@@ -3847,19 +4074,12 @@ def create_app(
                 "limit": limit,
             },
         )
-        plan = require_feishu_data(workspace, "feishu.calendar.read", scope, plan_id, 2)
         try:
-            result = feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
+            return feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
         except ValueError:
-            finish_feishu_plan(workspace, plan, "failed")
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"}
             ) from None
-        except Exception:
-            finish_feishu_plan(workspace, plan, "unknown")
-            raise
-        finish_feishu_plan(workspace, plan, "succeeded")
-        return result
 
     @app.get("/api/v1/agent/calendar", dependencies=[Depends(authenticated)])
     def agent_calendar(
@@ -3869,13 +4089,13 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(agent_workspace)],
         cursor: str | None = None,
         limit: int = 20,
-        plan_id: UUID | None = None,
     ) -> CalendarPage:
+        require_calendar_provider_config(workspace)
         if not 1 <= limit <= 30 or (cursor and len(cursor) > 500):
             raise HTTPException(
                 422, detail={"code": "validation_error", "message": "日历分页无效。"}
             )
-        scope = normalize_feishu_scope(
+        normalize_feishu_scope(
             "feishu.calendar.read",
             {
                 "start": start.isoformat(),
@@ -3885,20 +4105,13 @@ def create_app(
                 "limit": limit,
             },
         )
-        plan = require_feishu_data(workspace, "feishu.calendar.read", scope, plan_id, 2)
         try:
-            result = feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
+            return feishu_for(workspace).calendar(start, end, timezone, cursor, limit)
         except ValueError:
-            finish_feishu_plan(workspace, plan, "failed")
             raise HTTPException(
                 422,
                 detail={"code": "validation_error", "message": "请选择有效的起止时间和时区。"},
             ) from None
-        except Exception:
-            finish_feishu_plan(workspace, plan, "unknown")
-            raise
-        finish_feishu_plan(workspace, plan, "succeeded")
-        return result
 
     if web_dist is not None:
         app.mount("/", StaticFiles(directory=web_dist, html=True), name="webui")

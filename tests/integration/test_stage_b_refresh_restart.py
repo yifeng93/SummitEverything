@@ -106,7 +106,7 @@ def api(tmp_path, monkeypatch, backend, remote, *, create=True):
                 "feishu": {
                     "app_id": APP_ID,
                     "redirect_uri": CALLBACK,
-                    "identity": "app",
+                    "identity": "user",
                     "calendar_id": "independent-calendar",
                     "real_data_enabled": True,
                 },

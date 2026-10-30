@@ -16,7 +16,7 @@
   resize: vertical;
 }
 
-.feishu-agent-setup-feedback {
-  margin: 0.25rem 0 0;
-  overflow-wrap: anywhere;
-}
+
+/* 复制成功后按钮变成绿色「已复制 ✓」，不再另起一行说明。 */
+.feishu-copy-done { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--green); }
+.feishu-copy-done svg { flex: 0 0 auto; }

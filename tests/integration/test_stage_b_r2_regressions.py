@@ -12,10 +12,10 @@ from uuid import uuid4
 
 import pytest
 from authorized_feishu_client import AuthorizedFeishuReadClient
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
-from summit_everything.api.app import create_app
 from summit_everything.integrations.feishu.fake import FakeFeishu
 from summit_everything.integrations.feishu.provider import (
     AppCredentials,
@@ -348,7 +348,9 @@ def _real_client(
         )
 
     monkeypatch.setattr(app_module, "FeishuHttpProvider", factory)
-    app = create_app(
+    # This helper exercises the production HTTP adapter and MockTransport; do
+    # not inject the synthetic FakeFeishu fixture here.
+    app = app_module.create_app(
         session_token="synthetic-r2-session",
         profile_root=tmp_path / "profile",
         secret_backend=MemorySecretBackend(),
@@ -607,7 +609,7 @@ class ConfigStub(FeishuStub):
         return httpx.Response(404, json={"code": 99991672, "msg": "synthetic unexpected path"})
 
 
-def _config_client(tmp_path: Path, monkeypatch, store: StubCredentialStore):
+def _config_client(tmp_path: Path, monkeypatch, store: StubCredentialStore, *, fake=False):
     stub = ConfigStub()
 
     def factory(config, app_credentials, **kwargs):  # type: ignore[no-untyped-def]
@@ -621,7 +623,10 @@ def _config_client(tmp_path: Path, monkeypatch, store: StubCredentialStore):
         )
 
     monkeypatch.setattr(app_module, "FeishuHttpProvider", factory)
-    app = create_app(
+    # The real-provider contract cases below use the HTTP adapter with a
+    # MockTransport; only their remote boundary is synthetic.
+    app_factory = create_app if fake else app_module.create_app
+    app = app_factory(
         session_token="synthetic-r2-session",
         profile_root=tmp_path / "profile",
         secret_backend=MemorySecretBackend(),
@@ -1020,7 +1025,7 @@ def test_status_reports_the_actual_mode_and_separates_app_from_user(tmp_path, mo
 
 def test_status_in_fake_mode_is_labelled_fake(tmp_path, monkeypatch):
     store = StubCredentialStore(app=_app_credentials())
-    client, _stub = _config_client(tmp_path, monkeypatch, store)
+    client, _stub = _config_client(tmp_path, monkeypatch, store, fake=True)
     status = client.get("/api/v1/integrations/feishu/status", headers=HEADERS).json()
     assert status["mode"] == "fake", status
     assert status["app_configured"] is False, status
@@ -1049,7 +1054,7 @@ def test_real_import_source_is_not_labelled_fake(tmp_path, monkeypatch):
 
 def test_fake_import_source_is_labelled_fake(tmp_path, monkeypatch):
     store = StubCredentialStore(user=_user_token(["minutes:read", "calendar:read"]))
-    client, _stub = _config_client(tmp_path, monkeypatch, store)
+    client, _stub = _config_client(tmp_path, monkeypatch, store, fake=True)
     # Fake mode uses the simulated provider with its own synthetic material ids.
     response = client.post(
         "/api/v1/integrations/feishu/imports",

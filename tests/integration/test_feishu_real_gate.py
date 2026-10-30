@@ -14,19 +14,34 @@ from fastapi.testclient import TestClient
 from summit_everything.api.app import create_app
 from summit_everything.integrations.acceptance_plans import AcceptancePlanLedger
 from summit_everything.integrations.feishu.fake import FakeFeishu
-from summit_everything.integrations.settings import MemorySecretBackend
+from summit_everything.integrations.feishu.provider import (
+    AppCredentials,
+    CalendarPage,
+    FeishuConfig,
+    MemoryCredentialStore,
+    UserCredentials,
+)
+from summit_everything.integrations.feishu.service import FeishuService
+from summit_everything.integrations.settings import (
+    CredentialVault,
+    FeishuSettings,
+    MemorySecretBackend,
+    ProviderSettings,
+    provider_settings_payload,
+)
+from summit_everything.retrieval.store import IndexStore
 
 HEADERS = {"Authorization": "Bearer synthetic-gate-session"}
 APP_ID = "cli_synthetic_gate_app"
 CALLBACK = "http://localhost:8765/callback"
 
 
-def _client(tmp_path: Path) -> TestClient:
+def _client(tmp_path: Path, provider=None) -> TestClient:
     app = create_app(
         session_token="synthetic-gate-session",
         profile_root=tmp_path / "profile",
         secret_backend=MemorySecretBackend(),
-        feishu_provider=FakeFeishu(tmp_path / "synthetic-remote"),
+        feishu_provider=provider or FakeFeishu(tmp_path / "synthetic-remote"),
     )
     return TestClient(app)
 
@@ -67,6 +82,54 @@ def _configure_real(client: TestClient) -> None:
     )
 
 
+def test_expired_user_calendar_token_needs_matching_app_secret_to_be_ready(tmp_path: Path) -> None:
+    credentials = UserCredentials(
+        access_token="synthetic-expired-access",
+        refresh_token="synthetic-refresh",
+        expires_at=900,
+        scopes=["calendar:read", "calendar:calendar.event:read"],
+    )
+    credential_store = MemoryCredentialStore()
+    credential_store.put(credentials)
+    config = FeishuConfig(mode="real", app_id=APP_ID, identity="user")
+    service = FeishuService(
+        FakeFeishu(tmp_path / "synthetic-remote"),
+        credential_store,
+        config,
+        "synthetic-session",
+        clock=lambda: 1000,
+    )
+    backend = MemorySecretBackend()
+    vault = CredentialVault("synthetic-profile", backend)
+    settings = ProviderSettings(
+        mode="real",
+        feishu=FeishuSettings(app_id=APP_ID, identity="user"),
+    )
+    vault.put("feishu_user", credentials.model_dump_json(), account_id=APP_ID)
+
+    before = service.status()
+    summary = provider_settings_payload(
+        settings, vault, feishu_calendar_ready=before.calendar_ready
+    )
+    assert before.refreshable is True
+    assert before.calendar_ready is False
+    assert before.app_configured is False
+    assert before.credential_error == "application_credential_missing"
+    assert summary.capabilities["feishu_calendar_read"].disabled_reason == "provider_not_configured"
+
+    app_credentials = AppCredentials(app_id=APP_ID, app_secret="synthetic-app-secret")
+    credential_store.put_app(app_credentials)
+    vault.put("feishu_app", "synthetic-app-secret", account_id=APP_ID)
+
+    after = service.status()
+    summary = provider_settings_payload(settings, vault, feishu_calendar_ready=after.calendar_ready)
+    assert after.refreshable is True
+    assert after.calendar_ready is True
+    assert after.app_configured is True
+    assert after.credential_error is None
+    assert summary.capabilities["feishu_calendar_read"].available is True
+
+
 def test_real_data_routes_are_disabled_until_explicitly_authorized(tmp_path):
     client = _client(tmp_path)
     _open(client, tmp_path)
@@ -81,12 +144,145 @@ def test_real_data_routes_are_disabled_until_explicitly_authorized(tmp_path):
     for path in (
         "/api/v1/integrations/feishu/materials",
         "/api/v1/integrations/feishu/tasks",
-        "/api/v1/integrations/feishu/calendar?start=2026-10-09T00:00:00%2B08:00"
-        "&end=2026-10-10T00:00:00%2B08:00&timezone=Asia%2FShanghai",
     ):
         response = client.get(path, headers=HEADERS)
         assert response.status_code == 409, (path, response.text)
         assert response.json()["error"]["code"] == "acceptance_plan_required"
+
+
+def test_calendar_read_is_direct_bounded_and_workspace_bound_for_agent(tmp_path):
+    class CalendarProvider:
+        calls = []
+
+        def calendar(self, credentials, start, end, timezone, cursor, limit):
+            self.calls.append((credentials, start, end, timezone, cursor, limit))
+            return CalendarPage(items=[], next_cursor=None, timezone=timezone, truncated=False)
+
+    provider = CalendarProvider()
+    client = _client(tmp_path, provider)
+    _open(client, tmp_path)
+    _configure_real(client)
+    current = client.get("/api/v1/workspaces/current", headers=HEADERS).json()
+    path = (
+        "/api/v1/integrations/feishu/calendar?start=2026-10-09T00:00:00%2B08:00"
+        "&end=2026-10-10T00:00:00%2B08:00&timezone=Asia%2FShanghai&limit=20"
+    )
+
+    direct = client.get(path, headers=HEADERS)
+    assert direct.status_code == 200, direct.text
+    assert direct.json()["items"] == []
+    assert len(provider.calls) == 1
+
+    agent = client.get(
+        "/api/v1/agent/calendar?" + path.split("?", 1)[1],
+        headers={**HEADERS, "X-Summit-Workspace-Id": current["workspace_id"]},
+    )
+    assert agent.status_code == 200, agent.text
+    assert agent.json() == direct.json()
+    assert len(provider.calls) == 2
+
+    isolated = client.get(
+        "/api/v1/agent/calendar?" + path.split("?", 1)[1],
+        headers={**HEADERS, "X-Summit-Workspace-Id": "00000000-0000-0000-0000-000000000001"},
+    )
+    assert isolated.status_code == 409
+    assert isolated.json()["error"]["code"] == "workspace_changed"
+    assert len(provider.calls) == 2
+
+
+def test_calendar_provider_failure_is_not_retried_or_reported_as_empty(tmp_path):
+    class FailingCalendarProvider:
+        calls = 0
+
+        def calendar(self, credentials, start, end, timezone, cursor, limit):
+            self.calls += 1
+            raise TimeoutError("synthetic timeout")
+
+    provider = FailingCalendarProvider()
+    client = _client(tmp_path, provider)
+    _open(client, tmp_path)
+    _configure_real(client)
+    response = client.get(
+        "/api/v1/integrations/feishu/calendar?start=2026-10-09T00:00:00%2B08:00"
+        "&end=2026-10-10T00:00:00%2B08:00&timezone=Asia%2FShanghai",
+        headers=HEADERS,
+    )
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "provider_timeout"
+    assert provider.calls == 1
+
+
+def test_user_calendar_requires_authorization_and_scope_but_accepts_legacy_readonly_scope(tmp_path):
+    class CalendarProvider:
+        calls = []
+
+        def calendar(self, credentials, start, end, timezone, cursor, limit):
+            self.calls.append(credentials)
+            return CalendarPage(items=[], next_cursor=None, timezone=timezone)
+
+    provider = CalendarProvider()
+    client = _client(tmp_path, provider)
+    _open(client, tmp_path)
+    _configure_real(client)
+    assert (
+        client.patch(
+            "/api/v1/settings", headers=HEADERS, json={"feishu": {"identity": "user"}}
+        ).status_code
+        == 200
+    )
+    path = (
+        "/api/v1/integrations/feishu/calendar?start=2026-10-09T00:00:00%2B08:00"
+        "&end=2026-10-10T00:00:00%2B08:00&timezone=Asia%2FShanghai"
+    )
+
+    missing_authorization = client.get(path, headers=HEADERS)
+    assert missing_authorization.status_code == 401
+    assert missing_authorization.json()["error"]["code"] == "not_authorized"
+    assert (
+        client.get("/api/v1/settings", headers=HEADERS).json()["capabilities"][
+            "feishu_calendar_read"
+        ]["available"]
+        is False
+    )
+
+    credential = UserCredentials(
+        access_token="synthetic-user-token",
+        refresh_token="synthetic-refresh-token",
+        expires_at=2_000_000_000,
+        scopes=["calendar:unrelated:read"],
+    )
+    assert (
+        client.put(
+            "/api/v1/credentials/feishu_user",
+            headers=HEADERS,
+            json={"account_id": APP_ID, "secret": credential.model_dump_json()},
+        ).status_code
+        == 200
+    )
+    missing_scope = client.get(path, headers=HEADERS)
+    assert missing_scope.status_code == 403
+    assert missing_scope.json()["error"]["code"] == "missing_scope"
+    assert provider.calls == []
+
+    legacy = credential.model_copy(update={"scopes": ["calendar:calendar:readonly"]})
+    assert (
+        client.put(
+            "/api/v1/credentials/feishu_user",
+            headers=HEADERS,
+            json={"account_id": APP_ID, "secret": legacy.model_dump_json()},
+        ).status_code
+        == 200
+    )
+    allowed = client.get(path, headers=HEADERS)
+    assert allowed.status_code == 200, allowed.text
+    assert len(provider.calls) == 1
+    assert provider.calls[0].scopes == ["calendar:calendar:readonly"]
+    assert (
+        client.get("/api/v1/settings", headers=HEADERS).json()["capabilities"][
+            "feishu_calendar_read"
+        ]["available"]
+        is True
+    )
 
 
 def test_real_mode_without_an_app_id_is_reported_as_unconfigured(tmp_path):
@@ -98,6 +294,13 @@ def test_real_mode_without_an_app_id_is_reported_as_unconfigured(tmp_path):
     response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "provider_not_configured"
+    calendar = client.get(
+        "/api/v1/integrations/feishu/calendar?start=2026-10-09T00:00:00%2B08:00"
+        "&end=2026-10-10T00:00:00%2B08:00&timezone=Asia%2FShanghai",
+        headers=HEADERS,
+    )
+    assert calendar.status_code == 409
+    assert calendar.json()["error"]["code"] == "provider_not_configured"
 
 
 def test_settings_flag_does_not_report_capability_as_enabled(tmp_path):
@@ -121,12 +324,14 @@ def test_settings_flag_does_not_report_capability_as_enabled(tmp_path):
     assert response.json()["error"]["code"] == "acceptance_plan_required"
 
 
-def test_fake_mode_keeps_working_offline(tmp_path):
+def test_settings_api_cannot_select_fake_feishu_mode(tmp_path):
     client = _client(tmp_path)
     _open(client, tmp_path)
+    rejected = client.patch("/api/v1/settings", headers=HEADERS, json={"mode": "fake"})
+    assert rejected.status_code == 422
     response = client.get("/api/v1/integrations/feishu/materials", headers=HEADERS)
-    assert response.status_code == 401
-    assert response.json()["error"]["code"] == "not_authorized"
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "provider_not_configured"
 
 
 def test_real_feishu_read_plan_binds_configuration_scope_and_is_one_shot(tmp_path):
@@ -299,13 +504,13 @@ def test_real_query_plan_binds_context_settings_and_sources_without_persisting_p
                 "mode": "real",
                 "llm": {"provider": "deepseek", "model": "deepseek-flash", "enabled": True},
                 "embedding": {
-                    "provider": "dashscope",
-                    "model": "qwen3.7-text-embedding",
+                    "provider": "local",
+                    "model": "BAAI/bge-small-zh-v1.5",
                     "enabled": True,
                 },
                 "rerank": {
-                    "provider": "dashscope",
-                    "model": "qwen3.7-text-rerank",
+                    "provider": "local",
+                    "model": "BAAI/bge-small-zh-v1.5",
                     "enabled": True,
                 },
             },
@@ -313,6 +518,37 @@ def test_real_query_plan_binds_context_settings_and_sources_without_persisting_p
         == 200
     )
     fingerprint = client.get("/api/v1/settings", headers=HEADERS).json()["embedding_fingerprint"]
+    workspace = client.get("/api/v1/workspaces/current", headers=HEADERS).json()
+    profile = Path(workspace["local_profile_dir"]).resolve()
+
+    class PreparedModelStatus:
+        def status(self) -> dict[str, object]:
+            return {
+                "model": "BAAI/bge-small-zh-v1.5",
+                "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+                "dimensions": 512,
+                "token_limit": 512,
+                "download_size_bytes": 95_330_972,
+                "state": "ready",
+                "downloaded_bytes": 95_330_972,
+                "progress_percent": 100,
+                "error_code": None,
+            }
+
+    # Planning tests only inspect readiness; no inference is invoked here.
+    client.app.state.local_model_stores[str(profile)] = PreparedModelStatus()
+    # Seed an empty but structurally valid synthetic LanceDB generation for the
+    # configured model. This test exercises plan binding and stale-plan
+    # rejection; it must not require a provider call or bypass the new index gate.
+    index = IndexStore(profile / "index.sqlite3")
+    generation = index.replace_generation(
+        UUID(workspace["workspace_id"]),
+        fingerprint,
+        [],
+        expected_generation=None,
+        vector_dimension=512,
+    )
+    assert index.active_generation(UUID(workspace["workspace_id"])) == generation
     query_id = str(uuid4())
     scope = {
         "question": "合成问题不得存入账本",
@@ -330,7 +566,7 @@ def test_real_query_plan_binds_context_settings_and_sources_without_persisting_p
     )
     assert created.status_code == 201, created.text
     plan = created.json()["plan"]
-    assert plan["request_limit"] == 3
+    assert plan["request_limit"] == 1
     assert created.json()["scope"]["question"] == scope["question"]
     ledger = next((tmp_path / "profile").rglob("acceptance-plans.json"))
     assert scope["question"] not in ledger.read_text()

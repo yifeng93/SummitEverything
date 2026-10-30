@@ -1,0 +1,39 @@
+/* 页面阅读：左目录、右正文，正文 15/1.75、72ch；整理操作在抽屉里，正文区不带表单。 */
+
+.page-reader-layout { display: grid; grid-template-columns: 224px minmax(0, 1fr); gap: 32px; max-width: 1200px; margin: 0 auto; padding: 32px 40px 72px; align-items: start; }
+.page-reader-side { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow: auto; }
+.page-reader { max-width: var(--measure-read); }
+.page-reader-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.page-reader-tools { display: flex; align-items: center; gap: 6px; }
+.page-reader .back-link { color: var(--muted); font-size: var(--text-small); }
+.tree-toggle { display: none; }
+.page-breadcrumb { margin: 14px 0 0; color: var(--quiet); font-size: var(--text-caption); }
+.page-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; color: var(--muted); font-size: var(--text-caption); }
+.page-meta span { display: inline-flex; align-items: center; }
+.page-meta span:first-child { padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); background: var(--surface-2); }
+.page-meta span.page-status-invalid, .page-meta span.page-status-historical { border-color: var(--warn); background: var(--warn-wash); color: var(--warn-ink); }
+.page-reader h1 { margin: 12px 0 24px; font-size: var(--text-page); }
+.page-body { max-width: var(--measure-read); color: var(--ink); font-size: var(--text-body); line-height: var(--lh-read); }
+.page-validity-note { margin: 0 0 14px; padding: 10px 12px; border-left: 3px solid var(--warn); background: var(--warn-wash); color: var(--warn-ink); font-size: var(--text-small); line-height: 1.65; }
+.page-reconfirmation { display: grid; gap: 14px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.page-reconfirmation > p[role="status"] { margin: 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-wash); color: var(--ink); font-size: var(--text-small); line-height: 1.65; }
+/* 同分类翻页：窗口不够宽、目录收起时，仍能一篇接一篇读下去。 */
+.page-pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); }
+.page-pager > div { flex: 1; min-width: 0; }
+.page-pager .next { display: flex; justify-content: flex-end; }
+.page-pager button { display: grid; gap: 2px; max-width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.page-pager button:hover { background: var(--surface-2); }
+.page-pager span { color: var(--quiet); font-size: var(--text-caption); }
+.page-pager strong { overflow: hidden; font-size: var(--text-small); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.page-pager .next button { text-align: right; justify-items: end; }
+
+@media (max-width: 1100px) {
+  .page-reader-layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 24px 24px 64px; }
+  .page-reader-side { display: none; }
+  .tree-toggle { display: inline-flex; }
+}
+
+@media (max-width: 560px) {
+  .page-reader-layout { padding: 20px 16px 48px; }
+  .page-meta { flex-direction: column; align-items: flex-start; gap: 6px; }
+}

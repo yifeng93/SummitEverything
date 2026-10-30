@@ -64,13 +64,17 @@ def test_injected_defaults_prefill_settings_and_keep_offline_defaults(tmp_path, 
     open_workspace(client, tmp_path / "workspace")
 
     payload = client.get("/api/v1/settings", headers=HEADERS).json()
-    assert payload["mode"] == "fake"
-    assert payload["llm"]["provider"] == "fake"
-    assert payload["embedding"]["provider"] == "fake"
+    assert payload["mode"] == "real"
+    assert payload["llm"]["provider"] == "deepseek"
+    assert payload["llm"]["enabled"] is True
+    assert payload["embedding"]["provider"] == "local"
     assert payload["feishu"]["app_id"] == APP_ID
     assert payload["feishu"]["redirect_uri"] == CALLBACK_URI
     assert payload["embedding"]["base_url"] == EMBEDDING_BASE_URL
     assert payload["rerank"]["base_url"] == RERANK_BASE_URL
+
+    fake_patch = client.patch("/api/v1/settings", headers=HEADERS, json={"mode": "fake"})
+    assert fake_patch.status_code == 422, fake_patch.text
 
 
 def test_user_saved_setting_overrides_the_injected_default(tmp_path, monkeypatch):
@@ -185,5 +189,7 @@ def test_create_app_reads_no_implicit_local_source(tmp_path, monkeypatch):
     payload = client.get("/api/v1/settings", headers=HEADERS).json()
     assert payload["feishu"]["app_id"] == ""
     assert payload["feishu"]["redirect_uri"] == ""
-    assert payload["embedding"]["base_url"] == "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    assert payload["rerank"]["base_url"] == "https://dashscope.aliyuncs.com/api/v1"
+    assert payload["embedding"]["provider"] == "local"
+    assert payload["rerank"]["provider"] == "local"
+    assert payload["embedding"]["base_url"] == ""
+    assert payload["rerank"]["base_url"] == ""

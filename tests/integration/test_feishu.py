@@ -6,15 +6,17 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
-
-from summit_everything.api.app import create_app
 
 PREFIX = "/api/v1/integrations/feishu"
 
 
 def client(tmp_path: Path) -> TestClient:
-    app = create_app(session_token="local-test-session", profile_root=tmp_path / "profiles")
+    app = create_app(
+        session_token="local-test-session",
+        profile_root=tmp_path / "profiles",
+    )
     c = TestClient(
         app,
         base_url="http://127.0.0.1:5173",
@@ -54,9 +56,12 @@ def test_fake_default_authorization_and_selected_only_import(tmp_path: Path) -> 
         "mode": "fake",
         "authorized": False,
         "app_configured": False,
-        "identity": "app",
+        "identity": "user",
         "token_type": "user",
         "scopes": [],
+        "refreshable": False,
+        "calendar_ready": False,
+        "authorization_generation": 0,
         "user_identity_verified": False,
         "credential_error": None,
     }
@@ -286,6 +291,7 @@ def test_expiry_missing_scope_and_safe_provider_errors(tmp_path: Path) -> None:
 
 def test_oauth_expiry_and_wrong_redirect(tmp_path: Path) -> None:
     c = client(tmp_path)
+    c.get(PREFIX + "/status")
     service = c.app.state.feishu_service
     service.clock = lambda: 1000
     url = urlsplit(c.post(PREFIX + "/authorizations", json={}).json()["authorization_url"])
@@ -463,7 +469,10 @@ def test_configured_callback_other_port_and_cors_is_preserved(tmp_path: Path) ->
 
     config = FeishuConfig(redirect_uri="http://127.0.0.1:8793" + PREFIX + "/callback")
     c = TestClient(
-        create_app(session_token="local", feishu_config=config),
+        create_app(
+            session_token="local",
+            feishu_config=config,
+        ),
         base_url="http://127.0.0.1:5173",
         headers={"Authorization": "Bearer local"},
     )
@@ -500,7 +509,11 @@ def test_app_secret_boundary_isolated_from_user_tokens_and_responses(tmp_path: P
     config = module.FeishuConfig(app_id="synthetic-app")
     assert "synthetic-app-secret" not in config.model_dump_json()
     c = TestClient(
-        create_app(session_token="local", credential_store=store, feishu_config=config),
+        create_app(
+            session_token="local",
+            credential_store=store,
+            feishu_config=config,
+        ),
         base_url="http://127.0.0.1:5173",
         headers={"Authorization": "Bearer local"},
     )

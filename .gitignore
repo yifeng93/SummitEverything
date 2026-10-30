@@ -17,5 +17,9 @@ build/
 *.pem
 *.key
 .local/
+.workbuddy/
 test-results/
 playwright-report/
+
+# Local pytest workspaces can contain profile data and credentials.
+.pytest-tmp*/

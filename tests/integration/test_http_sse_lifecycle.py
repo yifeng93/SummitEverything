@@ -12,8 +12,8 @@ from uuid import uuid4
 
 import httpx
 import uvicorn
+from fake_settings_factory import create_fake_test_app as create_app
 
-from summit_everything.api.app import create_app
 from summit_everything.integrations.llm import GroundedAnswer as ProviderAnswer
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore

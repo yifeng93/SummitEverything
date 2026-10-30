@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { api, ApiError, type Page, type Workspace } from './api/client'
+import { api, ApiError, type Page, type Project, type Workspace } from './api/client'
 import { AppShell } from './components/AppShell'
 import { ApprovalView } from './components/ApprovalView'
 import { AskView } from './components/AskView'
@@ -16,7 +16,6 @@ import { useToasts, type ToastKind } from './toast'
 import {
   firstUseProgressKey, resolveFirstUseProgress, saveFirstUseProgress, type FirstUseProgress,
 } from './components/firstUseProgress'
-import './App.css'
 
 /**
  * 外壳状态机（逐页规格 §0「三态」）。
@@ -40,10 +39,18 @@ export default function App() {
   const [profileDir, setProfileDir] = useState<string | undefined>(undefined)
   const [approvalCount, setApprovalCount] = useState(0)
   const [approvalRefreshEpoch, setApprovalRefreshEpoch] = useState(0)
+  const [runtimeSettingsEpoch, setRuntimeSettingsEpoch] = useState(0)
   const [approvalTarget, setApprovalTarget] = useState<ApprovalTarget | null>(null)
   const [approvalDirty, setApprovalDirty] = useState(false)
   const [approvalDiscardEpoch, setApprovalDiscardEpoch] = useState(0)
   const [todayCacheEpoch, setTodayCacheEpoch] = useState(0)
+  /** 侧栏「项目」二级入口的数据源；只保留未归档项目。 */
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [projectsEpoch, setProjectsEpoch] = useState(0)
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null)
+  const [projectTarget, setProjectTarget] = useState<{ id: string; nonce: number } | null>(null)
+  const projectsHandle = useRef<{ showList: () => void } | null>(null)
+  const projectNonce = useRef(0)
   const [themePreference, setThemePreference] = useThemePreference()
   const { toasts, notify, dismiss } = useToasts()
   const resetApproval = useCallback(() => setApprovalCount(0), [])
@@ -137,6 +144,32 @@ export default function App() {
 
   useEffect(() => { void connect() }, [connect])
 
+  /** 侧栏二级入口只依赖项目名与 id；失败时留空，不冒充「没有项目」。 */
+  useEffect(() => {
+    if (connection !== 'ready') return
+    let cancelled = false
+    void api.get<Project[]>('/projects').then((rows) => {
+      if (!cancelled) setProjects(rows.filter((project) => !project.archived).map((project) => ({ id: project.id, name: project.name })))
+    }).catch(() => { if (!cancelled) setProjects([]) })
+    return () => { cancelled = true }
+  }, [connection, projectsEpoch, workspace?.workspace_id])
+
+  const refreshSidebarProjects = useCallback(() => setProjectsEpoch((value) => value + 1), [])
+
+  /** 侧栏点项目：和点导航一样先处理未保存稿件，再直接落到那个项目的详情。 */
+  const openProjectShortcut = useCallback((projectId: string) => {
+    if (section === 'approval' && approvalDirty) {
+      if (!window.confirm('稿件有未保存的修改。离开审批会放弃这些修改，是否继续？')) return
+      setApprovalDirty(false)
+      setApprovalDiscardEpoch((value) => value + 1)
+    }
+    projectNonce.current += 1
+    setPage(null)
+    setProjectTarget({ id: projectId, nonce: projectNonce.current })
+    setSection('projects')
+    setVisitedSections((current) => new Set(current).add('projects'))
+  }, [section, approvalDirty])
+
   /**
    * 打开工作库：先解析本机进度再决定落点，避免先闪一下今日又弹向导。
    * 不自动打开上次的工作库，也不按凭据猜测首次配置是否完成。
@@ -147,12 +180,19 @@ export default function App() {
     if (opened.local_profile_dir) setProfileDir(opened.local_profile_dir)
     setPage(null)
     setApprovalTarget(null)
+    setProjectTarget(null)
+    setActiveProjectId(null)
     setConnection('connecting')
     await resolveFirstUse(opened, mode)
     setConnection('ready')
   }, [resetApproval, resolveFirstUse])
 
   const refreshApprovalAfterIntake = useCallback(() => setApprovalRefreshEpoch((value) => value + 1), [])
+  const refreshApprovalAfterSettingsChange = useCallback(() => {
+    setApprovalRefreshEpoch((value) => value + 1)
+    setRuntimeSettingsEpoch((value) => value + 1)
+  }, [])
+  const clearProjectTarget = useCallback(() => setProjectTarget(null), [])
   const openApproval = useCallback((target?: ApprovalTarget) => {
     setApprovalTarget(target ?? null)
     setSection('approval')
@@ -160,6 +200,13 @@ export default function App() {
   }, [])
   const clearApprovalTarget = useCallback(() => setApprovalTarget(null), [])
   const invalidateTodayAfterAuthorizationChange = useCallback(() => setTodayCacheEpoch((value) => value + 1), [])
+
+  /** 换页（阅读页里点目录/上一篇）总是回到正文顶部；关闭阅读时再还原原来的列表位置。 */
+  function showPage(next: Page) {
+    setPage(next)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
 
   async function openPage(pageId: string, expectedHash?: string) {
     if (section === 'approval' && approvalDirty) {
@@ -173,11 +220,11 @@ export default function App() {
     }
     try {
       const query = expectedHash ? '?expected_content_sha256=' + expectedHash : ''
-      setPage(await api.get<Page>('/pages/' + pageId + query))
+      showPage(await api.get<Page>('/pages/' + pageId + query))
     } catch (cause) {
       if (expectedHash && cause instanceof ApiError && cause.code === 'version_conflict') {
         try {
-          setPage(await api.get<Page>('/pages/' + pageId))
+          showPage(await api.get<Page>('/pages/' + pageId))
           report('引用保存的是回答当时的页面版本；该页面已更新。当前显示的是新版本，不能替代原回答依据。')
           return
         } catch {
@@ -207,6 +254,9 @@ export default function App() {
     setFirstUse((current) => ({ ...current, open: false }))
     setPage(null)
     setApprovalTarget(null)
+    setProjectTarget(null)
+    setActiveProjectId(null)
+    setProjects([])
     setSection('today')
     setWorkspace(null)
     resetApproval()
@@ -231,11 +281,15 @@ export default function App() {
           setApprovalDiscardEpoch((value) => value + 1)
         }
         setPage(null); setSection(next); setVisitedSections((current) => new Set(current).add(next))
+        // 点一级导航「项目」永远回到项目列表。
+        if (next === 'projects') projectsHandle.current?.showList()
       }}
       workspaceName={workspace.name}
       onSwitchWorkspace={switchWorkspace}
       approvalCount={approvalCount}
-      openPageTitle={page ? String(page.metadata.title ?? '未命名页面') : null}
+      projects={projects}
+      activeProjectId={activeProjectId}
+      onOpenProject={openProjectShortcut}
       themePreference={themePreference}
       onThemePreferenceChange={setThemePreference}
       toasts={toasts}
@@ -260,6 +314,8 @@ export default function App() {
           workspaceId={workspace.workspace_id}
           profileId={workspace.local_profile_dir ?? profileDir ?? 'default'}
           onSwitchWorkspace={switchWorkspace}
+          onOpenApproval={openApproval}
+          onError={report}
         wizardOnly={firstUse.open}
         initialWizardStep={firstUse.step}
         resumeWizardStep={firstUse.step}
@@ -270,11 +326,12 @@ export default function App() {
         onWizardClose={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection(firstUse.returnSection) }}
         onFinishFirstUse={() => { setFirstUse((current) => ({ ...current, open: false })); setPage(null); setSection('today') }}
         onAuthorizationChanged={invalidateTodayAfterAuthorizationChange}
+        onRuntimeSettingsChanged={refreshApprovalAfterSettingsChange}
         />
       ) : null}
-      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView key={workspace.workspace_id} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} />}</div>
-      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView key={workspace.workspace_id} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={openApproval} />}</div>
-      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={openApproval} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} onOpenConnectionWizard={() => { setFirstUse((current) => ({ ...current, open: true, step: 4, returnSection: 'today' })); setSection('settings'); setVisitedSections((current) => new Set(current).add('settings')) }} /></div>
+      <div hidden={Boolean(page) || section !== 'projects'}>{visitedSections.has('projects') && <ProjectsView key={workspace.workspace_id} handleRef={projectsHandle} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} target={projectTarget} onTargetHandled={clearProjectTarget} onActiveProjectChange={setActiveProjectId} onProjectsChanged={refreshSidebarProjects} />}</div>
+      <div hidden={Boolean(page) || section !== 'ask'}>{visitedSections.has('ask') && <AskView key={workspace.workspace_id} active={!page && section === 'ask'} settingsEpoch={runtimeSettingsEpoch} onError={report} onOpenPage={(id, expectedHash) => void openPage(id, expectedHash)} onOpenApproval={openApproval} onOpenSettings={() => { setPage(null); setSection('settings'); setVisitedSections((current) => new Set(current).add('settings')) }} />}</div>
+      <div hidden={Boolean(page) || section !== 'today'}><TodayView key={`${profileDir ?? ''}:${workspace.workspace_id}:${todayCacheEpoch}`} calendarDedupeScope={`${profileDir ?? ''}:${workspace.workspace_id}`} onError={report} onOpenPage={(id) => void openPage(id)} onOpenApproval={openApproval} onInboxChanged={refreshApprovalAfterIntake} onAuthorizationChanged={invalidateTodayAfterAuthorizationChange} onOpenConnectionWizard={() => { setFirstUse((current) => ({ ...current, open: true, step: 4, returnSection: 'today' })); setSection('settings'); setVisitedSections((current) => new Set(current).add('settings')) }} /></div>
       <div hidden={Boolean(page) || section !== 'approval'}><ApprovalView key={workspace.workspace_id} refreshEpoch={approvalRefreshEpoch} target={approvalTarget} onTargetHandled={clearApprovalTarget} onPendingCount={setApprovalCount} onDirtyChange={setApprovalDirty} discardEpoch={approvalDiscardEpoch} onError={report} onOpenPage={(pageId, expectedHash) => void openPage(pageId, expectedHash)} /></div>
     </AppShell>
   )

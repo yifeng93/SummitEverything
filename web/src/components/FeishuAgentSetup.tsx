@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Check } from 'lucide-react'
 import { buildFeishuAgentSetupPrompt } from './feishuAgentSetupPrompt'
 import './FeishuAgentSetup.css'
 
@@ -25,8 +26,11 @@ export function FeishuAgentSetup({ className = 'button secondary' }: { className
   }
 
   return <div className="feishu-agent-setup">
-    <button className={className} type="button" disabled={copying} onClick={() => void copyPrompt()}>{copying ? '正在复制…' : '连接飞书'}</button>
-    {copied && <p className="feishu-agent-setup-feedback" role="status">已复制，粘贴到 Codex / WorkBuddy 开始自动配置。</p>}
+    <button className={className} type="button" disabled={copying} onClick={() => void copyPrompt()}>
+      {copying ? '正在复制…' : copied ? <span className="feishu-copy-done"><span>已复制</span><Check size={14} strokeWidth={2} aria-hidden="true" /></span> : '连接飞书'}
+    </button>
+    {/* 复制结果只回在按钮上；这里保留一个读屏可播报的状态，不占版面。 */}
+    <span className="sr-only" role="status">{copied ? '已复制' : ''}</span>
     {failed && <div className="feishu-agent-setup-fallback">
       <p className="form-error" role="alert">无法自动复制。选择下面的只读提示词，再粘贴到 Codex / WorkBuddy；也可以重试。</p>
       <textarea aria-label="飞书接入提示词" readOnly value={prompt} onFocus={(event) => event.currentTarget.select()} />

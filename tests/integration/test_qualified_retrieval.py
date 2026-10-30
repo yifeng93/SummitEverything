@@ -10,7 +10,7 @@ from summit_everything.intake.sources import IntakeService
 from summit_everything.integrations.embedding import FakeEmbedding
 from summit_everything.integrations.llm import GroundedAnswer
 from summit_everything.local.answer_context import AnswerContext
-from summit_everything.retrieval.planner import plan_retrieval
+from summit_everything.retrieval.planner import plan_retrieval, query_scope, supported_dimensions
 from summit_everything.retrieval.query import QueryService
 from summit_everything.retrieval.store import IndexStore
 from summit_everything.workspace.manifest import (
@@ -145,6 +145,56 @@ def test_unrelated_query_reports_missing_relevance_without_claiming_index_failur
         assert "缓存" not in answer.missing_information[0]
         assert "资格检查未通过" not in answer.missing_information[0]
     assert calls == []
+
+
+def test_local_style_retrieval_keeps_synonyms_scoped_and_ignores_wrong_numeric_premises(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    target_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青岚计划预算与排期",
+        body=(
+            "青岚计划可用预算上限为 19 万元；预计于 11 月启动。"
+            "场地租金为 1800 元/天。可容纳 24 人。"
+        ),
+    )
+    other_line = create_line(root, "其他模拟线", "other-line")
+    other_project = create_project(root, other_line.id, "朱雀项目", "other-project")
+    other_id, _ = approve_page(
+        root,
+        str(other_line.id),
+        str(other_project.id),
+        title="朱雀项目预算与排期",
+        body="朱雀项目可用预算上限为 12 万元；预计于 12 月启动。",
+    )
+    service = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    service.rebuild(root, fingerprint="fake-v1")
+
+    cases = {
+        "青岚计划经费上限是多少？": (target_id, "19 万元"),
+        "青岚计划可动用的资金额度是多少？": (target_id, "19 万元"),
+        "青岚计划在什么时候动工？": (target_id, "预计于 11 月启动"),
+        "青岚计划预算 1000 元能租吗？": (target_id, "1800 元/天"),
+        "青岚计划能容纳 100 人吗？": (target_id, "可容纳 24 人"),
+        "朱雀项目经费上限是多少？": (other_id, "12 万元"),
+    }
+    for question, (expected_page_id, evidence) in cases.items():
+        answer = service.query(root, question, fingerprint="fake-v1", limit=5)
+        assert any(item.page_id == expected_page_id for item in answer.citations), question
+        assert all(item.page_id == expected_page_id for item in answer.citations), question
+        assert evidence in " ".join(item.excerpt for item in answer.citations), question
+
+    # Specific objects and meaningful qualifiers remain hard scope boundaries.
+    for question in (
+        "紫藤计划可动用资金上限是多少？",
+        "青岚计划年度预算是多少？",
+        "青岚计划专项预算是多少？",
+    ):
+        answer = service.query(root, question, fingerprint="fake-v1", limit=5)
+        assert answer.citations == [], question
 
 
 def test_external_edit_during_embedding_is_rejected_before_reranking(tmp_path: Path) -> None:
@@ -1078,6 +1128,187 @@ def test_c19_general_comparison_keeps_multiple_material_path_without_object_gate
     assert not polite.unresolved_topic
     assert polite.explicit_subjects == ()
     assert set(polite.dimensions) == {"budget", "schedule"}
+
+
+def test_question_word_does_not_become_an_exact_retrieval_topic():
+    plan = plan_retrieval("青榆访客登记怎样办理？", [], ("青榆",))
+
+    assert not plan.unresolved_topic
+    assert plan.explicit_subjects == ()
+    assert plan.dimensions == ("term:青榆访客登记",)
+    assert query_scope("青榆访客登记怎样办理？", plan.explicit_subjects)[0] == (
+        "term:青榆访客登记",
+    )
+
+
+def test_page_title_localizer_and_difference_question_are_planned_as_subject_and_terms():
+    aliases = ("DeepSeek Harness", "插件配置表单")
+    object_aliases = ("DeepSeek Harness",)
+    for question in (
+        "DeepSeek Harness 插件配置表单中，update、replace 和 mutate 有什么区别？",
+        "《插件配置表单》中 update、replace 和 mutate 有什么区别？",
+        "插件配置表单里的 update、replace 和 mutate 分别有什么区别？",
+        "插件配置表单中的 update、replace、mutate 有何不同？",
+    ):
+        plan = plan_retrieval(question, [], aliases, object_aliases=object_aliases)
+
+        assert plan.explicit_subjects == ("插件配置表单",), (question, plan)
+        assert plan.dimensions == ("term:update", "term:replace", "term:mutate"), (
+            question,
+            plan,
+        )
+        assert set(plan.required_pairs) == {
+            ("插件配置表单", "term:update"),
+            ("插件配置表单", "term:replace"),
+            ("插件配置表单", "term:mutate"),
+        }
+
+    unicode_title = plan_retrieval("Straße中 update 有什么区别？", [], ("Straße",))
+    assert unicode_title.explicit_subjects == ("Straße",)
+    assert unicode_title.dimensions == ("term:update",)
+
+
+def test_localizer_particles_do_not_consume_topic_word_prefixes():
+    aliases = ("青岚项目",)
+    next_month = plan_retrieval("青岚项目下个月预算是多少？", [], aliases)
+    internal = plan_retrieval("青岚项目内部审批流程是什么？", [], aliases)
+    shanghai = plan_retrieval("青岚项目上海站的安排是什么？", [], aliases)
+    shanghai_where = plan_retrieval("青岚项目上海站在哪里？", [], aliases)
+
+    assert next_month.explicit_subjects == ("青岚项目",)
+    assert next_month.dimensions == ("budget&term:下个月",)
+    assert internal.explicit_subjects == ("青岚项目",)
+    assert internal.dimensions == ("term:内部审批",)
+    assert shanghai.explicit_subjects == ("青岚项目",)
+    assert shanghai.dimensions == ("term:上海站",)
+    assert shanghai_where.explicit_subjects == ("青岚项目",)
+    assert "term:海站" not in shanghai_where.dimensions
+
+
+def test_same_vocabulary_in_a_different_page_does_not_bypass_title_subject_scope(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    target_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="插件配置表单",
+        body=("update 只修改已提供的配置字段；replace 替换整份配置；mutate 按字段变更现有配置。"),
+    )
+    decoy_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="插件配置模板",
+        body=("update 只修改已提供的配置字段；replace 替换整份配置；mutate 按字段变更现有配置。"),
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "《插件配置表单》中 update、replace 和 mutate 有什么区别？",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+
+    cited = {citation.page_id for citation in answer.citations}
+    assert target_id in cited
+    assert decoy_id not in cited
+
+
+def test_page_title_scope_keeps_explanations_that_mention_other_corpus_aliases(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    target_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="插件配置表单",
+        body=(
+            "`update` 合并提交的配置字段。`replace` 先将即时字段重置为继承配置，再应用提交的字段。"
+            "`mutate` 操作独立路径，保留客户端响应中未包含的秘密值。"
+        ),
+    )
+    approve_page(
+        root,
+        line_id,
+        project_id,
+        title="配置",
+        body="配置是页面中的普通术语。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "《插件配置表单》中 update、replace 和 mutate 有什么区别？",
+        fingerprint="fake-v1",
+        answer_mode="comparison",
+    )
+
+    citation = next(item for item in answer.citations if item.page_id == target_id)
+    assert all(term in citation.excerpt for term in ("update", "replace", "mutate"))
+    assert "合并提交" in citation.excerpt
+    assert "重置为继承配置" in citation.excerpt
+    assert "再应用提交的字段" in citation.excerpt
+    assert "独立路径" in citation.excerpt
+    assert "保留客户端响应中未包含的秘密值" in citation.excerpt
+
+
+def test_unregistered_entity_title_does_not_turn_another_projects_fact_into_page_scope(
+    tmp_path: Path,
+) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    entity_page_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="青岚项目",
+        body="白鹭项目预算上限为二十万元。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "青岚项目预算是多少？",
+        fingerprint="fake-v1",
+        answer_mode="fact",
+    )
+
+    assert entity_page_id not in {citation.page_id for citation in answer.citations}
+
+
+def test_metadata_alias_entity_keeps_the_cross_object_scope_gate(tmp_path: Path) -> None:
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    page_id, _ = approve_page(
+        root,
+        line_id,
+        project_id,
+        title="预算说明",
+        metadata_extra={"aliases": ["青岚项目"]},
+        body="白鹭项目预算上限为二十万元。",
+    )
+    retrieval = QueryService(IndexStore(tmp_path / "profile" / "index.sqlite3"), FakeEmbedding())
+    retrieval.rebuild(root, fingerprint="fake-v1")
+
+    answer = retrieval.query(
+        root,
+        "青岚项目预算是多少？",
+        fingerprint="fake-v1",
+        answer_mode="fact",
+    )
+
+    assert page_id not in {citation.page_id for citation in answer.citations}
+
+
+def test_english_exact_topic_does_not_match_a_longer_word():
+    assert supported_dimensions("complete replacement user section", ("term:replace",)) == ()
+    assert supported_dimensions("replace the user section", ("term:replace",)) == ("term:replace",)
+    assert supported_dimensions("async updateSettings", ("term:update",)) == ()
 
 
 def test_c19_unknown_exact_topics_are_separated_from_object_names_and_keep_positive_matches(
@@ -2022,3 +2253,43 @@ def test_open_action_question_keeps_existing_topic_dimension_filter(
         object_aliases={"青岚项目"},
     )
     assert any("budget" in dimension.split("&") for dimension in multi_clause.dimensions)
+
+
+def test_qualified_chunks_reads_the_workspace_once(tmp_path: Path, monkeypatch) -> None:
+    """A large corpus must not re-read every page for each candidate chunk."""
+    import summit_everything.retrieval.query as query_module
+
+    root, line_id, project_id = create_test_workspace(tmp_path / "workspace")
+    first_id, first_hash = approve_page(
+        root, line_id, project_id, body="甲项目已确认。", title="甲"
+    )
+    second_id, second_hash = approve_page(
+        root, line_id, project_id, body="乙项目已确认。", title="乙"
+    )
+    chunks = [
+        {"page_id": first_id, "content_sha256": first_hash, "chunk_id": "a", "text": "甲"},
+        {"page_id": second_id, "content_sha256": second_hash, "chunk_id": "b", "text": "乙"},
+    ]
+    calls = 0
+    original = query_module.list_pages
+
+    def counting_list_pages(path: Path):
+        nonlocal calls
+        calls += 1
+        return original(path)
+
+    monkeypatch.setattr(query_module, "list_pages", counting_list_pages)
+    monkeypatch.setattr(
+        query_module,
+        "read_page",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("read_page must not run per chunk")
+        ),
+    )
+    service = QueryService(IndexStore(tmp_path / "index.sqlite3"))
+    qualified, rejections = service._qualified_chunks(
+        root, chunks, purpose=RetrievalPurpose.CURRENT
+    )
+    assert len(qualified) == 2
+    assert rejections == {}
+    assert calls == 1

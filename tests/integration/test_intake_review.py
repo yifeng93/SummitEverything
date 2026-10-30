@@ -8,10 +8,11 @@ from threading import Event, Thread, current_thread
 from typing import Any
 from uuid import UUID, uuid4
 
+import pytest
+from fake_settings_factory import create_fake_test_app as create_app
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from summit_everything.api.app import create_app
 from summit_everything.domain.models import IntakeItem, IntakeJob
 from summit_everything.intake.review import IntakeReviewService
 from summit_everything.intake.sources import IntakeConflict, IntakeService
@@ -168,13 +169,32 @@ def test_source_with_pending_draft_is_not_pending_or_reorganized_again(tmp_path:
     assert intake.list_items(root)[0].latest_job_id == repeated.job_id
 
 
-def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path: Path) -> None:
+@pytest.mark.parametrize("failure", ["timeout", "schema"])
+def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(
+    tmp_path: Path, failure: str
+) -> None:
     root = make_workspace(tmp_path / "workspace")
     line = create_line(root, "模拟主线", "line")
     project = create_project(root, line.id, "模拟项目", "project")
     intake = IntakeService()
     item = intake.add_text(root, "可重试来源。", filename="retry.txt", operation_id="retry-source")
-    failing_review = IntakeReviewService(FakeLLM(scenario="timeout"))
+
+    class SchemaFailureThenSuccess:
+        calls = 0
+        fallback = FakeLLM()
+
+        def organize(self, inputs):  # type: ignore[no-untyped-def]
+            self.calls += 1
+            if self.calls == 1:
+                if failure == "timeout":
+                    raise LLMProviderError("simulated provider timeout", reason="timeout")
+                raise LLMProviderError(
+                    "proposals schema mismatch: proposals.0.input_indexes.0", reason="schema"
+                )
+            return self.fallback.organize(inputs)
+
+    provider = SchemaFailureThenSuccess()
+    failing_review = IntakeReviewService(provider)
 
     try:
         failing_review.create_job(
@@ -190,7 +210,9 @@ def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path
         raise AssertionError("the configured provider failure was hidden")
 
     assert intake.list_items(root)[0].state == "failed"
-    retry_review = IntakeReviewService(FakeLLM())
+    assert (root / item.original_relative_path).read_text(encoding="utf-8") == "可重试来源。"
+    assert provider.calls == 1
+    retry_review = IntakeReviewService(provider)
     try:
         retry_review.create_job(
             root,
@@ -203,6 +225,7 @@ def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path
         assert "reprocess" in str(exc).lower()
     else:
         raise AssertionError("a failed source was retried without an explicit reprocess choice")
+    assert provider.calls == 1
 
     retried = retry_review.create_job(
         root,
@@ -213,6 +236,7 @@ def test_failed_source_is_visible_and_retry_requires_explicit_reprocess(tmp_path
         reprocess=True,
     )
     assert retried.state == "completed"
+    assert provider.calls == 2
     assert intake.list_items(root)[0].state == "reviewing"
 
 

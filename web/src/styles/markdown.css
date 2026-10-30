@@ -1,0 +1,86 @@
+/* Markdown 排版：正文与模型答案共用一套尺度。
+ * 层级靠字号 + 颜色分工：标题 ink、正文 ink、元信息 muted；代码用 --code-* 四色。 */
+
+.markdown-content { min-width: 0; overflow-wrap: anywhere; color: var(--ink); font-size: var(--text-body); line-height: var(--lh-read); }
+.markdown-content > :first-child { margin-top: 0; }
+.markdown-content > :last-child { margin-bottom: 0; }
+
+/* ── 标题：每级都有明确的大小与上间距 ─────────────────────────── */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 { color: var(--ink); line-height: 1.35; letter-spacing: -.01em; }
+.markdown-content h1 { margin: 1.6em 0 .6em; font-size: var(--text-page); font-weight: 600; }
+.markdown-content h2 { margin: 1.8em 0 .6em; font-size: var(--text-section); font-weight: 600; }
+.markdown-content h3 { margin: 1.5em 0 .4em; font-size: var(--text-list); font-weight: 600; }
+.markdown-content h4 { margin: 1.3em 0 .3em; font-size: var(--text-small); font-weight: 600; color: var(--muted); }
+.markdown-content h5,
+.markdown-content h6 { margin: 1.2em 0 .3em; font-size: var(--text-small); font-weight: 600; color: var(--muted); }
+
+/* ── 段落与行内元素 ──────────────────────────────────────────── */
+.markdown-content p { margin: .75em 0; }
+.markdown-content strong { color: var(--ink); font-weight: 600; }
+.markdown-content em { font-style: italic; }
+.markdown-content del { color: var(--muted); }
+.markdown-content a { color: var(--accent-dark); text-decoration: none; text-underline-offset: 2px; }
+.markdown-content a:hover { text-decoration: underline; }
+.markdown-unresolved-link { color: var(--muted); text-decoration: underline dotted; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.markdown-content img { max-width: 100%; height: auto; border-radius: var(--radius); }
+
+/* ── 列表：标记用弱色，正文保持 ink ───────────────────────────── */
+.markdown-content ul,
+.markdown-content ol { margin: .6em 0; padding-left: 1.35em; }
+.markdown-content li { margin: .25em 0; }
+.markdown-content li::marker { color: var(--quiet); }
+.markdown-content li > input[type="checkbox"] { margin-right: .4em; }
+
+/* ── 引用与分隔线 ────────────────────────────────────────────── */
+.markdown-content blockquote { margin: 1em 0; padding: .2em 0 .2em 1em; border-left: 3px solid var(--accent-wash); color: var(--muted); }
+.markdown-content hr { margin: 1.8em 0; border: 0; border-top: 1px solid var(--line); }
+
+/* ── 代码：块用深一档底色 + 边框，行内用强调色 ────────────────── */
+.markdown-content pre { margin: 1em 0; max-width: 100%; overflow: auto; padding: var(--space-3) var(--space-3-5); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.markdown-content pre code { display: block; white-space: pre; font-family: var(--mono); font-size: var(--text-small); line-height: 1.7; color: var(--ink); }
+.markdown-content :not(pre) > code { padding: .1em .35em; border-radius: 4px; background: var(--surface-2); color: var(--accent-dark); font-family: var(--mono); font-size: var(--text-small); }
+
+/* ── 表格 ────────────────────────────────────────────────────── */
+.markdown-content table { display: block; width: max-content; max-width: 100%; margin: 1em 0; overflow-x: auto; border-collapse: collapse; font-size: var(--text-small); }
+.markdown-content th,
+.markdown-content td { padding: var(--space-1-5) var(--space-2-5); border: 1px solid var(--line); text-align: left; }
+.markdown-content th { background: var(--surface-2); color: var(--ink); font-weight: 600; }
+
+/* ── 语法高亮（rehype-highlight）：四色 + 中性 ─────────────────── */
+.markdown-content .hljs-comment,
+.markdown-content .hljs-quote { color: var(--code-comment); font-style: italic; }
+.markdown-content .hljs-keyword,
+.markdown-content .hljs-selector-tag,
+.markdown-content .hljs-literal,
+.markdown-content .hljs-doctag,
+.markdown-content .hljs-meta .hljs-keyword { color: var(--code-keyword); }
+.markdown-content .hljs-string,
+.markdown-content .hljs-regexp,
+.markdown-content .hljs-char,
+.markdown-content .hljs-addition,
+.markdown-content .hljs-meta .hljs-string { color: var(--code-string); }
+.markdown-content .hljs-number,
+.markdown-content .hljs-symbol,
+.markdown-content .hljs-bullet,
+.markdown-content .hljs-link { color: var(--code-number); }
+.markdown-content .hljs-title,
+.markdown-content .hljs-title.function_,
+.markdown-content .hljs-title.class_ { color: var(--code-number); font-weight: 500; }
+.markdown-content .hljs-type,
+.markdown-content .hljs-built_in,
+.markdown-content .hljs-attr,
+.markdown-content .hljs-property,
+.markdown-content .hljs-selector-class,
+.markdown-content .hljs-selector-id { color: var(--code-type); }
+.markdown-content .hljs-variable,
+.markdown-content .hljs-template-variable,
+.markdown-content .hljs-params { color: var(--ink); }
+.markdown-content .hljs-meta { color: var(--quiet); }
+.markdown-content .hljs-operator,
+.markdown-content .hljs-punctuation { color: var(--muted); }
+.markdown-content .hljs-deletion { color: var(--danger-ink); background: var(--danger-wash); }

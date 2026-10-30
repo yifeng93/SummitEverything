@@ -45,7 +45,7 @@ def test_without_any_source_the_behaviour_is_unchanged(tmp_path):
 
     store = SettingsStore(tmp_path / "settings.json")
     assert store.read() == ProviderSettings()
-    assert store.read().embedding.base_url == "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    assert store.read().embedding.base_url == ""
 
 
 def test_source_priority_env_then_bundle(tmp_path):
@@ -173,7 +173,7 @@ def test_saving_the_injected_default_does_not_persist_it(tmp_path):
     assert updated.embedding.base_url == EMBEDDING_BASE_URL
     persisted = json.loads(settings_path.read_text(encoding="utf-8"))
     assert "base_url" not in persisted["embedding"]
-    assert persisted["embedding"]["provider"] == "fake"
+    assert persisted["embedding"]["provider"] == "local"
 
 
 def test_a_profile_without_overrides_follows_a_new_injected_default(tmp_path):
@@ -235,12 +235,12 @@ def test_without_injected_defaults_the_stored_document_is_unchanged(tmp_path):
 
     assert store.read() == updated
     persisted = json.loads(settings_path.read_text(encoding="utf-8"))
-    assert persisted["mode"] == "fake"
+    assert persisted["mode"] == "real"
     assert persisted["llm"]["provider"] == "deepseek"
     # Untouched non-injectable defaults are still materialised exactly as before.
-    assert persisted["embedding"]["base_url"] == "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    assert persisted["rerank"]["base_url"] == "https://dashscope.aliyuncs.com/api/v1"
-    assert updated.embedding.base_url == "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    assert "base_url" not in persisted["embedding"]
+    assert "base_url" not in persisted["rerank"]
+    assert updated.embedding.base_url == ""
 
 
 def test_injected_values_still_fail_stored_settings_validation(tmp_path):

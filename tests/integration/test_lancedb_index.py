@@ -51,6 +51,9 @@ def test_lancedb_native_vector_and_chinese_fts_keep_more_than_default_rows(
     assert store.active_generation(workspace_id) == generation
     assert len(store.generation_chunks(generation)) == len(chunks)
     assert len(store.existing_generation_chunks(generation)) == len(chunks)
+    assert store.generation_page_versions(generation) == [
+        (str(chunks[0][0].page_id), "a" * 64)
+    ] * len(chunks)
     dense, lexical = store.search(generation, [1.0, 0.0, 0.0], "消防验收疏散通道", limit=137)
     assert len(dense) == 137
     assert dense[-1]["chunk_id"] == "chunk-0007"

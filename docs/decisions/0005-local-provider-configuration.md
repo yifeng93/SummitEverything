@@ -1,6 +1,6 @@
 # ADR 0005: Local provider configuration and credentials
 
-- Status: Accepted implementation target; the current Stage B candidate implements it only partially
+- Status: Partially superseded by [ADR 0032](0032-real-provider-delivery.md); local credential and network boundaries remain in force
 - Date: 2026-10-10
 - Context: The current application defaults to Fake providers and an in-memory Feishu credential store. Stage B adds optional remote adapters without making page load, settings changes, preview, or workspace opening trigger network calls.
 
@@ -8,7 +8,7 @@
 
 1. Keep provider selection and all non-secret settings in the local profile associated with the active workspace. The workspace directory continues to contain no credentials, index, sessions, or provider secrets.
 2. Store provider credentials in macOS Keychain through a single `CredentialStore` boundary. The Keychain item identity includes app namespace, local profile identity, provider, and provider account identity. There is no plaintext-file or in-memory fallback in real mode. Fake mode may use an injected in-memory store for tests only.
-3. Keep `fake` as the default mode. Real mode is opt-in and reports capabilities separately from configured state. Settings GET/PATCH and secret status do not contact a provider. A connection test is a distinct, user-triggered action and is a Stage C operation requiring itemized authorization.
+3. Historical decision: `fake` was the default mode and real mode was opt-in. On 2026-10-30 the user replaced that product choice with real-only normal startup; Fake/Mock providers are restricted to explicitly injected automation-test dependencies. Settings GET/PATCH and secret status remain provider-network-free.
 4. Never return a secret from an API. Secret entry uses a dedicated, non-echoing form and a dedicated credential endpoint; frontend state is cleared after submission. Error responses contain stable codes and safe messages only.
 5. Restrict network destinations to typed providers and known regional endpoint forms. Do not accept arbitrary fetch URLs. Bound request time and response size, disable redirects, parse untrusted responses strictly, and do not retry provider writes.
 6. Capabilities whose protocol cannot be proven are disabled individually. In particular, task create/edit/complete remain disabled until all-day date behavior and independent result verification after lost responses are established. Such disabled capabilities do not turn a read-only result into a claim that writes passed.

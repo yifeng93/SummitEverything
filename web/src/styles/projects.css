@@ -1,0 +1,129 @@
+/* 项目：列表与详情共用左侧对齐线，不再出现页头与列表错位。 */
+
+.projects-view .page-heading { align-items: center; margin-bottom: 14px; }
+.project-list-page { max-width: none; margin: 0; }
+.project-stats { margin: 0 0 12px; color: var(--quiet); font-size: var(--text-caption); }
+
+/* 主线管理：默认折叠，只有管理时才展开。 */
+.line-management { margin: 0 0 12px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: var(--text-small); }
+.line-management > summary { display: inline-flex; align-items: center; min-height: 0; padding: 2px 0; cursor: pointer; color: var(--quiet); font-size: var(--text-caption); }
+.line-management > summary:hover { color: var(--ink); }
+.line-management[open] { padding: 0 14px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.line-management[open] > summary { min-height: var(--control-sm); }
+.line-management > .field { max-width: 320px; margin: 4px 0 12px; }
+.line-management-actions { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px; padding-bottom: 12px; }
+.line-management-actions form { display: flex; align-items: flex-end; gap: 8px; }
+.create-line-form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px; padding-bottom: 12px; }
+.create-line-form .field, .project-create-form .field { min-width: 180px; margin: 0; }
+.project-create-form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; padding: 14px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+
+/* 搜索与筛选 */
+.project-list-controls { display: grid; grid-template-columns: minmax(0, 1fr) 160px 160px; gap: 10px; margin: 0 0 4px; }
+.project-list-controls .field { margin: 0; }
+
+/* 列表行 */
+.project-list { display: grid; gap: 0; padding-top: 4px; }
+.project-list-row { border-bottom: 1px solid var(--line); }
+.project-row-main { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; padding: 14px 6px; border: 0; background: transparent; text-align: left; }
+.project-row-main:hover { background: var(--surface-2); }
+.project-status-badge { min-width: 58px; padding: 4px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); color: var(--muted); text-align: center; font-size: var(--text-caption); white-space: nowrap; }
+.project-status-badge.active { border-color: var(--green); background: var(--green-wash); color: var(--green); }
+.project-status-badge.archived { background: var(--surface-2); }
+.project-status-badge.needs-setup { border-color: var(--warn); background: var(--warn-wash); color: var(--warn-ink); }
+.project-row-copy { min-width: 0; flex: 1; }
+.row-chevron { flex: 0 0 auto; color: var(--quiet); }
+.project-row-copy strong, .project-row-copy small { display: block; }
+.project-row-copy strong { color: var(--ink); font-size: var(--text-list); font-weight: 550; }
+.project-row-copy small { margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: var(--text-caption); }
+.project-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+/* 页头「更多」：触发按钮 + 右对齐浮层，展开不挤压标题行。 */
+.project-more-actions { position: relative; align-self: center; }
+.project-more-actions > summary { list-style: none; cursor: pointer; }
+.project-more-actions > summary::-webkit-details-marker { display: none; }
+.project-more-actions[open] > summary { background: var(--surface-2); border-color: var(--control-border); }
+.project-menu { position: absolute; right: 0; top: calc(100% + var(--space-1-5)); z-index: 20; min-width: 168px; display: grid; gap: 2px; padding: var(--space-1-5); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-2); }
+.project-menu > button { width: 100%; padding: var(--space-2) var(--space-2-5); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--ink); font: inherit; font-size: var(--text-small); text-align: left; }
+.project-menu > button:hover { background: var(--surface-2); }
+.project-menu form { display: grid; gap: var(--space-2); padding: var(--space-2) var(--space-2-5); }
+.archived-projects { margin-top: 14px; }
+.archived-projects > summary { cursor: pointer; color: var(--muted); font-size: var(--text-caption); padding: 6px 2px; }
+.project-empty { padding: 48px 12px; }
+.loading-state { padding: 40px 0; color: var(--muted); font-size: var(--text-small); }
+
+/* 项目详情：顶部只占三行——返回、标题 + 操作、档案摘要；页面区是主体。
+ * 宽度沿用 .content-wrap 的 1200px（两栏页面区需要），长正文另按 72ch 收窄。 */
+.project-detail { max-width: none; }
+.project-detail .back-link { font-size: var(--text-small); color: var(--muted); }
+.project-detail-topline { display: flex; align-items: center; gap: 10px; min-height: var(--space-6) }
+.project-detail-line { overflow: hidden; padding-left: 10px; border-left: 1px solid var(--line-strong); color: var(--quiet); font-size: var(--text-caption); text-overflow: ellipsis; white-space: nowrap; }
+.project-detail-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin: 4px 0 6px; }
+.project-detail-head .page-heading { margin: 0; }
+.project-detail-head .page-heading > div { display: flex; align-items: center; gap: 10px; }
+.project-detail-head h1 { margin: 0; }
+.project-detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+/* 档案与概览默认折叠成一行摘要：展开才占高度。 */
+.facts-digest { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-detail-actions form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+.project-detail-actions form .field { min-width: 220px; margin: 0; }
+/* 分隔线跟随整块宽度；只有正文行宽收窄，避免右边线中途断掉。 */
+.page-list-section { margin-top: var(--space-6); border-top: 1px solid var(--line); padding-top: var(--space-3-5); }
+/* 项目页：标题下面直接接文档区，不画分隔线。 */
+.project-detail .page-list-section { margin-top: var(--space-5); border-top: 0; padding-top: 0; }
+.page-list-section h2 { font-size: var(--text-list); margin-bottom: 6px; }
+.knowledge-page-list li + li { border-top: 1px solid var(--line); }
+.knowledge-page-list button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 4px; text-align: left; border: 0; background: none; }
+.knowledge-page-list button:hover { background: var(--surface-2); }
+.knowledge-page-list button > span:nth-child(2) { flex: 1; min-width: 0; }
+.knowledge-page-list strong, .knowledge-page-list small { display: block; }
+.knowledge-page-list strong { color: var(--ink); font-size: var(--text-list); font-weight: 550; }
+.knowledge-page-list small { margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: var(--text-caption); }
+.page-type-mark { width: 22px; height: 22px; flex-basis: 22px; font-size: var(--text-caption); }
+.project-timeline-item { display: grid; gap: 0; }
+/* 摘要固定一行：不再用 -webkit-line-clamp（现代引擎下 display:-webkit-box 被归一化，
+ * 钳制失效后第二行会从 padding 里露出半截字）。nowrap + ellipsis 在所有引擎一致。 */
+.project-timeline-summary { display: block; overflow: hidden; padding: 0 8px 10px 40px; color: var(--muted); font-size: var(--text-small); text-overflow: ellipsis; white-space: nowrap; }
+.project-timeline-summary > :first-child { margin-top: 0; }
+
+/* 知识库概览：先给覆盖范围，再看目录。状态句只在需要处理时出现，占整行。 */
+.knowledge-summary { display: grid; gap: 8px; margin: 0 0 12px; }
+.knowledge-metrics { display: grid; min-width: 0; grid-template-columns: repeat(4, minmax(84px, 1fr)); gap: 10px; }
+.knowledge-metric { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.knowledge-metric span { display: block; color: var(--muted); font-size: var(--text-caption); }
+.knowledge-metric strong { display: block; margin-top: 2px; color: var(--ink); font-size: var(--text-metric); font-weight: 500; font-variant-numeric: tabular-nums; }
+.knowledge-summary-state { margin: 0; color: var(--muted); font-size: var(--text-small); line-height: 1.6; }
+.knowledge-summary-state.warn { color: var(--warn-ink); }
+
+/* 项目文档：左侧是文件夹 + 文档的树，右侧直接是所选文档的正文。 */
+.project-docs { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-6); align-items: start; margin-top: var(--space-2); }
+.project-docs-tree { position: sticky; top: 20px; max-height: calc(100vh - 48px); overflow: auto; }
+.project-docs-body { min-width: 0; }
+.project-overview-pane.is-empty h1 { margin-top: 0; }
+.project-overview-pane.is-empty p { margin: 0 0 var(--space-4); }
+.project-overview-pane .overview-editor { margin-top: var(--space-4); }
+.project-overview-pane .button-row { margin-top: var(--space-3); }
+.knowledge-tree-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin: 0; padding: 0; list-style: none; }
+.knowledge-tree-list .knowledge-tree-list { margin: 2px 0 2px 10px; padding-left: 10px; border-left: 1px solid var(--line); }
+.knowledge-tree-node { display: flex; align-items: center; gap: var(--space-1-5); width: 100%; padding: var(--space-1-5) var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--muted); font: inherit; font-size: var(--text-small); text-align: left; }
+.knowledge-tree-node:hover { background: var(--surface-2); color: var(--ink); }
+.knowledge-tree-node[aria-expanded="true"] { color: var(--ink); }
+.knowledge-tree-node[aria-current="page"] { background: var(--accent-wash); color: var(--accent-dark); font-weight: 500; }
+.knowledge-tree-node[aria-current="page"] .knowledge-tree-count { color: var(--accent-dark); }
+.knowledge-tree-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-tree-count { flex: 0 0 auto; color: var(--quiet); font-size: var(--text-caption); font-variant-numeric: tabular-nums; }
+.knowledge-tree-chevron-space { width: 13px; flex: 0 0 13px; }
+.knowledge-tree-page { display: flex; align-items: center; gap: var(--space-1-5); width: 100%; padding: var(--space-1-5) var(--space-2) var(--space-1-5) var(--space-6); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--muted); font: inherit; font-size: var(--text-small); text-align: left; }
+.knowledge-tree-page > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-tree-page:hover { background: var(--surface-2); color: var(--ink); }
+.knowledge-tree-page[aria-current="page"] { background: var(--accent-wash); color: var(--accent-dark); font-weight: 500; }
+.knowledge-tree-page svg, .knowledge-tree-node svg { flex: 0 0 auto; }
+.knowledge-pane-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px 8px; border-bottom: 1px solid var(--line); }
+.knowledge-pane-head h3 { margin: 0; font-size: var(--text-list); }
+.knowledge-pane-head span { color: var(--quiet); font-size: var(--text-caption); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 800px) {
+  .knowledge-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .project-docs { grid-template-columns: 1fr; }
+  .project-docs-tree { position: static; max-height: none; }
+  .project-list-controls { grid-template-columns: 1fr; }
+  .project-list-controls .sort-note { grid-column: auto; }
+}

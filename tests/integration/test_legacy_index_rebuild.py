@@ -28,7 +28,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial_job(
+def test_legacy_index_status_query_and_plan_remain_read_only_without_local_model(
     tmp_path: Path,
 ) -> None:
     index_path = tmp_path / "profile" / "index.sqlite3"
@@ -94,18 +94,24 @@ def test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial
             "UPDATE chunks SET workspace_id = ? WHERE workspace_id = ?",
             (workspace_id, "workspace-pending"),
         )
-    configured = api.patch(
-        "/api/v1/settings",
-        json={
-            "mode": "real",
-            "embedding": {
-                "provider": "dashscope",
-                "model": "qwen3.7-text-embedding",
-                "enabled": True,
-            },
-        },
+    # Simulate a profile saved by the older release. New settings writes no
+    # longer allow selecting this provider, but existing local files still load.
+    workspace = api.get("/api/v1/workspaces/current").json()
+    provider_settings = Path(workspace["local_profile_dir"]) / "provider-settings.json"
+    provider_settings.parent.mkdir(parents=True, exist_ok=True)
+    provider_settings.write_text(
+        json.dumps(
+            {
+                "mode": "real",
+                "embedding": {
+                    "provider": "dashscope",
+                    "model": "qwen3.7-text-embedding",
+                    "enabled": True,
+                },
+            }
+        ),
+        encoding="utf-8",
     )
-    assert configured.status_code == 200, configured.text
 
     line = api.post("/api/v1/lines", json={"name": "合成线", "operation_id": "line"}).json()
     project = api.post(
@@ -132,7 +138,7 @@ def test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial
     assert page.json()["index_update"] == "not_enabled"
     assert embedding.calls == 0
     fake_mode = api.patch("/api/v1/settings", json={"mode": "fake"})
-    assert fake_mode.status_code == 200, fake_mode.text
+    assert fake_mode.status_code == 422, fake_mode.text
 
     before = _sha256(index_path)
     with sqlite3.connect(index_path) as connection:
@@ -157,8 +163,8 @@ def test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial
         "/api/v1/queries",
         json={"question": "旧向量样本是什么", "fingerprint": "legacy-fake64", "purpose": "current"},
     )
-    assert query.status_code == 200, query.text
-    assert "旧版本地索引需要重建" in query.text
+    assert query.status_code == 409, query.text
+    assert "当前本机索引尚未按已选向量模型准备完成" in query.text
     assert "这段旧文本不得被读取或引用" not in query.text
     assert embedding.calls == 0
 
@@ -189,9 +195,10 @@ def test_legacy_index_status_query_and_plan_are_read_only_until_explicit_initial
         )
 
     built = api.post("/api/v1/index/jobs", json=plan)
-    assert built.status_code == 200, built.text
-    assert embedding.calls > 0
-    assert api.get("/api/v1/index/status").json()["state"] == "ready"
+    assert built.status_code == 409, built.text
+    assert built.json()["error"]["code"] == "local_model_not_ready"
+    assert embedding.calls == 0
+    assert api.get("/api/v1/index/status").json()["state"] == "not_ready"
     with sqlite3.connect(index_path) as connection:
         source = connection.execute(
             "SELECT vector_json FROM chunks WHERE workspace_id = ? AND chunk_id = ?",

@@ -119,7 +119,7 @@ def test_proposal_with_a_path_or_trust_field_is_rejected_with_the_field_name():
     error = caught.value
     assert error.reason == "schema"
     # Only the field location is named; the offending value is never carried.
-    assert "path" in str(error)
+    assert "<extra>" in str(error)
     assert "/outside/workspace.md" not in str(error)
 
 

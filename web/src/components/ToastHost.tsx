@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { X } from 'lucide-react'
 import { TOAST_TIMEOUT_MS, type Toast } from '../toast'
 
 /**
@@ -28,7 +29,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: number)
         title="关闭这条提示"
         onClick={() => onDismiss(toast.id)}
       >
-        <span aria-hidden="true">✕</span>
+        <span aria-hidden="true"><X size={14} strokeWidth={2} /></span>
       </button>
     </div>
   )

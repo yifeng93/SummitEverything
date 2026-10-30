@@ -1,0 +1,272 @@
+[
+  {
+    "index": 8,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动008",
+        "kind": "topic",
+        "body": "合成纸飞机活动008仅为合成测试。人数上限32人，开始时间为下午16:30。场地费用尚未确定；负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 9,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动009",
+        "kind": "topic",
+        "body": "合成纸飞机活动009仅为合成测试。活动人数上限为33人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 18,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动018",
+        "kind": "topic",
+        "body": "合成纸飞机活动018仅为合成测试。人数上限42人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 19,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动019（合成测试）",
+        "kind": "object",
+        "body": "标注为合成纸飞机活动019，仅为合成测试。人数上限43人，开始时间为下午16:30。场地费用尚未确定；负责人电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 28,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动028",
+        "kind": "case",
+        "body": "合成纸飞机活动028仅为合成测试。人数上限52人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 29,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动029",
+        "kind": "topic",
+        "body": "合成纸飞机活动029仅为合成测试。人数上限53人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 38,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动038",
+        "kind": "topic",
+        "body": "合成纸飞机活动038仅为合成测试。人数上限62人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 48,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动048",
+        "kind": "topic",
+        "body": "合成纸飞机活动048仅为合成测试。人数上限为72人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 49,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动049",
+        "kind": "object",
+        "body": "合成纸飞机活动049仅为合成测试。人数上限73人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 59,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动059",
+        "kind": "topic",
+        "body": "合成纸飞机活动059，仅为合成测试。活动人数上限为83人，下午16:30开始。尚未确定的事项：场地费用、负责人的电话。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 68,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动068",
+        "kind": "topic",
+        "body": "合成纸飞机活动068仅为合成测试。人数上限92人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 69,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动069",
+        "kind": "case",
+        "body": "合成纸飞机活动069，仅为合成测试。人数上限93人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 78,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动078",
+        "kind": "object",
+        "body": "合成纸飞机活动078仅为合成测试。人数上限102人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 79,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动079",
+        "kind": "topic",
+        "body": "合成纸飞机活动079仅为合成测试。人数上限103人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 89,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动089合成测试",
+        "kind": "topic",
+        "body": "本条目为合成测试性质的纸飞机活动089。已知信息：人数上限为113人；活动于下午16:30开始。尚未确定的事项包括场地费用及负责人的电话。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 88,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动088",
+        "kind": "case",
+        "body": "合成纸飞机活动088仅为合成测试。人数上限112人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 98,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动098",
+        "kind": "case",
+        "body": "合成纸飞机活动098仅为合成测试。人数上限为122人，开始时间为下午16:30。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  },
+  {
+    "index": 99,
+    "proposals": [
+      {
+        "title": "合成纸飞机活动099",
+        "kind": "topic",
+        "body": "合成纸飞机活动099仅为合成测试。人数上限123人，下午16:30开始。场地费用和负责人的电话尚未确定。",
+        "input_indexes": [
+          0
+        ],
+        "important_conflicts": [],
+        "action_suggestions": []
+      }
+    ]
+  }
+]
