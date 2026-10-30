@@ -60,6 +60,7 @@ from summit_everything.integrations.acceptance_plans import (
     ProviderUsage,
     plan_conflict_message,
 )
+from summit_everything.integrations.credential_generations import CredentialGenerationStore
 from summit_everything.integrations.embedding import EmbeddingProviderError
 from summit_everything.integrations.feishu.http import FeishuHttpProvider
 from summit_everything.integrations.feishu.provider import (
@@ -96,8 +97,10 @@ from summit_everything.integrations.llm import DeepSeekLLM, LLMProviderError
 from summit_everything.integrations.provider_smoke import (
     SMOKE_LIMITS,
     SmokeLimitReached,
+    record_smoke_result,
     reserve_smoke_call,
     smoke_counts,
+    smoke_result,
 )
 from summit_everything.integrations.rerank import RerankProviderError
 from summit_everything.integrations.runtime import ModelRuntime
@@ -831,6 +834,9 @@ def create_app(
     def acceptance_ledger(workspace: WorkspaceContext) -> AcceptancePlanLedger:
         return AcceptancePlanLedger(Path(workspace.local_profile_dir))
 
+    def credential_generations(workspace: WorkspaceContext) -> CredentialGenerationStore:
+        return CredentialGenerationStore(Path(workspace.local_profile_dir))
+
     def persist_provider_usage(
         workspace: WorkspaceContext, plan_id: UUID, providers: tuple[Any, ...]
     ) -> None:
@@ -846,23 +852,128 @@ def create_app(
         resolved = str(Path(workspace.local_profile_dir).resolve())
         return hashlib.sha256(resolved.encode()).hexdigest()
 
-    def settings_binding(workspace: WorkspaceContext) -> str:
+    def legacy_settings_binding(workspace: WorkspaceContext) -> str:
         settings = settings_store(workspace).read()
         encoded = json.dumps(
             settings.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
         ).encode()
         return hashlib.sha256(encoded).hexdigest()
 
-    def operation_config_binding(workspace: WorkspaceContext, operation: str) -> str:
-        settings_digest = settings_binding(workspace)
-        if not operation.startswith("feishu."):
-            return settings_digest
+    def settings_binding(workspace: WorkspaceContext) -> str:
+        return credential_bound_settings_binding(
+            legacy_settings_binding(workspace),
+            credential_generations(workspace).get("deepseek"),
+        )
+
+    def credential_bound_settings_binding(settings_digest: str, generation: int) -> str:
         return json_binding(
             {
                 "settings": settings_digest,
-                "authorization_generation": feishu_auth_generation(workspace),
+                "deepseek_credential_generation": generation,
             }
         )
+
+    def model_call_status(workspace: WorkspaceContext) -> dict[str, object]:
+        try:
+            generation = credential_generations(workspace).get("deepseek")
+            settings_digest = legacy_settings_binding(workspace)
+            current_binding = credential_bound_settings_binding(settings_digest, generation)
+        except Exception:
+            return {"state": "unreadable", "has_success": False}
+        compatible_bindings = {current_binding}
+        # Existing acceptance plans predate credential generations. They can
+        # be adopted only before this app has observed a DeepSeek key change.
+        if generation == 0:
+            compatible_bindings.add(settings_digest)
+        profile_id = profile_binding(workspace)
+        ledger_unreadable = False
+        try:
+            plan_items = [
+                plan
+                for plan in acceptance_ledger(workspace).list_plans()
+                if plan.operation in {"model.organize", "model.query", "model.journal_assist"}
+                and plan.workspace_id == str(workspace.workspace_id)
+                and plan.profile_id == profile_id
+                and plan.config_sha256 in compatible_bindings
+            ]
+        except RuntimeError:
+            plan_items = []
+            ledger_unreadable = True
+        successful = [
+            plan
+            for plan in plan_items
+            if plan.state == "succeeded"
+            and any(item.provider == "deepseek" for item in plan.provider_usage)
+        ]
+        attempts = [
+            plan
+            for plan in plan_items
+            if plan.requests_reserved > 0 and plan.state in {"succeeded", "failed", "unknown"}
+        ]
+        latest_attempt = max(
+            attempts, key=lambda plan: plan.finished_at or plan.created_at, default=None
+        )
+        latest_success = max(
+            successful, key=lambda plan: plan.finished_at or plan.created_at, default=None
+        )
+        latest_state = "none"
+        latest_attempt_at = (
+            latest_attempt.finished_at.isoformat()
+            if latest_attempt is not None and latest_attempt.finished_at is not None
+            else None
+        )
+        latest_success_at = (
+            latest_success.finished_at.isoformat()
+            if latest_success is not None and latest_success.finished_at is not None
+            else None
+        )
+        if latest_attempt is not None:
+            latest_state = (
+                latest_attempt.state
+                if latest_attempt.state in {"failed", "unknown"}
+                else "succeeded"
+                if any(item.provider == "deepseek" for item in latest_attempt.provider_usage)
+                else "unknown"
+            )
+        try:
+            smoke = smoke_result(Path(app.state.profile_root), "deepseek_chat")
+        except RuntimeError:
+            smoke = None
+            ledger_unreadable = True
+        if (
+            smoke
+            and smoke.get("workspace_id") == str(workspace.workspace_id)
+            and smoke.get("profile_id") == profile_id
+            and smoke.get("config_sha256") in compatible_bindings
+        ):
+            smoke_at = smoke.get("finished_at")
+            if not latest_attempt_at or (smoke_at and smoke_at > latest_attempt_at):
+                latest_state = smoke.get("state", "unknown")
+                latest_attempt_at = smoke_at
+            if smoke.get("state") == "succeeded" and (
+                not latest_success_at or (smoke_at and smoke_at > latest_success_at)
+            ):
+                latest_success_at = smoke_at
+        if latest_state == "none" and latest_success_at:
+            latest_state = "succeeded"
+        if latest_state == "none" and ledger_unreadable:
+            latest_state = "unreadable"
+        return {
+            "state": latest_state,
+            "has_success": latest_success_at is not None,
+            "last_attempt_at": latest_attempt_at,
+            "last_success_at": latest_success_at,
+        }
+
+    def operation_config_binding(workspace: WorkspaceContext, operation: str) -> str:
+        if operation.startswith("feishu."):
+            return json_binding(
+                {
+                    "settings": legacy_settings_binding(workspace),
+                    "authorization_generation": feishu_auth_generation(workspace),
+                }
+            )
+        return settings_binding(workspace)
 
     def feishu_auth_generation(workspace: WorkspaceContext) -> int:
         # This reads only the in-process coordinator counter; it does not inspect
@@ -1648,6 +1759,7 @@ def create_app(
             local_model_status=local_models_for(workspace).status(),
             legacy_provider_migration_required=settings.legacy_provider_migration_required,
             feishu_calendar_ready=feishu_calendar_ready_for(workspace),
+            model_call_status=model_call_status(workspace),
         )
 
     @app.patch("/api/v1/settings", dependencies=[Depends(authenticated)])
@@ -1667,6 +1779,7 @@ def create_app(
             local_model_status=local_models_for(workspace).status(),
             legacy_provider_migration_required=settings.legacy_provider_migration_required,
             feishu_calendar_ready=feishu_calendar_ready_for(workspace),
+            model_call_status=model_call_status(workspace),
         )
 
     @app.get(
@@ -1735,7 +1848,14 @@ def create_app(
         validate_credential_account(workspace, provider, payload.account_id)
         secret = payload.secret.get_secret_value()
         validate_credential_shape(provider, secret)
-        credential_vault(workspace).put(provider, secret, account_id=payload.account_id)
+        vault = credential_vault(workspace)
+        if provider == "deepseek":
+            # Fail before creating the local generation record when Keychain is
+            # unavailable. Keep the generation bump before the real mutation so
+            # a failed write cannot leave stale success evidence reusable.
+            vault.has(provider, account_id=payload.account_id)
+            credential_generations(workspace).bump(provider)
+        vault.put(provider, secret, account_id=payload.account_id)
         return {"provider": provider, "configured": True}
 
     @app.delete("/api/v1/credentials/{provider}", dependencies=[Depends(authenticated)])
@@ -1745,7 +1865,11 @@ def create_app(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
     ) -> Response:
         validate_credential_account(workspace, provider, payload.account_id)
-        credential_vault(workspace).delete(provider, account_id=payload.account_id)
+        vault = credential_vault(workspace)
+        if provider == "deepseek":
+            vault.has(provider, account_id=payload.account_id)
+            credential_generations(workspace).bump(provider)
+        vault.delete(provider, account_id=payload.account_id)
         return Response(status_code=204)
 
     @app.post("/api/v1/acceptance-plans", status_code=201, dependencies=[Depends(authenticated)])
@@ -1996,6 +2120,30 @@ def create_app(
                 },
             ) from None
 
+    def persist_smoke_result(
+        workspace: WorkspaceContext,
+        operation: str,
+        state: Literal["succeeded", "failed", "unknown"],
+        config_sha256: str,
+    ) -> None:
+        try:
+            record_smoke_result(
+                Path(app.state.profile_root),
+                operation,
+                workspace_id=str(workspace.workspace_id),
+                profile_id=profile_binding(workspace),
+                config_sha256=config_sha256,
+                state=state,
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "smoke_ledger_unavailable",
+                    "message": "本地调用记录不可用；无法确认本次检查状态。",
+                },
+            ) from None
+
     @app.post("/api/v1/provider-smoke/deepseek-chat", dependencies=[Depends(authenticated)])
     def smoke_deepseek_chat(
         workspace: Annotated[WorkspaceContext, Depends(active_workspace)],
@@ -2004,16 +2152,24 @@ def create_app(
         provider = runtime.llm(max_tokens=64)
         if not isinstance(provider, DeepSeekLLM):
             raise HTTPException(status_code=409, detail="所选 provider 不支持此检查。")
+        call_binding = settings_binding(workspace)
+        attempt: int | None = None
         try:
             attempt = reserve_smoke("deepseek_chat")
             provider.answer(
                 "请仅复述合成短语。",
                 [{"heading": "合成标题", "excerpt": "合成短语：连接正常。"}],
             )
+            persist_smoke_result(workspace, "deepseek_chat", "succeeded", call_binding)
             return {"state": "succeeded", "operation": "deepseek_chat", "attempt": attempt}
         except HTTPException:
             raise
         except Exception as exc:
+            if attempt is not None:
+                try:
+                    persist_smoke_result(workspace, "deepseek_chat", "unknown", call_binding)
+                except HTTPException:
+                    pass
             detail: dict[str, object] = {
                 "code": "provider_smoke_failed",
                 "message": smoke_failure_message(exc, service="模型服务"),

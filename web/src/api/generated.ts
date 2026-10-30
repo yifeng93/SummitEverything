@@ -2579,6 +2579,24 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** ModelCallStatus */
+        ModelCallStatus: {
+            /**
+             * State
+             * @default none
+             * @enum {string}
+             */
+            state: "none" | "succeeded" | "failed" | "unknown" | "unreadable";
+            /**
+             * Has Success
+             * @default false
+             */
+            has_success: boolean;
+            /** Last Attempt At */
+            last_attempt_at?: string | null;
+            /** Last Success At */
+            last_success_at?: string | null;
+        };
         /** ModelStudioSettingsPatch */
         ModelStudioSettingsPatch: {
             /** Provider */
@@ -2961,6 +2979,7 @@ export interface components {
             keychain_available: boolean;
             /** Embedding Fingerprint */
             embedding_fingerprint: string;
+            model_call_status?: components["schemas"]["ModelCallStatus"];
             local_model: components["schemas"]["LocalModelStatus"];
         };
         /** SourceDetail */

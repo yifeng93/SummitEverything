@@ -51,6 +51,22 @@ export const disabledReasons: Record<string, { text: string; next: string }> = {
     text: '已选择服务；真实模式与本机密钥尚未完成配置。',
     next: '在本卡填入对应密钥并保存；保存设置不会联网，也不会自动发起检查。',
   },
+  local_provider_disabled: {
+    text: '本地模型已准备，但向量化或排序功能已关闭。',
+    next: '在高级设置中启用对应能力后再使用。',
+  },
+  local_model_preparing: {
+    text: '本地模型正在准备。',
+    next: '等待准备完成；设置页读取状态不会联网。',
+  },
+  local_model_failed: {
+    text: '本地模型准备失败。',
+    next: '查看本机错误状态后重试准备。',
+  },
+  local_model_incomplete: {
+    text: '本地模型文件不完整。',
+    next: '重新准备本地模型并等待文件校验完成。',
+  },
   acceptance_plan_required: {
     text: '每次使用前需预览并确认本次范围。',
     next: '在对应操作中先查看本次范围预览，再由你独立确认执行。',
@@ -211,6 +227,15 @@ export function capabilityStatusLabel(capability: Capability | undefined): strin
   return '未启用'
 }
 
+export function localCapabilityStatusLabel(capability: Capability | undefined): string {
+  if (capability?.available) return '本机可用'
+  if (capability?.disabled_reason === 'local_model_preparing') return '本机模型准备中'
+  if (capability?.disabled_reason === 'local_model_failed') return '本机模型准备失败'
+  if (capability?.disabled_reason === 'local_model_incomplete') return '本机模型文件不完整'
+  if (capability?.disabled_reason === 'local_model_not_prepared') return '本机模型未准备'
+  return capabilityStatusLabel(capability)
+}
+
 export function smokeCheckConfigStamp(settings: Settings, key: SmokeCheckKey): string {
   const common = { mode: settings.mode, keychainAvailable: settings.keychain_available }
   if (key === 'deepseek_chat') {
@@ -222,10 +247,12 @@ export function smokeCheckConfigStamp(settings: Settings, key: SmokeCheckKey): s
 
 export function checkedCapabilityStatusLabel(
   capability: Capability | undefined,
-  outcome: CheckOutcome,
+  status: Settings['model_call_status'] | undefined,
 ): string {
-  if (outcome === 'succeeded') return '本次合成检查通过'
-  if (outcome === 'failed') return '本次检查失败'
+  if (status?.state === 'succeeded' && status.has_success) return '最近调用成功'
+  if (status?.state === 'failed') return status.has_success ? '最近失败（此前成功）' : '最近调用失败'
+  if (status?.state === 'unknown') return status.has_success ? '结果未知（此前成功）' : '最近结果未知'
+  if (status?.state === 'unreadable') return '调用记录暂不可读'
   return capabilityStatusLabel(capability)
 }
 
@@ -237,25 +264,33 @@ export function modelCardBadge(input: {
   mode: Settings['mode']
   credentials: Record<string, boolean>
   capabilities: Settings['capabilities']
-  checkOutcomes: Record<SmokeCheckKey, CheckOutcome>
+  callStatus: Settings['model_call_status']
 }): CardBadge {
-  const outcomes = Object.values(input.checkOutcomes)
-  if (outcomes.every((outcome) => outcome === 'succeeded')) {
+  const localReady = Boolean(input.capabilities.embedding?.available && input.capabilities.rerank?.available)
+  if (input.callStatus.state === 'unreadable') {
+    return { kind: 'unreadable', label: '调用记录暂不可读', hint: '本机设置仍可读取；调用历史不可读取时不会推测已验证。' }
+  }
+  if (input.callStatus.state === 'failed') {
     return {
-      kind: 'verified', label: '三项检查通过',
-      hint: 'DeepSeek、Embedding 与 Rerank 三项的当前配置均通过本机合成检查。真实业务调用仍需每次预览并独立确认范围。',
+      kind: 'failed', label: input.callStatus.has_success ? '最近调用失败' : '最近调用失败',
+      hint: input.callStatus.has_success
+        ? '当前配置最近一次调用未成功；此前仍有成功记录。每次使用仍需预览并确认本次范围。'
+        : '当前配置最近一次调用未成功。每次使用仍需预览并确认本次范围。',
     }
   }
-  if (outcomes.some((outcome) => outcome === 'failed')) {
+  if (input.callStatus.state === 'unknown') {
+    return { kind: 'failed', label: '最近结果未知', hint: '最近一次请求没有可确认的完成结果；已有成功记录会保留。' }
+  }
+  if (input.callStatus.state === 'succeeded' && input.callStatus.has_success && localReady) {
     return {
-      kind: 'failed', label: '有检查失败',
-      hint: '至少一项当前配置的合成连接检查未通过。逐项状态分别显示，失败同样计入额度，不会自动重发。',
+      kind: 'verified', label: '已就绪',
+      hint: '当前 DeepSeek 配置有成功调用记录，本地向量化和排序模型可用。每次使用仍需预览并确认本次范围。',
     }
   }
-  if (outcomes.some((outcome) => outcome === 'succeeded')) {
+  if (input.callStatus.state === 'succeeded' && input.callStatus.has_success) {
     return {
-      kind: 'configured', label: '部分已检查',
-      hint: '只有部分能力完成了当前配置的合成连接检查。逐项状态会显示已检查、未检查范围；未检查能力不代表可用。',
+      kind: 'configured', label: 'DeepSeek 最近调用成功',
+      hint: '当前 DeepSeek 配置有成功调用记录；本地向量化或排序模型尚未全部可用。每次使用仍需预览并确认本次范围。',
     }
   }
   const capabilities = input.capabilities ?? {}
@@ -270,12 +305,12 @@ export function modelCardBadge(input: {
   }
   if (input.mode === 'real') {
     return {
-      kind: 'configured', label: '已配置（尚未验证）',
-      hint: '配置与密钥已保存在本机。点击“检查连接”并确认后才会联网；每次真实使用前仍需预览并确认本次范围。',
+      kind: 'configured', label: '已配置',
+      hint: '当前配置没有可用的成功调用记录。读取状态不会联网；每次真实使用仍需预览并确认本次范围。',
     }
   }
   return {
-    kind: 'configured', label: '已配置（尚未验证）',
+    kind: 'configured', label: '已配置',
     hint: '配置已保存在本机；使用前仍需满足真实 provider、密钥、本地模型与索引要求。',
   }
 }

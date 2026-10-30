@@ -1,0 +1,14 @@
+SHELL_BODY=
+BUTTONS=[]
+locator.click: Timeout 3000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: '设置', exact: true })[22m
+
+    at openSettings (/Users/hanwenbo/.codex/worktrees/model-status-evidence-qa/SummitEverything/.local/qa/model-status/browser-status.mjs:57:67)
+    at async file:///Users/hanwenbo/.codex/worktrees/model-status-evidence-qa/SummitEverything/.local/qa/model-status/browser-status.mjs:71:14 {
+  log: [
+    "  - waiting for getByRole('button', { name: '设置', exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+BROWSER_QA_EXIT=1

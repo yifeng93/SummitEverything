@@ -24,6 +24,8 @@ function settings(overrides: Record<string, unknown> = {}) {
     credential_status: { feishu_app: false, deepseek: false, dashscope: false },
     keychain_available: true,
     embedding_fingerprint: 'fingerprint',
+    local_model: { model: 'BAAI/bge-small-zh-v1.5', revision: 'rev', dimensions: 512, token_limit: 512, download_size_bytes: 95_330_972, state: 'not_prepared', downloaded_bytes: 0, progress_percent: 0, error_code: null },
+    model_call_status: { state: 'none', has_success: false, last_attempt_at: null, last_success_at: null },
     ...overrides,
   }
 }
@@ -180,7 +182,7 @@ it('maps the four backend capability codes to business language with a next acti
   expect(await screen.findByText(/每次使用前需预览并确认本次范围/)).toBeTruthy()
   expect(screen.getByText(/下一步：在对应操作中先查看本次范围预览/)).toBeTruthy()
   expect(screen.getByText(/旧离线配置已迁移，真实服务尚未完成准备/)).toBeTruthy()
-  expect(screen.getByText('已配置（尚未验证）')).toBeTruthy()
+  expect(screen.getByText('已配置')).toBeTruthy()
   expect(screen.getByText(/缺少可独立核实写入结果的方式，飞书任务写回保持关闭/)).toBeTruthy()
   expect(screen.getByText(/下一步：写回继续禁用/)).toBeTruthy()
   expect(screen.getByText('已配置，待本次确认')).toBeTruthy()
@@ -194,8 +196,8 @@ it('falls back to a next-action message for an unknown capability code', async (
   expect(screen.getByText(/下一步：先查看能力详情确认门禁原因/)).toBeTruthy()
 })
 
-it('maps AI model badges only when all three current capability checks pass', () => {
-  const none = { mode: 'real' as const, credentials: {}, capabilities: {}, checkOutcomes: { deepseek_chat: 'none' as const, model_studio_embedding: 'none' as const, model_studio_rerank: 'none' as const } }
+it('maps AI model badges from current successful calls and local readiness', () => {
+  const none = { mode: 'real' as const, credentials: {}, capabilities: {}, callStatus: { state: 'none' as const, has_success: false, last_attempt_at: null, last_success_at: null } }
   const empty = none
   expect(modelCardBadge(empty).kind).toBe('unconfigured')
 
@@ -203,29 +205,63 @@ it('maps AI model badges only when all three current capability checks pass', ()
     mode: 'real',
     credentials: { deepseek: true },
     capabilities: { llm: capability({ configured: true, disabled_reason: 'acceptance_plan_required' }) },
-    checkOutcomes: { deepseek_chat: 'none', model_studio_embedding: 'none', model_studio_rerank: 'none' },
+    callStatus: { state: 'none', has_success: false, last_attempt_at: null, last_success_at: null },
   })
   expect(configured.kind).toBe('configured')
-  expect(configured.label).toBe('已配置（尚未验证）')
+  expect(configured.label).toBe('已配置')
 
-  const partial = modelCardBadge({
-    mode: 'real', credentials: { deepseek: true }, capabilities: {},
-    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'none', model_studio_rerank: 'none' },
+  const success = modelCardBadge({
+    mode: 'real', credentials: { deepseek: true },
+    capabilities: { embedding: capability({ available: true, configured: true }), rerank: capability({ available: true, configured: true }) },
+    callStatus: { state: 'succeeded', has_success: true, last_attempt_at: '2026-10-30T00:00:00Z', last_success_at: '2026-10-30T00:00:00Z' },
   })
-  expect(partial.label).toBe('部分已检查')
-  expect(partial.kind).not.toBe('verified')
+  expect(success.label).toBe('已就绪')
+  expect(success.kind).toBe('verified')
 
-  const mixed = modelCardBadge({
+  const failed = modelCardBadge({
     mode: 'real', credentials: { deepseek: true }, capabilities: {},
-    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'none', model_studio_rerank: 'failed' },
+    callStatus: { state: 'failed', has_success: true, last_attempt_at: '2026-10-30T00:01:00Z', last_success_at: '2026-10-30T00:00:00Z' },
   })
-  expect(mixed.label).toBe('有检查失败')
-  expect(mixed.kind).toBe('failed')
+  expect(failed.label).toBe('最近调用失败')
+  expect(failed.hint).toContain('此前仍有成功记录')
+})
 
-  expect(modelCardBadge({
-    mode: 'real', credentials: { deepseek: true }, capabilities: {},
-    checkOutcomes: { deepseek_chat: 'succeeded', model_studio_embedding: 'succeeded', model_studio_rerank: 'succeeded' },
-  }).kind).toBe('verified')
+it('re-mounts with persisted call evidence and refreshes local capability rows after preparation', async () => {
+  const saved = settings({
+    mode: 'real',
+    credential_status: { feishu_app: false, deepseek: true, dashscope: false },
+    llm: { provider: 'deepseek', model: 'deepseek-flash', account_id: 'default', enabled: true },
+    embedding: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', dimensions: 512, enabled: true },
+    rerank: { provider: 'local', model: 'BAAI/bge-small-zh-v1.5', dimensions: 512, enabled: true },
+    capabilities: {
+      llm: capability({ configured: true, disabled_reason: 'acceptance_plan_required' }),
+      embedding: capability({ disabled_reason: 'local_model_preparing' }),
+      rerank: capability({ disabled_reason: 'local_model_preparing' }),
+    },
+    local_model: { model: 'BAAI/bge-small-zh-v1.5', revision: 'rev', dimensions: 512, token_limit: 512, download_size_bytes: 95_330_972, state: 'preparing', downloaded_bytes: 0, progress_percent: 0, error_code: null },
+    model_call_status: { state: 'succeeded', has_success: true, last_attempt_at: '2026-10-30T00:00:00Z', last_success_at: '2026-10-30T00:00:00Z' },
+  })
+  const ready = { model: 'BAAI/bge-small-zh-v1.5', revision: 'rev', dimensions: 512, token_limit: 512, download_size_bytes: 95_330_972, state: 'ready', downloaded_bytes: 95_330_972, progress_percent: 100, error_code: null }
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+    const url = String(input)
+    if (url.endsWith('/settings')) return { ok: true, status: 200, json: async () => saved }
+    if (url.endsWith('/provider-smoke')) return { ok: true, status: 200, json: async () => smokeStatus }
+    if (url.endsWith('/integrations/feishu/status')) return { ok: true, status: 200, json: async () => feishuStatus() }
+    if (url.endsWith('/retrieval-model/status')) return { ok: true, status: 200, json: async () => ready }
+    throw new Error(`Unexpected request ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+
+  const first = render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  expect(await screen.findByText('DeepSeek 最近调用成功')).toBeTruthy()
+  expect(await screen.findByText('正在下载并校验')).toBeTruthy()
+  await waitFor(() => expect(screen.getAllByText('本机可用')).toHaveLength(2), { timeout: 3000 })
+  first.unmount()
+
+  render(<SettingsView workspaceName="Synthetic" onSwitchWorkspace={vi.fn()} />)
+  expect(await screen.findByText('DeepSeek 最近调用成功')).toBeTruthy()
+  expect(fetchMock.mock.calls.some(([url, init]) => String(url).includes('/provider-smoke/') && init?.method === 'POST')).toBe(false)
+  expect(fetchMock.mock.calls.some(([url, init]) => String(url).includes('/acceptance-plans') && init?.method === 'POST')).toBe(false)
 })
 
 it('ties each local smoke result to its own active settings so edits invalidate stale results', () => {

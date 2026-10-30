@@ -256,8 +256,10 @@ class LocalRetrievalModelStore:
             "token_limit": MODEL_TOKEN_LIMIT,
             "download_size_bytes": MODEL_DOWNLOAD_SIZE,
             "state": state,
-            "downloaded_bytes": progress.get("downloaded_bytes", 0),
-            "progress_percent": progress.get("progress_percent", 0),
+            "downloaded_bytes": MODEL_DOWNLOAD_SIZE
+            if state == "ready"
+            else progress.get("downloaded_bytes", 0),
+            "progress_percent": 100 if state == "ready" else progress.get("progress_percent", 0),
             "error_code": progress.get("error_code") if state in {"failed", "incomplete"} else None,
         }
 

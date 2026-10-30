@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /Users/hanwenbo/.codex/worktrees/model-status-evidence-qa2/SummitEverything/web
+
+
+ Test Files  3 passed (3)
+      Tests  25 passed (25)
+   Start at  15:20:42
+   Duration  10.26s (environment 39%, transform 25%, tests 24%, import 12%)
+

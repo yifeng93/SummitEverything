@@ -1,0 +1,37 @@
+const { chromium } = require('/Users/hanwenbo/ai/SummitEverything/web/node_modules/@playwright/test');
+const fs = require('node:fs');
+const path = '/Users/hanwenbo/ai/SummitEverything/.local/model-status-evidence';
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  const errors = [], writes = [];
+  page.on('pageerror', e => errors.push(String(e)));
+  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('request', r => { if (!['GET', 'HEAD', 'OPTIONS'].includes(r.method())) writes.push({ method:r.method(), path:new URL(r.url()).pathname }); });
+  const openSettings = async () => {
+    await page.getByRole('button', { name:'设置', exact:true }).click();
+    const card = page.locator('section[aria-label="AI 模型"]');
+    await card.getByText('已就绪', { exact:true }).waitFor({ timeout:30000 });
+    await card.getByText('最近调用成功', { exact:true }).waitFor();
+    if (await card.getByText('本机可用', { exact:true }).count() !== 2) throw new Error('Expected two local ready capabilities');
+    if ((await card.innerText()).includes('尚未验证')) throw new Error('Stale unverified label');
+    return card;
+  };
+  await page.goto('http://127.0.0.1:5173/');
+  let card = await openSettings();
+  const initialText = await card.innerText();
+  await page.getByRole('button',{ name:'今日', exact:true }).click();
+  await openSettings();
+  await page.reload();
+  card = await openSettings();
+  await card.screenshot({ path:path+'/live-model-card.png' });
+  await page.screenshot({ path:path+'/live-desktop.png' });
+  await page.setViewportSize({width:390,height:844});
+  await card.screenshot({ path:path+'/live-model-card-mobile.png' });
+  const data = await page.evaluate(async()=>{const r=await fetch('/api/v1/settings');const d=await r.json();return {model_call_status:d.model_call_status,local_model:d.local_model,capabilities:{llm:d.capabilities.llm,embedding:d.capabilities.embedding,rerank:d.capabilities.rerank}}});
+  const result = { url:page.url(), title:await page.title(), viewports:[[1440,1000],[390,844]], initialText, afterReload:await card.innerText(), errors,writes, summary:data };
+  fs.writeFileSync(path+'/live-result.json', JSON.stringify(result,null,2));
+  await browser.close();
+  if (errors.length || writes.length || data.local_model.progress_percent !== 100 || data.model_call_status.state !== 'succeeded') throw new Error('Live verification failed; inspect live-result.json');
+  console.log(JSON.stringify(result,null,2));
+})().catch(e=>{console.error(e);process.exit(1)});

@@ -179,6 +179,11 @@ class AcceptancePlanLedger:
                 raise PlanConflict("acceptance plan expired")
             return plan
 
+    def list_plans(self) -> list[AcceptancePlan]:
+        """Return a snapshot for local, read-only status summaries."""
+        with self._locked(read_only=True) as records:
+            return list(records.values())
+
     def confirm(
         self,
         plan_id: UUID,

@@ -10,9 +10,9 @@ import { ConfirmDialog } from './ConfirmDialog'
 import { LocalModelSetup } from './LocalModelSetup'
 import { saveFirstUseProgress, type FirstUseProgress } from './firstUseProgress'
 import {
-  badgeClass, capabilityLabels, capabilityStatusLabel, checkedCapabilityStatusLabel, credentialAccountId, failedFeishuStatusRead, feishuCardBadge,
-  modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckConfigStamp, smokeCheckDisabled, smokeChecks,
-  type CardBadge, type CheckOutcome, type CheckResult, type FeishuStatusRead, type SecretProvider, type Settings,
+  badgeClass, capabilityLabels, capabilityStatusLabel, checkedCapabilityStatusLabel, localCapabilityStatusLabel, credentialAccountId, failedFeishuStatusRead, feishuCardBadge,
+  modelCardBadge, parseFeishuStatus, reasonText, settingsPatch, smokeCheckDisabled, smokeChecks,
+  type CardBadge, type FeishuStatusRead, type SecretProvider, type Settings,
   type SmokeCheckKey, type SmokeStatus,
   unpreparedLocalModel,
 } from './settingsBadges'
@@ -22,6 +22,28 @@ function CardHead({ title, badge }: { title: string; badge: CardBadge }) {
     <h2>{title}</h2>
     <span className={badgeClass(badge.kind)}>{badge.label}</span>
   </div>
+}
+
+function localCapabilityState(
+  config: Settings['embedding'] | Settings['rerank'],
+  localModel: Settings['local_model'],
+): Settings['capabilities'][string] {
+  if (config.provider === 'dashscope') {
+    return { available: false, configured: false, disabled_reason: 'legacy_provider_migration_required' }
+  }
+  if (config.provider !== 'local') {
+    return { available: false, configured: false, disabled_reason: 'local_model_not_selected' }
+  }
+  if (localModel.state !== 'ready') {
+    const reason = localModel.state === 'preparing' ? 'local_model_preparing'
+      : localModel.state === 'failed' ? 'local_model_failed'
+        : localModel.state === 'incomplete' ? 'local_model_incomplete' : 'local_model_not_prepared'
+    return { available: false, configured: false, disabled_reason: reason }
+  }
+  if (!config.enabled) {
+    return { available: false, configured: true, disabled_reason: 'local_provider_disabled' }
+  }
+  return { available: true, configured: true, disabled_reason: null }
 }
 
 const emptySecrets: Record<SecretProvider, string> = { feishu_app: '', deepseek: '', dashscope: '' }
@@ -70,7 +92,6 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
   // 提交成功后立即清空输入框，页面永不回显。
   const [secrets, setSecrets] = useState<Record<SecretProvider, string>>(emptySecrets)
   // 每项结果只对产生它的本机配置有效；配置变更后由指纹失配自动过期。
-  const [checkResults, setCheckResults] = useState<CheckResult>({})
   // 读取失败可保留最后一次成功只读状态，但必须显著标记为可能过时。
   const [feishuStatus, setFeishuStatus] = useState<FeishuStatusRead>({ state: 'loading' })
   const feishuStatusRef = useRef<FeishuStatusRead>({ state: 'loading' })
@@ -280,28 +301,23 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
     setBusy(true); setError(''); setNotice('')
     try {
       await api.post('/provider-smoke/' + path, {})
-      if (settings) setCheckResults((current) => ({ ...current, [key]: { outcome: 'succeeded', configStamp: smokeCheckConfigStamp(settings, key) } }))
       setNotice(`${operation} 合成连接检查成功。本次请求已计入授权次数。`)
     } catch (cause) {
-      if (settings) setCheckResults((current) => ({ ...current, [key]: { outcome: 'failed', configStamp: smokeCheckConfigStamp(settings, key) } }))
       setError(cause instanceof Error ? cause.message : '请求结果未知；此尝试可能已计入次数。')
     } finally {
       await loadSmokeStatus()
+      await load()
       setBusy(false)
     }
   }
 
   const capabilities = settings?.capabilities ?? {}
   const credentials = settings?.credential_status ?? {}
-  const checkOutcomes = Object.fromEntries((Object.keys(smokeChecks) as SmokeCheckKey[]).map((key) => {
-    const result = checkResults[key]
-    return [key, settings && result?.configStamp === smokeCheckConfigStamp(settings, key) ? result.outcome : 'none']
-  })) as Record<SmokeCheckKey, CheckOutcome>
   const modelBadge = modelCardBadge({
     mode: settings?.mode ?? 'real',
     credentials,
     capabilities,
-    checkOutcomes,
+    callStatus: settings?.model_call_status ?? { state: 'none', has_success: false, last_attempt_at: null, last_success_at: null },
   })
   const feishuBadge = feishuCardBadge({
     keychainAvailable: Boolean(settings?.keychain_available),
@@ -381,14 +397,24 @@ export function SettingsView({ workspaceName, workspaceId = workspaceName, profi
               const reason = reasonText(capability?.disabled_reason)
               return <div className="cap-row" key={id}>
                 <strong>{capabilityLabels[id]}</strong>
-                  <span className="cap-state">{id === 'llm' ? checkedCapabilityStatusLabel(capability, checkOutcomes.deepseek_chat) : capabilityStatusLabel(capability)}</span>
+                <span className="cap-state">{id === 'llm'
+                  ? checkedCapabilityStatusLabel(capability, settings.model_call_status)
+                  : localCapabilityStatusLabel(capability)}</span>
                 {capability?.disabled_reason && !sharedAiReason && <p className="cap-reason">{reason.text}</p>}
               </div>
             })}
           </div>
           {sharedAiReason && <p className="card-footnote">{sharedAiReason}</p>}
           <LocalModelSetup key={`${profileId}:${workspaceId}`} status={settings.local_model ?? unpreparedLocalModel} onStatus={(local_model) => {
-            const updated = { ...settings, local_model }
+            const updated = {
+              ...settings,
+              local_model,
+              capabilities: {
+                ...settings.capabilities,
+                embedding: localCapabilityState(settings.embedding, local_model),
+                rerank: localCapabilityState(settings.rerank, local_model),
+              },
+            }
             const nextStamp = localModelStamp(local_model)
             if (persistedLocalModelStamp.current !== nextStamp) onRuntimeSettingsChanged?.()
             persistedLocalModelStamp.current = nextStamp

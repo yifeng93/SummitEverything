@@ -9013,6 +9013,52 @@
         ],
         "title": "MemoryPatchRequest"
       },
+      "ModelCallStatus": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "none",
+              "succeeded",
+              "failed",
+              "unknown",
+              "unreadable"
+            ],
+            "title": "State",
+            "default": "none"
+          },
+          "has_success": {
+            "type": "boolean",
+            "title": "Has Success",
+            "default": false
+          },
+          "last_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Attempt At"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelCallStatus"
+      },
       "ModelStudioSettingsPatch": {
         "properties": {
           "provider": {
@@ -9981,6 +10027,9 @@
           "embedding_fingerprint": {
             "type": "string",
             "title": "Embedding Fingerprint"
+          },
+          "model_call_status": {
+            "$ref": "#/components/schemas/ModelCallStatus"
           },
           "local_model": {
             "$ref": "#/components/schemas/LocalModelStatus"

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import time
 from pathlib import Path
 
+from summit_everything.local import retrieval_model
 from summit_everything.local.retrieval_model import LocalModelError, LocalRetrievalModelStore
 
 
@@ -15,6 +17,27 @@ def test_model_status_is_read_only_and_reports_missing_model(tmp_path: Path) -> 
     assert not store.root.exists()
     assert status["model"] == "BAAI/bge-small-zh-v1.5"
     assert status["download_size_bytes"] > 90_000_000
+
+
+def test_verified_model_status_reports_complete_progress_after_restart(
+    tmp_path: Path, monkeypatch
+) -> None:
+    store = LocalRetrievalModelStore(tmp_path / "profile" / "retrieval-models")
+    model_dir = store.revision_dir
+    model_dir.mkdir(parents=True)
+    model_bytes = b"synthetic model"
+    (model_dir / "weights.bin").write_bytes(model_bytes)
+    monkeypatch.setattr(
+        retrieval_model,
+        "MODEL_FILES",
+        {"weights.bin": (len(model_bytes), hashlib.sha256(model_bytes).hexdigest())},
+    )
+    monkeypatch.setattr(retrieval_model, "MODEL_DOWNLOAD_SIZE", len(model_bytes))
+    status = store.status()
+
+    assert status["state"] == "ready"
+    assert status["downloaded_bytes"] == len(model_bytes)
+    assert status["progress_percent"] == 100
 
 
 def test_explicit_prepare_failure_is_visible_and_retryable(tmp_path: Path) -> None:

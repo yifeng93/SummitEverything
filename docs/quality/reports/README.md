@@ -185,3 +185,5 @@
 | [PR #21 合并前仓库清理 · Sol 最终门判断（2026-10-16）](2026-10-16-PRE-PR21-CLEANUP-SOL-GATE.md) | Sol 最终门判断（PR #21 合并前清理） |
 | [App 图标 + DMG 卷图标 · Sol 门判断（PR #22，2026-10-16）](2026-10-16-APP-ICON-SOL-GATE.md) | App 图标 + DMG 卷图标（PR #22）Sol 门判断 |
 | [App 图标 + DMG 卷图标 独立 QA（固定 SHA `deed704`）](2026-10-16-APP-ICON-QA.md) | App 图标 + DMG 卷图标（PR #22）独立 QA 报告 |
+
+- [2026-10-30 模型状态提示 Sol 复核](2026-10-30-MODEL-STATUS-SOL.md)：固定修复、首轮FAIL与全新QA、本机当前页面验证。

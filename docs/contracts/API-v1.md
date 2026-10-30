@@ -171,6 +171,8 @@ Fake/offline 是默认模式；这组路由的读取、保存和页面刷新都�
 - `feishu`: `app_id`、loopback `redirect_uri`、`identity`（app/user，默认 app）、`calendar_id`、`material_content`（transcript/artifacts）与 `real_data_enabled`（默认 false）。不返回 app secret 或 token；授权状态由 `GET /integrations/feishu/status` 单独返回。
 - `llm`, `embedding`, `rerank`: 返回非秘密 provider 配置、allowlisted model 和能力开关。默认检索 provider 是本地 BGE；`dashscope` 配置字段仅为旧 profile 兼容读取，业务 runtime 拒绝调用。设置摘要包含 `local_model`（模型状态、revision、维度、文件大小、准备进度和安全错误码），不含本机目录或模型文件 hash。
 - `capabilities`: 按能力列出 `available/configured/disabled_reason`。该静态摘要不签发动作计划或确认；Feishu 日历只读直接校验身份/scope；材料和任务读取/导入还需提交已确认的精确计划。task create/edit/complete 因缺少可核实结果证明单独保持 unavailable（`result_proof_unavailable`）。不能因为读取可用而标成可写。
+- `model_call_status`: 只读的 DeepSeek 最近调用摘要（`state`、`has_success`、`last_attempt_at`、`last_success_at`）。整理、问答和日志助手只认成功终态且有 DeepSeek 用量记录的计划；DeepSeek smoke 结果按配置摘要持久化。设置配置摘要绑定本地凭据代次，替换或删除密钥后不继承旧成功。旧版计划只在尚无已观察到的密钥变更时按当前设置摘要作为历史成功记录；不表示当前凭据已重新验证。账本损坏只令调用状态为 `unreadable`，不阻断其他设置读取。
+- `embedding` / `rerank` 可用状态同时核对本地 BGE 文件已校验、对应 provider 选为 `local` 且能力已启用。单纯文件 ready 不代表能力已启用；本地模型无需云端 smoke。
 - `credential_status`: 各 provider 是否已设置、Keychain 是否可用。不得返回 Keychain item 名、secret 长度或 secret 值。
 
 ### `PATCH /settings`

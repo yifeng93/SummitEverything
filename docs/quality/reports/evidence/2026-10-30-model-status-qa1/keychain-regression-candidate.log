@@ -1,0 +1,76 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_unavailable_keychain_fails_closed_without_file_fallback _________
+
+tmp_path = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-335/test_unavailable_keychain_fail0')
+
+    def test_unavailable_keychain_fails_closed_without_file_fallback(tmp_path):
+        app = create_app(
+            session_token="synthetic-session",
+            profile_root=tmp_path / "profile",
+            secret_backend=UnavailableSecretBackend(),
+        )
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer synthetic-session"}
+        opened = client.post(
+            "/api/v1/workspaces",
+            headers=headers,
+            json={
+                "root": str(tmp_path / "workspace"),
+                "mode": "create",
+                "name": "模拟库",
+                "operation_id": "unavailable-keychain",
+            },
+        )
+        assert opened.status_code == 201
+    
+        response = client.put(
+            "/api/v1/credentials/deepseek",
+            headers=headers,
+            json={"account_id": "default", "secret": "sk-synthetic-secret-00000000"},
+        )
+    
+        assert response.status_code == 503
+        assert "synthetic-secret" not in response.text
+>       assert all(
+            "synthetic-secret" not in path.read_text() for path in (tmp_path / "profile").rglob("*")
+        )
+
+tests/integration/test_provider_settings_api.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/integration/test_provider_settings_api.py:348: in <genexpr>
+    "synthetic-secret" not in path.read_text() for path in (tmp_path / "profile").rglob("*")
+                              ^^^^^^^^^^^^^^^^
+../../../../.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-335/test_unavailable_keychain_fail0/profile/a9ba283c-0e1b-4c7c-9023-4fbd6a207da2')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       IsADirectoryError: [Errno 21] Is a directory: '/private/var/folders/sc/gywzky152m1_46r5hlv4y3bw0000gn/T/pytest-of-hanwenbo/pytest-335/test_unavailable_keychain_fail0/profile/a9ba283c-0e1b-4c7c-9023-4fbd6a207da2'
+
+../../../../.local/share/uv/python/cpython-3.13.2-macos-aarch64-none/lib/python3.13/pathlib/_local.py:537: IsADirectoryError
+=============================== warnings summary ===============================
+../../../../ai/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Users/hanwenbo/ai/SummitEverything/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_provider_settings_api.py::test_unavailable_keychain_fails_closed_without_file_fallback
+1 failed, 1 warning in 1.91s

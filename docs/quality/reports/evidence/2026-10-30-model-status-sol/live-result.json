@@ -1,0 +1,54 @@
+{
+  "url": "http://127.0.0.1:5173/",
+  "title": "SummitEverything — 本地知识工作台",
+  "viewports": [
+    [
+      1440,
+      1000
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "initialText": "AI 模型\n已就绪\n整理与问答模型\n最近调用成功\n知识索引向量化\n本机可用\n检索结果排序\n本机可用\n\n每次使用前需预览并确认本次范围。\n\n本地检索模型\n已准备好\n\n检索与排序都在本机完成。\n\n如何启用真实模型\n配置 AI 模型与密钥",
+  "afterReload": "AI 模型\n已就绪\n整理与问答模型\n最近调用成功\n知识索引向量化\n本机可用\n检索结果排序\n本机可用\n\n每次使用前需预览并确认本次范围。\n\n本地检索模型\n已准备好\n\n检索与排序都在本机完成。\n\n如何启用真实模型\n配置 AI 模型与密钥",
+  "errors": [],
+  "writes": [],
+  "summary": {
+    "model_call_status": {
+      "state": "succeeded",
+      "has_success": true,
+      "last_attempt_at": "2026-10-30T06:27:47.191608+00:00",
+      "last_success_at": "2026-10-30T06:27:47.191608+00:00"
+    },
+    "local_model": {
+      "model": "BAAI/bge-small-zh-v1.5",
+      "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+      "dimensions": 512,
+      "token_limit": 512,
+      "download_size_bytes": 95330972,
+      "state": "ready",
+      "downloaded_bytes": 95330972,
+      "progress_percent": 100,
+      "error_code": null
+    },
+    "capabilities": {
+      "llm": {
+        "available": false,
+        "configured": true,
+        "disabled_reason": "acceptance_plan_required"
+      },
+      "embedding": {
+        "available": true,
+        "configured": true,
+        "disabled_reason": null
+      },
+      "rerank": {
+        "available": true,
+        "configured": true,
+        "disabled_reason": null
+      }
+    }
+  }
+}

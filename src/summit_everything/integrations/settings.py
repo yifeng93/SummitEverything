@@ -209,6 +209,13 @@ class CapabilityState(_SettingsModel):
     disabled_reason: str | None
 
 
+class ModelCallStatus(_SettingsModel):
+    state: Literal["none", "succeeded", "failed", "unknown", "unreadable"] = "none"
+    has_success: bool = False
+    last_attempt_at: str | None = None
+    last_success_at: str | None = None
+
+
 class LocalModelStatus(_SettingsModel):
     model: str
     revision: str
@@ -233,6 +240,7 @@ class SettingsSummary(_SettingsModel):
     credential_status: dict[str, bool]
     keychain_available: bool
     embedding_fingerprint: str
+    model_call_status: ModelCallStatus = Field(default_factory=ModelCallStatus)
     local_model: LocalModelStatus
 
 
@@ -560,6 +568,7 @@ def provider_settings_payload(
     local_model_status: dict[str, object] | None = None,
     legacy_provider_migration_required: bool = False,
     feishu_calendar_ready: bool | None = None,
+    model_call_status: dict[str, object] | None = None,
 ) -> SettingsSummary:
     """Build a safe, user-facing status summary without exposing secret metadata."""
     keychain_available = isinstance(vault.backend, (MemorySecretBackend, MacOSKeychainBackend))
@@ -593,26 +602,43 @@ def provider_settings_payload(
     llm_configured = settings.llm.provider == "deepseek" and credential_status.get(
         "deepseek", False
     )
-    local_model_ready = (local_model_status or {}).get("state") == "ready"
-    embedding_configured = settings.embedding.provider == "local" and local_model_ready
-    rerank_configured = settings.rerank.provider == "local" and local_model_ready
-    embedding_reason = (
-        None
-        if embedding_configured
-        else "local_model_not_prepared"
-        if settings.embedding.provider == "local"
-        else "legacy_provider_migration_required"
-        if settings.embedding.provider == "dashscope"
-        else "local_model_not_selected"
+    local_model = LocalModelStatus.model_validate(
+        local_model_status
+        or {
+            "model": "BAAI/bge-small-zh-v1.5",
+            "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+            "dimensions": 512,
+            "token_limit": 512,
+            "download_size_bytes": 95_330_972,
+            "state": "not_prepared",
+            "downloaded_bytes": 0,
+            "progress_percent": 0,
+            "error_code": None,
+        }
     )
-    rerank_reason = (
-        None
-        if rerank_configured
-        else "local_model_not_prepared"
-        if settings.rerank.provider == "local"
-        else "legacy_provider_migration_required"
-        if settings.rerank.provider == "dashscope"
-        else "local_model_not_selected"
+    local_model_ready = local_model.state == "ready"
+
+    def local_capability(provider: str, enabled: bool) -> tuple[bool, str | None]:
+        if provider == "dashscope":
+            return False, "legacy_provider_migration_required"
+        if provider != "local":
+            return False, "local_model_not_selected"
+        if not local_model_ready:
+            return False, {
+                "not_prepared": "local_model_not_prepared",
+                "preparing": "local_model_preparing",
+                "failed": "local_model_failed",
+                "incomplete": "local_model_incomplete",
+            }.get(local_model.state, "local_model_not_prepared")
+        if not enabled:
+            return True, "local_provider_disabled"
+        return True, None
+
+    embedding_configured, embedding_reason = local_capability(
+        settings.embedding.provider, settings.embedding.enabled
+    )
+    rerank_configured, rerank_reason = local_capability(
+        settings.rerank.provider, settings.rerank.enabled
     )
     capabilities = {
         key: CapabilityState(**disabled, disabled_reason=reason)
@@ -623,7 +649,9 @@ def provider_settings_payload(
             "feishu_task_write": feishu_reason,
             "llm": (
                 "acceptance_plan_required"
-                if llm_configured and settings.mode == "real"
+                if llm_configured and settings.mode == "real" and settings.llm.enabled
+                else "provider_disabled"
+                if llm_configured and not settings.llm.enabled
                 else "offline_default"
                 if settings.llm.provider == "fake"
                 else "provider_not_configured"
@@ -638,12 +666,12 @@ def provider_settings_payload(
         disabled_reason=capabilities["llm"].disabled_reason,
     )
     capabilities["embedding"] = CapabilityState(
-        available=embedding_configured,
+        available=embedding_configured and settings.embedding.enabled,
         configured=embedding_configured,
         disabled_reason=capabilities["embedding"].disabled_reason,
     )
     capabilities["rerank"] = CapabilityState(
-        available=rerank_configured,
+        available=rerank_configured and settings.rerank.enabled,
         configured=rerank_configured,
         disabled_reason=capabilities["rerank"].disabled_reason,
     )
@@ -744,20 +772,8 @@ def provider_settings_payload(
         credential_status=credential_status,
         keychain_available=keychain_available,
         embedding_fingerprint=embedding_fingerprint(settings.embedding, mode=settings.mode),
-        local_model=LocalModelStatus.model_validate(
-            local_model_status
-            or {
-                "model": "BAAI/bge-small-zh-v1.5",
-                "revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
-                "dimensions": 512,
-                "token_limit": 512,
-                "download_size_bytes": 95_330_972,
-                "state": "not_prepared",
-                "downloaded_bytes": 0,
-                "progress_percent": 0,
-                "error_code": None,
-            }
-        ),
+        local_model=local_model,
+        model_call_status=ModelCallStatus.model_validate(model_call_status or {}),
     )
 
 
